@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.impl.MethodImpl;
@@ -32,6 +33,10 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
+        if (DumbService.getInstance(e.getProject()).isDumb()) {
+            return null;
+        }
+
         if (!isContainerGetCall(e)) {
             return null;
         }
