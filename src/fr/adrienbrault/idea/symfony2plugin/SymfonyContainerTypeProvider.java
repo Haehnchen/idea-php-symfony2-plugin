@@ -8,7 +8,6 @@ import com.jetbrains.php.lang.psi.elements.impl.StringLiteralExpressionImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import org.jetbrains.annotations.Nullable;
-import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
@@ -21,6 +20,14 @@ import java.util.Map;
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class SymfonyContainerTypeProvider implements PhpTypeProvider {
+
+    private Map<String, Map<String, String>> servicesMapsPerProject;
+    private Map<String, Long> servicesMapsLastModifiedPerProject;
+
+    public SymfonyContainerTypeProvider() {
+        servicesMapsPerProject = new HashMap<String, Map<String, String>>();
+        servicesMapsLastModifiedPerProject = new HashMap<String, Long>();
+    }
 
     @Nullable
     @Override
@@ -85,9 +92,6 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         return serviceId;
     }
 
-    private Map<String, String> cachedServiceMap;
-    private long cachedServiceMapLastModified;
-
     private Map<String, String>getServicesMap(Project project) {
         Map<String, String> map = new HashMap<String, String>();
 
@@ -97,15 +101,16 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return map;
         }
 
-        long xmlFileLastModified = xmlFile.lastModified();
-        if (xmlFileLastModified == cachedServiceMapLastModified) {
-            return cachedServiceMap;
+        Long xmlFileLastModified = xmlFile.lastModified();
+        if (xmlFileLastModified.equals(servicesMapsLastModifiedPerProject.get(project.getBasePath()))) {
+            return servicesMapsPerProject.get(project.getBasePath());
         }
 
         try {
             ServiceMapParser serviceMapParser = new ServiceMapParser();
-            cachedServiceMap = serviceMapParser.parse(xmlFile);
-            cachedServiceMapLastModified = xmlFileLastModified;
+            map = serviceMapParser.parse(xmlFile);
+            servicesMapsPerProject.put(project.getBasePath(), map);
+            servicesMapsLastModifiedPerProject.put(project.getBasePath(), xmlFileLastModified);
         } catch (SAXException e) {
             return map;
         } catch (IOException e) {
@@ -114,7 +119,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return map;
         }
 
-        return cachedServiceMap;
+        return map;
     }
 
 }
