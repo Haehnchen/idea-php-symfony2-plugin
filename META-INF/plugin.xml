@@ -1,0 +1,27 @@
+<idea-plugin version="2">
+  <id>fr.adrienbrault.idea.symfony2plugin</id>
+  <name>Symfony2 Plugin</name>
+  <version>0.1.0</version>
+  <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
+
+  <description><![CDATA[
+      Symfony2 plugin.
+
+      Currently detect ContainerInterface::get() result type.
+      ]]></description>
+
+  <change-notes><![CDATA[
+
+      ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="107.105"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.SymfonyContainerTypeProvider"/>
+  </extensions>
+
+  <depends>com.jetbrains.php</depends>
+  <depends>com.intellij.modules.platform</depends>
+</idea-plugin>
