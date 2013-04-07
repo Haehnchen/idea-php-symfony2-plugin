@@ -124,8 +124,15 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         NodeList servicesNodes = doc.getElementsByTagName("service");
         for (int i = 0; i < servicesNodes.getLength(); i++) {
             Element node = (Element) servicesNodes.item(i);
-            map.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
+            if (node.hasAttribute("class") && node.hasAttribute("id")) {
+                map.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
+            }
         }
+
+        // Support services whose class isn't specified
+        map.put("request", "\\Symfony\\Component\\HttpFoundation\\Request");
+        map.put("service_container", "\\Symfony\\Component\\DependencyInjection\\ContainerInterface");
+        map.put("kernel", "\\Symfony\\Component\\HttpKernel\\KernelInterface");
 
         cachedServiceMap = map;
         cachedServiceMapLastModified = xmlFileLastModified;
