@@ -20,6 +20,8 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.SymfonyContainerTypeProvider"/>
+    <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" />
+    <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings" />
   </extensions>
 
   <depends>com.jetbrains.php</depends>
