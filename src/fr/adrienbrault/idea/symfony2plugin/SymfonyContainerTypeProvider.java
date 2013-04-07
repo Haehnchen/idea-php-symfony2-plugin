@@ -100,7 +100,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
     private Map<String, String>getServicesMap(Project project) {
         Map<String, String> map = new HashMap<String, String>();
 
-        String defaultServiceMapFilePath = project.getBasePath() + Settings.getInstance(project).pathToProjectContainer;
+        String defaultServiceMapFilePath = project.getBasePath() + "/" + Settings.getInstance(project).pathToProjectContainer;
         File xmlFile = new File(defaultServiceMapFilePath);
         if (!xmlFile.exists()) {
             return map;
