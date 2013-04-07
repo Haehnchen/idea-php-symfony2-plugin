@@ -36,7 +36,6 @@ public class Settings implements PersistentStateComponent<Settings> {
     @Nullable
     @Override
     public Settings getState() {
-        System.out.println(pathToProjectContainer);
         return this;
     }
 

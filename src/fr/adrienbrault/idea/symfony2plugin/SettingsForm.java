@@ -41,7 +41,7 @@ public class SettingsForm implements Configurable {
     @Override
     public JComponent createComponent() {
         JLabel label = new JLabel("Path to appDevDebugProjectContainer.xml: ");
-        pathToProjectPanel = new JTextField(getSettings().pathToProjectContainer, 20);
+        pathToProjectPanel = new JTextField(getSettings().pathToProjectContainer, 35);
 
         label.setLabelFor(pathToProjectPanel);
 
