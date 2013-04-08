@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>fr.adrienbrault.idea.symfony2plugin</id>
   <name>Symfony2 Plugin</name>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
   <description><![CDATA[
@@ -16,7 +16,7 @@
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="107.105"/>
+  <idea-version since-build="129.196"/>
 
   <extensions defaultExtensionNs="com.intellij">
     <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.SymfonyContainerTypeProvider"/>
