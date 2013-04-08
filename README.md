@@ -6,8 +6,10 @@ Plugin url : http://plugins.jetbrains.com/plugin?pr=&pluginId=7219
 Installing the plugin
 ---------------------
 
-The plugin has not yet ( 2013-04-08 ) been approved by Jetbrains on http://plugins.jetbrains.com/plugin?pr=&pluginId=7219 .
+The plugin requires that you have the latest PHPStorm EAP build (6.0.1 EAP 129.196, Apr 5), available at http://confluence.jetbrains.com/display/PhpStorm/PhpStorm+Early+Access+Program
 
-So you currently need to download the plugin .jar from github and then install it in phpstorm: `Settings -> Plugins -> Install plugin from disk`.
+You can install the plugin by going to `Settings -> Plugin -> Browse repositories` and then search for `Symfony2`. **RECOMMENDED WAY**
 
-Note that the plugin requires that you have the latest PHPStorm EAP build, available at http://confluence.jetbrains.com/display/PhpStorm/PhpStorm+Early+Access+Program
+You can also [download the plugin .jar from github](https://github.com/adrienbrault/idea-php-symfony2-plugin/raw/master/symfony2-plugin.jar) and then install it in phpstorm: `Settings -> Plugins -> Install plugin from disk`.
+
+
