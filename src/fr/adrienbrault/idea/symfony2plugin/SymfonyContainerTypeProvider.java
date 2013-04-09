@@ -3,9 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.psi.elements.impl.MethodImpl;
-import com.jetbrains.php.lang.psi.elements.impl.MethodReferenceImpl;
-import com.jetbrains.php.lang.psi.elements.impl.StringLiteralExpressionImpl;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +41,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return null;
         }
 
-        String serviceId = getServiceId((MethodReferenceImpl) e);
+        String serviceId = getServiceId((MethodReference) e);
         if (null == serviceId) {
             return null;
         }
@@ -57,22 +57,22 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
     }
 
     private boolean isContainerGetCall(PsiElement e) {
-        if (!(e instanceof  MethodReferenceImpl)) {
+        if (!(e instanceof  MethodReference)) {
             return false;
         }
 
-        MethodReferenceImpl methodRefImpl = (MethodReferenceImpl) e;
+        MethodReference methodRef = (MethodReference) e;
         if (null == e.getReference()) {
             return false;
         }
 
-        PsiElement resolvedReference = methodRefImpl.getReference().resolve();
-        if (!(resolvedReference instanceof MethodImpl)) {
+        PsiElement resolvedReference = methodRef.getReference().resolve();
+        if (!(resolvedReference instanceof Method)) {
             return false;
         }
 
-        MethodImpl methodImpl = (MethodImpl) resolvedReference;
-        String methodFQN = methodImpl.getFQN(); // Something like "\Symfony\Bundle\FrameworkBundle\Controller\Controller.get"
+        Method method = (Method) resolvedReference;
+        String methodFQN = method.getFQN(); // Something like "\Symfony\Bundle\FrameworkBundle\Controller\Controller.get"
         if (null == methodFQN) {
             return false;
         }
@@ -85,11 +85,11 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         return false;
     }
 
-    private String getServiceId(MethodReferenceImpl e) {
+    private String getServiceId(MethodReference e) {
         String serviceId = null;
 
         PsiElement[] parameters = e.getParameters();
-        if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpressionImpl) {
+        if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
             serviceId = parameters[0].getText(); // quoted string
             serviceId = serviceId.substring(1, serviceId.length() - 1);
         }
