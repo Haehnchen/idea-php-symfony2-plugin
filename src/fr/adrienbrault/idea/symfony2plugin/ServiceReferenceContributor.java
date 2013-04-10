@@ -20,15 +20,15 @@ public class ServiceReferenceContributor extends PsiReferenceContributor {
             @NotNull
             @Override
             public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                if (!(psiElement.getContext() instanceof ParameterList)) {
+                    return new PsiReference[0];
+                }
                 ParameterList parameterList = (ParameterList) psiElement.getContext();
-                if (!(parameterList instanceof ParameterList)) {
-                    return new PsiReference[0];
-                }
 
-                MethodReference method = (MethodReference) parameterList.getContext();
-                if (!(method instanceof MethodReference)) {
+                if (!(parameterList.getContext() instanceof MethodReference)) {
                     return new PsiReference[0];
                 }
+                MethodReference method = (MethodReference) parameterList.getContext();
 
                 if (!ContainerGetHelper.isContainerGetCall(method)) {
                     return new PsiReference[0];
