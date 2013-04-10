@@ -1,8 +1,9 @@
 Changelog
 =========
 
-### 0.2.2
+### 0.3.0
 
+* Services id are now clickable (go to class definition), and autocompletable (CTRL+SPACE).
 * Should support all ContainerInterface::get proxies as long as the id is the first argument
   (Previously, only direct calls to ContainerInterface::get or Controller::get)
 
