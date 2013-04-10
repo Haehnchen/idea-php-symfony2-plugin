@@ -49,7 +49,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         String defaultServiceMapFilePath = project.getBasePath() + "/" + Settings.getInstance(project).pathToProjectContainer;
         File xmlFile = new File(defaultServiceMapFilePath);
         if (!xmlFile.exists()) {
-            return null;
+            return new ServiceMap();
         }
 
         Long xmlFileLastModified = xmlFile.lastModified();
@@ -66,7 +66,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         } catch (ParserConfigurationException ignored) {
         }
 
-        return null;
+        return new ServiceMap();
     }
 
 }

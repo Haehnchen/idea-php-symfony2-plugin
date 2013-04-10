@@ -45,13 +45,13 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
         // Return the PsiElement for the class corresponding to the serviceId
         Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
         if (null == symfony2ProjectComponent) {
-            return null;
+            return new ResolveResult[]{};
         }
 
         String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId);
 
         if (null == serviceClass) {
-            return null;
+            return new ResolveResult[]{};
         }
 
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());

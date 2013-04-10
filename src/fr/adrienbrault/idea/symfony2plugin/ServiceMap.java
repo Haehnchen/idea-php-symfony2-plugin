@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -13,6 +14,11 @@ public class ServiceMap {
     public ServiceMap(Map<String, String> map, Map<String, String> publicMap) {
         this.map = map;
         this.publicMap = publicMap;
+    }
+
+    public ServiceMap() {
+       this.map = new HashMap<String, String>();
+       this.publicMap = new HashMap<String, String>();
     }
 
     public Map<String, String> getMap() {
