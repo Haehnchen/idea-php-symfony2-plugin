@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.3.1
+
+* Fix small cache issue
+
 ### 0.3.0
 
 * Services id are now clickable (go to class definition), and autocompletable (CTRL+SPACE).
