@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.jetbrains.twig.TwigFile;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,6 +28,8 @@ public class TemplateLookupElement extends LookupElement {
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
         presentation.setIcon(icons.PhpIcons.TwigFileIcon);
+        presentation.setTypeText(VfsUtil.getRelativePath(twigFile.getContainingDirectory().getVirtualFile(), twigFile.getProject().getBaseDir(), '/'));
+        presentation.setTypeGrayed(true);
     }
 
 }

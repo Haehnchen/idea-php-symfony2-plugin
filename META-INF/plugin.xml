@@ -60,7 +60,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServiceReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TemplateReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateReferenceContributor"/>
+        <!--<psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateReferenceContributor"/>-->
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigCompletionContributor"/>
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
     </extensions>
