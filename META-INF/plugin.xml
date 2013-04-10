@@ -1,18 +1,57 @@
 <idea-plugin version="2">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.3.2</version>
+    <version>0.3.3</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
-      Symfony2 plugin.
+<h1>Symfony2 plugin.</h1>
 
-      Currently detect ContainerInterface::get() result type.
+<h2>Features:</h2>
+<ul>
+    <li>Autocomplete service id in ContainerInterface::get() calls</li>
+    <li>Clickable service id in ContainerInterface::get() first argument</li>
+    <li>Detect ContainerInterface::get() result type and thus provide autocomplete</li>
+</ul>
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.3.3</h2>
+<ul>
+    <li>Better description, and integrate the changelog into the plugin</li>
+</ul>
 
-            ]]>
+<h2>0.3.2</h2>
+<ul>
+    <li>Services id completion popup also show the class on the right</li>
+</ul>
+
+<h2>0.3.1</h2>
+<ul>
+    <li>Fix small cache issue</li>
+</ul>
+
+<h2>0.3.0</h2>
+<ul>
+    <li>Services id are now clickable (go to class definition), and autocompletable (CTRL+SPACE).</li>
+    <li>Should support all ContainerInterface::get proxies as long as the id is the first argument (Previously, only direct calls to ContainerInterface::get or Controller::get)</li>
+</ul>
+
+<h2>0.2.1</h2>
+<ul>
+    <li>Fixed required idea build</li>
+</ul>
+
+<h2>0.2.0</h2>
+<ul>
+    <li>The `appDevDebugProjectContainer.xml` path can now be configured in the project settings.</li>
+</ul>
+
+<h2>0.1.0</h2>
+<ul>
+    <li>Detect ContainerInterface::get result type</li>
+</ul>
+]]>
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->

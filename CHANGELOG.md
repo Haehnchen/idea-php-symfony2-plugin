@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.3.3
+
+* Better description, and integrate the changelog into the plugin
+
 ### 0.3.2
 
 * Services id completion popup also show the class on the right
