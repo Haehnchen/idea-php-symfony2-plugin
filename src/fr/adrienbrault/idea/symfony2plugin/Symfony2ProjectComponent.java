@@ -61,6 +61,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             ServiceMapParser serviceMapParser = new ServiceMapParser();
             servicesMap = serviceMapParser.parse(xmlFile);
             servicesMapLastModified = xmlFileLastModified;
+
+            return servicesMap;
         } catch (SAXException ignored) {
         } catch (IOException ignored) {
         } catch (ParserConfigurationException ignored) {
