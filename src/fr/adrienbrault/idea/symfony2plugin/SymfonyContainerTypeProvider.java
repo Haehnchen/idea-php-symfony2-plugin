@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.DumbService;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
@@ -11,26 +10,11 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import org.jetbrains.annotations.Nullable;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class SymfonyContainerTypeProvider implements PhpTypeProvider {
-
-    private Map<String, Map<String, String>> servicesMapsPerProject;
-    private Map<String, Long> servicesMapsLastModifiedPerProject;
-
-    public SymfonyContainerTypeProvider() {
-        servicesMapsPerProject = new HashMap<String, Map<String, String>>();
-        servicesMapsLastModifiedPerProject = new HashMap<String, Long>();
-    }
 
     @Nullable
     @Override
@@ -48,8 +32,8 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return null;
         }
 
-        Map<String, String> serviceMap = getServicesMap(e.getProject());
-        String serviceClass = serviceMap.get(serviceId);
+        Symfony2ProjectComponent symfony2ProjectComponent = e.getProject().getComponent(Symfony2ProjectComponent.class);
+        String serviceClass = symfony2ProjectComponent.getServicesMap().get(serviceId);
 
         if (null == serviceClass) {
             return null;
@@ -124,36 +108,6 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         }
 
         return serviceId;
-    }
-
-    private Map<String, String>getServicesMap(Project project) {
-        Map<String, String> map = new HashMap<String, String>();
-
-        String defaultServiceMapFilePath = project.getBasePath() + "/" + Settings.getInstance(project).pathToProjectContainer;
-        File xmlFile = new File(defaultServiceMapFilePath);
-        if (!xmlFile.exists()) {
-            return map;
-        }
-
-        Long xmlFileLastModified = xmlFile.lastModified();
-        if (xmlFileLastModified.equals(servicesMapsLastModifiedPerProject.get(project.getBasePath()))) {
-            return servicesMapsPerProject.get(project.getBasePath());
-        }
-
-        try {
-            ServiceMapParser serviceMapParser = new ServiceMapParser();
-            map = serviceMapParser.parse(xmlFile);
-            servicesMapsPerProject.put(project.getBasePath(), map);
-            servicesMapsLastModifiedPerProject.put(project.getBasePath(), xmlFileLastModified);
-        } catch (SAXException e) {
-            return map;
-        } catch (IOException e) {
-            return map;
-        } catch (ParserConfigurationException e) {
-            return map;
-        }
-
-        return map;
     }
 
 }

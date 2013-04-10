@@ -1,29 +1,34 @@
 <idea-plugin version="2">
-  <id>fr.adrienbrault.idea.symfony2plugin</id>
-  <name>Symfony2 Plugin</name>
-  <version>0.2.1</version>
-  <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
+    <id>fr.adrienbrault.idea.symfony2plugin</id>
+    <name>Symfony2 Plugin</name>
+    <version>0.2.1</version>
+    <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
-  <description><![CDATA[
+    <description><![CDATA[
       Symfony2 plugin.
 
       Currently detect ContainerInterface::get() result type.
       ]]></description>
 
-  <change-notes><![CDATA[
+    <change-notes><![CDATA[
 
-      ]]>
-  </change-notes>
+            ]]>
+    </change-notes>
 
-  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="129.196"/>
+    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="129.196"/>
 
-  <extensions defaultExtensionNs="com.intellij">
-    <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.SymfonyContainerTypeProvider"/>
-    <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" />
-    <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings" />
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.SymfonyContainerTypeProvider"/>
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+    </extensions>
 
-  <depends>com.jetbrains.php</depends>
-  <depends>com.intellij.modules.platform</depends>
+    <depends>com.jetbrains.php</depends>
+    <depends>com.intellij.modules.platform</depends>
+    <project-components>
+        <component>
+            <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
+        </component>
+    </project-components>
 </idea-plugin>
