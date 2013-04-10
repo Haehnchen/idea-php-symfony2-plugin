@@ -17,7 +17,7 @@ import java.util.Map;
 public class Symfony2ProjectComponent implements ProjectComponent {
 
     private Project project;
-    private Map<String, String> servicesMap;
+    private ServiceMap servicesMap;
     private Long servicesMapLastModified;
 
     public Symfony2ProjectComponent(Project project) {
@@ -45,13 +45,11 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         System.out.println("projectClosed");
     }
 
-    public Map<String, String> getServicesMap() {
-        Map<String, String> map = new HashMap<String, String>();
-
+    public ServiceMap getServicesMap() {
         String defaultServiceMapFilePath = project.getBasePath() + "/" + Settings.getInstance(project).pathToProjectContainer;
         File xmlFile = new File(defaultServiceMapFilePath);
         if (!xmlFile.exists()) {
-            return map;
+            return null;
         }
 
         Long xmlFileLastModified = xmlFile.lastModified();
@@ -63,15 +61,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             ServiceMapParser serviceMapParser = new ServiceMapParser();
             servicesMap = serviceMapParser.parse(xmlFile);
             servicesMapLastModified = xmlFileLastModified;
-        } catch (SAXException e) {
-            return map;
-        } catch (IOException e) {
-            return map;
-        } catch (ParserConfigurationException e) {
-            return map;
+        } catch (SAXException ignored) {
+        } catch (IOException ignored) {
+        } catch (ParserConfigurationException ignored) {
         }
 
-        return map;
+        return null;
     }
 
 }

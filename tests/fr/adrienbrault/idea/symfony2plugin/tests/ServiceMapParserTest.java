@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import fr.adrienbrault.idea.symfony2plugin.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.ServiceMapParser;
 import org.junit.Test;
 import org.junit.Assert;
@@ -17,14 +18,26 @@ public class ServiceMapParserTest extends Assert {
         ServiceMapParser serviceMapParser = new ServiceMapParser();
 
         String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<container><service id=\"adrienbrault\" class=\"AdrienBrault\\Awesome\"/></container>";
-        Map<String, String> serviceMap = serviceMapParser.parse(new ByteArrayInputStream(xmlString.getBytes()));
+            "<container>" +
+                "<service id=\"adrienbrault\" class=\"AdrienBrault\\Awesome\"/>" +
+                "<service id=\"secret\" class=\"AdrienBrault\\Secret\" public=\"false\"/>" +
+            "</container>";
+        ServiceMap serviceMap = serviceMapParser.parse(new ByteArrayInputStream(xmlString.getBytes()));
 
-        assertEquals("\\AdrienBrault\\Awesome", serviceMap.get("adrienbrault"));
+        assertTrue(serviceMap instanceof ServiceMap);
 
-        assertEquals("\\Symfony\\Component\\HttpFoundation\\Request", serviceMap.get("request"));
-        assertEquals("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", serviceMap.get("service_container"));
-        assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.get("kernel"));
+        assertEquals("\\AdrienBrault\\Awesome", serviceMap.getMap().get("adrienbrault"));
+        assertEquals("\\AdrienBrault\\Awesome", serviceMap.getPublicMap().get("adrienbrault"));
+
+        assertEquals("\\AdrienBrault\\Secret", serviceMap.getMap().get("secret"));
+        assertNull(serviceMap.getPublicMap().get("secret"));
+
+        assertEquals("\\Symfony\\Component\\HttpFoundation\\Request", serviceMap.getMap().get("request"));
+        assertEquals("\\Symfony\\Component\\HttpFoundation\\Request", serviceMap.getPublicMap().get("request"));
+        assertEquals("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", serviceMap.getMap().get("service_container"));
+        assertEquals("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", serviceMap.getPublicMap().get("service_container"));
+        assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.getMap().get("kernel"));
+        assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.getPublicMap().get("kernel"));
     }
 
 }

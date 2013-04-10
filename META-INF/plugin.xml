@@ -20,6 +20,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.SymfonyContainerTypeProvider"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.ServiceReferenceContributor"/>
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
     </extensions>

@@ -22,16 +22,17 @@ public class ServiceMapParser {
         documentBuilder = dbFactory.newDocumentBuilder();
     }
 
-    public Map<String, String> parse(InputStream stream) throws IOException, SAXException {
+    public ServiceMap parse(InputStream stream) throws IOException, SAXException {
         return parse(documentBuilder.parse(stream));
     }
 
-    public Map<String, String> parse(File file) throws IOException, SAXException {
+    public ServiceMap parse(File file) throws IOException, SAXException {
         return parse(documentBuilder.parse(file));
     }
 
-    public Map<String, String> parse(Document document) {
+    public ServiceMap parse(Document document) {
         Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> publicMap = new HashMap<String, String>();
 
         NodeList servicesNodes = document.getElementsByTagName("service");
         for (int i = 0; i < servicesNodes.getLength(); i++) {
@@ -39,14 +40,22 @@ public class ServiceMapParser {
             if (node.hasAttribute("class") && node.hasAttribute("id")) {
                 map.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
             }
+            if (!(node.hasAttribute("public") && node.getAttribute("public").equals("false"))) {
+                publicMap.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
+            }
         }
 
         // Support services whose class isn't specified
+        populateMapWithDefaultServices(map);
+        populateMapWithDefaultServices(publicMap);
+
+        return new ServiceMap(map, publicMap);
+    }
+
+    private void populateMapWithDefaultServices(Map<String, String> map) {
         map.put("request", "\\Symfony\\Component\\HttpFoundation\\Request");
         map.put("service_container", "\\Symfony\\Component\\DependencyInjection\\ContainerInterface");
         map.put("kernel", "\\Symfony\\Component\\HttpKernel\\KernelInterface");
-
-        return map;
     }
 
 }
