@@ -1,6 +1,12 @@
 Changelog
 =========
 
+### 0.4.0
+
+* Autocomplete template name in render() calls
+* Clickable template name in render() calls
+* Autocomplete template name in twig templates
+
 ### 0.3.3
 
 * Better description, and integrate the changelog into the plugin

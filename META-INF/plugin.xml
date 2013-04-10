@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.3.3</version>
+    <version>0.4.0</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -12,10 +12,20 @@
     <li>Autocomplete service id in ContainerInterface::get() calls</li>
     <li>Clickable service id in ContainerInterface::get() first argument</li>
     <li>Detect ContainerInterface::get() result type and thus provide autocomplete</li>
+    <li>Autocomplete template name in render() calls</li>
+    <li>Clickable template name in render() calls</li>
+    <li>Autocomplete template name in twig templates</li>
 </ul>
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.4.0</h2>
+<ul>
+    <li>Autocomplete template name in render() calls</li>
+    <li>Clickable template name in render() calls</li>
+    <li>Autocomplete template name in twig templates</li>
+</ul>
+
 <h2>0.3.3</h2>
 <ul>
     <li>Better description, and integrate the changelog into the plugin</li>
