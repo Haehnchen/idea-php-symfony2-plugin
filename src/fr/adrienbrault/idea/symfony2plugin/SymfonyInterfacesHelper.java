@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;
@@ -10,13 +10,31 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-public class ContainerGetHelper {
+public class SymfonyInterfacesHelper {
 
     public static boolean isContainerGetCall(PsiElement e) {
-        return isContainerGetCall(e, 1);
+        return isCallTo(e, "\\Symfony\\Component\\DependencyInjection\\ContainerInterface.get");
     }
 
-    public static boolean isContainerGetCall(PsiElement e, int deepness) {
+    public static boolean isTemplatingRenderCall(PsiElement e) {
+        return isCallTo(e, new String[] {
+            "\\Symfony\\Component\\Templating\\EngineInterface.render",
+            "\\Symfony\\Bridge\\Twig\\TwigEngine.render",
+            "\\Symfony\\Bundle\\TwigBundle\\TwigEngine.render",
+            "\\Symfony\\Bundle\\TwigBundle\\TwigEngine.renderResponse",
+            "\\Symfony\\Bundle\\TwigBundle\\EngineInterface.renderResponse"
+        });
+    }
+
+    private static boolean isCallTo(PsiElement e, String expectedMethodFQN) {
+        return isCallTo(e, new String[] { expectedMethodFQN }, 1);
+    }
+
+    private static boolean isCallTo(PsiElement e, String[] expectedMethodFQNs) {
+        return isCallTo(e, expectedMethodFQNs, 1);
+    }
+
+    private static boolean isCallTo(PsiElement e, String[] expectedMethodFQNs, int deepness) {
         if (!(e instanceof MethodReference)) {
             return false;
         }
@@ -37,9 +55,12 @@ public class ContainerGetHelper {
             return false;
         }
 
-        String expectedMethodFQN = "\\Symfony\\Component\\DependencyInjection\\ContainerInterface.get";
-        if (methodFQN.equals(expectedMethodFQN)) {
-            return true;
+        for (int i = 0; i < expectedMethodFQNs.length; i++) {
+            String expectedMethodFQN = expectedMethodFQNs[i];
+
+            if (methodFQN.equals(expectedMethodFQN)) {
+                return true;
+            }
         }
 
         if (deepness > 3) {
@@ -59,7 +80,8 @@ public class ContainerGetHelper {
                 if (null != returnInstructionElement &&
                     null != returnInstructionElement.getReference() &&
                     returnInstructionElement.getReference().resolve() != resolvedReference) { // Avoid stackoverflow with method calling itself
-                    return isContainerGetCall(returnInstructionElement, deepness + 1);
+
+                    return isCallTo(returnInstructionElement, expectedMethodFQNs, deepness + 1);
                 }
             }
         }
@@ -67,16 +89,17 @@ public class ContainerGetHelper {
         return false;
     }
 
-    public static String getServiceId(MethodReference e) {
-        String serviceId = null;
+    public static String getFirstArgumentStringValue(MethodReference e) {
+        String stringValue = null;
 
         PsiElement[] parameters = e.getParameters();
         if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
-            serviceId = parameters[0].getText(); // quoted string
-            serviceId = serviceId.substring(1, serviceId.length() - 1);
+            StringLiteralExpression stringLiteralExpression = (StringLiteralExpression)parameters[0];
+            stringValue = stringLiteralExpression.getText(); // quoted string
+            stringValue = stringValue.substring(stringLiteralExpression.getValueRange().getStartOffset(), stringLiteralExpression.getValueRange().getEndOffset());
         }
 
-        return serviceId;
+        return stringValue;
     }
 
 }

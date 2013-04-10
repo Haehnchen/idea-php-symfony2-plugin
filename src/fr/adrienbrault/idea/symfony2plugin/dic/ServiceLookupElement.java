@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,5 +29,6 @@ public class ServiceLookupElement extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(serviceClass.getPresentableFQN());
         presentation.setTypeGrayed(true);
+        presentation.setIcon(PhpIcons.CLASS_ICON);
     }
 }

@@ -6,6 +6,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.SymfonyInterfacesHelper;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,11 +21,11 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return null;
         }
 
-        if (!ContainerGetHelper.isContainerGetCall(e)) {
+        if (!SymfonyInterfacesHelper.isContainerGetCall(e)) {
             return null;
         }
 
-        String serviceId = ContainerGetHelper.getServiceId((MethodReference) e);
+        String serviceId = SymfonyInterfacesHelper.getFirstArgumentStringValue((MethodReference) e);
         if (null == serviceId) {
             return null;
         }
