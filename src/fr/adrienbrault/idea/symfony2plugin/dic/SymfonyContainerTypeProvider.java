@@ -1,14 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.openapi.project.DumbService;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
-import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nullable;
 
 /**

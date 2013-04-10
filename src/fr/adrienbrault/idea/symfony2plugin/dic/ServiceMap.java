@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;

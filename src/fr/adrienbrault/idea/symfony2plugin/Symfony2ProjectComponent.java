@@ -2,14 +2,14 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>

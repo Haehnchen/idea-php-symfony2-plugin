@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;

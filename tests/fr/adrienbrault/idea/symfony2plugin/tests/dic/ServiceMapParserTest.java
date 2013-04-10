@@ -1,12 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests;
+package fr.adrienbrault.idea.symfony2plugin.tests.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.ServiceMap;
-import fr.adrienbrault.idea.symfony2plugin.ServiceMapParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import org.junit.Test;
 import org.junit.Assert;
 
 import java.io.ByteArrayInputStream;
-import java.util.Map;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
