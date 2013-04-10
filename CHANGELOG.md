@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.3.2
+
+* Services id completion popup also show the class on the right
+
 ### 0.3.1
 
 * Fix small cache issue
