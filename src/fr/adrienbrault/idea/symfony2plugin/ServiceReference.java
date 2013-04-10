@@ -18,10 +18,7 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -77,7 +74,21 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
     @Override
     public Object[] getVariants() {
         Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
+        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+        PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
-        return symfony2ProjectComponent.getServicesMap().getPublicMap().keySet().toArray();
+        List<LookupElement> results = new ArrayList<LookupElement>();
+        Iterator it = serviceMap.getPublicMap().entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry)it.next();
+            String serviceId = (String)pairs.getKey();
+            String serviceClass = (String)pairs.getValue();
+            Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceClass);
+            if (phpClasses.size() > 0) {
+                results.add(new ServiceLookupElement(serviceId, phpClasses.iterator().next()));
+            }
+        }
+
+        return results.toArray();
     }
 }
