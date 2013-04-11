@@ -75,7 +75,12 @@ public class TemplateHelper {
         return PlatformPatterns.or(
             PlatformPatterns
                 .psiElement(TwigTokenTypes.STRING_TEXT)
-                .withParent(TwigTagWithFileReference.class)
+                .withParent(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigCompositeElementTypes.EMBED_TAG),
+                        PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                    )
+                )
                 .withLanguage(TwigLanguage.INSTANCE),
 
             // Targetting {{ render(..) }} is tricky right ? :p
