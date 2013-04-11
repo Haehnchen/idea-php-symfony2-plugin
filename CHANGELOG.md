@@ -1,9 +1,11 @@
 Changelog
 =========
 
-### 0.4.1
+### 0.5.0
 
 * Use a symfony2 icon instead of class icon in services autocomplete :)
+* You can now click on templates name in twig to go to file (awesome!)
+* "{{ include(" now autocomplete the template name
 
 ### 0.4.0
 

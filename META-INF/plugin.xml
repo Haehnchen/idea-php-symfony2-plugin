@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -15,13 +15,16 @@
     <li>Autocomplete template name in render() calls</li>
     <li>Clickable template name in render() calls</li>
     <li>Autocomplete template name in twig templates</li>
+    <li>Clickable template name in twig templates</li>
 </ul>
       ]]></description>
 
     <change-notes><![CDATA[
-<h2>0.4.1</h2>
+<h2>0.5.0</h2>
 <ul>
     <li>Use a symfony2 icon instead of class icon in services autocomplete :)</li>
+    <li>You can now click on templates name in twig to go to file (awesome!)</li>
+    <li>"{{ include(" now autocomplete the template name</li>
 </ul>
 
 <h2>0.4.0</h2>
