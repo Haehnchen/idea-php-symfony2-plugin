@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,11 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public ServiceMap getServicesMap() {
-        String defaultServiceMapFilePath = project.getBasePath() + "/" + Settings.getInstance(project).pathToProjectContainer;
+        String defaultServiceMapFilePath = Settings.getInstance(project).pathToProjectContainer;
+        if (!defaultServiceMapFilePath.startsWith("/")) { // Project relative path
+            defaultServiceMapFilePath = project.getBasePath() + "/" + defaultServiceMapFilePath;
+        }
+
         File xmlFile = new File(defaultServiceMapFilePath);
         if (!xmlFile.exists()) {
             return new ServiceMap();

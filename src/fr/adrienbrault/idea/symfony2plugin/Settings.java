@@ -19,8 +19,12 @@ import org.jetbrains.annotations.Nullable;
        }
 )
 public class Settings implements PersistentStateComponent<Settings> {
-    public String pathToProjectContainer = "app/cache/dev/appDevDebugProjectContainer.xml";
+    public String pathToProjectContainer;
     protected Project project;
+
+    public Settings() {
+        reset();
+    }
 
     public static Settings getInstance(Project project)
     {
@@ -40,5 +44,9 @@ public class Settings implements PersistentStateComponent<Settings> {
     @Override
     public void loadState(Settings settings) {
         XmlSerializerUtil.copyBean(settings, this);
+    }
+
+    public void reset() {
+        pathToProjectContainer = "app/cache/dev/appDevDebugProjectContainer.xml";
     }
 }
