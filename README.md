@@ -12,4 +12,7 @@ You can install the plugin by going to `Settings -> Plugin -> Browse repositorie
 
 You can also [download the plugin .jar from github](https://github.com/adrienbrault/idea-php-symfony2-plugin/raw/master/symfony2-plugin.jar) and then install it in phpstorm: `Settings -> Plugins -> Install plugin from disk`.
 
+Building & Debugging
+--------------------
 
+Open the project in IntelliJ, and follow the steps here : http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
