@@ -5,8 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Lumbendil
