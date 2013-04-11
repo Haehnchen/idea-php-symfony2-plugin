@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.5.0</version>
+    <version>0.5.1</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -20,6 +20,11 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.5.1</h2>
+<ul>
+    <li>Support {% embed autocomplete in twig</li>
+</ul>
+
 <h2>0.5.0</h2>
 <ul>
     <li>Use a symfony2 icon instead of class icon in services autocomplete :)</li>

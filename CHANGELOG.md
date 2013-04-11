@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.5.1
+
+* Support {% embed autocomplete in twig
+
 ### 0.5.0
 
 * Use a symfony2 icon instead of class icon in services autocomplete :)
