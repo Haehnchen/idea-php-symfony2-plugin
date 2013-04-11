@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.5.3
+
+* Fix a bug on windows when using an absolute path for the container.xml
+
 ### 0.5.2
 
 * The plugin settings for the container.xml path, has now a file chooser, and allow paths outside the project
