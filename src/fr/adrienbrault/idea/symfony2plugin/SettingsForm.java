@@ -47,16 +47,20 @@ public class SettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        JLabel label = new JLabel("Path to appDevDebugProjectContainer.xml: ");
+        JLabel label = new JLabel("Path to container.xml: ");
         pathToProjectPanel = new TextFieldWithBrowseButton(new JTextField("", 35));
-        pathToProjectPanel.getButton().addMouseListener(createButtonMouseListener());
+        pathToProjectPanel.getButton().addMouseListener(createContainerPathButtonMouseListener());
 
         label.setLabelFor(pathToProjectPanel);
+
+        JButton resetPathButton = new JButton("Default");
+        resetPathButton.addMouseListener(createResetContainerPathButtonMouseListener());
 
         JPanel panel = new JPanel();
 
         panel.add(label);
         panel.add(pathToProjectPanel);
+        panel.add(resetPathButton);
 
         updateUIFromSettings();
 
@@ -65,7 +69,7 @@ public class SettingsForm implements Configurable {
 
     @Override
     public boolean isModified() {
-        return true;
+        return !pathToProjectPanel.getText().equals(getSettings().pathToProjectContainer);
     }
 
     @Override
@@ -75,7 +79,6 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void reset() {
-        getSettings().reset();
         updateUIFromSettings();
     }
 
@@ -92,7 +95,7 @@ public class SettingsForm implements Configurable {
         pathToProjectPanel.setText(getSettings().pathToProjectContainer);
     }
 
-    private MouseListener createButtonMouseListener() {
+    private MouseListener createContainerPathButtonMouseListener() {
         return new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -117,6 +120,31 @@ public class SettingsForm implements Configurable {
                 }
 
                 pathToProjectPanel.setText(path);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent mouseEvent) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent mouseEvent) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent mouseEvent) {
+            }
+        };
+    }
+
+    private MouseListener createResetContainerPathButtonMouseListener() {
+        return new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                pathToProjectPanel.setText(Settings.DEFAULT_CONTAINER_PATH);
             }
 
             @Override
