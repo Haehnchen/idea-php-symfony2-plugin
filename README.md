@@ -3,6 +3,11 @@ IDEA PHP Symfony2 Plugin
 
 Plugin url : http://plugins.jetbrains.com/plugin?pr=&pluginId=7219
 
+Note about autocompletion
+-------------------------
+
+When you want to start autocompleting a service id or a template name, press CTRL + SPACE to trigger.
+
 Installing the plugin
 ---------------------
 
