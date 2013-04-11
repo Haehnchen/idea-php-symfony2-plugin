@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.4.1
+
+* Use a symfony2 icon instead of class icon in services autocomplete :)
+
 ### 0.4.0
 
 * Autocomplete template name in render() calls

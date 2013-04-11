@@ -19,6 +19,11 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.4.1</h2>
+<ul>
+    <li>Use a symfony2 icon instead of class icon in services autocomplete :)</li>
+</ul>
+
 <h2>0.4.0</h2>
 <ul>
     <li>Autocomplete template name in render() calls</li>
