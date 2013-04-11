@@ -53,9 +53,13 @@ public class TemplateHelper {
                 String templateDirectory = null; // xxx:XXX:xxx
                 String templateFile = null; // xxx:xxx:XXX
                 if (templatePath.contains("/")) {
-                    int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
-                    templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
-                    templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
+
+                    // remap twig folder shortcut:
+                    // Folder/Subfolder/file.html.twig -> BundleName:Folder/Subfolder:file.html.twig
+
+                    int firstDirectorySeparatorIndex = templatePath.indexOf("/");
+                    templateDirectory = templatePath.substring(0, firstDirectorySeparatorIndex);
+                    templateFile = templatePath.substring(firstDirectorySeparatorIndex + 1);
                 } else {
                     templateDirectory = "";
                     templateFile = templatePath;
