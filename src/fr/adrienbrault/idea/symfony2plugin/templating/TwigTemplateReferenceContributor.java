@@ -1,12 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import com.jetbrains.twig.TwigLanguage;
-import com.jetbrains.twig.TwigTagWithFileReference;
-import com.jetbrains.twig.TwigTokenTypes;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,7 +15,7 @@ public class TwigTemplateReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT).withParent(TwigTagWithFileReference.class).withLanguage(TwigLanguage.INSTANCE),
+            TemplateHelper.getAutocompletableTemplatePattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override

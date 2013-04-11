@@ -1,12 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.completion.*;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.twig.TwigFile;
-import com.jetbrains.twig.TwigLanguage;
-import com.jetbrains.twig.TwigTagWithFileReference;
-import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -19,7 +15,7 @@ public class TwigCompletionContributor extends CompletionContributor {
     public TwigCompletionContributor() {
         extend(
             CompletionType.BASIC,
-            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT).withParent(TwigTagWithFileReference.class).withLanguage(TwigLanguage.INSTANCE),
+            TemplateHelper.getAutocompletableTemplatePattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,

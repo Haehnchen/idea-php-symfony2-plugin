@@ -80,6 +80,7 @@
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigCompletionContributor"/>
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
     </extensions>
 
     <depends>com.jetbrains.php</depends>

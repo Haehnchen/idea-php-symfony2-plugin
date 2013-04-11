@@ -3,15 +3,17 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.twig.TwigFile;
-import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,6 +69,32 @@ public class TemplateHelper {
         }
 
         return results;
+    }
+
+    public static ElementPattern<PsiElement> getAutocompletableTemplatePattern() {
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.STRING_TEXT)
+                .withParent(TwigTagWithFileReference.class)
+                .withLanguage(TwigLanguage.INSTANCE),
+
+            // Targetting {{ render(..) }} is tricky right ? :p
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("include")
+                )
+                .withParent(
+                    PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
+                )
+                .withLanguage(TwigLanguage.INSTANCE)
+        );
     }
 
 }
