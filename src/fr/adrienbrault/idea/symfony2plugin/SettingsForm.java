@@ -84,7 +84,7 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-
+        pathToProjectPanel = null;
     }
 
     private Settings getSettings() {
