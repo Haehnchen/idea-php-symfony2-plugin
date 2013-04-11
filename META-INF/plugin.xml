@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.5.1</version>
+    <version>0.5.2</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -20,6 +20,11 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2></h2>
+<ul>
+    <li>The plugin settings for the container.xml path, has now a file chooser, and allow paths outside the project</li>
+</ul>
+
 <h2>0.5.1</h2>
 <ul>
     <li>Support {% embed autocomplete in twig</li>

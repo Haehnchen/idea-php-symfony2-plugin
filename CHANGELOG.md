@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.5.2
+
+* The plugin settings for the container.xml path, has now a file chooser, and allow paths outside the project
+
 ### 0.5.1
 
 * Support {% embed autocomplete in twig
