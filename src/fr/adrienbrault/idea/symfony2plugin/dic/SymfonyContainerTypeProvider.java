@@ -16,7 +16,8 @@ import org.jetbrains.annotations.Nullable;
 public class SymfonyContainerTypeProvider implements PhpTypeProvider {
 
     private Symfony2CachedInterfacesUtil cachedInterfacesUtil;
-    int depth = 0;
+
+    private int depth = 0;
 
     @Nullable
     @Override
@@ -29,7 +30,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         if (depth > 2) {
             // Try to avoid too much recursive things ...
             // Who would chain more than 2 ContainerInterface::get calls ? ie : $container->get('service_container')->get('service_container')->get('service_container')
-            depth = 0;
+            depth--;
             return null;
         }
 
@@ -47,25 +48,25 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         }
 
         if (!isContainerGetCall) {
-            depth = 0;
+            depth--;
             return null;
         }
 
         String serviceId = Symfony2InterfacesUtil.getFirstArgumentStringValue((MethodReference) e);
         if (null == serviceId) {
-            depth = 0;
+            depth--;
             return null;
         }
 
         Symfony2ProjectComponent symfony2ProjectComponent = e.getProject().getComponent(Symfony2ProjectComponent.class);
         ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
         if (null == serviceMap) {
-            depth = 0;
+            depth--;
             return null;
         }
         String serviceClass = serviceMap.getMap().get(serviceId);
 
-        depth = 0;
+        depth--;
 
         if (null == serviceClass) {
             return null;
