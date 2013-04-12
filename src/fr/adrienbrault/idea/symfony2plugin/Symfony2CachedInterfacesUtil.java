@@ -19,7 +19,10 @@ public class Symfony2CachedInterfacesUtil extends Symfony2InterfacesUtil {
     protected boolean isCallTo(PsiElement e, Method[] expectedMethods) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Method method : Arrays.asList(expectedMethods)) {
-            stringBuilder.append(method.getFQN()).append("_");
+            if (null != method) {
+                stringBuilder.append(method.getFQN());
+                stringBuilder.append("_");
+            }
         }
 
         Map<String, Boolean> elementCache = isCallToCache.get(e);
