@@ -7,7 +7,7 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.SymfonyInterfacesHelper;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -33,7 +33,8 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
                     }
                     MethodReference method = (MethodReference) parameterList.getContext();
 
-                    if (!SymfonyInterfacesHelper.isUrlGeneratorGenerateCall(method)) {
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isUrlGeneratorGenerateCall(method)) {
                         return new PsiReference[0];
                     }
 

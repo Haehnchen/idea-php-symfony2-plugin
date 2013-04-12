@@ -2,15 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
+import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -47,6 +49,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public ServiceMap getServicesMap() {
+        if (null != servicesMap) {
+            return servicesMap;
+        }
+
         String defaultServiceMapFilePath = Settings.getInstance(project).pathToProjectContainer;
         if (!defaultServiceMapFilePath.startsWith("/")) { // Project relative path
             defaultServiceMapFilePath = project.getBasePath() + "/" + defaultServiceMapFilePath;
@@ -74,6 +80,14 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         return new ServiceMap();
+    }
+
+    public Map<String, Route> getRoutes() {
+        Map<String, Route> routes = new HashMap<String, Route>();
+        Route route = new Route("foo", new HashMap<String, Object>());
+        routes.put(route.getName(), route);
+
+        return routes;
     }
 
 }

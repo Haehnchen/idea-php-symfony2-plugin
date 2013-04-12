@@ -3,13 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceBase;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -36,12 +35,9 @@ public class RouteReference extends PsiReferenceBase<PsiElement> implements PsiR
     @NotNull
     @Override
     public Object[] getVariants() {
-        Collection<PhpClass> classes = PhpIndex.getInstance(getElement().getProject()).getClassesByFQN("\\UrlGenerator");
+        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
+        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
 
-        return new Object[] {
-            "route1",
-            "route2",
-            "route3",
-        };
+        return routes.keySet().toArray();
     }
 }
