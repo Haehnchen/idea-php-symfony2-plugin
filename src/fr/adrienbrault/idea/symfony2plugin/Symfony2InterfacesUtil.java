@@ -25,11 +25,11 @@ public class Symfony2InterfacesUtil {
     public boolean isTemplatingRenderCall(PsiElement e) {
         return isCallTo(e, new Method[] {
             getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Templating\\EngineInterface", "render"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Templating\\StreamEngineInterface", "stream"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Bundle\\TwigBundle\\EngineInterface", "renderResponse"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "render"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "renderView"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "stream"),
+            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Templating\\StreamingEngineInterface", "stream"),
+            getInterfaceMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\EngineInterface", "renderResponse"),
+            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "render"),
+            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "renderView"),
+            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "stream"),
         });
     }
 
