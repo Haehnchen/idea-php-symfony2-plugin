@@ -64,8 +64,13 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
                 String className = filename.substring(0, filename.lastIndexOf('.'));
                 String repoName = phpClass.getName() + ':'  + className;
 
-                for (PhpClass entity_phpclass : phpIndex.getClassesByFQN(ns + "\\" + className)) {
-                    results.add(new DoctrineEntityLookupElement(repoName, entity_phpclass));
+                // dont add Repository classes and abstract entities
+                if(!className.endsWith("Repository")) {
+                    for (PhpClass entityClass : phpIndex.getClassesByFQN(ns + "\\" + className)) {
+                        if(!entityClass.isAbstract()) {
+                            results.add(new DoctrineEntityLookupElement(repoName, entityClass));
+                        }
+                    }
                 }
 
               }
