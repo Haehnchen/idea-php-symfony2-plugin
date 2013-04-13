@@ -17,11 +17,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
-        if (!TemplateHelper.getAutocompletableTemplatePattern().accepts(psiElement)) {
+        if (!TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)) {
             return null;
         }
 
-        Map<String, TwigFile> twigFilesByName = TemplateHelper.getTwigFilesByName(psiElement.getProject());
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
         TwigFile twigFile = twigFilesByName.get(psiElement.getText());
 
         if (null == twigFile) {

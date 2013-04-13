@@ -4,6 +4,7 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
@@ -92,6 +93,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
         File urlGeneratorFile = new File(urlGeneratorPath);
+        VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
 
         if (!urlGeneratorFile.exists()) {
             return routes;
