@@ -30,7 +30,15 @@ public class SymfonyInterfacesHelper {
         // EntityManager is needed for symfony 2.0?
         return isCallTo(e, new String[] {
                 "\\Doctrine\\ORM\\EntityManager.getRepository",
-                "\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository"
+                "\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository",
+                "\\Doctrine\\ORM\\EntityRepository.getRepository",
+        });
+    }
+
+    public static boolean isObjectRepositoryCall(PsiElement e) {
+        return isCallTo(e, new String[] {
+                "\\Doctrine\\Common\\Persistence\\ObjectRepository.find",
+                "\\Doctrine\\Common\\Persistence\\ObjectRepository.findOneBy",
         });
     }
 
