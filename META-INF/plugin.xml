@@ -94,6 +94,7 @@
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServiceReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineEntityReferenceContributor"/>
         <!--<psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateReferenceContributor"/>-->
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigCompletionContributor"/>
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
