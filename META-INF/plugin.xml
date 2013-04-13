@@ -17,6 +17,12 @@
     <li>Autocomplete template name in twig templates</li>
     <li>Clickable template name in twig templates</li>
 </ul>
+
+<h2>Notes</h2>
+<ul>
+    <li>To trigger the autocompletion, press CTRL + SPACE.</li>
+    <li>Set the type of "classes.php" to text resolved some autocomplete issues for me.</li>
+</ul>
       ]]></description>
 
     <change-notes><![CDATA[
