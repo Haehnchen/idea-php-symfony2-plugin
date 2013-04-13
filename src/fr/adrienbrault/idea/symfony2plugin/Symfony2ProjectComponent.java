@@ -119,7 +119,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         while (matcher.find()) {
             String routeName = matcher.group(1);
-            String controller = matcher.group(2);
+            String controller = matcher.group(2).replace("\\\\", "\\");
             Route route = new Route(routeName, controller);
             routes.put(route.getName(), route);
         }
