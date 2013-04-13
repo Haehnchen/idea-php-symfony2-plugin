@@ -1,6 +1,14 @@
 Changelog
 =========
 
+### 0.6.0
+
+* Autocomplete route name in php and twig
+* Should fix IDE freezes and StackoverflowException etc :)
+* Performance improvment
+* No more proxy method detection, the plugin has to know them (for example Controller::get)
+* Smarter detection of functions call in twig (ie: {% set var = render('<caret>') %} should work)
+
 ### 0.5.3
 
 * Fix a bug on windows when using an absolute path for the container.xml
