@@ -7,6 +7,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,28 +46,28 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
     public Object[] getVariants() {
 
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
+
+        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
+        Map<String, String> em = symfony2ProjectComponent.getEntityNamespacesMap();
 
         List<LookupElement> results = new ArrayList<LookupElement>();
-        for (PhpClass phpClass : phpClasses) {
+        for (String shortcutName : em.keySet()) {
 
             // search for classes that match the symfony2 namings
-            String ns = phpClass.getNamespaceName() + "Entity";
-            Collection<PhpNamespace> entities = phpIndex.getNamespacesByName(ns);
+            Collection<PhpNamespace> entities = phpIndex.getNamespacesByName(em.get(shortcutName));
 
             // @TODO: it looks like PhpIndex cant search for classes like \ns\Path\*\...
             // temporary only use flat entities and dont support "MyBundle:Folder\Entity"
             for (PhpNamespace entity_files : entities) {
 
                 // build our symfony2 shortcut
-                System.out.println(entity_files.getContainingFile().getContainingDirectory());
                 String filename = entity_files.getContainingFile().getName();
                 String className = filename.substring(0, filename.lastIndexOf('.'));
-                String repoName = phpClass.getName() + ':'  + className;
+                String repoName = shortcutName + ':'  + className;
 
                 // dont add Repository classes and abstract entities
                 if(!className.endsWith("Repository")) {
-                    for (PhpClass entityClass : phpIndex.getClassesByFQN(ns + "\\" + className)) {
+                    for (PhpClass entityClass : phpIndex.getClassesByFQN(em.get(shortcutName) + "\\" + className)) {
                         if(!entityClass.isAbstract()) {
                             results.add(new DoctrineEntityLookupElement(repoName, entityClass));
                         }
