@@ -1,25 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
-import java.util.Map;
-
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class Route {
 
     private String name;
-    private Map<String, Object> defaults;
+    private String controller;
 
-    public Route(String name, Map<String, Object> defaults) {
+    public Route(String name, String controller) {
         this.name = name;
-        this.defaults = defaults;
+        this.controller = controller;
     }
 
     public String getName() {
         return name;
     }
 
-    public Map<String, Object> getDefaults() {
-        return defaults;
+    public String getController() {
+        return controller;
     }
 }
