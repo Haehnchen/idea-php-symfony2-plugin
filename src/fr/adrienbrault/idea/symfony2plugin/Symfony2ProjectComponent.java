@@ -4,9 +4,10 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesParser;
+import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -22,11 +25,12 @@ import java.util.Map;
 public class Symfony2ProjectComponent implements ProjectComponent {
 
     private Project project;
+
     private ServiceMap servicesMap;
     private Long servicesMapLastModified;
 
-    private Long entityNamespacesMapLastModified;
-    private Map<String, String> entityNamespaces;
+    private Map<String, Route> routes;
+    private Long routesLastModified;
 
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
@@ -54,10 +58,11 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public ServiceMap getServicesMap() {
-        String defaultServiceMapFilePath = Settings.getInstance(project).pathToProjectContainer;
-        if (!FileUtil.isAbsolute(defaultServiceMapFilePath)) { // Project relative path
-            defaultServiceMapFilePath = project.getBasePath() + "/" + defaultServiceMapFilePath;
+        if (null != servicesMap) {
+            return servicesMap;
         }
+
+        String defaultServiceMapFilePath = getPath(project, Settings.getInstance(project).pathToProjectContainer);
 
         File xmlFile = new File(defaultServiceMapFilePath);
         if (!xmlFile.exists()) {
@@ -83,34 +88,54 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return new ServiceMap();
     }
 
-    public Map<String, String> getEntityNamespacesMap() {
-        String defaultServiceMapFilePath = Settings.getInstance(project).pathToProjectContainer;
-        if (!FileUtil.isAbsolute(defaultServiceMapFilePath)) { // Project relative path
-            defaultServiceMapFilePath = project.getBasePath() + "/" + defaultServiceMapFilePath;
+    public Map<String, Route> getRoutes() {
+        Map<String, Route> routes = new HashMap<String, Route>();
+
+        String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
+        File urlGeneratorFile = new File(urlGeneratorPath);
+        VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
+
+        if (!urlGeneratorFile.exists()) {
+            return routes;
         }
 
-        File xmlFile = new File(defaultServiceMapFilePath);
-        if (!xmlFile.exists()) {
-            return new HashMap<String, String>();
+        Long routesLastModified = urlGeneratorFile.lastModified();
+        if (routesLastModified.equals(this.routesLastModified)) {
+            return this.routes;
         }
 
-        Long xmlFileLastModified = xmlFile.lastModified();
-        if (xmlFileLastModified.equals(entityNamespacesMapLastModified)) {
-            return entityNamespaces;
-        }
-
+        Matcher matcher = null;
         try {
-            EntityNamesParser entityNamesParser = new EntityNamesParser();
-            entityNamespaces = entityNamesParser.parse(xmlFile);
-            entityNamespacesMapLastModified = xmlFileLastModified;
-
-            return entityNamespaces;
-        } catch (SAXException ignored) {
+            // Damn, what has he done!
+            // Right ?
+            // If you find a better way to parse the file ... submit a PR :P
+            matcher = Pattern.compile("'((?:[^'\\\\]|\\\\.)*)' => [^\\n]+'_controller' => '((?:[^'\\\\]|\\\\.)*)'[^\\n]+\n").matcher(VfsUtil.loadText(virtualUrlGeneratorFile));
         } catch (IOException ignored) {
-        } catch (ParserConfigurationException ignored) {
         }
 
-        return new HashMap<String, String>();
+        if (null == matcher) {
+            return routes;
+        }
+
+        while (matcher.find()) {
+            String routeName = matcher.group(1);
+            String controller = matcher.group(2).replace("\\\\", "\\");
+            Route route = new Route(routeName, controller);
+            routes.put(route.getName(), route);
+        }
+
+        this.routes = routes;
+        this.routesLastModified = routesLastModified;
+
+        return routes;
+    }
+
+    private String getPath(Project project, String path) {
+        if (!FileUtil.isAbsolute(path)) { // Project relative path
+            path = project.getBasePath() + "/" + path;
+        }
+
+        return path;
     }
 
 }

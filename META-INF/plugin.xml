@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.5.3</version>
+    <version>0.6.0</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -16,10 +16,27 @@
     <li>Clickable template name in render() calls</li>
     <li>Autocomplete template name in twig templates</li>
     <li>Clickable template name in twig templates</li>
+    <li>Autocomplete route name in UrlGenerator::generate() calls</li>
+    <li>Autocomplete route name in twig templates</li>
+</ul>
+
+<h2>Notes</h2>
+<ul>
+    <li>To trigger the autocompletion, press CTRL + SPACE.</li>
+    <li>Set the type of "classes.php" to text resolved some autocomplete issues for me.</li>
 </ul>
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.6.0</h2>
+<ul>
+    <li>Autocomplete route name in php and twig</li>
+    <li>Should fix IDE freezes and StackoverflowException etc :)</li>
+    <li>Performance improvment</li>
+    <li>No more proxy method detection, the plugin has to know them (for example Controller::get)</li>
+    <li>Smarter detection of functions call in twig (ie: {% set var = render('<caret>') %} should work)</li>
+</ul>
+
 <h2>0.5.3</h2>
 <ul>
     <li>Fix a bug on windows when using an absolute path for the container.xml</li>
@@ -98,7 +115,9 @@
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineEntityReferenceContributor"/>
         <!--<psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateReferenceContributor"/>-->
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigCompletionContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.TwigRouteCompletionContributor"/>
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>

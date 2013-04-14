@@ -21,12 +21,14 @@ import org.jetbrains.annotations.Nullable;
 public class Settings implements PersistentStateComponent<Settings> {
 
     public static String DEFAULT_CONTAINER_PATH = "app/cache/dev/appDevDebugProjectContainer.xml";
+    public static String DEFAULT_URL_GENERATOR_PATH = "app/cache/dev/appDevUrlGenerator.php";
 
     public String pathToProjectContainer = DEFAULT_CONTAINER_PATH;
+    public String pathToUrlGenerator = DEFAULT_URL_GENERATOR_PATH;
+
     protected Project project;
 
-    public static Settings getInstance(Project project)
-    {
+    public static Settings getInstance(Project project) {
         Settings settings = ServiceManager.getService(project, Settings.class);
 
         settings.project = project;

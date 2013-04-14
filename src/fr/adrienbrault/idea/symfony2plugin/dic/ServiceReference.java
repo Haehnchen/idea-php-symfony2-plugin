@@ -44,10 +44,14 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
 
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
         Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceClass);
+        Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(serviceClass);
 
         List<ResolveResult> results = new ArrayList<ResolveResult>();
         for (PhpClass phpClass : phpClasses) {
             results.add(new PsiElementResolveResult(phpClass));
+        }
+        for (PhpClass phpInterface : phpInterfaces) {
+            results.add(new PsiElementResolveResult(phpInterface));
         }
 
         return results.toArray(new ResolveResult[results.size()]);
@@ -77,6 +81,11 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
             Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceClass);
             if (phpClasses.size() > 0) {
                 results.add(new ServiceLookupElement(serviceId, phpClasses.iterator().next()));
+            } else {
+                Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(serviceClass);
+                if (phpInterfaces.size() > 0) {
+                    results.add(new ServiceLookupElement(serviceId, phpInterfaces.iterator().next()));
+                }
             }
         }
 

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -26,7 +27,8 @@ import java.awt.event.MouseListener;
 public class SettingsForm implements Configurable {
 
     private Project project;
-    private TextFieldWithBrowseButton pathToProjectPanel;
+    private TextFieldWithBrowseButton pathToContainerTextField;
+    private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -47,34 +49,74 @@ public class SettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        JLabel label = new JLabel("Path to container.xml: ");
-        pathToProjectPanel = new TextFieldWithBrowseButton(new JTextField("", 35));
-        pathToProjectPanel.getButton().addMouseListener(createContainerPathButtonMouseListener());
-
-        label.setLabelFor(pathToProjectPanel);
-
-        JButton resetPathButton = new JButton("Default");
-        resetPathButton.addMouseListener(createResetContainerPathButtonMouseListener());
-
+        JLabel label;
+        JButton resetPathButton;
         JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.WEST;
 
-        panel.add(label);
-        panel.add(pathToProjectPanel);
-        panel.add(resetPathButton);
+        label = new JLabel("Path to container.xml: ");
+        pathToContainerTextField = new TextFieldWithBrowseButton(new JTextField(""));
+        pathToContainerTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToContainerTextField.getTextField()));
+
+        label.setLabelFor(pathToContainerTextField);
+
+        resetPathButton = new JButton("Default");
+        resetPathButton.addMouseListener(createResetPathButtonMouseListener(pathToContainerTextField.getTextField(), Settings.DEFAULT_CONTAINER_PATH));
+
+        c.gridy = 0;
+        c.gridx = 0;
+        panel.add(label, c);
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(pathToContainerTextField, c);
+        c.gridx = 2;
+        c.fill = 0;
+        panel.add(resetPathButton, c);
+
+        label = new JLabel("Path to urlGenerator.php: ");
+        pathToUrlGeneratorTextField = new TextFieldWithBrowseButton(new JTextField(""));
+        pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField()));
+
+        resetPathButton = new JButton("Default");
+        resetPathButton.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
+
+        c.gridy = 1;
+        c.gridx = 0;
+        panel.add(label, c);
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(pathToUrlGeneratorTextField, c);
+        c.gridx = 2;
+        c.fill = 0;
+        panel.add(resetPathButton, c);
 
         updateUIFromSettings();
 
-        return panel;
+        JPanel container = new JPanel();
+        container.setLayout(new BorderLayout());
+        container.add(panel, BorderLayout.WEST);
+
+        JPanel container2 = new JPanel();
+        container2.setLayout(new BorderLayout());
+        container2.add(container, BorderLayout.NORTH);
+
+        return container2;
     }
 
     @Override
     public boolean isModified() {
-        return !pathToProjectPanel.getText().equals(getSettings().pathToProjectContainer);
+        return
+            !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
+            || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
+        ;
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        getSettings().pathToProjectContainer = pathToProjectPanel.getText();
+        getSettings().pathToProjectContainer = pathToContainerTextField.getText();
+        getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
     }
 
     @Override
@@ -84,7 +126,8 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-        pathToProjectPanel = null;
+        pathToContainerTextField = null;
+        pathToUrlGeneratorTextField = null;
     }
 
     private Settings getSettings() {
@@ -92,10 +135,11 @@ public class SettingsForm implements Configurable {
     }
 
     private void updateUIFromSettings() {
-        pathToProjectPanel.setText(getSettings().pathToProjectContainer);
+        pathToContainerTextField.setText(getSettings().pathToProjectContainer);
+        pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
     }
 
-    private MouseListener createContainerPathButtonMouseListener() {
+    private MouseListener createPathButtonMouseListener(final JTextField textField) {
         return new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -107,7 +151,7 @@ public class SettingsForm implements Configurable {
                 VirtualFile selectedFile = FileChooser.chooseFile(
                     FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
                     project,
-                    VfsUtil.findRelativeFile(pathToProjectPanel.getText(), projectDirectory)
+                    VfsUtil.findRelativeFile(textField.getText(), projectDirectory)
                 );
 
                 if (null == selectedFile) {
@@ -119,7 +163,7 @@ public class SettingsForm implements Configurable {
                     path = selectedFile.getPath();
                 }
 
-                pathToProjectPanel.setText(path);
+                textField.setText(path);
             }
 
             @Override
@@ -136,7 +180,7 @@ public class SettingsForm implements Configurable {
         };
     }
 
-    private MouseListener createResetContainerPathButtonMouseListener() {
+    private MouseListener createResetPathButtonMouseListener(final JTextField textField, final String defaultValue) {
         return new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -144,7 +188,7 @@ public class SettingsForm implements Configurable {
 
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
-                pathToProjectPanel.setText(Settings.DEFAULT_CONTAINER_PATH);
+                textField.setText(defaultValue);
             }
 
             @Override

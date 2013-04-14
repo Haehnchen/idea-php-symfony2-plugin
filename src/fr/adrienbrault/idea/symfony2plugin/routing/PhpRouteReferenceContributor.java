@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-public class PhpTemplateReferenceContributor extends PsiReferenceContributor {
+public class PhpRouteReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
@@ -34,11 +34,11 @@ public class PhpTemplateReferenceContributor extends PsiReferenceContributor {
                     MethodReference method = (MethodReference) parameterList.getContext();
 
                     Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isTemplatingRenderCall(method)) {
+                    if (!interfacesUtil.isUrlGeneratorGenerateCall(method)) {
                         return new PsiReference[0];
                     }
 
-                    return new PsiReference[]{ new TemplateReference((StringLiteralExpression) psiElement) };
+                    return new PsiReference[]{ new RouteReference((StringLiteralExpression) psiElement) };
                 }
             }
         );

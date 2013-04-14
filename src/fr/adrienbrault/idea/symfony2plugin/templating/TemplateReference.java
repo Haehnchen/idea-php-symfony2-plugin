@@ -32,7 +32,7 @@ public class TemplateReference extends PsiReferenceBase<PsiElement> implements P
     @Nullable
     @Override
     public PsiElement resolve() {
-        Map<String, TwigFile> twigFilesByName = TemplateHelper.getTwigFilesByName(getElement().getProject());
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(getElement().getProject());
 
         return twigFilesByName.get(templateName);
     }
@@ -42,7 +42,7 @@ public class TemplateReference extends PsiReferenceBase<PsiElement> implements P
     public Object[] getVariants() {
         List<LookupElement> results = new ArrayList<LookupElement>();
 
-        Map<String, TwigFile> twigFilesByName = TemplateHelper.getTwigFilesByName(getElement().getProject());
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(getElement().getProject());
         for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
             results.add(
                 new TemplateLookupElement(entry.getKey(), entry.getValue())

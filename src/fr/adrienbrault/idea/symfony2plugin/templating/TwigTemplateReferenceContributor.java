@@ -15,7 +15,7 @@ public class TwigTemplateReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(
-            TemplateHelper.getAutocompletableTemplatePattern(),
+            TwigHelper.getAutocompletableTemplatePattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override

@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-public class TemplateHelper {
+public class TwigHelper {
 
     public static Map<String, TwigFile> getTwigFilesByName(Project project) {
         PhpIndex phpIndex = PhpIndex.getInstance(project);
@@ -95,11 +95,27 @@ public class TemplateHelper {
                     ),
                     PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("include")
                 )
-                .withParent(
-                    PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
-                )
                 .withLanguage(TwigLanguage.INSTANCE)
         );
+    }
+
+    public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("path"),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("url")
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE)
+        ;
     }
 
 }
