@@ -27,11 +27,14 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider {
         }
 
         MethodReference met = (MethodReference) e;
+        String methodName = met.getName();
 
-        // at least one parameter is necessary
-        PsiElement[] parameters = met.getParameters();
-        if(parameters.length == 0) {
-            return null;
+        // at least one parameter is necessary on some finds
+        if(null != methodName && !methodName.equals("findAll")) {
+            PsiElement[] parameters = met.getParameters();
+            if(parameters.length == 0) {
+                return null;
+            }
         }
 
         // @TODO: find the previously defined type instead of try it on the parameter, we now can rely on it!
@@ -45,6 +48,11 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider {
 
         if(phpClass == null) {
             return null;
+        }
+
+
+        if(null != methodName && (methodName.equals("findAll") || methodName.equals("findBy"))) {
+            return new PhpType().add(phpClass.getFQN() + "[]");
         }
 
         return new PhpType().add(phpClass);

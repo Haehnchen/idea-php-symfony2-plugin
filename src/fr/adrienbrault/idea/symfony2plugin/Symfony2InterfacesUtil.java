@@ -54,6 +54,8 @@ public class Symfony2InterfacesUtil {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
                 getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
         });
     }
 
