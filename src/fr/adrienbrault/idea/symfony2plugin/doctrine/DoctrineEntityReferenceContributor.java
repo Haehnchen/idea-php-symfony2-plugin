@@ -6,7 +6,7 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.SymfonyInterfacesHelper;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -31,8 +31,8 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                             return new PsiReference[0];
                         }
                         MethodReference method = (MethodReference) parameterList.getContext();
-
-                        if (!SymfonyInterfacesHelper.isRepositoryCall(method)) {
+                        Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                        if (!interfacesUtil.isRepositoryCall(method)) {
                             return new PsiReference[0];
                         }
 

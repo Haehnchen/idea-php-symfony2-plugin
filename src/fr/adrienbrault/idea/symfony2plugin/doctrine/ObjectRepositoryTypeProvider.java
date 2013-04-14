@@ -6,7 +6,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
-import fr.adrienbrault.idea.symfony2plugin.SymfonyInterfacesHelper;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -22,11 +22,12 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider {
             return null;
         }
 
-       if (!SymfonyInterfacesHelper.isRepositoryCall(e)) {
+        Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+        if (!interfacesUtil.isRepositoryCall(e)) {
             return null;
         }
 
-        String repositoryName = SymfonyInterfacesHelper.getFirstArgumentStringValue((MethodReference) e);
+        String repositoryName = Symfony2InterfacesUtil.getFirstArgumentStringValue((MethodReference) e);
         if (null == repositoryName) {
             return null;
         }

@@ -40,6 +40,23 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isRepositoryCall(PsiElement e) {
+        // EntityManager is needed for symfony 2.0?
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
+                getClassMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\AbstractManagerRegistry", "getRepository"),
+                getClassMethod(e.getProject(), "\\Doctrine\\ORM\\EntityRepository", "getRepository"),
+        });
+    }
+
+    public boolean isObjectRepositoryCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
+        });
+    }
+
     protected boolean isCallTo(PsiElement e, Method expectedMethod) {
         return isCallTo(e, new Method[] { expectedMethod });
     }

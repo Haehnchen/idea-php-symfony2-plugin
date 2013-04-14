@@ -21,6 +21,10 @@ public class EntityHelper {
      */
     public static PhpClass resolveShortcutName(Project project, String shortcutName) {
 
+        if(shortcutName == null) {
+            return null;
+        }
+
         String entity_name = shortcutName;
 
         // resolve:

@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
@@ -31,6 +32,9 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     private Map<String, Route> routes;
     private Long routesLastModified;
+
+    private Long entityNamespacesMapLastModified;
+    private Map<String, String> entityNamespaces;
 
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
@@ -136,6 +140,34 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         return path;
+    }
+
+    public Map<String, String> getEntityNamespacesMap() {
+
+        String defaultServiceMapFilePath = getPath(project, Settings.getInstance(project).pathToProjectContainer);
+
+        File xmlFile = new File(defaultServiceMapFilePath);
+        if (!xmlFile.exists()) {
+            return new HashMap<String, String>();
+        }
+
+        Long xmlFileLastModified = xmlFile.lastModified();
+        if (xmlFileLastModified.equals(entityNamespacesMapLastModified)) {
+            return entityNamespaces;
+        }
+
+        try {
+            EntityNamesParser entityNamesParser = new EntityNamesParser();
+            entityNamespaces = entityNamesParser.parse(xmlFile);
+            entityNamespacesMapLastModified = xmlFileLastModified;
+
+            return entityNamespaces;
+        } catch (SAXException ignored) {
+        } catch (IOException ignored) {
+        } catch (ParserConfigurationException ignored) {
+        }
+
+        return new HashMap<String, String>();
     }
 
 }
