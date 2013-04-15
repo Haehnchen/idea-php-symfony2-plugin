@@ -32,7 +32,7 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                         }
                         MethodReference method = (MethodReference) parameterList.getContext();
                         Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                        if (!interfacesUtil.isRepositoryCall(method)) {
+                        if (!interfacesUtil.isGetRepositoryCall(method)) {
                             return new PsiReference[0];
                         }
 

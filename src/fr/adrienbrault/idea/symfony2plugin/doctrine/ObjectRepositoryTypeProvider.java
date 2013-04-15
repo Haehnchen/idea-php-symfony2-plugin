@@ -23,7 +23,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider {
         }
 
         Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-        if (!interfacesUtil.isRepositoryCall(e)) {
+        if (!interfacesUtil.isGetRepositoryCall(e)) {
             return null;
         }
 
