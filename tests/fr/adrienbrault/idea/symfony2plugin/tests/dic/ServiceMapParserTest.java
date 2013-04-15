@@ -20,6 +20,7 @@ public class ServiceMapParserTest extends Assert {
             "<container>" +
                 "<service id=\"adrienbrault\" class=\"AdrienBrault\\Awesome\"/>" +
                 "<service id=\"secret\" class=\"AdrienBrault\\Secret\" public=\"false\"/>" +
+                "<service id=\"translator\" alias=\"adrienbrault\"/>" +
             "</container>";
         ServiceMap serviceMap = serviceMapParser.parse(new ByteArrayInputStream(xmlString.getBytes()));
 
@@ -37,6 +38,9 @@ public class ServiceMapParserTest extends Assert {
         assertEquals("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", serviceMap.getPublicMap().get("service_container"));
         assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.getMap().get("kernel"));
         assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.getPublicMap().get("kernel"));
+
+        assertEquals("\\AdrienBrault\\Awesome", serviceMap.getMap().get("translator"));
+        assertEquals("\\AdrienBrault\\Awesome", serviceMap.getPublicMap().get("translator"));
     }
 
 }
