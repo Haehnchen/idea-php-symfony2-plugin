@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.doctrine.component;
+package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.component;
 
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesParser;
 import org.junit.Assert;
