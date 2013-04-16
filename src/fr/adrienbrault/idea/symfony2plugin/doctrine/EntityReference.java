@@ -66,7 +66,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
                 String repoName = shortcutName + ':'  + className;
 
                 // dont add Repository classes and abstract entities
-                if(!className.endsWith("Repository")) {
+                if(!className.endsWith("Repository") && !className.equals("Repository")) {
                     for (PhpClass entityClass : phpIndex.getClassesByFQN(em.get(shortcutName) + "\\" + className)) {
                         if(!entityClass.isAbstract()) {
                             results.add(new DoctrineEntityLookupElement(repoName, entityClass));
