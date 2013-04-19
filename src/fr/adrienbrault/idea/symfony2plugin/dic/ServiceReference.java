@@ -36,7 +36,7 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
             return new ResolveResult[]{};
         }
 
-        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId);
+        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId.toLowerCase());
 
         if (null == serviceClass) {
             return new ResolveResult[]{};
