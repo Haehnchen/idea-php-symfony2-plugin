@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 0.6.1
+
+* Service aliases support
+* Resolve services classes case insensitively
+
 ### 0.6.0
 
 * Autocomplete route name in php and twig
