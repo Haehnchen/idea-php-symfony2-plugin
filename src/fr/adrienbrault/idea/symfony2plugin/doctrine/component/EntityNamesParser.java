@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.xpath.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -35,36 +36,23 @@ public class EntityNamesParser {
     }
 
     public Map<String, String> parse(Document document) {
+
         Map<String, String> map = new HashMap<String, String>();
 
-        // any way to this better?
-        NodeList servicesNodes = document.getElementsByTagName("service");
-        for (int i = 0; i < servicesNodes.getLength(); i++) {
-            Element node = (Element) servicesNodes.item(i);
+        Object result = null;
+        try {
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression xPathExpr = xpath.compile("/container/services/service[@id[starts-with(.,'doctrine.orm.')]]//call[@method='setEntityNamespaces']//argument[@key]");
+            result = xPathExpr.evaluate(document, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            return map;
+        }
 
-            // doctrine.orm.default_entity_manager
-            // doctrine.orm.customer_entity_manager
-            if (node.hasAttribute("class") && node.hasAttribute("id") && node.getAttribute("id").startsWith("doctrine.orm") && node.getAttribute("id").endsWith("_entity_manager")) {
+        NodeList nodes = (NodeList) result;
 
-                // <call method="setEntityNamespaces">
-                NodeList calls = document.getElementsByTagName("call");
-                for (int x = 0; x < calls.getLength(); x++) {
-
-                    Element call = (Element) calls.item(x);
-                    if (call.hasAttribute("method") && call.getAttribute("method").equals("setEntityNamespaces")) {
-
-                        // <argument key="HomeBundle">HomeBundle\Entity</argument>
-                        NodeList arguments = call.getElementsByTagName("argument");
-                        for (int y = 0; y < arguments.getLength(); y++) {
-                            Element arg = (Element) arguments.item(y);
-                            if (arg.hasAttribute("key")) {
-                                map.put(arg.getAttribute("key"), "\\" + arg.getTextContent());
-                            }
-                        }
-                    }
-
-                }
-            }
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Element node = (Element) nodes.item(i);
+            map.put(node.getAttribute("key"), "\\" + node.getTextContent());
         }
 
         return map;
