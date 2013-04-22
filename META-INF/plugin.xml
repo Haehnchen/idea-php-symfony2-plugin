@@ -126,6 +126,7 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor"/>
     </extensions>
 
     <depends>com.jetbrains.php</depends>
