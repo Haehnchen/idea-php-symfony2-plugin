@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 
@@ -20,7 +21,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(
                 CompletionType.BASIC,
                 // @TODO: look if we can filter more here
-                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE),
+                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(StandardPatterns.string().startsWith("@")).withLanguage(YAMLLanguage.INSTANCE),
                 new CompletionProvider<CompletionParameters>() {
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                ProcessingContext context,
@@ -28,7 +29,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
                         PsiElement element = parameters.getOriginalPosition();
 
-                        if(element == null || !element.getText().startsWith("@")) {
+                        if(element == null) {
                             return;
                         }
 
