@@ -16,6 +16,9 @@ import com.intellij.codeInsight.completion.CompletionContributor;
 
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class YamlCompletionContributor extends CompletionContributor {
     public YamlCompletionContributor() {
         extend(
