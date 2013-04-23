@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
-
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
@@ -11,6 +10,9 @@ import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class YamlElementPatternHelper {
 
     public static ElementPattern<PsiElement> getOrmSingleLineScalarKey(String keyName) {
@@ -98,7 +100,7 @@ public class YamlElementPatternHelper {
         );
     }
 
-    public static ElementPattern<PsiElement> getOrmFields() {
+    public static ElementPattern<PsiElement> getFilterOnPrevParent(String tree) {
         return PlatformPatterns.or(
 
                 // match refer|: Value
@@ -108,7 +110,7 @@ public class YamlElementPatternHelper {
                                         PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
                                                 PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
                                                         PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                                                                PlatformPatterns.string().equalTo("fields")
+                                                                PlatformPatterns.string().oneOfIgnoreCase(tree)
                                                         )
                                                 )
                                         )
@@ -121,7 +123,7 @@ public class YamlElementPatternHelper {
                                 PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
                                         PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
                                                 PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                                                        PlatformPatterns.string().equalTo("fields")
+                                                        PlatformPatterns.string().oneOfIgnoreCase(tree)
                                                 )
                                         )
                                 )

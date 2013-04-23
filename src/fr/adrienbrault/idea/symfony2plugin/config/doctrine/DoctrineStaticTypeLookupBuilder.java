@@ -12,7 +12,7 @@ import java.util.List;
 public class DoctrineStaticTypeLookupBuilder {
 
     public static ArrayList<LookupElement> getTypes() {
-        return ListToElements(Arrays.asList("string", "integer", "smallint", "bigint", "boolean", "decimal", "date", "time", "datetime", "text", "array", "float"));
+        return ListToElements(Arrays.asList("id", "string", "integer", "smallint", "bigint", "boolean", "decimal", "date", "time", "datetime", "text", "array", "float"));
     }
 
     public static ArrayList<LookupElement> getNullAble() {
@@ -25,6 +25,31 @@ public class DoctrineStaticTypeLookupBuilder {
 
     public static ArrayList<LookupElement> getRootItems() {
         return ListToElements(Arrays.asList("type", "table", "fields", "manyToOne", "manyToMany", "oneToOne", "oneToMany", "indexes", "id", "lifecycleCallbacks", "repositoryClass", "inheritanceType", "discriminatorColumn"));
+    }
+
+    public static ArrayList<LookupElement> getAssociationMapping(Association type) {
+
+        switch (type) {
+            case oneToOne:
+                return ListToElements(Arrays.asList("targetEntity", "inversedBy", "joinColumn"));
+
+            case oneToMany:
+                return ListToElements(Arrays.asList("targetEntity", "mappedBy"));
+
+            case manyToOne:
+                return ListToElements(Arrays.asList("targetEntity", "inversedBy", "joinColumn"));
+
+            case manyToMany:
+                return ListToElements(Arrays.asList("targetEntity", "inversedBy", "joinTable", "mappedBy"));
+
+            default:
+                return new ArrayList<LookupElement>();
+        }
+
+    }
+
+    public static enum Association {
+        oneToOne, oneToMany, manyToOne, manyToMany,
     }
 
     public static ArrayList<LookupElement> getPropertyMappings() {

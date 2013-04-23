@@ -48,7 +48,13 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getNullAble()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmParentLookup("joinColumn"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getJoinColumns()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmRoot(), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getRootItems()));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmFields(), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getPropertyMappings()));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("fields"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getPropertyMappings()));
+
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("oneToOne"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToOne)));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("oneToMany"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToMany)));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToOne"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToOne)));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
+
 
     }
 

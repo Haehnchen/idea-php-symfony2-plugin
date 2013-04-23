@@ -3,8 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 
-import com.intellij.openapi.vfs.VfsUtil;
-import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
