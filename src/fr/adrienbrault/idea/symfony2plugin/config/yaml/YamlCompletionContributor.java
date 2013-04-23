@@ -1,19 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLLanguage;
-import org.jetbrains.yaml.YAMLTokenTypes;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
-
 import java.util.Map;
 
 /**
@@ -22,9 +18,7 @@ import java.util.Map;
 public class YamlCompletionContributor extends CompletionContributor {
     public YamlCompletionContributor() {
         extend(
-                CompletionType.BASIC,
-                // @TODO: look if we can filter more here
-                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(StandardPatterns.string().startsWith("@")).withLanguage(YAMLLanguage.INSTANCE),
+                CompletionType.BASIC, YamlElementPatternHelper.getServiceDefinition(),
                 new CompletionProvider<CompletionParameters>() {
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                ProcessingContext context,
@@ -48,6 +42,13 @@ public class YamlCompletionContributor extends CompletionContributor {
                     }
                 }
         );
+
+
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getTypes()));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getNullAble()));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmParentLookup("joinColumn"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getJoinColumns()));
+
+
     }
 
 }
