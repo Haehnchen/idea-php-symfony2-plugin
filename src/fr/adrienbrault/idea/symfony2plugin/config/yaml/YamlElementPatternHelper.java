@@ -98,6 +98,37 @@ public class YamlElementPatternHelper {
         );
     }
 
+    public static ElementPattern<PsiElement> getOrmFields() {
+        return PlatformPatterns.or(
+
+                // match refer|: Value
+                PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
+                                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                                                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
+                                                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
+                                                                PlatformPatterns.string().equalTo("fields")
+                                                        )
+                                                )
+                                        )
+                                )
+                        )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE),
+
+                // match refer|
+                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
+                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
+                                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
+                                                PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
+                                                        PlatformPatterns.string().equalTo("fields")
+                                                )
+                                        )
+                                )
+                )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE)
+        );
+    }
+
     /**
      * find common services
      *
