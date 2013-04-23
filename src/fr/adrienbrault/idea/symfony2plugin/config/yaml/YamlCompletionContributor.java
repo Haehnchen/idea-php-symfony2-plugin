@@ -47,7 +47,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getTypes()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getNullAble()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmParentLookup("joinColumn"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getJoinColumns()));
-
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmRoot(), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getRootItems()));
 
     }
 

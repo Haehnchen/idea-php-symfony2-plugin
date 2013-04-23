@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 public class YamlElementPatternHelper {
@@ -71,6 +72,30 @@ public class YamlElementPatternHelper {
      */
     public static ElementPattern<PsiElement> getOrmParentLookup(String keyName) {
         return PlatformPatterns.or(getOrmParentKeyLookup(keyName), getOrmParentEmptyLookup(keyName));
+    }
+
+    public static ElementPattern<PsiElement> getOrmRoot() {
+        return PlatformPatterns.or(
+
+                // match refer|: Value
+                PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
+                                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                                                PlatformPatterns.psiElement(YAMLDocument.class)
+                                        )
+                                )
+                        )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE),
+
+                // match refer|
+                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
+                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
+                                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                                        PlatformPatterns.psiElement(YAMLDocument.class)
+                                )
+                        )
+                ).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE)
+        );
     }
 
     /**

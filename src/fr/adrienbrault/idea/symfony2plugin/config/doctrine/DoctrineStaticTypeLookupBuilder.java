@@ -21,6 +21,10 @@ public class DoctrineStaticTypeLookupBuilder {
         return ListToElements(Arrays.asList("name", "referencedColumnName", "unique", "nullable", "onDelete", "onUpdate", "columnDefinition"));
     }
 
+    public static ArrayList<LookupElement> getRootItems() {
+        return ListToElements(Arrays.asList("type", "table", "fields", "manyToOne", "manyToMany", "oneToOne", "oneToMany", "indexes", "id", "lifecycleCallbacks", "repositoryClass", "inheritanceType", "discriminatorColumn"));
+    }
+
     public static ArrayList<LookupElement> ListToElements(List<String> items) {
 
         ArrayList<LookupElement> lookups = new ArrayList<LookupElement>();
