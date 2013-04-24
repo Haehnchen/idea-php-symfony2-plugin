@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.6.2
+
+* Should fix ide freezes with class autocompletion (use XXX).
+
 ### 0.6.1
 
 * Service aliases support
