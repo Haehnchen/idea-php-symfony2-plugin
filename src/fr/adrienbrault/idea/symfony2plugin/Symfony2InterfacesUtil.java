@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -58,17 +59,14 @@ public class Symfony2InterfacesUtil {
             return false;
         }
 
-        PsiElement resolvedReference = methodRef.getReference().resolve();
-        if (!(resolvedReference instanceof Method)) {
+        PhpClass methodClass = PsiTreeUtil.getParentOfType(e, PhpClass.class);
+        if(null == methodClass) {
             return false;
         }
 
-        Method method = (Method) resolvedReference;
-        PhpClass methodClass = method.getContainingClass();
-
         for (Method expectedMethod : Arrays.asList(expectedMethods)) {
             if (null != expectedMethod
-                && expectedMethod.getName().equals(method.getName())
+                && expectedMethod.getName().equals(methodRef.getName())
                 && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
                 return true;
             }
