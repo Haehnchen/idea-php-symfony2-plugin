@@ -52,8 +52,12 @@ public class DoctrineStaticTypeLookupBuilder {
         oneToOne, oneToMany, manyToOne, manyToMany,
     }
 
+    public static ArrayList<LookupElement> getOrmFieldAnnotations() {
+        return ListToElements(Arrays.asList("@ORM\\@Column", "@ORM\\GeneratedValue", "@ORM\\UniqueConstraint", "@ORM\\Id", "@ORM\\JoinTable", "@ORM\\ManyToOne", "@ORM\\ManyToMany", "@ORM\\OneToOne", "@ORM\\OneToMany"));
+    }
+
     public static ArrayList<LookupElement> getPropertyMappings() {
-        return ListToElements(Arrays.asList("type", "column", "length", "unique", "nullable", "precision", "scale"));
+        return ListToElements(Arrays.asList("type", "column", "length", "unique", "nullable", "precision", "scale", "columnDefinition"));
     }
 
     public static ArrayList<LookupElement> ListToElements(List<String> items) {
