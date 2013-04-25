@@ -74,6 +74,12 @@ public class Symfony2InterfacesUtil {
             return false;
         }
 
+        // resolve is also called on invalid php code like "use <xxx>"
+        // so double check the method name before resolve the method
+        if(!isMatchingMethodName(methodRef, expectedMethods)) {
+            return false;
+        }
+
         PsiElement resolvedReference = methodRef.getReference().resolve();
         if (!(resolvedReference instanceof Method)) {
             return false;
@@ -84,8 +90,18 @@ public class Symfony2InterfacesUtil {
 
         for (Method expectedMethod : Arrays.asList(expectedMethods)) {
             if (null != expectedMethod
-                && expectedMethod.getName().equals(method.getName())
-                && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+                    && expectedMethod.getName().equals(method.getName())
+                    && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected boolean isMatchingMethodName(MethodReference methodRef, Method[] expectedMethods) {
+        for (Method expectedMethod : Arrays.asList(expectedMethods)) {
+            if(expectedMethod != null && expectedMethod.getName().equals(methodRef.getName())) {
                 return true;
             }
         }

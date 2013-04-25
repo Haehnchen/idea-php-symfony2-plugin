@@ -18,6 +18,11 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
 
     private String serviceId;
 
+    public ServiceReference(@NotNull PsiElement element, String ServiceId) {
+        super(element);
+        serviceId = ServiceId;
+    }
+
     public ServiceReference(@NotNull StringLiteralExpression element) {
         super(element);
 
@@ -36,7 +41,7 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
             return new ResolveResult[]{};
         }
 
-        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId);
+        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId.toLowerCase());
 
         if (null == serviceClass) {
             return new ResolveResult[]{};

@@ -47,6 +47,10 @@ public class ServiceMapParser {
             if (!(node.hasAttribute("public") && node.getAttribute("public").equals("false"))) {
                 publicMap.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
             }
+            if (node.hasAttribute("alias") && publicMap.get(node.getAttribute("alias")) != null) {
+                map.put(node.getAttribute("id"), map.get(node.getAttribute("alias")));
+                publicMap.put(node.getAttribute("id"), map.get(node.getAttribute("alias")));
+            }
         }
 
         // Support services whose class isn't specified

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.6.0</version>
+    <version>0.6.2</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -28,6 +28,17 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.6.2</h2>
+<ul>
+    <li>Should fix ide freezes with class autocompletion (use XXX).</li>
+</ul>
+
+<h2>0.6.1</h2>
+<ul>
+    <li>Service aliases support</li>
+    <li>Resolve services classes case insensitively</li>
+</ul>
+
 <h2>0.6.0</h2>
 <ul>
     <li>Autocomplete route name in php and twig</li>
@@ -121,10 +132,15 @@
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
+        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor"/>
     </extensions>
 
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
     <project-components>
         <component>
             <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
