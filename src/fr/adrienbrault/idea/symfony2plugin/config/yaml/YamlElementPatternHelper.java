@@ -17,6 +17,13 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
  */
 public class YamlElementPatternHelper {
 
+    /**
+     * auto complete on
+     *
+     * keyName: refer|
+     *
+     * @param keyName
+     */
     public static ElementPattern<PsiElement> getOrmSingleLineScalarKey(String keyName) {
         return PlatformPatterns
             .psiElement(YAMLTokenTypes.TEXT)
@@ -35,15 +42,42 @@ public class YamlElementPatternHelper {
      * provides auto complete on
      *
      * keyName:
-     *   refer|: Value
+     *   refer|
+     *   refer|: xxx
+     *   refer|
      *
      * @param keyName key name
      */
-    public static ElementPattern<PsiElement> getOrmParentKeyLookup(String keyName) {
-        return PlatformPatterns
-            .psiElement(YAMLTokenTypes.SCALAR_KEY)
-            .withParent(PlatformPatterns
-                .psiElement(YAMLKeyValue.class)
+    public static ElementPattern<PsiElement> getOrmParentLookup(String keyName) {
+        return PlatformPatterns.or(
+            // match
+            //
+            // keyName:
+            //   refer|: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_KEY)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withName(
+                                PlatformPatterns.string().equalTo(keyName)
+                            )
+                        )
+                    )
+                )
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // keyName:
+            //   xxx: xxx
+            //   refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
                 .withParent(PlatformPatterns
                     .psiElement(YAMLElementTypes.COMPOUND_VALUE)
                     .withParent(PlatformPatterns
@@ -53,57 +87,42 @@ public class YamlElementPatternHelper {
                         )
                     )
                 )
-            )
-            .inFile(getOrmFilePattern())
-            .withLanguage(YAMLLanguage.INSTANCE)
-        ;
-    }
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE),
 
-    /**
-     * provides auto complete on
-     *
-     * keyName:
-     *   refer|
-     *
-     * @param keyName key name
-     */
-    public static ElementPattern<PsiElement> getOrmParentEmptyLookup(String keyName) {
-        return PlatformPatterns
-            .psiElement(YAMLTokenTypes.TEXT)
-            .withParent(PlatformPatterns
-                .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+            // match
+            //
+            // keyName:
+            //   refer|
+            //   xxx: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withName(
                         PlatformPatterns.string().equalTo(keyName)
                     )
                 )
-            )
-            .inFile(getOrmFilePattern())
-            .withLanguage(YAMLLanguage.INSTANCE)
-        ;
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
     }
 
     /**
      * provides auto complete on
      *
-     * keyName:
+     * xxx:
      *   refer|
-     *   refer|: Value
-     *
-     * @param keyName key name
+     *   refer|: xxx
+     *   refer|
      */
-    public static ElementPattern<PsiElement> getOrmParentLookup(String keyName) {
-        return PlatformPatterns.or(
-            getOrmParentKeyLookup(keyName),
-            getOrmParentEmptyLookup(keyName)
-        );
-    }
-
     public static ElementPattern<PsiElement> getOrmRoot() {
         return PlatformPatterns.or(
 
-            // match refer|: Value
+            // match
+            //
+            // xxx:
+            //   refer|: xxx
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.SCALAR_KEY)
                 .withParent(PlatformPatterns
@@ -121,7 +140,11 @@ public class YamlElementPatternHelper {
                 .inFile(getOrmFilePattern())
                 .withLanguage(YAMLLanguage.INSTANCE),
 
-            // match refer|
+            // match
+            //
+            // xxx:
+            //   xxx: xxx
+            //   refer|
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.TEXT)
                 .withParent(PlatformPatterns
@@ -134,14 +157,43 @@ public class YamlElementPatternHelper {
                     )
                 )
                 .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // xxx:
+            //   refer|
+            //   xxx: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLDocument.class)
+                    )
+                )
+                .inFile(getOrmFilePattern())
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
 
+    /**
+     * provides auto complete on
+     *
+     * tree:
+     *   xxx:
+     *     refer|
+     *     refer|: xxx
+     *     refer|
+     */
     public static ElementPattern<PsiElement> getFilterOnPrevParent(String tree) {
         return PlatformPatterns.or(
 
-            // match refer|: Value
+            // match
+            //
+            // tree:
+            //   xxx:
+            //     refer|: xxx
             PlatformPatterns
             .psiElement(YAMLTokenTypes.SCALAR_KEY)
             .withParent(PlatformPatterns
@@ -165,7 +217,12 @@ public class YamlElementPatternHelper {
             .inFile(getOrmFilePattern())
             .withLanguage(YAMLLanguage.INSTANCE),
 
-            // match refer|
+            // match
+            //
+            // tree:
+            //   xxx:
+            //     xxx: xxx
+            //     refer|
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.TEXT)
                 .withParent(PlatformPatterns
@@ -179,6 +236,29 @@ public class YamlElementPatternHelper {
                                 .withName(PlatformPatterns
                                     .string().oneOfIgnoreCase(tree)
                                 )
+                            )
+                        )
+                    )
+                )
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // tree:
+            //   xxx:
+            //     refer|
+            //     xxx: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withName(PlatformPatterns
+                                .string().oneOfIgnoreCase(tree)
                             )
                         )
                     )
