@@ -15,7 +15,9 @@ public class ClassReferenceProvider extends PsiReferenceProvider {
     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
         // get the service name "service_container"
         String text = psiElement.getText();
-        return new PsiReference[]{ new PhpClassReference(psiElement, text.substring(1, text.length() - 1)) };
+        text = text.substring(1, text.length() - 1);
+
+        return new PsiReference[]{ new PhpClassReference(psiElement, text) };
     }
 
 }

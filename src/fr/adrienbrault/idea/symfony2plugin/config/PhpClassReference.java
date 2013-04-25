@@ -4,11 +4,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,11 +14,11 @@ import java.util.*;
  */
 public class PhpClassReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
 
-    private String serviceId;
+    private String classFQN;
 
-    public PhpClassReference(@NotNull PsiElement element, String ServiceId) {
+    public PhpClassReference(@NotNull PsiElement element, String classFQN) {
         super(element);
-        serviceId = ServiceId;
+        this.classFQN = classFQN;
     }
 
     @NotNull
@@ -31,7 +26,7 @@ public class PhpClassReference extends PsiReferenceBase<PsiElement> implements P
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceId);
+        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(classFQN);
 
         List<ResolveResult> results = new ArrayList<ResolveResult>();
         for (PhpClass phpClass : phpClasses) {
