@@ -186,7 +186,7 @@ public class YamlElementPatternHelper {
      *     refer|: xxx
      *     refer|
      */
-    public static ElementPattern<PsiElement> getFilterOnPrevParent(String tree) {
+    public static ElementPattern<PsiElement> getFilterOnPrevParent(String... tree) {
         return PlatformPatterns.or(
 
             // match
