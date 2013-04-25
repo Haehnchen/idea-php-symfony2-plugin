@@ -2,8 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiFilePattern;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -20,7 +22,7 @@ public class YamlElementPatternHelper {
                 PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
                         PlatformPatterns.string().equalTo(keyName)
                 )
-        ).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE);
+        ).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
     }
 
     /**
@@ -40,7 +42,7 @@ public class YamlElementPatternHelper {
                                         PlatformPatterns.string().equalTo(keyName)
                         )
                 )
-        )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE);
+        )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
     }
 
     /**
@@ -59,7 +61,7 @@ public class YamlElementPatternHelper {
                                 PlatformPatterns.string().equalTo(keyName)
                         )
                 )
-        ).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE);
+        ).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
     }
 
     /**
@@ -87,7 +89,7 @@ public class YamlElementPatternHelper {
                                                 PlatformPatterns.psiElement(YAMLDocument.class)
                                         )
                                 )
-                        )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE),
+                        )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE),
 
                 // match refer|
                 PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
@@ -96,7 +98,7 @@ public class YamlElementPatternHelper {
                                         PlatformPatterns.psiElement(YAMLDocument.class)
                                 )
                         )
-                ).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE)
+                ).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE)
         );
     }
 
@@ -115,7 +117,7 @@ public class YamlElementPatternHelper {
                                                 )
                                         )
                                 )
-                        )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE),
+                        )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE),
 
                 // match refer|
                 PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
@@ -127,7 +129,7 @@ public class YamlElementPatternHelper {
                                                 )
                                         )
                                 )
-                )).inFile(PlatformPatterns.psiFile().withName(PlatformPatterns.string().contains("orm.yml"))).withLanguage(YAMLLanguage.INSTANCE)
+                )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE)
         );
     }
 
@@ -138,6 +140,10 @@ public class YamlElementPatternHelper {
      */
     public static ElementPattern<PsiElement> getServiceDefinition () {
         return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(StandardPatterns.string().startsWith("@")).withLanguage(YAMLLanguage.INSTANCE);
+    }
+
+    private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
+        return PlatformPatterns.psiFile().withName(PlatformPatterns.string().endsWith("orm.yml"));
     }
 
 }
