@@ -7,7 +7,6 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2CachedInterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class SymfonyContainerTypeProvider implements PhpTypeProvider {
 
-    private Symfony2CachedInterfacesUtil cachedInterfacesUtil;
+    private Symfony2InterfacesUtil interfacesUtil;
 
     @Nullable
     @Override
@@ -42,18 +41,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return null;
         }
 
-        boolean shouldUnsetCachedInterfaceUtil = false;
-
-        if (null == cachedInterfacesUtil) {
-            cachedInterfacesUtil = new Symfony2CachedInterfacesUtil();
-            shouldUnsetCachedInterfaceUtil = true;
-        }
-
-        boolean isContainerGetCall = cachedInterfacesUtil.isContainerGetCall(e);
-
-        if (shouldUnsetCachedInterfaceUtil) {
-            cachedInterfacesUtil = null;
-        }
+        boolean isContainerGetCall = getInterfacesUtil().isContainerGetCall(e);
 
         if (!isContainerGetCall) {
             return null;
@@ -76,6 +64,14 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         }
 
         return new PhpType().add(serviceClass);
+    }
+
+    private Symfony2InterfacesUtil getInterfacesUtil() {
+        if (null == interfacesUtil) {
+            interfacesUtil = new Symfony2InterfacesUtil();
+        }
+
+        return interfacesUtil;
     }
 
 }
