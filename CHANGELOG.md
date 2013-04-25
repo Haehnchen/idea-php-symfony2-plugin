@@ -1,6 +1,15 @@
 Changelog
 =========
 
+### 0.7.0
+
+* Fix the fix about ide freezes
+* Add auto completion inside doctrine's .orm.yml config files
+* Add @ORM\\ annotations auto completion inside docblocks
+* Add services auto completion inside yaml files
+* Add services auto completion inside services.xml files
+* Add class go to definition inside services.xml files
+
 ### 0.6.2
 
 * Should fix ide freezes with class autocompletion (use XXX).
