@@ -18,6 +18,11 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
 
     private String serviceId;
 
+    public ServiceReference(@NotNull PsiElement element, String ServiceId) {
+        super(element);
+        serviceId = ServiceId;
+    }
+
     public ServiceReference(@NotNull StringLiteralExpression element) {
         super(element);
 
