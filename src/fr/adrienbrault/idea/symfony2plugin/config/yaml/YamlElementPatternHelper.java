@@ -18,11 +18,17 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 public class YamlElementPatternHelper {
 
     public static ElementPattern<PsiElement> getOrmSingleLineScalarKey(String keyName) {
-        return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
-                PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                        PlatformPatterns.string().equalTo(keyName)
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.TEXT)
+            .withParent(PlatformPatterns
+                .psiElement(YAMLKeyValue.class)
+                .withName(
+                    PlatformPatterns.string().equalTo(keyName)
                 )
-        ).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
+            )
+            .inFile(getOrmFilePattern())
+            .withLanguage(YAMLLanguage.INSTANCE)
+        ;
     }
 
     /**
@@ -32,17 +38,25 @@ public class YamlElementPatternHelper {
      *   refer|: Value
      *
      * @param keyName key name
-     * @return
      */
     public static ElementPattern<PsiElement> getOrmParentKeyLookup(String keyName) {
-        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
-                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                                        PlatformPatterns.string().equalTo(keyName)
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.SCALAR_KEY)
+            .withParent(PlatformPatterns
+                .psiElement(YAMLKeyValue.class)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withName(
+                            PlatformPatterns.string().equalTo(keyName)
                         )
+                    )
                 )
-        )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
+            )
+            .inFile(getOrmFilePattern())
+            .withLanguage(YAMLLanguage.INSTANCE)
+        ;
     }
 
     /**
@@ -52,16 +66,22 @@ public class YamlElementPatternHelper {
      *   refer|
      *
      * @param keyName key name
-     * @return
      */
     public static ElementPattern<PsiElement> getOrmParentEmptyLookup(String keyName) {
-        return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
-                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                                PlatformPatterns.string().equalTo(keyName)
-                        )
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.TEXT)
+            .withParent(PlatformPatterns
+                .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withName(
+                        PlatformPatterns.string().equalTo(keyName)
+                    )
                 )
-        ).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
+            )
+            .inFile(getOrmFilePattern())
+            .withLanguage(YAMLLanguage.INSTANCE)
+        ;
     }
 
     /**
@@ -72,74 +92,113 @@ public class YamlElementPatternHelper {
      *   refer|: Value
      *
      * @param keyName key name
-     * @return
      */
     public static ElementPattern<PsiElement> getOrmParentLookup(String keyName) {
-        return PlatformPatterns.or(getOrmParentKeyLookup(keyName), getOrmParentEmptyLookup(keyName));
+        return PlatformPatterns.or(
+            getOrmParentKeyLookup(keyName),
+            getOrmParentEmptyLookup(keyName)
+        );
     }
 
     public static ElementPattern<PsiElement> getOrmRoot() {
         return PlatformPatterns.or(
 
-                // match refer|: Value
-                PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
-                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                                                PlatformPatterns.psiElement(YAMLDocument.class)
-                                        )
-                                )
-                        )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE),
-
-                // match refer|
-                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
-                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                                        PlatformPatterns.psiElement(YAMLDocument.class)
-                                )
+            // match refer|: Value
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_KEY)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLDocument.class)
+                            )
                         )
-                ).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE)
+                    )
+                )
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLDocument.class)
+                        )
+                    )
+                )
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
 
     public static ElementPattern<PsiElement> getFilterOnPrevParent(String tree) {
         return PlatformPatterns.or(
 
-                // match refer|: Value
-                PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
-                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                                                PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                                                                PlatformPatterns.string().oneOfIgnoreCase(tree)
-                                                        )
-                                                )
-                                        )
+            // match refer|: Value
+            PlatformPatterns
+            .psiElement(YAMLTokenTypes.SCALAR_KEY)
+            .withParent(PlatformPatterns
+                .psiElement(YAMLKeyValue.class)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLKeyValue.class)
+                                .withName(PlatformPatterns
+                                    .string().oneOfIgnoreCase(tree)
                                 )
-                        )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE),
+                            )
+                        )
+                    )
+                )
+            )
+            .inFile(getOrmFilePattern())
+            .withLanguage(YAMLLanguage.INSTANCE),
 
-                // match refer|
-                PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withParent(
-                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
-                                        PlatformPatterns.psiElement(YAMLElementTypes.COMPOUND_VALUE).withParent(
-                                                PlatformPatterns.psiElement(YAMLKeyValue.class).withName(
-                                                        PlatformPatterns.string().oneOfIgnoreCase(tree)
-                                                )
-                                        )
+            // match refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLKeyValue.class)
+                                .withName(PlatformPatterns
+                                    .string().oneOfIgnoreCase(tree)
                                 )
-                )).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE)
+                            )
+                        )
+                    )
+                )
+                .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
 
     /**
      * find common services
-     *
-     * @return
      */
-    public static ElementPattern<PsiElement> getServiceDefinition () {
-        return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(StandardPatterns.string().startsWith("@")).withLanguage(YAMLLanguage.INSTANCE);
+    public static ElementPattern<PsiElement> getServiceDefinition() {
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.TEXT)
+            .withText(
+                StandardPatterns.string().startsWith("@")
+            )
+            .withLanguage(YAMLLanguage.INSTANCE)
+        ;
     }
 
     private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
