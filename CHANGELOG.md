@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.7.1
+
+* Add assets autocompletion in twig asset() calls
+
 ### 0.7.0
 
 * Fix the fix about ide freezes
