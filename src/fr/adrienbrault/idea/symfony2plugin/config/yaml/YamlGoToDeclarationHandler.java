@@ -6,9 +6,11 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -33,15 +35,21 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return new PsiElement[]{};
         }
 
-        if(psiElement.getText().startsWith("@") && psiElement.getText().length() > 1) {
-            return serviceGoToDeclaration(psiElement, psiElement.getText().substring(1));
+        String psiText = psiElement.getText();
+        if(psiText.startsWith("@") && psiText.length() > 1) {
+            return serviceGoToDeclaration(psiElement, psiText.substring(1));
         }
 
-        if(psiElement.getText().contains(".") && psiElement.getText().length() > 1) {
-            return serviceGoToDeclaration(psiElement, psiElement.getText());
+        // match: %annotations.reader.class%
+        if(psiText.length() > 3 && psiText.startsWith("%") && psiText.endsWith("%")) {
+            return parameterGoToDeclaration(psiElement, psiText.substring(1, psiText.length() - 1));
         }
 
-        if(psiElement.getText().contains("\\")) {
+        if(psiText.contains(".") && psiText.length() > 1) {
+            return serviceGoToDeclaration(psiElement, psiText);
+        }
+
+        if(psiText.contains("\\")) {
             return classGoToDeclaration(psiElement);
         }
 
@@ -85,6 +93,29 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
+
+        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
+        if (null == symfony2ProjectComponent) {
+            return new PsiElement[]{};
+        }
+
+        String parameterName = symfony2ProjectComponent.getConfigParameter().get(psiParameterName);
+        if (null == parameterName) {
+            return new PsiElement[]{};
+        }
+
+        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        results.addAll(PhpElementsUtil.getClassInterfaceResolveResult(psiElement.getProject(), parameterName));
+
+        // self add; so variable is not marked as invalid eg in xml
+        if(results.size() == 0) {
+            return new PsiElement[]{};
+        }
+
+        return new PsiElement[]{results.get(0).getElement()};
     }
 
     @Nullable
