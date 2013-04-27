@@ -2,10 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.config.component;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,9 +16,16 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
 
     private String parameterName;
 
+    private boolean wrapPercent = false;
+
     public ParameterReference(@NotNull PsiElement element, String ParameterName) {
         super(element);
         parameterName = ParameterName;
+    }
+
+    public ParameterReference wrapVariantsWithPercent(boolean WrapPercent) {
+        this.wrapPercent = WrapPercent;
+        return this;
     }
 
     @NotNull
@@ -33,22 +38,12 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
         }
 
         String parameterName = symfony2ProjectComponent.getConfigParameter().get(this.parameterName);
-
         if (null == parameterName) {
             return new ResolveResult[]{};
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(parameterName);
-        Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(parameterName);
-
         List<ResolveResult> results = new ArrayList<ResolveResult>();
-        for (PhpClass phpClass : phpClasses) {
-            results.add(new PsiElementResolveResult(phpClass));
-        }
-        for (PhpClass phpInterface : phpInterfaces) {
-            results.add(new PsiElementResolveResult(phpInterface));
-        }
+        results.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), parameterName));
 
         // self add; so variable is not marked as invalid eg in xml
         if(results.size() == 0) {
@@ -75,7 +70,14 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
         Map<String, String> it = symfony2ProjectComponent.getConfigParameter();
 
         for(Map.Entry<String, String> Entry: it.entrySet()) {
-            results.add(new ParameterLookupElement(Entry.getKey(), Entry.getValue()));
+            String parameterKey = Entry.getKey();
+
+            // wrap parameter for reuse this class in xml, php and yaml
+            if(this.wrapPercent) {
+                parameterKey = "%" + parameterKey + "%";
+            }
+
+            results.add(new ParameterLookupElement(parameterKey, Entry.getValue()));
         }
 
         return results.toArray();

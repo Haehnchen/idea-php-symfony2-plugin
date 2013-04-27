@@ -12,14 +12,17 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ParameterReferenceProvider extends PsiReferenceProvider {
 
+    private boolean trimQuote = false;
+    private boolean trimPercent = false;
 
-    private boolean trimQuote = true;
-
-    public ParameterReferenceProvider() {
+    public ParameterReferenceProvider setTrimPercent(boolean trimPercent) {
+        this.trimPercent = trimPercent;
+        return this;
     }
 
-    public ParameterReferenceProvider(boolean trimQuoteChar) {
-        trimQuote = trimQuoteChar;
+    public ParameterReferenceProvider setTrimQuote(boolean trimQuote) {
+        this.trimQuote = trimQuote;
+        return this;
     }
 
     @NotNull
@@ -28,18 +31,31 @@ public class ParameterReferenceProvider extends PsiReferenceProvider {
 
         String text = psiElement.getText();
 
-        // xml are wrapped with quote
-        if(trimQuote && text.length() >= 2) {
-            if(text.startsWith("\"")) {
+        // xml attributes are wrapped with quote
+        if(this.trimQuote) {
+            text = this.trimChar(text, "\"");
+        }
+
+        // xml need wrapped %, php and other dont
+        if(this.trimPercent) {
+            text = this.trimChar(text, "%");
+        }
+
+        return new PsiReference[]{ new ParameterReference(psiElement, text).wrapVariantsWithPercent(true) };
+    }
+
+    protected String trimChar(String text, String charString) {
+        if(text.length() >= 2) {
+            if(text.startsWith(charString)) {
                 text = text.substring(1, text.length() - 1);
             }
 
-            if(text.endsWith("\"")) {
+            if(text.endsWith(charString)) {
                 text = text.substring(1, text.length() - 1);
             }
         }
 
-        return new PsiReference[]{ new ParameterReference(psiElement, text) };
+        return text;
     }
 
 }

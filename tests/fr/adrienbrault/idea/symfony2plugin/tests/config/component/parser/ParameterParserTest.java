@@ -14,12 +14,12 @@ public class ParameterParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
         Map map = new ParameterParser().parse(testFile);
 
-        assertEquals("app", map.get("%kernel.name%"));
-        assertEquals("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerNameParser", map.get("%controller_name_converter.class%"));
+        assertEquals("app", map.get("kernel.name"));
+        assertEquals("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerNameParser", map.get("controller_name_converter.class"));
 
-        assertEquals("collection", map.get("%kernel.bundles%"));
-        assertNull("collection", map.get("kernel.bundles"));
-        assertNull(map.get("%FrameworkBundle%"));
+        assertEquals("collection", map.get("kernel.bundles"));
+        assertNull("collection", map.get("%kernel.bundles%"));
+        assertNull(map.get("FrameworkBundle"));
     }
 
 }

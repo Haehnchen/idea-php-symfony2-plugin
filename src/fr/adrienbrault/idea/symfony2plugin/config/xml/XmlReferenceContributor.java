@@ -92,7 +92,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             XmlPatterns.or(
                 XmlPatterns
                     .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-                    .withText(StandardPatterns.string().contains("%"))
+                    .withText(StandardPatterns.string().startsWith("%"))
                     .withParent(XmlPatterns
                         .xmlText()
                         .withParent(XmlPatterns
@@ -105,7 +105,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     .withParent(XmlPatterns
                         .xmlAttribute("class")
                         .withValue(StandardPatterns
-                            .string().contains("%")
+                            .string().startsWith("%")
                         )
                         .withParent(XmlPatterns
                             .xmlTag()
@@ -116,7 +116,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     )
             ),
 
-            new ParameterReferenceProvider(true)
+            new ParameterReferenceProvider().setTrimPercent(true).setTrimQuote(true)
         );
 
     }

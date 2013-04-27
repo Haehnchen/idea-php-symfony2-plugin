@@ -53,7 +53,7 @@ public class ParameterParser {
         for (int i = 0; i < nodes.getLength(); i++) {
             Element node = (Element) nodes.item(i);
             String parameterValue = node.hasAttribute("type") && node.getAttribute("type").equals("collection") ?  "collection" : node.getTextContent();
-            map.put("%" + node.getAttribute("key") + "%", parameterValue);
+            map.put(node.getAttribute("key"), parameterValue);
         }
 
         return map;
