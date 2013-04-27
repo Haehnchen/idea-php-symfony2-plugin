@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.component;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,15 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
     public ParameterReference(@NotNull PsiElement element, String ParameterName) {
         super(element);
         parameterName = ParameterName;
+    }
+
+    public ParameterReference(@NotNull StringLiteralExpression element) {
+        super(element);
+
+        parameterName = element.getText().substring(
+            element.getValueRange().getStartOffset(),
+            element.getValueRange().getEndOffset()
+        ); // Remove quotes
     }
 
     public ParameterReference wrapVariantsWithPercent(boolean WrapPercent) {
