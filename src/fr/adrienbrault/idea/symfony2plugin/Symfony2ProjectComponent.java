@@ -142,8 +142,9 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             return new HashMap<String, String>();
         }
 
+        // this is called async, so double check for configParameter and configParameterLastModified
         Long xmlFileLastModified = xmlFile.lastModified();
-        if (xmlFileLastModified.equals(configParameterLastModified)) {
+        if (configParameter != null && xmlFileLastModified.equals(configParameterLastModified)) {
             return configParameter;
         }
 
