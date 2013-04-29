@@ -15,7 +15,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
