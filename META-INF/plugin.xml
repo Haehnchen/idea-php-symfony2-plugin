@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -23,6 +23,7 @@
     <li>Autocomplete and click to go to, service ids inside services.yml</li>
     <li>Autocomplete and click to go to, service ids inside services.xml</li>
     <li>Click to go services class inside services.xml</li>
+    <li>Autocomplete assets in twig asset() calls</li>
 </ul>
 
 <h2>Notes</h2>
@@ -33,6 +34,11 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.7.1</h2>
+<ul>
+    <li>Add assets autocompletion in twig asset() calls</li>
+</ul>
+
 <h2>0.7.0</h2>
 <ul>
     <li>* Fix the fix about ide freezes</li>
@@ -83,7 +89,7 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.asset.TwigAssetCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
     </extensions>
 
