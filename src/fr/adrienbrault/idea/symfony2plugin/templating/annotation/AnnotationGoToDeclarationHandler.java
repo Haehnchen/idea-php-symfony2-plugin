@@ -99,25 +99,36 @@ public class AnnotationGoToDeclarationHandler implements GotoDeclarationHandler 
             return null;
         }
 
-        // \ns\ns\HomeBundle\Controller\
-        String namespace = method.getNamespaceName();
-        if(namespace.lastIndexOf("Bundle\\Controller\\") < 0) {
-            return null;
-        }
-
         PhpClass phpClass = method.getContainingClass();
         if(null == phpClass) {
             return null;
         }
 
         // defaultController
+        // default/Folder/FolderController
         String className = phpClass.getName();
         if(!className.endsWith("Controller")) {
             return null;
         }
 
+        // find the bundle name of file
+        PhpClass BundleClass = getContainingBundleClass(phpClass);
+        if(null == BundleClass) {
+            return null;
+        }
+
+        // check if files is in <Bundle>/Controller/*
+        if(!phpClass.getNamespaceName().startsWith(BundleClass.getNamespaceName() + "Controller\\")) {
+            return null;
+        }
+
+        // strip the controller folder name
+        String templateFolderName = phpClass.getNamespaceName().substring(BundleClass.getNamespaceName().length() + 11);
+
         // HomeBundle:default:index
-        String shortcutName = getContainingBundleName(phpClass) + ":" + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
+        // HomeBundle:default/Test:index
+        templateFolderName = templateFolderName.replace("\\", "/");
+        String shortcutName = getContainingBundleName(phpClass) + ":" + templateFolderName + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
 
         // we should support types later on
         // HomeBundle:default:index.html.twig
@@ -125,14 +136,25 @@ public class AnnotationGoToDeclarationHandler implements GotoDeclarationHandler 
     }
 
     @Nullable
-    protected String getContainingBundleName(PhpClass phpClassSearch) {
+    protected String getContainingBundleName(PhpClass phpClass) {
+
+        PhpClass phpBundleClass = getContainingBundleClass(phpClass);
+        if(null == phpBundleClass) {
+            return null;
+        }
+
+        return phpBundleClass.getName();
+    }
+
+    @Nullable
+    protected PhpClass getContainingBundleClass(PhpClass phpClassSearch) {
 
         PhpIndex phpIndex = PhpIndex.getInstance(phpClassSearch.getProject());
         Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
 
         for (PhpClass phpClass : phpClasses) {
             if(phpClassSearch.getNamespaceName().startsWith(phpClass.getNamespaceName())) {
-              return phpClass.getName();
+                return phpClass;
             }
         }
 
