@@ -2,8 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -29,7 +29,7 @@ public class DoctrineEntityLookupElement extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(className.getPresentableFQN());
         presentation.setTypeGrayed(true);
-        presentation.setIcon(PhpIcons.CLASS);
+        presentation.setIcon(Symfony2Icons.DOCTRINE);
     }
 
 }
