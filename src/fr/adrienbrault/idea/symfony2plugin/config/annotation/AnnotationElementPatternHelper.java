@@ -16,21 +16,36 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 public class AnnotationElementPatternHelper {
 
     public static ElementPattern<PsiElement> getTextIdentifier(String keyName) {
-        return PlatformPatterns.psiElement(PhpDocTokenTypes.DOC_IDENTIFIER).withParent(
-                PlatformPatterns.psiElement(PhpDocElementTypes.phpDocTagValue).withParent(
-                        PlatformPatterns.psiElement(PhpDocElementTypes.phpDocTag).withText(PlatformPatterns.string().startsWith(keyName))
+        return PlatformPatterns
+            .psiElement(PhpDocTokenTypes.DOC_IDENTIFIER)
+            .withParent(PlatformPatterns
+                .psiElement(PhpDocElementTypes.phpDocTagValue)
+                .withParent(PlatformPatterns
+                    .psiElement(PhpDocElementTypes.phpDocTag)
+                    .withText(PlatformPatterns
+                        .string().startsWith(keyName)
+                    )
                 )
-        ).withLanguage(PhpLanguage.INSTANCE);
+            )
+            .withLanguage(PhpLanguage.INSTANCE)
+        ;
     }
 
     public static ElementPattern<PsiElement> getOrmProperties() {
         // @TODO: afterSibling: dont we have beforeSibling ?
-        return PlatformPatterns.psiElement(PhpDocTokenTypes.DOC_IDENTIFIER).withParent(
-                PlatformPatterns.psiElement(PhpDocComment.class).afterSibling(
-                        PlatformPatterns.psiElement(PhpElementTypes.CLASS_FIELDS))
-                            ).inside(
-                                PlatformPatterns.psiElement(PhpElementTypes.NAMESPACE)
-        ).withLanguage(PhpLanguage.INSTANCE);
+        return PlatformPatterns
+            .psiElement(PhpDocTokenTypes.DOC_IDENTIFIER)
+            .withParent(PlatformPatterns
+                .psiElement(PhpDocComment.class)
+                .afterSibling(PlatformPatterns
+                    .psiElement(PhpElementTypes.CLASS_FIELDS)
+                )
+            )
+            .inside(PlatformPatterns
+                .psiElement(PhpElementTypes.NAMESPACE)
+            )
+            .withLanguage(PhpLanguage.INSTANCE)
+        ;
     }
 
 }

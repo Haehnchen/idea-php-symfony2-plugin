@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -113,6 +113,22 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("path"),
                     PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("url")
                 )
+            )
+            .withLanguage(TwigLanguage.INSTANCE)
+        ;
+    }
+
+    public static ElementPattern<PsiElement> getAutocompletableAssetPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("asset")
             )
             .withLanguage(TwigLanguage.INSTANCE)
         ;

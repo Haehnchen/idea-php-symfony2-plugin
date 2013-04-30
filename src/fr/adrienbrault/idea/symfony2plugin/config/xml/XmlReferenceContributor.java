@@ -15,25 +15,43 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
         // <argument type="service" id="service_container" />
         registrar.registerReferenceProvider(
-                XmlPatterns.xmlAttributeValue().withParent(
-                        XmlPatterns.xmlAttribute("id").withParent(
-                                XmlPatterns.xmlTag().withChild(
-                                        XmlPatterns.xmlAttribute("type").withValue(
-                                                StandardPatterns.string().equalTo("service")
-                                        )
-                                )
+            XmlPatterns
+                .xmlAttributeValue()
+                .withParent(XmlPatterns
+                    .xmlAttribute("id")
+                    .withParent(XmlPatterns
+                        .xmlTag()
+                        .withChild(XmlPatterns
+                            .xmlAttribute("type")
+                            .withValue(
+                                StandardPatterns.string().equalTo("service")
+                            )
                         )
-        ), new ServiceReferenceProvider());
+                    )
+                ),
+
+            new ServiceReferenceProvider()
+        );
 
         // <service id="fos_user.user_provider.username" class="FOS\UserBundle\Security\UserProvider">
         registrar.registerReferenceProvider(
-                XmlPatterns.xmlAttributeValue().withParent(
-                        XmlPatterns.xmlAttribute("class").withValue(StandardPatterns.string().contains("\\")).withParent(
-                                XmlPatterns.xmlTag().withChild(
-                                        XmlPatterns.xmlAttribute("id")
-                                )
+            XmlPatterns
+                .xmlAttributeValue()
+                .withParent(XmlPatterns
+                    .xmlAttribute("class")
+                    .withValue(StandardPatterns
+                        .string().contains("\\")
+                    )
+                    .withParent(XmlPatterns
+                        .xmlTag()
+                        .withChild(
+                            XmlPatterns.xmlAttribute("id")
                         )
-                ), new ClassReferenceProvider());
+                    )
+                ),
+
+            new ClassReferenceProvider()
+        );
 
     }
 
