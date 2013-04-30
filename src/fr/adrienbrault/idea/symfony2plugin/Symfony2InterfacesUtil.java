@@ -172,7 +172,7 @@ public class Symfony2InterfacesUtil {
         return isImplementationOfInterface(phpClass.getSuperClass(), phpInterface);
     }
 
-    protected boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
+    public boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
         if (subjectClass == expectedClass) {
             return true;
         }
