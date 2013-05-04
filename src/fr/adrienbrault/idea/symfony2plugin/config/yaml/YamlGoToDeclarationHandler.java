@@ -5,17 +5,11 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -33,33 +27,33 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return new PsiElement[]{};
         }
 
-        if(psiElement.getText().startsWith("@") && psiElement.getText().length() > 1) {
-            return serviceGoToDeclaration(psiElement, psiElement.getText().substring(1));
+        String psiText = psiElement.getText();
+        if(null == psiText || psiText.length() == 0) {
+            return new PsiElement[]{};
         }
 
-        if(psiElement.getText().contains(".") && psiElement.getText().length() > 1) {
-            return serviceGoToDeclaration(psiElement, psiElement.getText());
+        if(psiText.startsWith("@") && psiText.length() > 1) {
+            return serviceGoToDeclaration(psiElement, psiText.substring(1));
         }
 
-        if(psiElement.getText().contains("\\")) {
-            return classGoToDeclaration(psiElement);
+        // match: %annotations.reader.class%
+        if(psiText.length() > 3 && psiText.startsWith("%") && psiText.endsWith("%")) {
+            return parameterGoToDeclaration(psiElement, psiText.substring(1, psiText.length() - 1));
+        }
+
+        if(psiText.contains(".") && psiText.length() > 1) {
+            return serviceGoToDeclaration(psiElement, psiText);
+        }
+
+        if(psiText.contains("\\")) {
+            return classGoToDeclaration(psiElement, psiText);
         }
 
         return new PsiElement[]{};
     }
 
-    protected PsiElement[] classGoToDeclaration(PsiElement psiElement) {
-        String className = psiElement.getText();
-
-        PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(className);
-
-        List<PsiElement> results = new ArrayList<PsiElement>();
-        for (PhpClass phpClass : phpClasses) {
-            results.add(new PsiElementResolveResult(phpClass).getElement());
-        }
-
-        return results.toArray(new PsiElement[results.size()]);
+    protected PsiElement[] classGoToDeclaration(PsiElement psiElement, String className) {
+        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), className);
     }
 
     protected PsiElement[] serviceGoToDeclaration(PsiElement psiElement, String serviceId) {
@@ -71,20 +65,22 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return new PsiElement[]{};
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceClass);
-        Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(serviceClass);
+        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
+    }
 
-        List<PsiElement> results = new ArrayList<PsiElement>();
-        for (PhpClass phpClass : phpClasses) {
-            results.add(new PsiElementResolveResult(phpClass).getElement());
+    protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
+
+        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
+        if (null == symfony2ProjectComponent) {
+            return new PsiElement[]{};
         }
 
-        for (PhpClass phpInterface : phpInterfaces) {
-            results.add(new PsiElementResolveResult(phpInterface).getElement());
+        String parameterName = symfony2ProjectComponent.getConfigParameter().get(psiParameterName);
+        if (null == parameterName) {
+            return new PsiElement[]{};
         }
 
-        return results.toArray(new PsiElement[results.size()]);
+        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), parameterName);
     }
 
     @Nullable

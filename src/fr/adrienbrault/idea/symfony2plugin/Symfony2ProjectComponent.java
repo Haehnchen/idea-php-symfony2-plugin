@@ -7,6 +7,7 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
@@ -157,6 +158,33 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         });
 
         return files;
+    }
+
+    private Map<String, String> configParameter;
+    private Long configParameterLastModified;
+    public Map<String, String> getConfigParameter() {
+
+        String defaultServiceMapFilePath = getPath(project, Settings.getInstance(project).pathToProjectContainer);
+
+        File xmlFile = new File(defaultServiceMapFilePath);
+        if (!xmlFile.exists()) {
+            return new HashMap<String, String>();
+        }
+
+        // this is called async, so double check for configParameter and configParameterLastModified
+        Long xmlFileLastModified = xmlFile.lastModified();
+        if (configParameter != null && xmlFileLastModified.equals(configParameterLastModified)) {
+            return configParameter;
+        }
+
+        configParameterLastModified = xmlFileLastModified;
+
+        try {
+            ParameterParser parser = new ParameterParser();
+            return configParameter = parser.parse(xmlFile);
+        } catch (Exception ignored) {
+            return configParameter = new HashMap<String, String>();
+        }
     }
 
     private String getPath(Project project, String path) {

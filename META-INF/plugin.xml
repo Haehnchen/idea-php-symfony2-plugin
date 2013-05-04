@@ -92,6 +92,7 @@
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.asset.TwigAssetCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
     </extensions>
 
     <depends>com.jetbrains.php</depends>

@@ -22,6 +22,13 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isContainerParameterCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter"),
+            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter"),
+        });
+    }
+
     public boolean isTemplatingRenderCall(PsiElement e) {
         return isCallTo(e, new Method[] {
             getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Templating\\EngineInterface", "render"),

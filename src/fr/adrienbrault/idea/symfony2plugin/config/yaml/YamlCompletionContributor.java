@@ -43,6 +43,31 @@ public class YamlCompletionContributor extends CompletionContributor {
                 }
         );
 
+        extend(
+            CompletionType.BASIC, YamlElementPatternHelper.getServiceParameterDefinition(),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    PsiElement element = parameters.getOriginalPosition();
+
+                    if(element == null) {
+                        return;
+                    }
+
+                    Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
+
+                    Map<String, String> it = symfony2ProjectComponent.getConfigParameter();
+
+                    for(Map.Entry<String, String> Entry: it.entrySet()) {
+                        resultSet.addElement(new ServiceStringLookupElement(Entry.getKey(), Entry.getValue()));
+                    }
+
+                }
+            }
+        );
+
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getTypes()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getNullAble()));
