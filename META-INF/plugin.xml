@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.6.0</version>
+    <version>0.7.1</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -18,6 +18,12 @@
     <li>Clickable template name in twig templates</li>
     <li>Autocomplete route name in UrlGenerator::generate() calls</li>
     <li>Autocomplete route name in twig templates</li>
+    <li>Autocomplete ORM\XXX annotations and properties</li>
+    <li>Autocomplete some key and values inside doctrine .orm.yml configurations</li>
+    <li>Autocomplete and click to go to, service ids inside services.yml</li>
+    <li>Autocomplete and click to go to, service ids inside services.xml</li>
+    <li>Click to go services class inside services.xml</li>
+    <li>Autocomplete assets in twig asset() calls</li>
 </ul>
 
 <h2>Notes</h2>
@@ -28,6 +34,32 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.7.1</h2>
+<ul>
+    <li>Add assets autocompletion in twig asset() calls</li>
+</ul>
+
+<h2>0.7.0</h2>
+<ul>
+    <li>* Fix the fix about ide freezes</li>
+    <li>* Add auto completion inside doctrine's .orm.yml config files</li>
+    <li>* Add @ORM\\ annotations auto completion inside docblocks</li>
+    <li>* Add services auto completion inside yaml files</li>
+    <li>* Add services auto completion inside services.xml files</li>
+    <li>* Add class go to definition inside services.xml files</li>
+</ul>
+
+<h2>0.6.2</h2>
+<ul>
+    <li>Should fix ide freezes with class autocompletion (use XXX).</li>
+</ul>
+
+<h2>0.6.1</h2>
+<ul>
+    <li>Service aliases support</li>
+    <li>Resolve services classes case insensitively</li>
+</ul>
+
 <h2>0.6.0</h2>
 <ul>
     <li>Autocomplete route name in php and twig</li>
@@ -35,71 +67,6 @@
     <li>Performance improvment</li>
     <li>No more proxy method detection, the plugin has to know them (for example Controller::get)</li>
     <li>Smarter detection of functions call in twig (ie: {% set var = render('<caret>') %} should work)</li>
-</ul>
-
-<h2>0.5.3</h2>
-<ul>
-    <li>Fix a bug on windows when using an absolute path for the container.xml</li>
-</ul>
-
-<h2>0.5.2</h2>
-<ul>
-    <li>The plugin settings for the container.xml path, has now a file chooser, and allow paths outside the project</li>
-</ul>
-
-<h2>0.5.1</h2>
-<ul>
-    <li>Support {% embed autocomplete in twig</li>
-</ul>
-
-<h2>0.5.0</h2>
-<ul>
-    <li>Use a symfony2 icon instead of class icon in services autocomplete :)</li>
-    <li>You can now click on templates name in twig to go to file (awesome!)</li>
-    <li>"{{ include(" now autocomplete the template name</li>
-</ul>
-
-<h2>0.4.0</h2>
-<ul>
-    <li>Autocomplete template name in render() calls</li>
-    <li>Clickable template name in render() calls</li>
-    <li>Autocomplete template name in twig templates</li>
-</ul>
-
-<h2>0.3.3</h2>
-<ul>
-    <li>Better description, and integrate the changelog into the plugin</li>
-</ul>
-
-<h2>0.3.2</h2>
-<ul>
-    <li>Services id completion popup also show the class on the right</li>
-</ul>
-
-<h2>0.3.1</h2>
-<ul>
-    <li>Fix small cache issue</li>
-</ul>
-
-<h2>0.3.0</h2>
-<ul>
-    <li>Services id are now clickable (go to class definition), and autocompletable (CTRL+SPACE).</li>
-    <li>Should support all ContainerInterface::get proxies as long as the id is the first argument (Previously, only direct calls to ContainerInterface::get or Controller::get)</li>
-</ul>
-
-<h2>0.2.1</h2>
-<ul>
-    <li>Fixed required idea build</li>
-</ul>
-
-<h2>0.2.0</h2>
-<ul>
-    <li>The `appDevDebugProjectContainer.xml` path can now be configured in the project settings.</li>
-</ul>
-
-<h2>0.1.0</h2>
-<ul>
-    <li>Detect ContainerInterface::get result type</li>
 </ul>
 ]]>
     </change-notes>
@@ -119,10 +86,16 @@
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
+        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.asset.TwigAssetCompletionContributor"/>
     </extensions>
 
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
     <project-components>
         <component>
             <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>

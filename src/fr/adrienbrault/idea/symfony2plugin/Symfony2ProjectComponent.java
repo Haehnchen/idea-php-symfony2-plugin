@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -16,7 +18,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -158,6 +162,31 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         this.routesLastModified = routesLastModified;
 
         return routes;
+    }
+
+    public List<VirtualFile> getAssetFiles() {
+        final List<VirtualFile> files = new ArrayList<VirtualFile>();
+
+        VirtualFile projectDirectory = project.getBaseDir();
+        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, "web");
+
+        if (null == webDirectory) {
+            return files;
+        }
+
+        ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
+        fileIndex.iterateContentUnderDirectory(webDirectory, new ContentIterator() {
+            @Override
+            public boolean processFile(final VirtualFile virtualFile) {
+                if (!virtualFile.isDirectory()) {
+                    files.add(virtualFile);
+                }
+
+                return true;
+            }
+        });
+
+        return files;
     }
 
     private String getPath(Project project, String path) {

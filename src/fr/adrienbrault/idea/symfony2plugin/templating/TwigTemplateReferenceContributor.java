@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import org.jetbrains.annotations.NotNull;
 
 /**
