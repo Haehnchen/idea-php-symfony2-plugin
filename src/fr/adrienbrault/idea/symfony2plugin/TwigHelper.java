@@ -134,4 +134,21 @@ public class TwigHelper {
         ;
     }
 
+    public static ElementPattern<PsiElement> getTranslationPattern() {
+        return
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.STRING_TEXT)
+                .beforeLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.FILTER)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans")
+                )
+                .withLanguage(TwigLanguage.INSTANCE);
+    }
+
 }
