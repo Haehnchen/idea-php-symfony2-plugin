@@ -40,6 +40,12 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isTranslatorCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
+        });
+    }
+
     protected boolean isCallTo(PsiElement e, Method expectedMethod) {
         return isCallTo(e, new Method[] { expectedMethod });
     }

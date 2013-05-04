@@ -10,6 +10,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
@@ -36,6 +38,9 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     private Map<String, Route> routes;
     private Long routesLastModified;
 
+    private TranslationStringMap translationStringMap;
+    private Long translationStringMapModified;
+
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
     }
@@ -59,6 +64,31 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public void projectClosed() {
         System.out.println("projectClosed");
+    }
+
+    public TranslationStringMap getTranslationMap() {
+
+        // we are using this until we have some better cache
+
+        File defaultServiceMapFilePath = new File(getPath(project, Settings.getInstance(project).pathToProjectContainer));
+
+        if (!defaultServiceMapFilePath.exists()) {
+            return new TranslationStringMap();
+        }
+
+        // root path of translation is our caching indicator
+        File translationRootPath = new File(defaultServiceMapFilePath.getParentFile().getPath() + "/translations");
+        if (!translationRootPath.exists()) {
+            return new TranslationStringMap();
+        }
+
+        Long translationModified = translationRootPath.lastModified();
+        if (translationModified.equals(translationStringMapModified)) {
+            return translationStringMap;
+        }
+
+        translationStringMapModified = translationModified;
+        return translationStringMap = new TranslationStringParser().parsePathMatcher(translationRootPath.getPath());
     }
 
     public ServiceMap getServicesMap() {
