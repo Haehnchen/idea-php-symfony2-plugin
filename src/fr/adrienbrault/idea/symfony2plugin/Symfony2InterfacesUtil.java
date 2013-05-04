@@ -47,6 +47,22 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isGetRepositoryCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+        });
+    }
+
+    public boolean isObjectRepositoryCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
+                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
+        });
+    }
+
     protected boolean isCallTo(PsiElement e, Method expectedMethod) {
         return isCallTo(e, new Method[] { expectedMethod });
     }
@@ -163,7 +179,7 @@ public class Symfony2InterfacesUtil {
         return isImplementationOfInterface(phpClass.getSuperClass(), phpInterface);
     }
 
-    protected boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
+    public boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
         if (subjectClass == expectedClass) {
             return true;
         }

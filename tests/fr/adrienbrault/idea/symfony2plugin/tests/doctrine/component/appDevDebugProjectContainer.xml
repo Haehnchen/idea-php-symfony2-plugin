@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+  <services>
+    <service id="doctrine.orm.default_entity_manager" class="EntityManager516982d26ada1_546a8d27f194334ee012bfe64f629947b07e4919\__CG__\Doctrine\ORM\EntityManager">
+      <file>/EntityManager_516982d26ada1.php</file>
+      <argument type="service">
+        <service class="Doctrine\ORM\EntityManager" factory-method="create" public="false">
+          <argument type="service" id="doctrine.dbal.default_connection"/>
+          <argument type="service">
+            <service class="Doctrine\ORM\Configuration" public="false">
+              <call method="setEntityNamespaces">
+                <argument type="collection">
+                  <argument key="MyNiceBundle">My\NiceBundle\Entity</argument>
+                </argument>
+              </call>
+            </service>
+          </argument>
+          <configurator service="doctrine.orm.default_manager_configurator" method="configure"/>
+        </service>
+      </argument>
+      <argument type="service" id="service_container"/>
+    </service>
+    <service id="doctrine.orm.customer_entity_manager" class="EntityManager516982d26ada1_546a8d27f194334ee012bfe64f629947b07e4919\__CG__\Doctrine\ORM\EntityManager">
+      <file>EntityManager_516982d26ada1.php</file>
+      <argument type="service">
+        <service class="Doctrine\ORM\EntityManager" factory-method="create" public="false">
+          <argument type="service" id="doctrine.dbal.customer_connection"/>
+          <argument type="service">
+            <service class="Doctrine\ORM\Configuration" public="false">
+              <call method="setEntityNamespaces">
+                <argument type="collection">
+                  <argument key="YourTestBundle">Your\TestBundle\Entity</argument>
+                </argument>
+              </call>
+             </service>
+          </argument>
+          <configurator service="doctrine.orm.customer_manager_configurator" method="configure"/>
+        </service>
+      </argument>
+      <argument type="service" id="service_container"/>
+    </service>
+  </services>
+</container>
