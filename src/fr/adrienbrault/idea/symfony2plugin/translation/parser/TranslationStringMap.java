@@ -35,7 +35,10 @@ public class TranslationStringMap {
         }
 
         stringMap.put(domain + ":" + stringId, stringId);
-        domainMap.get(domain).add(stringId);
+
+        if(!domainMap.get(domain).contains(stringId)) {
+            domainMap.get(domain).add(stringId);
+        }
 
     }
 
