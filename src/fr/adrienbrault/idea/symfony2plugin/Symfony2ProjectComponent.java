@@ -7,21 +7,24 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
+import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.asset.AssetEnum;
+import fr.adrienbrault.idea.symfony2plugin.asset.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,11 +142,15 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return routes;
     }
 
-    public List<VirtualFile> getAssetFiles() {
-        final List<VirtualFile> files = new ArrayList<VirtualFile>();
+    public List<AssetFile> getAssetFiles() {
+        return this.getAssetFiles(false);
+    }
+
+    public List<AssetFile> getAssetFiles(boolean includeBundle) {
+        final List<AssetFile> files = new ArrayList<AssetFile>();
 
         VirtualFile projectDirectory = project.getBaseDir();
-        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, "web");
+        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, "Web");
 
         if (null == webDirectory) {
             return files;
@@ -154,12 +161,45 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             @Override
             public boolean processFile(final VirtualFile virtualFile) {
                 if (!virtualFile.isDirectory()) {
-                    files.add(virtualFile);
+                    files.add(new AssetFile(virtualFile, AssetEnum.Position.Web, webDirectory));
                 }
 
                 return true;
             }
         });
+
+        if(!includeBundle) {
+            return files;
+        }
+
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(this.project));
+        for(final SymfonyBundle bundle : symfonyBundleUtil.getBundles()) {
+
+            PsiDirectory bundleDirectory = bundle.getDirectory();
+            if(null == bundleDirectory) {
+                continue;
+            }
+
+            final VirtualFile bundleDirectoryVirtual = bundleDirectory.getVirtualFile();
+            VirtualFile blaDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources", "public");
+
+            if (null != blaDirectory) {
+
+                fileIndex.iterateContentUnderDirectory(blaDirectory, new ContentIterator() {
+                    @Override
+                    public boolean processFile(final VirtualFile virtualFile) {
+
+                        if (!virtualFile.isDirectory()) {
+                            files.add(new AssetFile(virtualFile, AssetEnum.Position.Bundle, bundleDirectoryVirtual, '@' + bundle.getName() + "/"));
+                        }
+
+                        return true;
+                    }
+                });
+
+            }
+
+        }
 
         return files;
     }

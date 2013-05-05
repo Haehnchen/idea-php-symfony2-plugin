@@ -1,16 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.asset;
 
 import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.IconUtil;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -28,15 +24,10 @@ public class TwigAssetCompletionContributor extends CompletionContributor {
                                            ProcessingContext context,
                                            @NotNull final CompletionResultSet resultSet) {
                     Project project = parameters.getPosition().getProject();
-                    List<VirtualFile> files = project.getComponent(Symfony2ProjectComponent.class).getAssetFiles();
-                    VirtualFile webDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "web");
+                    List<AssetFile> files = project.getComponent(Symfony2ProjectComponent.class).getAssetFiles();
 
-                    if (null == webDirectory) {
-                        return;
-                    }
-
-                    for (final VirtualFile file : files) {
-                        resultSet.addElement(new AssetLookupElement(file, webDirectory, project));
+                    for (final AssetFile assetFile : files) {
+                        resultSet.addElement(new AssetLookupElement(assetFile, project));
                     }
                 }
             }
