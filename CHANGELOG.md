@@ -1,6 +1,16 @@
 Changelog
 =========
 
+### 0.8.0
+
+* Autocomplete twig files in @Template annotations
+* Go to twig file on @Template annotation
+* Autocomplete container parameters in php/xml/yaml
+* Autocomplete doctrine getRepository argument
+* Go to entity class on getRepository argument
+* Detect getRepository() result type
+* Detect EntityRepository::find/findOneBy/findAll/findBy result type
+
 ### 0.7.1
 
 * Add assets autocompletion in twig asset() calls

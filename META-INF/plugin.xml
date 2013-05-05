@@ -1,29 +1,50 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.7.1</version>
+    <version>0.8.0</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
 
 <h2>Features:</h2>
+
+<h3>Dependency Injection Container</h3>
 <ul>
     <li>Autocomplete service id in ContainerInterface::get() calls</li>
     <li>Clickable service id in ContainerInterface::get() first argument</li>
     <li>Detect ContainerInterface::get() result type and thus provide autocomplete</li>
+    <li>Autocomplete and click to go to, service ids inside services.yml/xml</li>
+    <li>Click to go services class inside services.xml</li>
+    <li>Autocomplete container parameters in php/xml/yaml</li>
+</ul>
+
+<h3>Doctrine</h3>
+<ul>
+    <li>Autocomplete ORM\XXX annotations and properties</li>
+    <li>Autocomplete some key and values inside doctrine .orm.yml configurations</li>
+    <li>Autocomplete doctrine getRepository argument</li>
+    <li>Go to entity class on getRepository argument</li>
+    <li>Detect getRepository() result type</li>
+    <li>Detect EntityRepository::find/findOneBy/findAll/findBy result type</li>
+</ul>
+
+<h3>Templates/twig</h3>
+<ul>
     <li>Autocomplete template name in render() calls</li>
     <li>Clickable template name in render() calls</li>
     <li>Autocomplete template name in twig templates</li>
     <li>Clickable template name in twig templates</li>
+    <li>Autocomplete assets in twig asset() calls</li>
+    <li>Autocomplete twig files in @Template annotations</li>
+    <li>Go to twig file on @Template annotation</li>
+</ul>
+
+
+<h3>Routing</h3>
+<ul>
     <li>Autocomplete route name in UrlGenerator::generate() calls</li>
     <li>Autocomplete route name in twig templates</li>
-    <li>Autocomplete ORM\XXX annotations and properties</li>
-    <li>Autocomplete some key and values inside doctrine .orm.yml configurations</li>
-    <li>Autocomplete and click to go to, service ids inside services.yml</li>
-    <li>Autocomplete and click to go to, service ids inside services.xml</li>
-    <li>Click to go services class inside services.xml</li>
-    <li>Autocomplete assets in twig asset() calls</li>
 </ul>
 
 <h2>Notes</h2>
@@ -31,9 +52,27 @@
     <li>To trigger the autocompletion, press CTRL + SPACE.</li>
     <li>Set the type of "classes.php" to text resolved some autocomplete issues for me.</li>
 </ul>
+
+<h2><a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
+<ul>
+    <li><a href="https://github.com/adrienbrault">Adrien Brault</a></li>
+    <li><a href="https://github.com/Haehnchen">Daniel Espendiller</a></li>
+    <li><a href="https://github.com/Lumbendil">Roger Llopart Pla</a></li>
+</ul>
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.8.0</h2>
+<ul>
+    <li>Autocomplete twig files in @Template annotations</li>
+    <li>Go to twig file on @Template annotation</li>
+    <li>Autocomplete container parameters in php/xml/yaml</li>
+    <li>Autocomplete doctrine getRepository argument</li>
+    <li>Go to entity class on getRepository argument</li>
+    <li>Detect getRepository() result type</li>
+    <li>Detect EntityRepository::find/findOneBy/findAll/findBy result type</li>
+</ul>
+
 <h2>0.7.1</h2>
 <ul>
     <li>Add assets autocompletion in twig asset() calls</li>
