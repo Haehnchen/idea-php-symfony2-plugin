@@ -134,4 +134,15 @@ public class TwigHelper {
         ;
     }
 
+    public static ElementPattern<PsiElement> getAutocompletableAssetTag(String tagName) {
+
+        // @TODO: withChild is not working so we are filtering on text
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(PlatformPatterns
+                .psiElement(TwigCompositeElementTypes.TAG)
+                .withText(PlatformPatterns.string().startsWith("{% " + tagName))
+            );
+    }
+
 }

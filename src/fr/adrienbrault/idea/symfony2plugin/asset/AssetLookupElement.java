@@ -4,6 +4,8 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.IconUtil;
+import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetEnum;
+import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import org.jetbrains.annotations.NotNull;
 
 /**

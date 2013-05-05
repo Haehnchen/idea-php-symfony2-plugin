@@ -14,22 +14,7 @@ import java.util.Map;
 public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     public TwigTemplateCompletionContributor() {
-        extend(
-            CompletionType.BASIC,
-            TwigHelper.getAutocompletableTemplatePattern(),
-            new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-                    Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-                    for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
-                        resultSet.addElement(
-                            new TemplateLookupElement(entry.getKey(), entry.getValue())
-                        );
-                    }
-                }
-            }
-        );
+
     }
 
 }

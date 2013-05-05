@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.asset;
+package fr.adrienbrault.idea.symfony2plugin.asset.dic;
 
 public class AssetEnum {
 
