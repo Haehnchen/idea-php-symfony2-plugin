@@ -1,13 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.patterns.PhpPatterns;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,6 +43,29 @@ public class PhpElementsUtil {
         }
 
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    static public boolean isMethodWithFirstString(PsiElement psiElement, String... methodName) {
+
+        // filter out method calls without parameter
+        // $this->methodName('service_name')
+        // withName is not working, so simulate it in a hack
+        if(!PlatformPatterns
+            .psiElement(PhpElementTypes.METHOD_REFERENCE)
+            .withChild(PlatformPatterns
+                .psiElement(PhpElementTypes.PARAMETER_LIST)
+                .withFirstChild(PlatformPatterns
+                    .psiElement(PhpElementTypes.STRING)
+                )
+            ).accepts(psiElement)) {
+
+            return false;
+        }
+
+        // cant we move it up to PlatformPatterns? withName condition dont looks working
+        String methodRefName = ((MethodReference) psiElement).getName();
+
+        return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
     }
 
 
