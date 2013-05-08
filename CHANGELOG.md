@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.8.1
+
+* Should improve performance and fix some issues with use statements
+
 ### 0.8.0
 
 * Autocomplete twig files in @Template annotations

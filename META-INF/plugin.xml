@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.8.0</version>
+    <version>0.8.1</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -62,6 +62,11 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.8.1</h2>
+<ul>
+    <li>Should improve performance and fix some issues with use statements</li>
+</ul>
+
 <h2>0.8.0</h2>
 <ul>
     <li>Autocomplete twig files in @Template annotations</li>
