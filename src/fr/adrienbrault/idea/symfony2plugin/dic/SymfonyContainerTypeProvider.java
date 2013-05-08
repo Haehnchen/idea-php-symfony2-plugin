@@ -25,7 +25,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
         }
 
         // container calls are only on "get" methods
-        if(!PhpElementsUtil.isMethodWithFirstString(e, "getAll", "get")) {
+        if(!PhpElementsUtil.isMethodWithFirstString(e, "get")) {
             return null;
         }
 
