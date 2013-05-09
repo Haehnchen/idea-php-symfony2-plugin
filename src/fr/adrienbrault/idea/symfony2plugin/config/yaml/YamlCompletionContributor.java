@@ -7,6 +7,7 @@ import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
@@ -80,6 +81,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToOne"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToOne)));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new YamlCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
 
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class"), new PhpClassCompletionProvider());
 
     }
 
