@@ -71,7 +71,7 @@ public class AssetDirectoryReader {
             }
 
             final VirtualFile bundleDirectoryVirtual = bundleDirectory.getVirtualFile();
-            VirtualFile blaDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources", "public");
+            VirtualFile blaDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources");
 
             if (null != blaDirectory) {
 
@@ -102,9 +102,10 @@ public class AssetDirectoryReader {
 
         if (this.filterExtension != null) {
             String extension = virtualFile.getExtension();
-            if(null != extension) {
-               return Arrays.asList(this.filterExtension).contains(extension);
-            }
+
+            // file need extension and it must be in list
+            return null != extension && Arrays.asList(this.filterExtension).contains(extension);
+
         }
 
         return true;
