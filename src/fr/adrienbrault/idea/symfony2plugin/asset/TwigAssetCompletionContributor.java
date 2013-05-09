@@ -17,11 +17,11 @@ public class TwigAssetCompletionContributor extends CompletionContributor {
         ));
 
         extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setAssetParser(
-            new AssetDirectoryReader().setFilterExtension("css").setIncludeBundleDir(true)
+            new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true)
         ));
 
         extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setAssetParser(
-            new AssetDirectoryReader().setFilterExtension("js").setIncludeBundleDir(true)
+            new AssetDirectoryReader().setFilterExtension("js", "dart", "coffee").setIncludeBundleDir(true)
         ));
 
     }

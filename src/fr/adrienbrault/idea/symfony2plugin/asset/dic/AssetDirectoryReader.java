@@ -13,13 +13,14 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AssetDirectoryReader {
 
     protected Project project;
     protected boolean includeBundleDir = false;
-    protected String filterExtension;
+    protected String[] filterExtension;
 
     public void setProject(Project project) {
         this.project = project;
@@ -30,7 +31,7 @@ public class AssetDirectoryReader {
         return this;
     }
 
-    public AssetDirectoryReader setFilterExtension(String filterExtension) {
+    public AssetDirectoryReader setFilterExtension(String... filterExtension) {
         this.filterExtension = filterExtension;
         return this;
     }
@@ -101,7 +102,7 @@ public class AssetDirectoryReader {
         if (this.filterExtension != null) {
             String extension = virtualFile.getExtension();
             if(null != extension) {
-               return extension.equals(this.filterExtension);
+               return Arrays.asList(this.filterExtension).contains(extension);
             }
         }
 
