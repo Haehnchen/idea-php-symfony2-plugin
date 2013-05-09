@@ -22,8 +22,9 @@ public class AssetDirectoryReader {
     protected boolean includeBundleDir = false;
     protected String[] filterExtension;
 
-    public void setProject(Project project) {
+    public AssetDirectoryReader setProject(Project project) {
         this.project = project;
+        return this;
     }
 
     public AssetDirectoryReader setIncludeBundleDir(boolean includeBundleDir) {
