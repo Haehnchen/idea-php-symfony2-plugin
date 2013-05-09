@@ -85,7 +85,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
     }
 
     @Nullable
-    protected PhpClass getRepositoryClass(PhpIndex phpIndex) {
+    public static PhpClass getRepositoryClass(PhpIndex phpIndex) {
         Collection<PhpClass> classes = phpIndex.getInterfacesByFQN("\\Doctrine\\Common\\Persistence\\ObjectRepository");
         return classes.isEmpty() ? null : classes.iterator().next();
     }
@@ -96,7 +96,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
         return classes.isEmpty() ? null : classes.iterator().next();
     }
 
-    protected boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
+    public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
 
         if(entityClass.isAbstract()) {
             return false;
