@@ -24,10 +24,13 @@ public class SettingsForm implements Configurable {
     private TextFieldWithBrowseButton pathToContainerTextField;
     private JButton pathToContainerTextFieldReset;
     private JButton pathToUrlGeneratorTextFieldReset;
-    private JCheckBox checkBoxContainerTypes;
-    private JCheckBox checkBoxGetRepositoryTypes;
-    private JCheckBox checkBoxGetRepositoryResultTypes;
+
+    private JCheckBox symfonyContainerTypeProvider;
+    private JCheckBox objectRepositoryTypeProvider;
+    private JCheckBox objectRepositoryResultTypeProvider;
+
     private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
+    private JLabel typesLabel;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -61,6 +64,9 @@ public class SettingsForm implements Configurable {
         return
             !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
+            || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
+            || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
+            || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
         ;
     }
 
@@ -68,6 +74,10 @@ public class SettingsForm implements Configurable {
     public void apply() throws ConfigurationException {
         getSettings().pathToProjectContainer = pathToContainerTextField.getText();
         getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
+
+        getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
+        getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
+        getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
     }
 
     @Override
@@ -77,8 +87,6 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-        pathToContainerTextField = null;
-        pathToUrlGeneratorTextField = null;
     }
 
     private Settings getSettings() {
@@ -88,6 +96,10 @@ public class SettingsForm implements Configurable {
     private void updateUIFromSettings() {
         pathToContainerTextField.setText(getSettings().pathToProjectContainer);
         pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
+
+        symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
+        objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
+        objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField) {
@@ -155,4 +167,5 @@ public class SettingsForm implements Configurable {
             }
         };
     }
+
 }

@@ -20,6 +20,8 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -87,32 +89,40 @@
             </constraints>
             <properties/>
           </component>
-          <component id="733dc" class="javax.swing.JCheckBox" binding="checkBoxContainerTypes">
-            <constraints>
-              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <enabled value="true"/>
-              <text value="Container"/>
-            </properties>
-          </component>
-          <component id="21819" class="javax.swing.JCheckBox" binding="checkBoxGetRepositoryTypes">
-            <constraints>
-              <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Repository"/>
-            </properties>
-          </component>
-          <component id="59e9b" class="javax.swing.JCheckBox" binding="checkBoxGetRepositoryResultTypes">
+          <component id="21819" class="javax.swing.JCheckBox" binding="objectRepositoryTypeProvider">
             <constraints>
               <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
-              <text value="RepositoryTypes"/>
+              <text value="Repository Entity"/>
+            </properties>
+          </component>
+          <component id="59e9b" class="javax.swing.JCheckBox" binding="objectRepositoryResultTypeProvider">
+            <constraints>
+              <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="ObjectRepository (find*)"/>
+            </properties>
+          </component>
+          <component id="d0415" class="javax.swing.JLabel" binding="typesLabel">
+            <constraints>
+              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="PhpTypes Resolver"/>
+            </properties>
+          </component>
+          <component id="7d2c2" class="javax.swing.JCheckBox" binding="symfonyContainerTypeProvider">
+            <constraints>
+              <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Container Service"/>
             </properties>
           </component>
         </children>

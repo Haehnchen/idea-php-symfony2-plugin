@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -20,7 +21,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (DumbService.getInstance(e.getProject()).isDumb()) {
+        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).symfonyContainerTypeProvider) {
             return null;
         }
 
