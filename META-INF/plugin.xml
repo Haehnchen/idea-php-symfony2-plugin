@@ -70,7 +70,7 @@
     <li>Support bundles assets (@AcmeDemoBundle/Resources/xxx)</li>
     <li>Add {% javascripts and {% stylesheets assets autocompletion</li>
     <li>Add assets go to file</li>
-<ul>
+</ul>
 
 <h2>0.8.1</h2>
 <ul>
