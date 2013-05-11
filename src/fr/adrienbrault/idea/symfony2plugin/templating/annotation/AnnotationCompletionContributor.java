@@ -6,6 +6,7 @@ import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationQuoteInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -26,7 +27,7 @@ public class AnnotationCompletionContributor extends CompletionContributor {
                         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
                         for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
                             resultSet.addElement(
-                                    new TemplateLookupElement(entry.getKey(), entry.getValue())
+                                    new TemplateLookupElement(entry.getKey(), entry.getValue(), parameters.getPosition() , AnnotationQuoteInsertHandler.getInstance())
                             );
                         }
                     }
