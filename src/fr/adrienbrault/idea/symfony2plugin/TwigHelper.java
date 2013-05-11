@@ -34,9 +34,24 @@ public class TwigHelper {
             bundlesDirectories.put(phpClass.getName(), phpClass.getContainingFile().getContainingDirectory());
         }
 
+        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
+
         Collection<VirtualFile> twigVirtualFiles = fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, TwigFileType.INSTANCE, GlobalSearchScope.projectScope(project));
         Map<String, TwigFile> results = new HashMap<String, TwigFile>();
         for (VirtualFile twigVirtualFile : twigVirtualFiles) {
+
+            if (null != globalDirectory && VfsUtil.isAncestor(globalDirectory, twigVirtualFile, false)) {
+                String templatePath = VfsUtil.getRelativePath(twigVirtualFile, globalDirectory, '/');
+                String templateDeep = "";
+                if (null != templatePath && templatePath.contains("/")) {
+                    templateDeep = templatePath.substring(0, templatePath.lastIndexOf("/"));
+                }
+                TwigFile twigFile = (TwigFile) PsiManager.getInstance(project).findFile(twigVirtualFile);
+                results.put(":" + templateDeep + ":" + twigVirtualFile.getName(), twigFile);
+
+                continue;
+            }
+
             // Find in which bundle it is
             for (Map.Entry<String, PsiDirectory> pair : bundlesDirectories.entrySet()) {
                 if (!VfsUtil.isAncestor((pair.getValue()).getVirtualFile(), twigVirtualFile, false)) {
