@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.8.1</version>
+    <version>0.9.0</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -35,7 +35,8 @@
     <li>Clickable template name in render() calls</li>
     <li>Autocomplete template name in twig templates</li>
     <li>Clickable template name in twig templates</li>
-    <li>Autocomplete assets in twig asset() calls</li>
+    <li>Autocomplete assets in twig asset()/{% javascript/{% stylesheets</li>
+    <li>Go to assets file in twig asset()/{% javascript/{% stylesheets</li>
     <li>Autocomplete twig files in @Template annotations</li>
     <li>Go to twig file on @Template annotation</li>
 </ul>
@@ -62,6 +63,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.9.0</h2>
+<ul>
+    <li>Support app level twig templates (::layout.html.twig)</li>
+    <li>Ability to disable php types providers in the settings (if you eccounter freezes when autocompleting classes etc)</li>
+    <li>Support bundles assets (@AcmeDemoBundle/Resources/xxx)</li>
+    <li>Add {% javascripts and {% stylesheets assets autocompletion</li>
+    <li>Add assets go to file</li>
+<ul>
+
 <h2>0.8.1</h2>
 <ul>
     <li>Should improve performance and fix some issues with use statements</li>

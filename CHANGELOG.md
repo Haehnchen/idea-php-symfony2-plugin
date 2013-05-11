@@ -1,6 +1,14 @@
 Changelog
 =========
 
+### 0.9.0
+
+* Support app level twig templates (::layout.html.twig)
+* Ability to disable php types providers in the settings (if you eccounter freezes when autocompleting classes etc)
+* Support bundles assets (@AcmeDemoBundle/Resources/xxx)
+* Add {% javascripts and {% stylesheets assets autocompletion
+* Add assets go to file
+
 ### 0.8.1
 
 * Should improve performance and fix some issues with use statements
