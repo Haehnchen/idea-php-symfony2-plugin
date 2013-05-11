@@ -68,10 +68,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public ServiceMap getServicesMap() {
-        if (null != servicesMap) {
-            return servicesMap;
-        }
-
         String defaultServiceMapFilePath = getPath(project, Settings.getInstance(project).pathToProjectContainer);
 
         File xmlFile = new File(defaultServiceMapFilePath);
