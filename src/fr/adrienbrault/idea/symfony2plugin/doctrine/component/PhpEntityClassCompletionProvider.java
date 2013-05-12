@@ -13,6 +13,8 @@ import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassReferenceInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +28,7 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
 
         PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
 
-        PhpClass repositoryInterface = EntityReference.getRepositoryClass(phpIndex);
+        PhpClass repositoryInterface = PhpElementsUtil.getInterface(phpIndex, DoctrineTypes.REPOSITORY_INTERFACE);
         if(null == repositoryInterface) {
             return;
         }
@@ -40,7 +42,7 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
 
         Collection<String> names = phpIndex.getAllClassNames(new CamelHumpMatcher(resultSet.getPrefixMatcher().getPrefix()));
         for (String name : names) {
-            Collection classes = phpIndex.getClassesByName(name);
+            Collection<PhpClass> classes = phpIndex.getClassesByName(name);
 
             for(Map.Entry<String, String> entry: entityNamespaces.entrySet()) {
                 String namespaceFqn = PhpLangUtil.toFQN(entry.getValue());
