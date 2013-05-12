@@ -13,22 +13,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lumbendil
- * Date: 7/04/13
- * Time: 20:11
- * To change this template use File | Settings | File Templates.
- */
 public class SettingsForm implements Configurable {
 
     private Project project;
+
+    private JPanel panel1;
     private TextFieldWithBrowseButton pathToContainerTextField;
+    private JButton pathToContainerTextFieldReset;
+    private JButton pathToUrlGeneratorTextFieldReset;
+
+    private JCheckBox symfonyContainerTypeProvider;
+    private JCheckBox objectRepositoryTypeProvider;
+    private JCheckBox objectRepositoryResultTypeProvider;
+
     private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
+    private JLabel typesLabel;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -46,63 +48,15 @@ public class SettingsForm implements Configurable {
         return null;
     }
 
-    @Nullable
-    @Override
     public JComponent createComponent() {
-        JLabel label;
-        JButton resetPathButton;
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.WEST;
 
-        label = new JLabel("Path to container.xml: ");
-        pathToContainerTextField = new TextFieldWithBrowseButton(new JTextField(""));
         pathToContainerTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToContainerTextField.getTextField()));
+        pathToContainerTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToContainerTextField.getTextField(), Settings.DEFAULT_CONTAINER_PATH));
 
-        label.setLabelFor(pathToContainerTextField);
-
-        resetPathButton = new JButton("Default");
-        resetPathButton.addMouseListener(createResetPathButtonMouseListener(pathToContainerTextField.getTextField(), Settings.DEFAULT_CONTAINER_PATH));
-
-        c.gridy = 0;
-        c.gridx = 0;
-        panel.add(label, c);
-        c.gridx = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(pathToContainerTextField, c);
-        c.gridx = 2;
-        c.fill = 0;
-        panel.add(resetPathButton, c);
-
-        label = new JLabel("Path to urlGenerator.php: ");
-        pathToUrlGeneratorTextField = new TextFieldWithBrowseButton(new JTextField(""));
         pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField()));
+        pathToUrlGeneratorTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
 
-        resetPathButton = new JButton("Default");
-        resetPathButton.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
-
-        c.gridy = 1;
-        c.gridx = 0;
-        panel.add(label, c);
-        c.gridx = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(pathToUrlGeneratorTextField, c);
-        c.gridx = 2;
-        c.fill = 0;
-        panel.add(resetPathButton, c);
-
-        updateUIFromSettings();
-
-        JPanel container = new JPanel();
-        container.setLayout(new BorderLayout());
-        container.add(panel, BorderLayout.WEST);
-
-        JPanel container2 = new JPanel();
-        container2.setLayout(new BorderLayout());
-        container2.add(container, BorderLayout.NORTH);
-
-        return container2;
+        return (JComponent) panel1;
     }
 
     @Override
@@ -110,6 +64,9 @@ public class SettingsForm implements Configurable {
         return
             !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
+            || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
+            || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
+            || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
         ;
     }
 
@@ -117,6 +74,10 @@ public class SettingsForm implements Configurable {
     public void apply() throws ConfigurationException {
         getSettings().pathToProjectContainer = pathToContainerTextField.getText();
         getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
+
+        getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
+        getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
+        getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
     }
 
     @Override
@@ -126,8 +87,6 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-        pathToContainerTextField = null;
-        pathToUrlGeneratorTextField = null;
     }
 
     private Settings getSettings() {
@@ -137,6 +96,10 @@ public class SettingsForm implements Configurable {
     private void updateUIFromSettings() {
         pathToContainerTextField.setText(getSettings().pathToProjectContainer);
         pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
+
+        symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
+        objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
+        objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField) {
@@ -204,4 +167,5 @@ public class SettingsForm implements Configurable {
             }
         };
     }
+
 }
