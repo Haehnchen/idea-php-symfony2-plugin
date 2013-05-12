@@ -12,22 +12,27 @@ public class AnnotationQuoteInsertHandler implements InsertHandler<LookupElement
 
     public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement lookupElement) {
 
+        if(!(lookupElement.getObject() instanceof PsiElement)) {
+            return;
+        }
 
         PsiElement psi = (PsiElement) lookupElement.getObject();
 
-        //PhpInsertHandlerUtil.insertStringAtCaret(context.getEditor(), "()");
-        // IntellijIdeaRulezzz :)
         String annotationText = psi.getParent().getText();
         if(!(annotationText.startsWith("('") || annotationText.startsWith("(\""))) {
-            context.getDocument().insertString(context.getStartOffset(), new StringBuilder().append("'"));
+            context.getDocument().insertString(context.getStartOffset(), this.getQuoteChar());
         }
-
-
 
         if(!(annotationText.endsWith("')") || annotationText.endsWith("\")"))) {
-            context.getDocument().insertString(context.getTailOffset(), new StringBuilder().append("'"));
+            context.getDocument().insertString(context.getTailOffset(), this.getQuoteChar());
+
         }
+
         context.getEditor().getCaretModel().moveCaretRelatively(1, 0, false, false, true);
+    }
+
+    private StringBuilder getQuoteChar() {
+        return new StringBuilder().append("'");
     }
 
     public static AnnotationQuoteInsertHandler getInstance(){
