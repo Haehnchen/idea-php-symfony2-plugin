@@ -41,8 +41,8 @@ public class TemplateLookupElement extends LookupElement {
     }
 
     @NotNull
-    public PsiElement getObject() {
-        return this.psiElement;
+    public Object getObject() {
+        return this.psiElement != null ? this.psiElement : super.getObject();
     }
 
     public void handleInsert(InsertionContext context) {
