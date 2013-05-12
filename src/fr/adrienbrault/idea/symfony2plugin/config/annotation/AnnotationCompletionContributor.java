@@ -3,9 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.config.annotation;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.util.annotation.AnnotationIndex;
@@ -83,7 +85,10 @@ public class AnnotationCompletionContributor extends CompletionContributor {
                 boolean at = parent instanceof PhpDocTag;
                 Set<String> functags = AnnotationIndex.getControllerAnnotations().keySet();
 
-                //PsiTreeUtil.getParentOfType(PhpDocComment.).getNextSibling().getText();
+                Method method = PsiTreeUtil.getNextSiblingOfType(parent, Method.class);
+                if(null == method || !method.getName().endsWith("Action")) {
+                    return;
+                }
 
 
                 for (String s : functags) {
