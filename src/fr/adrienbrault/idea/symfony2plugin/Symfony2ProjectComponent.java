@@ -10,8 +10,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
@@ -38,9 +36,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     private Map<String, Route> routes;
     private Long routesLastModified;
-
-    private TranslationStringMap translationStringMap;
-    private Long translationStringMapModified;
 
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
