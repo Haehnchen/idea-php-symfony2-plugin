@@ -16,6 +16,8 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -112,23 +114,23 @@ public class AnnotationGoToDeclarationHandler implements GotoDeclarationHandler 
         }
 
         // find the bundle name of file
-        PhpClass BundleClass = getContainingBundleClass(phpClass);
-        if(null == BundleClass) {
+        SymfonyBundle bundle = getContainingBundle(phpClass);
+        if(null == bundle) {
             return null;
         }
 
         // check if files is in <Bundle>/Controller/*
-        if(!phpClass.getNamespaceName().startsWith(BundleClass.getNamespaceName() + "Controller\\")) {
+        if(!phpClass.getNamespaceName().startsWith(bundle.getNamespaceName() + "Controller\\")) {
             return null;
         }
 
         // strip the controller folder name
-        String templateFolderName = phpClass.getNamespaceName().substring(BundleClass.getNamespaceName().length() + 11);
+        String templateFolderName = phpClass.getNamespaceName().substring(bundle.getNamespaceName().length() + 11);
 
         // HomeBundle:default:index
         // HomeBundle:default/Test:index
         templateFolderName = templateFolderName.replace("\\", "/");
-        String shortcutName = getContainingBundleName(phpClass) + ":" + templateFolderName + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
+        String shortcutName = bundle.getName() + ":" + templateFolderName + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
 
         // we should support types later on
         // HomeBundle:default:index.html.twig
@@ -136,29 +138,9 @@ public class AnnotationGoToDeclarationHandler implements GotoDeclarationHandler 
     }
 
     @Nullable
-    protected String getContainingBundleName(PhpClass phpClass) {
-
-        PhpClass phpBundleClass = getContainingBundleClass(phpClass);
-        if(null == phpBundleClass) {
-            return null;
-        }
-
-        return phpBundleClass.getName();
-    }
-
-    @Nullable
-    protected PhpClass getContainingBundleClass(PhpClass phpClassSearch) {
-
+    protected SymfonyBundle getContainingBundle(PhpClass phpClassSearch) {
         PhpIndex phpIndex = PhpIndex.getInstance(phpClassSearch.getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
-
-        for (PhpClass phpClass : phpClasses) {
-            if(phpClassSearch.getNamespaceName().startsWith(phpClass.getNamespaceName())) {
-                return phpClass;
-            }
-        }
-
-        return null;
+        return new SymfonyBundleUtil(phpIndex).getContainingBundle(phpClassSearch);
     }
 
     @Nullable

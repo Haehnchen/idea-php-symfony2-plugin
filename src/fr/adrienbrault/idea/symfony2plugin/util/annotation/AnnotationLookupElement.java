@@ -1,31 +1,33 @@
-package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
+package fr.adrienbrault.idea.symfony2plugin.util.annotation;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
-public class DoctrineTypeLookup extends LookupElement {
+public class AnnotationLookupElement extends LookupElement {
 
     private String name;
     private InsertHandler<LookupElement> insertHandler = null;
+    private AnnotationValue annotationValue = null;
 
-    public DoctrineTypeLookup(String typeName) {
-        this.name = typeName;
-    }
-
-    public DoctrineTypeLookup(String typeName, InsertHandler<LookupElement> insertHandler) {
-        this.name = typeName;
+    public AnnotationLookupElement(String name, AnnotationValue annotationValue, InsertHandler<LookupElement> insertHandler) {
+        this.name = name;
         this.insertHandler = insertHandler;
+        this.annotationValue = annotationValue;
     }
 
     @NotNull
     @Override
     public String getLookupString() {
         return name;
+    }
+
+    @NotNull
+    public AnnotationValue getObject() {
+        return this.annotationValue;
     }
 
     public void handleInsert(InsertionContext context) {
@@ -36,9 +38,10 @@ public class DoctrineTypeLookup extends LookupElement {
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
-        presentation.setIcon(Symfony2Icons.DOCTRINE);
-        presentation.setTypeText("Doctrine");
+        presentation.setIcon(Symfony2Icons.SYMFONY);
+        presentation.setTypeText(this.annotationValue.getType() == AnnotationValue.Type.Array ? "Array" : "Value");
         presentation.setTypeGrayed(true);
     }
 
 }
+

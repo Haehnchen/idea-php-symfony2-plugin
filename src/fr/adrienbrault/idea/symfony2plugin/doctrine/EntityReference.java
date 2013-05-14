@@ -8,6 +8,8 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,8 +54,8 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
         List<LookupElement> results = new ArrayList<LookupElement>();
 
         // find Repository interface to filter RepositoryClasses out
-        PhpClass repositoryClass = getRepositoryClass(phpIndex);
-        if(null == repositoryClass) {
+        PhpClass repositoryInterface = PhpElementsUtil.getInterface(phpIndex, DoctrineTypes.REPOSITORY_INTERFACE);
+        if(null == repositoryInterface) {
             return results.toArray();
         }
 
@@ -72,8 +74,8 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
                 String repoName = entry.getKey() + ':'  + className;
 
                 // dont add Repository classes and abstract entities
-                PhpClass entityClass = getClass(phpIndex, entityNamespaces.get(entry.getKey()) + "\\" + className);
-                if(null != entityClass && isEntity(entityClass, repositoryClass)) {
+                PhpClass entityClass = PhpElementsUtil.getClass(phpIndex, entityNamespaces.get(entry.getKey()) + "\\" + className);
+                if(null != entityClass && isEntity(entityClass, repositoryInterface)) {
                     results.add(new DoctrineEntityLookupElement(repoName, entityClass));
                 }
 
@@ -84,19 +86,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
         return results.toArray();
     }
 
-    @Nullable
-    protected PhpClass getRepositoryClass(PhpIndex phpIndex) {
-        Collection<PhpClass> classes = phpIndex.getInterfacesByFQN("\\Doctrine\\Common\\Persistence\\ObjectRepository");
-        return classes.isEmpty() ? null : classes.iterator().next();
-    }
-
-    @Nullable
-    protected PhpClass getClass(PhpIndex phpIndex, String className) {
-        Collection<PhpClass> classes = phpIndex.getClassesByFQN(className);
-        return classes.isEmpty() ? null : classes.iterator().next();
-    }
-
-    protected boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
+    public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
 
         if(entityClass.isAbstract()) {
             return false;

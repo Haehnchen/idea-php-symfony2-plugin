@@ -8,6 +8,7 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.documentation.phpdoc.lexer.PhpDocTokenTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocPsiElement;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 
 /**
@@ -43,6 +44,23 @@ public class AnnotationElementPatternHelper {
             )
             .inside(PlatformPatterns
                 .psiElement(PhpElementTypes.NAMESPACE)
+            )
+            .withLanguage(PhpLanguage.INSTANCE)
+        ;
+    }
+
+    /**
+     * find the Controller::indexAction should done better when withName is working
+     */
+    public static ElementPattern<PsiElement> getControllerActionMethodPattern() {
+        return PlatformPatterns
+            .psiElement()
+            .withSuperParent(1, PhpDocPsiElement.class)
+            .withParent(PhpDocComment.class)
+            .inFile(PlatformPatterns
+                .psiFile().withName(PlatformPatterns
+                    .string().endsWith("Controller.php")
+                )
             )
             .withLanguage(PhpLanguage.INSTANCE)
         ;

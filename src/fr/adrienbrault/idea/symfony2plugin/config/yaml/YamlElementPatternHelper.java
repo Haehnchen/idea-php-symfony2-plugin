@@ -1,9 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiFilePattern;
-import com.intellij.patterns.StandardPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.yaml.YAMLElementTypes;
@@ -25,17 +22,11 @@ public class YamlElementPatternHelper {
      * @param keyName
      */
     public static ElementPattern<PsiElement> getOrmSingleLineScalarKey(String keyName) {
-        return PlatformPatterns
-            .psiElement(YAMLTokenTypes.TEXT)
-            .withParent(PlatformPatterns
-                .psiElement(YAMLKeyValue.class)
-                .withName(
-                    PlatformPatterns.string().equalTo(keyName)
-                )
-            )
-            .inFile(getOrmFilePattern())
-            .withLanguage(YAMLLanguage.INSTANCE)
-        ;
+        return getKeyPattern(keyName).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getSingleLineScalarKey(String keyName) {
+        return getKeyPattern(keyName).withLanguage(YAMLLanguage.INSTANCE);
     }
 
     /**
@@ -95,14 +86,7 @@ public class YamlElementPatternHelper {
             // keyName:
             //   refer|
             //   xxx: xxx
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withName(
-                        PlatformPatterns.string().equalTo(keyName)
-                    )
-                )
+            getKeyPattern(keyName)
                 .inFile(getOrmFilePattern())
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
@@ -296,6 +280,18 @@ public class YamlElementPatternHelper {
 
     private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
         return PlatformPatterns.psiFile().withName(PlatformPatterns.string().endsWith("orm.yml"));
+    }
+
+
+    private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String keyName) {
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.TEXT)
+            .withParent(PlatformPatterns
+                .psiElement(YAMLKeyValue.class)
+                .withName(
+                    PlatformPatterns.string().equalTo(keyName)
+                )
+            );
     }
 
 }
