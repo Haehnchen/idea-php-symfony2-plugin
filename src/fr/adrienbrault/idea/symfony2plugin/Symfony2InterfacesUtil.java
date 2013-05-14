@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -77,9 +78,6 @@ public class Symfony2InterfacesUtil {
         }
 
         MethodReference methodRef = (MethodReference) e;
-        if (null == e.getReference()) {
-            return false;
-        }
 
         // resolve is also called on invalid php code like "use <xxx>"
         // so double check the method name before resolve the method
@@ -87,7 +85,12 @@ public class Symfony2InterfacesUtil {
             return false;
         }
 
-        PsiElement resolvedReference = methodRef.getReference().resolve();
+        PsiReference psiReference = methodRef.getReference();
+        if (null == psiReference) {
+            return false;
+        }
+
+        PsiElement resolvedReference = psiReference.resolve();
         if (!(resolvedReference instanceof Method)) {
             return false;
         }
