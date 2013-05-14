@@ -44,9 +44,7 @@ public class TranslationReference extends PsiReferenceBase<PsiElement> implement
         }
 
         // read translations;
-        // @TODO: move caching out of Symfony2ProjectComponent
-        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
-        TranslationStringMap map = symfony2ProjectComponent.getTranslationMap();
+        TranslationStringMap map = TranslationIndex.getInstance(getElement().getProject()).getTranslationMap();
         if(map == null) {
             return lookupElements.toArray();
         }

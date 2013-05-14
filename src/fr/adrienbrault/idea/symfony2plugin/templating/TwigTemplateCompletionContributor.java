@@ -6,6 +6,7 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import org.jetbrains.annotations.NotNull;
@@ -47,8 +48,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
 
-                    Symfony2ProjectComponent symfony2ProjectComponent = parameters.getPosition().getProject().getComponent(Symfony2ProjectComponent.class);
-                    TranslationStringMap map = symfony2ProjectComponent.getTranslationMap();
+                    TranslationStringMap map = TranslationIndex.getInstance(parameters.getPosition().getProject()).getTranslationMap();
                     if(map == null) {
                         return;
                     }

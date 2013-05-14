@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -66,29 +67,15 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         System.out.println("projectClosed");
     }
 
-    public TranslationStringMap getTranslationMap() {
+    @Nullable
+    public File getPathToProjectContainer() {
+        File projectContainer = new File(getPath(project, Settings.getInstance(project).pathToProjectContainer));
 
-        // we are using this until we have some better cache
-
-        File defaultServiceMapFilePath = new File(getPath(project, Settings.getInstance(project).pathToProjectContainer));
-
-        if (!defaultServiceMapFilePath.exists()) {
-            return new TranslationStringMap();
+        if (!projectContainer.exists()) {
+            return null;
         }
 
-        // root path of translation is our caching indicator
-        File translationRootPath = new File(defaultServiceMapFilePath.getParentFile().getPath() + "/translations");
-        if (!translationRootPath.exists()) {
-            return new TranslationStringMap();
-        }
-
-        Long translationModified = translationRootPath.lastModified();
-        if (translationModified.equals(translationStringMapModified)) {
-            return translationStringMap;
-        }
-
-        translationStringMapModified = translationModified;
-        return translationStringMap = new TranslationStringParser().parsePathMatcher(translationRootPath.getPath());
+        return projectContainer;
     }
 
     public ServiceMap getServicesMap() {
