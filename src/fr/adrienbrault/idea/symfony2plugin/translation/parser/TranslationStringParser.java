@@ -3,10 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,30 +11,29 @@ import java.util.regex.Pattern;
  */
 public class TranslationStringParser {
 
-    public TranslationStringMap parse(Path path) {
-
-        try {
-
-            DirectoryStream<Path> ds = Files.newDirectoryStream(path, "*.php");
-
-            // @TODO: which language is default?
-            for(Path p: ds) {
-                return this.parse(p.toString());
-            }
-
-        } catch (IOException e) {
-            return new TranslationStringMap();
-        }
-
-        return new TranslationStringMap();
-    }
-
     public TranslationStringMap parse(String file) {
         return this.parse(new File(file));
     }
 
     public TranslationStringMap parsePathMatcher(String path) {
-        return this.parse(Paths.get(path));
+
+        File file = new File(path);
+        File[] files = file.listFiles();
+
+        if(null == files) {
+            return new TranslationStringMap();
+        }
+
+        for (final File fileEntry : files) {
+            if (!fileEntry.isDirectory()) {
+                String fileName = fileEntry.getName();
+                if( null != fileName && fileName.endsWith("php")) {
+                    return this.parse(fileEntry);
+                }
+            }
+        }
+
+        return new TranslationStringMap();
     }
 
     @Nullable
