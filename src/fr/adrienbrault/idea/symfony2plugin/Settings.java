@@ -30,6 +30,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean objectRepositoryTypeProvider = false;
     public boolean objectRepositoryResultTypeProvider = false;
 
+    public int phpTypesLifetimeSec = 120;
+
     protected Project project;
 
     public static Settings getInstance(Project project) {

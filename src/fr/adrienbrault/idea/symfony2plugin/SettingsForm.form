@@ -22,6 +22,10 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -123,6 +127,34 @@
             </constraints>
             <properties>
               <text value="Container Service"/>
+            </properties>
+          </component>
+          <component id="45179" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Cache Lifetime (10-600 sec)"/>
+            </properties>
+          </component>
+          <component id="accce" class="javax.swing.JSlider" binding="phpTypesLifetimeSec">
+            <constraints>
+              <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+            <properties>
+              <inverted value="false"/>
+              <majorTickSpacing value="0"/>
+              <maximum value="600"/>
+              <minimum value="10"/>
+              <orientation value="0"/>
+              <paintLabels value="false"/>
+              <paintTicks value="false"/>
+              <paintTrack value="true"/>
+              <snapToTicks value="false"/>
+              <value value="180"/>
+              <valueIsAdjusting value="false"/>
             </properties>
           </component>
         </children>

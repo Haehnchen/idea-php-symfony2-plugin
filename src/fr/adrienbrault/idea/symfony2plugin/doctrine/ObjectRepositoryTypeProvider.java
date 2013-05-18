@@ -9,6 +9,8 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpTypeCache;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeCacheIndex;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -28,24 +30,29 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider {
             return null;
         }
 
+        PhpTypeCache cache = PhpTypeCacheIndex.getInstance(e.getProject(), ObjectRepositoryTypeProvider.class);
+        if(cache.hasSignature(e)) {
+            return cache.getSignatureCache(e);
+        }
+
         Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
         if (!interfacesUtil.isGetRepositoryCall(e)) {
-            return null;
+            return cache.addSignatureCache(e, null);
         }
 
         String repositoryName = Symfony2InterfacesUtil.getFirstArgumentStringValue((MethodReference) e);
         if (null == repositoryName) {
-            return null;
+            return cache.addSignatureCache(e, null);
         }
 
         // @TODO: parse xml or yml for repositoryClass?
         PhpClass phpClass = EntityHelper.resolveShortcutName(e.getProject(), repositoryName + "Repository");
 
         if(phpClass == null) {
-            return null;
+            return cache.addSignatureCache(e, null);
         }
 
-        return new PhpType().add(phpClass);
+        return cache.addSignatureCache(e, new PhpType().add(phpClass));
     }
 
 }

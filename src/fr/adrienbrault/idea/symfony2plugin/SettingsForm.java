@@ -31,6 +31,7 @@ public class SettingsForm implements Configurable {
 
     private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
     private JLabel typesLabel;
+    private JSlider phpTypesLifetimeSec;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -67,6 +68,7 @@ public class SettingsForm implements Configurable {
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
+            || phpTypesLifetimeSec.getValue() != getSettings().phpTypesLifetimeSec
         ;
     }
 
@@ -78,6 +80,8 @@ public class SettingsForm implements Configurable {
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
         getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
         getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
+
+        getSettings().phpTypesLifetimeSec = phpTypesLifetimeSec.getValue();
     }
 
     @Override
@@ -100,6 +104,8 @@ public class SettingsForm implements Configurable {
         symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
         objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
         objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
+
+        phpTypesLifetimeSec.setValue(getSettings().phpTypesLifetimeSec);
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField) {
