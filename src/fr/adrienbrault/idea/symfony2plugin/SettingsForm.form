@@ -22,6 +22,8 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -123,6 +125,30 @@
             </constraints>
             <properties>
               <text value="Container Service"/>
+            </properties>
+          </component>
+          <component id="45179" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Cache Lifetime (sec) [10...600]"/>
+            </properties>
+          </component>
+          <component id="8cbb" class="javax.swing.JTextField" binding="phpTypesLifetimeSec">
+            <constraints>
+              <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+            <properties>
+              <columns value="4"/>
+              <editable value="true"/>
+              <enabled value="true"/>
+              <horizontalAlignment value="4"/>
+              <text value="120"/>
             </properties>
           </component>
         </children>

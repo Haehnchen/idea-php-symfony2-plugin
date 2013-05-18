@@ -31,6 +31,7 @@ public class SettingsForm implements Configurable {
 
     private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
     private JLabel typesLabel;
+    private JTextField phpTypesLifetimeSec;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -67,6 +68,7 @@ public class SettingsForm implements Configurable {
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
+            || this.getPhpTypesLifetimeSec() != getSettings().phpTypesLifetimeSec
         ;
     }
 
@@ -78,6 +80,8 @@ public class SettingsForm implements Configurable {
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
         getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
         getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
+
+        getSettings().phpTypesLifetimeSec = this.getPhpTypesLifetimeSec();
     }
 
     @Override
@@ -100,6 +104,21 @@ public class SettingsForm implements Configurable {
         symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
         objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
         objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
+
+        phpTypesLifetimeSec.setText(Integer.toString(getSettings().phpTypesLifetimeSec));
+    }
+
+    private int getPhpTypesLifetimeSec() {
+        String stringValue = this.phpTypesLifetimeSec.getText();
+        int oldValue = getSettings().phpTypesLifetimeSec;
+        int newValue = oldValue;
+        try {
+            newValue = Integer.parseInt(stringValue);
+        } catch (NumberFormatException nfe){
+
+        }
+        if ((newValue < 10) || (newValue > 600)) return oldValue;
+        return newValue;
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField) {

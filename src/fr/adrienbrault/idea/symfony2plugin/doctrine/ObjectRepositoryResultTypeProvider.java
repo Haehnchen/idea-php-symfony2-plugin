@@ -10,6 +10,8 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpTypeCache;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeCacheIndex;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -53,30 +55,34 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider {
             return null;
         }
 
+        PhpTypeCache cache = PhpTypeCacheIndex.getInstance(e.getProject(), ObjectRepositoryResultTypeProvider.class);
+        if(cache.hasSignature(e)) {
+            return cache.getSignatureCache(e);
+        }
+
         Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
         if (!interfacesUtil.isObjectRepositoryCall(e)) {
-            return null;
+            return cache.addSignatureCache(e, null);
         }
 
         // @TODO: find the previously defined type instead of try it on the parameter, we now can rely on it!
         // find the called repository name on method before
         if(!(methodRef.getFirstChild() instanceof MethodReference)) {
-            return null;
+            return cache.addSignatureCache(e, null);
         }
 
         String repositoryName = Symfony2InterfacesUtil.getFirstArgumentStringValue((MethodReference) methodRef.getFirstChild());
         PhpClass phpClass = EntityHelper.resolveShortcutName(e.getProject(), repositoryName);
 
         if(phpClass == null) {
-            return null;
+            return cache.addSignatureCache(e, null);
         }
-
 
         if(methodRefName.equals("findAll") || methodRefName.equals("findBy")) {
-            return new PhpType().add(phpClass.getFQN() + "[]");
+            return cache.addSignatureCache(e, new PhpType().add(phpClass.getFQN() + "[]"));
         }
 
-        return new PhpType().add(phpClass);
+        return cache.addSignatureCache(e, new PhpType().add(phpClass));
     }
 
 }
