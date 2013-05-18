@@ -24,8 +24,6 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -135,26 +133,22 @@
               <forms/>
             </constraints>
             <properties>
-              <text value="Cache Lifetime (10-600 sec)"/>
+              <text value="Cache Lifetime (sec) [10...600]"/>
             </properties>
           </component>
-          <component id="accce" class="javax.swing.JSlider" binding="phpTypesLifetimeSec">
+          <component id="8cbb" class="javax.swing.JTextField" binding="phpTypesLifetimeSec">
             <constraints>
-              <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
               <forms defaultalign-horz="false"/>
             </constraints>
             <properties>
-              <inverted value="false"/>
-              <majorTickSpacing value="0"/>
-              <maximum value="600"/>
-              <minimum value="10"/>
-              <orientation value="0"/>
-              <paintLabels value="false"/>
-              <paintTicks value="false"/>
-              <paintTrack value="true"/>
-              <snapToTicks value="false"/>
-              <value value="180"/>
-              <valueIsAdjusting value="false"/>
+              <columns value="4"/>
+              <editable value="true"/>
+              <enabled value="true"/>
+              <horizontalAlignment value="4"/>
+              <text value="120"/>
             </properties>
           </component>
         </children>
