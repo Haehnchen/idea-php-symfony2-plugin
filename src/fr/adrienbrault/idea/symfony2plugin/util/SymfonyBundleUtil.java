@@ -1,11 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 
 import java.util.Collection;
 import java.util.HashMap;
+
+import org.jetbrains.annotations.Nullable;
 
 public class SymfonyBundleUtil {
 
@@ -30,6 +33,30 @@ public class SymfonyBundleUtil {
 
     public Collection<SymfonyBundle> getBundles() {
         return this.symfonyBundles.values();
+    }
+
+    @Nullable
+    public SymfonyBundle getContainingBundle(PhpClass phpClass) {
+
+        for(SymfonyBundle bundle : this.getBundles()) {
+            if(bundle.isInBundle(phpClass)) {
+                return bundle;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public SymfonyBundle getContainingBundle(PsiFile psiFile) {
+
+        for(SymfonyBundle bundle : this.getBundles()) {
+            if(bundle.isInBundle(psiFile)) {
+                return bundle;
+            }
+        }
+
+        return null;
     }
 
 }
