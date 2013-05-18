@@ -29,8 +29,10 @@ public class PhpTypeCacheIndex {
             projectInstance.put(object, projectPhpTypeInstance);
         }
 
-        if(projectPhpTypeInstance.getLastCacheClear() < System.currentTimeMillis() - 1000 * Settings.getInstance(project).phpTypesLifetimeSec) {
-            projectPhpTypeInstance.clear();
+        // cache hit expire check should run twice in the configured cache lifetime
+        Integer expiredDiff = 1000 * Settings.getInstance(project).phpTypesLifetimeSec;
+        if(projectPhpTypeInstance.getLastCacheHitCheckTime() < System.currentTimeMillis() - expiredDiff / 2) {
+            projectPhpTypeInstance.removeExpiredTypes(System.currentTimeMillis() - expiredDiff);
         }
 
         return projectPhpTypeInstance;

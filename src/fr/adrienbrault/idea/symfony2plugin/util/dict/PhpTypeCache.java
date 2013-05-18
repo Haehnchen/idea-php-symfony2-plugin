@@ -6,6 +6,7 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -13,10 +14,11 @@ import java.util.HashMap;
 public class PhpTypeCache {
 
     private HashMap<Integer, PhpType> phpTypes = new HashMap<Integer, PhpType>();
-    private long lastCacheClear;
+    private HashMap<Integer, Long> lastCacheHit = new HashMap<Integer, Long>();
+    private long lastCacheHitCheckTime;
 
     public PhpTypeCache() {
-        this.lastCacheClear = System.currentTimeMillis();
+        this.lastCacheHitCheckTime = System.currentTimeMillis();
     }
 
     public boolean hasSignature(Integer signature) {
@@ -33,6 +35,7 @@ public class PhpTypeCache {
 
     @Nullable
     public PhpType getSignatureCache(Integer signature) {
+        this.lastCacheHit.put(signature, System.currentTimeMillis());
         return this.phpTypes.get(signature);
     }
 
@@ -51,6 +54,7 @@ public class PhpTypeCache {
     }
 
     public void setSignatureCache(MethodReference methodReference, PhpType phpType) {
+        this.lastCacheHit.put(methodReference.hashCode(), System.currentTimeMillis());
         this.phpTypes.put(methodReference.hashCode(), phpType);
     }
 
@@ -72,13 +76,19 @@ public class PhpTypeCache {
         return this.phpTypes;
     }
 
-    public long getLastCacheClear() {
-        return this.lastCacheClear;
+    public long getLastCacheHitCheckTime() {
+        return this.lastCacheHitCheckTime;
     }
 
-    public void clear() {
-        this.phpTypes.clear();
-        this.lastCacheClear = System.currentTimeMillis();
+    public void removeExpiredTypes(Long expiredTime) {
+
+        for(Map.Entry<Integer, Long> entrySet: this.lastCacheHit.entrySet()) {
+            if(entrySet.getValue() < expiredTime) {
+                this.phpTypes.remove(entrySet.getKey());
+            }
+        }
+
+        this.lastCacheHitCheckTime = System.currentTimeMillis();
     }
 
 }
