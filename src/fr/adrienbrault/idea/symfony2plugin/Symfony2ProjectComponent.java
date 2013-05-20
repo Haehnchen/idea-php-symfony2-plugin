@@ -8,8 +8,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeMap;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -20,7 +18,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,34 +139,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         this.routesLastModified = routesLastModified;
 
         return routes;
-    }
-
-
-    private FormTypeMap formTypesMap;
-    private Long formTypesMapLastModified;
-    public FormTypeMap getFormTypeMap() {
-
-        String defaultServiceMapFilePath = getPath(project, Settings.getInstance(project).pathToProjectContainer);
-
-        File xmlFile = new File(defaultServiceMapFilePath);
-        if (!xmlFile.exists()) {
-            return new FormTypeMap();
-        }
-
-        Long xmlFileLastModified = xmlFile.lastModified();
-        if (xmlFileLastModified.equals(formTypesMapLastModified)) {
-            return formTypesMap;
-        }
-
-        formTypesMapLastModified = xmlFileLastModified;
-
-        try {
-            FormTypeParser parser = new FormTypeParser();
-            return formTypesMap = parser.parse(xmlFile);
-        } catch (Exception ignored) {
-            return formTypesMap = new FormTypeMap();
-        }
-
     }
 
     @SuppressWarnings("unchecked")
