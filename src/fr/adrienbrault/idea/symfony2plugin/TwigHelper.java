@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
@@ -8,14 +10,11 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.FileTypeIndex;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.*;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,63 +23,56 @@ import java.util.Map;
  */
 public class TwigHelper {
 
-    public static Map<String, TwigFile> getTwigFilesByName(Project project) {
+    public static Map<String, TwigFile> getTwigFilesByName(final Project project) {
+
         PhpIndex phpIndex = PhpIndex.getInstance(project);
-        FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
-        Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
+        final Map<String, TwigFile> results = new HashMap<String, TwigFile>();
 
-        Map<String, PsiDirectory> bundlesDirectories = new HashMap<String, PsiDirectory>();
-        for (PhpClass phpClass : phpClasses) {
-            bundlesDirectories.put(phpClass.getName(), phpClass.getContainingFile().getContainingDirectory());
-        }
+        for (final SymfonyBundle bundle : new SymfonyBundleUtil(phpIndex).getBundles()) {
 
-        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
-
-        Collection<VirtualFile> twigVirtualFiles = fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, TwigFileType.INSTANCE, GlobalSearchScope.projectScope(project));
-        Map<String, TwigFile> results = new HashMap<String, TwigFile>();
-        for (VirtualFile twigVirtualFile : twigVirtualFiles) {
-
-            if (null != globalDirectory && VfsUtil.isAncestor(globalDirectory, twigVirtualFile, false)) {
-                String templatePath = VfsUtil.getRelativePath(twigVirtualFile, globalDirectory, '/');
-                String templateDeep = "";
-                if (null != templatePath && templatePath.contains("/")) {
-                    templateDeep = templatePath.substring(0, templatePath.lastIndexOf("/"));
-                }
-                TwigFile twigFile = (TwigFile) PsiManager.getInstance(project).findFile(twigVirtualFile);
-                results.put(":" + templateDeep + ":" + twigVirtualFile.getName(), twigFile);
-
+            final PsiDirectory views = bundle.getSubDirectory("Resources", "views");
+            if(null == views) {
                 continue;
             }
 
-            // Find in which bundle it is
-            for (Map.Entry<String, PsiDirectory> pair : bundlesDirectories.entrySet()) {
-                if (!VfsUtil.isAncestor((pair.getValue()).getVirtualFile(), twigVirtualFile, false)) {
-                    continue;
+            // dont give use all files:
+            // Collection<VirtualFile> twigVirtualFiles = FileTypeIndex.getFiles(TwigFileType.INSTANCE, GlobalSearchScopes.directoryScope(views, true));
+
+            ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
+            fileIndex.iterateContentUnderDirectory(views.getVirtualFile(), new ContentIterator() {
+                @Override
+                public boolean processFile(final VirtualFile virtualFile) {
+
+                    if(!(virtualFile.getFileType() instanceof TwigFileType)) {
+                      return true;
+                    }
+
+                    String templatePath = VfsUtil.getRelativePath(virtualFile, views.getVirtualFile(), '/');
+                    if(null == templatePath) {
+                        return true;
+                    }
+
+                    String templateDirectory = null; // xxx:XXX:xxx
+                    String templateFile = null; // xxx:xxx:XXX
+
+                    if (templatePath.contains("/")) {
+                        int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
+                        templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
+                        templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
+                    } else {
+                        templateDirectory = "";
+                        templateFile = templatePath;
+                    }
+
+                    String templateFinalName = bundle.getName() + ":" + templateDirectory + ":" + templateFile;
+
+                    TwigFile twigFile = (TwigFile) PsiManager.getInstance(project).findFile(virtualFile);
+                    results.put(templateFinalName, twigFile);
+
+                    return true;
                 }
+            });
 
-                String bundleName = pair.getKey(); // XXX:xxx:xxx
-                String templatePath = VfsUtil.getRelativePath(twigVirtualFile, (pair.getValue()).getVirtualFile(), '/'); // Resources/views/xxx.twig
-                if (null == templatePath || !templatePath.startsWith("Resources/views")) {
-                    continue;
-                }
-
-                templatePath = templatePath.substring("Resources/views/".length()); // xxx.twig
-                String templateDirectory = null; // xxx:XXX:xxx
-                String templateFile = null; // xxx:xxx:XXX
-                if (templatePath.contains("/")) {
-                    int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
-                    templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
-                    templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
-                } else {
-                    templateDirectory = "";
-                    templateFile = templatePath;
-                }
-
-                String templateFinalName = bundleName + ":" + templateDirectory + ":" + templateFile;
-                TwigFile twigFile = (TwigFile) PsiManager.getInstance(project).findFile(twigVirtualFile);
-
-                results.put(templateFinalName, twigFile);
-            }
         }
 
         return results;
