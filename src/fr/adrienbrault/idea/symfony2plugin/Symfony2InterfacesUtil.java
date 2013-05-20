@@ -70,6 +70,13 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isFormBuilderFormTypeCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "add"),
+                getClassMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
+        });
+    }
+
     protected boolean isCallTo(PsiElement e, Method expectedMethod) {
         return isCallTo(e, new Method[] { expectedMethod });
     }

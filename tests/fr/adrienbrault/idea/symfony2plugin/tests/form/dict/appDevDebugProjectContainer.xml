@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+  <services>
+    <service id="form.registry" class="Symfony\Component\Form\FormRegistry">
+      <argument type="collection">
+        <argument type="service">
+          <service class="Symfony\Component\Form\Extension\DependencyInjection\DependencyInjectionExtension" public="false">
+            <argument type="service" id="service_container"/>
+            <argument type="collection">
+              <argument key="field">form.type.field</argument>
+              <argument key="form">form.type.form</argument>
+              <argument key="birthday">form.type.birthday</argument>
+              <argument key="checkbox">form.type.checkbox</argument>
+              <argument key="choice">form.type.choice</argument>
+              <argument key="collection">form.type.collection</argument>
+              <argument key="country">form.type.country</argument>
+              <argument key="date">form.type.date</argument>
+              <argument key="datetime">form.type.datetime</argument>
+              <argument key="email">form.type.email</argument>
+              <argument key="file">form.type.file</argument>
+              <argument key="hidden">form.type.hidden</argument>
+              <argument key="integer">form.type.integer</argument>
+              <argument key="language">form.type.language</argument>
+              <argument key="locale">form.type.locale</argument>
+              <argument key="money">form.type.money</argument>
+              <argument key="number">form.type.number</argument>
+              <argument key="password">form.type.password</argument>
+              <argument key="percent">form.type.percent</argument>
+              <argument key="radio">form.type.radio</argument>
+              <argument key="repeated">form.type.repeated</argument>
+              <argument key="search">form.type.search</argument>
+              <argument key="textarea">form.type.textarea</argument>
+              <argument key="text">form.type.text</argument>
+              <argument key="time">form.type.time</argument>
+              <argument key="timezone">form.type.timezone</argument>
+              <argument key="url">form.type.url</argument>
+              <argument key="entity">form.type.entity</argument>
+            </argument>
+            <argument type="collection">
+              <argument key="form" type="collection">
+                <argument>form.type_extension.form.http_foundation</argument>
+                <argument>form.type_extension.form.validator</argument>
+                <argument>form.type_extension.csrf</argument>
+                <argument>mopa.form.help_extension</argument>
+                <argument>mopa.form.legend_extension</argument>
+                <argument>mopa.form.error_type_extension</argument>
+                <argument>mopa.form.widget_extension</argument>
+                <argument>mopa.form.widget_collection_extension</argument>
+              </argument>
+              <argument key="repeated" type="collection">
+                <argument>form.type_extension.repeated.validator</argument>
+              </argument>
+              <argument key="date" type="collection">
+                <argument>mopa.form.date_extension</argument>
+              </argument>
+            </argument>
+            <argument type="collection">
+              <argument>form.type_guesser.validator</argument>
+              <argument>form.type_guesser.doctrine</argument>
+            </argument>
+          </service>
+        </argument>
+      </argument>
+      <argument type="service" id="form.resolved_type_factory"/>
+    </service>
+  </services>
+</container>

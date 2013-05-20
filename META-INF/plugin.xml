@@ -156,6 +156,7 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor"/>
     </extensions>
 
     <depends>com.jetbrains.php</depends>
