@@ -26,14 +26,14 @@ import java.util.Set;
 public class AnnotationCompletionContributor extends CompletionContributor {
     public AnnotationCompletionContributor() {
 
-        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\OneToOne"), new AnnotationCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToOne)));
-        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\OneToMany"), new AnnotationCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToMany)));
-        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\ManyToOne"), new AnnotationCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToOne)));
-        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\ManyToMany"), new AnnotationCompletionProvider(DoctrineStaticTypeLookupBuilder.getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
+        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\OneToOne"), new AnnotationCompletionProvider(new DoctrineStaticTypeLookupBuilder(DoctrineStaticTypeLookupBuilder.InsertHandler.Annotations).getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToOne)));
+        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\OneToMany"), new AnnotationCompletionProvider(new DoctrineStaticTypeLookupBuilder(DoctrineStaticTypeLookupBuilder.InsertHandler.Annotations).getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToMany)));
+        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\ManyToOne"), new AnnotationCompletionProvider( new DoctrineStaticTypeLookupBuilder(DoctrineStaticTypeLookupBuilder.InsertHandler.Annotations).getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToOne)));
+        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\ManyToMany"), new AnnotationCompletionProvider(new DoctrineStaticTypeLookupBuilder(DoctrineStaticTypeLookupBuilder.InsertHandler.Annotations).getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
 
-        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\Column"), new AnnotationCompletionProvider(DoctrineStaticTypeLookupBuilder.getPropertyMappings()));
+        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getTextIdentifier("@ORM\\Column"), new AnnotationCompletionProvider(new DoctrineStaticTypeLookupBuilder(DoctrineStaticTypeLookupBuilder.InsertHandler.Annotations).getPropertyMappings()));
 
-        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getOrmProperties(), new AnnotationCompletionProvider(DoctrineStaticTypeLookupBuilder.getOrmFieldAnnotations()));
+        extend(CompletionType.BASIC, AnnotationElementPatternHelper.getOrmProperties(), new AnnotationCompletionProvider(new DoctrineStaticTypeLookupBuilder(DoctrineStaticTypeLookupBuilder.InsertHandler.Annotations).getOrmFieldAnnotations()));
 
 
         // adding @Annotation(<values>)
