@@ -65,7 +65,7 @@ public class TranslationGoToDeclarationHandler implements GotoDeclarationHandler
 
         ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), DomainMappings.class);
 
-        Collection domains = xmlParser.parser();
+        Object domains = xmlParser.parser();
         if(domains == null || !(domains instanceof ArrayList)) {
             return new PsiElement[0];
         }

@@ -6,5 +6,5 @@ import java.util.Collection;
 
 public interface ServiceParserInterface {
     public String getXPathFilter();
-    public ArrayList parser(File file);
+    public Object parser(File file);
 }

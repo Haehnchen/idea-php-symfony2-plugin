@@ -15,7 +15,7 @@ public class ServiceXmlParserFactory implements ServiceFileInterface {
     protected ServiceParserInterface serviceParser;
 
     protected Long lastUpdate;
-    protected Collection items;
+    protected Object items;
 
     public ServiceXmlParserFactory(Project project, Class serviceParser) {
         this.project = project;
@@ -29,7 +29,7 @@ public class ServiceXmlParserFactory implements ServiceFileInterface {
     }
 
     @Nullable
-    public Collection parser() {
+    public Object parser() {
 
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
