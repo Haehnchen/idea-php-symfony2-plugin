@@ -7,9 +7,9 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +66,18 @@ public class PhpElementsUtil {
         String methodRefName = ((MethodReference) psiElement).getName();
 
         return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
+    }
+
+    @Nullable
+    static public PhpClass getClass(PhpIndex phpIndex, String className) {
+        Collection<PhpClass> classes = phpIndex.getClassesByFQN(className);
+        return classes.isEmpty() ? null : classes.iterator().next();
+    }
+
+    @Nullable
+    static public PhpClass getInterface(PhpIndex phpIndex, String className) {
+        Collection<PhpClass> classes = phpIndex.getInterfacesByFQN(className);
+        return classes.isEmpty() ? null : classes.iterator().next();
     }
 
 

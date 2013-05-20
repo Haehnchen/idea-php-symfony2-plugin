@@ -12,6 +12,14 @@ public class SymfonyBundle {
         this.phpClass = phpClass;
     }
 
+    public PhpClass getPhpClass() {
+       return this.phpClass;
+    }
+
+    public String getNamespaceName() {
+        return this.phpClass.getNamespaceName();
+    }
+
     public String getName() {
         return this.phpClass.getName();
     }
@@ -28,6 +36,10 @@ public class SymfonyBundle {
         }
 
         return bundleDirectory;
+    }
+
+    public boolean isInBundle(PhpClass phpClass) {
+        return phpClass.getNamespaceName().startsWith(this.phpClass.getNamespaceName());
     }
 
 }

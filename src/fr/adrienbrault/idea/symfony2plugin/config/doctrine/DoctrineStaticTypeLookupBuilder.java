@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationMethodInsertHandler;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationTagInsertHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +55,7 @@ public class DoctrineStaticTypeLookupBuilder {
     }
 
     public static ArrayList<LookupElement> getOrmFieldAnnotations() {
-        return ListToElements(Arrays.asList("@ORM\\@Column", "@ORM\\GeneratedValue", "@ORM\\UniqueConstraint", "@ORM\\Id", "@ORM\\JoinTable", "@ORM\\ManyToOne", "@ORM\\ManyToMany", "@ORM\\OneToOne", "@ORM\\OneToMany"));
+        return ListToElements(Arrays.asList("@ORM\\Column", "@ORM\\GeneratedValue", "@ORM\\UniqueConstraint", "@ORM\\Id", "@ORM\\JoinTable", "@ORM\\ManyToOne", "@ORM\\ManyToMany", "@ORM\\OneToOne", "@ORM\\OneToMany"));
     }
 
     public static ArrayList<LookupElement> getPropertyMappings() {
@@ -64,8 +66,13 @@ public class DoctrineStaticTypeLookupBuilder {
 
         ArrayList<LookupElement> lookups = new ArrayList<LookupElement>();
 
-        for (String answer : items) {
-            lookups.add(new DoctrineTypeLookup(answer));
+        for (String item : items) {
+            if(item.startsWith("@")) {
+                lookups.add(new DoctrineTypeLookup(item, AnnotationTagInsertHandler.getInstance()));
+            } else {
+                lookups.add(new DoctrineTypeLookup(item, AnnotationMethodInsertHandler.getInstance()));
+            }
+
         }
 
         return lookups;
