@@ -82,8 +82,6 @@ public class SymfonyBundle {
         return GlobalSearchScopes.directoryScope(currentDir, true);
     }
 
-
-}
     public boolean isInBundle(PhpClass phpClass) {
         return phpClass.getNamespaceName().startsWith(this.phpClass.getNamespaceName());
     }
