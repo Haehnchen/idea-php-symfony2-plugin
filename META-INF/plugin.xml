@@ -133,6 +133,7 @@
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServiceReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineEntityReferenceContributor"/>
         <!--<psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateReferenceContributor"/>-->

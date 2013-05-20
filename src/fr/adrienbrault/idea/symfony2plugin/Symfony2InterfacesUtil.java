@@ -48,6 +48,12 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isTranslatorCall(PsiElement e) {
+        return isCallTo(e, new Method[] {
+                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
+        });
+    }
+
     public boolean isGetRepositoryCall(PsiElement e) {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),

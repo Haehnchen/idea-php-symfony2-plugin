@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -65,6 +66,17 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public void projectClosed() {
         System.out.println("projectClosed");
+    }
+
+    @Nullable
+    public File getPathToProjectContainer() {
+        File projectContainer = new File(getPath(project, Settings.getInstance(project).pathToProjectContainer));
+
+        if (!projectContainer.exists()) {
+            return null;
+        }
+
+        return projectContainer;
     }
 
     public ServiceMap getServicesMap() {
