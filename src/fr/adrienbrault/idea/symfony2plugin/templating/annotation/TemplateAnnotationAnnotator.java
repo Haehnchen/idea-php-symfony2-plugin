@@ -64,7 +64,6 @@ public class TemplateAnnotationAnnotator implements Annotator {
                 return;
             }
 
-            System.out.println(shortcutName);
             Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(element.getProject());
             TwigFile twigFile = twigFilesByName.get(shortcutName);
 
