@@ -1,14 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -66,6 +70,21 @@ public class PhpElementsUtil {
         String methodRefName = ((MethodReference) psiElement).getName();
 
         return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
+    }
+
+    static public PsiElementPattern.Capture<StringLiteralExpression> methodWithFirstStringPattern() {
+        return PlatformPatterns
+            .psiElement(StringLiteralExpression.class)
+            .withParent(
+                PlatformPatterns.psiElement(PhpElementTypes.PARAMETER_LIST)
+                    .withFirstChild(
+                        PlatformPatterns.psiElement(PhpElementTypes.STRING)
+                    )
+                    .withParent(
+                        PlatformPatterns.psiElement(PhpElementTypes.METHOD_REFERENCE)
+                    )
+            )
+            .withLanguage(PhpLanguage.INSTANCE);
     }
 
     @Nullable
