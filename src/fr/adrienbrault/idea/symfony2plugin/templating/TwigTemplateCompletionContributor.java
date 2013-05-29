@@ -4,8 +4,10 @@ import com.intellij.codeInsight.completion.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
@@ -84,6 +86,25 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }
 
+        );
+
+        // provides support for {% block |
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getAutocompletableBlockPattern(),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+                    ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
+                    for (TwigBlock block : blocks) {
+                        resultSet.addElement(new TwigBlockLookupElement(block));
+                    }
+
+                }
+            }
         );
 
     }

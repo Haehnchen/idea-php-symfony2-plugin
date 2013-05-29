@@ -6,8 +6,11 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -18,6 +21,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
+
+        if (!TwigHelper.getGoToBlockPattern().accepts(psiElement)) {
+            return this.getBlockGoTo(psiElement);
+        }
+
         if (!TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)) {
             return null;
         }
@@ -30,6 +38,20 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return new PsiElement[] { twigFile };
+    }
+
+    private PsiElement[] getBlockGoTo(PsiElement psiElement) {
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
+        ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(psiElement.getContainingFile());
+
+        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+        for (TwigBlock block : blocks) {
+            if(block.getName().contains(psiElement.getText())) {
+                psiElements.add(block.getPsiFile());
+            }
+        }
+
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
     @Nullable

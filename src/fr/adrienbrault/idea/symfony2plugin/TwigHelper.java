@@ -114,6 +114,27 @@ public class TwigHelper {
         return results;
     }
 
+    public static ElementPattern<PsiElement> getAutocompletableBlockPattern() {
+        return PlatformPatterns
+            .psiElement().withParent(
+                PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG).withText(
+                    PlatformPatterns.string().startsWith("{% block")
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getGoToBlockPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG).withText(
+                    PlatformPatterns.string().startsWith("{% block")
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getAutocompletableTemplatePattern() {
         return PlatformPatterns.or(
             PlatformPatterns
