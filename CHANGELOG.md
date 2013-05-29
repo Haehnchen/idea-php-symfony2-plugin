@@ -1,6 +1,18 @@
 Changelog
 =========
 
+### 0.9.1
+
+* Temporary PhpTypes cache which reduce ide freeze (until fixed on JetBrains side)
+* Add PhpTypes cache lifetime settings
+* Add some more Annotation support
+* Add Annotator and Action to create twig file directly on @Template clicking
+* Autocomplete for FormTypes in FormBuilder
+* Autocomplete of classes in yaml and xml
+* Autocomplete for translation in trans twig and translate php
+* Optimize twig templates searching, which sometimes generated outdated listing
+* Auto use import of some supported Annotation
+
 ### 0.9.0
 
 * Support app level twig templates (::layout.html.twig)

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -39,6 +39,8 @@
     <li>Go to assets file in twig asset()/{% javascript/{% stylesheets</li>
     <li>Autocomplete twig files in @Template annotations</li>
     <li>Go to twig file on @Template annotation</li>
+    <li>Autocomplete for translation in trans</li>
+    <li>Action for @Template</li>
 </ul>
 
 
@@ -48,8 +50,17 @@
     <li>Autocomplete route name in twig templates</li>
 </ul>
 
+<h3>Other</h3>
+<ul>
+    <li>Autocomplete for translation in trans twig and translate php</li>
+    <li>FormTypes in FormBuilder</li>
+    <li>PHP Class Autocomplete in yaml and xml</li>
+    <li>Some basic Annotation support</li>
+</ul>
+
 <h2>Notes</h2>
 <ul>
+    <li>Play with PhpTypes lifetime cache on freeze</li>
     <li>To trigger the autocompletion, press CTRL + SPACE.</li>
     <li>Set the type of "classes.php" to text resolved some autocomplete issues for me.</li>
 </ul>
@@ -63,6 +74,19 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.9.1</h2>
+<ul>
+    <li>Temporary PhpTypes cache which reduce ide freeze (until fixed on JetBrains side)</li>
+    <li>Add PhpTypes cache lifetime settings</li>
+    <li>Add some more Annotation support</li>
+    <li>Add Annotator and Action to create twig file directly on @Template clicking</li>
+    <li>Autocomplete for FormTypes in FormBuilder</li>
+    <li>Autocomplete of classes in yaml and xml</li>
+    <li>Autocomplete for translation in trans twig and translate php</li>
+    <li>Optimize twig templates searching, which sometimes generated outdated listing</li>
+    <li>Auto use import of some supported Annotation</li>
+</ul>
+
 <h2>0.9.0</h2>
 <ul>
     <li>Support app level twig templates (::layout.html.twig)</li>
