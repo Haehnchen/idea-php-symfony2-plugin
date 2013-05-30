@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -46,8 +47,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
         for (TwigBlock block : blocks) {
-            if(block.getName().contains(psiElement.getText())) {
-                psiElements.add(block.getPsiFile());
+            if(block.getName().equals(psiElement.getText())) {
+                Collections.addAll(psiElements, block.getBlock());
             }
         }
 

@@ -99,8 +99,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
                     ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
+                    ArrayList<String> uniqueList = new ArrayList<String>();
                     for (TwigBlock block : blocks) {
-                        resultSet.addElement(new TwigBlockLookupElement(block));
+                        if(!uniqueList.contains(block.getName())) {
+                            uniqueList.add(block.getName());
+                            resultSet.addElement(new TwigBlockLookupElement(block));
+                        }
                     }
 
                 }
