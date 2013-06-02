@@ -14,6 +14,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -114,6 +115,25 @@ public class TwigHelper {
         return results;
     }
 
+
+    @Nullable
+    public static String getTwigMethodString(@Nullable PsiElement transPsiElement) {
+        if (transPsiElement == null) return null;
+
+        ElementPattern<PsiElement> pattern = PlatformPatterns.psiElement(TwigTokenTypes.RBRACE);
+
+        String currentText = transPsiElement.getText();
+        for (PsiElement child = transPsiElement.getNextSibling(); child != null; child = child.getNextSibling()) {
+            currentText = currentText + child.getText();
+            if (pattern.accepts(child)) {
+                //noinspection unchecked
+                return currentText;
+            }
+        }
+
+        return null;
+    }
+
     public static ElementPattern<PsiElement> getAutocompletableBlockPattern() {
         return PlatformPatterns
             .psiElement().withParent(
@@ -131,6 +151,15 @@ public class TwigHelper {
                 PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG).withText(
                     PlatformPatterns.string().startsWith("{% block")
                 )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getTransDomainPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK).withText(PlatformPatterns.string().contains("trans"))
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }

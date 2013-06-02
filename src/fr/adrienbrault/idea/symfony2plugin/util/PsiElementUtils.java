@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
@@ -68,5 +69,29 @@ public class PsiElementUtils {
         return getCurrentParameterIndex(parameterList.getParameters(), psiElement);
     }
 
+
+    @Nullable
+    public static <T extends PsiElement> T getNextSiblingOfType(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {
+        if (sibling == null) return null;
+        for (PsiElement child = sibling.getNextSibling(); child != null; child = child.getNextSibling()) {
+            if (pattern.accepts(child)) {
+                //noinspection unchecked
+                return (T)child;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static <T extends PsiElement> T getPrevSiblingOfType(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {
+        if (sibling == null) return null;
+        for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
+            if (pattern.accepts(child)) {
+                //noinspection unchecked
+                return (T)child;
+            }
+        }
+        return null;
+    }
 
 }
