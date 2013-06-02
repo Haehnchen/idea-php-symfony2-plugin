@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +15,7 @@ public class ParameterLookupElement extends LookupElement {
 
     private String parameterKey;
     private String parameterValue;
+    private PsiElement psiElement;
     private InsertHandler<LookupElement> insertHandler = null;
 
     public ParameterLookupElement(String parameterKey, String parameterValue) {
@@ -21,9 +23,16 @@ public class ParameterLookupElement extends LookupElement {
         this.parameterValue = parameterValue;
     }
 
-    public ParameterLookupElement(String name, String value, InsertHandler<LookupElement> insertHandler) {
+    public ParameterLookupElement(String name, String value, InsertHandler<LookupElement> insertHandler, PsiElement psiElement) {
         this(name, value);
         this.insertHandler = insertHandler;
+        this.psiElement = psiElement;
+    }
+
+    @NotNull
+    @Override
+    public Object getObject() {
+        return this.psiElement;
     }
 
     public void handleInsert(InsertionContext context) {

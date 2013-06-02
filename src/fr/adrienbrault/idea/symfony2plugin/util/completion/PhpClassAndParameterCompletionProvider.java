@@ -31,7 +31,7 @@ public class PhpClassAndParameterCompletionProvider extends CompletionProvider<C
         for(Map.Entry<String, String> Entry: configParameters.entrySet()) {
             // some better class filter
             if(Entry.getValue().contains("\\")) {
-                resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance()));
+                resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), parameters.getOriginalPosition()));
             }
         }
 

@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
@@ -64,7 +65,7 @@ public class YamlCompletionContributor extends CompletionContributor {
                     Map<String, String> it = symfony2ProjectComponent.getConfigParameter();
 
                     for(Map.Entry<String, String> Entry: it.entrySet()) {
-                        resultSet.addElement(new ServiceStringLookupElement(Entry.getKey(), Entry.getValue()));
+                        resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), element));
                     }
 
                 }
