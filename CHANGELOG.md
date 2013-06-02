@@ -1,6 +1,15 @@
 Changelog
 =========
 
+### 0.9.2
+
+* Autocomplete for twig blocks
+* Go to for extended twig block
+* Some twig translation fixes
+* Yaml: Php class completion for service parameter ending with .class
+* Yaml: Php class completion list service class parameter
+
+
 ### 0.9.1
 
 * Temporary PhpTypes cache which reduce ide freeze (until fixed on JetBrains side)

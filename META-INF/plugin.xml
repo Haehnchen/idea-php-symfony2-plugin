@@ -41,6 +41,7 @@
     <li>Go to twig file on @Template annotation</li>
     <li>Autocomplete for translation in trans</li>
     <li>Action for @Template</li>
+    <li>Autocomplete and go to for block tag</li>
 </ul>
 
 
