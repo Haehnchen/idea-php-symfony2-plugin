@@ -81,7 +81,7 @@
     <li>Go to for extended twig blocks</li>
     <li>Some twig translation fixes</li>
     <li>Yaml: Php class completion for service parameter ending with .class</li>
-    <li>aml: Php class completion list service class parameter</li>
+    <li>Yaml: Php class completion list service class parameter</li>
 </ul>
 
 <h2>0.9.1</h2>
