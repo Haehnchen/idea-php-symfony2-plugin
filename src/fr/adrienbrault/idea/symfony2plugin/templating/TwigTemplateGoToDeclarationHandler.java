@@ -23,14 +23,18 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
-        if (!TwigHelper.getGoToBlockPattern().accepts(psiElement)) {
+        if (TwigHelper.getGoToBlockPattern().accepts(psiElement)) {
             return this.getBlockGoTo(psiElement);
         }
 
-        if (!TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)) {
-            return null;
+        if (TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)) {
+            return this.getTwigFiles(psiElement);
         }
 
+        return null;
+    }
+
+    private PsiElement[] getTwigFiles(PsiElement psiElement) {
         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
         TwigFile twigFile = twigFilesByName.get(psiElement.getText());
 

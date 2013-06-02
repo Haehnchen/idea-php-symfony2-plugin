@@ -126,7 +126,7 @@ public class TwigHelper {
 
     public static ElementPattern<PsiElement> getGoToBlockPattern() {
         return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
                 PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG).withText(
                     PlatformPatterns.string().startsWith("{% block")
