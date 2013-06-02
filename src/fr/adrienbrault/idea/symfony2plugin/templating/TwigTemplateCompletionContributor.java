@@ -67,8 +67,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     // @TODO: some more conditions needed here
                     // search in twig project for regex
+                    // check for better solution; think of nesting
                     String regex = "\\|\\s?trans\\s?\\(\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
-                    Matcher matcher = Pattern.compile(regex).matcher(str);
+                    Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
                     String domainName = "messages";
                     while (matcher.find()) {
