@@ -155,11 +155,22 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * match 'dddd') on ending
+     */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(
-                PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK).withText(PlatformPatterns.string().contains("trans"))
+            .beforeLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
+            )
+            .withParent(PlatformPatterns
+                .psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
