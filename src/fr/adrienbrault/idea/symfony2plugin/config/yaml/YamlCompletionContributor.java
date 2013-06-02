@@ -83,6 +83,8 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class"), new PhpClassCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getParameterClassPattern(), new PhpClassCompletionProvider());
+
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
 
     }

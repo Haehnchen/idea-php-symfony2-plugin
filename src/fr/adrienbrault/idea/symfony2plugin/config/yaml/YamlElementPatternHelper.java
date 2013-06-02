@@ -294,4 +294,28 @@ public class YamlElementPatternHelper {
             );
     }
 
+    /**
+     * parameters:
+     *    foo.example.class: |
+     *
+     */
+    static PsiElementPattern.Capture<PsiElement> getParameterClassPattern() {
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.TEXT)
+            .withParent(PlatformPatterns
+                .psiElement(YAMLKeyValue.class)
+                .withName(
+                    PlatformPatterns.string().endsWith(".class")
+                )
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withName("parameters")
+                    )
+                )
+            );
+
+    }
+
 }
