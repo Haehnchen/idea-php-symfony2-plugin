@@ -7,7 +7,7 @@ import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
@@ -21,30 +21,10 @@ import java.util.Map;
  */
 public class YamlCompletionContributor extends CompletionContributor {
     public YamlCompletionContributor() {
+
         extend(
-                CompletionType.BASIC, YamlElementPatternHelper.getServiceDefinition(),
-                new CompletionProvider<CompletionParameters>() {
-                    public void addCompletions(@NotNull CompletionParameters parameters,
-                                               ProcessingContext context,
-                                               @NotNull CompletionResultSet resultSet) {
-
-                        PsiElement element = parameters.getOriginalPosition();
-
-                        if(element == null) {
-                            return;
-                        }
-
-                        Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
-                        Map<String,String> map = symfony2ProjectComponent.getServicesMap().getMap();
-
-                        for( Map.Entry<String, String> entry: map.entrySet() ) {
-                            resultSet.addElement(
-                                    new ServiceStringLookupElement(entry.getKey(), entry.getValue())
-                            );
-                        }
-
-                    }
-                }
+            CompletionType.BASIC, YamlElementPatternHelper.getServiceDefinition(),
+            new ServiceCompletionProvider()
         );
 
         extend(
@@ -85,6 +65,9 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class"), new PhpClassAndParameterCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_class"), new PhpClassAndParameterCompletionProvider());
+
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_service"), new ServiceCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParameterClassPattern(), new PhpClassCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
