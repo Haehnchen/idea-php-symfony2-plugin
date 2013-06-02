@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.1</version>
+    <version>0.9.2</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -75,6 +75,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.9.2</h2>
+<ul>
+    <li>Autocomplete for twig blocks</li>
+    <li>Go to for extended twig blocks</li>
+    <li>Some twig translation fixes</li>
+    <li>Yaml: Php class completion for service parameter ending with .class</li>
+    <li>aml: Php class completion list service class parameter</li>
+</ul>
+
 <h2>0.9.1</h2>
 <ul>
     <li>Temporary PhpTypes cache which reduce ide freeze (until fixed on JetBrains side)</li>
