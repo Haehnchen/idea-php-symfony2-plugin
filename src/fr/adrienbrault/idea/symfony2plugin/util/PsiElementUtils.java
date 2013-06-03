@@ -2,7 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -92,6 +95,27 @@ public class PsiElementUtils {
             }
         }
         return null;
+    }
+
+    @Nullable
+    public static MethodReference getMethodReferenceWithFirstStringParameter(PsiElement psiElement) {
+        if(!PlatformPatterns.psiElement()
+            .withParent(StringLiteralExpression.class).inside(ParameterList.class)
+            .withLanguage(PhpLanguage.INSTANCE).accepts(psiElement)) {
+
+            return null;
+        }
+
+        ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+        if (parameterList == null) {
+            return null;
+        }
+
+        if (!(parameterList.getContext() instanceof MethodReference)) {
+            return null;
+        }
+
+        return (MethodReference) parameterList.getContext();
     }
 
 }
