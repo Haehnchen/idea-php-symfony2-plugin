@@ -163,33 +163,40 @@
     <idea-version since-build="129.196"/>
 
     <extensions defaultExtensionNs="com.intellij">
+
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
+
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServiceReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineEntityReferenceContributor"/>
-        <!--<psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateReferenceContributor"/>-->
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationGoToDeclarationHandler"/>
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.TwigRouteCompletionContributor"/>
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
-        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
-        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor"/>
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.asset.TwigAssetCompletionContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor"/>
+        <!--<psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateReferenceContributor"/>-->
+
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
+
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.TwigRouteCompletionContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.asset.TwigAssetCompletionContributor"/>
+        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
+
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor"/>
+
     </extensions>
 
     <depends>com.jetbrains.php</depends>
