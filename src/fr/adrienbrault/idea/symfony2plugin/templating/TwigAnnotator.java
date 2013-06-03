@@ -3,13 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -20,6 +19,10 @@ public class TwigAnnotator implements Annotator {
     @Override
     public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
         this.annotateRouting(element, holder);
+        this.annotateAssets(element, holder);
+
+        // need some more filtering eg filter='cssrewrite' also checked
+        //this.annotateAssetsTag(element, holder);
 
         // getAutocompletableTemplatePattern are buggy need to fix first
         //this.annotateTemplate(element, holder);
@@ -51,6 +54,34 @@ public class TwigAnnotator implements Annotator {
         }
 
         holder.createWarningAnnotation(element, "Missing Template");
+    }
+
+    private void annotateAssets(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
+        if(!TwigHelper.getAutocompletableAssetPattern().accepts(element)) {
+            return;
+        }
+
+        for (final AssetFile assetFile : new AssetDirectoryReader().setProject(element.getProject()).getAssetFiles()) {
+            if(assetFile.toString().equals(element.getText())) {
+                return;
+            }
+        }
+
+        holder.createWarningAnnotation(element, "Missing asset");
+    }
+
+    private void annotateAssetsTag(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
+        if(!TwigHelper.getAutocompletableAssetTag("stylesheets").accepts(element)) {
+            return;
+        }
+
+        for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
+            if(assetFile.toString().equals(element.getText())) {
+                return;
+            }
+        }
+
+        holder.createWarningAnnotation(element, "Missing asset");
     }
 
 }
