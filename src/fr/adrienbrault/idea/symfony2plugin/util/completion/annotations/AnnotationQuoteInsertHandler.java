@@ -32,7 +32,7 @@ public class AnnotationQuoteInsertHandler implements InsertHandler<LookupElement
     }
 
     private StringBuilder getQuoteChar() {
-        return new StringBuilder().append("'");
+        return new StringBuilder().append("\"");
     }
 
     public static AnnotationQuoteInsertHandler getInstance(){

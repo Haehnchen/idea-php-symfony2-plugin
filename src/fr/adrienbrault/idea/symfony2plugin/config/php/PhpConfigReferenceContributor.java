@@ -24,6 +24,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has")
+            .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
         );
