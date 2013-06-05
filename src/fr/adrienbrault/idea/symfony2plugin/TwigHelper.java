@@ -10,6 +10,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiWhiteSpace;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -259,8 +260,20 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getAutocompletableAssetTag(String tagName) {
 
         // @TODO: withChild is not working so we are filtering on text
+
+        // pattern to match '..foo.css' but not match eg ='...'
+        //
+        // {% stylesheets filter='cssrewrite'
+        //  'assets/css/foo.css'
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class)
+                )
             .withParent(PlatformPatterns
                 .psiElement(TwigCompositeElementTypes.TAG)
                 .withText(PlatformPatterns.string().startsWith("{% " + tagName))

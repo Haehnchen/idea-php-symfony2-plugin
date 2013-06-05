@@ -21,11 +21,7 @@ public class TwigAnnotator implements Annotator {
         this.annotateRouting(element, holder);
         this.annotateAssets(element, holder);
         this.annotateTemplate(element, holder);
-
-        // need some more filtering eg filter='cssrewrite' also checked
-        //this.annotateAssetsTag(element, holder);
-
-
+        this.annotateAssetsTag(element, holder);
     }
 
     private void annotateRouting(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
@@ -71,17 +67,32 @@ public class TwigAnnotator implements Annotator {
     }
 
     private void annotateAssetsTag(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-        if(!TwigHelper.getAutocompletableAssetTag("stylesheets").accepts(element)) {
+
+        if(TwigHelper.getAutocompletableAssetTag("stylesheets").accepts(element)) {
+
+            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
+                if(assetFile.toString().equals(element.getText())) {
+                    return;
+                }
+            }
+
+            holder.createWarningAnnotation(element, "Missing asset");
+
             return;
         }
 
-        for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
-            if(assetFile.toString().equals(element.getText())) {
-                return;
+        if(TwigHelper.getAutocompletableAssetTag("javascripts").accepts(element)) {
+
+            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension("js", "dart", "coffee").setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
+                if(assetFile.toString().equals(element.getText())) {
+                    return;
+                }
             }
+
+            holder.createWarningAnnotation(element, "Missing asset");
         }
 
-        holder.createWarningAnnotation(element, "Missing asset");
+
     }
 
 }
