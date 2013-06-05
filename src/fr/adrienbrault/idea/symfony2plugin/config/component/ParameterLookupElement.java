@@ -32,7 +32,7 @@ public class ParameterLookupElement extends LookupElement {
     @NotNull
     @Override
     public Object getObject() {
-        return this.psiElement;
+        return this.psiElement != null ? this.psiElement : this;
     }
 
     public void handleInsert(InsertionContext context) {
