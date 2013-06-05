@@ -20,12 +20,12 @@ public class TwigAnnotator implements Annotator {
     public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
         this.annotateRouting(element, holder);
         this.annotateAssets(element, holder);
+        this.annotateTemplate(element, holder);
 
         // need some more filtering eg filter='cssrewrite' also checked
         //this.annotateAssetsTag(element, holder);
 
-        // getAutocompletableTemplatePattern are buggy need to fix first
-        //this.annotateTemplate(element, holder);
+
     }
 
     private void annotateRouting(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
@@ -44,7 +44,7 @@ public class TwigAnnotator implements Annotator {
     }
 
     private void annotateTemplate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-        if(!TwigHelper.getAutocompletableTemplatePattern().accepts(element)) {
+        if(!TwigHelper.isTemplateFileReferenceTag(element)) {
             return;
         }
 

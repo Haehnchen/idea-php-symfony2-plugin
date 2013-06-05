@@ -31,7 +31,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return this.getBlockGoTo(psiElement);
         }
 
-        if (TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)) {
+        if(TwigHelper.isTemplateFileReferenceTag(psiElement)) {
             return this.getTwigFiles(psiElement);
         }
 

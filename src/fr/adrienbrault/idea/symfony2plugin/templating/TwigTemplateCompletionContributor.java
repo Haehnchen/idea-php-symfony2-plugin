@@ -34,6 +34,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
+
+                    if(!TwigHelper.isTemplateFileReferenceTag(parameters.getPosition())) {
+                        return;
+                    }
+
                     Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
                     for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
                         resultSet.addElement(

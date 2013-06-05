@@ -12,6 +12,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
@@ -181,8 +182,8 @@ public class TwigHelper {
                 .psiElement(TwigTokenTypes.STRING_TEXT)
                 .withParent(
                     PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigCompositeElementTypes.EMBED_TAG),
-                        PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                            PlatformPatterns.psiElement(TwigCompositeElementTypes.EMBED_TAG),
+                            PlatformPatterns.psiElement(TwigTagWithFileReference.class)
                     )
                 )
                 .withLanguage(TwigLanguage.INSTANCE),
@@ -264,6 +265,17 @@ public class TwigHelper {
                 .psiElement(TwigCompositeElementTypes.TAG)
                 .withText(PlatformPatterns.string().startsWith("{% " + tagName))
             );
+    }
+
+    private static boolean isOneOfFileReferenceTag(PsiElement psiElement, String... tagNames) {
+        // use PlatformPatterns would be nice but not fully supported
+        return TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)
+            && PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf(tagNames))) != null;
+
+    }
+
+    public static boolean isTemplateFileReferenceTag(PsiElement psiElement) {
+        return isOneOfFileReferenceTag(psiElement, "extends", "from", "include", "use", "import", "embed");
     }
 
 }
