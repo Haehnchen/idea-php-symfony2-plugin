@@ -36,6 +36,10 @@ public class SettingsForm implements Configurable {
     private JCheckBox twigAnnotateTemplate;
     private JCheckBox twigAnnotateAsset;
     private JCheckBox twigAnnotateAssetTags;
+    private JCheckBox phpAnnotateTemplate;
+    private JCheckBox phpAnnotateService;
+    private JCheckBox phpAnnotateRoute;
+    private JCheckBox phpAnnotateTemplateAnnotation;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -78,6 +82,11 @@ public class SettingsForm implements Configurable {
             || !twigAnnotateTemplate.isSelected() == getSettings().twigAnnotateTemplate
             || !twigAnnotateAsset.isSelected() == getSettings().twigAnnotateAsset
             || !twigAnnotateAssetTags.isSelected() == getSettings().twigAnnotateAssetTags
+
+            || !phpAnnotateTemplate.isSelected() == getSettings().phpAnnotateTemplate
+            || !phpAnnotateService.isSelected() == getSettings().phpAnnotateService
+            || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
+            || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
         ;
     }
 
@@ -96,6 +105,11 @@ public class SettingsForm implements Configurable {
         getSettings().twigAnnotateTemplate = twigAnnotateTemplate.isSelected();
         getSettings().twigAnnotateAsset = twigAnnotateAsset.isSelected();
         getSettings().twigAnnotateAssetTags = twigAnnotateAssetTags.isSelected();
+
+        getSettings().phpAnnotateTemplate = phpAnnotateTemplate.isSelected();
+        getSettings().phpAnnotateService = phpAnnotateService.isSelected();
+        getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
+        getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
     }
 
     @Override
@@ -125,6 +139,11 @@ public class SettingsForm implements Configurable {
         twigAnnotateTemplate.setSelected(getSettings().twigAnnotateTemplate);
         twigAnnotateAsset.setSelected(getSettings().twigAnnotateAsset);
         twigAnnotateAssetTags.setSelected(getSettings().twigAnnotateAssetTags);
+
+        phpAnnotateTemplate.setSelected(getSettings().phpAnnotateTemplate);
+        phpAnnotateService.setSelected(getSettings().phpAnnotateService);
+        phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
+        phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
     }
 
     private int getPhpTypesLifetimeSec() {
