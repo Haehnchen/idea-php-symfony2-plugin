@@ -130,9 +130,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         while (matcher.find()) {
             String routeName = matcher.group(1);
-            String controller = matcher.group(2).replace("\\\\", "\\");
-            Route route = new Route(routeName, controller);
-            routes.put(route.getName(), route);
+            // dont add _assetic_04d92f8, _assetic_04d92f8_0
+            if(!routeName.matches("_assetic_[0-9a-z]+[_\\d+]*")) {
+                String controller = matcher.group(2).replace("\\\\", "\\");
+                Route route = new Route(routeName, controller);
+                routes.put(route.getName(), route);
+            }
         }
 
         this.routes = routes;
