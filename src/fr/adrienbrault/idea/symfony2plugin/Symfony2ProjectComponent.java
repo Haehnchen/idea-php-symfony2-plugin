@@ -1,5 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -55,10 +58,16 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public void projectOpened() {
         System.out.println("projectOpened");
+        this.checkProject();
     }
 
     public void projectClosed() {
         System.out.println("projectClosed");
+    }
+
+    public void showInfoNotification(String content) {
+        Notification errorNotification = new Notification("Symfony2 Plugin", "Symfony2 Plugin", content, NotificationType.INFORMATION);
+        Notifications.Bus.notify(errorNotification, this.project);
     }
 
     @Nullable
@@ -176,6 +185,20 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         return (Map<String, String>) domains;
+    }
+
+    private void checkProject() {
+
+        if(getPathToProjectContainer() == null) {
+            showInfoNotification("missing container file");
+        }
+
+        String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
+        File urlGeneratorFile = new File(urlGeneratorPath);
+        if (!urlGeneratorFile.exists()) {
+            showInfoNotification("missing routing file");
+        }
+
     }
 
 }
