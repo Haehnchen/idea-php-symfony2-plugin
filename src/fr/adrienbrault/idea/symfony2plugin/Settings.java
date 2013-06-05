@@ -30,6 +30,11 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean objectRepositoryTypeProvider = false;
     public boolean objectRepositoryResultTypeProvider = false;
 
+    public boolean twigAnnotateTemplate = true;
+    public boolean twigAnnotateAsset = true;
+    public boolean twigAnnotateAssetTags = true;
+    public boolean twigAnnotateRoute = true;
+
     public int phpTypesLifetimeSec = 120;
 
     protected Project project;

@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.twig.TwigFile;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
@@ -18,13 +19,26 @@ public class TwigAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-        this.annotateRouting(element, holder);
-        this.annotateAssets(element, holder);
-        this.annotateTemplate(element, holder);
-        this.annotateAssetsTag(element, holder);
+
+        if(Settings.getInstance(element.getProject()).twigAnnotateRoute) {
+            this.annotateRoute(element, holder);
+        }
+
+        if(Settings.getInstance(element.getProject()).twigAnnotateAsset) {
+            this.annotateAsset(element, holder);
+        }
+
+        if(Settings.getInstance(element.getProject()).twigAnnotateAssetTags) {
+            this.annotateAssetsTag(element, holder);
+        }
+
+        if(Settings.getInstance(element.getProject()).twigAnnotateTemplate) {
+            this.annotateTemplate(element, holder);
+        }
+
     }
 
-    private void annotateRouting(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
+    private void annotateRoute(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
         if(!TwigHelper.getAutocompletableRoutePattern().accepts(element)) {
             return;
         }
@@ -52,7 +66,7 @@ public class TwigAnnotator implements Annotator {
         holder.createWarningAnnotation(element, "Missing Template");
     }
 
-    private void annotateAssets(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
+    private void annotateAsset(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
         if(!TwigHelper.getAutocompletableAssetPattern().accepts(element)) {
             return;
         }

@@ -32,6 +32,10 @@ public class SettingsForm implements Configurable {
     private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
     private JLabel typesLabel;
     private JTextField phpTypesLifetimeSec;
+    private JCheckBox twigAnnotateRoute;
+    private JCheckBox twigAnnotateTemplate;
+    private JCheckBox twigAnnotateAsset;
+    private JCheckBox twigAnnotateAssetTags;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -69,6 +73,11 @@ public class SettingsForm implements Configurable {
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
             || this.getPhpTypesLifetimeSec() != getSettings().phpTypesLifetimeSec
+
+            || !twigAnnotateRoute.isSelected() == getSettings().twigAnnotateRoute
+            || !twigAnnotateTemplate.isSelected() == getSettings().twigAnnotateTemplate
+            || !twigAnnotateAsset.isSelected() == getSettings().twigAnnotateAsset
+            || !twigAnnotateAssetTags.isSelected() == getSettings().twigAnnotateAssetTags
         ;
     }
 
@@ -82,6 +91,11 @@ public class SettingsForm implements Configurable {
         getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
 
         getSettings().phpTypesLifetimeSec = this.getPhpTypesLifetimeSec();
+
+        getSettings().twigAnnotateRoute = twigAnnotateRoute.isSelected();
+        getSettings().twigAnnotateTemplate = twigAnnotateTemplate.isSelected();
+        getSettings().twigAnnotateAsset = twigAnnotateAsset.isSelected();
+        getSettings().twigAnnotateAssetTags = twigAnnotateAssetTags.isSelected();
     }
 
     @Override
@@ -106,6 +120,11 @@ public class SettingsForm implements Configurable {
         objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
 
         phpTypesLifetimeSec.setText(Integer.toString(getSettings().phpTypesLifetimeSec));
+
+        twigAnnotateRoute.setSelected(getSettings().twigAnnotateRoute);
+        twigAnnotateTemplate.setSelected(getSettings().twigAnnotateTemplate);
+        twigAnnotateAsset.setSelected(getSettings().twigAnnotateAsset);
+        twigAnnotateAssetTags.setSelected(getSettings().twigAnnotateAssetTags);
     }
 
     private int getPhpTypesLifetimeSec() {
