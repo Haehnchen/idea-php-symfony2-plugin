@@ -17,6 +17,7 @@
     <li>Autocomplete and click to go to, service ids inside services.yml/xml</li>
     <li>Click to go services class inside services.xml</li>
     <li>Autocomplete container parameters in php/xml/yaml</li>
+    <li>Autocomplete class and parameters</li>
 </ul>
 
 <h3>Doctrine</h3>
@@ -57,11 +58,13 @@
     <li>FormTypes in FormBuilder</li>
     <li>PHP Class Autocomplete in yaml and xml</li>
     <li>Some basic Annotation support</li>
+    <li>Annotator which notice unknown route, template, service, assets, ...</li>
 </ul>
 
 <h2>Notes</h2>
 <ul>
     <li>Play with PhpTypes lifetime cache on freeze</li>
+    <li>Disable Annotator if its not suitable in your environment</li>
     <li>To trigger the autocompletion, press CTRL + SPACE.</li>
     <li>Set the type of "classes.php" to text resolved some autocomplete issues for me.</li>
 </ul>
@@ -75,6 +78,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+<h2>0.9.3</h2>
+<ul>
+    <li>Add Annotator which mark unknown route, template, service, assets</li>
+    <li>Settings form can disable every Annotator, if its not suitable in environment</li>
+    <li>Some compilation and pattern matches fixes and optimization</li>
+    <li>Add compilation for class, factory-service, factory-class in yaml and xml</li>
+    <li>Add notice for missing route and container file on project startup</li>
+</ul>
+
 <h2>0.9.2</h2>
 <ul>
     <li>Autocomplete for twig blocks</li>

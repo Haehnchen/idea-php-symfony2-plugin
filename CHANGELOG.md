@@ -1,6 +1,14 @@
 Changelog
 =========
 
+### 0.9.3
+
+* Add Annotator which mark unknown route, template, service, assets
+* Settings form can disable every Annotator, if its not suitable in environment
+* Some compilation and pattern matches fixes and optimization
+* Add compilation for class, factory-service, factory-class in yaml and xml
+* Add notice for missing route and container file on project startup
+
 ### 0.9.2
 
 * Autocomplete for twig blocks
