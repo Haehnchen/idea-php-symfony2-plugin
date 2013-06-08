@@ -195,6 +195,18 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     private void checkProject() {
 
+        if(!this.isEnabled()) {
+            if(VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor") != null
+                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "cache", "dev") != null
+                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "cache", "prod") != null
+                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor", "symfony", "symfony") != null
+              ) {
+                showInfoNotification("Looks like this a Symfony2 project. Enable the Symfony2 Plugin in Project Settings");
+            }
+
+            return;
+        }
+
         if(getPathToProjectContainer() == null) {
             showInfoNotification("missing container file");
         }

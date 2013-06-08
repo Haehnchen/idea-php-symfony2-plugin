@@ -72,7 +72,7 @@ public class SettingsForm implements Configurable {
     @Override
     public boolean isModified() {
         return
-            !symfonyContainerTypeProvider.isSelected() == getSettings().pluginEnabled
+            !pluginEnabled.isSelected() == getSettings().pluginEnabled
             || !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
