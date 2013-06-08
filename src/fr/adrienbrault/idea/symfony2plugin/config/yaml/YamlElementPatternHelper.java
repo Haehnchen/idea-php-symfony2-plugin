@@ -26,7 +26,29 @@ public class YamlElementPatternHelper {
     }
 
     public static ElementPattern<PsiElement> getSingleLineScalarKey(String keyName) {
-        return getKeyPattern(keyName).withLanguage(YAMLLanguage.INSTANCE);
+        // key: | and key: "quote" is valid here
+        // getKeyPattern
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withName(
+                        PlatformPatterns.string().equalTo(keyName)
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+            ,
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withName(
+                        PlatformPatterns.string().equalTo(keyName)
+                    )
+                )
+            .withLanguage(YAMLLanguage.INSTANCE)
+        );
     }
 
     /**

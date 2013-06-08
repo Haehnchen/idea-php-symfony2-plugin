@@ -3,16 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLLanguage;
-import org.jetbrains.yaml.YAMLTokenTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +32,10 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
     private void getControllerGoto(PsiElement psiElement, List<PsiElement> results) {
 
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+
         ControllerIndex controllerIndex = new ControllerIndex(PhpIndex.getInstance(psiElement.getProject()));
-        ControllerAction controllerAction = controllerIndex.getControllerAction(psiElement.getText());
+        ControllerAction controllerAction = controllerIndex.getControllerAction(text);
 
         if(controllerAction != null) {
             results.add(controllerAction.getMethod());

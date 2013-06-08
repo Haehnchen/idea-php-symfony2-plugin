@@ -118,4 +118,8 @@ public class PsiElementUtils {
         return (MethodReference) parameterList.getContext();
     }
 
+    public static String trimQuote(String text) {
+        return text.replaceAll("^\"|\"$|\'|\'$", "");
+    }
+
 }
