@@ -98,6 +98,17 @@ public class SymfonyBundle {
     }
 
     @Nullable
+    public VirtualFile getRelative(String path) {
+        PsiDirectory virtualDirectory =  this.getDirectory();
+        if(virtualDirectory == null) {
+            return null;
+        }
+
+       return VfsUtil.findRelativeFile(virtualDirectory.getVirtualFile(), path.split("/"));
+
+    }
+
+    @Nullable
     public String getRelative(VirtualFile virtualFile) {
         PsiDirectory virtualDirectory =  this.getDirectory();
         if(virtualDirectory == null) {

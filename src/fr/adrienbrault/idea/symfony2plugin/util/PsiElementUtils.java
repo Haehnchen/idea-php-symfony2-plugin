@@ -1,9 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -120,6 +124,14 @@ public class PsiElementUtils {
 
     public static String trimQuote(String text) {
         return text.replaceAll("^\"|\"$|\'|\'$", "");
+    }
+
+    @Nullable
+    public static PsiFile virtualFileToPsiFile(Project project, VirtualFile virtualFile) {
+        if(virtualFile == null) {
+            return null;
+        }
+        return PsiManager.getInstance(project).findFile(virtualFile);
     }
 
 }

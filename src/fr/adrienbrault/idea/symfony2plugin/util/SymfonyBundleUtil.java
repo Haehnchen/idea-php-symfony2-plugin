@@ -36,6 +36,11 @@ public class SymfonyBundleUtil {
     }
 
     @Nullable
+    public SymfonyBundle getBundle(String bundleName) {
+        return this.symfonyBundles.get(bundleName);
+    }
+
+    @Nullable
     public SymfonyBundle getContainingBundle(PhpClass phpClass) {
 
         for(SymfonyBundle bundle : this.getBundles()) {
