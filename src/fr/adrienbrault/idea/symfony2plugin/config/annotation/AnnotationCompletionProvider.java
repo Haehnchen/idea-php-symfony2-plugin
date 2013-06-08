@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.util.ProcessingContext;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -21,6 +22,11 @@ public class AnnotationCompletionProvider extends CompletionProvider<CompletionP
     }
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            return;
+        }
+
         resultSet.addAllElements(lookupElements);
     }
 }

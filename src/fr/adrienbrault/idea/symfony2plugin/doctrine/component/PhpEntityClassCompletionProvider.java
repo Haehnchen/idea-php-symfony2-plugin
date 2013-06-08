@@ -25,6 +25,9 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
+        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            return;
+        }
 
         PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
 

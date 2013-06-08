@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
@@ -24,6 +25,11 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
+
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
+
         List<PsiElement> results = new ArrayList<PsiElement>();
 
         if(YamlElementPatternHelper.getSingleLineScalarKey("_controller").accepts(psiElement)) {

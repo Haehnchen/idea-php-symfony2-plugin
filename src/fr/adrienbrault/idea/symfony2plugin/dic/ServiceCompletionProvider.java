@@ -14,6 +14,10 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
+        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            return;
+        }
+
         PsiElement element = parameters.getOriginalPosition();
 
         if(element == null) {

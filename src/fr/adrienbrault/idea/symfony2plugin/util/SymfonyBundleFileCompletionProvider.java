@@ -9,6 +9,7 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.BundleFile;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundleFileLookupElement;
@@ -26,6 +27,11 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+        if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+            return;
+        }
+
         PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
 
         ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(completionParameters.getPosition().getProject());

@@ -6,11 +6,17 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
 public class ControllerCompletionProvider extends CompletionProvider<CompletionParameters> {
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+        if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+            return;
+        }
+
         PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
 
         ControllerIndex controllerIndex = new ControllerIndex(phpIndex);

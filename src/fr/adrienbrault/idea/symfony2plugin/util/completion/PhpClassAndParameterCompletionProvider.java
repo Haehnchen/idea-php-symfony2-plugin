@@ -18,6 +18,11 @@ import java.util.Map;
 public class PhpClassAndParameterCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            return;
+        }
+
         PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
 
         for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {

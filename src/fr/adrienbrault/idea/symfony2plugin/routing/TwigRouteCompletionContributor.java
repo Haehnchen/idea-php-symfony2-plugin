@@ -21,6 +21,11 @@ public class TwigRouteCompletionContributor extends CompletionContributor {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
                     Symfony2ProjectComponent symfony2ProjectComponent = parameters.getPosition().getProject().getComponent(Symfony2ProjectComponent.class);
                     Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
 

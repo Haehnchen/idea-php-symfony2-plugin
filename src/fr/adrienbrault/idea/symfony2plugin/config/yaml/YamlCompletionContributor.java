@@ -36,6 +36,10 @@ public class YamlCompletionContributor extends CompletionContributor {
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
 
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
                     PsiElement element = parameters.getOriginalPosition();
 
                     if(element == null) {

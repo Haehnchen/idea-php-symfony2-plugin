@@ -6,6 +6,7 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +15,10 @@ public class ServiceReferenceProvider extends PsiReferenceProvider {
     @NotNull
     @Override
     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return new PsiReference[0];
+        }
 
         // get the service name "service_container"
         String text = PhpCodeInsightUtil.toString(psiElement);

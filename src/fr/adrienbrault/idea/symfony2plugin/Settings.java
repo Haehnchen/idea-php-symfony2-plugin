@@ -5,13 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lumbendil
- * Date: 7/04/13
- * Time: 20:02
- * To change this template use File | Settings | File Templates.
- */
 @State(
        name = "Settings",
        storages = {
@@ -25,6 +18,8 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public String pathToProjectContainer = DEFAULT_CONTAINER_PATH;
     public String pathToUrlGenerator = DEFAULT_URL_GENERATOR_PATH;
+
+    public boolean pluginEnabled = true;
 
     public boolean symfonyContainerTypeProvider = true;
     public boolean objectRepositoryTypeProvider = false;

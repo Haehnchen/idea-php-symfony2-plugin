@@ -22,7 +22,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).objectRepositoryTypeProvider) {
+        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).objectRepositoryTypeProvider) {
             return null;
         }
 

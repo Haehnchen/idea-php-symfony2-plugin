@@ -18,7 +18,7 @@ public class PhpRoutingAnnotator implements Annotator {
     @Override
     public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
 
-        if(!Settings.getInstance(element.getProject()).phpAnnotateRoute) {
+        if(!Symfony2ProjectComponent.isEnabled(element.getProject()) || !Settings.getInstance(element.getProject()).phpAnnotateRoute) {
             return;
         }
 

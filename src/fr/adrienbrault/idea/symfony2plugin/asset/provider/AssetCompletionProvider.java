@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ProcessingContext;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
@@ -19,6 +20,10 @@ public class AssetCompletionProvider extends CompletionProvider<CompletionParame
                                ProcessingContext context,
                                @NotNull final CompletionResultSet resultSet) {
         Project project = parameters.getPosition().getProject();
+
+        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            return;
+        }
 
         this.assetParser.setProject(project);
         for (final AssetFile assetFile : this.assetParser.getAssetFiles()) {

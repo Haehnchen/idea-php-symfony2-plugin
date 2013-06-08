@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -25,7 +26,7 @@ public class TranslationGoToDeclarationHandler implements GotoDeclarationHandler
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
-        if(!PlatformPatterns.psiElement()
+        if(!Symfony2ProjectComponent.isEnabled(psiElement) || !PlatformPatterns.psiElement()
             .withParent(StringLiteralExpression.class).inside(ParameterList.class)
             .withLanguage(PhpLanguage.INSTANCE).accepts(psiElement)) {
 

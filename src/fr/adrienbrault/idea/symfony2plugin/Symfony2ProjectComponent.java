@@ -8,6 +8,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.ResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
@@ -68,6 +70,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     public void showInfoNotification(String content) {
         Notification errorNotification = new Notification("Symfony2 Plugin", "Symfony2 Plugin", content, NotificationType.INFORMATION);
         Notifications.Bus.notify(errorNotification, this.project);
+    }
+
+    public boolean isEnabled() {
+        return Settings.getInstance(project).pluginEnabled;
     }
 
     @Nullable
@@ -199,6 +205,18 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             showInfoNotification("missing routing file");
         }
 
+    }
+
+    public static boolean isEnabled(Project project) {
+        if(project != null){
+            Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
+            return null != symfony2ProjectComponent && symfony2ProjectComponent.isEnabled();
+        }
+        return false;
+    }
+
+    public static boolean isEnabled(PsiElement psiElement) {
+        return isEnabled(psiElement.getProject());
     }
 
 }

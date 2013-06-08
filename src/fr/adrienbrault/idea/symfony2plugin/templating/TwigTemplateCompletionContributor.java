@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
@@ -35,6 +36,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
 
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
                     if(!TwigHelper.isTemplateFileReferenceTag(parameters.getPosition())) {
                         return;
                     }
@@ -57,6 +62,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
 
                     TranslationStringMap map = TranslationIndex.getInstance(parameters.getPosition().getProject()).getTranslationMap();
                     if(map == null) {
@@ -106,6 +115,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
 
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
                     if(PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans")) == null) {
                         return;
                     }
@@ -132,6 +145,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
 
                     Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
                     ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());

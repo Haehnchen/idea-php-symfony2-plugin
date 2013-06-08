@@ -32,6 +32,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
+
         if (TwigHelper.getGoToBlockPattern().accepts(psiElement)) {
             return this.getBlockGoTo(psiElement);
         }

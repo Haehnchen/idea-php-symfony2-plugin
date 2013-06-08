@@ -20,6 +20,10 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
+
         if (!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)) {
             return new PsiElement[]{};
         }

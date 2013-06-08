@@ -9,6 +9,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.util.annotation.AnnotationIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.annotation.AnnotationLookupElement;
@@ -56,6 +57,11 @@ public class AnnotationCompletionContributor extends CompletionContributor {
         }
 
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
             if(!AnnotationIndex.getControllerAnnotations().containsKey(this.docTagName)) {
                 return;
             }
@@ -76,6 +82,10 @@ public class AnnotationCompletionContributor extends CompletionContributor {
     private static class PhpControllerAnnotations extends CompletionProvider<CompletionParameters>{
 
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
 
             PsiElement position = parameters.getPosition().getOriginalElement();
             PsiElement parent = position.getParent();

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigFile;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -24,6 +25,11 @@ public class AnnotationCompletionContributor extends CompletionContributor {
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
+
+                        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                            return;
+                        }
+
                         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
                         for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
                             resultSet.addElement(

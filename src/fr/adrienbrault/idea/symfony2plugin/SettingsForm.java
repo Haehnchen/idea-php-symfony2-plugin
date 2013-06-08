@@ -40,6 +40,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox phpAnnotateService;
     private JCheckBox phpAnnotateRoute;
     private JCheckBox phpAnnotateTemplateAnnotation;
+    private JCheckBox pluginEnabled;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -71,7 +72,8 @@ public class SettingsForm implements Configurable {
     @Override
     public boolean isModified() {
         return
-            !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
+            !symfonyContainerTypeProvider.isSelected() == getSettings().pluginEnabled
+            || !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
@@ -92,6 +94,9 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
+
+        getSettings().pluginEnabled = pluginEnabled.isSelected();
+
         getSettings().pathToProjectContainer = pathToContainerTextField.getText();
         getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
 
@@ -126,6 +131,9 @@ public class SettingsForm implements Configurable {
     }
 
     private void updateUIFromSettings() {
+
+        pluginEnabled.setSelected(getSettings().pluginEnabled);
+
         pathToContainerTextField.setText(getSettings().pathToProjectContainer);
         pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
 
