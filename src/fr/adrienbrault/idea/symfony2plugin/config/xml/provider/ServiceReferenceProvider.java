@@ -5,9 +5,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class ServiceReferenceProvider extends PsiReferenceProvider {
@@ -21,10 +21,7 @@ public class ServiceReferenceProvider extends PsiReferenceProvider {
         }
 
         // get the service name "service_container"
-        String text = PhpCodeInsightUtil.toString(psiElement);
-        if(text == null) {
-            return new PsiReference[0];
-        }
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
 
         return new PsiReference[]{ new ServiceReference(psiElement, text) };
     }
