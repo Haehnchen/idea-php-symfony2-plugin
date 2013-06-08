@@ -137,4 +137,14 @@ public class SymfonyBundle {
         return relativePath.substring(0, bla);
     }
 
+    @Nullable
+    public String getFileShortcut(BundleFile bundleFile) {
+        String relativePath = this.getRelative(bundleFile.getVirtualFile());
+        if(relativePath == null) {
+            return null;
+        }
+
+        return "@" + this.getName() + "/" + relativePath;
+    }
+
 }
