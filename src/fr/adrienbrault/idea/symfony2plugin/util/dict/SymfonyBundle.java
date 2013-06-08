@@ -97,6 +97,7 @@ public class SymfonyBundle {
 
     }
 
+    @Nullable
     public String getRelative(VirtualFile virtualFile) {
         PsiDirectory virtualDirectory =  this.getDirectory();
         if(virtualDirectory == null) {
@@ -104,6 +105,25 @@ public class SymfonyBundle {
         }
 
         return VfsUtil.getRelativePath(virtualFile, virtualDirectory.getVirtualFile(), '/');
+    }
+
+    @Nullable
+    public String getRelative(VirtualFile virtualFile, boolean stripExtension) {
+        String relativePath =  this.getRelative(virtualFile);
+        if(relativePath == null) {
+            return null;
+        }
+
+        if(!stripExtension) {
+            return relativePath;
+        }
+
+        int bla = relativePath.lastIndexOf(".");
+        if(bla == -1) {
+            return null;
+        }
+
+        return relativePath.substring(0, bla);
     }
 
 }
