@@ -41,6 +41,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox phpAnnotateRoute;
     private JCheckBox phpAnnotateTemplateAnnotation;
     private JCheckBox pluginEnabled;
+    private JCheckBox yamlAnnotateServiceConfig;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -89,6 +90,8 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateService.isSelected() == getSettings().phpAnnotateService
             || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
+
+            || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
         ;
     }
 
@@ -115,6 +118,8 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateService = phpAnnotateService.isSelected();
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
+
+        getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
     }
 
     @Override
@@ -152,6 +157,8 @@ public class SettingsForm implements Configurable {
         phpAnnotateService.setSelected(getSettings().phpAnnotateService);
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
+
+        yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
     }
 
     private int getPhpTypesLifetimeSec() {

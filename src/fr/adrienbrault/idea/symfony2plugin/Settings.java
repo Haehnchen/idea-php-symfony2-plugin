@@ -35,6 +35,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean phpAnnotateRoute = true;
     public boolean phpAnnotateTemplateAnnotation = true;
 
+    public boolean yamlAnnotateServiceConfig = true;
+
     public int phpTypesLifetimeSec = 120;
 
     protected Project project;
