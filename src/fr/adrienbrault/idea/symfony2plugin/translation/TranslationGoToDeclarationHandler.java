@@ -50,12 +50,21 @@ public class TranslationGoToDeclarationHandler implements GotoDeclarationHandler
 
         // only use parameter: 3 = domain
         ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement.getParent());
-        if(currentIndex == null || currentIndex.getIndex() != 2) {
+        if(currentIndex == null) {
             return new PsiElement[0];
         }
 
-        String domainName = PsiElementUtils.getMethodParameterAt(parameterList, 2);
-        return TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), domainName);
+        if(currentIndex.getIndex() == 2) {
+            String domainName = PsiElementUtils.getMethodParameterAt(parameterList, 2);
+            return TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), domainName);
+        }
+
+        if(currentIndex.getIndex() == 0) {
+            String domainName = PsiElementUtils.getMethodParameterAt(parameterList, 2);
+            return TranslationUtil.getTranslationPsiElements(psiElement.getProject(), currentIndex.getValue(), domainName == null ? "messages" : domainName);
+        }
+
+        return new PsiElement[0];
     }
 
     @Nullable
