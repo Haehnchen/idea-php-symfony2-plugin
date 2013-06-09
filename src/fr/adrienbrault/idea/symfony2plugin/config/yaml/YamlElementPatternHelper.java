@@ -306,13 +306,27 @@ public class YamlElementPatternHelper {
      * find common service parameter
      */
     public static ElementPattern<PsiElement> getServiceParameterDefinition() {
-        return PlatformPatterns
-            .psiElement(YAMLTokenTypes.TEXT)
-            .withText(
-                StandardPatterns.string().startsWith("%")
-            )
-            .withLanguage(YAMLLanguage.INSTANCE)
-            ;
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withText(
+                    StandardPatterns.string().startsWith("%")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+            ,
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .withText(
+                    StandardPatterns.string().startsWith("'%")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .withText(
+                    StandardPatterns.string().startsWith("\"%")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
     }
 
     private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
