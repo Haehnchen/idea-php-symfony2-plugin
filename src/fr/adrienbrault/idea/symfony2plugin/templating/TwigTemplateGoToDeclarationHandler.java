@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,6 +56,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
                 return TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getText());
             }
+        }
+
+        if (TwigHelper.getTranslationPattern().accepts(psiElement)) {
+            return getTranslationKeyGoTo(psiElement);
         }
 
         return null;
@@ -110,6 +115,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return new PsiElement[0];
+    }
+
+    private PsiElement[] getTranslationKeyGoTo(PsiElement psiElement) {
+        String translationKey = psiElement.getText();
+        return TranslationUtil.getTranslationPsiElements(psiElement.getProject(), translationKey, YamlHelper.getDomainTrans(psiElement));
     }
 
     @Nullable
