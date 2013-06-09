@@ -126,6 +126,10 @@ public class PsiElementUtils {
         return text.replaceAll("^\"|\"$|\'|\'$", "");
     }
 
+    public static String getText(PsiElement psiElement) {
+        return trimQuote(psiElement.getText());
+    }
+
     @Nullable
     public static PsiFile virtualFileToPsiFile(Project project, VirtualFile virtualFile) {
         if(virtualFile == null) {

@@ -25,7 +25,7 @@ public class YamlElementPatternHelper {
         return getKeyPattern(keyName).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
     }
 
-    public static ElementPattern<PsiElement> getSingleLineScalarKey(String keyName) {
+    public static ElementPattern<PsiElement> getSingleLineScalarKey(String... keyName) {
         // key: | and key: "quote" is valid here
         // getKeyPattern
         return PlatformPatterns.or(
@@ -34,7 +34,7 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withName(
-                        PlatformPatterns.string().equalTo(keyName)
+                        PlatformPatterns.string().oneOf(keyName)
                     )
                 )
                 .withLanguage(YAMLLanguage.INSTANCE)
@@ -44,7 +44,7 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withName(
-                        PlatformPatterns.string().equalTo(keyName)
+                        PlatformPatterns.string().oneOf(keyName)
                     )
                 )
             .withLanguage(YAMLLanguage.INSTANCE)
@@ -278,13 +278,28 @@ public class YamlElementPatternHelper {
      * find common services
      */
     public static ElementPattern<PsiElement> getServiceDefinition() {
-        return PlatformPatterns
-            .psiElement(YAMLTokenTypes.TEXT)
-            .withText(
-                StandardPatterns.string().startsWith("@")
-            )
-            .withLanguage(YAMLLanguage.INSTANCE)
-        ;
+
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withText(
+                    StandardPatterns.string().startsWith("@")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+            ,
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .withText(
+                    StandardPatterns.string().startsWith("'@")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .withText(
+                    StandardPatterns.string().startsWith("\"@")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
     }
 
     /**

@@ -7,6 +7,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -24,14 +25,13 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        if (!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)) {
-            return new PsiElement[]{};
-        }
-        if(psiElement == null) {
+        if (!(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
+            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement))) {
+
             return new PsiElement[]{};
         }
 
-        String psiText = psiElement.getText();
+        String psiText = PsiElementUtils.getText(psiElement);
         if(null == psiText || psiText.length() == 0) {
             return new PsiElement[]{};
         }

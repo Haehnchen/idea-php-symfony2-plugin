@@ -70,11 +70,9 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToOne"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToOne)));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class"), new PhpClassAndParameterCompletionProvider());
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_class"), new PhpClassAndParameterCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class"), new PhpClassAndParameterCompletionProvider());
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_service"), new ServiceCompletionProvider());
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("parent"), new ServiceCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_service", "parent"), new ServiceCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParameterClassPattern(), new PhpClassCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
