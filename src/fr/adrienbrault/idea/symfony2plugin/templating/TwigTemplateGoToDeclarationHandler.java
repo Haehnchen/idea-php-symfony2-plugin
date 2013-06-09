@@ -5,13 +5,11 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
@@ -20,7 +18,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -91,30 +88,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     private PsiElement[] getRouteGoTo(PsiElement psiElement) {
-
-        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
-
-        for (Route route : routes.values()) {
-            if(route.getName().equals(psiElement.getText())) {
-                String controllerName = route.getController();
-
-                // convert to class: FooBundle\Controller\BarController::fooBarAction
-                if(controllerName.contains("::")) {
-                    String className = controllerName.substring(0, controllerName.lastIndexOf("::"));
-                    String methodName = controllerName.substring(controllerName.lastIndexOf("::") +2);
-
-                    PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
-                    Collection<? extends PhpNamedElement> methodCalls = phpIndex.getBySignature("#M#C\\" + className + "." + methodName, null, 0);
-                    return methodCalls.toArray(new PsiElement[methodCalls.size()]);
-                }
-
-                return new PsiElement[0];
-            }
-
-        }
-
-        return new PsiElement[0];
+        return RouteHelper.getMethods(psiElement.getProject(), PsiElementUtils.getText(psiElement));
     }
 
     private PsiElement[] getTranslationKeyGoTo(PsiElement psiElement) {
