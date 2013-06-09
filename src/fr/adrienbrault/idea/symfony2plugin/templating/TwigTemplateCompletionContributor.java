@@ -15,12 +15,11 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -72,23 +71,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    PsiElement psi = parameters.getPosition();
-
-                    // we only get a PRINT_BLOCK with a huge flat list of psi elements
-                    // parsing this would be harder than use regex
-                    // {{ 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain') }}
-                    String str = psi.getParent().getText();
-
-                    // @TODO: some more conditions needed here
-                    // search in twig project for regex
-                    // check for better solution; think of nesting
-                    String regex = "\\|\\s?trans\\s?\\(\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
-                    Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
-
-                    String domainName = "messages";
-                    while (matcher.find()) {
-                        domainName = matcher.group(1);
-                    }
+                    PsiElement psiElement = parameters.getPosition();
+                    String domainName =  YamlHelper.getDomainTrans(psiElement);
 
                     ArrayList<String> domainMap = map.getDomainMap(domainName);
                     if(domainMap == null) {
