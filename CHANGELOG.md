@@ -1,6 +1,17 @@
 Changelog
 =========
 
+### 0.9.x
+
+* Provide a global plugin state toggle per project
+* Notice: Default plugin state will be "Disabled" in next version
+* Provide go to controller name for routing names
+* Compilation for _controller on yaml
+* Support Yaml value with quote value
+* Compilation and go to for routing resources in yaml
+* Add translation go to for translation key in yaml and php, for yaml files
+* Yaml Annotator for parameter, service and class
+
 ### 0.9.3
 
 * Add Annotator which mark unknown route, template, service, assets
