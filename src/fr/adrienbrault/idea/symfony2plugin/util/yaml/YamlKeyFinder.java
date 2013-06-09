@@ -31,7 +31,8 @@ public class YamlKeyFinder {
             // we found your key
             // also online line is supported: test.boo.bar
             if(keyName.equals(currentYAMLKeyValue.getKeyText())) {
-                return currentYAMLKeyValue.getValue();
+                PsiElement valuePsiElement = currentYAMLKeyValue.getValue();
+                return valuePsiElement != null ? valuePsiElement : currentYAMLKeyValue;
             }
 
             // call me again on key-value child
