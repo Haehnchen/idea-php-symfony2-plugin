@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.3</version>
+    <version>0.9.4</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -50,11 +50,12 @@
 <ul>
     <li>Autocomplete route name in UrlGenerator::generate() calls</li>
     <li>Autocomplete route name in twig templates</li>
+    <li>Go to for routing name methods</li>
 </ul>
 
 <h3>Other</h3>
 <ul>
-    <li>Autocomplete for translation in trans twig and translate php</li>
+    <li>Autocomplete and go to for translation in trans twig and translate php</li>
     <li>FormTypes in FormBuilder</li>
     <li>PHP Class Autocomplete in yaml and xml</li>
     <li>Some basic Annotation support</li>
@@ -78,12 +79,26 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.4</h2>
+<ul>
+    <li>Provide a global plugin state toggle per project</li>
+    <li>Notice: Default plugin state will be "Disabled" in next version</li>
+    <li>Provide go to controller method of routing names</li>
+    <li>Autocomplete for _controller in yaml</li>
+    <li>Support Yaml value with quote value</li>
+    <li>Autocomplete and go to for routing resources in yaml</li>
+    <li>Add translation go to for translation key in yaml and php, for yaml files</li>
+    <li>Yaml Annotator for parameter, service and class</li>
+    <li>Many PsiElement Pattern fixes</li>
+</ul>
+
 <h2>0.9.3</h2>
 <ul>
     <li>Add Annotator which mark unknown route, template, service, assets</li>
     <li>Settings form can disable every Annotator, if its not suitable in environment</li>
-    <li>Some compilation and pattern matches fixes and optimization</li>
-    <li>Add compilation for class, factory-service, factory-class in yaml and xml</li>
+    <li>Some autocomplete and pattern matches fixes and optimization</li>
+    <li>Add autocomplete for class, factory-service, factory-class in yaml and xml</li>
     <li>Add notice for missing route and container file on project startup</li>
 </ul>
 

@@ -1,23 +1,24 @@
 Changelog
 =========
 
-### 0.9.x
+### 0.9.4
 
 * Provide a global plugin state toggle per project
 * Notice: Default plugin state will be "Disabled" in next version
-* Provide go to controller name for routing names
-* Compilation for _controller on yaml
+* Provide go to controller method of routing names
+* Autocomplete for _controller in yaml
 * Support Yaml value with quote value
-* Compilation and go to for routing resources in yaml
+* Autocomplete and go to for routing resources in yaml
 * Add translation go to for translation key in yaml and php, for yaml files
 * Yaml Annotator for parameter, service and class
+* Many PsiElement Pattern fixes
 
 ### 0.9.3
 
 * Add Annotator which mark unknown route, template, service, assets
 * Settings form can disable every Annotator, if its not suitable in environment
-* Some compilation and pattern matches fixes and optimization
-* Add compilation for class, factory-service, factory-class in yaml and xml
+* Some autocomplete and pattern matches fixes and optimization
+* Add autocomplete for class, factory-service, factory-class in yaml and xml
 * Add notice for missing route and container file on project startup
 
 ### 0.9.2
