@@ -279,7 +279,23 @@ public class TwigHelper {
                 .withText(PlatformPatterns.string().startsWith("{% " + tagName))
             );
     }
+    public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern() {
 
+        // {% include '<xxx>' with {'foo' : bar, 'bar' : 'foo'} %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("extends", "from", "include", "use", "import", "embed"))
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
     private static boolean isOneOfFileReferenceTag(PsiElement psiElement, String... tagNames) {
         // use PlatformPatterns would be nice but not fully supported
         return TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)

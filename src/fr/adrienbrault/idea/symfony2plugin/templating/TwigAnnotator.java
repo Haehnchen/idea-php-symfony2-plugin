@@ -58,7 +58,8 @@ public class TwigAnnotator implements Annotator {
     }
 
     private void annotateTemplate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-        if(!TwigHelper.isTemplateFileReferenceTag(element)) {
+
+        if(!TwigHelper.getTemplateFileReferenceTagPattern().accepts(element)) {
             return;
         }
 
