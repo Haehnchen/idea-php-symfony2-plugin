@@ -369,4 +369,15 @@ public class YamlElementPatternHelper {
 
     }
 
+    static PsiElementPattern.Capture<PsiElement> getInsideServiceKeyPattern() {
+        return PlatformPatterns
+            .psiElement()
+            .inside(
+                PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withName(
+                        PlatformPatterns.string().oneOf("services", "parameters")
+                    )
+            );
+    }
 }

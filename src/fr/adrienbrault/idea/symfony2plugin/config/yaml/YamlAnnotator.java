@@ -2,12 +2,15 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 public class YamlAnnotator implements Annotator {
 
@@ -25,7 +28,7 @@ public class YamlAnnotator implements Annotator {
     }
 
     private void annotateParameter(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-        if(!YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement)) {
+        if(!YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement) || !YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
             return;
         }
 
@@ -48,7 +51,7 @@ public class YamlAnnotator implements Annotator {
     }
 
     private void annotateService(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-        if(!YamlElementPatternHelper.getServiceDefinition().accepts(psiElement)) {
+        if(!YamlElementPatternHelper.getServiceDefinition().accepts(psiElement) || !YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
             return;
         }
 
@@ -63,7 +66,7 @@ public class YamlAnnotator implements Annotator {
 
     private void annotateClass(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
 
-        if(!YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(element)) {
+        if(!((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(element) || YamlElementPatternHelper.getParameterClassPattern().accepts(element)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(element))) {
             return;
         }
 
