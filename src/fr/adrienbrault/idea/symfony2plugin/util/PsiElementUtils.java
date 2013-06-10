@@ -41,7 +41,7 @@ public class PsiElementUtils {
     public static String getMethodParameterAt(ParameterList parameterList, int index) {
         PsiElement[] parameters = parameterList.getParameters();
 
-        if(parameters.length < index) {
+        if(parameters.length < index + 1) {
             return null;
         }
 
