@@ -34,11 +34,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return null;
         }
 
-        if (TwigHelper.getGoToBlockPattern().accepts(psiElement)) {
+        if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
             return this.getBlockGoTo(psiElement);
         }
 
-        if(TwigHelper.isTemplateFileReferenceTag(psiElement)) {
+        if(TwigHelper.isTemplateFileReferenceTag(psiElement) && TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement)) {
             return this.getTwigFiles(psiElement);
         }
 

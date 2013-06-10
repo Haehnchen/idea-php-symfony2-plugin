@@ -136,23 +136,21 @@ public class TwigHelper {
         return null;
     }
 
-    public static ElementPattern<PsiElement> getAutocompletableBlockPattern() {
-        return PlatformPatterns
-            .psiElement().withParent(
-                PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG).withText(
-                    PlatformPatterns.string().startsWith("{% block")
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    public static ElementPattern<PsiElement> getGoToBlockPattern() {
+    public static ElementPattern<PsiElement> getBlockTagPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
-                PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG).withText(
-                    PlatformPatterns.string().startsWith("{% block")
-                )
+                PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG)
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("block")
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }

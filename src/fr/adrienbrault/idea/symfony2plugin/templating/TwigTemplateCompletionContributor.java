@@ -124,7 +124,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // provides support for {% block |
         extend(
             CompletionType.BASIC,
-            TwigHelper.getAutocompletableBlockPattern(),
+            TwigHelper.getBlockTagPattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
