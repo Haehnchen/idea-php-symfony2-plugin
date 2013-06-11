@@ -72,6 +72,13 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
 
         ControllerIndex controllerIndex = new ControllerIndex(PhpIndex.getInstance(psiElement.getProject()));
+
+        ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(psiElement.getProject(), text);
+        if(controllerServiceAction != null) {
+            results.add(controllerServiceAction.getMethod());
+            return;
+        }
+
         ControllerAction controllerAction = controllerIndex.getControllerAction(text);
 
         if(controllerAction != null) {

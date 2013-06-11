@@ -1,8 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.util.controller;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +36,34 @@ public class ControllerIndex {
 
         return actions;
 
+    }
+
+    @Nullable
+    public ControllerAction getControllerActionOnService(Project project, String shortcutName) {
+
+        // only foo_bar:Method is valid
+        if(shortcutName.contains("::") || !shortcutName.contains(":") || shortcutName.contains("\\")) {
+            return null;
+        }
+
+        String serviceId = shortcutName.substring(0, shortcutName.lastIndexOf(":"));
+        String methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
+
+        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
+        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+
+        if(serviceMap.getMap().containsKey(serviceId))  {
+            Collection<? extends PhpNamedElement> methodCalls = phpIndex.getBySignature("#M#C" + serviceMap.getMap().get(serviceId) + "." + methodName, null, 0);
+
+            for(PhpNamedElement phpNamedElement : methodCalls) {
+                if(phpNamedElement instanceof Method) {
+                    return new ControllerAction(serviceId, (Method) phpNamedElement);
+                }
+            }
+
+        }
+
+        return null;
     }
 
     @Nullable
