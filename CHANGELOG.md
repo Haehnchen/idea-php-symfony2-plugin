@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Enable plugin in settings for your project!
+
+### 0.9.x
+* Add controller services support for go to and autocomplete
+* Support strict=false syntax in yaml
+* Fix for NullPointerException of plugin enabled check
+* Switch default plugin state to "Disabled" per project
+
 ### 0.9.4
 
 * Provide a global plugin state toggle per project
