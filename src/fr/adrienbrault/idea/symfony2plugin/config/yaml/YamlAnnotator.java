@@ -56,7 +56,13 @@ public class YamlAnnotator implements Annotator {
         }
 
         Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(PsiElementUtils.getText(psiElement).substring(1));
+        String serviceName = PsiElementUtils.getText(psiElement).substring(1);
+
+        // yaml strict=false syntax
+        if(serviceName.endsWith("=")) {
+            serviceName = serviceName.substring(0, serviceName.length() -1);
+        }
+        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceName);
 
         if (null == serviceClass) {
             holder.createWarningAnnotation(psiElement, "Missing Service");

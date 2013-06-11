@@ -62,6 +62,11 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     protected PsiElement[] serviceGoToDeclaration(PsiElement psiElement, String serviceId) {
 
+        // yaml strict=false syntax
+        if(serviceId.endsWith("=")) {
+            serviceId = serviceId.substring(0, serviceId.length() -1);
+        }
+
         Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
         String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId.toLowerCase());
 
