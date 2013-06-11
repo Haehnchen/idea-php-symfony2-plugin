@@ -224,7 +224,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public static boolean isEnabled(PsiElement psiElement) {
-        return isEnabled(psiElement.getProject());
+        return psiElement != null && isEnabled(psiElement.getProject());
     }
 
 }
