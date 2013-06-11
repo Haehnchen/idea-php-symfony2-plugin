@@ -24,5 +24,9 @@ public class ControllerCompletionProvider extends CompletionProvider<CompletionP
             completionResultSet.addElement(new ControllerActionLookupElement(controllerAction));
         }
 
+        for(ControllerAction controllerAction: controllerIndex.getServiceActionMethods(completionParameters.getPosition().getProject())) {
+            completionResultSet.addElement(new ControllerActionLookupElement(controllerAction));
+        }
+
     }
 }

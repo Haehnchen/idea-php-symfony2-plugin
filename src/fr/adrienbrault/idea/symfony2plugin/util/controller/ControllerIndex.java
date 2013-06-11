@@ -1,20 +1,22 @@
 package fr.adrienbrault.idea.symfony2plugin.util.controller;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
+import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ControllerIndex {
 
@@ -100,6 +102,51 @@ public class ControllerIndex {
                 actions.add(new ControllerAction(shortcutName, method));
             }
 
+        }
+
+        return actions;
+    }
+
+    public ArrayList<ControllerAction> getServiceActionMethods(Project project) {
+
+        ArrayList<ControllerAction> actions = new ArrayList<ControllerAction>();
+
+        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
+        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
+        if(routes.size() == 0) {
+            return actions;
+        }
+
+        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+        if(serviceMap.getMap().size() == 0) {
+            return actions;
+        }
+
+        HashMap<String, String> controllerClassNames = new HashMap<String, String>();
+
+        // there is now way to find service controllers directly,
+        // so we search for predefined service controller and use the public methods
+        for (Map.Entry<String,Route> entrySet: routes.entrySet()) {
+            String controllerName = entrySet.getValue().getController();
+            if(!controllerName.contains("::") && controllerName.contains(":")) {
+                String serviceId = controllerName.substring(0, controllerName.lastIndexOf(":"));
+                if(serviceMap.getMap().containsKey(serviceId)) {
+                    String className =  serviceMap.getMap().get(serviceId);
+                    controllerClassNames.put(serviceId, className);
+                }
+            }
+        }
+
+        // find public method of the service class which are possible Actions
+        for(Map.Entry<String, String> classDefinition: controllerClassNames.entrySet()) {
+            PhpClass phpClass = PhpElementsUtil.getClass(this.phpIndex, classDefinition.getValue());
+            if(phpClass != null) {
+                for(Method method : phpClass.getMethods()) {
+                    if(method.getAccess().isPublic() && !method.getName().startsWith("__") && !method.getName().startsWith("set")) {
+                        actions.add(new ControllerAction(classDefinition.getKey() + ":" + method.getName(), method));
+                    }
+                }
+            }
         }
 
         return actions;
