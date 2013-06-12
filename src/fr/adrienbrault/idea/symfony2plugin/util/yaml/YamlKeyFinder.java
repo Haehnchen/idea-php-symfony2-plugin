@@ -14,11 +14,11 @@ public class YamlKeyFinder {
         this.startRoot = startRoot;
     }
 
-    public PsiElement find(String keyName) {
+    public YAMLKeyValue find(String keyName) {
         return this.find(this.startRoot, keyName);
     }
 
-    private PsiElement find(PsiElement psiElement, String keyName) {
+    private YAMLKeyValue find(PsiElement psiElement, String keyName) {
 
         YAMLKeyValue currentYAMLKeyValues[] = PsiTreeUtil.getChildrenOfType(psiElement, YAMLKeyValue.class);
 
@@ -31,12 +31,11 @@ public class YamlKeyFinder {
             // we found your key
             // also online line is supported: test.boo.bar
             if(keyName.equals(currentYAMLKeyValue.getKeyText())) {
-                PsiElement valuePsiElement = currentYAMLKeyValue.getValue();
-                return valuePsiElement != null ? valuePsiElement : currentYAMLKeyValue;
+                return currentYAMLKeyValue;
             }
 
             // call me again on key-value child
-            if(keyName.startsWith(currentYAMLKeyValue.getKeyText()) && keyName.contains(".")) {
+            if(keyName.startsWith(currentYAMLKeyValue.getKeyText() + ".")) {
                 return this.findKey(currentYAMLKeyValue, keyName);
             }
 
@@ -46,7 +45,7 @@ public class YamlKeyFinder {
     }
 
 
-    private PsiElement findKey(YAMLKeyValue currentYAMLKeyValue, String keyName) {
+    private YAMLKeyValue findKey(YAMLKeyValue currentYAMLKeyValue, String keyName) {
 
         // not a key-value with more child
         YAMLCompoundValue yamlCompoundValues[] = PsiTreeUtil.getChildrenOfType(currentYAMLKeyValue, YAMLCompoundValue.class);
@@ -58,7 +57,7 @@ public class YamlKeyFinder {
         for(YAMLCompoundValue yamlCompoundValue : yamlCompoundValues) {
             PsiElement foundPsiElement = this.find(yamlCompoundValue, keyName.substring(keyName.indexOf(".") + 1));
             if(foundPsiElement != null) {
-                return foundPsiElement;
+                return (YAMLKeyValue) foundPsiElement;
             }
         }
 
@@ -67,7 +66,7 @@ public class YamlKeyFinder {
     }
 
     @Nullable
-    public static PsiElement findKeyValueElement(PsiElement psiElementRoot, String keyName) {
+    public static YAMLKeyValue findKeyValueElement(PsiElement psiElementRoot, String keyName) {
         return new YamlKeyFinder(psiElementRoot).find(psiElementRoot, keyName);
     }
 

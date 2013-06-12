@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +53,11 @@ public class TranslationUtil {
             if(psiFile instanceof YAMLFile) {
                 PsiElement yamlDocu = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
                 if(yamlDocu != null) {
-                    PsiElement goToPsi = YamlKeyFinder.findKeyValueElement(yamlDocu, translationKey);
+                    YAMLKeyValue goToPsi = YamlKeyFinder.findKeyValueElement(yamlDocu, translationKey);
                     if(goToPsi != null) {
-                        psiFoundElements.add(goToPsi);
+                        // multiline are line values are not resolve properly on psiElements use key as fallback target
+                        PsiElement valuePsiElement = goToPsi.getValue();
+                        psiFoundElements.add(valuePsiElement != null ? valuePsiElement : goToPsi);
                     }
                 }
 
