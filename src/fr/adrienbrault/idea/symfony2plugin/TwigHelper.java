@@ -53,9 +53,8 @@ public class TwigHelper {
         }
 
         // provide bundle callback for symfony < 2.2, which dont have addPath in container file
-        if(twigPaths.size() == 0) {
-            getTwigFilesByNameBundleFallback(project, phpIndex, uniqueNamespaceList, twigPaths);
-        }
+        // it looks like not all bundle namespaces get registered in addPath, so add them every time
+        getTwigFilesByNameBundleFallback(project, phpIndex, uniqueNamespaceList, twigPaths);
 
         for (TwigPath twigPath : twigPaths) {
             VirtualFile virtualDirectoryFile = twigPath.getDirectory();
