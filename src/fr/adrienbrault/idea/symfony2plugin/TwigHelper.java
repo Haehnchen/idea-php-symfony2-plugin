@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -9,15 +8,20 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiWhiteSpace;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,94 +31,60 @@ import java.util.Map;
  */
 public class TwigHelper {
 
-    public static Map<String, TwigFile> getTwigFilesByName(final Project project) {
+    public static Map<String, TwigFile> getTwigFilesByName(Project project) {
 
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         final Map<String, TwigFile> results = new HashMap<String, TwigFile>();
 
-        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(phpIndex).getBundles();
         ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
 
-        for (SymfonyBundle bundle : symfonyBundles) {
+        ArrayList<String> uniqueNamespaceList = new ArrayList<String>();
+        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
 
-            final PsiDirectory views = bundle.getSubDirectory("Resources", "views");
-            if(null == views) {
-                continue;
+        ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
+        Object twigPathIndex = xmlParser.parser();
+
+        if(twigPathIndex instanceof TwigPathIndex) {
+            for (TwigPath twigPath : ((TwigPathIndex) twigPathIndex).getTwigPaths()) {
+                uniqueNamespaceList.add(twigPath.getNamespace());
             }
 
-            final String prefixName = bundle.getName();
+            twigPaths.addAll(((TwigPathIndex) twigPathIndex).getTwigPaths());
+        }
 
-            // dont give use all files:
-            // Collection<VirtualFile> twigVirtualFiles = FileTypeIndex.getFiles(TwigFileType.INSTANCE, GlobalSearchScopes.directoryScope(views, true));
+        // provide bundle callback for symfony < 2.2, which dont have addPath in container file
+        if(twigPaths.size() == 0) {
+            getTwigFilesByNameBundleFallback(project, phpIndex, uniqueNamespaceList, twigPaths);
+        }
 
-            fileIndex.iterateContentUnderDirectory(views.getVirtualFile(), new ContentIterator() {
-                @Override
-                public boolean processFile(final VirtualFile virtualFile) {
-
-                    if(!(virtualFile.getFileType() instanceof TwigFileType)) {
-                      return true;
-                    }
-
-                    String templatePath = VfsUtil.getRelativePath(virtualFile, views.getVirtualFile(), '/');
-                    if(null == templatePath) {
-                        return true;
-                    }
-
-                    String templateDirectory = null; // xxx:XXX:xxx
-                    String templateFile = null; // xxx:xxx:XXX
-
-                    if (templatePath.contains("/")) {
-                        int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
-                        templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
-                        templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
-                    } else {
-                        templateDirectory = "";
-                        templateFile = templatePath;
-                    }
-
-                    String templateFinalName = prefixName + ":" + templateDirectory + ":" + templateFile;
-
-                    TwigFile twigFile = (TwigFile) PsiManager.getInstance(project).findFile(virtualFile);
-                    results.put(templateFinalName, twigFile);
-
-                    return true;
-                }
-            });
+        for (TwigPath twigPath : twigPaths) {
+            VirtualFile virtualDirectoryFile = twigPath.getDirectory();
+            if(virtualDirectoryFile != null) {
+                TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath);
+                fileIndex.iterateContentUnderDirectory(virtualDirectoryFile, twigPathContentIterator);
+                results.putAll(twigPathContentIterator.getResults());
+            }
 
         }
 
-        //@TODO: provide list for prefix match, see twig doc
-        final VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
-        if(globalDirectory == null) {
-            return results;
-        }
-
-        fileIndex.iterateContentUnderDirectory(globalDirectory, new ContentIterator() {
-            @Override
-            public boolean processFile(VirtualFile virtualFile) {
-
-                if(!(virtualFile.getFileType() instanceof TwigFileType)) {
-                    return true;
-                }
-
-                TwigFileType twigFileType = (TwigFileType) virtualFile.getFileType();
-
-                String templatePath = VfsUtil.getRelativePath(virtualFile, globalDirectory, '/');
-                String templateDeep = "";
-                if (null != templatePath && templatePath.contains("/")) {
-                    templateDeep = templatePath.substring(0, templatePath.lastIndexOf("/"));
-                }
-
-                TwigFile twigFile = (TwigFile) PsiManager.getInstance(project).findFile(virtualFile);
-                if(twigFile != null) {
-                    results.put(":" + templateDeep + ":" + twigFile.getName(), twigFile);
-                }
-
-                return true;
-            }
-        });
 
         return results;
+
+    }
+
+    private static void getTwigFilesByNameBundleFallback(Project project, PhpIndex phpIndex, ArrayList<String> uniqueNamespaceList, ArrayList<TwigPath> twigPaths) {
+        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
+        if(globalDirectory != null) {
+            twigPaths.add(new TwigPath(globalDirectory.getPath()));
+        }
+
+        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(phpIndex).getBundles();
+        for (SymfonyBundle bundle : symfonyBundles) {
+            PsiDirectory views = bundle.getSubDirectory("Resources", "views");
+            if(views != null && !uniqueNamespaceList.contains(bundle.getName())) {
+                twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName()));
+            }
+        }
     }
 
 

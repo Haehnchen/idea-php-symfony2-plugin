@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+  <services>
+      <service id="twig.loader" class="Symfony\Bundle\TwigBundle\Loader\FilesystemLoader">
+          <tag name="twig.loader"/>
+          <argument type="service" id="templating.locator"/>
+          <argument type="service" id="templating.name_parser"/>
+          <call method="addPath">
+              <argument>vendor\symfony\symfony\src\Symfony\Bridge\Twig/Resources/views/Form</argument>
+          </call>
+          <call method="addPath">
+              <argument>vendor\symfony\symfony\src\Symfony\Bundle\FrameworkBundle/Resources/views</argument>
+              <argument>Framework</argument>
+          </call>
+          <call method="addPath">
+              <argument>vendor\foo\bar\FooBundle/Resources/views</argument>
+              <argument>Framework</argument>
+          </call>
+          <call method="addPath">
+              <argument>app/Resources/views</argument>
+          </call>
+      </service>
+  </services>
+</container>
