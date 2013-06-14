@@ -208,13 +208,13 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         if(getPathToProjectContainer() == null) {
-            showInfoNotification("missing container file");
+            showInfoNotification("missing container file: " + getPath(project, Settings.getInstance(project).pathToProjectContainer));
         }
 
         String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
         File urlGeneratorFile = new File(urlGeneratorPath);
         if (!urlGeneratorFile.exists()) {
-            showInfoNotification("missing routing file");
+            showInfoNotification("missing routing file: " + urlGeneratorPath);
         }
 
     }

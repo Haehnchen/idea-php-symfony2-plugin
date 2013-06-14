@@ -19,7 +19,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public String pathToProjectContainer = DEFAULT_CONTAINER_PATH;
     public String pathToUrlGenerator = DEFAULT_URL_GENERATOR_PATH;
 
-    public boolean pluginEnabled = true;
+    public boolean pluginEnabled = false;
 
     public boolean symfonyContainerTypeProvider = true;
     public boolean objectRepositoryTypeProvider = false;
