@@ -17,11 +17,11 @@ public class ServiceXmlParserFactory implements ServiceFileInterface {
     protected Long lastUpdate;
     protected Object items;
 
-    public ServiceXmlParserFactory(Project project, Class serviceParser) {
+    public ServiceXmlParserFactory(Project project, Class<? extends ServiceParserInterface> serviceParser) {
         this.project = project;
 
         try {
-            this.serviceParser = (ServiceParserInterface) serviceParser.newInstance();
+            this.serviceParser = serviceParser.newInstance();
         } catch (InstantiationException ignored) {
         } catch (IllegalAccessException ignored) {
         }
@@ -51,7 +51,7 @@ public class ServiceXmlParserFactory implements ServiceFileInterface {
        this.lastUpdate = null;
     }
 
-    public static ServiceXmlParserFactory getInstance(Project project, Class object){
+    public static ServiceXmlParserFactory getInstance(Project project, Class<? extends ServiceParserInterface> serviceParser){
 
         Map<Class, ServiceXmlParserFactory> projectInstance = instance.get(project);
 
@@ -60,10 +60,10 @@ public class ServiceXmlParserFactory implements ServiceFileInterface {
             instance.put(project, projectInstance);
         }
 
-        ServiceXmlParserFactory projectPhpTypeInstance = projectInstance.get(object);
+        ServiceXmlParserFactory projectPhpTypeInstance = projectInstance.get(serviceParser);
         if(projectPhpTypeInstance == null) {
-            projectPhpTypeInstance = new ServiceXmlParserFactory(project, object);
-            projectInstance.put(object, projectPhpTypeInstance);
+            projectPhpTypeInstance = new ServiceXmlParserFactory(project, serviceParser);
+            projectInstance.put(serviceParser, projectPhpTypeInstance);
         }
 
         return projectPhpTypeInstance;
