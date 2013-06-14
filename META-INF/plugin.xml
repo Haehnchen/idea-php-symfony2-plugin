@@ -1,11 +1,13 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
+
+<b>Enable plugin in your symfony2 project!</b>
 
 <h2>Features:</h2>
 
@@ -79,6 +81,16 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.5</h2>
+<ul>
+    <li>Add controller services support for go to and autocomplete</li>
+    <li>Support strict=false syntax in yaml</li>
+    <li>Fix for NullPointerException of plugin enabled check and routing indexing</li>
+    <li>Plugin default state is now "Disabled" per project</li>
+    <li>Support registered extra twig templates path on addPath of container</li>
+    <li>Fix for YamlKeyFinder which provides better matching for translation go to</li>
+</ul>
 
 <h2>0.9.4</h2>
 <ul>

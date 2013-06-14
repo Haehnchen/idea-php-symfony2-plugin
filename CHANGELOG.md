@@ -1,13 +1,15 @@
 Changelog
 =========
 
-Enable plugin in settings for your project!
+Enable plugin in your symfony2 project!
 
-### 0.9.x
+### 0.9.5
 * Add controller services support for go to and autocomplete
 * Support strict=false syntax in yaml
-* Fix for NullPointerException of plugin enabled check
-* Switch default plugin state to "Disabled" per project
+* Fix for NullPointerException of plugin enabled check and routing indexing
+* Plugin default state is now "Disabled" per project
+* Get registered extra twig templates path on addPath of container
+* Fix for YamlKeyFinder which provides better matching for translation go to
 
 ### 0.9.4
 
