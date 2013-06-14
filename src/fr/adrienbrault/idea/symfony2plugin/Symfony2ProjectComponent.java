@@ -121,7 +121,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         File urlGeneratorFile = new File(urlGeneratorPath);
         VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
 
-        if (!urlGeneratorFile.exists()) {
+        if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
             return routes;
         }
 
