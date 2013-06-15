@@ -10,6 +10,7 @@ import javax.swing.*;
 public class Symfony2Icons {
 
     public static final Icon SYMFONY = IconLoader.getIcon("icons/symfony.png");
+    public static final Icon SYMFONY_TOOL_WINDOW = IconLoader.getIcon("icons/symfony_tool_window.png");
     public static final Icon DOCTRINE = IconLoader.getIcon("icons/doctrine.png");
 
 }

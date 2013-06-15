@@ -241,6 +241,13 @@
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.PhpServiceAnnotator"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
+
+        <toolWindow id="Symfony2" anchor="left" secondary="false"
+                    icon="/src/fr/adrienbrault/idea/symfony2plugin/icons/symfony_tool_window.png"
+                    factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
+                    conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
+                    />
+
     </extensions>
 
     <depends>com.jetbrains.php</depends>
