@@ -15,7 +15,9 @@ public class EntityNamesServiceParserTest extends Assert {
     public void testParse() throws Exception {
 
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
-        Map<String, String> map = new EntityNamesServiceParser().parser(testFile);
+        EntityNamesServiceParser entityNamesServiceParser = new EntityNamesServiceParser();
+        entityNamesServiceParser.parser(testFile);
+        Map<String, String> map = entityNamesServiceParser.getEntityNameMap();
 
         assertEquals("\\My\\NiceBundle\\Entity", map.get("MyNiceBundle"));
         assertEquals("\\Your\\TestBundle\\Entity", map.get("YourTestBundle"));

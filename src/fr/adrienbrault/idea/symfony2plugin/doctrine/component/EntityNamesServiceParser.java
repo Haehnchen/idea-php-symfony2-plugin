@@ -10,25 +10,30 @@ import java.util.Map;
 
 public class EntityNamesServiceParser extends AbstractServiceParser {
 
+
+    protected Map<String, String> entityNameMap = new HashMap<String, String>();
+
     @Override
     public String getXPathFilter() {
         return "/container/services/service[@id[starts-with(.,'doctrine.orm.')]]//call[@method='setEntityNamespaces']//argument[@key]";
     }
 
-    public Map<String, String> parser(File file) {
+    public void parser(File file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {
-            return new HashMap<String, String>();
+            return;
         }
 
-        Map<String, String> map = new HashMap<String, String>();
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element node = (Element) nodeList.item(i);
-            map.put(node.getAttribute("key"), "\\" + node.getTextContent());
+            this.entityNameMap.put(node.getAttribute("key"), "\\" + node.getTextContent());
         }
 
-        return map;
+    }
+
+    public Map<String, String> getEntityNameMap() {
+        return entityNameMap;
     }
 
 }

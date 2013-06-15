@@ -18,11 +18,11 @@ public class FormTypeServiceParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         FormTypeServiceParser parser = new FormTypeServiceParser();
-        FormTypeMap map = parser.parser(testFile);
+        parser.parser(testFile);
 
-        assertEquals(map.getMap().get("form.type.field"), "field");
-        assertEquals(map.getMap().get("form.type.locale"), "locale");
-        assertEquals(map.getMap().get("form.type.entity"), "entity");
+        assertEquals(parser.getFormTypeMap().getMap().get("form.type.field"), "field");
+        assertEquals(parser.getFormTypeMap().getMap().get("form.type.locale"), "locale");
+        assertEquals(parser.getFormTypeMap().getMap().get("form.type.entity"), "entity");
 
     }
 

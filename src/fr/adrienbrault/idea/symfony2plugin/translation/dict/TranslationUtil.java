@@ -20,16 +20,10 @@ public class TranslationUtil {
 
     static public PsiElement[] getDomainFilePsiElements(Project project, String domainName) {
 
-        ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-
-        Object domains = xmlParser.parser();
-        if(domains == null || !(domains instanceof ArrayList)) {
-            return new PsiElement[0];
-        }
-
+        DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
         List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
-        for(DomainFileMap domain: (ArrayList<DomainFileMap>) domains) {
+        for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
             if(domain.getDomain().equals(domainName)) {
                 PsiFile psiFile = domain.getPsiFile(project);
                 if(psiFile != null) {

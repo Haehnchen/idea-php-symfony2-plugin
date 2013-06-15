@@ -10,26 +10,29 @@ import java.util.Map;
 
 public class FormTypeServiceParser extends AbstractServiceParser {
 
+    protected FormTypeMap formTypeMap = new FormTypeMap();
+
     @Override
     public String getXPathFilter() {
         return "/container/services/service[@id='form.registry']//service[@class]/argument[@type='collection'][1]/argument[@key]";
     }
 
-    public FormTypeMap parser(File file) {
+    public void parser(File file) {
         NodeList nodeList = this.parserer(file);
 
-        Map<String, String> fromTypesMap = new HashMap<String, String>();
-
         if(nodeList == null) {
-            return new FormTypeMap(fromTypesMap);
+            return;
         }
 
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element node = (Element) nodeList.item(i);
-            fromTypesMap.put(node.getTextContent(), node.getAttribute("key"));
+            this.formTypeMap.getMap().put(node.getTextContent(), node.getAttribute("key"));
         }
 
-        return new FormTypeMap(fromTypesMap);
+    }
+
+    public FormTypeMap getFormTypeMap() {
+        return formTypeMap;
     }
 
 }

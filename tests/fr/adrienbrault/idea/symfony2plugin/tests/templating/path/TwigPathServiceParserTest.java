@@ -18,13 +18,13 @@ public class TwigPathServiceParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         TwigPathServiceParser parser = new TwigPathServiceParser();
-        TwigPathIndex map = parser.parser(testFile);
+        parser.parser(testFile);
 
-        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bundle\\FrameworkBundle/Resources/views", map.getNamespacePaths("Framework").get(0).getPath());
-        assertEquals("vendor\\foo\\bar\\FooBundle/Resources/views", map.getNamespacePaths("Framework").get(1).getPath());
+        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bundle\\FrameworkBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(0).getPath());
+        assertEquals("vendor\\foo\\bar\\FooBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(1).getPath());
 
-        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bridge\\Twig/Resources/views/Form", map.getNamespacePaths(TwigPathIndex.MAIN).get(0).getPath());
-        assertEquals("app/Resources/views", map.getNamespacePaths(TwigPathIndex.MAIN).get(1).getPath());
+        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bridge\\Twig/Resources/views/Form", parser.getTwigPathIndex().getNamespacePaths(TwigPathIndex.MAIN).get(0).getPath());
+        assertEquals("app/Resources/views", parser.getTwigPathIndex().getNamespacePaths(TwigPathIndex.MAIN).get(1).getPath());
 
     }
 

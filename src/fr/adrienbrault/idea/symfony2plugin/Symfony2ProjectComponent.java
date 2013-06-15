@@ -9,7 +9,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.ResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
@@ -40,6 +39,24 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     private Map<String, Route> routes;
     private Long routesLastModified;
+
+    public static boolean isIndexing() {
+        return isInStackTrace("StubUpdatingIndex");
+    }
+
+    public static boolean isInStackTrace(String search)    {
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace(); // Thread.currentThread().getStackTrace()
+
+        for(StackTraceElement stackElement : stackTrace){
+            String codeFrom = stackElement.toString();
+            stackElement.getClassName();
+            if(codeFrom.contains(search)){
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
@@ -159,17 +176,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return routes;
     }
 
-    @SuppressWarnings("unchecked")
     public Map<String, String> getConfigParameter() {
-
-        ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(this.project, ParameterServiceParser.class);
-
-        Object domains = xmlParser.parser();
-        if(domains == null || !(domains instanceof Map)) {
-            return new HashMap<String, String>();
-        }
-
-        return (Map<String, String>) domains;
+        return ServiceXmlParserFactory.getInstance(this.project, ParameterServiceParser.class).getParameterMap();
     }
 
     private String getPath(Project project, String path) {
@@ -180,17 +188,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return path;
     }
 
-    @SuppressWarnings("unchecked")
     public Map<String, String> getEntityNamespacesMap() {
-
-        ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(this.project, EntityNamesServiceParser.class);
-
-        Object domains = xmlParser.parser();
-        if(domains == null || !(domains instanceof Map)) {
-            return new HashMap<String, String>();
-        }
-
-        return (Map<String, String>) domains;
+        return ServiceXmlParserFactory.getInstance(this.project, EntityNamesServiceParser.class).getEntityNameMap();
     }
 
     private void checkProject() {

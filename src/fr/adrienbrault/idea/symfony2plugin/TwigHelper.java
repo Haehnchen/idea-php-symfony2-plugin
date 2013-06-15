@@ -13,7 +13,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -41,16 +40,13 @@ public class TwigHelper {
         ArrayList<String> uniqueNamespaceList = new ArrayList<String>();
         ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
 
-        ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
-        Object twigPathIndex = xmlParser.parser();
-
-        if(twigPathIndex instanceof TwigPathIndex) {
-            for (TwigPath twigPath : ((TwigPathIndex) twigPathIndex).getTwigPaths()) {
-                uniqueNamespaceList.add(twigPath.getNamespace());
-            }
-
-            twigPaths.addAll(((TwigPathIndex) twigPathIndex).getTwigPaths());
+        // unique list for bundle fallback
+        TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
+        for (TwigPath twigPath : twigPathServiceParser.getTwigPathIndex().getTwigPaths()) {
+            uniqueNamespaceList.add(twigPath.getNamespace());
         }
+
+        twigPaths.addAll(twigPathServiceParser.getTwigPathIndex().getTwigPaths());
 
         // provide bundle callback for symfony < 2.2, which dont have addPath in container file
         // it looks like not all bundle namespaces get registered in addPath, so add them every time

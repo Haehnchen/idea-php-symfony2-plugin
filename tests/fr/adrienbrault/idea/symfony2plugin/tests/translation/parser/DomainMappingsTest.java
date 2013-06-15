@@ -16,7 +16,8 @@ public class DomainMappingsTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         DomainMappings bla = new DomainMappings();
-        ArrayList<DomainFileMap> map = bla.parser(testFile);
+        bla.parser(testFile);
+        ArrayList<DomainFileMap> map = bla.getDomainFileMaps();
 
         assertEquals(10, map.size());
 

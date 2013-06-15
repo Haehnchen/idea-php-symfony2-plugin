@@ -16,7 +16,7 @@ import java.io.IOException;
 abstract public class AbstractServiceParser  implements ServiceParserInterface {
 
     @Nullable
-    public NodeList parserer(File file) {
+    protected NodeList parserer(File file) {
 
         Document document;
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

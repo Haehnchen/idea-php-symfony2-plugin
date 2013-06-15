@@ -8,18 +8,18 @@ import java.io.File;
 
 public class TwigPathServiceParser extends AbstractServiceParser {
 
+    protected TwigPathIndex twigPathIndex = new TwigPathIndex();
+
     @Override
     public String getXPathFilter() {
         return "/container/services/service[@id='twig.loader']//call[@method='addPath']";
     }
 
-    public TwigPathIndex parser(File file) {
+    public void parser(File file) {
         NodeList nodeList = this.parserer(file);
 
-        TwigPathIndex twigPathIndex = new TwigPathIndex();
-
         if(nodeList == null) {
-            return twigPathIndex;
+            return;
         }
 
         for (int i = 0; i < nodeList.getLength(); i++) {
@@ -28,13 +28,16 @@ public class TwigPathServiceParser extends AbstractServiceParser {
             NodeList arguments = node.getElementsByTagName("argument");
 
             if(arguments.getLength() == 1) {
-                twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent()));
+                this.twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent()));
             } else if(arguments.getLength() == 2) {
-                twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent(), arguments.item(1).getTextContent()));
+                this.twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent(), arguments.item(1).getTextContent()));
             }
 
         }
 
+    }
+
+    public TwigPathIndex getTwigPathIndex() {
         return twigPathIndex;
     }
 

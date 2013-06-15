@@ -42,14 +42,9 @@ public class FormTypeReference extends PsiReferenceBase<PsiElement> implements P
             return lookupElements.toArray();
         }
 
-        ServiceXmlParserFactory xmlParser = ServiceXmlParserFactory.getInstance(getElement().getProject(), FormTypeServiceParser.class);
-        Object formTypeMap = xmlParser.parser();
+        FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(getElement().getProject(), FormTypeServiceParser.class);
 
-        if(!(formTypeMap instanceof FormTypeMap)) {
-            return lookupElements.toArray();
-        }
-
-        FormTypeMap map = (FormTypeMap) formTypeMap;
+        FormTypeMap map = formTypeServiceParser.getFormTypeMap();
         for(String key : map.getMap().keySet()) {
             lookupElements.add(new FormTypeLookup(key, map.getMap().get(key)));
         }

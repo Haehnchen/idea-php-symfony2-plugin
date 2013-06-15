@@ -12,7 +12,10 @@ public class ParameterServiceParserTest extends Assert {
     public void testParse() throws Exception {
 
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
-        Map<String, String> map = new ParameterServiceParser().parser(testFile);
+        ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
+        parameterServiceParser.parser(testFile);
+
+        Map<String, String> map = parameterServiceParser.getParameterMap();
 
         assertEquals("app", map.get("kernel.name"));
         assertEquals("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerNameParser", map.get("controller_name_converter.class"));
