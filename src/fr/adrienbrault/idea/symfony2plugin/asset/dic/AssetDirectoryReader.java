@@ -41,7 +41,7 @@ public class AssetDirectoryReader {
         final List<AssetFile> files = new ArrayList<AssetFile>();
 
         VirtualFile projectDirectory = project.getBaseDir();
-        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, "Web");
+        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, "web");
 
         if (null == webDirectory) {
             return files;
