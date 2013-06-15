@@ -38,8 +38,9 @@ public class YamlAnnotator implements Annotator {
         }
 
         // at least %a%
+        // and not this one: %kernel.root_dir%/../web/
         String parameterName = PsiElementUtils.getText(psiElement);
-        if(parameterName.length() < 3) {
+        if(parameterName.length() < 3 || !(parameterName.startsWith("%") && parameterName.endsWith("%"))) {
             return;
         }
 
