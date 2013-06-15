@@ -4,6 +4,7 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -43,7 +44,7 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
             VirtualFile virtualFile = symfonyBundle.getRelative(this.path);
             if(virtualFile != null) {
-                fileIndex.iterateContentUnderDirectory(virtualFile, new BundleContentIterator(symfonyBundle, bundleFiles));
+                fileIndex.iterateContentUnderDirectory(virtualFile, new BundleContentIterator(symfonyBundle, bundleFiles, completionParameters.getPosition().getProject()));
             }
 
         }
@@ -58,16 +59,18 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
         private SymfonyBundle symfonyBundle;
         private ArrayList<BundleFile> bundleFiles;
+        private Project project;
 
-        public BundleContentIterator(SymfonyBundle symfonyBundle, ArrayList<BundleFile> bundleFiles) {
+        public BundleContentIterator(SymfonyBundle symfonyBundle, ArrayList<BundleFile> bundleFiles, Project project) {
             this.symfonyBundle = symfonyBundle;
             this.bundleFiles = bundleFiles;
+            this.project = project;
         }
 
         @Override
         public boolean processFile(VirtualFile virtualFile) {
             if(!virtualFile.isDirectory()) {
-                bundleFiles.add(new BundleFile(this.symfonyBundle, virtualFile));
+                bundleFiles.add(new BundleFile(this.symfonyBundle, virtualFile, project));
             }
 
             return true;
