@@ -11,15 +11,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,9 +31,6 @@ import java.util.regex.Pattern;
 public class Symfony2ProjectComponent implements ProjectComponent {
 
     private Project project;
-
-    private ServiceMap servicesMap;
-    private Long servicesMapLastModified;
 
     private Map<String, Route> routes;
     private Long routesLastModified;
@@ -105,30 +100,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public ServiceMap getServicesMap() {
-        String defaultServiceMapFilePath = getPath(project, Settings.getInstance(project).pathToProjectContainer);
-
-        File xmlFile = new File(defaultServiceMapFilePath);
-        if (!xmlFile.exists()) {
-            return new ServiceMap();
-        }
-
-        Long xmlFileLastModified = xmlFile.lastModified();
-        if (xmlFileLastModified.equals(servicesMapLastModified)) {
-            return servicesMap;
-        }
-
-        try {
-            ServiceMapParser serviceMapParser = new ServiceMapParser();
-            servicesMap = serviceMapParser.parse(xmlFile);
-            servicesMapLastModified = xmlFileLastModified;
-
-            return servicesMap;
-        } catch (SAXException ignored) {
-        } catch (IOException ignored) {
-        } catch (ParserConfigurationException ignored) {
-        }
-
-        return new ServiceMap();
+        return ServiceXmlParserFactory.getInstance(this.project, XmlServiceParser.class).getServiceMap();
     }
 
     public Map<String, Route> getRoutes() {
@@ -222,7 +194,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return Settings.getInstance(project).pluginEnabled;
     }
 
-    public static boolean isEnabled(PsiElement psiElement) {
+    public static boolean isEnabled(@Nullable PsiElement psiElement) {
         return psiElement != null && isEnabled(psiElement.getProject());
     }
 
