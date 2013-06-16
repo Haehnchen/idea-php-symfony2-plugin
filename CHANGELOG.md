@@ -1,7 +1,12 @@
 Changelog
 =========
 
-Enable plugin in your symfony2 project!
+We will get API breaks in upcoming PhpStorm release to fix freezing, watch changelog before updating.
+
+### 0.9.x
+* Add search panel (left sidebar) to find internal known Symfony components and go to them
+* Fix assets "web" reader on Linux
+* Filter yaml parameter annotator on token values
 
 ### 0.9.5
 * Add controller services support for go to and autocomplete
