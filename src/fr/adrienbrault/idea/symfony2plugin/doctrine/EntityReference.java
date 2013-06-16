@@ -1,19 +1,27 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
-import com.intellij.psi.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiReferenceBase;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamespace;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -48,8 +56,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
 
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
-        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String, String> entityNamespaces = symfony2ProjectComponent.getEntityNamespacesMap();
+        Map<String, String> entityNamespaces = ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap();
 
         List<LookupElement> results = new ArrayList<LookupElement>();
 

@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassReferenceInsertHandler;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -36,9 +37,7 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = parameters.getOriginalFile().getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String, String> entityNamespaces = symfony2ProjectComponent.getEntityNamespacesMap();
-
+        Map<String, String> entityNamespaces = ServiceXmlParserFactory.getInstance(parameters.getOriginalFile().getProject(), EntityNamesServiceParser.class).getEntityNameMap();
 
         // copied from PhpCompletionUtil::addClassesInNamespace looks the official way to find classes in namespaces
         // its a really performance nightmare

@@ -2,15 +2,15 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 public class YamlAnnotator implements Annotator {
 
@@ -32,11 +32,6 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-        if (null == symfony2ProjectComponent) {
-            return;
-        }
-
         // at least %a%
         // and not this one: %kernel.root_dir%/../web/
         String parameterName = PsiElementUtils.getText(psiElement);
@@ -44,7 +39,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        String parameterValue = symfony2ProjectComponent.getConfigParameter().get(parameterName.substring(1, parameterName.length() - 1));
+        String parameterValue = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(parameterName.substring(1, parameterName.length() - 1));
         if (null == parameterValue) {
             holder.createWarningAnnotation(psiElement, "Missing Parameter");
         }
@@ -56,15 +51,14 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
         String serviceName = PsiElementUtils.getText(psiElement).substring(1);
 
         // yaml strict=false syntax
         if(serviceName.endsWith("=")) {
             serviceName = serviceName.substring(0, serviceName.length() -1);
         }
-        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceName);
 
+        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
         if (null == serviceClass) {
             holder.createWarningAnnotation(psiElement, "Missing Service");
         }

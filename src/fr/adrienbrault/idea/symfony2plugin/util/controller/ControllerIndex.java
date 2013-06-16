@@ -7,10 +7,12 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -52,7 +54,7 @@ public class ControllerIndex {
         String methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
 
         Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap();
 
         if(serviceMap.getMap().containsKey(serviceId))  {
             Collection<? extends PhpNamedElement> methodCalls = phpIndex.getBySignature("#M#C" + serviceMap.getMap().get(serviceId) + "." + methodName, null, 0);
@@ -117,7 +119,7 @@ public class ControllerIndex {
             return actions;
         }
 
-        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap();
         if(serviceMap.getMap().size() == 0) {
             return actions;
         }

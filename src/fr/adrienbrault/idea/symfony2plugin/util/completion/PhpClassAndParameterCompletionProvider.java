@@ -10,7 +10,9 @@ import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.ParameterPercentWrapInsertHandler;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -31,8 +33,7 @@ public class PhpClassAndParameterCompletionProvider extends CompletionProvider<C
 
         // ParameterPercentWrapInsertHandler
         // @TODO: we need a parameter class dict
-        Symfony2ProjectComponent symfony2ProjectComponent = parameters.getOriginalFile().getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String, String> configParameters = symfony2ProjectComponent.getConfigParameter();
+        Map<String, String> configParameters = ServiceXmlParserFactory.getInstance(parameters.getOriginalFile().getProject(), ParameterServiceParser.class).getParameterMap();
         for(Map.Entry<String, String> Entry: configParameters.entrySet()) {
             // some better class filter
             if(Entry.getValue().contains("\\")) {

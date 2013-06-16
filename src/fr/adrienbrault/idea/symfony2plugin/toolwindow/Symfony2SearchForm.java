@@ -19,11 +19,13 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import icons.PhpIcons;
 
 import javax.swing.*;
@@ -89,8 +91,7 @@ public class Symfony2SearchForm {
         PsiElement psiElement = null;
 
         if(lookupElement instanceof ServiceStringLookupElement) {
-            Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
-            ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+            ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(this.project, XmlServiceParser.class).getServiceMap();
             if(serviceMap.getMap().containsKey(lookupElement.getLookupString())) {
                 PsiElement psiElements[] = PhpElementsUtil.getClassInterfacePsiElements(this.project, serviceMap.getMap().get(lookupElement.getLookupString()));
                 if(psiElements.length > 0) {
@@ -130,10 +131,9 @@ public class Symfony2SearchForm {
         filter = filter.toLowerCase();
 
         ArrayList<LookupElement> items = new ArrayList<LookupElement>();
-        Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
         if(this.toggleService.isSelected()) {
-            Map<String,String> map = symfony2ProjectComponent.getServicesMap().getMap();
+            Map<String,String> map = ServiceXmlParserFactory.getInstance(this.project, XmlServiceParser.class).getServiceMap().getMap();
             for( Map.Entry<String, String> entry: map.entrySet() ) {
                 if(entry.getKey().toLowerCase().contains(filter)) {
                     items.add(new ServiceStringLookupElement(entry.getKey(), entry.getValue()));
@@ -142,6 +142,7 @@ public class Symfony2SearchForm {
         }
 
         if(this.toggleRoute.isSelected()) {
+            Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
             Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
             for (Route route : routes.values()) {
                 if(route.getName().toLowerCase().contains(filter)) {

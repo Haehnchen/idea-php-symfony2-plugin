@@ -3,16 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Map;
 
 
 public class PhpServiceAnnotator implements Annotator {
@@ -29,8 +26,7 @@ public class PhpServiceAnnotator implements Annotator {
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
-        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(element.getProject(), XmlServiceParser.class).getServiceMap();
 
         String serviceName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
         if(serviceMap.getMap().containsKey(serviceName))  {

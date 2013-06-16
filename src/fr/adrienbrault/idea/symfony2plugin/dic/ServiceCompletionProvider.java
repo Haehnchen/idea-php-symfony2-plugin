@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -24,8 +25,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String,String> map = symfony2ProjectComponent.getServicesMap().getMap();
+        Map<String,String> map = ServiceXmlParserFactory.getInstance(element.getProject(), XmlServiceParser.class).getServiceMap().getMap();
 
         for( Map.Entry<String, String> entry: map.entrySet() ) {
             resultSet.addElement(

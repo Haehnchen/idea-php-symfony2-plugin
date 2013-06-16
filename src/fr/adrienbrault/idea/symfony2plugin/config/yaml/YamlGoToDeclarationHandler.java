@@ -6,8 +6,11 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -67,9 +70,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             serviceId = serviceId.substring(0, serviceId.length() -1);
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId.toLowerCase());
-
+        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId.toLowerCase());
         if (null == serviceClass) {
             return new PsiElement[]{};
         }
@@ -79,12 +80,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
 
-        Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-        if (null == symfony2ProjectComponent) {
-            return new PsiElement[]{};
-        }
-
-        String parameterName = symfony2ProjectComponent.getConfigParameter().get(psiParameterName);
+        String parameterName = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(psiParameterName);
         if (null == parameterName) {
             return new PsiElement[]{};
         }

@@ -3,12 +3,15 @@ package fr.adrienbrault.idea.symfony2plugin.config.component;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -42,12 +45,7 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
-        if (null == symfony2ProjectComponent) {
-            return new ResolveResult[]{};
-        }
-
-        String parameterName = symfony2ProjectComponent.getConfigParameter().get(this.parameterName);
+        String parameterName = ServiceXmlParserFactory.getInstance(getElement().getProject(), ParameterServiceParser.class).getParameterMap().get(this.parameterName);
         if (null == parameterName) {
             return new ResolveResult[]{};
         }
@@ -74,10 +72,9 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
     @NotNull
     @Override
     public Object[] getVariants() {
-        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
 
         List<LookupElement> results = new ArrayList<LookupElement>();
-        Map<String, String> it = symfony2ProjectComponent.getConfigParameter();
+        Map<String, String> it = ServiceXmlParserFactory.getInstance(getElement().getProject(), ParameterServiceParser.class).getParameterMap();
 
         for(Map.Entry<String, String> Entry: it.entrySet()) {
             String parameterKey = Entry.getKey();

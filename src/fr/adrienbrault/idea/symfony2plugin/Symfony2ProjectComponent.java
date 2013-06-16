@@ -35,34 +35,16 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     private Map<String, Route> routes;
     private Long routesLastModified;
 
-    public static boolean isIndexing() {
-        return isInStackTrace("StubUpdatingIndex");
-    }
-
-    public static boolean isInStackTrace(String search)    {
-        StackTraceElement[] stackTrace = new Throwable().getStackTrace(); // Thread.currentThread().getStackTrace()
-
-        for(StackTraceElement stackElement : stackTrace){
-            String codeFrom = stackElement.toString();
-            stackElement.getClassName();
-            if(codeFrom.contains(search)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
     }
 
     public void initComponent() {
-        System.out.println("initComponent");
+        //System.out.println("initComponent");
     }
 
     public void disposeComponent() {
-        System.out.println("disposeComponent");
+        //System.out.println("disposeComponent");
     }
 
     @NotNull
@@ -97,10 +79,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         return projectContainer;
-    }
-
-    public ServiceMap getServicesMap() {
-        return ServiceXmlParserFactory.getInstance(this.project, XmlServiceParser.class).getServiceMap();
     }
 
     public Map<String, Route> getRoutes() {
@@ -148,20 +126,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return routes;
     }
 
-    public Map<String, String> getConfigParameter() {
-        return ServiceXmlParserFactory.getInstance(this.project, ParameterServiceParser.class).getParameterMap();
-    }
-
     private String getPath(Project project, String path) {
         if (!FileUtil.isAbsolute(path)) { // Project relative path
             path = project.getBasePath() + "/" + path;
         }
 
         return path;
-    }
-
-    public Map<String, String> getEntityNamespacesMap() {
-        return ServiceXmlParserFactory.getInstance(this.project, EntityNamesServiceParser.class).getEntityNameMap();
     }
 
     private void checkProject() {

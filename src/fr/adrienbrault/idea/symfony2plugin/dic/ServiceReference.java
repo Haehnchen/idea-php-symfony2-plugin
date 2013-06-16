@@ -5,7 +5,7 @@ import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,12 +36,7 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         // Return the PsiElement for the class corresponding to the serviceId
-        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
-        if (null == symfony2ProjectComponent) {
-            return new ResolveResult[]{};
-        }
-
-        String serviceClass = symfony2ProjectComponent.getServicesMap().getMap().get(serviceId.toLowerCase());
+        String serviceClass = ServiceXmlParserFactory.getInstance(getElement().getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId.toLowerCase());
 
         if (null == serviceClass) {
             return new ResolveResult[]{};
@@ -73,8 +68,8 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
     @NotNull
     @Override
     public Object[] getVariants() {
-        Symfony2ProjectComponent symfony2ProjectComponent = getElement().getProject().getComponent(Symfony2ProjectComponent.class);
-        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+
+        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(getElement().getProject(), XmlServiceParser.class).getServiceMap();
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
         List<LookupElement> results = new ArrayList<LookupElement>();

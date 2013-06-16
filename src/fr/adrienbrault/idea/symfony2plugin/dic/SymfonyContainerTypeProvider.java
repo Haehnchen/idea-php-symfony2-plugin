@@ -7,10 +7,10 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpTypeCache;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeCacheIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpTypeCache;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -48,8 +48,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider {
             return cache.addSignatureCache(e, null);
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = e.getProject().getComponent(Symfony2ProjectComponent.class);
-        ServiceMap serviceMap = symfony2ProjectComponent.getServicesMap();
+        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(e.getProject(), XmlServiceParser.class).getServiceMap();
         if (null == serviceMap) {
             return cache.addSignatureCache(e, null);
         }

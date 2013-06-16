@@ -3,9 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
@@ -13,9 +13,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvi
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.codeInsight.completion.CompletionContributor;
 import java.util.Map;
 
 /**
@@ -46,10 +46,7 @@ public class YamlCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
-
-                    Map<String, String> it = symfony2ProjectComponent.getConfigParameter();
-
+                    Map<String, String> it = ServiceXmlParserFactory.getInstance(element.getProject(), ParameterServiceParser.class).getParameterMap();
                     for(Map.Entry<String, String> Entry: it.entrySet()) {
                         resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), element));
                     }

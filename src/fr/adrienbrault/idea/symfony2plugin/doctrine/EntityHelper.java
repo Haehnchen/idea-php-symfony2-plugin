@@ -3,7 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 
 import java.util.Collection;
 import java.util.Map;
@@ -32,8 +33,7 @@ public class EntityHelper {
         // MyBundle:Folder\Model -> MyBundle\Entity\Folder\Model
         if (shortcutName.contains(":")) {
 
-            Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-            Map<String, String> em = symfony2ProjectComponent.getEntityNamespacesMap();
+            Map<String, String> em = ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap();
 
             int firstDirectorySeparatorIndex = shortcutName.indexOf(":");
 
