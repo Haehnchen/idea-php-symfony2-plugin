@@ -26,7 +26,7 @@ public class RouteLookupElement  extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(route.getController());
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.SYMFONY);
+        presentation.setIcon(Symfony2Icons.ROUTE);
     }
 
 }

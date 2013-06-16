@@ -28,7 +28,7 @@ public class FormTypeLookup extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(key);
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.SYMFONY);
+        presentation.setIcon(Symfony2Icons.FORM_TYPE);
     }
 
 }

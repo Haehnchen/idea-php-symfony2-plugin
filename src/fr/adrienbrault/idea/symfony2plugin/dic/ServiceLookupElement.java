@@ -29,6 +29,6 @@ public class ServiceLookupElement extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(serviceClass.getPresentableFQN());
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.SYMFONY);
+        presentation.setIcon(Symfony2Icons.SERVICE);
     }
 }
