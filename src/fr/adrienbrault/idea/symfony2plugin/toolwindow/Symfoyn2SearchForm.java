@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.toolwindow;
 import com.intellij.codeInsight.TargetElementUtilBase;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -10,8 +12,8 @@ import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.ui.SimpleColoredComponent;
+import com.intellij.ui.components.JBList;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
@@ -21,25 +23,52 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 
 public class Symfoyn2SearchForm {
     private JTextField textField1;
     private JPanel panel1;
-    private JList list1;
+    private JBList list1;
 
     public DefaultListModel listenModel = new DefaultListModel();
     private Project project;
+
+    public void loadPackageDataAndApplyToUi(final String filter) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            public void run() {
+                final ArrayList<? extends LookupElement> items = getItems(filter);
+
+                DefaultListModel listModel = (DefaultListModel) list1.getModel();
+                listModel.removeAllElements();
+
+                ArrayList<SortableLookupItem> sortableLookupItems = new ArrayList<SortableLookupItem>();
+
+                for(LookupElement item: items) {
+                    sortableLookupItems.add(new SortableLookupItem(item));
+                }
+
+                Collections.sort(sortableLookupItems);
+
+                for(SortableLookupItem sortableLookupItem: sortableLookupItems) {
+                    listModel.addElement(sortableLookupItem.getLookupElement());
+                }
+
+                Symfoyn2SearchForm.this.list1.setPaintBusy(false);
+            }
+        }, ModalityState.any());
+
+
+    }
 
     public Symfoyn2SearchForm(final Project project) {
 
@@ -54,14 +83,15 @@ public class Symfoyn2SearchForm {
             @Override
             public void keyReleased(KeyEvent e) {
                 super.keyReleased(e);
-                JTextField textField = (JTextField)e.getSource();
+                final JTextField textField = (JTextField)e.getSource();
 
-                DefaultListModel listModel = (DefaultListModel) list1.getModel();
-                listModel.removeAllElements();
+                Symfoyn2SearchForm.this.list1.setPaintBusy(true);
+                ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+                    public void run() {
+                        Symfoyn2SearchForm.this.loadPackageDataAndApplyToUi(textField.getText());
+                    }
+                });
 
-                for(LookupElement item: getItems(textField.getText())) {
-                    listModel.addElement(item);
-                }
             }
         });
 
@@ -122,20 +152,22 @@ public class Symfoyn2SearchForm {
     }
 
     public ArrayList<? extends LookupElement> getItems(String filter) {
-        ArrayList<LookupElement> items = new ArrayList<LookupElement>();
 
+        filter = filter.toLowerCase();
+
+        ArrayList<LookupElement> items = new ArrayList<LookupElement>();
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
         Map<String,String> map = symfony2ProjectComponent.getServicesMap().getMap();
         for( Map.Entry<String, String> entry: map.entrySet() ) {
-            if(entry.getKey().contains(filter)) {
+            if(entry.getKey().toLowerCase().contains(filter)) {
                 items.add(new ServiceStringLookupElement(entry.getKey(), entry.getValue()));
             }
         }
 
         Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
         for (Route route : routes.values()) {
-            if(route.getName().contains(filter)) {
+            if(route.getName().toLowerCase().contains(filter)) {
                 items.add(new RouteLookupElement(route));
             }
 
@@ -143,7 +175,7 @@ public class Symfoyn2SearchForm {
 
         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(this.project);
         for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
-            if(entry.getKey().contains(filter)) {
+            if(entry.getKey().toLowerCase().contains(filter)) {
                 items.add(new TemplateLookupElement(entry.getKey(), entry.getValue()));
             }
         }
@@ -191,6 +223,28 @@ public class Symfoyn2SearchForm {
                 new OpenFileDescriptor(project, virtualFile, navOffset).navigate(true);
             }
         }
+    }
+
+    private class SortableLookupItem implements Comparable<SortableLookupItem>  {
+
+
+        private LookupElement lookupElement;
+
+        public SortableLookupItem(LookupElement lookupElement) {
+            this.lookupElement = lookupElement;
+        }
+
+        public LookupElement getLookupElement() {
+            return lookupElement;
+        }
+
+        @Override
+        public int compareTo(SortableLookupItem o) {
+            Collator collator = Collator.getInstance();
+            collator.setStrength(Collator.SECONDARY);
+            return collator.compare(this.lookupElement.getLookupString(), o.getLookupElement().getLookupString());
+        }
+
     }
 
 }

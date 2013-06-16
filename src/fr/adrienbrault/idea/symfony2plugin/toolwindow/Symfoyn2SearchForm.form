@@ -16,14 +16,9 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="2a46d" class="javax.swing.JList" binding="list1" default-binding="true">
+          <component id="b2b5e" class="com.intellij.ui.components.JBList" binding="list1">
             <constraints/>
-            <properties>
-              <model>
-                <item value="wrwerwer"/>
-                <item value="dfsdf"/>
-              </model>
-            </properties>
+            <properties/>
           </component>
         </children>
       </scrollpane>
