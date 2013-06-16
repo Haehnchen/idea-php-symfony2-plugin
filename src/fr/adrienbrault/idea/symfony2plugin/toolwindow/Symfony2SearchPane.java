@@ -15,7 +15,7 @@ public class Symfony2SearchPane {
     public void setup(ToolWindowEx toolWindow) {
 
         ContentManager contentManager = toolWindow.getContentManager();
-        Content content = contentManager.getFactory().createContent(new Symfoyn2SearchForm(this.project).createComponent(), null, true);
+        Content content = contentManager.getFactory().createContent(new Symfony2SearchForm(this.project).createComponent(), null, true);
         contentManager.addContent(content);
         contentManager.setSelectedContent(content, true);
 

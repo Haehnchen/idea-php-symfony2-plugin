@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtilCore;
+import com.intellij.ui.FilterComponent;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.components.JBList;
 import com.jetbrains.twig.TwigFile;
@@ -27,8 +28,8 @@ import icons.PhpIcons;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Collator;
@@ -36,49 +37,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-public class Symfoyn2SearchForm {
-    private JTextField textField1;
+public class Symfony2SearchForm {
+
     private JPanel panel1;
     private JBList list1;
     private JToggleButton toggleService;
     private JToggleButton toggleTemplate;
     private JToggleButton toggleRoute;
+    private FilterComponent filterComponent1;
 
     public DefaultListModel listenModel = new DefaultListModel();
     private Project project;
 
-    public Symfoyn2SearchForm(Project project) {
+    public Symfony2SearchForm(Project project) {
 
         this.project = project;
 
         this.list1.setModel(this.listenModel);
-        this.list1.setCellRenderer(new ComplexCellRenderer());
+        this.list1.setCellRenderer(new MyLookupCellRenderer());
 
         this.toggleTemplate.setIcon(PhpIcons.TwigFileIcon);
-
-        textField1.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                super.keyReleased(e);
-                final JTextField textField = (JTextField)e.getSource();
-
-                Symfoyn2SearchForm.this.list1.setPaintBusy(true);
-                ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-                    public void run() {
-                        Symfoyn2SearchForm.this.loadSymfonyElements(textField.getText());
-                    }
-                });
-
-            }
-        });
 
         list1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                JList list = (JList)e.getSource();
+                JList list = (JList) e.getSource();
                 if (e.getClickCount() == 2) {
-                    if(list.getSelectedValue() instanceof LookupElement) {
+                    if (list.getSelectedValue() instanceof LookupElement) {
                         selectedItem((LookupElement) list.getSelectedValue());
                     }
 
@@ -86,6 +72,17 @@ public class Symfoyn2SearchForm {
 
             }
         });
+
+        ItemListener listener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Symfony2SearchForm.this.filterComponent1.filter();
+            }
+        };
+
+        toggleTemplate.addItemListener(listener);
+        toggleRoute.addItemListener(listener);
+        toggleService.addItemListener(listener);
     }
 
     public void selectedItem(LookupElement lookupElement) {
@@ -186,18 +183,38 @@ public class Symfoyn2SearchForm {
                     listModel.addElement(sortableLookupItem.getLookupElement());
                 }
 
-                Symfoyn2SearchForm.this.list1.setPaintBusy(false);
-                Symfoyn2SearchForm.this.list1.updateUI();
+                Symfony2SearchForm.this.list1.setPaintBusy(false);
+                Symfony2SearchForm.this.list1.updateUI();
             }
         }, ModalityState.any());
 
 
     }
 
+    private class SymfonyFilterComponents extends FilterComponent {
+
+        public SymfonyFilterComponents() {
+            super("bla", 5);
+        }
+
+        public void filter() {
+            Symfony2SearchForm.this.list1.setPaintBusy(true);
+            ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+                public void run() {
+                    Symfony2SearchForm.this.loadSymfonyElements(getFilter());
+                }
+            });
+        }
+    }
+
+    private void createUIComponents() {
+        this.filterComponent1 = new SymfonyFilterComponents();
+    }
+
     /**
-     * LookupCellRenderer
+     * Pls implement already ready com.intellij.codeInsight.lookup.impl.LookupCellRenderer!
      */
-    private class ComplexCellRenderer extends SimpleColoredComponent implements ListCellRenderer {
+    private class MyLookupCellRenderer extends SimpleColoredComponent implements ListCellRenderer {
         protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
         @Override
@@ -236,7 +253,6 @@ public class Symfoyn2SearchForm {
     }
 
     private class SortableLookupItem implements Comparable<SortableLookupItem>  {
-
 
         private LookupElement lookupElement;
 
