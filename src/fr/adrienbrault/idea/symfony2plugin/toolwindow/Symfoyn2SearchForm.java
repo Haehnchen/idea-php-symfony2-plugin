@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import icons.PhpIcons;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,45 +40,21 @@ public class Symfoyn2SearchForm {
     private JTextField textField1;
     private JPanel panel1;
     private JBList list1;
+    private JToggleButton toggleService;
+    private JToggleButton toggleTemplate;
+    private JToggleButton toggleRoute;
 
     public DefaultListModel listenModel = new DefaultListModel();
     private Project project;
 
-    public void loadPackageDataAndApplyToUi(final String filter) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            public void run() {
-                final ArrayList<? extends LookupElement> items = getItems(filter);
-
-                DefaultListModel listModel = (DefaultListModel) list1.getModel();
-                listModel.removeAllElements();
-
-                ArrayList<SortableLookupItem> sortableLookupItems = new ArrayList<SortableLookupItem>();
-
-                for(LookupElement item: items) {
-                    sortableLookupItems.add(new SortableLookupItem(item));
-                }
-
-                Collections.sort(sortableLookupItems);
-
-                for(SortableLookupItem sortableLookupItem: sortableLookupItems) {
-                    listModel.addElement(sortableLookupItem.getLookupElement());
-                }
-
-                Symfoyn2SearchForm.this.list1.setPaintBusy(false);
-            }
-        }, ModalityState.any());
-
-
-    }
-
-    public Symfoyn2SearchForm(final Project project) {
+    public Symfoyn2SearchForm(Project project) {
 
         this.project = project;
 
-        list1.setModel(this.listenModel);
-        list1.setCellRenderer(new ComplexCellRenderer());
+        this.list1.setModel(this.listenModel);
+        this.list1.setCellRenderer(new ComplexCellRenderer());
 
-        final JList list1 = this.list1;
+        this.toggleTemplate.setIcon(PhpIcons.TwigFileIcon);
 
         textField1.addKeyListener(new KeyAdapter() {
             @Override
@@ -88,7 +65,7 @@ public class Symfoyn2SearchForm {
                 Symfoyn2SearchForm.this.list1.setPaintBusy(true);
                 ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
                     public void run() {
-                        Symfoyn2SearchForm.this.loadPackageDataAndApplyToUi(textField.getText());
+                        Symfoyn2SearchForm.this.loadSymfonyElements(textField.getText());
                     }
                 });
 
@@ -158,31 +135,64 @@ public class Symfoyn2SearchForm {
         ArrayList<LookupElement> items = new ArrayList<LookupElement>();
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
-        Map<String,String> map = symfony2ProjectComponent.getServicesMap().getMap();
-        for( Map.Entry<String, String> entry: map.entrySet() ) {
-            if(entry.getKey().toLowerCase().contains(filter)) {
-                items.add(new ServiceStringLookupElement(entry.getKey(), entry.getValue()));
+        if(this.toggleService.isSelected()) {
+            Map<String,String> map = symfony2ProjectComponent.getServicesMap().getMap();
+            for( Map.Entry<String, String> entry: map.entrySet() ) {
+                if(entry.getKey().toLowerCase().contains(filter)) {
+                    items.add(new ServiceStringLookupElement(entry.getKey(), entry.getValue()));
+                }
             }
         }
 
-        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
-        for (Route route : routes.values()) {
-            if(route.getName().toLowerCase().contains(filter)) {
-                items.add(new RouteLookupElement(route));
-            }
+        if(this.toggleRoute.isSelected()) {
+            Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
+            for (Route route : routes.values()) {
+                if(route.getName().toLowerCase().contains(filter)) {
+                    items.add(new RouteLookupElement(route));
+                }
 
+            }
         }
 
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(this.project);
-        for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
-            if(entry.getKey().toLowerCase().contains(filter)) {
-                items.add(new TemplateLookupElement(entry.getKey(), entry.getValue()));
+        if(this.toggleTemplate.isSelected()) {
+            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(this.project);
+            for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
+                if(entry.getKey().toLowerCase().contains(filter)) {
+                    items.add(new TemplateLookupElement(entry.getKey(), entry.getValue()));
+                }
             }
         }
 
         return items;
     }
 
+    public void loadSymfonyElements(final String filter) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            public void run() {
+                final ArrayList<? extends LookupElement> items = getItems(filter);
+
+                DefaultListModel listModel = (DefaultListModel) list1.getModel();
+                listModel.removeAllElements();
+
+                ArrayList<SortableLookupItem> sortableLookupItems = new ArrayList<SortableLookupItem>();
+
+                for(LookupElement item: items) {
+                    sortableLookupItems.add(new SortableLookupItem(item));
+                }
+
+                Collections.sort(sortableLookupItems);
+
+                for(SortableLookupItem sortableLookupItem: sortableLookupItems) {
+                    listModel.addElement(sortableLookupItem.getLookupElement());
+                }
+
+                Symfoyn2SearchForm.this.list1.setPaintBusy(false);
+                Symfoyn2SearchForm.this.list1.updateUI();
+            }
+        }, ModalityState.any());
+
+
+    }
 
     /**
      * LookupCellRenderer

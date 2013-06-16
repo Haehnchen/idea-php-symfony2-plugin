@@ -1,27 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfoyn2SearchForm">
-  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="500" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <component id="596f" class="javax.swing.JTextField" binding="textField1" default-binding="true">
-        <constraints border-constraint="North"/>
+      <component id="aeacf" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
         <properties/>
       </component>
-      <scrollpane id="16f5f">
-        <constraints border-constraint="Center"/>
+      <scrollpane id="b8e66">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="b2b5e" class="com.intellij.ui.components.JBList" binding="list1">
+          <component id="f14b7" class="com.intellij.ui.components.JBList" binding="list1">
             <constraints/>
             <properties/>
           </component>
         </children>
       </scrollpane>
+      <toolbar id="922f4">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="20"/>
+          </grid>
+        </constraints>
+        <properties>
+          <borderPainted value="false"/>
+          <enabled value="true"/>
+          <floatable value="false"/>
+          <rollover value="false"/>
+        </properties>
+        <clientProperties>
+          <JToolBar.isRollover class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+        <border type="none"/>
+        <children>
+          <component id="c5bb2" class="javax.swing.JToggleButton" binding="toggleTemplate">
+            <constraints/>
+            <properties>
+              <icon value="fr/adrienbrault/idea/symfony2plugin/icons/symfony.png"/>
+              <selected value="true"/>
+            </properties>
+          </component>
+          <component id="49bf1" class="javax.swing.JToggleButton" binding="toggleRoute">
+            <constraints/>
+            <properties>
+              <icon value="fr/adrienbrault/idea/symfony2plugin/icons/route.png"/>
+              <selected value="true"/>
+            </properties>
+          </component>
+          <component id="d4beb" class="javax.swing.JToggleButton" binding="toggleService">
+            <constraints/>
+            <properties>
+              <icon value="fr/adrienbrault/idea/symfony2plugin/icons/service.png"/>
+              <selected value="true"/>
+            </properties>
+          </component>
+        </children>
+      </toolbar>
     </children>
   </grid>
 </form>
