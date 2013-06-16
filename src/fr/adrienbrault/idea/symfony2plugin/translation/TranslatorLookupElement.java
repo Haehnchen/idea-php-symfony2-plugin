@@ -28,7 +28,7 @@ public class TranslatorLookupElement extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(domain);
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.SYMFONY);
+        presentation.setIcon(Symfony2Icons.TRANSLATION);
     }
 
 }
