@@ -3,10 +3,11 @@ Changelog
 
 We will get API breaks in upcoming PhpStorm release to fix freezing, watch changelog before updating.
 
-### 0.9.x
+### 0.9.6
 * Add search panel (left sidebar) to find internal known Symfony components and go to them
 * Fix assets "web" reader on Linux
 * Filter yaml parameter annotator on token values
+* Add icons for all known symfony2 components
 
 ### 0.9.5
 * Add controller services support for go to and autocomplete
