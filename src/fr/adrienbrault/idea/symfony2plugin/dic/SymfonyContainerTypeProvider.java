@@ -21,12 +21,15 @@ import java.util.Collections;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
+    final static char TRIM_KEY = '\u0180';
+
     @Override
     public char getKey() {
-        return 'X';
+        return '\u0150';
     }
 
     @Nullable
@@ -50,11 +53,11 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
         // we need the param key on getBySignature(), since we are already in the resolved method there attach it to signature
         // param can have dotted values split with \
         PsiElement[] parameters = ((MethodReference)e).getParameters();
-        if (parameters.length > 0) {
+        if (parameters.length == 1) {
             PsiElement parameter = parameters[0];
             if ((parameter instanceof StringLiteralExpression)) {
                 String param = ((StringLiteralExpression)parameter).getContents();
-                if (StringUtil.isNotEmpty(param)) return "#X" + refSignature + "\\" + param;
+                if (StringUtil.isNotEmpty(param)) return refSignature + TRIM_KEY + param;
             }
         }
 
@@ -64,18 +67,13 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
     @Override
     public Collection<? extends PhpNamedElement> getBySignature(String expression, Project project) {
 
-        // i think we dont need this, but doesnt hurt
-        if(!expression.startsWith("#X")) {
-            return Collections.emptySet();
-        }
-
         // get back our original call
-        String orignalSignaturCall = expression.substring(2, expression.lastIndexOf("\\"));
-        String parameter = expression.substring(expression.lastIndexOf("\\") + 1);
+        String originalSignature = expression.substring(0, expression.lastIndexOf(TRIM_KEY));
+        String parameter = expression.substring(expression.lastIndexOf(TRIM_KEY) + 1);
 
         // search for called method
         PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature(orignalSignaturCall, null, 0);
+        Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature(originalSignature, null, 0);
         if(phpNamedElementCollections.size() == 0) {
             return Collections.emptySet();
         }
