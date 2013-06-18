@@ -53,7 +53,21 @@ public class TwigPathContentIterator implements ContentIterator {
 
         String namespace = this.twigPath.getNamespace().equals(TwigPathIndex.MAIN) ? "" : this.twigPath.getNamespace();
 
-        String templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
+        String templateFinalName;
+        if(this.twigPath.isBundleShortcut()) {
+            templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
+        } else {
+            templateFinalName = namespace + "/" + templateDirectory + "/" + templateFile;
+
+            // remove empty path and check for root (global namespace)
+            templateFinalName = templateFinalName.replace("//", "/");
+            if(templateFinalName.startsWith("/")) {
+                templateFinalName = templateFinalName.substring(1);
+            } else {
+                templateFinalName = "@" + templateFinalName;
+            }
+        }
+
 
         TwigFile twigFile = (TwigFile) PsiManager.getInstance(this.project).findFile(virtualFile);
         this.results.put(templateFinalName, twigFile);

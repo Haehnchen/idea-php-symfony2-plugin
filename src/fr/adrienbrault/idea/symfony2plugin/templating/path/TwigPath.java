@@ -10,6 +10,7 @@ public class TwigPath {
 
     private String path;
     private String namespace = TwigPathIndex.MAIN;
+    private boolean isBundleShortcut = false;
 
     public TwigPath(String path) {
         this.path = path;
@@ -20,8 +21,17 @@ public class TwigPath {
         this.namespace = namespace;
     }
 
+    public TwigPath(String path, String namespace, boolean isBundleShortcut) {
+        this(path, namespace);
+        this.isBundleShortcut = isBundleShortcut;
+    }
+
     public String getNamespace() {
         return namespace;
+    }
+
+    public boolean isBundleShortcut() {
+        return this.isBundleShortcut;
     }
 
     public boolean isGlobalNamespace() {

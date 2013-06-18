@@ -13,6 +13,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -70,14 +71,14 @@ public class TwigHelper {
     private static void getTwigFilesByNameBundleFallback(Project project, PhpIndex phpIndex, ArrayList<String> uniqueNamespaceList, ArrayList<TwigPath> twigPaths) {
         VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
         if(globalDirectory != null) {
-            twigPaths.add(new TwigPath(globalDirectory.getPath()));
+            twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, true));
         }
 
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(phpIndex).getBundles();
         for (SymfonyBundle bundle : symfonyBundles) {
             PsiDirectory views = bundle.getSubDirectory("Resources", "views");
             if(views != null && !uniqueNamespaceList.contains(bundle.getName())) {
-                twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName()));
+                twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName(), true));
             }
         }
     }
