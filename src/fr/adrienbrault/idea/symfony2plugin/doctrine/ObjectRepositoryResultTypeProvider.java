@@ -111,10 +111,10 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return Collections.emptySet();
         }
 
-        // this one looks not possible anymore!?
         if(parameter.equals("findAll") || parameter.equals("findBy")) {
-            return Collections.emptySet();
-            //return new PhpType().add(phpClass.getFQN() + "[]");
+            Method method = (Method) phpNamedElementCollections.iterator().next();
+            method.getType().add(phpClass.getFQN() + "[]");
+            return Arrays.asList(method);
         }
 
         return Arrays.asList(phpClass);
