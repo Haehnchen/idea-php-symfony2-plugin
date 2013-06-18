@@ -102,7 +102,8 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return Collections.emptySet();
         }
 
-        if (!new Symfony2InterfacesUtil().isObjectRepositoryCall((Method) phpNamedElementCollections.iterator().next())) {
+        Method method = (Method) phpNamedElementCollections.iterator().next();
+        if (!new Symfony2InterfacesUtil().isObjectRepositoryCall(method)) {
             return Collections.emptySet();
         }
 
@@ -111,8 +112,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return Collections.emptySet();
         }
 
-        if(parameter.equals("findAll") || parameter.equals("findBy")) {
-            Method method = (Method) phpNamedElementCollections.iterator().next();
+        if(method.getName().equals("findAll") || method.getName().equals("findBy")) {
             method.getType().add(phpClass.getFQN() + "[]");
             return Arrays.asList(method);
         }
