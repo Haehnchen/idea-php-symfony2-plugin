@@ -94,10 +94,9 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
         // @TODO: parse xml or yml for repositoryClass?
         PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter + "Repository");
 
-        // getBySignature dont extend already known types!?
-        // so already defined type is killed?
+        // self add :)
         if(phpClass == null) {
-            return Collections.emptySet();
+            return Arrays.asList(phpNamedElement);
         }
 
         return Arrays.asList(phpClass);
