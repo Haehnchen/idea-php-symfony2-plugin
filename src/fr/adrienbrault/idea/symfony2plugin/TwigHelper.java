@@ -102,6 +102,30 @@ public class TwigHelper {
         return null;
     }
 
+    /**
+     * Check for {{ include('|')  }}
+     *
+     * @param functionName twig function name
+     */
+    public static ElementPattern<PsiElement> getPrintBlockFunctionPattern(String functionName) {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(functionName)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getBlockTagPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
@@ -139,34 +163,6 @@ public class TwigHelper {
                 .psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
             )
             .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    public static ElementPattern<PsiElement> getAutocompletableTemplatePattern() {
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.STRING_TEXT)
-                .withParent(
-                    PlatformPatterns.or(
-                            PlatformPatterns.psiElement(TwigCompositeElementTypes.EMBED_TAG),
-                            PlatformPatterns.psiElement(TwigTagWithFileReference.class)
-                    )
-                )
-                .withLanguage(TwigLanguage.INSTANCE),
-
-            // Targetting {{ render(..) }} is tricky right ? :p
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.STRING_TEXT)
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("include")
-                )
-                .withLanguage(TwigLanguage.INSTANCE)
-        );
     }
 
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
@@ -260,15 +256,6 @@ public class TwigHelper {
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
-    private static boolean isOneOfFileReferenceTag(PsiElement psiElement, String... tagNames) {
-        // use PlatformPatterns would be nice but not fully supported
-        return TwigHelper.getAutocompletableTemplatePattern().accepts(psiElement)
-            && PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf(tagNames))) != null;
 
-    }
-
-    public static boolean isTemplateFileReferenceTag(PsiElement psiElement) {
-        return isOneOfFileReferenceTag(psiElement, "extends", "from", "include", "use", "import", "embed");
-    }
 
 }

@@ -27,31 +27,9 @@ import java.util.Map;
 public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     public TwigTemplateCompletionContributor() {
-        extend(
-            CompletionType.BASIC,
-            TwigHelper.getAutocompletableTemplatePattern(),
-            new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
 
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
-                        return;
-                    }
-
-                    if(!TwigHelper.isTemplateFileReferenceTag(parameters.getPosition())) {
-                        return;
-                    }
-
-                    Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-                    for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
-                        resultSet.addElement(
-                            new TemplateLookupElement(entry.getKey(), entry.getValue())
-                        );
-                    }
-                }
-            }
-        );
+        extend(CompletionType.BASIC, TwigHelper.getTemplateFileReferenceTagPattern(),  new TemplateCompletionProvider());
+        extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("include"),  new TemplateCompletionProvider());
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
         extend(
@@ -148,6 +126,24 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
         );
 
+    }
+
+    private class TemplateCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters,
+            ProcessingContext context,
+            @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
+            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+            for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
+                resultSet.addElement(
+                    new TemplateLookupElement(entry.getKey(), entry.getValue())
+                );
+            }
+        }
     }
 
 }
