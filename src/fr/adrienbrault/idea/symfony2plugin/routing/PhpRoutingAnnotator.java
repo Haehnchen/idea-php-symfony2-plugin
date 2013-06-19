@@ -7,6 +7,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +24,14 @@ public class PhpRoutingAnnotator implements Annotator {
         }
 
         MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element);
-        if (methodReference == null || !new Symfony2InterfacesUtil().isUrlGeneratorGenerateCall(methodReference)) {
+        if (methodReference == null || !new Symfony2InterfacesUtil().isUrlGeneratorGenerateCall(methodReference) || element.getContext() == null) {
+            return;
+        }
+
+        // @TODO fully replace with pattern and think of:
+        // $this->generateUrl('foo', array('foo' => 'foo'));
+        ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex(element.getContext());
+        if(parameterBag == null || parameterBag.getIndex() != 0) {
             return;
         }
 
