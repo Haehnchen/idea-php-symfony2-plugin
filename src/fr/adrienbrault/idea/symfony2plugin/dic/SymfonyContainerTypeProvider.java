@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -93,7 +94,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
             }
         }
 
-        return Collections.emptySet();
+        return Arrays.asList(phpNamedElement);
     }
 
 }

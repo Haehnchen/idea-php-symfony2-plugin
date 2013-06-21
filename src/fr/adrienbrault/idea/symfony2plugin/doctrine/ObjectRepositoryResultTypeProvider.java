@@ -104,12 +104,12 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
 
         Method method = (Method) phpNamedElementCollections.iterator().next();
         if (!new Symfony2InterfacesUtil().isObjectRepositoryCall(method)) {
-            return Collections.emptySet();
+            return Arrays.asList(method);
         }
 
         PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
         if(phpClass == null) {
-            return Collections.emptySet();
+            return Arrays.asList(method);
         }
 
         if(method.getName().equals("findAll") || method.getName().equals("findBy")) {

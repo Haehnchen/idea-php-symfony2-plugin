@@ -73,14 +73,13 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return Collections.emptySet();
         }
 
-        if (!new Symfony2InterfacesUtil().isGetRepositoryCall((Method) phpNamedElementCollections.iterator().next())) {
-            return Collections.emptySet();
-        }
-
-        // get first matched item
         PhpNamedElement phpNamedElement = phpNamedElementCollections.iterator().next();
         if(!(phpNamedElement instanceof Method)) {
-            return Collections.emptySet();
+            return Arrays.asList(phpNamedElement);
+        }
+
+        if (!new Symfony2InterfacesUtil().isGetRepositoryCall(phpNamedElement)) {
+            return Arrays.asList(phpNamedElement);
         }
 
         // @TODO: parse xml or yml for repositoryClass?
