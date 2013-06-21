@@ -1,7 +1,14 @@
 Changelog
 =========
 
-We will get API breaks in upcoming PhpStorm release to fix freezing, watch changelog before updating.
+Update to PhpStorm 6.0.3 !
+
+### 0.9.7
+* Drop outdated PhpTypeProvider which were removed by PhpStorm 6.0.3
+* Support new PhpTypeProvider2 to resolve ide freeze
+* Fix for twig addPath paths
+* Fix for twig template pattern, so include function is supported again
+* Some smaller pattern fixes in yaml and php
 
 ### 0.9.6
 * Add search panel (left sidebar) to find internal known Symfony components and go to them

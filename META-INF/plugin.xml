@@ -1,14 +1,14 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.6</version>
+    <version>0.9.7</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
 
 <br>
-<b>We will get API breaks in upcoming PhpStorm release to fix freezing, watch changelog before updating.</b>
+<b>Update to PhpStorm 6.0.3 !</b>
 <br>
 
 <h2>Features:</h2>
@@ -83,6 +83,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.7</h2>
+<ul>
+    <li>Drop outdated PhpTypeProvider which were removed by PhpStorm 6.0.3</li>
+    <li>Support new PhpTypeProvider2 to resolve ide freeze</li>
+    <li>Fix for twig addPath paths</li>
+    <li>Fix for twig template pattern, so include function is supported again</li>
+    <li>Some smaller pattern fixes in yaml and php</li>
+</ul>
 
 <h2>0.9.6</h2>
 <ul>
