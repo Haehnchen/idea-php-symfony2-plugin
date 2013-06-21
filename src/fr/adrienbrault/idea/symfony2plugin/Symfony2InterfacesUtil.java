@@ -23,6 +23,13 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isContainerGetCall(Method e) {
+        return isCallTo(e, new Method[] {
+            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
+            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
+        });
+    }
+
     public boolean isContainerParameterCall(PsiElement e) {
         return isCallTo(e, new Method[] {
             getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter"),
@@ -61,6 +68,22 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isGetRepositoryCall(Method e) {
+        return isCallTo(e, new Method[] {
+            getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
+            getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+        });
+    }
+
+    public boolean isObjectRepositoryCall(Method e) {
+        return isCallTo(e, new Method[] {
+            getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
+            getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
+            getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
+            getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
+        });
+    }
+
     public boolean isObjectRepositoryCall(PsiElement e) {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
@@ -84,6 +107,22 @@ public class Symfony2InterfacesUtil {
     protected boolean isCallTo(PsiElement e, Method[] expectedMethods) {
         return isCallTo(e, expectedMethods, 1);
     }
+
+    protected boolean isCallTo(Method e, Method[] expectedMethods) {
+
+        PhpClass methodClass = e.getContainingClass();
+
+        for (Method expectedMethod : Arrays.asList(expectedMethods)) {
+            if (null != expectedMethod
+                && expectedMethod.getName().equals(e.getName())
+                && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     protected boolean isCallTo(PsiElement e, Method[] expectedMethods, int deepness) {
         if (!(e instanceof MethodReference)) {
