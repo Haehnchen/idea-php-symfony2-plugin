@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -10,8 +11,10 @@ import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLoo
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.EventCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -75,6 +78,16 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config"));
+
+        extend(CompletionType.BASIC, StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("event")
+        ), new EventCompletionProvider());
+
+        extend(CompletionType.BASIC, StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("name")
+        ), new TagNameCompletionProvider());
 
     }
 

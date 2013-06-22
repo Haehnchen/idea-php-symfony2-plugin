@@ -2,8 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.codeInsight.completion.*;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.EventCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -16,6 +18,9 @@ public class XmlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-class"), new PhpClassAndParameterCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("parent"), new ServiceCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getParameterWithClassEndingPattern(), new PhpClassCompletionProvider());
+
+        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "name"), new TagNameCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "event"), new EventCompletionProvider());
     }
 
 }

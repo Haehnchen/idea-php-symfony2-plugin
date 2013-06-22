@@ -370,14 +370,19 @@ public class YamlElementPatternHelper {
     }
 
     static PsiElementPattern.Capture<PsiElement> getInsideServiceKeyPattern() {
+        return getInsideKeyValue("services", "parameters");
+    }
+
+    static PsiElementPattern.Capture<PsiElement> getInsideKeyValue(String... keys) {
         return PlatformPatterns
             .psiElement()
             .inside(
                 PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withName(
-                        PlatformPatterns.string().oneOf("services", "parameters")
+                        PlatformPatterns.string().oneOf(keys)
                     )
             );
     }
+
 }
