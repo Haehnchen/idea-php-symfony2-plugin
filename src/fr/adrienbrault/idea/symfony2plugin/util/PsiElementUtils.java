@@ -90,7 +90,7 @@ public class PsiElementUtils {
     }
 
     @Nullable
-    public static <T extends PsiElement> T getPrevSiblingOfType(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {
+    public static <T extends PsiElement> T getPrevSiblingOfType(@Nullable PsiElement sibling, ElementPattern<T> pattern) {
         if (sibling == null) return null;
         for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
             if (pattern.accepts(child)) {

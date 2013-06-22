@@ -1,23 +1,31 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.EventCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLSequence;
 
 import java.util.Map;
 
@@ -85,11 +93,50 @@ public class YamlCompletionContributor extends CompletionContributor {
         ), new EventCompletionProvider());
 
         extend(CompletionType.BASIC, StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("calls")
+        ), new ServiceCallsMethodCompletion());
+
+        extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
             YamlElementPatternHelper.getSingleLineScalarKey("name")
         ), new TagNameCompletionProvider());
 
     }
+    
+    private class ServiceCallsMethodCompletion extends CompletionProvider<CompletionParameters> {
+
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            // TODO: move this to pattern; filters match on parameter array
+            // - [ setContainer, [ @service_container ] ]
+            PsiElement psiElement = completionParameters.getPosition();
+            if(psiElement.getParent() == null || !(psiElement.getParent().getContext() instanceof YAMLSequence)) {
+                return;
+            }
+
+            YAMLKeyValue callYamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+            if(callYamlKeyValue == null) {
+                return;
+            }
+
+            YAMLKeyValue classKeyValue = PsiElementUtils.getPrevSiblingOfType(callYamlKeyValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName("class"));
+            if(classKeyValue == null) {
+                return;
+            }
+
+            PhpClass phpClass =ServiceUtil.getResolvedClass(psiElement.getProject(), classKeyValue.getValueText());
+            if(phpClass != null) {
+                PhpElementsUtil.addClassPublicMethodCompletion(completionResultSet, phpClass);
+            }
+
+        }
+
+    }
+
 
 }
 

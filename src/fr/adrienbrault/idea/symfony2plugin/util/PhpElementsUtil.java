@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
@@ -8,8 +9,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -99,5 +102,12 @@ public class PhpElementsUtil {
         return classes.isEmpty() ? null : classes.iterator().next();
     }
 
+    static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {
+        for(Method method: phpClass.getMethods()) {
+            if(method.getAccess().isPublic() && !method.getName().startsWith("__")) {
+                completionResultSet.addElement(new PhpLookupElement(method));
+            }
+        }
+    }
 
 }
