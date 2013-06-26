@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -31,6 +32,14 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
             resultSet.addElement(
                 new ServiceStringLookupElement(entry.getKey(), entry.getValue())
             );
+        }
+
+        for( Map.Entry<String, String> entry: YamlHelper.getLocalServiceMap(element).entrySet()) {
+            if(!map.containsKey(entry.getKey())) {
+                resultSet.addElement(
+                    new ServiceStringLookupElement(entry.getKey(), entry.getValue())
+                );
+            }
         }
 
     }

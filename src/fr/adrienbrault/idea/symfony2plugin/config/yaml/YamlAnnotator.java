@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 
 public class YamlAnnotator implements Annotator {
@@ -59,7 +60,7 @@ public class YamlAnnotator implements Annotator {
         }
 
         String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
-        if (null == serviceClass) {
+        if (null == serviceClass && !YamlHelper.getLocalServiceMap(psiElement).containsKey(serviceName)) {
             holder.createWarningAnnotation(psiElement, "Missing Service");
         }
 
