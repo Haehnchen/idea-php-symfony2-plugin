@@ -38,6 +38,8 @@ public class ServiceMapParserTest extends Assert {
         assertEquals("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", serviceMap.getPublicMap().get("service_container"));
         assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.getMap().get("kernel"));
         assertEquals("\\Symfony\\Component\\HttpKernel\\KernelInterface", serviceMap.getPublicMap().get("kernel"));
+        assertEquals("\\Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface", serviceMap.getMap().get("controller_resolver"));
+        assertEquals("\\Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface", serviceMap.getPublicMap().get("controller_resolver"));
 
         assertEquals("\\AdrienBrault\\Awesome", serviceMap.getMap().get("translator"));
         assertEquals("\\AdrienBrault\\Awesome", serviceMap.getPublicMap().get("translator"));

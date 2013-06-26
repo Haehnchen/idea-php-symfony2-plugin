@@ -64,6 +64,7 @@ public class ServiceMapParser {
         map.put("request", "\\Symfony\\Component\\HttpFoundation\\Request");
         map.put("service_container", "\\Symfony\\Component\\DependencyInjection\\ContainerInterface");
         map.put("kernel", "\\Symfony\\Component\\HttpKernel\\KernelInterface");
-    }
+        map.put("controller_resolver", "\\Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface");
+   }
 
 }
