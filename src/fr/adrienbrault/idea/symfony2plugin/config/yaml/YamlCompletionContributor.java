@@ -24,6 +24,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionP
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
@@ -98,11 +100,37 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("method")
+        ), new ServiceCallsMethodTestCompletion());
+
+        extend(CompletionType.BASIC, StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
             YamlElementPatternHelper.getSingleLineScalarKey("name")
         ), new TagNameCompletionProvider());
 
     }
-    
+
+
+    private class ServiceCallsMethodTestCompletion extends CompletionProvider<CompletionParameters> {
+
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            PsiElement psiElement = completionParameters.getPosition();
+            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
+            if(yamlCompoundValue == null) {
+                return;
+            }
+
+            addYamlClassMethods(yamlCompoundValue.getContext(), completionResultSet);
+
+        }
+
+    }
+
     private class ServiceCallsMethodCompletion extends CompletionProvider<CompletionParameters> {
 
         protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
@@ -123,18 +151,28 @@ public class YamlCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            YAMLKeyValue classKeyValue = PsiElementUtils.getPrevSiblingOfType(callYamlKeyValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName("class"));
-            if(classKeyValue == null) {
-                return;
-            }
-
-            PhpClass phpClass =ServiceUtil.getResolvedClass(psiElement.getProject(), classKeyValue.getValueText());
-            if(phpClass != null) {
-                PhpElementsUtil.addClassPublicMethodCompletion(completionResultSet, phpClass);
-            }
+            addYamlClassMethods(callYamlKeyValue, completionResultSet);
 
         }
 
+    }
+
+
+    private static void addYamlClassMethods(@Nullable PsiElement psiElement, CompletionResultSet completionResultSet) {
+
+        if(psiElement == null) {
+            return;
+        }
+
+        YAMLKeyValue classKeyValue = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLKeyValue.class).withName("class"));
+        if(classKeyValue == null) {
+            return;
+        }
+
+        PhpClass phpClass = ServiceUtil.getResolvedClass(psiElement.getProject(), classKeyValue.getValueText());
+        if(phpClass != null) {
+            PhpElementsUtil.addClassPublicMethodCompletion(completionResultSet, phpClass);
+        }
     }
 
 
