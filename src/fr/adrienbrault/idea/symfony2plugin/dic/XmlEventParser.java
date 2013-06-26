@@ -5,11 +5,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class XmlEventParser extends AbstractServiceParser {
 
-    protected ArrayList<String> list = new ArrayList<String>();
+    protected HashMap<String, String> list = new HashMap<String, String>();
 
     @Override
     public String getXPathFilter() {
@@ -25,12 +25,12 @@ public class XmlEventParser extends AbstractServiceParser {
 
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element node = (Element) nodeList.item(i);
-            this.list.add(node.getAttribute("event"));
+            this.list.put(node.getAttribute("event"), node.getAttribute("name"));
         }
 
     }
 
-    public ArrayList<String> get() {
+    public HashMap<String, String> get() {
         return list;
     }
 

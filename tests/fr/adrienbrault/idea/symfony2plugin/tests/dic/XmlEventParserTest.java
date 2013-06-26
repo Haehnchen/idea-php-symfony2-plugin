@@ -1,12 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic;
 
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class XmlEventParserTest extends Assert {
 
@@ -17,9 +16,10 @@ public class XmlEventParserTest extends Assert {
 
         XmlEventParser serviceMapParser = new XmlEventParser();
         serviceMapParser.parser(testFile);
-        ArrayList<String> tags = serviceMapParser.get();
+        HashMap<String, String> tags = serviceMapParser.get();
 
-        assertTrue(tags.contains("kernel.controller"));
+        assertTrue(tags.containsKey("kernel.controller"));
+        assertEquals("kernel.event_listener", tags.get("kernel.controller"));
     }
 
 }

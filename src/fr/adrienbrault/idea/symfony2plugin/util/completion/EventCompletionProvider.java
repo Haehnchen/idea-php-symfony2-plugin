@@ -6,9 +6,11 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 public class EventCompletionProvider extends CompletionProvider<CompletionParameters> {
     @Override
@@ -18,9 +20,9 @@ public class EventCompletionProvider extends CompletionProvider<CompletionParame
             return;
         }
 
-        XmlTagParser xmlEventParser = ServiceXmlParserFactory.getInstance(completionParameters.getPosition().getProject(), XmlTagParser.class);
-        for(String event : xmlEventParser.get()) {
-            completionResultSet.addElement(LookupElementBuilder.create(event));
+        XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(completionParameters.getPosition().getProject(), XmlEventParser.class);
+        for(Map.Entry<String, String> event : xmlEventParser.get().entrySet()) {
+            completionResultSet.addElement(LookupElementBuilder.create(event.getKey()).withTypeText(event.getValue(), true));
         }
 
     }
