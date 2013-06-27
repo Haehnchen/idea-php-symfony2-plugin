@@ -250,6 +250,7 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>

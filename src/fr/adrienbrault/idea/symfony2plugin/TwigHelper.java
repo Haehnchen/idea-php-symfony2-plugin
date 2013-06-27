@@ -67,6 +67,15 @@ public class TwigHelper {
 
     }
 
+    public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
+        Map<String, TwigFile> twigFiles = TwigHelper.getTwigFilesByName(project);
+        if(!twigFiles.containsKey(templateName)) {
+            return new PsiElement[0];
+        }
+
+        return new PsiElement[] {twigFiles.get(templateName)};
+    }
+
     private static void getTwigFilesByNameBundleFallback(Project project, PhpIndex phpIndex, ArrayList<String> uniqueNamespaceList, ArrayList<TwigPath> twigPaths) {
         VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
         if(globalDirectory != null) {
