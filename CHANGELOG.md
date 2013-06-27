@@ -1,7 +1,12 @@
 Changelog
 =========
 
-Update to PhpStorm 6.0.3 !
+### 0.9.8
+* Activate doctrine entity PhpTypes on default
+* Implement basic event and tag autocomplete in yaml and xml on known container elements
+* Add Service method calls autocomplete in yaml and xml
+* Implement a current file scope service parser for yaml, so private services are detected
+* Add autocomplete for macro imports on "from" tag in twig
 
 ### 0.9.7
 * Drop outdated PhpTypeProvider which were removed by PhpStorm 6.0.3

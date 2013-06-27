@@ -1,15 +1,11 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.7</version>
+    <version>0.9.8</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
-
-<br>
-<b>Update to PhpStorm 6.0.3 !</b>
-<br>
 
 <h2>Features:</h2>
 
@@ -83,6 +79,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.8</h2>
+<ul>
+    <li>Activate doctrine entity PhpTypes on default</li>
+    <li>Implement basic event and tag autocomplete in yaml and xml on known container elements</li>
+    <li>Add Service method calls autocomplete in yaml and xml</li>
+    <li>Implement a current file scope service parser for yaml, so private services are detected</li>
+    <li>Add autocomplete for macro imports on "from" tag in twig</li>
+</ul>
 
 <h2>0.9.7</h2>
 <ul>
