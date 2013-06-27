@@ -15,7 +15,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -255,6 +254,45 @@ public class TwigHelper {
                 PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("extends", "from", "include", "use", "import", "embed"))
             )
             .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getTemplateImportFileReferenceTagPattern() {
+
+
+        // @TODO: first pattern need some more filter; also 'from' tag would be nice
+        // first: {% from '<xxx>' import foo, <|>  %}
+        // second: {% from '<xxx>' import <|>  %}
+        return
+            PlatformPatterns.or(
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.IDENTIFIER)
+                    .withParent(TwigTagWithFileReference.class)
+                    .afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withoutText("import"),
+                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                            PlatformPatterns.string().oneOf("import")
+                        )
+                    )
+                    .withLanguage(TwigLanguage.INSTANCE),
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.IDENTIFIER)
+                    .withParent(TwigTagWithFileReference.class)
+                    .afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                            PlatformPatterns.string().oneOf("import")
+                        )
+                    )
+                    .withLanguage(TwigLanguage.INSTANCE)
+            );
     }
 
 

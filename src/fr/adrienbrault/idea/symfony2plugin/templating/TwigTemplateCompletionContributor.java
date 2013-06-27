@@ -1,21 +1,27 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import icons.PhpIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -125,6 +131,59 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }
         );
+
+        // provides support for {% from 'twig..' import |
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getTemplateImportFileReferenceTagPattern(),
+
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    // find {% from "<template.name>"
+                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), getFromTemplateElement());
+
+                    if(psiElement == null) {
+                        return;
+                    }
+
+                    String templateName = psiElement.getText();
+
+                    Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+                    if(!twigFilesByName.containsKey(templateName)) {
+                        return;
+                    }
+
+                    for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFilesByName.get(templateName)).entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(PhpIcons.TwigFileIcon));
+                    }
+
+                }
+
+                private PsiElementPattern.Capture<PsiElement> getFromTemplateElement() {
+                    return PlatformPatterns
+                        .psiElement(TwigTokenTypes.STRING_TEXT)
+                        .afterLeafSkipping(
+                            PlatformPatterns.or(
+                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                            ),
+                            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
+                        )
+                        .withLanguage(TwigLanguage.INSTANCE);
+                }
+            }
+        );
+
+
 
     }
 
