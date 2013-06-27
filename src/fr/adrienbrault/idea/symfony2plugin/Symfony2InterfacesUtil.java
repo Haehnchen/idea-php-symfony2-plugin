@@ -263,4 +263,17 @@ public class Symfony2InterfacesUtil {
         });
     }
 
+    public boolean isCallTo(Method e, String ClassInterfaceName, String methodName) {
+
+        // we need a full fqn name
+        if(ClassInterfaceName.contains("\\") && !ClassInterfaceName.startsWith("\\")) {
+            ClassInterfaceName = "\\" + ClassInterfaceName;
+        }
+
+        return isCallTo(e, new Method[] {
+            getInterfaceMethod(e.getProject(), ClassInterfaceName, methodName),
+            getClassMethod(e.getProject(), ClassInterfaceName, methodName),
+        });
+    }
+
 }
