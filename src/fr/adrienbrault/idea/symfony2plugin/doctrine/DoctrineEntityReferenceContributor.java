@@ -8,6 +8,8 @@ import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -28,7 +30,7 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                         }
                         ParameterList parameterList = (ParameterList) psiElement.getContext();
 
-                        if (!(parameterList.getContext() instanceof MethodReference)) {
+                        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
                             return new PsiReference[0];
                         }
                         MethodReference method = (MethodReference) parameterList.getContext();
@@ -41,6 +43,39 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                     }
                 }
         );
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+                        return new PsiReference[0];
+                    }
+
+                    ParameterList parameterList = (ParameterList) psiElement.getContext();
+                    if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
+                    // only use first parameter
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
+                    if(currentIndex == null || currentIndex.getIndex() != 0) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference method = (MethodReference) parameterList.getContext();
+                    if (!new Symfony2InterfacesUtil().isCallTo(method, "\\Doctrine\\Common\\Persistence\\ObjectManager", "find")) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement) };
+                }
+            }
+        );
+
+
     }
 
 }
