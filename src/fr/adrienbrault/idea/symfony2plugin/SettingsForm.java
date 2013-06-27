@@ -79,7 +79,6 @@ public class SettingsForm implements Configurable {
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
-            || this.getPhpTypesLifetimeSec() != getSettings().phpTypesLifetimeSec
 
             || !twigAnnotateRoute.isSelected() == getSettings().twigAnnotateRoute
             || !twigAnnotateTemplate.isSelected() == getSettings().twigAnnotateTemplate
@@ -106,8 +105,6 @@ public class SettingsForm implements Configurable {
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
         getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
         getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
-
-        getSettings().phpTypesLifetimeSec = this.getPhpTypesLifetimeSec();
 
         getSettings().twigAnnotateRoute = twigAnnotateRoute.isSelected();
         getSettings().twigAnnotateTemplate = twigAnnotateTemplate.isSelected();
@@ -146,8 +143,6 @@ public class SettingsForm implements Configurable {
         objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
         objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
 
-        phpTypesLifetimeSec.setText(Integer.toString(getSettings().phpTypesLifetimeSec));
-
         twigAnnotateRoute.setSelected(getSettings().twigAnnotateRoute);
         twigAnnotateTemplate.setSelected(getSettings().twigAnnotateTemplate);
         twigAnnotateAsset.setSelected(getSettings().twigAnnotateAsset);
@@ -159,19 +154,6 @@ public class SettingsForm implements Configurable {
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
-    }
-
-    private int getPhpTypesLifetimeSec() {
-        String stringValue = this.phpTypesLifetimeSec.getText();
-        int oldValue = getSettings().phpTypesLifetimeSec;
-        int newValue = oldValue;
-        try {
-            newValue = Integer.parseInt(stringValue);
-        } catch (NumberFormatException nfe){
-
-        }
-        if ((newValue < 10) || (newValue > 600)) return oldValue;
-        return newValue;
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField) {

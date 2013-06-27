@@ -22,8 +22,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean pluginEnabled = false;
 
     public boolean symfonyContainerTypeProvider = true;
-    public boolean objectRepositoryTypeProvider = false;
-    public boolean objectRepositoryResultTypeProvider = false;
+    public boolean objectRepositoryTypeProvider = true;
+    public boolean objectRepositoryResultTypeProvider = true;
 
     public boolean twigAnnotateTemplate = true;
     public boolean twigAnnotateAsset = true;
@@ -36,8 +36,6 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean phpAnnotateTemplateAnnotation = true;
 
     public boolean yamlAnnotateServiceConfig = true;
-
-    public int phpTypesLifetimeSec = 120;
 
     protected Project project;
 
