@@ -78,7 +78,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return Arrays.asList(phpNamedElement);
         }
 
-        if (!new Symfony2InterfacesUtil().isGetRepositoryCall(phpNamedElement)) {
+        if (!new Symfony2InterfacesUtil().isGetRepositoryCall((Method) phpNamedElement)) {
             return Arrays.asList(phpNamedElement);
         }
 
