@@ -15,7 +15,7 @@ public class ParameterLookupElement extends LookupElement {
 
     private String parameterKey;
     private String parameterValue;
-    private PsiElement psiElement;
+    private Object psiElement;
     private InsertHandler<LookupElement> insertHandler = null;
 
     public ParameterLookupElement(String parameterKey, String parameterValue) {
@@ -23,7 +23,7 @@ public class ParameterLookupElement extends LookupElement {
         this.parameterValue = parameterValue;
     }
 
-    public ParameterLookupElement(String name, String value, InsertHandler<LookupElement> insertHandler, PsiElement psiElement) {
+    public ParameterLookupElement(String name, String value, InsertHandler<LookupElement> insertHandler, Object psiElement) {
         this(name, value);
         this.insertHandler = insertHandler;
         this.psiElement = psiElement;

@@ -61,7 +61,9 @@ public class YamlCompletionContributor extends CompletionContributor {
 
                     Map<String, String> it = ServiceXmlParserFactory.getInstance(element.getProject(), ParameterServiceParser.class).getParameterMap();
                     for(Map.Entry<String, String> Entry: it.entrySet()) {
-                        resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), element));
+                        if(resultSet.getPrefixMatcher().prefixMatches(Entry.getValue())) {
+                            resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
+                        }
                     }
 
                 }

@@ -4,6 +4,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.completion;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
@@ -21,11 +22,12 @@ public class PhpClassAndParameterCompletionProvider extends CompletionProvider<C
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
-        if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+        PsiElement psiElement = parameters.getOriginalPosition();
+        if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
             return;
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
+        PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
 
         for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {
             resultSet.addElement(new PhpLookupElement(className, PhpClassIndex.KEY, parameters.getOriginalFile().getProject(), PhpClassReferenceInsertHandler.getInstance()));
@@ -36,8 +38,8 @@ public class PhpClassAndParameterCompletionProvider extends CompletionProvider<C
         Map<String, String> configParameters = ServiceXmlParserFactory.getInstance(parameters.getOriginalFile().getProject(), ParameterServiceParser.class).getParameterMap();
         for(Map.Entry<String, String> Entry: configParameters.entrySet()) {
             // some better class filter
-            if(Entry.getValue().contains("\\")) {
-                resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), parameters.getOriginalPosition()));
+            if(Entry.getValue().contains("\\") && resultSet.getPrefixMatcher().prefixMatches(Entry.getValue())) {
+                resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), psiElement.getText()));
             }
         }
 

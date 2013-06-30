@@ -12,13 +12,21 @@ public class ParameterPercentWrapInsertHandler implements InsertHandler<LookupEl
 
     public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement lookupElement) {
 
-        if(!(lookupElement.getObject() instanceof PsiElement)) {
+        String insertText = null;
+        if((lookupElement.getObject() instanceof PsiElement)) {
+
+            PsiElement psi = (PsiElement) lookupElement.getObject();
+            insertText = psi.getText();
             return;
         }
 
-        PsiElement psi = (PsiElement) lookupElement.getObject();
+        if((lookupElement.getObject() instanceof String)) {
+            insertText = (String) lookupElement.getObject();
+        }
 
-        String insertText = psi.getText();
+        if(insertText == null) {
+            return;
+        }
 
         if(!insertText.startsWith("%")) {
             context.getDocument().insertString(context.getStartOffset(), "%");
