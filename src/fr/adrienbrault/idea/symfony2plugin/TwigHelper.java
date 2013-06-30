@@ -133,6 +133,9 @@ public class TwigHelper {
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
+    public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
+        return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)).withLanguage(TwigLanguage.INSTANCE);
+    }
 
     public static ElementPattern<PsiElement> getBlockTagPattern() {
         return PlatformPatterns
@@ -222,6 +225,14 @@ public class TwigHelper {
                     ),
                     PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans")
                 )
+                .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getAutocompletableFilterPattern() {
+        return
+            PlatformPatterns
+                .psiElement()
+                .afterSibling(PlatformPatterns.psiElement(TwigTokenTypes.FILTER))
                 .withLanguage(TwigLanguage.INSTANCE);
     }
 

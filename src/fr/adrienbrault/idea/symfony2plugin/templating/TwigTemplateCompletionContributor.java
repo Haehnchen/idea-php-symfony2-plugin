@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
@@ -181,6 +182,64 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         .withLanguage(TwigLanguage.INSTANCE);
                 }
             }
+        );
+
+        // provides support for 'a'|<xxx> but currently blocked on phpstorm see WI-19022
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE)),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    // move this stuff to pattern fixed event stopping by phpstorm
+                    PsiElement currElement = parameters.getPosition().getOriginalElement();
+                    PsiElement prevElement = currElement.getPrevSibling();
+                    if ((prevElement != null) && ((prevElement instanceof PsiWhiteSpace))) prevElement = prevElement.getPrevSibling();
+
+                    if ((prevElement != null) && (prevElement.getNode().getElementType() == TwigTokenTypes.FILTER)) {
+                        for(Map.Entry<String, String> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFilters().entrySet()) {
+                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()));
+                        }
+                    }
+
+                }
+
+            }
+
+        );
+
+        // provides support for {{ '<xxx>' }}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getPrintBlockFunctionPattern(),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    PsiElement psiElement = parameters.getPosition().getOriginalElement();
+                    PsiElement prevElement = psiElement.getPrevSibling();
+                    if ((prevElement == null) || !(prevElement instanceof PsiWhiteSpace)) {
+                        return;
+                    }
+
+                    for(Map.Entry<String, String> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFunctions().entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()));
+                    }
+
+                }
+            }
+
         );
 
 
