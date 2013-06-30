@@ -1,6 +1,13 @@
 Changelog
 =========
 
+### 0.9.9
+* Fix for parameter completion in yaml
+* Provide global template goto in quoted strings of php and twig files
+* Support completion and types for ObjectManager::find calls
+* Implement twig extension parser to support function and filter completion (need JetBrains fix for full support WI-19022)
+* Reduce build limit to make plugin installable on IntelliJ IDEA 12.1.4
+
 ### 0.9.8
 * Activate doctrine entity PhpTypes on default
 * Implement basic event and tag autocomplete in yaml and xml on known container elements

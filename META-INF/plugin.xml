@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.8</version>
+    <version>0.9.9</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -79,6 +79,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.9</h2>
+<ul>
+    <li>Fix for parameter completion in yaml</li>
+    <li>Provide global template goto in quoted strings of php and twig files</li>
+    <li>Support completion and types for ObjectManager::find calls</li>
+    <li>Implement twig extension parser to support function and filter completion (need JetBrains fix for full support WI-19022)</li>
+    <li>Reduce build limit to make plugin installable on IntelliJ IDEA 12.1.4</li>
+</ul>
 
 <h2>0.9.8</h2>
 <ul>
@@ -160,65 +169,10 @@
     <li>Auto use import of some supported Annotation</li>
 </ul>
 
-<h2>0.9.0</h2>
-<ul>
-    <li>Support app level twig templates (::layout.html.twig)</li>
-    <li>Ability to disable php types providers in the settings (if you eccounter freezes when autocompleting classes etc)</li>
-    <li>Support bundles assets (@AcmeDemoBundle/Resources/xxx)</li>
-    <li>Add {% javascripts and {% stylesheets assets autocompletion</li>
-    <li>Add assets go to file</li>
-</ul>
+<br/>
+<a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
+<br/>
 
-<h2>0.8.1</h2>
-<ul>
-    <li>Should improve performance and fix some issues with use statements</li>
-</ul>
-
-<h2>0.8.0</h2>
-<ul>
-    <li>Autocomplete twig files in @Template annotations</li>
-    <li>Go to twig file on @Template annotation</li>
-    <li>Autocomplete container parameters in php/xml/yaml</li>
-    <li>Autocomplete doctrine getRepository argument</li>
-    <li>Go to entity class on getRepository argument</li>
-    <li>Detect getRepository() result type</li>
-    <li>Detect EntityRepository::find/findOneBy/findAll/findBy result type</li>
-</ul>
-
-<h2>0.7.1</h2>
-<ul>
-    <li>Add assets autocompletion in twig asset() calls</li>
-</ul>
-
-<h2>0.7.0</h2>
-<ul>
-    <li>* Fix the fix about ide freezes</li>
-    <li>* Add auto completion inside doctrine's .orm.yml config files</li>
-    <li>* Add @ORM\\ annotations auto completion inside docblocks</li>
-    <li>* Add services auto completion inside yaml files</li>
-    <li>* Add services auto completion inside services.xml files</li>
-    <li>* Add class go to definition inside services.xml files</li>
-</ul>
-
-<h2>0.6.2</h2>
-<ul>
-    <li>Should fix ide freezes with class autocompletion (use XXX).</li>
-</ul>
-
-<h2>0.6.1</h2>
-<ul>
-    <li>Service aliases support</li>
-    <li>Resolve services classes case insensitively</li>
-</ul>
-
-<h2>0.6.0</h2>
-<ul>
-    <li>Autocomplete route name in php and twig</li>
-    <li>Should fix IDE freezes and StackoverflowException etc :)</li>
-    <li>Performance improvment</li>
-    <li>No more proxy method detection, the plugin has to know them (for example Controller::get)</li>
-    <li>Smarter detection of functions call in twig (ie: {% set var = render('<caret>') %} should work)</li>
-</ul>
 ]]>
     </change-notes>
 
