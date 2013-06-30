@@ -31,7 +31,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
     @Nullable
     @Override
     public String getType(PsiElement e) {
-        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).objectRepositoryTypeProvider) {
+        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).objectManagerFindTypeProvider) {
             return null;
         }
 

@@ -28,10 +28,10 @@ public class SettingsForm implements Configurable {
     private JCheckBox symfonyContainerTypeProvider;
     private JCheckBox objectRepositoryTypeProvider;
     private JCheckBox objectRepositoryResultTypeProvider;
+    private JCheckBox objectManagerFindTypeProvider;
 
     private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
     private JLabel typesLabel;
-    private JTextField phpTypesLifetimeSec;
     private JCheckBox twigAnnotateRoute;
     private JCheckBox twigAnnotateTemplate;
     private JCheckBox twigAnnotateAsset;
@@ -79,6 +79,7 @@ public class SettingsForm implements Configurable {
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
+            || !objectManagerFindTypeProvider.isSelected() == getSettings().objectManagerFindTypeProvider
 
             || !twigAnnotateRoute.isSelected() == getSettings().twigAnnotateRoute
             || !twigAnnotateTemplate.isSelected() == getSettings().twigAnnotateTemplate
@@ -105,6 +106,7 @@ public class SettingsForm implements Configurable {
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
         getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
         getSettings().objectRepositoryResultTypeProvider = objectRepositoryResultTypeProvider.isSelected();
+        getSettings().objectManagerFindTypeProvider = objectManagerFindTypeProvider.isSelected();
 
         getSettings().twigAnnotateRoute = twigAnnotateRoute.isSelected();
         getSettings().twigAnnotateTemplate = twigAnnotateTemplate.isSelected();
@@ -142,6 +144,7 @@ public class SettingsForm implements Configurable {
         symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
         objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
         objectRepositoryResultTypeProvider.setSelected(getSettings().objectRepositoryResultTypeProvider);
+        objectManagerFindTypeProvider.setSelected(getSettings().objectManagerFindTypeProvider);
 
         twigAnnotateRoute.setSelected(getSettings().twigAnnotateRoute);
         twigAnnotateTemplate.setSelected(getSettings().twigAnnotateTemplate);
