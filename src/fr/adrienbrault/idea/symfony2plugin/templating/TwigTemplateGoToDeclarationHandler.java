@@ -60,6 +60,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return getTranslationKeyGoTo(psiElement);
         }
 
+        // provide global twig file resolving
+        if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
+
+            return this.getTwigFiles(psiElement);
+        }
+
         return null;
     }
 
