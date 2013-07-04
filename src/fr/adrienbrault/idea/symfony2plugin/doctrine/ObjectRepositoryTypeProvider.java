@@ -83,7 +83,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
         }
 
         // @TODO: parse xml or yml for repositoryClass?
-        PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter + "Repository");
+        PhpClass phpClass = EntityHelper.getEntityRepositoryClass(project, parameter);
 
         // self add :)
         if(phpClass == null) {

@@ -1,18 +1,86 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class EntityHelper {
+
+    @Nullable
+    public static PhpClass getEntityRepositoryClass(Project project, String shortcutName) {
+
+        PhpClass phpClass = resolveShortcutName(project, shortcutName);
+        if(phpClass == null) {
+            return null;
+        }
+
+        // search on annotations
+        PhpDocComment docAnnotation = phpClass.getDocComment();
+        if(docAnnotation != null) {
+
+            // search for @ORM\Entity(repositoryClass="Foo\Bar\RegisterRepository")
+            String docAnnotationText = docAnnotation.getText();
+            Matcher matcher = Pattern.compile("repositoryClass=[\"|'](.*)[\"|']").matcher(docAnnotationText);
+            if (matcher.find()) {
+                //System.out.println("Annotation: " + shortcutName);
+                return PhpElementsUtil.getClass(PhpIndex.getInstance(project), matcher.group(1));
+            }
+        }
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getContainingBundle(phpClass);
+        if(symfonyBundle != null) {
+            String classFqnName = phpClass.getPresentableFQN();
+
+            if(classFqnName != null) {
+                String entityName = classFqnName.substring(symfonyBundle.getNamespaceName().length() - 1);
+                if(entityName.startsWith("Entity\\")) {
+                    entityName =  entityName.substring("Entity\\".length());
+                }
+
+                String entityFile = "Resources/config/doctrine/" + entityName + ".orm.yml";
+                VirtualFile virtualFile = symfonyBundle.getRelative(entityFile);
+                if(virtualFile != null) {
+                    PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                    if(psiFile != null) {
+
+                        // search for "repositoryClass: Foo\Bar\RegisterRepository" also provide quoted values
+                        Matcher matcher = Pattern.compile("[\\s]*repositoryClass:[\\s]*[\"|']*(.*)[\"|']*").matcher(psiFile.getText());
+                        if (matcher.find()) {
+                            //System.out.println("Yml: " + shortcutName);
+                            return PhpElementsUtil.getClass(PhpIndex.getInstance(project), matcher.group(1));
+                        }
+
+                        // we found entity config so no other check needed
+                        return null;
+                    }
+
+                }
+            }
+
+        }
+
+        // old __CLASS__ Repository type
+        // @TODO remove this fallback when we implemented all cases
+        return resolveShortcutName(project, shortcutName + "Repository");
+    }
 
     /**
      *
@@ -20,6 +88,7 @@ public class EntityHelper {
      * @param shortcutName name as MyBundle\Entity\Model or MyBundle:Model
      * @return null|PhpClass
      */
+    @Nullable
     public static PhpClass resolveShortcutName(Project project, String shortcutName) {
 
         if(shortcutName == null) {
