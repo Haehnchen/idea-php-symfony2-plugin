@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElemen
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
@@ -58,7 +59,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     PsiElement psiElement = parameters.getPosition();
-                    String domainName =  YamlHelper.getDomainTrans(psiElement);
+                    String domainName =  TwigUtil.getPsiElementTranslationDomain(psiElement);
 
                     ArrayList<String> domainMap = map.getDomainMap(domainName);
                     if(domainMap == null) {

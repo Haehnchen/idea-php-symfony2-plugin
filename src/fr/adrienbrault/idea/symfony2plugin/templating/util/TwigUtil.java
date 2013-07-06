@@ -1,10 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TwigUtil {
 
@@ -59,4 +65,72 @@ public class TwigUtil {
         return shortcutName + ".html.twig";
     }
 
+
+    @Nullable
+    public static String getTwigFileTransDefaultDomain(PsiFile psiFile) {
+
+        String str = psiFile.getText();
+
+        // {% trans_default_domain "app" %}
+        String regex = "\\{%\\s?trans_default_domain\\s?['\"](\\w+)['\"]\\s?%}";
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
+    }
+
+    /**
+     * need a twig translation print block and search for default domain on parameter or trans_default_domain
+     *
+     * @param psiElement some print block like that 'a'|trans
+     * @return matched domain or "messages" fallback
+     */
+    public static String getPsiElementTranslationDomain(PsiElement psiElement) {
+        String domain = getDomainTrans(psiElement);
+        if(domain == null) {
+            domain = getTwigFileTransDefaultDomain(psiElement.getContainingFile());
+        }
+
+        return domain == null ? "messages" : domain;
+    }
+
+    @Nullable
+    public static String getDomainTrans(PsiElement psiElement) {
+
+        // we only get a PRINT_BLOCK with a huge flat list of psi elements
+        // parsing this would be harder than use regex
+        // {{ 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain') }}
+
+        // @TODO: some more conditions needed here
+        // search in twig project for regex
+        // check for better solution; think of nesting
+
+        String domainName = null;
+
+        PsiElement parentPsiElement = psiElement.getParent();
+        if(parentPsiElement == null) {
+            return domainName;
+        }
+
+        String str = parentPsiElement.getText();
+
+        String regex = "\\|\\s?trans\\s?\\(\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        regex = "\\|\\s?transchoice\\s?\\(\\d+\\s?,\\s?\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return domainName;
+    }
 }

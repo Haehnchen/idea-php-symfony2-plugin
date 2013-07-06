@@ -12,9 +12,9 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -101,7 +101,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     private PsiElement[] getTranslationKeyGoTo(PsiElement psiElement) {
         String translationKey = psiElement.getText();
-        return TranslationUtil.getTranslationPsiElements(psiElement.getProject(), translationKey, YamlHelper.getDomainTrans(psiElement));
+        return TranslationUtil.getTranslationPsiElements(psiElement.getProject(), translationKey, TwigUtil.getPsiElementTranslationDomain(psiElement));
     }
 
     @Nullable
