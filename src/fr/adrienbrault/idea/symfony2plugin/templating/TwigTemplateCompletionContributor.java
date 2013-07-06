@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import icons.PhpIcons;
 import org.jetbrains.annotations.NotNull;
@@ -237,7 +238,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     for(Map.Entry<String, String> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFunctions().entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()));
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withInsertHandler(FunctionInsertHandler.getInstance()));
+                    }
+
+                    for(Map.Entry<String, String> entry: TwigUtil.getImportedMacros(psiElement.getContainingFile()).entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                    }
+
+                    for(Map.Entry<String, String> entry: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile()).entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
                 }

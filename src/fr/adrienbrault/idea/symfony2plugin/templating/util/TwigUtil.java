@@ -5,10 +5,15 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.twig.TwigFile;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,4 +138,55 @@ public class TwigUtil {
 
         return domainName;
     }
+
+    public static HashMap<String, String> getImportedMacros(PsiFile psiFile) {
+
+        HashMap<String, String> macros = new HashMap<String, String>();
+
+        String str = psiFile.getText();
+
+        // {% from '@foo/bar.html.twig' import macro1, macro_foo_bar %}
+        String regex = "\\{%\\s?from\\s?['\"](.*?)['\"]\\s?import\\s?(.*?)\\s?%}";
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+
+        while (matcher.find()) {
+
+            String templateName = matcher.group(1);
+            for(String macroName : matcher.group(2).split(",")) {
+                macros.put(macroName.trim(), templateName);
+            }
+        }
+
+        return macros;
+
+    }
+
+    public static HashMap<String, String> getImportedMacrosNamespaces(PsiFile psiFile) {
+
+        HashMap<String, String> macros = new HashMap<String, String>();
+
+        String str = psiFile.getText();
+
+        // {% import '@foo/bar.html.twig' as macro1 %}
+        String regex = "\\{%\\s?import\\s?['\"](.*?)['\"]\\s?as\\s?(.*?)\\s?%}";
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
+        while (matcher.find()) {
+
+            String templateName = matcher.group(1);
+            String asName = matcher.group(2);
+
+            if(twigFilesByName.containsKey(templateName)) {
+                for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFilesByName.get(templateName)).entrySet()) {
+                    macros.put(asName + '.' + entry.getKey(), templateName);
+                }
+            }
+
+        }
+
+        return macros;
+
+    }
+
 }
