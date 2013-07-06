@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util.controller;
 
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -22,10 +23,12 @@ import java.util.Map;
 
 public class ControllerIndex {
 
+    Project project;
     PhpIndex phpIndex;
 
-    public ControllerIndex(PhpIndex phpIndex) {
-       this.phpIndex = phpIndex;
+    public ControllerIndex(Project project) {
+       this.project = project;
+       this.phpIndex = PhpIndex.getInstance(project);
     }
 
     public ArrayList<ControllerAction> getAction() {
@@ -43,7 +46,7 @@ public class ControllerIndex {
     }
 
     @Nullable
-    public ControllerAction getControllerActionOnService(Project project, String shortcutName) {
+    public ControllerAction getControllerActionOnService(String shortcutName) {
 
         // only foo_bar:Method is valid
         if(shortcutName.contains("::") || !shortcutName.contains(":") || shortcutName.contains("\\")) {
@@ -53,11 +56,10 @@ public class ControllerIndex {
         String serviceId = shortcutName.substring(0, shortcutName.lastIndexOf(":"));
         String methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
 
-        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap();
+        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(this.project, XmlServiceParser.class).getServiceMap();
 
         if(serviceMap.getMap().containsKey(serviceId))  {
-            Collection<? extends PhpNamedElement> methodCalls = phpIndex.getBySignature("#M#C" + serviceMap.getMap().get(serviceId) + "." + methodName, null, 0);
+            Collection<? extends PhpNamedElement> methodCalls = this.phpIndex.getBySignature("#M#C" + serviceMap.getMap().get(serviceId) + "." + methodName, null, 0);
 
             for(PhpNamedElement phpNamedElement : methodCalls) {
                 if(phpNamedElement instanceof Method) {
@@ -152,6 +154,42 @@ public class ControllerIndex {
         }
 
         return actions;
+    }
+
+    @Nullable
+    public Method resolveShortcutName(String controllerName) {
+        ControllerIndex controllerIndex = new ControllerIndex(project);
+        ControllerAction controllerAction = controllerIndex.getControllerAction(controllerName);
+        if(controllerAction != null) {
+            return controllerAction.getMethod();
+        }
+
+        controllerAction = controllerIndex.getControllerActionOnService(controllerName);
+        if(controllerAction != null) {
+            return controllerAction.getMethod();
+        }
+
+        return null;
+    }
+
+    static public ArrayList<LookupElement> getControllerLookupElements(Project project) {
+        ArrayList<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        ControllerIndex controllerIndex = new ControllerIndex(project);
+        for(ControllerAction controllerAction: controllerIndex.getAction()) {
+            lookupElements.add(new ControllerActionLookupElement(controllerAction));
+        }
+
+        for(ControllerAction controllerAction: controllerIndex.getServiceActionMethods(project)) {
+            lookupElements.add(new ControllerActionLookupElement(controllerAction));
+        }
+
+        return lookupElements;
+    }
+
+    @Nullable
+    static public Method getControllerMethod(Project project, String controllerName) {
+        return new ControllerIndex(project).resolveShortcutName(controllerName);
     }
 
 }

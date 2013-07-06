@@ -33,9 +33,9 @@ public class RouteHelper {
                     return methodCalls.toArray(new PsiElement[methodCalls.size()]);
 
                 } else if(controllerName.contains(":")) {
-                    ControllerIndex controllerIndex = new ControllerIndex(PhpIndex.getInstance(project));
+                    ControllerIndex controllerIndex = new ControllerIndex(project);
 
-                    ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(project, controllerName);
+                    ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(controllerName);
                     if(controllerServiceAction != null) {
                         return new PsiElement[] {controllerServiceAction.getMethod()};
                     }

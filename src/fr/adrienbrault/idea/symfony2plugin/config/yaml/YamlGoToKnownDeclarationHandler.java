@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -68,21 +69,10 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
     }
 
     private void getControllerGoto(PsiElement psiElement, List<PsiElement> results) {
-
         String text = PsiElementUtils.trimQuote(psiElement.getText());
-
-        ControllerIndex controllerIndex = new ControllerIndex(PhpIndex.getInstance(psiElement.getProject()));
-
-        ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(psiElement.getProject(), text);
-        if(controllerServiceAction != null) {
-            results.add(controllerServiceAction.getMethod());
-            return;
-        }
-
-        ControllerAction controllerAction = controllerIndex.getControllerAction(text);
-
-        if(controllerAction != null) {
-            results.add(controllerAction.getMethod());
+        Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), text);
+        if(method != null) {
+            results.add(method);
         }
     }
 

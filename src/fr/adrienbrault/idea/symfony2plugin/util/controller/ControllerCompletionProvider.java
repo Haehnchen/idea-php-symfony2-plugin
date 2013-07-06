@@ -5,7 +5,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,16 +16,7 @@ public class ControllerCompletionProvider extends CompletionProvider<CompletionP
             return;
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
-
-        ControllerIndex controllerIndex = new ControllerIndex(phpIndex);
-        for(ControllerAction controllerAction: controllerIndex.getAction()) {
-            completionResultSet.addElement(new ControllerActionLookupElement(controllerAction));
-        }
-
-        for(ControllerAction controllerAction: controllerIndex.getServiceActionMethods(completionParameters.getPosition().getProject())) {
-            completionResultSet.addElement(new ControllerActionLookupElement(controllerAction));
-        }
+        completionResultSet.addAllElements(ControllerIndex.getControllerLookupElements(completionParameters.getPosition().getProject()));
 
     }
 }
