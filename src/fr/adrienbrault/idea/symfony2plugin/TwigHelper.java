@@ -211,7 +211,7 @@ public class TwigHelper {
         ;
     }
 
-    public static ElementPattern<PsiElement> getTranslationPattern() {
+    public static ElementPattern<PsiElement> getTranslationPattern(String... type) {
         return
             PlatformPatterns
                 .psiElement(TwigTokenTypes.STRING_TEXT)
@@ -221,9 +221,12 @@ public class TwigHelper {
                         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
                         PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                         PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.FILTER)
+                        PlatformPatterns.psiElement(TwigTokenTypes.FILTER),
+                        PlatformPatterns.psiElement(TwigTokenTypes.NUMBER)
                     ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans")
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                        PlatformPatterns.string().oneOf(type)
+                    )
                 )
                 .withLanguage(TwigLanguage.INSTANCE);
     }

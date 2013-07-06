@@ -50,13 +50,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         // find trans('', {}, '|')
         // tricky way to get the function string trans(...)
         if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
-            PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans"));
+            PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
             if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
                 return TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getText());
             }
         }
 
-        if (TwigHelper.getTranslationPattern().accepts(psiElement)) {
+        if (TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
             return getTranslationKeyGoTo(psiElement);
         }
 

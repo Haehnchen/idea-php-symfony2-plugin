@@ -39,9 +39,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("include"),  new TemplateCompletionProvider());
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
+        // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTranslationPattern(),
+            TwigHelper.getTranslationPattern("trans", "transchoice"),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
@@ -76,6 +77,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         );
 
         // provides support for 'a'|trans({'%foo%' : bar|default}, '<xxx>')
+        // provides support for 'a'|transchoice(2, {'%foo%' : bar|default}, '<xxx>')
         extend(
             CompletionType.BASIC,
             TwigHelper.getTransDomainPattern(),
@@ -88,7 +90,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    if(PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans")) == null) {
+                    if(PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice"))) == null) {
                         return;
                     }
 

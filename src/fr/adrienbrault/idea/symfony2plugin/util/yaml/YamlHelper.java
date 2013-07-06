@@ -35,8 +35,15 @@ public class YamlHelper {
         String regex = "\\|\\s?trans\\s?\\(\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
         Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
-        while (matcher.find()) {
-            domainName = matcher.group(1);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        regex = "\\|\\s?transchoice\\s?\\(\\d+\\s?,\\s?\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+
+        if (matcher.find()) {
+            return matcher.group(1);
         }
 
         return domainName;
