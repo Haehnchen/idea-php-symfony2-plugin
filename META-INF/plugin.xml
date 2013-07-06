@@ -198,7 +198,6 @@
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor"/>
 
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToKnownDeclarationHandler"/>

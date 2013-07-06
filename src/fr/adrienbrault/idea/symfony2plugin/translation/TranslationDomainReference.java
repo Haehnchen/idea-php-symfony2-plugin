@@ -14,14 +14,14 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TranslationReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
+public class TranslationDomainReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
 
     private String domainName = null;
     private StringLiteralExpression element;
 
-    public TranslationReference(@NotNull StringLiteralExpression element, String domain) {
+    public TranslationDomainReference(@NotNull StringLiteralExpression element) {
         super(element);
-        this.domainName = domain;
+        this.domainName = element.getContents();
         this.element = element;
     }
 
@@ -29,7 +29,7 @@ public class TranslationReference extends PsiReferenceBase<PsiElement> implement
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         List<ResolveResult> results = new ArrayList<ResolveResult>();
-        PsiElement[] psiElements = TranslationUtil.getTranslationPsiElements(this.element.getProject(), this.element.getContents(), this.domainName);
+        PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(this.element.getProject(), domainName);
 
         for (PsiElement psiElement : psiElements) {
             results.add(new PsiElementResolveResult(psiElement));
@@ -51,9 +51,8 @@ public class TranslationReference extends PsiReferenceBase<PsiElement> implement
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
         TranslationStringMap map = TranslationIndex.getInstance(getElement().getProject()).getTranslationMap();
-        ArrayList<String> domainMap = map.getDomainMap(domainName);
-        for(String stringId : domainMap) {
-            lookupElements.add(new TranslatorLookupElement(stringId, domainName));
+        for(String domainKey : map.getDomainList()) {
+            lookupElements.add(new TranslatorLookupElement(domainKey, domainKey));
         }
 
         return lookupElements.toArray();

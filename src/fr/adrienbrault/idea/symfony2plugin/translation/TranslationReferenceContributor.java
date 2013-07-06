@@ -19,42 +19,60 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
+
         psiReferenceRegistrar.registerReferenceProvider(
-                PlatformPatterns.psiElement(StringLiteralExpression.class),
-                new PsiReferenceProvider() {
-                    @NotNull
-                    @Override
-                    public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
-                            return new PsiReference[0];
-                        }
-
-                        ParameterList parameterList = (ParameterList) psiElement.getContext();
-
-                        if (!(parameterList.getContext() instanceof MethodReference)) {
-                            return new PsiReference[0];
-                        }
-
-                        MethodReference method = (MethodReference) parameterList.getContext();
-                        Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                        if (!interfacesUtil.isTranslatorCall(method)) {
-                            return new PsiReference[0];
-                        }
-
-                        // only use parameter, 1 = string_id and 3 = domain
-                        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-                        if(currentIndex == null || currentIndex.getIndex() == 1 || currentIndex.getIndex() > 2) {
-                            return new PsiReference[0];
-                        }
-
-                        // pipe domain if it is set
-                        String domain = PsiElementUtils.getMethodParameterAt(parameterList, 2);
-                        return new PsiReference[]{ new TranslationReference((StringLiteralExpression) psiElement, domain, currentIndex) };
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+                        return new PsiReference[0];
                     }
 
+                    ParameterList parameterList = (ParameterList) psiElement.getContext();
+
+                    if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference method = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isTranslatorCall(method)) {
+                        return new PsiReference[0];
+                    }
+
+                    int domainParameter = 2;
+                    if(method.getName().equals("transChoice")) {
+                        domainParameter = 3;
+                    }
+
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
+                    if(currentIndex == null) {
+                        return new PsiReference[0];
+                    }
+
+                    if(currentIndex.getIndex() == domainParameter) {
+                        return new PsiReference[]{ new TranslationDomainReference((StringLiteralExpression) psiElement) };
+                    }
+
+                    if(currentIndex.getIndex() == 0) {
+                        String domain = PsiElementUtils.getMethodParameterAt(parameterList, domainParameter);
+
+                        if(domain == null) {
+                            domain = "messages";
+                        }
+
+                        return new PsiReference[]{ new TranslationReference((StringLiteralExpression) psiElement, domain) };
+                    }
+
+                    return new PsiReference[0];
                 }
 
+            }
+
         );
+
     }
 
 }

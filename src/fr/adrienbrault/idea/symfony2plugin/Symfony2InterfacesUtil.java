@@ -58,6 +58,7 @@ public class Symfony2InterfacesUtil {
     public boolean isTranslatorCall(PsiElement e) {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
+                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
         });
     }
 
