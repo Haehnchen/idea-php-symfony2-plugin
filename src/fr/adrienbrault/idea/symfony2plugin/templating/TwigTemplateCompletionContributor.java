@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
+import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import icons.PhpIcons;
 import org.jetbrains.annotations.NotNull;
@@ -255,7 +256,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         );
 
-
+        extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("controller"),  new ControllerCompletionProvider());
 
     }
 

@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -15,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -67,7 +69,19 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return this.getTwigFiles(psiElement);
         }
 
+        if(TwigHelper.getPrintBlockFunctionPattern("controller").accepts(psiElement)) {
+            PsiElement controllerMethod = this.getControllerGoTo(psiElement);
+            if(controllerMethod != null) {
+                return new PsiElement[] { controllerMethod };
+            }
+        }
+
         return null;
+    }
+
+    private PsiElement getControllerGoTo(PsiElement psiElement) {
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        return ControllerIndex.getControllerMethod(psiElement.getProject(), text);
     }
 
     private PsiElement[] getTwigFiles(PsiElement psiElement) {

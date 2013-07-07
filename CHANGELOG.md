@@ -1,6 +1,14 @@
 Changelog
 =========
 
+### 0.9.x
+* Support Controller:forward in php
+* Resolve repositoryClass on yaml or annotation config
+* Support transchoice in php and twig
+* Use trans_default_domain as fallback translation domain in twig
+* Improvements in twig import, set and macro completion / goto
+* Controller goto and completion for twig controller function
+
 ### 0.9.9
 * Fix for parameter completion in yaml
 * Provide global template goto in quoted strings of php and twig files
