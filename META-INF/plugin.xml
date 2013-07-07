@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.9</version>
+    <version>0.9.10</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -79,6 +79,16 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.10</h2>
+<ul>
+    <li>Support Controller:forward in php</li>
+    <li>Resolve repositoryClass on yaml or annotation config</li>
+    <li>Support transchoice in php and twig</li>
+    <li>Use trans_default_domain as fallback translation domain in twig</li>
+    <li>Improvements in twig import, set and macro completion / goto</li>
+    <li>Controller goto and completion for twig controller function</li>
+</ul>
 
 <h2>0.9.9</h2>
 <ul>

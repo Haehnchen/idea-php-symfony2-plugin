@@ -1,7 +1,7 @@
 Changelog
 =========
 
-### 0.9.x
+### 0.9.10
 * Support Controller:forward in php
 * Resolve repositoryClass on yaml or annotation config
 * Support transchoice in php and twig
