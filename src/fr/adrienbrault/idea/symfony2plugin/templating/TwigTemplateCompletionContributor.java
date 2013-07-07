@@ -12,10 +12,7 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
@@ -241,12 +238,16 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
-                    for(Map.Entry<String, String> entry: TwigUtil.getImportedMacros(psiElement.getContainingFile()).entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                    for(TwigMacro twigMacro: TwigUtil.getImportedMacros(psiElement.getContainingFile())) {
+                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
-                    for(Map.Entry<String, String> entry: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile()).entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                    for(TwigMacro twigMacro: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile())) {
+                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                    }
+
+                    for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
+                        resultSet.addElement(LookupElementBuilder.create(twigSet.getName()).withTypeText("set"));
                     }
 
                 }

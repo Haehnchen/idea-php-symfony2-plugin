@@ -7,11 +7,14 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -139,21 +142,21 @@ public class TwigUtil {
         return domainName;
     }
 
-    public static HashMap<String, String> getImportedMacros(PsiFile psiFile) {
+    public static ArrayList<TwigMacro> getImportedMacros(PsiFile psiFile) {
 
-        HashMap<String, String> macros = new HashMap<String, String>();
+        ArrayList<TwigMacro> macros = new ArrayList<TwigMacro>();
 
         String str = psiFile.getText();
 
         // {% from '@foo/bar.html.twig' import macro1, macro_foo_bar %}
         String regex = "\\{%\\s?from\\s?['\"](.*?)['\"]\\s?import\\s?(.*?)\\s?%}";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
 
         while (matcher.find()) {
 
             String templateName = matcher.group(1);
             for(String macroName : matcher.group(2).split(",")) {
-                macros.put(macroName.trim(), templateName);
+                macros.add(new TwigMacro(macroName.trim(), templateName));
             }
         }
 
@@ -161,15 +164,15 @@ public class TwigUtil {
 
     }
 
-    public static HashMap<String, String> getImportedMacrosNamespaces(PsiFile psiFile) {
+    public static ArrayList<TwigMacro> getImportedMacrosNamespaces(PsiFile psiFile) {
 
-        HashMap<String, String> macros = new HashMap<String, String>();
+        ArrayList<TwigMacro> macros = new ArrayList<TwigMacro>();
 
         String str = psiFile.getText();
 
         // {% import '@foo/bar.html.twig' as macro1 %}
         String regex = "\\{%\\s?import\\s?['\"](.*?)['\"]\\s?as\\s?(.*?)\\s?%}";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
 
         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
         while (matcher.find()) {
@@ -179,13 +182,31 @@ public class TwigUtil {
 
             if(twigFilesByName.containsKey(templateName)) {
                 for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFilesByName.get(templateName)).entrySet()) {
-                    macros.put(asName + '.' + entry.getKey(), templateName);
+                    macros.add(new TwigMacro(asName + '.' + entry.getKey(), templateName));
                 }
             }
 
         }
 
         return macros;
+
+    }
+
+    public static ArrayList<TwigSet> getSetDeclaration(PsiFile psiFile) {
+
+        ArrayList<TwigSet> sets = new ArrayList<TwigSet>();
+        String str = psiFile.getText();
+
+        // {% set foo = 'foo' %}
+        // {% set foo %}
+        String regex = "\\{%\\s?set\\s?(.*?)\\s.*?%}";
+        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
+
+        while (matcher.find()) {
+            sets.add(new TwigSet(matcher.group(1)));
+        }
+
+        return sets;
 
     }
 
