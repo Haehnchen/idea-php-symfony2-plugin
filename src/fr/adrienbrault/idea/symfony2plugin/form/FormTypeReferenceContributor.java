@@ -2,13 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.form;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,6 +23,77 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
+                .withParent(
+                    PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).inside(ParameterList.class)
+                ),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+                    if (parameterList == null) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference method = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isFormBuilderFormTypeCall(method)) {
+                        return new PsiReference[0];
+                    }
+
+                    ArrayHashElement arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
+                    if(arrayHash != null && arrayHash.getKey() instanceof StringLiteralExpression) {
+
+                        ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+                        if(arrayCreation == null) {
+                            return new PsiReference[0];
+                        }
+
+                        // old 3 parameter hold valid array data
+                        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreation);
+                        if(currentIndex == null || currentIndex.getIndex() != 2) {
+                            return new PsiReference[0];
+                        }
+
+                        String keyString = ((StringLiteralExpression) arrayHash.getKey()).getContents();
+
+                        if(keyString.equals("translation_domain")) {
+                            return new PsiReference[]{ new TranslationDomainReference((StringLiteralExpression) psiElement) };
+                        }
+
+                        // @TODO: how to handle custom bundle fields like help_block
+                        if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline")) {
+
+                            // translation_domain in current array block
+                            String translationDomain = PhpElementsUtil.getArrayHashValue(arrayCreation, "translation_domain");
+                            if(translationDomain == null) {
+                                translationDomain = "messages";
+                            }
+
+                            return new PsiReference[]{ new TranslationReference((StringLiteralExpression) psiElement, translationDomain) };
+                        }
+
+                        if(keyString.equals("class")) {
+                            return new PsiReference[]{ new PhpClassReference((StringLiteralExpression) psiElement)};
+                        }
+
+                    }
+
+                    return new PsiReference[0];
+
+                }
+
+            }
+
+        );
+
         psiReferenceRegistrar.registerReferenceProvider(
                 PlatformPatterns.psiElement(StringLiteralExpression.class),
                 new PsiReferenceProvider() {

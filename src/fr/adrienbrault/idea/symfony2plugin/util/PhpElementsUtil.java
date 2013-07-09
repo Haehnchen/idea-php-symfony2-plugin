@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
-import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
@@ -12,10 +11,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -108,6 +104,33 @@ public class PhpElementsUtil {
                 completionResultSet.addElement(new PhpLookupElement(method));
             }
         }
+    }
+
+    @Nullable
+    static public String getArrayHashValue(ArrayCreationExpression arrayCreationExpression, String keyName) {
+        ArrayHashElement translationArrayHashElement = PsiElementUtils.getChildrenOfType(arrayCreationExpression, PlatformPatterns.psiElement(ArrayHashElement.class)
+            .withFirstChild(
+                PlatformPatterns.psiElement(PhpElementTypes.ARRAY_KEY).withText(
+                    PlatformPatterns.string().oneOf("'" + keyName + "'", "\"" + keyName + "\"")
+                )
+            )
+        );
+
+        if(translationArrayHashElement == null) {
+            return null;
+        }
+
+        if(!(translationArrayHashElement.getValue() instanceof StringLiteralExpression)) {
+            return null;
+        }
+
+        StringLiteralExpression valueString = (StringLiteralExpression) translationArrayHashElement.getValue();
+        if(valueString == null) {
+            return null;
+        }
+
+        return valueString.getContents();
+
     }
 
 }

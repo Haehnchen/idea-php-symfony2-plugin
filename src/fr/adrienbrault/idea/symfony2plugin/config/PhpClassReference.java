@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +16,11 @@ import java.util.*;
 public class PhpClassReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
 
     private String classFQN;
+
+    public PhpClassReference(@NotNull StringLiteralExpression element) {
+        super(element);
+        this.classFQN = element.getContents();
+    }
 
     public PhpClassReference(@NotNull PsiElement element, String classFQN) {
         super(element);

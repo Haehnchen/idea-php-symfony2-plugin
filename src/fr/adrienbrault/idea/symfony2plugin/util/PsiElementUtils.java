@@ -9,12 +9,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.ArrayUtil;
+import com.intellij.util.SmartList;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -99,6 +104,20 @@ public class PsiElementUtils {
                 return (T)child;
             }
         }
+        return null;
+    }
+
+    @Nullable
+    public static <T extends PsiElement> T getChildrenOfType(@Nullable PsiElement element, ElementPattern<T> pattern) {
+        if (element == null) return null;
+
+        for (PsiElement child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (pattern.accepts(child)) {
+                //noinspection unchecked
+                return (T)child;
+            }
+        }
+
         return null;
     }
 
