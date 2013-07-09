@@ -55,7 +55,8 @@ public class EntityHelper {
                     entityName =  entityName.substring("Entity\\".length());
                 }
 
-                String entityFile = "Resources/config/doctrine/" + entityName + ".orm.yml";
+                // entities in sub folder: 'Foo\Bar' -> 'Foo.Bar.orm.yml'
+                String entityFile = "Resources/config/doctrine/" + entityName.replace("\\", ".") + ".orm.yml";
                 VirtualFile virtualFile = symfonyBundle.getRelative(entityFile);
                 if(virtualFile != null) {
                     PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
