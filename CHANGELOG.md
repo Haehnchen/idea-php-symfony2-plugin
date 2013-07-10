@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 0.9.11
+* Fix icon issue in PhpStorm 7 EAP
+* Support translation and entity goto / completion in FormTypes arrays
+* Quickfix to not fire plugin completion in HTML content since it also interpreted as XML
+
 ### 0.9.10
 * Support Controller:forward in php
 * Resolve repositoryClass on yaml or annotation config

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.10</version>
+    <version>0.9.11</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -79,6 +79,13 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.11</h2>
+<ul>
+    <li>Fix icon issue in PhpStorm 7 EAP</li>
+    <li>Support translation and entity goto / completion in FormTypes arrays</li>
+    <li>Quickfix to not fire plugin completion in HTML content since it also interpreted as XML</li>
+</ul>
 
 <h2>0.9.10</h2>
 <ul>
