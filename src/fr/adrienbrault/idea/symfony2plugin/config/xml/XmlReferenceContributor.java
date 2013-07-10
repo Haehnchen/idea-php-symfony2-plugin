@@ -30,7 +30,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             )
                         )
                     )
-                ),
+                ).inFile(getXmlFilePattern()),
 
             new ServiceReferenceProvider()
         );
@@ -50,7 +50,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             XmlPatterns.xmlAttribute("id")
                         )
                     )
-                ),
+                ).inFile(getXmlFilePattern()),
 
             new ClassReferenceProvider()
         );
@@ -68,7 +68,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             .xmlTag()
                             .withName("parameter")
                             .withAnyAttribute("key")
-                        )
+                        ).inFile(getXmlFilePattern())
                     ),
                 XmlPatterns
                     .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
@@ -79,7 +79,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             .xmlTag()
                             .withName("argument")
                         )
-                    )
+                    ).inFile(getXmlFilePattern())
             ),
 
             new ClassReferenceProvider(false)
@@ -99,7 +99,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             .xmlTag()
                             .withName("argument")
                         )
-                    ),
+                    ).inFile(getXmlFilePattern()),
                 XmlPatterns
                     .xmlAttributeValue()
                     .withParent(XmlPatterns
@@ -113,12 +113,19 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                                 XmlPatterns.xmlAttribute("id")
                             )
                         )
-                    )
+                    ).inFile(getXmlFilePattern())
             ),
 
             new ParameterReferenceProvider().setTrimPercent(true).setTrimQuote(true)
         );
 
+    }
+
+    private PsiFilePattern.Capture<PsiFile> getXmlFilePattern() {
+        return XmlPatterns.psiFile()
+            .withName(XmlPatterns
+                .string().endsWith(".xml")
+            );
     }
 
 }
