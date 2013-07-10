@@ -9,6 +9,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
@@ -81,7 +82,62 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         }
 
                         if(keyString.equals("class")) {
-                            return new PsiReference[]{ new PhpClassReference((StringLiteralExpression) psiElement)};
+                            return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, true)};
+                        }
+
+                    }
+
+                    return new PsiReference[0];
+
+                }
+
+            }
+
+        );
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
+                .withParent(
+                    PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).inside(ParameterList.class)
+                ),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+                    if (parameterList == null) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference method = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isCallTo(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults")) {
+                        return new PsiReference[0];
+                    }
+
+                    ArrayHashElement arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
+                    if(arrayHash != null && arrayHash.getKey() instanceof StringLiteralExpression) {
+
+                        ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+                        if(arrayCreation == null) {
+                            return new PsiReference[0];
+                        }
+
+                        // old 3 parameter hold valid array data
+                        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreation);
+                        if(currentIndex == null || currentIndex.getIndex() != 0) {
+                            return new PsiReference[0];
+                        }
+
+                        String keyString = ((StringLiteralExpression) arrayHash.getKey()).getContents();
+
+
+                        if(keyString.equals("data_class")) {
+                            return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, true)};
                         }
 
                     }

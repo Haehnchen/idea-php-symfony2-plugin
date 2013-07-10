@@ -28,6 +28,12 @@ import java.util.Map;
  */
 public class EntityReference extends PsiReferenceBase<PsiElement> implements PsiReference {
     private String entityName;
+    private boolean useClassNameAsLookupString = false;
+
+    public EntityReference(@NotNull StringLiteralExpression element, boolean useClassNameAsLookupString) {
+        this(element);
+        this.useClassNameAsLookupString = useClassNameAsLookupString;
+    }
 
     public EntityReference(@NotNull StringLiteralExpression element) {
         super(element);
@@ -83,7 +89,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
                 // dont add Repository classes and abstract entities
                 PhpClass entityClass = PhpElementsUtil.getClass(phpIndex, entityNamespaces.get(entry.getKey()) + "\\" + className);
                 if(null != entityClass && isEntity(entityClass, repositoryInterface)) {
-                    results.add(new DoctrineEntityLookupElement(repoName, entityClass));
+                    results.add(new DoctrineEntityLookupElement(repoName, entityClass, this.useClassNameAsLookupString));
                 }
 
             }
