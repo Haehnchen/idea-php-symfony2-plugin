@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +14,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class XmlHelper {
@@ -88,6 +91,30 @@ public class XmlHelper {
         } catch (IOException ignored) {
         } catch (ParserConfigurationException ignored) {
         }
+
+        return null;
+    }
+
+    @Nullable
+    public static HashMap<String, String> getLocalMissingParameterMap(PsiElement psiElement,@Nullable Map<String, String> currentServiceMap) {
+
+        VirtualFile virtualFile = psiElement.getContainingFile().getOriginalFile().getVirtualFile();
+        if(virtualFile != null) {
+            ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
+            parameterServiceParser.parser(VfsUtil.virtualToIoFile(virtualFile));
+            HashMap<String, String> unknownParameterMap = new HashMap<String, String>();
+
+            for(Map.Entry<String, String> entry: parameterServiceParser.getParameterMap().entrySet()) {
+                if(currentServiceMap == null) {
+                    unknownParameterMap.put(entry.getKey(), entry.getValue());
+                } else if ( !currentServiceMap.containsKey(entry.getKey())) {
+                    unknownParameterMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            return unknownParameterMap;
+        }
+
 
         return null;
     }

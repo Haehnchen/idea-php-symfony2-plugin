@@ -6,6 +6,7 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.ParameterXmlReference;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -46,7 +47,7 @@ public class ParameterReferenceProvider extends PsiReferenceProvider {
             text = this.trimChar(text, "%");
         }
 
-        return new PsiReference[]{ new ParameterReference(psiElement, text).wrapVariantsWithPercent(true) };
+        return new PsiReference[]{ new ParameterXmlReference(psiElement, text).wrapVariantsWithPercent(true) };
     }
 
     protected String trimChar(String text, String charString) {
