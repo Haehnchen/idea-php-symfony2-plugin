@@ -31,7 +31,7 @@ public class ServiceReferenceContributor extends PsiReferenceContributor {
 
                     ParameterList parameterList = (ParameterList) psiElement.getContext();
 
-                    if (!(parameterList.getContext() instanceof MethodReference)) {
+                    if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
                         return new PsiReference[0];
                     }
                     MethodReference method = (MethodReference) parameterList.getContext();

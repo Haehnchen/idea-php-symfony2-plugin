@@ -43,6 +43,10 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
+                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
                     MethodReference method = (MethodReference) parameterList.getContext();
                     Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
                     if (!interfacesUtil.isFormBuilderFormTypeCall(method)) {
@@ -63,7 +67,12 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                             return new PsiReference[0];
                         }
 
-                        String keyString = ((StringLiteralExpression) arrayHash.getKey()).getContents();
+                        StringLiteralExpression key = (StringLiteralExpression) arrayHash.getKey();
+                        if(key == null) {
+                            return new PsiReference[0];
+                        }
+
+                        String keyString = key.getContents();
 
                         if(keyString.equals("translation_domain")) {
                             return new PsiReference[]{ new TranslationDomainReference((StringLiteralExpression) psiElement) };
@@ -113,6 +122,10 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
+                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
                     MethodReference method = (MethodReference) parameterList.getContext();
                     Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
                     if (!interfacesUtil.isCallTo(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults")) {
@@ -133,9 +146,12 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                             return new PsiReference[0];
                         }
 
-                        String keyString = ((StringLiteralExpression) arrayHash.getKey()).getContents();
+                        StringLiteralExpression key = (StringLiteralExpression) arrayHash.getKey();
+                        if(key == null) {
+                            return new PsiReference[0];
+                        }
 
-
+                        String keyString = key.getContents();
                         if(keyString.equals("data_class")) {
                             return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, true)};
                         }
@@ -162,7 +178,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                         ParameterList parameterList = (ParameterList) psiElement.getContext();
 
-                        if (!(parameterList.getContext() instanceof MethodReference)) {
+                        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
                             return new PsiReference[0];
                         }
 
