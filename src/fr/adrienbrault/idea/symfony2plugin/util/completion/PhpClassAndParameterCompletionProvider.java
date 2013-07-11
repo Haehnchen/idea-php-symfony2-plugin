@@ -13,7 +13,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.ParameterPercentWrapInsertHandler;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -40,6 +42,14 @@ public class PhpClassAndParameterCompletionProvider extends CompletionProvider<C
             // some better class filter
             if(Entry.getValue().contains("\\") && resultSet.getPrefixMatcher().prefixMatches(Entry.getValue())) {
                 resultSet.addElement(new ParameterLookupElement(Entry.getKey(), Entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), psiElement.getText()));
+            }
+        }
+
+        for( Map.Entry<String, String> entry: YamlHelper.getLocalParameterMap(psiElement).entrySet()) {
+            if(!configParameters.containsKey(entry.getKey())) {
+                resultSet.addElement(
+                    new ParameterLookupElement(entry.getKey(), entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), psiElement.getText())
+                );
             }
         }
 

@@ -40,8 +40,10 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        String parameterValue = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(parameterName.substring(1, parameterName.length() - 1));
-        if (null == parameterValue) {
+        parameterName = parameterName.substring(1, parameterName.length() - 1);
+
+        String parameterValue = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(parameterName);
+        if (null == parameterValue && !YamlHelper.getLocalParameterMap(psiElement).containsKey(parameterName)) {
             holder.createWarningAnnotation(psiElement, "Missing Parameter");
         }
 

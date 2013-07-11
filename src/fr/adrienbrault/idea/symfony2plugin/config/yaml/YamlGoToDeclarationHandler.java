@@ -6,14 +6,19 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -81,6 +86,14 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
     protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
 
         String parameterName = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(psiParameterName);
+        if (null == parameterName) {
+            // find local parameter
+            Map<String, String> localParameter = YamlHelper.getLocalParameterMap(psiElement);
+            if(localParameter.containsKey(psiParameterName)) {
+                parameterName = localParameter.get(psiParameterName);
+            }
+        }
+
         if (null == parameterName) {
             return new PsiElement[]{};
         }

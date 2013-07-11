@@ -18,7 +18,46 @@ public class YamlHelper {
         return new YamlLocalServiceMap().getLocalServiceMap(psiElement);
     }
 
+    static public Map<String, String> getLocalParameterMap(PsiElement psiElement) {
+        return new YamlLocalServiceMap().getLocalParameterMap(psiElement);
+    }
+
     private static class YamlLocalServiceMap {
+
+        public Map<String, String> getLocalParameterMap(PsiElement psiElement) {
+
+            Map<String, String> map = new HashMap<String, String>();
+
+            if(!(psiElement.getContainingFile().getFirstChild() instanceof YAMLDocument)) {
+                return map;
+            }
+
+            YAMLDocument yamlDocument = (YAMLDocument) psiElement.getContainingFile().getFirstChild();
+
+            // get services or parameter key
+            YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
+            if(yamlKeys == null) {
+                return map;
+            }
+
+            for(YAMLKeyValue yamlKeyValue : yamlKeys) {
+                String yamlConfigKey = yamlKeyValue.getName();
+                if(yamlConfigKey != null && yamlConfigKey.equals("parameters")) {
+
+                    YAMLKeyValue yamlParameter[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
+                    if(yamlParameter != null) {
+
+                        for(YAMLKeyValue yamlParameterArray:  yamlParameter) {
+                            map.put(yamlParameterArray.getKeyText(), yamlParameterArray.getValue().getText());
+                        }
+                    }
+
+                }
+            }
+
+            return map;
+
+        }
 
         public Map<String, String> getLocalServiceMap(PsiElement psiElement) {
 
