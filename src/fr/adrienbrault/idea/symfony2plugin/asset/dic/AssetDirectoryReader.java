@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 
@@ -40,8 +41,10 @@ public class AssetDirectoryReader {
     public List<AssetFile> getAssetFiles() {
         final List<AssetFile> files = new ArrayList<AssetFile>();
 
+        String webDirectoryName = Settings.getInstance(project).directoryToWeb;
+
         VirtualFile projectDirectory = project.getBaseDir();
-        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, "web");
+        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, webDirectoryName);
 
         if (null == webDirectory) {
             return files;

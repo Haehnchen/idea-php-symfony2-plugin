@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.fileTypes.FileTypeManager;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
@@ -43,6 +46,14 @@ public class SettingsForm implements Configurable {
     private JCheckBox pluginEnabled;
     private JCheckBox yamlAnnotateServiceConfig;
 
+    private JButton directoryToWebReset;
+    private JLabel directoryToWebLabel;
+    private TextFieldWithBrowseButton directoryToWeb;
+
+    private JButton directoryToAppReset;
+    private JLabel directoryToAppLabel;
+    private TextFieldWithBrowseButton directoryToApp;
+
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
     }
@@ -61,11 +72,17 @@ public class SettingsForm implements Configurable {
 
     public JComponent createComponent() {
 
-        pathToContainerTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToContainerTextField.getTextField()));
+        pathToContainerTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToContainerTextField.getTextField(), FileChooserDescriptorFactory.createSingleFileDescriptor(StdFileTypes.XML)));
         pathToContainerTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToContainerTextField.getTextField(), Settings.DEFAULT_CONTAINER_PATH));
 
-        pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField()));
+        pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), FileChooserDescriptorFactory.createSingleFileDescriptor(FileTypeManager.getInstance().getStdFileType("PHP"))));
         pathToUrlGeneratorTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
+
+        directoryToApp.getButton().addMouseListener(createPathButtonMouseListener(directoryToApp.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
+        directoryToApp.addMouseListener(createResetPathButtonMouseListener(directoryToApp.getTextField(), Settings.DEFAULT_APP_DIRECTORY));
+
+        directoryToWeb.getButton().addMouseListener(createPathButtonMouseListener(directoryToWeb.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
+        directoryToWeb.addMouseListener(createResetPathButtonMouseListener(directoryToWeb.getTextField(), Settings.DEFAULT_WEB_DIRECTORY));
 
         return (JComponent) panel1;
     }
@@ -92,6 +109,9 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
 
             || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
+
+            || !directoryToApp.getText().equals(getSettings().directoryToApp)
+            || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
         ;
     }
 
@@ -119,6 +139,9 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
 
         getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
+
+        getSettings().directoryToApp = directoryToApp.getText();
+        getSettings().directoryToWeb = directoryToWeb.getText();
     }
 
     @Override
@@ -157,9 +180,16 @@ public class SettingsForm implements Configurable {
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
+
+        directoryToApp.setText(getSettings().directoryToApp);
+        directoryToWeb.setText(getSettings().directoryToWeb);
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField) {
+        return createPathButtonMouseListener(textField, FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
+    }
+
+    private MouseListener createPathButtonMouseListener(final JTextField textField, final FileChooserDescriptor fileChooserDescriptor) {
         return new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -169,7 +199,7 @@ public class SettingsForm implements Configurable {
             public void mousePressed(MouseEvent mouseEvent) {
                 VirtualFile projectDirectory = project.getBaseDir();
                 VirtualFile selectedFile = FileChooser.chooseFile(
-                    FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
+                    fileChooserDescriptor,
                     project,
                     VfsUtil.findRelativeFile(textField.getText(), projectDirectory)
                 );

@@ -77,7 +77,9 @@ public class TwigHelper {
     }
 
     private static void getTwigFilesByNameBundleFallback(Project project, PhpIndex phpIndex, ArrayList<String> uniqueNamespaceList, ArrayList<TwigPath> twigPaths) {
-        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources", "views");
+
+        String appDirectoryName = Settings.getInstance(project).directoryToApp;
+        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName, "Resources", "views");
         if(globalDirectory != null) {
             twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, true));
         }

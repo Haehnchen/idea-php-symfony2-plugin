@@ -15,9 +15,13 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public static String DEFAULT_CONTAINER_PATH = "app/cache/dev/appDevDebugProjectContainer.xml";
     public static String DEFAULT_URL_GENERATOR_PATH = "app/cache/dev/appDevUrlGenerator.php";
+    public static String DEFAULT_WEB_DIRECTORY = "web";
+    public static String DEFAULT_APP_DIRECTORY = "app";
 
     public String pathToProjectContainer = DEFAULT_CONTAINER_PATH;
     public String pathToUrlGenerator = DEFAULT_URL_GENERATOR_PATH;
+    public String directoryToWeb = DEFAULT_WEB_DIRECTORY;
+    public String directoryToApp = DEFAULT_APP_DIRECTORY;
 
     public boolean pluginEnabled = false;
 
