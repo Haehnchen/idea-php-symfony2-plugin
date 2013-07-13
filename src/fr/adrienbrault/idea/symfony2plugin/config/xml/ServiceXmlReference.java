@@ -1,10 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiPolyVariantReference;
-import com.intellij.psi.PsiReferenceBase;
-import com.intellij.psi.ResolveResult;
+import com.intellij.psi.*;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;

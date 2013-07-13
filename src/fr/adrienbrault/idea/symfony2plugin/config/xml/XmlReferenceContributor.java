@@ -30,7 +30,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             )
                         )
                     )
-                ).inFile(getXmlFilePattern()),
+                ).inside(
+                    XmlHelper.getInsideTagPattern("services")
+                ).inFile(XmlHelper.getXmlFilePattern()),
 
             new ServiceReferenceProvider()
         );
@@ -50,7 +52,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             XmlPatterns.xmlAttribute("id")
                         )
                     )
-                ).inFile(getXmlFilePattern()),
+                ).inside(
+                    XmlHelper.getInsideTagPattern("services")
+                ).inFile(XmlHelper.getXmlFilePattern()),
 
             new ClassReferenceProvider()
         );
@@ -68,7 +72,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             .xmlTag()
                             .withName("parameter")
                             .withAnyAttribute("key")
-                        ).inFile(getXmlFilePattern())
+                        ).inside(
+                            XmlHelper.getInsideTagPattern("services")
+                    ).inFile(XmlHelper.getXmlFilePattern())
                     ),
                 XmlPatterns
                     .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
@@ -79,7 +85,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             .xmlTag()
                             .withName("argument")
                         )
-                    ).inFile(getXmlFilePattern())
+                    ).inside(
+                        XmlHelper.getInsideTagPattern("services")
+                    ).inFile(XmlHelper.getXmlFilePattern())
             ),
 
             new ClassReferenceProvider(false)
@@ -99,7 +107,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                             .xmlTag()
                             .withName("argument")
                         )
-                    ).inFile(getXmlFilePattern()),
+                    ).inside(
+                        XmlHelper.getInsideTagPattern("services")
+                    ).inFile(XmlHelper.getXmlFilePattern()),
                 XmlPatterns
                     .xmlAttributeValue()
                     .withParent(XmlPatterns
@@ -113,7 +123,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                                 XmlPatterns.xmlAttribute("id")
                             )
                         )
-                    ).inFile(getXmlFilePattern())
+                    ).inside(
+                        XmlHelper.getInsideTagPattern("services")
+                    ).inFile(XmlHelper.getXmlFilePattern())
             ),
 
             new ParameterReferenceProvider().setTrimPercent(true).setTrimQuote(true)
@@ -121,11 +133,5 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
     }
 
-    private PsiFilePattern.Capture<PsiFile> getXmlFilePattern() {
-        return XmlPatterns.psiFile()
-            .withName(XmlPatterns
-                .string().endsWith(".xml")
-            );
-    }
 
 }

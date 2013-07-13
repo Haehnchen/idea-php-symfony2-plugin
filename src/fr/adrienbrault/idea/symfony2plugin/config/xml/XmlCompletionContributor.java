@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
@@ -23,21 +24,30 @@ import org.jetbrains.annotations.NotNull;
 public class XmlCompletionContributor extends CompletionContributor {
 
     public XmlCompletionContributor() {
-        extend(CompletionType.BASIC, XmlHelper.getTagPattern("class"), new PhpClassAndParameterCompletionProvider());
-        extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-service"), new ServiceCompletionProvider());
-        extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-class"), new PhpClassAndParameterCompletionProvider());
-        extend(CompletionType.BASIC, XmlHelper.getTagPattern("parent"), new ServiceCompletionProvider());
-        extend(CompletionType.BASIC, XmlHelper.getParameterWithClassEndingPattern(), new PhpClassCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagPattern("class").inside(XmlHelper.getInsideTagPattern("services")), new PhpClassAndParameterCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-service").inside(XmlHelper.getInsideTagPattern("services")), new ServiceCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-class").inside(XmlHelper.getInsideTagPattern("services")), new PhpClassAndParameterCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagPattern("parent").inside(XmlHelper.getInsideTagPattern("services")), new ServiceCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getParameterWithClassEndingPattern().inside(XmlHelper.getInsideTagPattern("parameters")), new PhpClassCompletionProvider());
 
-        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "name"), new TagNameCompletionProvider());
-        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "event"), new EventCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "name").inside(XmlHelper.getInsideTagPattern("services")), new TagNameCompletionProvider());
+        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "event").inside(XmlHelper.getInsideTagPattern("services")), new EventCompletionProvider());
 
-        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("call", "method"), new ServiceCallsMethodCompletion());
+        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("call", "method").inside(XmlHelper.getInsideTagPattern("services")), new ServiceCallsMethodCompletion());
 
     }
 
     private class ServiceCallsMethodCompletion extends CompletionProvider<CompletionParameters> {
 
+        /**
+         * provides method completion
+         *
+         * <service id="fos_user.user_listener" class="FOS\UserBundle\Doctrine\CouchDB\UserListener" public="false">
+         *   <call method="setMailer">
+         *     <argument type="service" id="my_mailer" />
+         *   </call>
+         * </service>
+         */
         protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
@@ -45,6 +55,11 @@ public class XmlCompletionContributor extends CompletionContributor {
             }
 
             PsiElement psiElement = completionParameters.getPosition();
+
+            // check for valid xml file and services container
+            if(!XmlPatterns.psiElement().inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(psiElement)) {
+                return;
+            }
 
             // search for parent service definition
             XmlTag callXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);

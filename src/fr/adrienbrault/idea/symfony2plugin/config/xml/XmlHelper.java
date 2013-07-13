@@ -3,9 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PsiElementPattern;
+import com.intellij.patterns.PsiFilePattern;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
@@ -50,9 +53,12 @@ public class XmlHelper {
                         .withName(tag)
                     )
                 )
-            );
+            ).inFile(getXmlFilePattern());
     }
 
+    /**
+     * <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
+     */
     public static PsiElementPattern.Capture<PsiElement> getParameterWithClassEndingPattern() {
         return XmlPatterns
             .psiElement()
@@ -66,7 +72,24 @@ public class XmlHelper {
                         )
                     )
                 )
+            ).inside(
+                XmlPatterns.psiElement(XmlTag.class).withName("parameters")
+            ).inFile(getXmlFilePattern());
+    }
+
+    public static PsiFilePattern.Capture<PsiFile> getXmlFilePattern() {
+        return XmlPatterns.psiFile()
+            .withName(XmlPatterns
+                .string().endsWith(".xml")
             );
+    }
+
+    public static PsiElementPattern.Capture<XmlTag> getInsideTagPattern(String insideTagName) {
+        return XmlPatterns.psiElement(XmlTag.class).withName(insideTagName);
+    }
+
+    public static PsiElementPattern.Capture<XmlTag> getInsideTagPattern(String... insideTagName) {
+        return XmlPatterns.psiElement(XmlTag.class).withName(XmlPatterns.string().oneOf(insideTagName));
     }
 
     @Nullable
