@@ -1,6 +1,14 @@
 Changelog
 =========
 
+### 0.9.12
+* Rework of XML Pattern to not fire on HTML
+* Add local Parameter parser for Yaml
+* Add local Parameter and Service parser for XML
+* Fix all unsecured MethodReference casting
+* Make Symfony "web" and "app" folder configurable in Settings form
+* Introduce a Twig ui to manage template namespace (beta)
+
 ### 0.9.11
 * Fix icon issue in PhpStorm 7 EAP
 * Support translation and entity goto / completion in FormTypes arrays

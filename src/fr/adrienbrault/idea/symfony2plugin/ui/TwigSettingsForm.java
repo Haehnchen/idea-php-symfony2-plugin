@@ -164,7 +164,7 @@ public class TwigSettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-        this.tableView.setModel(new DefaultTableModel());
+        //this.tableView.setModel(new DefaultTableModel());
     }
 
     private class NamespaceColumn extends ColumnInfo<TwigPath, String> {

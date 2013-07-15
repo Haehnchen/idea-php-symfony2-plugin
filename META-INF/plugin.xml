@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.11</version>
+    <version>0.9.12</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -79,6 +79,16 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.12</h2>
+<ul>
+    <li>Rework of XML Pattern to not fire on HTML</li>
+    <li>Add local Parameter parser for Yaml</li>
+    <li>Add local Parameter and Service parser for XML</li>
+    <li>Fix all unsecured MethodReference casting</li>
+    <li>Make Symfony "web" and "app" folder configurable in Settings form</li>
+    <li>Introduce a Twig ui to manage template namespace (beta)</li>
+</ul>
 
 <h2>0.9.11</h2>
 <ul>
