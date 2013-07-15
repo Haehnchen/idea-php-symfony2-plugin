@@ -3,7 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @State(
        name = "Settings",
@@ -41,6 +45,9 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean phpAnnotateTemplateAnnotation = true;
 
     public boolean yamlAnnotateServiceConfig = true;
+
+    @Nullable
+    public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<TwigNamespaceSetting>();
 
     protected Project project;
 

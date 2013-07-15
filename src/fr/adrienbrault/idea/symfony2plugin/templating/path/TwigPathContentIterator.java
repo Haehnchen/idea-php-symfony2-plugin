@@ -29,7 +29,7 @@ public class TwigPathContentIterator implements ContentIterator {
             return true;
         }
 
-        VirtualFile virtualDirectoryFile = twigPath.getDirectory();
+        VirtualFile virtualDirectoryFile = twigPath.getDirectory(this.project);
         if(virtualDirectoryFile == null) {
             return true;
         }
@@ -54,7 +54,7 @@ public class TwigPathContentIterator implements ContentIterator {
         String namespace = this.twigPath.getNamespace().equals(TwigPathIndex.MAIN) ? "" : this.twigPath.getNamespace();
 
         String templateFinalName;
-        if(this.twigPath.isBundleShortcut()) {
+        if(this.twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
             templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
         } else {
             templateFinalName = namespace + "/" + templateDirectory + "/" + templateFile;

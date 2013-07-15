@@ -27,4 +27,8 @@ public class TwigPathIndex {
         return twigPaths;
     }
 
+    public enum NamespaceType {
+        BUNDLE, ADD_PATH
+    }
+
 }

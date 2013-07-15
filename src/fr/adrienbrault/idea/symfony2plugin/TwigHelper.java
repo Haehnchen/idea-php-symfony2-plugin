@@ -11,10 +11,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -30,41 +27,45 @@ import java.util.Map;
  */
 public class TwigHelper {
 
-    public static Map<String, TwigFile> getTwigFilesByName(Project project) {
+    synchronized public static Map<String, TwigFile> getTwigFilesByName(Project project) {
 
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        final Map<String, TwigFile> results = new HashMap<String, TwigFile>();
-
+        Map<String, TwigFile> results = new HashMap<String, TwigFile>();
         ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
 
-        ArrayList<String> uniqueNamespaceList = new ArrayList<String>();
         ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
-
-        // unique list for bundle fallback
-        TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
-        for (TwigPath twigPath : twigPathServiceParser.getTwigPathIndex().getTwigPaths()) {
-            uniqueNamespaceList.add(twigPath.getNamespace());
-        }
-
-        twigPaths.addAll(twigPathServiceParser.getTwigPathIndex().getTwigPaths());
-
-        // provide bundle callback for symfony < 2.2, which dont have addPath in container file
-        // it looks like not all bundle namespaces get registered in addPath, so add them every time
-        getTwigFilesByNameBundleFallback(project, phpIndex, uniqueNamespaceList, twigPaths);
+        twigPaths.addAll(getTwigNamespaces(project));
 
         for (TwigPath twigPath : twigPaths) {
-            VirtualFile virtualDirectoryFile = twigPath.getDirectory();
-            if(virtualDirectoryFile != null) {
-                TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath);
-                fileIndex.iterateContentUnderDirectory(virtualDirectoryFile, twigPathContentIterator);
-                results.putAll(twigPathContentIterator.getResults());
+            if(twigPath.isEnabled()) {
+                VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
+                if(virtualDirectoryFile != null) {
+                    TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath);
+                    fileIndex.iterateContentUnderDirectory(virtualDirectoryFile, twigPathContentIterator);
+                    results.putAll(twigPathContentIterator.getResults());
+                }
             }
 
         }
 
-
         return results;
 
+    }
+
+    @Nullable
+    public static TwigNamespaceSetting findManagedTwigNamespace(Project project, TwigPath twigPath) {
+
+        ArrayList<TwigNamespaceSetting> twigNamespaces = (ArrayList<TwigNamespaceSetting>) Settings.getInstance(project).twigNamespaces;
+        if(twigNamespaces == null) {
+            return null;
+        }
+
+        for(TwigNamespaceSetting twigNamespace: twigNamespaces) {
+           if(twigNamespace.equals(project, twigPath)) {
+                return twigNamespace;
+           }
+        }
+
+        return null;
     }
 
     public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
@@ -76,21 +77,45 @@ public class TwigHelper {
         return new PsiElement[] {twigFiles.get(templateName)};
     }
 
-    private static void getTwigFilesByNameBundleFallback(Project project, PhpIndex phpIndex, ArrayList<String> uniqueNamespaceList, ArrayList<TwigPath> twigPaths) {
+    synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project) {
+        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+
+        TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
+        twigPaths.addAll(twigPathServiceParser.getTwigPathIndex().getTwigPaths());
 
         String appDirectoryName = Settings.getInstance(project).directoryToApp;
         VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName, "Resources", "views");
         if(globalDirectory != null) {
-            twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, true));
+            twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, TwigPathIndex.NamespaceType.BUNDLE));
         }
 
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(phpIndex).getBundles();
         for (SymfonyBundle bundle : symfonyBundles) {
             PsiDirectory views = bundle.getSubDirectory("Resources", "views");
-            if(views != null && !uniqueNamespaceList.contains(bundle.getName())) {
-                twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName(), true));
+            if(views != null) {
+                twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName(), TwigPathIndex.NamespaceType.BUNDLE));
             }
         }
+
+        for(TwigPath twigPath: twigPaths) {
+            TwigNamespaceSetting twigNamespaceSetting = findManagedTwigNamespace(project, twigPath);
+            if(twigNamespaceSetting != null) {
+                twigPath.setEnabled(false);
+            }
+        }
+
+        ArrayList<TwigNamespaceSetting> twigNamespaceSettings = (ArrayList<TwigNamespaceSetting>) Settings.getInstance(project).twigNamespaces;
+        if(twigNamespaceSettings != null) {
+            for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
+                if(twigNamespaceSetting.isCustom()) {
+                    twigPaths.add(new TwigPath(twigNamespaceSetting.getPath(), twigNamespaceSetting.getNamespace(), twigNamespaceSetting.getNamespaceType(), true).setEnabled(twigNamespaceSetting.isEnabled()));
+
+                }
+            }
+        }
+
+        return twigPaths;
     }
 
 

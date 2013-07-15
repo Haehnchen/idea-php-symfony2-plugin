@@ -198,8 +198,13 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"/>
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" id="Symfony2.SettingsForm"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.TwigSettingsForm"
+                             displayName="Symfony2 Twig"
+                />
+        <!-- parentId="Symfony2.SettingsForm" ????????-->
 
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>

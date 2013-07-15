@@ -7,6 +7,7 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -19,7 +20,7 @@ import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class SettingsForm implements Configurable {
+public class SettingsForm implements SearchableConfigurable {
 
     private Project project;
 
@@ -151,6 +152,16 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
+    }
+
+    public String getId() {
+        return "Symfony2.SettingsForm";
+    }
+
+    @Nullable
+    @Override
+    public Runnable enableSearch(String option) {
+        return null;
     }
 
     private Settings getSettings() {
