@@ -5,6 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,13 +14,31 @@ public class ServiceXmlParserFactory {
     protected static Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<Project, Map<Class, ServiceXmlParserFactory>>();
 
     protected Project project;
-    protected ServiceParserInterface serviceParser;
-
-    protected Long lastUpdate;
     protected ServiceParserInterface serviceParserInstance;
+
+    protected HashMap<String, Long> serviceFiles = new HashMap<String, Long>();
 
     public ServiceXmlParserFactory(Project project) {
         this.project = project;
+    }
+
+    protected boolean isModified(ArrayList<File> serviceFiles) {
+        if(this.serviceFiles.size() != serviceFiles.size()) {
+            return true;
+        }
+
+        for(File serviceFile: serviceFiles) {
+            if(serviceFile.exists()) {
+                if(!this.serviceFiles.containsKey(serviceFile.getAbsolutePath())) {
+                    return true;
+                }
+                if(!this.serviceFiles.get(serviceFile.getAbsolutePath()).equals(serviceFile.lastModified())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Nullable
@@ -28,13 +47,10 @@ public class ServiceXmlParserFactory {
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
         File serviceFile = symfony2ProjectComponent.getPathToProjectContainer();
+        ArrayList<File> settingsServiceFiles = new ArrayList<File>();
+        settingsServiceFiles.add(serviceFile);
 
-        Long serviceModTime = 0L;
-        if (serviceFile != null) {
-            serviceModTime = serviceFile.lastModified();
-        }
-
-        if (this.serviceParserInstance != null && serviceModTime.equals(this.lastUpdate)) {
+        if (this.serviceParserInstance != null && !this.isModified(settingsServiceFiles)) {
             return (T) this.serviceParserInstance;
         }
 
@@ -44,16 +60,21 @@ public class ServiceXmlParserFactory {
         } catch (IllegalAccessException ignored) {
         }
 
-        if (this.serviceParserInstance != null && serviceFile != null) {
-            this.serviceParserInstance.parser(serviceFile);
+        if (this.serviceParserInstance != null) {
+            this.serviceFiles = new HashMap<String, Long>();
+            for(File settingsServiceFile: settingsServiceFiles) {
+                if(settingsServiceFile.exists()) {
+                    this.serviceParserInstance.parser(settingsServiceFile);
+                    serviceFiles.put(settingsServiceFile.getAbsolutePath(), settingsServiceFile.lastModified());
+                }
+            }
         }
 
-        this.lastUpdate = serviceModTime;
         return (T) this.serviceParserInstance;
     }
 
     public void setCacheInvalid() {
-       this.lastUpdate = null;
+        this.serviceFiles = new HashMap<String, Long>();
     }
 
     public static <T extends ServiceParserInterface> T getInstance(Project project, Class<T> serviceParser){
