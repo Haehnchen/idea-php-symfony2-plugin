@@ -89,29 +89,49 @@ public class TwigAnnotator implements Annotator {
 
         if(TwigHelper.getAutocompletableAssetTag("stylesheets").accepts(element)) {
 
-            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
-                if(assetFile.toString().equals(element.getText())) {
-                    return;
-                }
+            String templateName = element.getText();
+            if (isKnownAssetFileOrFolder(element, templateName, "css", "less", "sass")) {
+                return;
             }
 
             holder.createWarningAnnotation(element, "Missing asset");
-
-            return;
         }
 
         if(TwigHelper.getAutocompletableAssetTag("javascripts").accepts(element)) {
 
-            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension("js", "dart", "coffee").setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
-                if(assetFile.toString().equals(element.getText())) {
-                    return;
-                }
+            String templateName = element.getText();
+            if (isKnownAssetFileOrFolder(element, templateName, "js", "dart", "coffee")) {
+                return;
             }
 
             holder.createWarningAnnotation(element, "Missing asset");
         }
 
 
+    }
+
+    private boolean isKnownAssetFileOrFolder(PsiElement element, String templateName, String... fileTypes) {
+
+        if(!templateName.endsWith("*")) {
+            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
+                if(assetFile.toString().equals(templateName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // {% javascripts '@SampleBundle/Resources/public/js/*' %}
+        // {% javascripts 'assets/js/*' %}
+        String pathName = templateName.substring(0, templateName.length() - 1);
+        for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
+            if(assetFile.toString().startsWith(pathName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

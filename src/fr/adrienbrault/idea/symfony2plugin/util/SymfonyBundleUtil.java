@@ -41,6 +41,29 @@ public class SymfonyBundleUtil {
     }
 
     @Nullable
+    public SymfonyBundle getContainingBundle(String bundleShortcutName) {
+
+        if(!bundleShortcutName.startsWith("@")) {
+           return null;
+        }
+
+        int stripedBundlePos = bundleShortcutName.indexOf("/");
+        if(stripedBundlePos == -1) {
+            return null;
+        }
+
+        String bundleName = bundleShortcutName.substring(1, stripedBundlePos);
+        for(SymfonyBundle bundle : this.getBundles()) {
+            if(bundle.getName().equals(bundleName)) {
+                return bundle;
+            }
+        }
+
+        return null;
+    }
+
+
+    @Nullable
     public SymfonyBundle getContainingBundle(PhpClass phpClass) {
 
         for(SymfonyBundle bundle : this.getBundles()) {
