@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.service;
 
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -46,9 +47,7 @@ public class ServiceXmlParserFactory {
 
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
-        File serviceFile = symfony2ProjectComponent.getPathToProjectContainer();
-        ArrayList<File> settingsServiceFiles = new ArrayList<File>();
-        settingsServiceFiles.add(serviceFile);
+        ArrayList<File> settingsServiceFiles = symfony2ProjectComponent.getContainerFiles();
 
         if (this.serviceParserInstance != null && !this.isModified(settingsServiceFiles)) {
             return (T) this.serviceParserInstance;

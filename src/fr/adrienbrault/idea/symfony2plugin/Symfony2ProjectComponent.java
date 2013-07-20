@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
@@ -20,7 +21,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,17 +73,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return Settings.getInstance(project).pluginEnabled;
     }
 
-    @Nullable
-    public File getPathToProjectContainer() {
-        File projectContainer = new File(getPath(project, Settings.getInstance(project).pathToProjectContainer));
-
-        if (!projectContainer.exists()) {
-            return null;
-        }
-
-        return projectContainer;
-    }
-
     public Map<String, Route> getRoutes() {
         Map<String, Route> routes = new HashMap<String, Route>();
 
@@ -126,6 +118,27 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return routes;
     }
 
+    public ArrayList<File> getContainerFiles() {
+        List<ContainerFile> containerFiles = Settings.getInstance(this.project).containerFiles;
+
+        if(containerFiles == null) {
+            containerFiles = new ArrayList<ContainerFile>();
+        }
+
+        if(containerFiles.size() == 0) {
+            containerFiles.add(new ContainerFile(getPath(project, Settings.getInstance(project).pathToProjectContainer)));
+        }
+
+        ArrayList<File> validFiles = new ArrayList<File>();
+        for(ContainerFile containerFile : containerFiles) {
+            if(containerFile.exists(this.project)) {
+                validFiles.add(containerFile.getFile(this.project));
+            }
+        }
+
+        return validFiles;
+    }
+
     private String getPath(Project project, String path) {
         if (!FileUtil.isAbsolute(path)) { // Project relative path
             path = project.getBasePath() + "/" + path;
@@ -148,8 +161,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             return;
         }
 
-        if(getPathToProjectContainer() == null) {
-            showInfoNotification("missing container file: " + getPath(project, Settings.getInstance(project).pathToProjectContainer));
+        if(this.getContainerFiles().size() == 0) {
+            showInfoNotification("missing at least one container file");
         }
 
         String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);

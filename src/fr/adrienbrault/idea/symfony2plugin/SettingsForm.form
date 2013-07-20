@@ -61,7 +61,7 @@
               <forms/>
             </constraints>
             <properties>
-              <text value="Path to container.xml: "/>
+              <text value="Path (deprecated) to container.xml: "/>
             </properties>
           </component>
           <component id="3bb70" class="javax.swing.JButton" binding="pathToContainerTextFieldReset">

@@ -8,6 +8,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringP
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,8 +69,14 @@ public class TranslationIndex {
 
     @Nullable
     protected File getContainerFile() {
+        // @TODO: provide config for that
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
-        return symfony2ProjectComponent.getPathToProjectContainer();
+        ArrayList<File> containerFiles = symfony2ProjectComponent.getContainerFiles();
+        if(containerFiles.size() == 0) {
+            return null;
+        }
+
+        return containerFiles.get(0);
     }
 
     @Nullable

@@ -208,13 +208,19 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" id="Symfony2.SettingsForm"/>
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" id="Symfony2.SettingsForm" displayName="Symfony2 Plugin"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.TwigSettingsForm"
-                             displayName="Symfony2 Twig"
+                             displayName="Twig / Template"
+                             parentId="Symfony2.SettingsForm"
                 />
-        <!-- parentId="Symfony2.SettingsForm" ????????-->
+
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.ContainerSettingsForm"
+                             displayName="Container"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony2.ContainerSettingsForm"
+                />
 
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
