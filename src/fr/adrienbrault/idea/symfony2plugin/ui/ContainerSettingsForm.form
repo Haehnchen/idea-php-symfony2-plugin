@@ -24,6 +24,12 @@
               <text value="Add additional Symfony xml container files"/>
             </properties>
           </component>
+          <component id="12e56" class="javax.swing.JButton" binding="buttonReset">
+            <constraints border-constraint="East"/>
+            <properties>
+              <text value="Reset To Default"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>

@@ -4,8 +4,6 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.fileTypes.StdFileTypes;
-import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
@@ -25,8 +23,6 @@ public class SettingsForm implements SearchableConfigurable {
     private Project project;
 
     private JPanel panel1;
-    private TextFieldWithBrowseButton pathToContainerTextField;
-    private JButton pathToContainerTextFieldReset;
     private JButton pathToUrlGeneratorTextFieldReset;
 
     private JCheckBox symfonyContainerTypeProvider;
@@ -73,9 +69,6 @@ public class SettingsForm implements SearchableConfigurable {
 
     public JComponent createComponent() {
 
-        pathToContainerTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToContainerTextField.getTextField(), FileChooserDescriptorFactory.createSingleFileDescriptor(StdFileTypes.XML)));
-        pathToContainerTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToContainerTextField.getTextField(), Settings.DEFAULT_CONTAINER_PATH));
-
         pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), FileChooserDescriptorFactory.createSingleFileDescriptor(FileTypeManager.getInstance().getStdFileType("PHP"))));
         pathToUrlGeneratorTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
 
@@ -92,7 +85,6 @@ public class SettingsForm implements SearchableConfigurable {
     public boolean isModified() {
         return
             !pluginEnabled.isSelected() == getSettings().pluginEnabled
-            || !pathToContainerTextField.getText().equals(getSettings().pathToProjectContainer)
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
@@ -121,7 +113,6 @@ public class SettingsForm implements SearchableConfigurable {
 
         getSettings().pluginEnabled = pluginEnabled.isSelected();
 
-        getSettings().pathToProjectContainer = pathToContainerTextField.getText();
         getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
 
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
@@ -172,7 +163,6 @@ public class SettingsForm implements SearchableConfigurable {
 
         pluginEnabled.setSelected(getSettings().pluginEnabled);
 
-        pathToContainerTextField.setText(getSettings().pathToProjectContainer);
         pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
 
         symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);

@@ -24,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,7 @@ public class ContainerSettingsForm implements Configurable {
 
     private JPanel panel1;
     private JPanel listviewPanel;
+    private JButton buttonReset;
     private TableView<ContainerFile> tableView;
     private Project project;
     private boolean changed = false;
@@ -47,10 +50,7 @@ public class ContainerSettingsForm implements Configurable {
             new ExistsColumn(project)
         );
 
-        List<ContainerFile> containerFiles = getSettings().containerFiles;
-        if(containerFiles != null && containerFiles.size() > 0) {
-            this.modelList.addRows(containerFiles);
-        }
+        this.fillContainerList();
 
         this.modelList.addTableModelListener(new TableModelListener() {
             @Override
@@ -60,7 +60,28 @@ public class ContainerSettingsForm implements Configurable {
         });
 
         this.tableView.setModelAndUpdateColumns(this.modelList);
+
+        buttonReset.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                resetContainerList();
+
+                // add default path
+                ContainerSettingsForm.this.modelList.addRow(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
+
+            }
+        });
     }
+
+    private void fillContainerList() {
+        List<ContainerFile> containerFiles = getSettings().containerFiles;
+        if(containerFiles != null && containerFiles.size() > 0) {
+            this.modelList.addRows(containerFiles);
+        }
+    }
+
     @Nls
     @Override
     public String getDisplayName() {
@@ -141,6 +162,16 @@ public class ContainerSettingsForm implements Configurable {
 
     @Override
     public void reset() {
+        this.resetContainerList();
+        this.fillContainerList();
+        this.changed = false;
+    }
+
+    private void resetContainerList() {
+        // clear list, easier?
+        while(this.modelList.getRowCount() > 0) {
+            this.modelList.removeRow(0);
+        }
     }
 
     @Override

@@ -9,13 +9,8 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,14 +114,24 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public ArrayList<File> getContainerFiles() {
-        List<ContainerFile> containerFiles = Settings.getInstance(this.project).containerFiles;
+        return this.getContainerFiles(true);
+    }
+
+    public ArrayList<File> getContainerFiles(boolean attachSetting) {
+
+        List<ContainerFile> containerFiles = null;
+
+        // provide a default list
+        if(attachSetting) {
+           containerFiles = Settings.getInstance(this.project).containerFiles;
+        }
 
         if(containerFiles == null) {
             containerFiles = new ArrayList<ContainerFile>();
         }
 
         if(containerFiles.size() == 0) {
-            containerFiles.add(new ContainerFile(getPath(project, Settings.getInstance(project).pathToProjectContainer)));
+            containerFiles.add(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
         }
 
         ArrayList<File> validFiles = new ArrayList<File>();
