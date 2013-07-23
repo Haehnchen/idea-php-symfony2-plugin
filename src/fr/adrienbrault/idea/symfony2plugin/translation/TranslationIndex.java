@@ -1,14 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +46,7 @@ public class TranslationIndex {
             return this.translationStringMap;
         }
 
-        File translationDirectory = this.getTranslationFile();
+        File translationDirectory = this.getTranslationRoot();
         if(null == translationDirectory) {
             return new TranslationStringMap();
         }
@@ -58,7 +57,7 @@ public class TranslationIndex {
 
     protected boolean isCacheValid() {
 
-        File translationRootPath = this.getTranslationFile();
+        File translationRootPath = this.getTranslationRoot();
         if (null == translationRootPath) {
             return this.isCacheInvalid = false;
         }
@@ -68,32 +67,19 @@ public class TranslationIndex {
     }
 
     @Nullable
-    protected File getContainerFile() {
-        // @TODO: provide config for that
-        Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
-        ArrayList<File> containerFiles = symfony2ProjectComponent.getContainerFiles();
-        if(containerFiles.size() == 0) {
+    protected File getTranslationRoot() {
+
+        String translationPath = Settings.getInstance(this.project).pathToTranslation;
+        if (!FileUtil.isAbsolute(translationPath)) {
+            translationPath = project.getBasePath() + "/" + translationPath;
+        }
+
+        File file = new File(translationPath);
+        if(!file.exists() || !file.isDirectory()) {
             return null;
         }
 
-        return containerFiles.get(0);
-    }
-
-    @Nullable
-    protected File getTranslationFile() {
-
-        File serviceMapFile = this.getContainerFile();
-        if (null == serviceMapFile) {
-            return null;
-        }
-
-        // root path of translation is our caching indicator
-        File translationRootPath = new File(serviceMapFile.getParentFile().getPath() + "/translations");
-        if (!translationRootPath.exists()) {
-            return null;
-        }
-
-        return translationRootPath;
+        return file;
     }
 
 

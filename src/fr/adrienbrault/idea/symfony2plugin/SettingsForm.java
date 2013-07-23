@@ -4,8 +4,8 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.fileTypes.FileTypeManager;
+import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -18,7 +18,7 @@ import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class SettingsForm implements SearchableConfigurable {
+public class SettingsForm implements Configurable {
 
     private Project project;
 
@@ -50,6 +50,8 @@ public class SettingsForm implements SearchableConfigurable {
     private JButton directoryToAppReset;
     private JLabel directoryToAppLabel;
     private TextFieldWithBrowseButton directoryToApp;
+    private JButton pathToTranslationRootTextFieldReset;
+    private TextFieldWithBrowseButton pathToTranslationRootTextField;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -72,6 +74,9 @@ public class SettingsForm implements SearchableConfigurable {
         pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), FileChooserDescriptorFactory.createSingleFileDescriptor(FileTypeManager.getInstance().getStdFileType("PHP"))));
         pathToUrlGeneratorTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
 
+        pathToTranslationRootTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToTranslationRootTextField.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
+        pathToTranslationRootTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToTranslationRootTextField.getTextField(), Settings.DEFAULT_TRANSLATION_PATH));
+
         directoryToApp.getButton().addMouseListener(createPathButtonMouseListener(directoryToApp.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
         directoryToAppReset.addMouseListener(createResetPathButtonMouseListener(directoryToApp.getTextField(), Settings.DEFAULT_APP_DIRECTORY));
 
@@ -86,6 +91,7 @@ public class SettingsForm implements SearchableConfigurable {
         return
             !pluginEnabled.isSelected() == getSettings().pluginEnabled
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
+            || !pathToTranslationRootTextField.getText().equals(getSettings().pathToTranslation)
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
@@ -114,6 +120,7 @@ public class SettingsForm implements SearchableConfigurable {
         getSettings().pluginEnabled = pluginEnabled.isSelected();
 
         getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
+        getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
 
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
         getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
@@ -145,16 +152,6 @@ public class SettingsForm implements SearchableConfigurable {
     public void disposeUIResources() {
     }
 
-    public String getId() {
-        return "Symfony2.SettingsForm";
-    }
-
-    @Nullable
-    @Override
-    public Runnable enableSearch(String option) {
-        return null;
-    }
-
     private Settings getSettings() {
         return Settings.getInstance(project);
     }
@@ -164,6 +161,7 @@ public class SettingsForm implements SearchableConfigurable {
         pluginEnabled.setSelected(getSettings().pluginEnabled);
 
         pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
+        pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
 
         symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
         objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);
