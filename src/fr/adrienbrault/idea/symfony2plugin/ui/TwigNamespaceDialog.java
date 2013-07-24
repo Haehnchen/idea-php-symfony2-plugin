@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
-import com.google.common.base.Enums;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -13,8 +12,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.event.*;
-import java.util.Collections;
 
 public class TwigNamespaceDialog extends JDialog {
     private JPanel contentPane;
@@ -34,12 +34,21 @@ public class TwigNamespaceDialog extends JDialog {
         this.namespacePath.getTextField().setText(twigPath.getPath());
         this.namespaceType.getModel().setSelectedItem(twigPath.getNamespaceType().toString());
         this.twigPath = twigPath;
+        this.setOkState();
     }
 
     public TwigNamespaceDialog(Project project, TableView<TwigPath> tableView) {
+
+        this.tableView = tableView;
+        this.project = project;
+
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
+        this.setOkState();
+
+        this.namespacePath.getTextField().getDocument().addDocumentListener(new ChangeDocumentListener());
+        this.name.getDocument().addDocumentListener(new ChangeDocumentListener());
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -52,9 +61,6 @@ public class TwigNamespaceDialog extends JDialog {
                 onCancel();
             }
         });
-
-        this.tableView = tableView;
-        this.project = project;
 
         namespacePath.getButton().addMouseListener(createPathButtonMouseListener(namespacePath.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
@@ -72,9 +78,20 @@ public class TwigNamespaceDialog extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
+    private void setOkState() {
+        TwigNamespaceDialog.this.buttonOK.setEnabled(
+            TwigNamespaceDialog.this.namespacePath.getText().length() > 0 &&
+            TwigNamespaceDialog.this.name.getText().length() > 0
+        );
+    }
+
     private void onOK() {
 
         TwigPath twigPath = new TwigPath(this.namespacePath.getText(), this.name.getText(), TwigPathIndex.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
+        if(this.namespacePath.getText().length() == 0 || this.namespacePath.getText().length() == 0) {
+            dispose();
+            return;
+        }
 
         // re-add old item to not use public setter wor twigpaths
         // update ?
@@ -136,6 +153,24 @@ public class TwigNamespaceDialog extends JDialog {
             public void mouseExited(MouseEvent mouseEvent) {
             }
         };
+    }
+
+
+    private class ChangeDocumentListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            setOkState();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            setOkState();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            setOkState();
+        }
     }
 
 }

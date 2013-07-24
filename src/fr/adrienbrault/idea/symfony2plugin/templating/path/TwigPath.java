@@ -35,6 +35,18 @@ public class TwigPath implements Comparable<TwigPath> {
         this.customPath = customPath;
     }
 
+    @Override
+    public TwigPath clone() {
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException ignored) {
+        }
+
+        TwigPath twigPath = new TwigPath(this.getPath(), this.getNamespace(), this.getNamespaceType(), this.isCustomPath());
+        twigPath.setEnabled(this.isEnabled());
+        return twigPath;
+    }
+
     public TwigPath(String path, String namespace, TwigPathIndex.NamespaceType namespaceType) {
         this(path, namespace);
         this.namespaceType = namespaceType;

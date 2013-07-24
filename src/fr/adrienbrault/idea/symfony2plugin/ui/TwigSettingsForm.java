@@ -25,6 +25,9 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,13 +35,19 @@ import java.util.List;
 public class TwigSettingsForm implements Configurable {
 
     private JPanel panel1;
+    private JPanel panelTableView;
+    private JButton resetToDefault;
     private TableView<TwigPath> tableView;
     private Project project;
     private boolean changed = false;
+    private ListTableModel<TwigPath> modelList;
 
     public TwigSettingsForm(@NotNull Project project) {
 
-        ListTableModel<TwigPath> list = new ListTableModel<TwigPath>(
+        this.project = project;
+
+        this.tableView = new TableView<TwigPath>();
+        this.modelList = new ListTableModel<TwigPath>(
             new NamespaceColumn(),
             new PathColumn(project),
             new TypeColumn(),
@@ -46,26 +55,47 @@ public class TwigSettingsForm implements Configurable {
             new DisableColumn()
         );
 
-        ArrayList<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
-        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(project));
-        Collections.sort(sortableLookupItems);
+        this.attachItems(true);
 
-        for (TwigPath twigPath : sortableLookupItems) {
-            list.addRow(twigPath);
-        }
+        this.tableView.setModelAndUpdateColumns(this.modelList);
 
-        this.tableView.setModelAndUpdateColumns(list);
-
-        list.addTableModelListener(new TableModelListener() {
+        this.modelList.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
                 TwigSettingsForm.this.changed = true;
             }
         });
 
+        resetToDefault.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                TwigSettingsForm.this.resetList();
 
-        this.project = project;
+                ArrayList<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
+                sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(TwigSettingsForm.this.project, false));
+                Collections.sort(sortableLookupItems);
+
+                for (TwigPath twigPath : sortableLookupItems) {
+                    // dont use managed class here
+                    // @TODO state to enabled (should not be here)
+                    TwigSettingsForm.this.modelList.addRow(twigPath.clone().setEnabled(true));
+                }
+            }
+        });
     }
+
+    private void attachItems(boolean includeSettings) {
+        ArrayList<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
+        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, includeSettings));
+        Collections.sort(sortableLookupItems);
+
+        for (TwigPath twigPath : sortableLookupItems) {
+            // dont use managed class here
+            this.modelList.addRow(twigPath.clone());
+        }
+    }
+
     @Nls
     @Override
     public String getDisplayName() {
@@ -75,7 +105,7 @@ public class TwigSettingsForm implements Configurable {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @Nullable
@@ -128,7 +158,9 @@ public class TwigSettingsForm implements Configurable {
         tablePanel.disableUpAction();
         tablePanel.disableDownAction();
 
-        return tablePanel.createPanel();
+        this.panelTableView.add(tablePanel.createPanel());
+
+        return this.panel1;
     }
 
     @Override
@@ -141,8 +173,9 @@ public class TwigSettingsForm implements Configurable {
         List<TwigNamespaceSetting> twigPaths = new ArrayList<TwigNamespaceSetting>();
 
         for(TwigPath twigPath :this.tableView.getListTableModel().getItems()) {
+            // only custom and disabled path need to save
             if((!twigPath.isEnabled() && twigPath.getRelativePath(this.project) != null) || twigPath.isCustomPath()) {
-                twigPaths.add(new TwigNamespaceSetting(twigPath.getNamespace(), twigPath.getRelativePath(this.project), false, twigPath.getNamespaceType(), twigPath.isCustomPath()));
+                twigPaths.add(new TwigNamespaceSetting(twigPath.getNamespace(), twigPath.getRelativePath(this.project), twigPath.isEnabled(), twigPath.getNamespaceType(), twigPath.isCustomPath()));
             }
         }
 
@@ -150,21 +183,28 @@ public class TwigSettingsForm implements Configurable {
         this.changed = false;
     }
 
-    private void updateUIFromSettings() {
-    }
-
     private Settings getSettings() {
         return Settings.getInstance(this.project);
     }
 
+    private void resetList() {
+        // clear list, easier?
+        while(this.modelList.getRowCount() > 0) {
+            this.modelList.removeRow(0);
+        }
+
+    }
+
     @Override
     public void reset() {
-        this.updateUIFromSettings();
+        this.resetList();
+        this.attachItems(true);
+        this.changed = false;
     }
 
     @Override
     public void disposeUIResources() {
-        //this.tableView.setModel(new DefaultTableModel());
+        this.resetList();
     }
 
     private class NamespaceColumn extends ColumnInfo<TwigPath, String> {

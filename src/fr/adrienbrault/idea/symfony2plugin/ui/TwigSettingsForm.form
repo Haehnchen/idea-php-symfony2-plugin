@@ -7,24 +7,31 @@
     <properties/>
     <border type="none"/>
     <children>
-      <scrollpane id="756f1">
-        <constraints border-constraint="South"/>
+      <grid id="b090a" binding="panelTableView" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <grid id="93a1e" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="North"/>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="75d3d" class="com.intellij.ui.table.TableView" binding="tableView">
-            <constraints/>
+          <component id="c5e9d" class="javax.swing.JLabel">
+            <constraints border-constraint="Center"/>
             <properties>
-              <showHorizontalLines value="true"/>
-              <showVerticalLines value="true"/>
-              <striped value="false"/>
+              <text value="Manage Twig Namespaces (restart required after change)" noi18n="true"/>
             </properties>
-            <clientProperties>
-              <Table.isFileList class="java.lang.Boolean" value="false"/>
-            </clientProperties>
+          </component>
+          <component id="bead7" class="javax.swing.JButton" binding="resetToDefault">
+            <constraints border-constraint="East"/>
+            <properties>
+              <text value="Reset To Default"/>
+            </properties>
           </component>
         </children>
-      </scrollpane>
+      </grid>
     </children>
   </grid>
 </form>

@@ -78,6 +78,10 @@ public class TwigHelper {
     }
 
     synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project) {
+       return getTwigNamespaces(project, true);
+    }
+
+    synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project, boolean includeSettings) {
         ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
         PhpIndex phpIndex = PhpIndex.getInstance(project);
 
@@ -103,6 +107,10 @@ public class TwigHelper {
             if(twigNamespaceSetting != null) {
                 twigPath.setEnabled(false);
             }
+        }
+
+        if(!includeSettings) {
+            return twigPaths;
         }
 
         ArrayList<TwigNamespaceSetting> twigNamespaceSettings = (ArrayList<TwigNamespaceSetting>) Settings.getInstance(project).twigNamespaces;
