@@ -1,6 +1,13 @@
 Changelog
 =========
 
+### 0.9.13
+* Add multi container support
+* Some improvements for Twig namespace ui
+* Settings ui cleanups and improvements
+* Implement help page with reStructuredText and Sphinx, available on GitHub
+* Assets annotator support wildcard folder
+
 ### 0.9.12
 * Rework of XML Pattern to not fire on HTML
 * Add local Parameter parser for Yaml

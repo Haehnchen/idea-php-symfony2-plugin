@@ -6,6 +6,7 @@ Plugin url : http://plugins.jetbrains.com/plugin?pr=&pluginId=7219
 Autocomplete (or something else) is not working! Help! :open_mouth:
 -------------------------------------------------------------------
 
+* Open Documentation [read online](http://symfony2-plugin.espend.de/) or [fork doc](https://github.com/Haehnchen/idea-php-symfony2-plugin-doc)
 * You usually need to trigger the autocomplete popup yourself, by pressing CTRL+SPACE (may be a different shortcut depending on your keymap).
 * Many features require the `app/cache/dev/appDevDebugProjectContainer.xml` file to exist. It is generated when you boot your app in dev environment (open `/app_dev.php` in a browser or `php app/console`).
 * Routing features require the `app/cache/dev/appDevUrlGenerator.php` file to exist. It is generated the first time a call to `$urlGenerator->generate()` is made at runtime (open a page in your browser that generate at least 1 url).

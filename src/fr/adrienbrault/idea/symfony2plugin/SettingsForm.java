@@ -10,11 +10,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -52,9 +54,17 @@ public class SettingsForm implements Configurable {
     private TextFieldWithBrowseButton directoryToApp;
     private JButton pathToTranslationRootTextFieldReset;
     private TextFieldWithBrowseButton pathToTranslationRootTextField;
+    private JButton buttonHelp;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
+        buttonHelp.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL);
+            }
+        });
     }
 
     @Nls

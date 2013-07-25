@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
  */
 public class Symfony2ProjectComponent implements ProjectComponent {
 
+    static String HELP_URL = "http://symfony2-plugin.espend.de/";
+
     private Project project;
 
     private Map<String, Route> routes;

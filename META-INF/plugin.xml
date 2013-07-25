@@ -1,11 +1,15 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.12</version>
+    <version>0.9.13</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
+
+<a href="http://symfony2-plugin.espend.de/">Online Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a>
+<br/><br/>
+Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/124">Api breaks in Twig</a>.
 
 <h2>Features:</h2>
 
@@ -79,6 +83,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.13</h2>
+<ul>
+    <li>Add multi container support</li>
+    <li>Some improvements for Twig namespace ui</li>
+    <li>Settings ui cleanups and improvements</li>
+    <li>Implement help page with reStructuredText and Sphinx, available on <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">GitHub</a></li>
+    <li>Assets annotator support wildcard folder</li>
+</ul>
 
 <h2>0.9.12</h2>
 <ul>
