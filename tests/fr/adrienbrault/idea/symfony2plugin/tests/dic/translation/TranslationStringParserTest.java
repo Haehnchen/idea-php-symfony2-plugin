@@ -19,6 +19,9 @@ public class TranslationStringParserTest  extends Assert {
         assertEquals("registration.email.message", map.getStringMap().get("FOSUserBundle:registration.email.message"));
         assertEquals("layout.logout", map.getStringMap().get("FOSUserBundle:layout.logout"));
         assertEquals("button.next", map.getStringMap().get("CraueFormFlowBundle:button.next"));
+        assertEquals("foo.bar", map.getStringMap().get("validators:foo.bar"));
+        assertEquals("foo.baz", map.getStringMap().get("validators:foo.baz"));
+        assertEquals("foo.escape", map.getStringMap().get("validators:foo.escape"));
 
         assertTrue(map.getDomainList().contains("FOSUserBundle"));
         assertFalse(map.getDomainList().contains("NotInList"));

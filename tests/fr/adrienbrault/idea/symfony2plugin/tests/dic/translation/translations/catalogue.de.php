@@ -7,6 +7,10 @@ $catalogue = new MessageCatalogue('de', array (
   array (
     'This value should be false.' => 'Dieser Wert sollte false sein.',
     'This value should be true.' => 'Dieser Wert sollte true sein.',
+    'foo.escape' => 'A multiline translation ending with a ne\', wline.',
+    'foo.bar' => 'A multiline translation ending with a newline.
+',
+    'foo.baz' => 'Dieser Wert sollte true sein.',
   ),
   'security' => 
   array (

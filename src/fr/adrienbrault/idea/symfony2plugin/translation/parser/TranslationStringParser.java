@@ -53,7 +53,7 @@ public class TranslationStringParser {
             String domain = matcher.group(1);
             String array_strings = matcher.group(2);
 
-            Matcher match_strings = Pattern.compile("'(.*?)'\\s=>\\s'.*?'", Pattern.MULTILINE).matcher(array_strings);
+            Matcher match_strings = Pattern.compile("\\s'(.*?)'\\s=>\\s'.*?',\\s", Pattern.MULTILINE).matcher(array_strings);
             while(match_strings.find()){
                 string_map.addString(domain, match_strings.group(1));
             }
