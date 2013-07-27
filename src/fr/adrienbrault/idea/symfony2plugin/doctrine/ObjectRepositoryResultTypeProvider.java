@@ -72,19 +72,24 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        // @TODO: find the previously defined type instead of try it on the parameter, we now can rely on it!
-        // find the called repository name on method before
-        if(!(methodRef.getFirstChild() instanceof MethodReference)) {
+        // we can get the repository name from the signature calls
+        // #M#?#M#?#M#C\Foo\Apptitan\Controller\BarController.get?doctrine.getRepository?EntityBundle:User.find
+        String repositorySignature = methodRef.getSignature();
+        System.out.println(repositorySignature);
+        int lastRepositoryName = repositorySignature.lastIndexOf(ObjectManagerFindTypeProvider.TRIM_KEY);
+        if(lastRepositoryName == -1) {
             return null;
         }
 
-        String repositoryName = Symfony2InterfacesUtil.getFirstArgumentStringValue((MethodReference) methodRef.getFirstChild());
-
-        if (repositoryName != null) {
-            return refSignature + TRIM_KEY + repositoryName;
+        repositorySignature = repositorySignature.substring(lastRepositoryName);
+        int nextMethodCall = repositorySignature.indexOf('.' + methodRefName);
+        if(nextMethodCall == -1) {
+            return null;
         }
 
-        return null;
+        repositorySignature = repositorySignature.substring(1, nextMethodCall);
+
+        return refSignature + TRIM_KEY + repositorySignature;
 
     }
 
