@@ -9,6 +9,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
@@ -154,7 +155,7 @@ public class TwigHelper {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
-                PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
+                PlatformPatterns.psiElement(getDeprecatedPrintBlock())
             )
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -169,14 +170,14 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
-        return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)).withLanguage(TwigLanguage.INSTANCE);
+        return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(getDeprecatedPrintBlock())).withLanguage(TwigLanguage.INSTANCE);
     }
 
     public static ElementPattern<PsiElement> getBlockTagPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
-                PlatformPatterns.psiElement(TwigCompositeElementTypes.BLOCK_TAG)
+                PlatformPatterns.psiElement(getDeprecatedBlockTag())
             )
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -206,7 +207,7 @@ public class TwigHelper {
                 PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
             )
             .withParent(PlatformPatterns
-                .psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
+                .psiElement(getDeprecatedPrintBlock())
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
@@ -292,7 +293,7 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(PsiWhiteSpace.class)
                 )
             .withParent(PlatformPatterns
-                .psiElement(TwigCompositeElementTypes.TAG)
+                .psiElement(getDeprecatedTwigTagWithFileReference())
                 .withText(PlatformPatterns.string().startsWith("{% " + tagName))
             );
     }
@@ -324,7 +325,7 @@ public class TwigHelper {
             PlatformPatterns.or(
                 PlatformPatterns
                     .psiElement(TwigTokenTypes.IDENTIFIER)
-                    .withParent(TwigTagWithFileReference.class)
+                    .withParent(getDeprecatedTwigTagWithFileReference())
                     .afterLeafSkipping(
                         PlatformPatterns.or(
                             PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -339,7 +340,7 @@ public class TwigHelper {
                     .withLanguage(TwigLanguage.INSTANCE),
                 PlatformPatterns
                     .psiElement(TwigTokenTypes.IDENTIFIER)
-                    .withParent(TwigTagWithFileReference.class)
+                    .withParent(getDeprecatedTwigTagWithFileReference())
                     .afterLeafSkipping(
                         PlatformPatterns.or(
                             PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -353,5 +354,90 @@ public class TwigHelper {
             );
     }
 
+
+    @Nullable
+    public static IElementType getNamedElementType(String className, String fieldName) {
+        IElementType initClass = null;
+        try {
+            Class c = Class.forName(className);
+            initClass = (IElementType) c.getDeclaredField(fieldName).get(c.getDeclaredField(fieldName));
+
+        } catch (ClassNotFoundException e) {
+            System.out.println("ClassNotFoundException: " + className + "." + fieldName);
+        } catch (NoSuchFieldException e) {
+            System.out.println("NoSuchFieldException: " + className + "." + fieldName);
+        } catch (IllegalAccessException e) {
+            System.out.println("IllegalAccessException: " + className + "." + fieldName);
+        }
+
+        return initClass;
+    }
+
+    @Nullable
+    public static Class getDeprecatedTwigTagWithFileReference() {
+        Class c = null;
+        try {
+            c = Class.forName("com.jetbrains.twig.TwigTagWithFileReference");
+            return c;
+        } catch (ClassNotFoundException ignored) {
+        }
+
+        try {
+            c = Class.forName("com.jetbrains.twig.elements.TwigTagWithFileReference");
+            return c;
+        } catch (ClassNotFoundException ignored) {
+        }
+
+
+        throw  new IllegalArgumentException("com.jetbrains.twig.elements.TwigTagWithFileReference");
+
+    }
+
+
+    @Nullable
+    public static IElementType getDeprecatedBlockTag() {
+        IElementType iElementType = getNamedElementType("com.jetbrains.twig.TwigCompositeElementTypes",  "BLOCK_TAG");
+        if(iElementType != null) {
+            return iElementType;
+        }
+
+        iElementType = getNamedElementType("com.jetbrains.twig.elements.TwigElementTypes",  "BLOCK_TAG");
+        if(iElementType != null) {
+            return iElementType;
+        }
+
+        throw new IllegalArgumentException("no BLOCK_TAG found");
+
+    }
+
+    @Nullable
+    public static IElementType getDeprecatedPrintBlock() {
+        IElementType iElementType = getNamedElementType("com.jetbrains.twig.TwigCompositeElementTypes",  "PRINT_BLOCK");
+        if(iElementType != null) {
+            return iElementType;
+        }
+
+        iElementType = getNamedElementType("com.jetbrains.twig.elements.TwigElementTypes",  "PRINT_BLOCK");
+        if(iElementType != null) {
+            return iElementType;
+        }
+
+        throw new IllegalArgumentException("no PRINT_BLOCK found");
+    }
+
+    @Nullable
+    public static IElementType getDeprecatedMacroTag() {
+        IElementType iElementType = getNamedElementType("com.jetbrains.twig.TwigCompositeElementTypes",  "MACRO_TAG");
+        if(iElementType != null) {
+            return iElementType;
+        }
+
+        iElementType = getNamedElementType("com.jetbrains.twig.elements.TwigElementTypes",  "MACRO_TAG");
+        if(iElementType != null) {
+            return iElementType;
+        }
+
+        throw new IllegalArgumentException("no MACRO_TAG found");
+    }
 
 }

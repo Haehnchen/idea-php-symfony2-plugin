@@ -47,7 +47,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         if (PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
-                PlatformPatterns.psiElement(TwigCompositeElementTypes.PRINT_BLOCK)
+                PlatformPatterns.psiElement(TwigHelper.getDeprecatedPrintBlock())
             ).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
 
             psiElements.addAll(Arrays.asList(this.getSets(psiElement)));
@@ -98,7 +98,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
                     TwigFile twigFile = twigFilesByName.get(twigMacro.getTemplate());
 
                     return PsiTreeUtil.collectElements(twigFile, new RegexPsiElementFilter(
-                        TwigCompositeElementTypes.MACRO_TAG,
+                        TwigHelper.getDeprecatedMacroTag(),
                         "\\{%\\s?macro\\s?" + Pattern.quote(funcName) + "\\s?\\(.*%}")
                     );
                 }
