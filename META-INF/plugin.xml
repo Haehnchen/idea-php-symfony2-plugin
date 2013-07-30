@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.13</version>
+    <version>0.9.14</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -83,6 +83,13 @@ Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbr
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.14</h2>
+<ul>
+    <li>Fix for Settings saving</li>
+    <li>Support PhpStorm EAP 7 build 130.1293</li>
+    <li>Types for getRepository calls dont need backreferences anymore</li>
+</ul>
 
 <h2>0.9.13</h2>
 <ul>

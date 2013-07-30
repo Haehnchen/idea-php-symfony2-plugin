@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 0.9.14
+* Fix for Settings saving
+* Support PhpStorm EAP 7 build 130.1293
+* Types for getRepository calls dont need backreferences anymore
+
 ### 0.9.13
 * Add multi container support
 * Some improvements for Twig namespace ui
