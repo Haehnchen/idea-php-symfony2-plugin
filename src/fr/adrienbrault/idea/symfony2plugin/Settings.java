@@ -13,7 +13,8 @@ import java.util.List;
 @State(
        name = "Settings",
        storages = {
-               @Storage(id = "default", file="$PROJECT_CONFIG_DIR$/symfony2.xml", scheme = StorageScheme.DIRECTORY_BASED)
+               @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
+               @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/symfony2.xml", scheme = StorageScheme.DIRECTORY_BASED)
        }
 )
 public class Settings implements PersistentStateComponent<Settings> {
