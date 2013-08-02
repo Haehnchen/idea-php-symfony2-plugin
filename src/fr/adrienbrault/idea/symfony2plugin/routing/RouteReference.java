@@ -1,9 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiReferenceBase;
+import com.intellij.psi.*;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
@@ -16,17 +14,25 @@ import java.util.Map;
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-public class RouteReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+public class RouteReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
 
     private String routeName;
 
     public RouteReference(@NotNull StringLiteralExpression element) {
         super(element);
+        this.routeName = element.getContents();
+    }
 
-        routeName = element.getText().substring(
-            element.getValueRange().getStartOffset(),
-            element.getValueRange().getEndOffset()
-        ); // Remove quotes
+    @NotNull
+    @Override
+    public ResolveResult[] multiResolve(boolean incompleteCode) {
+        List<ResolveResult> results = new ArrayList<ResolveResult>();
+
+        for (PsiElement psiElement : RouteHelper.getMethods(this.getElement().getProject(), this.routeName)) {
+            results.add(new PsiElementResolveResult(psiElement));
+        }
+
+        return results.toArray(new ResolveResult[results.size()]);
     }
 
     @Nullable
