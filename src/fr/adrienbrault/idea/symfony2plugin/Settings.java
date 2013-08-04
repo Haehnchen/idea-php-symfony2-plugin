@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +56,9 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     @Nullable
     public List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
+
+    @Nullable
+    public List<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
 
     protected Project project;
 

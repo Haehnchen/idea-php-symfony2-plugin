@@ -82,6 +82,19 @@ public class PsiElementUtils {
         return getCurrentParameterIndex(parameterList.getParameters(), psiElement);
     }
 
+    public static int getParameterIndexValue(@Nullable PsiElement parameterListChild) {
+
+        if(parameterListChild == null) {
+            return -1;
+        }
+
+        ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex(parameterListChild);
+        if(parameterBag == null) {
+            return -1;
+        }
+
+        return parameterBag.getIndex();
+    }
 
     @Nullable
     public static <T extends PsiElement> T getNextSiblingOfType(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {

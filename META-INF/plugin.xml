@@ -242,6 +242,12 @@ Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbr
                              id="Symfony2.ContainerSettingsForm"
                 />
 
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.MethodParameterReferenceSettingsForm"
+                             displayName="Method References"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony2.MethodReferenceSettingsForm"
+                />
+
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
@@ -256,6 +262,7 @@ Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbr
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.util.DocHashTagReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.util.MethodParameterReferenceContributor"/>
 
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToLocalDeclarationHandler"/>
