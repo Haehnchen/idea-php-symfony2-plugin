@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 0.9.15
+* Implement method parameter completion / goto on custom signatures
+* Provide method parameter completion / goto on docblock hashtag
+* Update help page for new features
+
 ### 0.9.14
 * Fix for Settings saving
 * Support PhpStorm EAP 7 build 130.1293
