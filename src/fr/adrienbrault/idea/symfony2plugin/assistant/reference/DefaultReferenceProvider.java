@@ -48,12 +48,12 @@ public class DefaultReferenceProvider {
 
         @Override
         public String getAlias() {
-            return "repository";
+            return "entity";
         }
 
         @Override
         public String getDocBlockParamAlias() {
-            return "Repository";
+            return "Entity";
         }
     }
 

@@ -288,9 +288,6 @@ Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbr
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
 
-        <lang.syntaxHighlighterFactory key="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlSyntaxHighlighterFactory"/>
-        <syntaxHighlighter key="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlSyntaxHighlighterFull"/>
-
         <toolWindow id="Symfony2" anchor="left" secondary="false"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"

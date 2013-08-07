@@ -38,7 +38,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
 
                     PhpDocParamTag phpDocParamTag = docTagHashing.getPhpDocParamTag();
 
-                    if(phpDocParamTag.getTagValue().contains("#Repository")) {
+                    if(phpDocParamTag.getTagValue().contains("#Entity")) {
                         return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement)};
                     }
 
