@@ -110,6 +110,8 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getSingleLineScalarKey("name")
         ), new TagNameCompletionProvider());
 
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_method"), new ServiceClassMethodInsideScalarKeyCompletion("factory_service"));
+
     }
 
 
@@ -127,7 +129,38 @@ public class YamlCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            addYamlClassMethods(yamlCompoundValue.getContext(), completionResultSet);
+            yamlCompoundValue = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
+            if(yamlCompoundValue == null) {
+                return;
+            }
+
+            addYamlClassMethods(yamlCompoundValue, completionResultSet, "class");
+
+        }
+
+    }
+
+    private class ServiceClassMethodInsideScalarKeyCompletion extends CompletionProvider<CompletionParameters> {
+
+        private String yamlArrayKeyName;
+
+        public ServiceClassMethodInsideScalarKeyCompletion(String yamlArrayKeyName) {
+            this.yamlArrayKeyName = yamlArrayKeyName;
+        }
+
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            PsiElement psiElement = completionParameters.getPosition();
+            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
+            if(yamlCompoundValue == null) {
+                return;
+            }
+
+            addYamlClassMethods(yamlCompoundValue, completionResultSet, this.yamlArrayKeyName);
 
         }
 
@@ -153,25 +186,24 @@ public class YamlCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            addYamlClassMethods(callYamlKeyValue, completionResultSet);
+            addYamlClassMethods(callYamlKeyValue, completionResultSet, "class");
 
         }
 
     }
 
-
-    private static void addYamlClassMethods(@Nullable PsiElement psiElement, CompletionResultSet completionResultSet) {
+    private static void addYamlClassMethods(@Nullable PsiElement psiElement, CompletionResultSet completionResultSet, String classTag) {
 
         if(psiElement == null) {
             return;
         }
 
-        YAMLKeyValue classKeyValue = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLKeyValue.class).withName("class"));
+        YAMLKeyValue classKeyValue = PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(classTag));
         if(classKeyValue == null) {
             return;
         }
 
-        PhpClass phpClass = ServiceUtil.getResolvedClass(psiElement.getProject(), classKeyValue.getValueText());
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText());
         if(phpClass != null) {
             PhpElementsUtil.addClassPublicMethodCompletion(completionResultSet, phpClass);
         }
