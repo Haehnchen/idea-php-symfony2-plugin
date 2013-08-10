@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -20,6 +21,10 @@ public class SymfonyBundleUtil {
         this.loadBundles();
     }
 
+    public SymfonyBundleUtil(Project project) {
+        this(PhpIndex.getInstance(project));
+    }
+
     protected void loadBundles() {
 
         this.symfonyBundles = new HashMap<String, SymfonyBundle>();
@@ -38,6 +43,10 @@ public class SymfonyBundleUtil {
     @Nullable
     public SymfonyBundle getBundle(String bundleName) {
         return this.symfonyBundles.get(bundleName);
+    }
+
+    public boolean bundleExists(String bundleName) {
+        return this.symfonyBundles.get(bundleName) != null;
     }
 
     @Nullable

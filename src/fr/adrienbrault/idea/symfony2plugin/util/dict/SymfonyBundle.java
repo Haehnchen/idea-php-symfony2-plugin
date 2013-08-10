@@ -3,9 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.util.dict;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopes;
-import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +41,16 @@ public class SymfonyBundle {
         }
 
         return bundleDirectory;
+    }
+
+    @Nullable
+    public VirtualFile getVirtualDirectory() {
+        PsiDirectory psiDirectory = this.getDirectory();
+        if(psiDirectory == null) {
+            return null;
+        }
+
+        return psiDirectory.getVirtualFile();
     }
 
     @Nullable
