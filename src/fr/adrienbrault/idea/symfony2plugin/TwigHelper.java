@@ -192,6 +192,41 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getTransDefaultDomain() {
+
+        return PlatformPatterns.or(
+            PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .withParent(
+                PlatformPatterns.psiElement(getDeprecatedTwigTagWithFileReference())
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("trans_default_domain")
+            ).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                PlatformPatterns.psiElement(getDeprecatedTwigTagWithFileReference())
+            )
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("trans_default_domain")
+                ).withLanguage(TwigLanguage.INSTANCE)
+        );
+    }
+
     /**
      * match 'dddd') on ending
      */

@@ -76,6 +76,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             }
         }
 
+        if(TwigHelper.getTransDefaultDomain().accepts(psiElement)) {
+            return TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getText());
+        }
+
         return null;
     }
 

@@ -256,6 +256,30 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         );
 
+        // {% trans_default_domain <> %}
+        // {% trans_default_domain '<>' %}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getTransDefaultDomain(),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    TranslationStringMap map = TranslationIndex.getInstance(parameters.getPosition().getProject()).getTranslationMap();
+                    for(String domainKey : map.getDomainList()) {
+                        resultSet.addElement(new TranslatorLookupElement(domainKey, domainKey));
+                    }
+
+                }
+            }
+
+        );
+
         extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("controller"),  new ControllerCompletionProvider());
 
     }
