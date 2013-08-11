@@ -25,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import icons.PhpIcons;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -235,8 +236,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    for(Map.Entry<String, String> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFunctions().entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withInsertHandler(FunctionInsertHandler.getInstance()));
+                    for(Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFunctions().entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(TwigExtensionParser.getIcon(entry.getValue().getTwigExtensionType())).withTypeText(entry.getValue().getType()).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
                     for(TwigMacro twigMacro: TwigUtil.getImportedMacros(psiElement.getContainingFile())) {

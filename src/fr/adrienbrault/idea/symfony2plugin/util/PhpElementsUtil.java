@@ -37,6 +37,16 @@ public class PhpElementsUtil {
         return results;
     }
 
+    static public PsiElement[] getPsiElementsBySignature(Project project, @Nullable String signature) {
+
+        if(signature == null) {
+            return new PsiElement[0];
+        }
+
+        Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpIndex.getInstance(project).getBySignature(signature, null, 0);
+        return phpNamedElementCollections.toArray(new PsiElement[phpNamedElementCollections.size()]);
+    }
+
     static public PsiElement[] getClassInterfacePsiElements(Project project, String FQNClassOrInterfaceName) {
 
         // convert ResolveResult to PsiElement

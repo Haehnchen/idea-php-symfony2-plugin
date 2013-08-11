@@ -1,11 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
+import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,14 +20,14 @@ public class TwigExtensionParser  {
 
     private Project project;
 
-    private HashMap<String, String> functions;
+    private HashMap<String, TwigExtension> functions;
     private HashMap<String, String> filters;
 
     public TwigExtensionParser(Project project) {
         this.project = project;
     }
 
-    public HashMap<String, String> getFunctions() {
+    public HashMap<String, TwigExtension> getFunctions() {
         if(filters == null) {
             this.parseElementType(TwigElementType.METHOD);
         }
@@ -39,6 +43,10 @@ public class TwigExtensionParser  {
 
     public enum TwigElementType {
         FILTER, METHOD
+    }
+
+    public enum TwigExtensionType {
+        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION
     }
 
     private void parseElementType(TwigElementType type) {
@@ -78,33 +86,51 @@ public class TwigExtensionParser  {
     }
 
     private void parseFunctions(ArrayList<String> classNames) {
-        this.functions = new HashMap<String, String>();
+        this.functions = new HashMap<String, TwigExtension>();
         for(String phpClassName : classNames) {
 
             PhpIndex phpIndex = PhpIndex.getInstance(this.project);
             Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature("#M#C" + phpClassName + "." + "getFunctions", null, 0);
             for(PhpNamedElement phpNamedElement: phpNamedElementCollections) {
                 if(phpNamedElement instanceof Method) {
-                    parseFunctions(phpNamedElement.getText(), this.functions);
+                    parseFunctions((Method) phpNamedElement, this.functions);
                 }
             }
         }
     }
 
-    protected HashMap<String, String> parseFunctions(String text, HashMap<String, String> filters) {
+    protected HashMap<String, TwigExtension> parseFunctions(Method method, HashMap<String, TwigExtension> filters) {
 
-        Matcher simpleFunction = Pattern.compile("[\\\\]*(Twig_SimpleFunction)[\\s+]*\\(['\"](.*?)['\"][\\s+]*").matcher(text);
+        String text = method.getText();
+
+        Matcher simpleFunction = Pattern.compile("[\\\\]*(Twig_SimpleFunction)[\\s+]*\\(['\"](.*?)['\"][\\s+]*,(.*?)[,|)]").matcher(text);
         while(simpleFunction.find()){
             if(!simpleFunction.group(2).contains("*")) {
-                filters.put(simpleFunction.group(2), simpleFunction.group(1));
+                filters.put(simpleFunction.group(2),  new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, "#F" + PsiElementUtils.trimQuote(simpleFunction.group(3).trim())));
             }
         }
 
-
-        Matcher filterFunction = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Function_Method|Twig_Function_Node)").matcher(text);
+        Matcher filterFunction = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Function_Method)\\((.*?),(.*?)[,|)]").matcher(text);
         while(filterFunction.find()){
             if(!filterFunction.group(1).contains("*")) {
-                filters.put(filterFunction.group(1), filterFunction.group(2));
+                String type = filterFunction.group(2);
+
+                String signature = null;
+                if(filterFunction.group(3).trim().equals("$this")) {
+                    PhpClass phpClass = method.getContainingClass();
+                    if(phpClass != null) {
+                        signature = "#M#C\\" + phpClass.getPresentableFQN() + "." + PsiElementUtils.trimQuote(filterFunction.group(4).trim());
+                    }
+                }
+
+                filters.put(filterFunction.group(1), new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature));
+            }
+        }
+
+        Matcher filterFunctionNode = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Function_Node)\\((.*?),").matcher(text);
+        while(filterFunctionNode.find()){
+            if(!filterFunctionNode.group(1).contains("*")) {
+                filters.put(filterFunctionNode.group(1), new TwigExtension(TwigExtensionType.FUNCTION_NODE, "#M#C\\" + PsiElementUtils.trimQuote(filterFunctionNode.group(3).trim()) + ".compile"));
             }
         }
 
@@ -131,6 +157,23 @@ public class TwigExtensionParser  {
 
         return filters;
 
+    }
+
+    public static Icon getIcon(TwigExtensionType twigExtensionType) {
+
+        if(twigExtensionType == TwigExtensionType.FUNCTION_NODE) {
+            return PhpIcons.CLASS_INITIALIZER;
+        }
+
+        if(twigExtensionType == TwigExtensionType.SIMPLE_FUNCTION) {
+            return PhpIcons.FUNCTION;
+        }
+
+        if(twigExtensionType == TwigExtensionType.FUNCTION_METHOD) {
+            return PhpIcons.METHOD_ICON;
+        }
+
+        return PhpIcons.WEB_ICON;
     }
 
 }

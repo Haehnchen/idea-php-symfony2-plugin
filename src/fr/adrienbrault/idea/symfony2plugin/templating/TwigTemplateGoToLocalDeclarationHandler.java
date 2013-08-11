@@ -6,18 +6,22 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationHandler {
@@ -53,9 +57,30 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getSets(psiElement)));
         }
 
+        // {{ function( }}
+        if (PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .beforeLeaf(PlatformPatterns.psiElement(TwigTokenTypes.LBRACE))
+            .withParent(
+                PlatformPatterns.psiElement(TwigHelper.getDeprecatedPrintBlock())
+            ).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
+
+            psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
+        }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
+
+    private PsiElement[] getFunctions(PsiElement psiElement) {
+        HashMap<String, TwigExtension> functions = new TwigExtensionParser(psiElement.getProject()).getFunctions();
+
+        String funcName = psiElement.getText();
+        if(!functions.containsKey(funcName)) {
+            return new PsiElement[0];
+        }
+
+        return PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), functions.get(funcName).getSignature());
+     }
 
     private PsiElement[] getSets(PsiElement psiElement) {
         String funcName = psiElement.getText();
