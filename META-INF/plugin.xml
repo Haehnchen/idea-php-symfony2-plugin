@@ -1,13 +1,13 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.15</version>
+    <version>0.9.16</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
 
-<a href="http://symfony2-plugin.espend.de/">Online Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a>
+<a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/><br/>
 Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/124">Api breaks in Twig</a>.
 
@@ -83,6 +83,14 @@ Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbr
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.16</h2>
+<ul>
+    <li>Improve twig extension parser to support goto and icons</li>
+    <li>Provide domain goto and completion for twig trans_default_domain tag</li>
+    <li>Add factory_method tag support inside yaml</li>
+    <li>"Create Template" annotator is now also available in php and twig render calls</li>
+</ul>
 
 <h2>0.9.15</h2>
 <ul>

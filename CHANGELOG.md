@@ -1,6 +1,12 @@
 Changelog
 =========
 
+### 0.9.16
+* Improve twig extension parser to support goto and icons
+* Provide domain goto and completion for twig trans_default_domain tag
+* Add factory_method tag support inside yaml
+* "Create Template" annotator is now also available in php and twig render calls
+
 ### 0.9.15
 * Implement method parameter completion / goto on custom signatures
 * Provide method parameter completion / goto on docblock hashtag
