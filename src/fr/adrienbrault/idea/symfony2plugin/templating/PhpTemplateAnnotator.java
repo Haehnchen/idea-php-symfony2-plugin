@@ -67,7 +67,7 @@ public class PhpTemplateAnnotator implements Annotator {
 
     }
 
-    class CreateTemplateFix extends BaseIntentionAction {
+    public static class CreateTemplateFix extends BaseIntentionAction {
 
         private String templateName;
         public CreateTemplateFix(String templateName) {

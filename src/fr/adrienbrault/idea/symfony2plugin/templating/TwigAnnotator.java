@@ -64,11 +64,21 @@ public class TwigAnnotator implements Annotator {
         }
 
         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(element.getProject());
-        if(twigFilesByName.containsKey(element.getText()))  {
+        String templateName = element.getText();
+        if(twigFilesByName.containsKey(templateName))  {
             return;
         }
 
         holder.createWarningAnnotation(element, "Missing Template");
+
+        int test = templateName.indexOf("Bundle:");
+        if(test == -1) {
+            return;
+        }
+
+        holder.createWarningAnnotation(element, "Create Template")
+            .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName));
+
     }
 
     private void annotateAsset(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
