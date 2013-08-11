@@ -12,6 +12,10 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -282,6 +286,47 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         );
 
         extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("controller"),  new ControllerCompletionProvider());
+
+
+        // assets completion:
+        // stylesheets and javascripts tags
+
+        extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetPattern(), new AssetCompletionProvider().setAssetParser(
+            new AssetDirectoryReader()
+        ));
+
+        extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setAssetParser(
+            new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true)
+        ));
+
+        extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setAssetParser(
+            new AssetDirectoryReader().setFilterExtension("js", "dart", "coffee").setIncludeBundleDir(true)
+        ));
+
+
+        // routing completion like path() function
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getAutocompletableRoutePattern(),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    Symfony2ProjectComponent symfony2ProjectComponent = parameters.getPosition().getProject().getComponent(Symfony2ProjectComponent.class);
+                    Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
+
+                    for (Route route : routes.values()) {
+                        resultSet.addElement(new RouteLookupElement(route));
+                    }
+                }
+            }
+        );
+
 
     }
 

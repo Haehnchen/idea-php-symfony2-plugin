@@ -283,9 +283,7 @@ Notice: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbr
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.TwigRouteCompletionContributor"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.asset.TwigAssetCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
 
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>

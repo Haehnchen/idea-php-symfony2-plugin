@@ -53,12 +53,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectOpened() {
-        System.out.println("projectOpened");
+        // System.out.println("projectOpened");
         this.checkProject();
     }
 
     public void projectClosed() {
-        System.out.println("projectClosed");
+        // System.out.println("projectClosed");
     }
 
     public void showInfoNotification(String content) {
