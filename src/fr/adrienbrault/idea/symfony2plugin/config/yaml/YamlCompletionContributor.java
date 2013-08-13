@@ -186,7 +186,7 @@ public class YamlCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            addYamlClassMethods(callYamlKeyValue, completionResultSet, "class");
+            addYamlClassMethods(callYamlKeyValue.getContext(), completionResultSet, "class");
 
         }
 
