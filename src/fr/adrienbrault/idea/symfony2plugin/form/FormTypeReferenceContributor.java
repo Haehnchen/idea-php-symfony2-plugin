@@ -190,11 +190,11 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                         // only use second parameter
                         ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-                        if(currentIndex == null || currentIndex.getIndex() == 0 || currentIndex.getIndex() > 1) {
+                        if(currentIndex == null || currentIndex.getIndex() != 1) {
                             return new PsiReference[0];
                         }
 
-                        return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement, currentIndex) };
+                        return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement) };
                     }
 
                 }

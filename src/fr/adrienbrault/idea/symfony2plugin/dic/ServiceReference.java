@@ -5,6 +5,7 @@ import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,19 +43,8 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
             return new ResolveResult[]{};
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
-        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceClass);
-        Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(serviceClass);
-
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
-        for (PhpClass phpClass : phpClasses) {
-            results.add(new PsiElementResolveResult(phpClass));
-        }
-        for (PhpClass phpInterface : phpInterfaces) {
-            results.add(new PsiElementResolveResult(phpInterface));
-        }
-
-        return results.toArray(new ResolveResult[results.size()]);
+        List<ResolveResult> resolveResults = PhpElementsUtil.getClassInterfaceResolveResult(this.getElement().getProject(), serviceClass);
+        return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
     }
 
     @Nullable

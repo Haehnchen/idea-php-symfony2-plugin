@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
@@ -19,6 +20,7 @@ public class DefaultReferenceProvider {
         new TranslationDomainReferenceProvider(),
         new PhpClassReferenceProvider(),
         new ServiceReferenceProvider(),
+        new FormTypeReferenceProvider()
     };
 
     private static class RouteReferenceProvider implements AssistantReferenceProvider {
@@ -126,6 +128,24 @@ public class DefaultReferenceProvider {
         @Override
         public String getDocBlockParamAlias() {
             return "Service";
+        }
+    }
+
+    private static class FormTypeReferenceProvider implements AssistantReferenceProvider {
+
+        @Override
+        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
+            return new FormTypeReference(psiElement);
+        }
+
+        @Override
+        public String getAlias() {
+            return "form_type";
+        }
+
+        @Override
+        public String getDocBlockParamAlias() {
+            return "FormType";
         }
     }
 }

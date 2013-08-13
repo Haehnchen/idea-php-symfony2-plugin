@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.form.dict;
 
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,17 @@ public class FormTypeMap {
 
     public Map<String, String> getMap() {
         return map;
+    }
+
+    @Nullable
+    public String getServiceName(String formTypeName) {
+        for(Map.Entry<String, String> entry: this.map.entrySet()) {
+            if(entry.getValue().equals(formTypeName)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
     }
 
 }
