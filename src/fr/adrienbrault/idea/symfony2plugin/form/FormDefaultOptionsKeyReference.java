@@ -20,25 +20,21 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormExtensionKeyReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+public class FormDefaultOptionsKeyReference extends PsiReferenceBase<PsiElement> implements PsiReference {
 
     private StringLiteralExpression element;
-    private String[] formTypes = new String[] { "form" };
+    private String formType;
 
-    public FormExtensionKeyReference(@NotNull StringLiteralExpression element) {
+    public FormDefaultOptionsKeyReference(@NotNull StringLiteralExpression element, String formType) {
         super(element);
         this.element = element;
-    }
-
-    public FormExtensionKeyReference(@NotNull StringLiteralExpression element, String... formTypes) {
-        this(element);
-        this.formTypes = formTypes;
+        this.formType = formType;
     }
 
     @Nullable
     @Override
     public PsiElement resolve() {
-        HashMap<String, String> test = FormOptionsUtil.getFormExtensionKeys(this.getElement().getProject(), this.formTypes);
+        HashMap<String, String> test = FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType);
         String value = this.element.getContents();
 
         if(!test.containsKey(value)) {
@@ -61,19 +57,19 @@ public class FormExtensionKeyReference extends PsiReferenceBase<PsiElement> impl
 
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
-        for(Map.Entry<String, String> extension: FormOptionsUtil.getFormExtensionKeys(this.getElement().getProject(), this.formTypes).entrySet()) {
+        for(Map.Entry<String, String> extension: FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType).entrySet()) {
             String typeText = extension.getValue();
             if(typeText.lastIndexOf("\\") != -1) {
                 typeText = typeText.substring(typeText.lastIndexOf("\\") + 1);
             }
 
-            if(typeText.endsWith("Extension")) {
-                typeText = typeText.substring(0, typeText.length() - 9);
+            if(typeText.endsWith("Type")) {
+                typeText = typeText.substring(0, typeText.length() - 4);
             }
 
             lookupElements.add(LookupElementBuilder.create(extension.getKey())
                 .withTypeText(typeText)
-                .withIcon(Symfony2Icons.FORM_EXTENSION)
+                .withIcon(Symfony2Icons.FORM_OPTION)
             );
         }
 

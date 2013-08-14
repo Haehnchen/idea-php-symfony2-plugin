@@ -9,7 +9,6 @@ import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
@@ -221,13 +220,18 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                                 if(arrayCreationExpression instanceof ArrayCreationExpression) {
                                     if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == 2) {
 
-                                        String formTypeName = null;
                                         PsiElement parameterList = arrayCreationExpression.getContext();
                                         if(parameterList instanceof ParameterList) {
-                                            formTypeName = PsiElementUtils.getMethodParameterAt(((ParameterList) arrayCreationExpression.getContext()), 1);
+                                            String formTypeName = PsiElementUtils.getMethodParameterAt(((ParameterList) arrayCreationExpression.getContext()), 1);
+
+                                            return new PsiReference[]{
+                                                new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form", formTypeName),
+                                                new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, formTypeName)
+                                            };
+
                                         }
 
-                                        return new PsiReference[]{ new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form", formTypeName) };
+                                        return new PsiReference[]{ new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form") };
                                     }
                                 }
 

@@ -60,6 +60,16 @@ public class PhpElementsUtil {
         return phpNamedElementCollections.toArray(new PsiElement[phpNamedElementCollections.size()]);
     }
 
+    @Nullable
+    static public PsiElement getPsiElementsBySignatureSingle(Project project, @Nullable String signature) {
+        PsiElement[] psiElements = getPsiElementsBySignature(project, signature);
+        if(psiElements.length == 0) {
+            return null;
+        }
+
+        return psiElements[0];
+    }
+
     static public PsiElement[] getClassInterfacePsiElements(Project project, String FQNClassOrInterfaceName) {
 
         // convert ResolveResult to PsiElement
@@ -154,6 +164,11 @@ public class PhpElementsUtil {
 
         return valueString.getContents();
 
+    }
+
+    static public boolean isEqualMethodReferenceName(MethodReference methodReference, String methodName) {
+        String name = methodReference.getName();
+        return name != null && name.equals(methodName);
     }
 
 }
