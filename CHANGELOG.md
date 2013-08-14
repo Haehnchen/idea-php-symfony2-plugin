@@ -1,6 +1,10 @@
 Changelog
 =========
 
+### 0.9.17
+* Refactor of FormTypes reference contributor to provide goto and custom provider
+* Provide form extension and default option array key completion / goto inside FormBuilder calls
+
 ### 0.9.16
 * Improve twig extension parser to support goto and icons
 * Provide domain goto and completion for twig trans_default_domain tag
