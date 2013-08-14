@@ -37,6 +37,19 @@ public class PhpElementsUtil {
         return results;
     }
 
+    static public ArrayList<String> getArrayCreationKeys(ArrayCreationExpression arrayCreationExpression) {
+        ArrayList<String> keys = new ArrayList<String>();
+
+        for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
+            PhpPsiElement child = arrayHashElement.getKey();
+            if(child instanceof StringLiteralExpression) {
+                keys.add(((StringLiteralExpression) child).getContents());
+            }
+        }
+
+        return keys;
+    }
+
     static public PsiElement[] getPsiElementsBySignature(Project project, @Nullable String signature) {
 
         if(signature == null) {

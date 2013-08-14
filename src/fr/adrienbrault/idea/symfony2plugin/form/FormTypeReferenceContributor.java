@@ -5,6 +5,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -200,6 +201,48 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 }
 
         );
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_KEY).accepts(psiElement.getContext())) {
+                        PsiElement arrayKey = psiElement.getContext();
+                        if(arrayKey != null) {
+                            PsiElement arrayHashElement = arrayKey.getContext();
+                            if(arrayHashElement instanceof ArrayHashElement) {
+                                PsiElement arrayCreationExpression = arrayHashElement.getContext();
+                                if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                                    if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == 2) {
+
+                                        String formTypeName = null;
+                                        PsiElement parameterList = arrayCreationExpression.getContext();
+                                        if(parameterList instanceof ParameterList) {
+                                            formTypeName = PsiElementUtils.getMethodParameterAt(((ParameterList) arrayCreationExpression.getContext()), 1);
+                                        }
+
+                                        return new PsiReference[]{ new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form", formTypeName) };
+                                    }
+                                }
+
+                            }
+                        }
+
+                    }
+
+                    return new PsiReference[0];
+                }
+
+            }
+
+        );
+
     }
 
 }
