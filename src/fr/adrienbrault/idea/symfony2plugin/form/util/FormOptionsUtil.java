@@ -99,6 +99,19 @@ public class FormOptionsUtil {
                 }
 
             }
+
+            // support: parent::setDefaultOptions($resolver)
+            // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
+            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaultOptions") && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
+                PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
+                if(parentMethod instanceof Method) {
+                    PhpClass phpClass = ((Method) parentMethod).getContainingClass();
+                    if(phpClass != null) {
+                        attachOnDefaultOptions(project, defaultValues, phpClass.getPresentableFQN());
+                    }
+                }
+            }
+
         }
     }
 
