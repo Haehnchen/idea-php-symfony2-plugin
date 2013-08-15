@@ -7,6 +7,7 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
@@ -211,6 +212,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
+                    // array('<test>' => '')
                     if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_KEY).accepts(psiElement.getContext())) {
                         PsiElement arrayKey = psiElement.getContext();
                         if(arrayKey != null) {
@@ -218,24 +220,23 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                             if(arrayHashElement instanceof ArrayHashElement) {
                                 PsiElement arrayCreationExpression = arrayHashElement.getContext();
                                 if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                                    if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == 2) {
-
-                                        PsiElement parameterList = arrayCreationExpression.getContext();
-                                        if(parameterList instanceof ParameterList) {
-                                            String formTypeName = PsiElementUtils.getMethodParameterAt(((ParameterList) arrayCreationExpression.getContext()), 1);
-
-                                            return new PsiReference[]{
-                                                new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form", formTypeName),
-                                                new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, formTypeName)
-                                            };
-
-                                        }
-
-                                        return new PsiReference[]{ new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form") };
-                                    }
+                                    return getMatchingOption((ArrayCreationExpression) arrayCreationExpression, (StringLiteralExpression) psiElement);
                                 }
-
                             }
+                        }
+
+                    }
+
+                    // on array creation key dont have value, so provide completion here also
+                    // array('foo' => 'bar', '<test>')
+                    if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).accepts(psiElement.getContext())) {
+                        PsiElement arrayKey = psiElement.getContext();
+                        if(arrayKey != null) {
+                            PsiElement arrayCreationExpression = arrayKey.getContext();
+                            if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                                return getMatchingOption((ArrayCreationExpression) arrayCreationExpression, (StringLiteralExpression) psiElement);
+                            }
+
                         }
 
                     }
@@ -243,10 +244,45 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[0];
                 }
 
+                private PsiReference[] getMatchingOption(ArrayCreationExpression arrayCreationExpression, StringLiteralExpression psiElement) {
+
+                    if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) != 2) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement parameterList = arrayCreationExpression.getContext();
+
+                    // unknown formtype so provide form fallback
+                    if(!(parameterList instanceof ParameterList)) {
+                        // unknown formtype so provide form fallback
+                        return new PsiReference[]{ new FormExtensionKeyReference(psiElement, "form") };
+                    }
+
+
+                    // form name can be a string alias
+                    String formTypeName = PsiElementUtils.getMethodParameterAt(((ParameterList) arrayCreationExpression.getContext()), 1);
+
+                    // formtype is not a string, so try to find any php class types
+                    if(formTypeName == null) {
+                        PsiElement psiElement1 = PsiElementUtils.getMethodParameterPsiElementAt(((ParameterList) arrayCreationExpression.getContext()), 1);
+                        if(psiElement1 instanceof PhpTypedElementImpl) {
+                            formTypeName = ((PhpTypedElementImpl) psiElement1).getType().toString();
+                        }
+                    }
+
+                    return new PsiReference[]{
+                        new FormExtensionKeyReference(psiElement, "form", formTypeName),
+                        new FormDefaultOptionsKeyReference(psiElement, formTypeName)
+                    };
+
+                }
+
             }
 
         );
 
     }
+
+
 
 }

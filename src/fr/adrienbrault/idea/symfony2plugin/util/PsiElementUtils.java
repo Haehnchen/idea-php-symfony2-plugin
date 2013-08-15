@@ -54,6 +54,16 @@ public class PsiElementUtils {
         return getMethodParameter(parameters[index]);
     }
 
+    public static PsiElement getMethodParameterPsiElementAt(ParameterList parameterList, int index) {
+        PsiElement[] parameters = parameterList.getParameters();
+
+        if(parameters.length < index + 1) {
+            return null;
+        }
+
+        return parameters[index];
+    }
+
     @Nullable
     public static ParameterBag getCurrentParameterIndex(PsiElement[] parameters, PsiElement parameter) {
         int i;
