@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -215,36 +216,34 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    // array('<test>' => '')
-                    if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_KEY).accepts(psiElement.getContext())) {
-                        PsiElement arrayKey = psiElement.getContext();
-                        if(arrayKey != null) {
-                            PsiElement arrayHashElement = arrayKey.getContext();
-                            if(arrayHashElement instanceof ArrayHashElement) {
-                                PsiElement arrayCreationExpression = arrayHashElement.getContext();
-                                if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                                    return getMatchingOption((ArrayCreationExpression) arrayCreationExpression, (StringLiteralExpression) psiElement);
-                                }
-                            }
-                        }
-
+                    ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+                    if (parameterList == null) {
+                        return new PsiReference[0];
                     }
 
-                    // on array creation key dont have value, so provide completion here also
-                    // array('foo' => 'bar', '<test>')
-                    if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).accepts(psiElement.getContext())) {
-                        PsiElement arrayKey = psiElement.getContext();
-                        if(arrayKey != null) {
-                            PsiElement arrayCreationExpression = arrayKey.getContext();
-                            if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                                return getMatchingOption((ArrayCreationExpression) arrayCreationExpression, (StringLiteralExpression) psiElement);
-                            }
-
-                        }
-
+                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
                     }
 
-                    return new PsiReference[0];
+                    ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreation);
+                    if(currentIndex == null || currentIndex.getIndex() != 2) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference method = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isFormBuilderFormTypeCall(method)) {
+                        return new PsiReference[0];
+                    }
+
+                    ArrayCreationExpression arrayCreationExpression = getCompletableArrayCreationElement(psiElement);
+                    if(arrayCreationExpression == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return getMatchingOption(arrayCreationExpression, (StringLiteralExpression) psiElement);
+
                 }
 
                 private PsiReference[] getMatchingOption(ArrayCreationExpression arrayCreationExpression, StringLiteralExpression psiElement) {
@@ -336,7 +335,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                                     PhpClass phpClass1 = PhpElementsUtil.getClass(PhpIndex.getInstance(psiElement.getProject()), dataClass);
                                     return new PsiReference[]{ new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, phpClass1) };
                                 }
-                                System.out.println(dataClass);
                             }
 
                         }
@@ -350,7 +348,89 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
+        // FormBuilderInterface::add('underscore_method')
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
 
+                    ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+                    if (parameterList == null) {
+                        return new PsiReference[0];
+                    }
+
+                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference method = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isCallTo(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults")) {
+                        return new PsiReference[0];
+                    }
+
+                    // only use second parameter
+                    ArrayCreationExpression arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayHash);
+                    if(currentIndex == null || currentIndex.getIndex() != 0) {
+                        return new PsiReference[0];
+                    }
+
+                    if(getCompletableArrayCreationElement(psiElement) != null) {
+                        return new PsiReference[]{
+                            new FormExtensionKeyReference((StringLiteralExpression) psiElement),
+                            new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "form")
+                        };
+                    }
+
+                    return new PsiReference[0];
+                }
+
+            }
+
+        );
+
+
+    }
+
+    @Nullable
+    public static ArrayCreationExpression getCompletableArrayCreationElement(PsiElement psiElement) {
+
+        // array('<test>' => '')
+        if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_KEY).accepts(psiElement.getContext())) {
+            PsiElement arrayKey = psiElement.getContext();
+            if(arrayKey != null) {
+                PsiElement arrayHashElement = arrayKey.getContext();
+                if(arrayHashElement instanceof ArrayHashElement) {
+                    PsiElement arrayCreationExpression = arrayHashElement.getContext();
+                    if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                        return (ArrayCreationExpression) arrayCreationExpression;
+                    }
+                }
+            }
+
+        }
+
+        // on array creation key dont have value, so provide completion here also
+        // array('foo' => 'bar', '<test>')
+        if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).accepts(psiElement.getContext())) {
+            PsiElement arrayKey = psiElement.getContext();
+            if(arrayKey != null) {
+                PsiElement arrayCreationExpression = arrayKey.getContext();
+                if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                    return (ArrayCreationExpression) arrayCreationExpression;
+                }
+
+            }
+
+        }
+
+        return null;
     }
 
 
