@@ -50,6 +50,35 @@ public class PhpElementsUtil {
         return keys;
     }
 
+    @Nullable
+    static public PhpPsiElement getArrayValue(ArrayCreationExpression arrayCreationExpression, String name) {
+
+        for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
+            PhpPsiElement child = arrayHashElement.getKey();
+            if(child instanceof StringLiteralExpression) {
+                if(((StringLiteralExpression) child).getContents().equals(name)) {
+                    return arrayHashElement.getValue();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    static public String getArrayValueString(ArrayCreationExpression arrayCreationExpression, String name) {
+        PhpPsiElement phpPsiElement = getArrayValue(arrayCreationExpression, name);
+        if(phpPsiElement == null) {
+            return null;
+        }
+
+        if(phpPsiElement instanceof StringLiteralExpression) {
+            return ((StringLiteralExpression) phpPsiElement).getContents();
+        }
+
+        return null;
+    }
+
     static public PsiElement[] getPsiElementsBySignature(Project project, @Nullable String signature) {
 
         if(signature == null) {
