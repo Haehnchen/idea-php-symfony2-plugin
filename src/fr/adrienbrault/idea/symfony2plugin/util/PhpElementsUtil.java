@@ -7,6 +7,7 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLanguage;
@@ -198,6 +199,33 @@ public class PhpElementsUtil {
     static public boolean isEqualMethodReferenceName(MethodReference methodReference, String methodName) {
         String name = methodReference.getName();
         return name != null && name.equals(methodName);
+    }
+
+    public static PsiElement findArrayKeyValueInsideReference(PsiElement psiElement, String methodReferenceName, String keyName) {
+
+        if(psiElement == null) {
+            return null;
+        }
+
+        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class);
+        for(MethodReference methodReference: tests) {
+
+            // instance check
+            // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
+            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodReferenceName)) {
+                PsiElement[] parameters = methodReference.getParameters();
+                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
+                    PsiElement keyValue = PhpElementsUtil.getArrayValue((ArrayCreationExpression) parameters[0], keyName);
+                    if(keyValue != null) {
+                        return keyValue;
+                    }
+                }
+
+            }
+
+        }
+
+        return null;
     }
 
 }

@@ -52,6 +52,11 @@ public class FormExtensionKeyReference extends PsiReferenceBase<PsiElement> impl
             return null;
         }
 
+        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);
+        if(keyValue != null) {
+            return keyValue;
+        }
+
         return psiElements[0];
     }
 

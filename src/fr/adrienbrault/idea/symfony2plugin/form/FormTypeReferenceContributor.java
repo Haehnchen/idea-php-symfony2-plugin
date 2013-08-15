@@ -226,6 +226,10 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+                    if(arrayCreation == null) {
+                        return new PsiReference[0];
+                    }
+
                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreation);
                     if(currentIndex == null || currentIndex.getIndex() != 2) {
                         return new PsiReference[0];
@@ -376,6 +380,10 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     // only use second parameter
                     ArrayCreationExpression arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+                    if(arrayHash == null) {
+                        return new PsiReference[0];
+                    }
+
                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayHash);
                     if(currentIndex == null || currentIndex.getIndex() != 0) {
                         return new PsiReference[0];

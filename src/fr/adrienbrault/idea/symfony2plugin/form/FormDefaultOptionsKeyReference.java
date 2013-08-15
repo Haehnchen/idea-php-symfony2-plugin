@@ -48,6 +48,11 @@ public class FormDefaultOptionsKeyReference extends PsiReferenceBase<PsiElement>
             return null;
         }
 
+        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);
+        if(keyValue != null) {
+            return keyValue;
+        }
+
         return psiElements[0];
     }
 
