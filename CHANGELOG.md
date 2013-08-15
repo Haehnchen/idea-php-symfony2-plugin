@@ -1,6 +1,13 @@
 Changelog
 =========
 
+### 0.9.18
+* Directly goto into form options definition not only to method
+* Add form child name (underscore method) support on form builder resolve from setDefaultOptions:data_class
+* Resolve parent calls inside setDefaultOptions eg for getting base form options
+* Fix completion option on incomplete array definition (array key)
+* Add php type resolve on form type parameter to not only support form types aliases
+
 ### 0.9.17
 * Refactor of FormTypes reference contributor to provide goto and custom provider
 * Provide form extension and default option array key completion / goto inside FormBuilder calls

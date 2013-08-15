@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.17</version>
+    <version>0.9.18</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -83,6 +83,15 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.18</h2>
+<ul>
+    <li>Directly goto into form options definition not only to method</li>
+    <li>Add form child name (underscore method) support on form builder resolve from setDefaultOptions:data_class</li>
+    <li>Resolve parent calls inside setDefaultOptions eg for getting base form options</li>
+    <li>Fix completion option on incomplete array definition (array key)</li>
+    <li>Add php type resolve on form type parameter to not only support form types aliases</li>
+</ul>
 
 <h2>0.9.17</h2>
 <ul>
