@@ -20,8 +20,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -88,6 +86,10 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                             // translation_domain in current array block
                             String translationDomain = PhpElementsUtil.getArrayHashValue(arrayCreation, "translation_domain");
+                            if(translationDomain == null) {
+                                translationDomain = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, "setDefaultOptions",  "setDefaults", "translation_domain");
+                            }
+
                             if(translationDomain == null) {
                                 translationDomain = "messages";
                             }
@@ -315,37 +317,16 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    PhpClass phpClass = PsiTreeUtil.getParentOfType(method, PhpClass.class);
-
-                    if(phpClass == null) {
-                        return new PsiReference[0];
-                    }
-
-
-                    PsiElement psiElement1 = PhpElementsUtil.getPsiElementsBySignatureSingle(psiElement.getProject(), "#M#C\\" + phpClass.getPresentableFQN() + ".setDefaultOptions");
-                    if(psiElement1 == null) {
-                        return new PsiReference[0];
-                    }
-
-                    Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(psiElement1, MethodReference.class);
-                    for(MethodReference methodReference: tests) {
-
-                        // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
-                        if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
-                            PsiElement[] parameters = methodReference.getParameters();
-                            if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                                String dataClass = PhpElementsUtil.getArrayValueString((ArrayCreationExpression) parameters[0], "data_class");
-                                if(dataClass != null) {
-                                    PhpClass phpClass1 = PhpElementsUtil.getClass(PhpIndex.getInstance(psiElement.getProject()), dataClass);
-                                    return new PsiReference[]{ new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, phpClass1) };
-                                }
-                            }
-
+                    String className = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, "setDefaultOptions",  "setDefaults", "data_class");
+                    if(className != null) {
+                        PhpClass dataClass = PhpElementsUtil.getClass(PhpIndex.getInstance(psiElement.getProject()), className);
+                        if(dataClass != null) {
+                            return new PsiReference[]{ new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, dataClass) };
                         }
                     }
 
                     return new PsiReference[0];
-                    //
+
                 }
 
             }

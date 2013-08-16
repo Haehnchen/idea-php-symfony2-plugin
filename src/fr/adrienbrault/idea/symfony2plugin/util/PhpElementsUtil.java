@@ -201,7 +201,7 @@ public class PhpElementsUtil {
         return name != null && name.equals(methodName);
     }
 
-    public static PsiElement findArrayKeyValueInsideReference(PsiElement psiElement, String methodReferenceName, String keyName) {
+    static public PsiElement findArrayKeyValueInsideReference(PsiElement psiElement, String methodReferenceName, String keyName) {
 
         if(psiElement == null) {
             return null;
@@ -223,6 +223,44 @@ public class PhpElementsUtil {
 
             }
 
+        }
+
+        return null;
+    }
+
+    @Nullable
+    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo, String methodName, String keyName) {
+        PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElementInsideClass, PhpClass.class);
+        if(phpClass == null) {
+            return null;
+        }
+
+        String className = phpClass.getPresentableFQN();
+        if(className == null) {
+            return null;
+        }
+
+        return PhpElementsUtil.getArrayKeyValueInsideSignature(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + callTo, methodName, keyName);
+    }
+
+    @Nullable
+    static public String getArrayKeyValueInsideSignature(Project project, String signature, String methodName, String keyName) {
+
+        PsiElement psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(project, signature);
+        if(psiElement == null) {
+            return null;
+        }
+
+        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class);
+        for(MethodReference methodReference: tests) {
+
+            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName)) {
+                PsiElement[] parameters = methodReference.getParameters();
+                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
+                    return PhpElementsUtil.getArrayValueString((ArrayCreationExpression) parameters[0], keyName);
+                }
+
+            }
         }
 
         return null;
