@@ -70,6 +70,19 @@ public class TwigHelper {
     }
 
     public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
+
+        // both are valid names first is internal completion
+        // @TODO: provide setting for that
+        // BarBundle:Foo:steps/step_finish.html.twig
+        // BarBundle:Foo/steps:step_finish.html.twig
+
+        if(templateName.matches("^.*?:.*?:.*?/.*?$")) {
+            int lastDoublePoint = templateName.lastIndexOf(":");
+            String subFolder = templateName.substring(lastDoublePoint + 1, templateName.lastIndexOf("/"));
+            String file = templateName.substring(templateName.lastIndexOf("/") + 1);
+            templateName = templateName.substring(0, lastDoublePoint) + "/" + subFolder + ":" + file;
+        }
+
         Map<String, TwigFile> twigFiles = TwigHelper.getTwigFilesByName(project);
         if(!twigFiles.containsKey(templateName)) {
             return new PsiElement[0];

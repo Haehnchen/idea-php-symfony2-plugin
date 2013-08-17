@@ -21,13 +21,17 @@ import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TemplateAnnotationAnnotator implements Annotator {
 
@@ -38,19 +42,28 @@ public class TemplateAnnotationAnnotator implements Annotator {
             return;
         }
 
-        if(!PlatformPatterns.psiElement(PhpDocTag.class).accepts(element)) {
+        if(!(element instanceof PhpDocTag)) {
             return;
         }
 
-        if (element instanceof PhpDocTag) {
+        PhpDocTag phpDocTag = (PhpDocTag) element;
+        String docTagName = phpDocTag.getName();
+        if(docTagName == null || !docTagName.equals("@Template")) {
+            return;
+        }
 
-            PhpDocTag phpDocTag = (PhpDocTag) element;
+        String tagValue = phpDocTag.getTagValue();
+        String templateName;
 
-            String docTagName = phpDocTag.getName();
-            if(docTagName == null || !docTagName.equals("@Template") || !phpDocTag.getTagValue().equals("()")) {
-                return;
-            }
+        // @Template("FooBundle:Folder:foo.html.twig")
+        // @Template("FooBundle:Folder:foo.html.twig", "asdas")
+        // @Template(tag="name")
+        Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
+        if (matcher.find()) {
+            templateName = matcher.group(1);
+        } else {
 
+            // find template name on lass method
             PhpDocComment docComment = PsiTreeUtil.getParentOfType(element, PhpDocComment.class);
             if(null == docComment) {
                 return;
@@ -61,24 +74,23 @@ public class TemplateAnnotationAnnotator implements Annotator {
                 return;
             }
 
-            String shortcutName = TwigUtil.getControllerMethodShortcut(method);
-            if(shortcutName == null) {
-                return;
-            }
-
-            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(element.getProject());
-            TwigFile twigFile = twigFilesByName.get(shortcutName);
-
-            if (null != twigFile) {
-                return;
-            }
-
-            if(null != element.getFirstChild()) {
-                holder.createWarningAnnotation(element.getFirstChild().getTextRange(), "Create Template")
-                    .registerFix(new CreatePropertyQuickFix(method));
-            }
-
+            templateName = TwigUtil.getControllerMethodShortcut(method);
         }
+
+        if(templateName == null) {
+            return;
+        }
+
+        if ( TwigHelper.getTemplatePsiElements(element.getProject(), templateName).length > 0) {
+            return;
+        }
+
+        if(null != element.getFirstChild()) {
+            holder.createWarningAnnotation(element.getFirstChild().getTextRange(), "Create Template")
+                .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName));
+        }
+
+
     }
 
     class CreatePropertyQuickFix extends BaseIntentionAction {

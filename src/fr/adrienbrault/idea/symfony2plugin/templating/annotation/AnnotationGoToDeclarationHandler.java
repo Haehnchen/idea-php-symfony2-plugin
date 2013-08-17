@@ -12,6 +12,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
@@ -22,6 +23,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -36,65 +39,40 @@ public class AnnotationGoToDeclarationHandler implements GotoDeclarationHandler 
             return null;
         }
 
-        if (PlatformPatterns.psiElement(PhpDocElementTypes.DOC_TAG_NAME).withText(StandardPatterns.string().equalTo("@Template")).withLanguage(PhpLanguage.INSTANCE).accepts(psiElement)) {
-
-            PsiElement phpDocTagValue = psiElement.getNextSibling();
-            if(null != phpDocTagValue) {
-
-                String tagValue = psiElement.getNextSibling().getText();
-
-                // ("MyAppBundle:Conversation:list/search.html.twig")
-                if(tagValue.length() > 4 && tagValue.contains(":")) {
-                    String strippedShortcutValue = tagValue.substring(2, tagValue.length() -2);
-                    return getTwigDeclaration(psiElement.getProject(), strippedShortcutValue);
-                }
-
-                // empty template "()" which maps the controller and action name
-                if(tagValue.equals("()")) {
-
-                    PhpDocComment docComment = PsiTreeUtil.getParentOfType(psiElement, PhpDocComment.class);
-                    if(null == docComment) {
-                        return null;
-                    }
-
-                    Method method = PsiTreeUtil.getNextSiblingOfType(docComment, Method.class);
-                    if(null == method) {
-                        return null;
-                    }
-
-                    String shortcutName = getTwigShortcutName(method);
-                    if(null == shortcutName) {
-                        return null;
-                    }
-
-                    return getTwigDeclaration(psiElement.getProject(), shortcutName);
-                }
-
-            }
-
-        }
-
-        return new PsiElement[]{};
-    }
-
-    @Nullable
-    protected PsiElement[] getTwigDeclaration(Project project, String shortcutName) {
-        TwigFile twigFile = getTwigFileOnShortcut(project, shortcutName);
-        if (twigFile == null) {
+        if (!PlatformPatterns.psiElement(PhpDocElementTypes.DOC_TAG_NAME).withText(StandardPatterns.string().equalTo("@Template")).withLanguage(PhpLanguage.INSTANCE).accepts(psiElement)) {
             return null;
         }
 
-        return new PsiElement[] { twigFile };
-    }
-
-    protected TwigFile getTwigFileOnShortcut(Project project, String shortcutName) {
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(project);
-        TwigFile twigFile = twigFilesByName.get(shortcutName);
-
-        if (null == twigFile) {
+        PsiElement phpDocTagValue = psiElement.getContext();
+        if(!(phpDocTagValue instanceof PhpDocTag)) {
             return null;
         }
-        return twigFile;
+
+        // find template name on annotation parameter
+        // @Template("templatename")
+        String tagValue = ((PhpDocTag) phpDocTagValue).getTagValue();
+        Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
+        if (matcher.find()) {
+            return TwigHelper.getTemplatePsiElements(psiElement.getProject(), matcher.group(1));
+        }
+
+        PhpDocComment docComment = PsiTreeUtil.getParentOfType(psiElement, PhpDocComment.class);
+        if(null == docComment) {
+            return null;
+        }
+
+        Method method = PsiTreeUtil.getNextSiblingOfType(docComment, Method.class);
+        if(null == method) {
+            return null;
+        }
+
+        String shortcutName = getTwigShortcutName(method);
+        if(null == shortcutName) {
+            return null;
+        }
+
+        return TwigHelper.getTemplatePsiElements(psiElement.getProject(), shortcutName);
+
     }
 
     @Nullable

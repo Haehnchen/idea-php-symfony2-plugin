@@ -8,6 +8,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -172,6 +173,7 @@ public class Symfony2InterfacesUtil {
         return false;
     }
 
+    @Nullable
     public static String getFirstArgumentStringValue(MethodReference e) {
         String stringValue = null;
 

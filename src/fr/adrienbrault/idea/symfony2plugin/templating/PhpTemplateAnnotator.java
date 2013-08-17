@@ -48,10 +48,13 @@ public class PhpTemplateAnnotator implements Annotator {
             return;
         }
 
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(element.getProject());
-        String templateName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
 
-        if(twigFilesByName.containsKey(templateName))  {
+        String templateName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
+        if(templateName == null) {
+            return;
+        }
+
+        if(TwigHelper.getTemplatePsiElements(element.getProject(), templateName).length > 0)  {
            return;
         }
 

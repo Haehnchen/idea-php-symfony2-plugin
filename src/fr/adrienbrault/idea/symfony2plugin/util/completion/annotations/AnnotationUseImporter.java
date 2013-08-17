@@ -20,10 +20,14 @@ public class AnnotationUseImporter {
 
         // copied from PhpReferenceInsertHandler; throws an error on PhpContractUtil because of "fully qualified names only"
         // but that is catch on phpstorm side already; looks fixed now so use fqn
-        if(PhpCodeInsightUtil.canImport(scopeForUseOperator, "\\" + fqnAnnotation)) {
-            PsiDocumentManager.getInstance(context.getProject()).commitDocument(context.getDocument());
-            PhpCodeEditUtil.insertUseStatement("\\" + fqnAnnotation, scopeForUseOperator);
-            PsiDocumentManager.getInstance(context.getProject()).doPostponedOperationsAndUnblockDocument(context.getDocument());
+        try {
+            if(PhpCodeInsightUtil.canImport(scopeForUseOperator, fqnAnnotation)) {
+                PsiDocumentManager.getInstance(context.getProject()).commitDocument(context.getDocument());
+                PhpCodeEditUtil.insertUseStatement("\\" + fqnAnnotation, scopeForUseOperator);
+                PsiDocumentManager.getInstance(context.getProject()).doPostponedOperationsAndUnblockDocument(context.getDocument());
+            }
+        } catch (Exception e) {
+            System.out.println("symfony2plugin: PhpCodeInsightUtil.canImport workaround");
         }
 
     }
