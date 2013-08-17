@@ -23,6 +23,44 @@ public class DefaultReferenceProvider {
         new FormTypeReferenceProvider()
     };
 
+    public enum DEFAULT_PROVIDER_ENUM {
+        ROUTE {
+            public String toString() {
+                return "route";
+            }
+        },
+        ENTITY {
+            public String toString() {
+                return "entity";
+            }
+        },
+        TEMPLATE {
+            public String toString() {
+                return "template";
+            }
+        },
+        TRANSLATION_DOMAIN {
+            public String toString() {
+                return "translation_domain";
+            }
+        },
+        CLASS {
+            public String toString() {
+                return "class";
+            }
+        },
+        SERVICE {
+            public String toString() {
+                return "service";
+            }
+        },
+        FORM_TYPE {
+            public String toString() {
+                return "form_type";
+            }
+        }
+    }
+
     private static class RouteReferenceProvider implements AssistantReferenceProvider {
 
         @Override

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.assistant.reference;
 
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
+import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
 
 @Tag("method_parameter_settings")
 public class MethodParameterSetting {
@@ -12,6 +13,8 @@ public class MethodParameterSetting {
     private int indexParameter;
     private String contributorName;
     private String contributorData;
+
+    private AssistantPsiReferenceContributor assistantPsiReferenceContributor = null;
 
     public MethodParameterSetting() {
     }
@@ -26,6 +29,12 @@ public class MethodParameterSetting {
     public MethodParameterSetting(String callTo, String methodName, int indexParameter, String provider, String contributorName, String contributorTypeData) {
         this(callTo, methodName, indexParameter, provider);
         this.contributorName = contributorName;
+        this.contributorData = contributorTypeData;
+    }
+
+    public MethodParameterSetting(String callTo, String methodName, int indexParameter, DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM provider, DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM contributorName, String contributorTypeData) {
+        this(callTo, methodName, indexParameter, provider.toString());
+        this.contributorName = contributorName.toString();
         this.contributorData = contributorTypeData;
     }
 
@@ -83,5 +92,17 @@ public class MethodParameterSetting {
         return contributorData;
     }
 
+    public MethodParameterSetting withPsiReference(AssistantPsiReferenceContributor assistantPsiReferenceContributor) {
+        this.assistantPsiReferenceContributor = assistantPsiReferenceContributor;
+        return this;
+    }
+
+    public AssistantPsiReferenceContributor getAssistantPsiReferenceContributor() {
+        return assistantPsiReferenceContributor;
+    }
+
+    public boolean hasAssistantPsiReferenceContributor() {
+        return this.assistantPsiReferenceContributor != null;
+    }
 
 }

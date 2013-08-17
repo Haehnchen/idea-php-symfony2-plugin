@@ -74,6 +74,10 @@ public class AssistantReferenceUtil {
     @NotNull
     public static PsiReference[] getPsiReference(MethodParameterSetting methodParameterSetting, StringLiteralExpression psiElement) {
 
+        if(methodParameterSetting.hasAssistantPsiReferenceContributor()) {
+            return methodParameterSetting.getAssistantPsiReferenceContributor().getPsiReferences(psiElement);
+        }
+
         String ReferenceProvider = methodParameterSetting.getReferenceProviderName();
         for(AssistantReferenceProvider referenceProvider: DefaultReferenceProvider.DEFAULT_PROVIDERS) {
             if(referenceProvider.getAlias().equals(ReferenceProvider)) {

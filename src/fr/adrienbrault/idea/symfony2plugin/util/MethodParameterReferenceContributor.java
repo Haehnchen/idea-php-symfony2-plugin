@@ -9,9 +9,13 @@ import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.AssistantReferenceUtil;
+import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceContributor;
+import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -34,7 +38,10 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         return new PsiReference[0];
                     }
 
-                    ArrayList<MethodParameterSetting> configs = AssistantReferenceUtil.getMethodsParameterSettings(psiElement.getProject());
+                    ArrayList<MethodParameterSetting> configs = new ArrayList<MethodParameterSetting>();
+
+                    configs.addAll(AssistantReferenceUtil.getMethodsParameterSettings(psiElement.getProject()));
+                    configs.addAll(getInternalMethodParameterSetting());
 
                     ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
                     if (parameterList == null) {
@@ -64,6 +71,36 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
 
 
                     return psiReferences.toArray(new PsiReference[psiReferences.size()]);
+                }
+
+
+                private ArrayList<MethodParameterSetting> getInternalMethodParameterSetting() {
+                    ArrayList<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+
+                    methodParameterSettings.add(new MethodParameterSetting(
+                        "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface",
+                        "setDefaults",
+                        0,
+                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.TRANSLATION_DOMAIN,
+                        DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE,
+                        "translation_domain"
+                    ));
+
+                    methodParameterSettings.add(new MethodParameterSetting(
+                        "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface",
+                        "setDefaults",
+                        0,
+                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.TRANSLATION_DOMAIN,
+                        DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE,
+                        "data_class"
+                    ).withPsiReference(new AssistantPsiReferenceContributor() {
+                        @Override
+                        public PsiReference[] getPsiReferences(StringLiteralExpression psiElement) {
+                            return new PsiReference[]{ new EntityReference(psiElement, true)};
+                        }
+                    }));
+
+                    return methodParameterSettings;
                 }
 
             }

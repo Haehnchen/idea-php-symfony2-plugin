@@ -16,6 +16,24 @@ public class DefaultReferenceContributor {
         new AssistantReferenceProviderArrayKey()
     };
 
+    public enum DEFAULT_CONTRIBUTORS_ENUM {
+        PARAMETER {
+            public String toString() {
+                return "parameter";
+            }
+        },
+        ARRAY_VALUE {
+            public String toString() {
+                return "array_value";
+            }
+        },
+        ARRAY_KEY {
+            public String toString() {
+                return "array_key";
+            }
+        }
+    }
+
     private static class ParameterAssistantReferenceProvider implements AssistantReferenceContributor {
 
         @Override
@@ -25,7 +43,7 @@ public class DefaultReferenceContributor {
 
         @Override
         public String getAlias() {
-            return "parameter";
+            return DEFAULT_CONTRIBUTORS_ENUM.PARAMETER.toString();
         }
 
         @Override
@@ -40,7 +58,7 @@ public class DefaultReferenceContributor {
         }
     }
 
-    private static class AssistantReferenceProviderConfigArray implements AssistantReferenceContributor {
+    public static class AssistantReferenceProviderConfigArray implements AssistantReferenceContributor {
 
         @Override
         public boolean supportData() {
@@ -49,7 +67,7 @@ public class DefaultReferenceContributor {
 
         @Override
         public String getAlias() {
-            return "array_value";
+            return DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE.toString();
         }
 
         public boolean isContributedElement(PsiElement psiElement, MethodParameterSetting config) {
@@ -118,7 +136,7 @@ public class DefaultReferenceContributor {
 
         @Override
         public String getAlias() {
-            return "array_key";
+            return DEFAULT_CONTRIBUTORS_ENUM.ARRAY_KEY.toString();
         }
 
     }
