@@ -1,21 +1,22 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-public class ServiceReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
+public class ServiceReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private String serviceId;
 
@@ -27,10 +28,7 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
     public ServiceReference(@NotNull StringLiteralExpression element) {
         super(element);
 
-        serviceId = element.getText().substring(
-            element.getValueRange().getStartOffset(),
-            element.getValueRange().getEndOffset()
-        ); // Remove quotes
+        serviceId = element.getContents();
     }
 
     @NotNull
@@ -45,14 +43,6 @@ public class ServiceReference extends PsiReferenceBase<PsiElement> implements Ps
 
         List<ResolveResult> resolveResults = PhpElementsUtil.getClassInterfaceResolveResult(this.getElement().getProject(), serviceClass);
         return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
-    }
-
-    @Nullable
-    @Override
-    public PsiElement resolve() {
-        ResolveResult[] resolveResults = multiResolve(false);
-
-        return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
     }
 
     @NotNull

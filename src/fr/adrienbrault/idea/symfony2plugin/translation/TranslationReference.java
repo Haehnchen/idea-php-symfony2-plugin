@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
@@ -14,7 +17,7 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TranslationReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
+public class TranslationReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private String domainName = null;
     private StringLiteralExpression element;
@@ -36,12 +39,6 @@ public class TranslationReference extends PsiReferenceBase<PsiElement> implement
         }
 
         return results.toArray(new ResolveResult[results.size()]);
-    }
-
-    @Nullable
-    @Override
-    public PsiElement resolve() {
-        return null;
     }
 
     @NotNull

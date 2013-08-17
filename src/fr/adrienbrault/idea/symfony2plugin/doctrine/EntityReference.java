@@ -37,11 +37,7 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
 
     public EntityReference(@NotNull StringLiteralExpression element) {
         super(element);
-
-        entityName = element.getText().substring(
-                element.getValueRange().getStartOffset(),
-                element.getValueRange().getEndOffset()
-        );
+        entityName = element.getContents();
     }
 
     @Nullable
