@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.18</version>
+    <version>0.9.19</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -83,6 +83,14 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.19</h2>
+<ul>
+    <li>Many improvements in template detection</li>
+    <li>Support for translation_domain inside OptionsResolverInterface:setDefaults</li>
+    <li>Hash tag docblocks are now searched on parent methods not only in current file</li>
+    <li>New provider for form options</li>
+</ul>
 
 <h2>0.9.18</h2>
 <ul>

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+### 0.9.19
+* Many improvements in template detection
+* Support for translation_domain inside OptionsResolverInterface:setDefaults
+* Hash tag docblocks are now searched on parent methods not only in current file
+* New provider for form options
+
 ### 0.9.18
 * Directly goto into form options definition not only to method
 * Add form child name (underscore method) support on form builder resolve from setDefaultOptions:data_class
