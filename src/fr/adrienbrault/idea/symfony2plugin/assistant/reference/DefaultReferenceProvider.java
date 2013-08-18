@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.form.FormDefaultOptionsKeyReference;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
@@ -20,7 +21,8 @@ public class DefaultReferenceProvider {
         new TranslationDomainReferenceProvider(),
         new PhpClassReferenceProvider(),
         new ServiceReferenceProvider(),
-        new FormTypeReferenceProvider()
+        new FormTypeReferenceProvider(),
+        new FormOptionReferenceProvider(),
     };
 
     public enum DEFAULT_PROVIDER_ENUM {
@@ -57,6 +59,11 @@ public class DefaultReferenceProvider {
         FORM_TYPE {
             public String toString() {
                 return "form_type";
+            }
+        },
+        FORM_OPTION {
+            public String toString() {
+                return "form_option";
             }
         }
     }
@@ -186,4 +193,23 @@ public class DefaultReferenceProvider {
             return "FormType";
         }
     }
+
+    private static class FormOptionReferenceProvider implements AssistantReferenceProvider {
+
+        @Override
+        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
+            return new FormDefaultOptionsKeyReference(psiElement, "form");
+        }
+
+        @Override
+        public String getAlias() {
+            return "form_option";
+        }
+
+        @Override
+        public String getDocBlockParamAlias() {
+            return null;
+        }
+    }
+
 }

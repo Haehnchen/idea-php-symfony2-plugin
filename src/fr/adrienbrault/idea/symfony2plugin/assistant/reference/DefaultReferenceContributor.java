@@ -5,6 +5,8 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
+import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 public class DefaultReferenceContributor {
@@ -122,6 +124,22 @@ public class DefaultReferenceContributor {
                         }
 
                     }
+                }
+
+            }
+
+            // on array creation key dont have value, so provide completion here also
+            // array('foo' => 'bar', '<test>')
+            if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).accepts(psiElement.getContext())) {
+                PsiElement arrayKey = psiElement.getContext();
+                if(arrayKey != null) {
+                    PsiElement arrayCreationExpression = arrayKey.getContext();
+                    if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                        if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == config.getIndexParameter()) {
+                            return true;
+                        }
+                    }
+
                 }
 
             }
