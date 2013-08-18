@@ -10,9 +10,11 @@ import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
+import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -265,5 +267,33 @@ public class PhpElementsUtil {
 
         return null;
     }
+
+
+    public static Method[] getImplementedMethods(@NotNull Method method) {
+        ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<Method>());
+        return items.toArray(new Method[items.size()]);
+    }
+
+
+    private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, @NotNull Method method, ArrayList<Method> implementedMethods) {
+        if (phpClass == null) {
+            return implementedMethods;
+        }
+
+        Method[] methods = phpClass.getOwnMethods();
+        for (Method ownMethod : methods) {
+            if (PhpLangUtil.equalsMethodNames(ownMethod.getName(), method.getName())) {
+                implementedMethods.add(ownMethod);
+            }
+        }
+
+        for(PhpClass interfaceClass: phpClass.getImplementedInterfaces()) {
+            getImplementedMethods(interfaceClass, method, implementedMethods);
+        }
+
+        getImplementedMethods(phpClass.getSuperClass(), method, implementedMethods);
+
+        return implementedMethods;
+    }    
 
 }

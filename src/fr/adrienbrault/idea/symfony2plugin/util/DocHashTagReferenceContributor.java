@@ -16,8 +16,11 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReferenc
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+
 
 public class DocHashTagReferenceContributor extends PsiReferenceContributor {
+
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(
@@ -36,48 +39,59 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    PhpDocParamTag phpDocParamTag = docTagHashing.getPhpDocParamTag();
+                    ArrayList<PhpDocParamTag> phpDocParamTags = docTagHashing.getPhpDocParamTags();
+
+                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
+
+                    int i = 0;
+                    for(PhpDocParamTag phpDocParamTag: phpDocParamTags) {
+                        this.attachReferences((StringLiteralExpression) psiElement, phpDocParamTag, docTagHashing.getParameters().get(i++), docTagHashing.getParameterList() , psiReferences);
+                    }
+
+                    return psiReferences.toArray(new PsiReference[psiReferences.size()]);
+
+                }
+
+                private void attachReferences(StringLiteralExpression psiElement, PhpDocParamTag phpDocParamTag, Parameter[] parameters, ParameterList parameterList, ArrayList<PsiReference> psiReferences) {
 
                     if(phpDocParamTag.getTagValue().contains("#Entity")) {
-                        return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement)};
+                        psiReferences.add(new EntityReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#Service")) {
-                        return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement)};
+                        psiReferences.add(new ServiceReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#TranslationDomain")) {
-                        return new PsiReference[]{ new TranslationDomainReference((StringLiteralExpression) psiElement)};
+                        psiReferences.add(new TranslationDomainReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#Template")) {
-                        return new PsiReference[]{ new TemplateReference((StringLiteralExpression) psiElement)};
+                        psiReferences.add(new TemplateReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#Route")) {
-                        return new PsiReference[]{ new RouteReference((StringLiteralExpression) psiElement)};
+                        psiReferences.add(new RouteReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#Class")) {
-                        return new PsiReference[]{ new PhpClassReference((StringLiteralExpression) psiElement, true)};
+                        psiReferences.add(new PhpClassReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#TranslationKey")) {
 
                         String filterDomain = "messages";
 
-                        int domainKey = getMatchingTranslationDomain(docTagHashing.getParameters());
+                        int domainKey = getMatchingTranslationDomain(parameters);
                         if(domainKey >= 0) {
-                            String keyParameter = PsiElementUtils.getMethodParameterAt(docTagHashing.getParameterList(), domainKey);
+                            String keyParameter = PsiElementUtils.getMethodParameterAt(parameterList, domainKey);
                             if(keyParameter != null) {
                                 filterDomain = keyParameter;
                             }
                         }
 
-                        return new PsiReference[]{ new TranslationReference((StringLiteralExpression) psiElement, filterDomain)};
+                        psiReferences.add(new TranslationReference(psiElement, filterDomain));
                     }
-
-                    return new PsiReference[0];
 
                 }
 
@@ -103,24 +117,24 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
     public class DocTagHashing {
 
         private PsiElement psiElement;
-        private PhpDocParamTag phpDocParamTag;
+        private ArrayList<PhpDocParamTag> phpDocParamTags;
 
-        private Parameter[] parameters;
+        private ArrayList<Parameter[]> parameters = new ArrayList<Parameter[]>();
         private ParameterList parameterList;
 
         public DocTagHashing(PsiElement psiElement) {
             this.psiElement = psiElement;
         }
 
-        private PhpDocParamTag getPhpDocParamTag() {
-            return phpDocParamTag;
+        private ArrayList<PhpDocParamTag> getPhpDocParamTags() {
+            return phpDocParamTags;
         }
 
         private ParameterList getParameterList() {
             return parameterList;
         }
 
-        private Parameter[] getParameters() {
+        private ArrayList<Parameter[]> getParameters() {
             return parameters;
         }
 
@@ -153,21 +167,31 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
             }
 
             Method method = (Method) resolvedReference;
-            this.parameters = method.getParameters();
-            if(this.parameters.length -1 < currentIndex.getIndex()) {
+            Parameter[] methodParameter = method.getParameters();
+            if(methodParameter.length -1 < currentIndex.getIndex()) {
                 return false;
             }
 
-            Parameter parameter = this.parameters[currentIndex.getIndex()];
-            PhpDocParamTag phpDocParamTag = parameter.getDocTag();
+            this.phpDocParamTags = new ArrayList<PhpDocParamTag>();
+            Method[] implementedMethods = PhpElementsUtil.getImplementedMethods(method);
 
-            if(phpDocParamTag == null) {
-                return false;
+            for(Method implementedMethod: implementedMethods) {
+                Parameter[] implementedParameters = implementedMethod.getParameters();
+                if(!(implementedParameters.length -1 < currentIndex.getIndex())) {
+                    Parameter parameter = implementedParameters[currentIndex.getIndex()];
+                    PsiElement implementedParameterList = parameter.getContext();
+
+                    if(implementedParameterList instanceof ParameterList) {
+                        PhpDocParamTag phpDocParamTag = parameter.getDocTag();
+                        if(phpDocParamTag != null) {
+                            this.phpDocParamTags.add(phpDocParamTag);
+                            this.parameters.add(implementedParameters);
+                        }
+                    }
+                }
             }
 
-            this.phpDocParamTag = phpDocParamTag;
-
-            return true;
+            return phpDocParamTags.size() > 0;
         }
 
     }
