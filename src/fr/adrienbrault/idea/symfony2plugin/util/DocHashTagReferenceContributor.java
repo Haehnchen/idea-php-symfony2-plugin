@@ -7,9 +7,12 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
+import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
@@ -54,6 +57,13 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
 
                 private void attachReferences(StringLiteralExpression psiElement, PhpDocParamTag phpDocParamTag, Parameter[] parameters, ParameterList parameterList, ArrayList<PsiReference> psiReferences) {
 
+                    /* @TODO: use this
+                       for(AssistantReferenceProvider assistantReferenceProvider: DefaultReferenceProvider.DEFAULT_PROVIDERS) {
+                        if(phpDocParamTag.getTagValue().contains("#" + assistantReferenceProvider.getDocBlockParamAlias())) {
+                            psiReferences.add(assistantReferenceProvider.getPsiReference(psiElement, null));
+                        }
+                    } */
+
                     if(phpDocParamTag.getTagValue().contains("#Entity")) {
                         psiReferences.add(new EntityReference(psiElement));
                     }
@@ -75,7 +85,11 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#Class")) {
-                        psiReferences.add(new PhpClassReference(psiElement));
+                        psiReferences.add(new PhpClassReference(psiElement, true));
+                    }
+
+                    if(phpDocParamTag.getTagValue().contains("#FormType")) {
+                        psiReferences.add(new FormTypeReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#TranslationKey")) {
