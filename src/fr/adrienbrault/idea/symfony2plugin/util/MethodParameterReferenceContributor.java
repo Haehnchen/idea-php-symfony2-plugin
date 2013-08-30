@@ -90,7 +90,7 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface",
                         "setDefaults",
                         0,
-                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.TRANSLATION_DOMAIN,
+                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.ENTITY,
                         DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE,
                         "data_class"
                     ).withPsiReference(new AssistantPsiReferenceContributor() {

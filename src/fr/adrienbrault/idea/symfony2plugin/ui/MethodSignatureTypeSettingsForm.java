@@ -1,0 +1,238 @@
+package fr.adrienbrault.idea.symfony2plugin.ui;
+
+import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.Project;
+import com.intellij.ui.AnActionButton;
+import com.intellij.ui.AnActionButtonRunnable;
+import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.table.TableView;
+import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.ElementProducer;
+import com.intellij.util.ui.ListTableModel;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MethodSignatureTypeSettingsForm  implements Configurable {
+    private JPanel panel1;
+    private JPanel panelConfigTableView;
+    private JButton buttonHelp;
+
+    private TableView<MethodSignatureSetting> tableView;
+    private Project project;
+    private boolean changed = false;
+    private ListTableModel<MethodSignatureSetting> modelList;
+
+    public MethodSignatureTypeSettingsForm(Project project) {
+        this.project = project;
+
+        this.tableView = new TableView<MethodSignatureSetting>();
+        this.modelList = new ListTableModel<MethodSignatureSetting>(
+            new CallToColumn(),
+            new MethodColumn(),
+            new IndexColumn(),
+            new ProviderColumn()
+        );
+
+        this.attachItems();
+
+        this.tableView.setModelAndUpdateColumns(this.modelList);
+        this.tableView.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                MethodSignatureTypeSettingsForm.this.changed = true;
+            }
+        });
+
+        /* buttonHelp.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL + "extension/method_parameter.html");
+            }
+        }); */
+
+    }
+
+    private void attachItems() {
+
+        if(this.getSettings().methodSignatureSettings == null) {
+            return;
+        }
+
+        for (MethodSignatureSetting methodParameterSetting : this.getSettings().methodSignatureSettings) {
+            this.modelList.addRow(methodParameterSetting);
+        }
+    }
+
+    @Nls
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getHelpTopic() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public JComponent createComponent() {
+        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<MethodSignatureSetting>() {
+            @Override
+            public MethodSignatureSetting createElement() {
+                //IdeFocusManager.getInstance(TwigSettingsForm.this.project).requestFocus(TwigNamespaceDialog.getWindows(), true);
+                return null;
+            }
+
+            @Override
+            public boolean canCreateElement() {
+                return true;
+            }
+        });
+
+        tablePanel.setEditAction(new AnActionButtonRunnable() {
+            @Override
+            public void run(AnActionButton anActionButton) {
+                MethodSignatureTypeSettingsForm.this.openTwigPathDialog(MethodSignatureTypeSettingsForm.this.tableView.getSelectedObject());
+            }
+        });
+
+
+        tablePanel.setAddAction(new AnActionButtonRunnable() {
+            @Override
+            public void run(AnActionButton anActionButton) {
+                MethodSignatureTypeSettingsForm.this.openTwigPathDialog(null);
+            }
+        });
+
+        tablePanel.disableUpAction();
+        tablePanel.disableDownAction();
+
+        this.panelConfigTableView.add(tablePanel.createPanel());
+
+        return this.panel1;
+    }
+
+    @Override
+    public boolean isModified() {
+        return this.changed;
+    }
+
+    @Override
+    public void apply() throws ConfigurationException {
+        List<MethodSignatureSetting> methodParameterSettings = new ArrayList<MethodSignatureSetting>();
+
+        for(MethodSignatureSetting methodSignatureSetting :this.tableView.getListTableModel().getItems()) {
+            methodParameterSettings.add(methodSignatureSetting);
+        }
+
+        getSettings().methodSignatureSettings = methodParameterSettings;
+        this.changed = false;
+    }
+
+    private Settings getSettings() {
+        return Settings.getInstance(this.project);
+    }
+
+    private void resetList() {
+        // clear list, easier?
+        while(this.modelList.getRowCount() > 0) {
+            this.modelList.removeRow(0);
+        }
+
+    }
+
+    @Override
+    public void reset() {
+        this.resetList();
+        this.attachItems();
+        this.changed = false;
+    }
+
+    @Override
+    public void disposeUIResources() {
+
+    }
+
+    private class CallToColumn extends ColumnInfo<MethodSignatureSetting, String> {
+
+        public CallToColumn() {
+            super("CallTo");
+        }
+
+        @Nullable
+        @Override
+        public String valueOf(MethodSignatureSetting methodParameterSetting) {
+            return methodParameterSetting.getCallTo();
+        }
+    }
+
+    private class MethodColumn extends ColumnInfo<MethodSignatureSetting, String> {
+
+        public MethodColumn() {
+            super("Method");
+        }
+
+        @Nullable
+        @Override
+        public String valueOf(MethodSignatureSetting methodSignatureSetting) {
+            return methodSignatureSetting.getMethodName();
+        }
+    }
+
+    private class IndexColumn extends ColumnInfo<MethodSignatureSetting, Integer> {
+
+        public IndexColumn() {
+            super("Index");
+        }
+
+        @Nullable
+        @Override
+        public Integer valueOf(MethodSignatureSetting methodParameterSetting) {
+            return methodParameterSetting.getIndexParameter();
+        }
+    }
+
+    private class ProviderColumn extends ColumnInfo<MethodSignatureSetting, String> {
+
+        public ProviderColumn() {
+            super("Provider");
+        }
+
+        @Nullable
+        @Override
+        public String valueOf(MethodSignatureSetting methodParameterSetting) {
+            return methodParameterSetting.getReferenceProviderName();
+        }
+    }
+
+    private void openTwigPathDialog(@Nullable MethodSignatureSetting methodParameterSetting) {
+        MethodSignatureTypeDialog twigNamespaceDialog;
+        if(methodParameterSetting == null) {
+            twigNamespaceDialog = new MethodSignatureTypeDialog(project, this.tableView);
+        } else {
+            twigNamespaceDialog = new MethodSignatureTypeDialog(project, this.tableView, methodParameterSetting);
+        }
+
+        Dimension dim = new Dimension();
+        dim.setSize(500, 190);
+        twigNamespaceDialog.setTitle("MethodSignatureSetting");
+        twigNamespaceDialog.setMinimumSize(dim);
+        twigNamespaceDialog.pack();
+        twigNamespaceDialog.setLocationRelativeTo(this.panel1);
+
+        twigNamespaceDialog.setVisible(true);
+    }
+}

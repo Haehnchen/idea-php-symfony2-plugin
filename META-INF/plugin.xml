@@ -286,10 +286,17 @@
                              id="Symfony2.MethodReferenceSettingsForm"
                 />
 
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.MethodSignatureTypeSettingsForm"
+                             displayName="Type Provider"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony2.MethodSignatureTypeSettingsForm"
+                />
+
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindTypeProvider"/>
+        <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
 
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServiceReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
