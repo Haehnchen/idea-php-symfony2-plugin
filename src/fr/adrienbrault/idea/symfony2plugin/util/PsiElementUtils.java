@@ -36,7 +36,7 @@ public class PsiElementUtils {
         value = value.replace("IntellijIdeaRulezzz", "");
         value = value.replace("IntellijIdeaRulezzz ", "");
 
-        return value;
+        return value.trim();
     }
 
     public static String getMethodParameterAt(ParameterList parameterList, int index) {

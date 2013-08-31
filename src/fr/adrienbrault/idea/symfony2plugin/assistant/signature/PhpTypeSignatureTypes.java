@@ -45,7 +45,7 @@ public class PhpTypeSignatureTypes {
 
         @Nullable
         public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
-            return PhpIndex.getInstance(project).getAnyByFQN(parameter);
+            return PhpIndex.getInstance(project).getAnyByFQN(parameter.startsWith("\\") ? parameter : "\\" + parameter);
         }
 
         @NotNull

@@ -23,6 +23,7 @@ public class DefaultReferenceProvider {
         new ServiceReferenceProvider(),
         new FormTypeReferenceProvider(),
         new FormOptionReferenceProvider(),
+        new PhpInterfaceReferenceProvider(),
     };
 
     public enum DEFAULT_PROVIDER_ENUM {
@@ -155,6 +156,24 @@ public class DefaultReferenceProvider {
         @Override
         public String getDocBlockParamAlias() {
             return "Class";
+        }
+    }
+
+    private static class PhpInterfaceReferenceProvider implements AssistantReferenceProvider {
+
+        @Override
+        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
+            return new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(false);
+        }
+
+        @Override
+        public String getAlias() {
+            return "interface";
+        }
+
+        @Override
+        public String getDocBlockParamAlias() {
+            return "Interface";
         }
     }
 

@@ -88,6 +88,10 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                         psiReferences.add(new PhpClassReference(psiElement, true));
                     }
 
+                    if(phpDocParamTag.getTagValue().contains("#Interface")) {
+                        psiReferences.add(new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(false));
+                    }
+
                     if(phpDocParamTag.getTagValue().contains("#FormType")) {
                         psiReferences.add(new FormTypeReference(psiElement));
                     }

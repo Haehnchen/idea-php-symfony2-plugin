@@ -111,6 +111,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
         }
 
         ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        phpNamedElements.add(phpNamedElement);
 
         PhpTypeSignatureInterface[] signatureTypeProviders = PhpTypeSignatureTypes.DEFAULT_PROVIDER;
 
@@ -125,11 +126,8 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
             }
         }
 
-        if(phpNamedElements.size() > 0) {
-            return new ArrayList<PhpNamedElement>(phpNamedElements);
-        }
-
-        return null;
+        // not good but we need return any previous types: null clears all types
+        return new ArrayList<PhpNamedElement>(phpNamedElements);
     }
 
 }
