@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -30,12 +31,13 @@ public class AnnotationCompletionContributor extends CompletionContributor {
                             return;
                         }
 
-                        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-                        for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
+                        Map<String, PsiFile> twigFilesByName = TwigHelper.getTemplateFilesByName(parameters.getPosition().getProject());
+                        for (Map.Entry<String, PsiFile> entry : twigFilesByName.entrySet()) {
                             resultSet.addElement(
-                                    new TemplateLookupElement(entry.getKey(), entry.getValue(), parameters.getPosition() , AnnotationQuoteInsertHandler.getInstance())
+                                new TemplateLookupElement(entry.getKey(), entry.getValue(), parameters.getPosition() , AnnotationQuoteInsertHandler.getInstance())
                             );
                         }
+
                     }
                 }
         );

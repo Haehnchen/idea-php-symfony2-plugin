@@ -8,6 +8,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
@@ -28,9 +29,8 @@ import java.util.Map;
  */
 public class TwigHelper {
 
-    synchronized public static Map<String, TwigFile> getTwigFilesByName(Project project) {
-
-        Map<String, TwigFile> results = new HashMap<String, TwigFile>();
+    synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
+        Map<String, PsiFile> results = new HashMap<String, PsiFile>();
         ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
 
         ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
@@ -40,7 +40,7 @@ public class TwigHelper {
             if(twigPath.isEnabled()) {
                 VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
                 if(virtualDirectoryFile != null) {
-                    TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath);
+                    TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
                     fileIndex.iterateContentUnderDirectory(virtualDirectoryFile, twigPathContentIterator);
                     results.putAll(twigPathContentIterator.getResults());
                 }
@@ -49,7 +49,21 @@ public class TwigHelper {
         }
 
         return results;
+    }
 
+    synchronized public static Map<String, TwigFile> getTwigFilesByName(Project project) {
+        Map<String, TwigFile> results = new HashMap<String, TwigFile>();
+        for(Map.Entry<String, PsiFile> entry: getTemplateFilesByName(project, true, true).entrySet()) {
+            if(entry.getValue() instanceof TwigFile) {
+                results.put(entry.getKey(), (TwigFile) entry.getValue());
+            }
+        }
+
+        return results;
+    }
+
+    synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project) {
+        return getTemplateFilesByName(project, true, true);
     }
 
     @Nullable
@@ -83,7 +97,7 @@ public class TwigHelper {
             templateName = templateName.substring(0, lastDoublePoint) + "/" + subFolder + ":" + file;
         }
 
-        Map<String, TwigFile> twigFiles = TwigHelper.getTwigFilesByName(project);
+        Map<String, PsiFile> twigFiles = TwigHelper.getTemplateFilesByName(project);
         if(!twigFiles.containsKey(templateName)) {
             return new PsiElement[0];
         }

@@ -1,10 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiPolyVariantReferenceBase;
-import com.intellij.psi.ResolveResult;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.util.Iconable;
+import com.intellij.psi.*;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -31,8 +30,8 @@ public class TemplateReference extends PsiPolyVariantReferenceBase<PsiElement> {
     public Object[] getVariants() {
         List<LookupElement> results = new ArrayList<LookupElement>();
 
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(getElement().getProject());
-        for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
+        Map<String, PsiFile> PsiFileMap = TwigHelper.getTemplateFilesByName(getElement().getProject());
+        for (Map.Entry<String, PsiFile> entry : PsiFileMap.entrySet()) {
             results.add(
                 new TemplateLookupElement(entry.getKey(), entry.getValue())
             );

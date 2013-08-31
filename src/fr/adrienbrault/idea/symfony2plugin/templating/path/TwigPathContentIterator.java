@@ -4,8 +4,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.jetbrains.twig.TwigFile;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 
 import java.util.HashMap;
@@ -16,16 +17,20 @@ public class TwigPathContentIterator implements ContentIterator {
     private TwigPath twigPath;
     private Project project;
 
-    private Map<String, TwigFile> results = new HashMap<String, TwigFile>();
+    private Map<String, PsiFile> results = new HashMap<String, PsiFile>();
+
+    private boolean withPhp = false;
+    private boolean withTwig = true;
 
     public TwigPathContentIterator(Project project, TwigPath twigPath) {
         this.twigPath = twigPath;
         this.project = project;
-
     }
 
     public boolean processFile(VirtualFile virtualFile) {
-        if(!(virtualFile.getFileType() instanceof TwigFileType)) {
+
+        // @TODO make file types more dynamically like eg js
+        if(!this.isProcessable(virtualFile)) {
             return true;
         }
 
@@ -69,13 +74,36 @@ public class TwigPathContentIterator implements ContentIterator {
         }
 
 
-        TwigFile twigFile = (TwigFile) PsiManager.getInstance(this.project).findFile(virtualFile);
-        this.results.put(templateFinalName, twigFile);
+        PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
+        this.results.put(templateFinalName, psiFile);
 
         return true;
     }
 
-    public Map<String, TwigFile> getResults() {
+    private boolean isProcessable(VirtualFile virtualFile) {
+
+        if(withTwig && virtualFile.getFileType() instanceof TwigFileType) {
+            return true;
+        }
+
+        if(withPhp && virtualFile.getFileType() instanceof PhpFileType) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public TwigPathContentIterator setWithPhp(boolean withPhp) {
+        this.withPhp = withPhp;
+        return this;
+    }
+
+    public TwigPathContentIterator setWithTwig(boolean withTwig) {
+        this.withTwig = withTwig;
+        return this;
+    }
+
+    public Map<String, PsiFile> getResults() {
         return results;
     }
 }

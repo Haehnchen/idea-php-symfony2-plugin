@@ -12,9 +12,6 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.PhpTypeSignatureInterface;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.PhpTypeSignatureTypes;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

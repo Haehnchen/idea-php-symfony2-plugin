@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.ui.FilterComponent;
 import com.intellij.ui.SimpleColoredComponent;
@@ -108,8 +109,8 @@ public class Symfony2SearchForm {
         }
 
         if(lookupElement instanceof TemplateLookupElement) {
-            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(this.project);
-            TwigFile twigFile = twigFilesByName.get(lookupElement.getLookupString());
+            Map<String, PsiFile> twigFilesByName = TwigHelper.getTemplateFilesByName(this.project);
+            PsiFile twigFile = twigFilesByName.get(lookupElement.getLookupString());
             if (null != twigFile) {
                psiElement = twigFile;
             }
@@ -153,8 +154,8 @@ public class Symfony2SearchForm {
         }
 
         if(this.toggleTemplate.isSelected()) {
-            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(this.project);
-            for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
+            Map<String, PsiFile> twigFilesByName = TwigHelper.getTemplateFilesByName(this.project);
+            for (Map.Entry<String, PsiFile> entry : twigFilesByName.entrySet()) {
                 if(entry.getKey().toLowerCase().contains(filter)) {
                     items.add(new TemplateLookupElement(entry.getKey(), entry.getValue()));
                 }

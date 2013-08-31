@@ -4,8 +4,10 @@ import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,18 +18,23 @@ import org.jetbrains.annotations.Nullable;
 public class TemplateLookupElement extends LookupElement {
 
     private String templateName;
-    private TwigFile twigFile;
+    private PsiFile twigFile;
     private PsiElement psiElement = null;
 
     @Nullable
     private InsertHandler<LookupElement> insertHandler = null;
 
+    @Deprecated
     public TemplateLookupElement(String templateName, TwigFile twigFile) {
-        this.templateName = templateName;
-        this.twigFile = twigFile;
+        this(templateName, (PsiFile) twigFile);
     }
 
-    public TemplateLookupElement(String templateName, TwigFile twigFile, PsiElement psiElement, InsertHandler<LookupElement> insertHandler) {
+    public TemplateLookupElement(String templateName, PsiFile psiFile) {
+        this.templateName = templateName;
+        this.twigFile = psiFile;
+    }
+
+    public TemplateLookupElement(String templateName, PsiFile twigFile, PsiElement psiElement, InsertHandler<LookupElement> insertHandler) {
         this.templateName = templateName;
         this.twigFile = twigFile;
         this.insertHandler = insertHandler;
@@ -53,7 +60,7 @@ public class TemplateLookupElement extends LookupElement {
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
-        presentation.setIcon(icons.PhpIcons.TwigFileIcon);
+        presentation.setIcon(this.twigFile.getIcon(Iconable.ICON_FLAG_VISIBILITY));
         presentation.setTypeText(VfsUtil.getRelativePath(twigFile.getContainingDirectory().getVirtualFile(), twigFile.getProject().getBaseDir(), '/'));
         presentation.setTypeGrayed(true);
     }
