@@ -40,6 +40,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean objectRepositoryResultTypeProvider = true;
     public boolean objectManagerFindTypeProvider = true;
 
+    public boolean objectSignatureTypeProvider = false;
+
     public boolean twigAnnotateTemplate = true;
     public boolean twigAnnotateAsset = true;
     public boolean twigAnnotateAssetTags = true;

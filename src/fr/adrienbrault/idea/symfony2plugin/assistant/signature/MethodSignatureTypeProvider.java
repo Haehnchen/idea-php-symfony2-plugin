@@ -35,7 +35,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
     @Override
     public String getType(PsiElement e) {
 
-        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled) {
+        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).objectSignatureTypeProvider) {
             return null;
         }
 

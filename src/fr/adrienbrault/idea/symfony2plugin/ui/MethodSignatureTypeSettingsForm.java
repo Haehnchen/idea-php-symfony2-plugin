@@ -11,7 +11,9 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,12 +21,15 @@ import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MethodSignatureTypeSettingsForm  implements Configurable {
     private JPanel panel1;
     private JPanel panelConfigTableView;
+    private JCheckBox enableCustomSignatureTypesCheckBox;
     private JButton buttonHelp;
 
     private TableView<MethodSignatureSetting> tableView;
@@ -53,14 +58,23 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
             }
         });
 
-        /* buttonHelp.addMouseListener(new MouseAdapter() {
+        buttonHelp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL + "extension/method_parameter.html");
+                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL + "extension/signature_type.html");
             }
-        }); */
+        });
 
+        enableCustomSignatureTypesCheckBox.setSelected(getSettings().objectSignatureTypeProvider);
+
+        enableCustomSignatureTypesCheckBox.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                MethodSignatureTypeSettingsForm.this.changed = true;
+            }
+        });
     }
 
     private void attachItems() {
@@ -139,6 +153,8 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
         }
 
         getSettings().methodSignatureSettings = methodParameterSettings;
+        getSettings().objectSignatureTypeProvider = enableCustomSignatureTypesCheckBox.isSelected();
+
         this.changed = false;
     }
 
