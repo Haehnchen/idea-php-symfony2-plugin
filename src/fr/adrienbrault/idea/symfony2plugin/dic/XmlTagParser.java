@@ -6,10 +6,11 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class XmlTagParser extends AbstractServiceParser {
 
-    protected ArrayList<String> list = new ArrayList<String>();
+    protected HashSet<String> list = new HashSet<String>();
 
     @Override
     public String getXPathFilter() {
@@ -30,7 +31,7 @@ public class XmlTagParser extends AbstractServiceParser {
 
     }
 
-    public ArrayList<String> get() {
+    public HashSet<String> get() {
         return list;
     }
 

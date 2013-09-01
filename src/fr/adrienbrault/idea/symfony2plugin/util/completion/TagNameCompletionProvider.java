@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -19,8 +20,8 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         }
 
         XmlTagParser xmlEventParser = ServiceXmlParserFactory.getInstance(completionParameters.getPosition().getProject(), XmlTagParser.class);
-        for(String event : xmlEventParser.get()) {
-            completionResultSet.addElement(LookupElementBuilder.create(event));
+        for(String tag: xmlEventParser.get()) {
+            completionResultSet.addElement(new ParameterLookupElement(tag));
         }
 
     }

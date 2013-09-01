@@ -14,17 +14,11 @@ import java.util.List;
 
 public class TagReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String serviceId;
-
-    public TagReference(@NotNull PsiElement element, String ServiceId) {
-        super(element);
-        serviceId = ServiceId;
-    }
+    private String tagName;
 
     public TagReference(@NotNull StringLiteralExpression element) {
         super(element);
-
-        serviceId = element.getContents();
+        tagName = element.getContents();
     }
 
     @NotNull
@@ -41,8 +35,8 @@ public class TagReference extends PsiPolyVariantReferenceBase<PsiElement> {
         List<LookupElement> results = new ArrayList<LookupElement>();
 
         XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(this.getElement().getProject(), XmlTagParser.class);
-        for(String event : xmlTagParser.get()) {
-            results.add(LookupElementBuilder.create(event));
+        for(String tag : xmlTagParser.get()) {
+            results.add(new ParameterLookupElement(tag));
         }
 
         return results.toArray();
