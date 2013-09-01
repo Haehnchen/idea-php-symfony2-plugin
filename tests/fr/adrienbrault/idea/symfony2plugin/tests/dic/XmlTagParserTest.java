@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 public class XmlTagParserTest extends Assert {
 
@@ -16,7 +16,7 @@ public class XmlTagParserTest extends Assert {
 
         XmlTagParser xmlTagParser = new XmlTagParser();
         xmlTagParser.parser(testFile);
-        ArrayList<String> tags = xmlTagParser.get();
+        HashSet<String> tags = xmlTagParser.get();
 
         assertTrue(tags.contains("twig.extension"));
         assertTrue(tags.contains("twig.extension.reloaded"));
