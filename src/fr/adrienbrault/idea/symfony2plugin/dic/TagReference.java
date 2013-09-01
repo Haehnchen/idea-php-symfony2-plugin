@@ -1,11 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +24,20 @@ public class TagReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        // @TODO we can provide tagged classes here
-        return new ResolveResult[]{};
+
+        XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(this.getElement().getProject(), XmlTagParser.class);
+        ArrayList<String> taggedClasses = xmlTagParser.getTaggedClass(this.tagName);
+
+        if(taggedClasses == null) {
+            return new ResolveResult[]{};
+        }
+
+        List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
+        for(String taggedClass: taggedClasses) {
+            resolveResults.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), taggedClass));
+        }
+
+        return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
     }
 
     @NotNull

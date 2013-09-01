@@ -152,6 +152,11 @@ public class PhpElementsUtil {
     }
 
     @Nullable
+    static public PhpClass getClass(Project project, String className) {
+        return getClass(PhpIndex.getInstance(project), className);
+    }
+
+    @Nullable
     static public PhpClass getClass(PhpIndex phpIndex, String className) {
         Collection<PhpClass> classes = phpIndex.getClassesByFQN(className);
         return classes.isEmpty() ? null : classes.iterator().next();

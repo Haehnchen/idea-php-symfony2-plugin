@@ -3,19 +3,26 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,6 +46,13 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
         if(YamlElementPatternHelper.getSingleLineScalarKey("resource").accepts(psiElement)) {
             this.getResourceGoto(psiElement, results);
+        }
+
+        if(StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("name")
+        ).accepts(psiElement)) {
+            this.getTagClassesGoto(psiElement, results);
         }
 
         return results.toArray(new PsiElement[results.size()]);
@@ -73,6 +87,21 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), text);
         if(method != null) {
             results.add(method);
+        }
+    }
+
+    private void getTagClassesGoto(PsiElement psiElement, List<PsiElement> results) {
+        String tagName = PsiElementUtils.trimQuote(psiElement.getText());
+
+        XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlTagParser.class);
+        ArrayList<String> taggedClasses = xmlTagParser.getTaggedClass(tagName);
+
+        if(taggedClasses == null) {
+            return;
+        }
+
+        for(String taggedClass: taggedClasses) {
+            Collections.addAll(results, PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), taggedClass));
         }
     }
 
