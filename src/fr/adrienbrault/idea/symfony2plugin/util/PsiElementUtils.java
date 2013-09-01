@@ -12,6 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
+import com.jetbrains.php.lang.psi.elements.ParameterListOwner;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.Nullable;
@@ -79,8 +80,7 @@ public class PsiElementUtils {
         }
 
         ParameterList parameterList = (ParameterList) psiElement.getContext();
-
-        if (!(parameterList.getContext() instanceof MethodReference)) {
+        if (!(parameterList.getContext() instanceof ParameterListOwner)) {
             return null;
         }
 

@@ -17,7 +17,7 @@ import java.util.*;
 
 public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
 
-    private ArrayList<List<String>> oneOfCall = new ArrayList<List<String>>();
+    private ArrayList<Call> oneOfCall = new ArrayList<Call>();
     private Class referenceClass;
 
     public PhpStringLiteralExpressionReference(Class referenceClass) {
@@ -25,9 +25,12 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
     }
 
     public PhpStringLiteralExpressionReference addCall(String className, String methodName) {
-        String[] countries = {className, methodName};
-        List<String> list = Arrays.asList(countries);
-        this.oneOfCall.add(list);
+        this.oneOfCall.add(new Call(className, methodName, 0));
+        return this;
+    }
+
+    public PhpStringLiteralExpressionReference addCall(String className, String methodName, int index) {
+        this.oneOfCall.add(new Call(className, methodName, index));
         return this;
     }
 
@@ -43,12 +46,11 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
         if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
             return new PsiReference[0];
         }
-        MethodReference method = (MethodReference) parameterList.getContext();
 
+        MethodReference method = (MethodReference) parameterList.getContext();
         Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-        for(List<String> list: this.oneOfCall) {
-            String[] callItem = list.toArray(new String[list.size()]);
-            if (symfony2InterfacesUtil.isCallTo(method, callItem[0], callItem[1])) {
+        for(Call call: this.oneOfCall) {
+            if (symfony2InterfacesUtil.isCallTo(method, call.getClassName(), call.getMethodName()) && PsiElementUtils.getParameterIndexValue(psiElement) == call.getIndex()) {
                 return this.getPsiReferenceBase(psiElement);
             }
         }
@@ -68,5 +70,33 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
         }
 
         return new PsiReference[0];
+    }
+
+    private class Call {
+        private String className;
+        private String methodName;
+        private int index = 0;
+
+        public Call(String className, String methodName) {
+            this.className = className;
+            this.methodName = methodName;
+        }
+
+        public Call(String className, String methodName, int index) {
+            this(className, methodName);
+            this.index = index;
+        }
+
+        private int getIndex() {
+            return index;
+        }
+
+        private String getClassName() {
+            return className;
+        }
+
+        private String getMethodName() {
+            return methodName;
+        }
     }
 }

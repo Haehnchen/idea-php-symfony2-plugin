@@ -53,19 +53,12 @@ public class ServiceReference extends PsiPolyVariantReferenceBase<PsiElement> {
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
         List<LookupElement> results = new ArrayList<LookupElement>();
-        Iterator it = serviceMap.getPublicMap().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry)it.next();
-            String serviceId = (String)pairs.getKey();
-            String serviceClass = (String)pairs.getValue();
-            Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(serviceClass);
+        for(Map.Entry<String, String> entry: serviceMap.getPublicMap().entrySet()) {
+            String serviceId = entry.getKey();
+            String serviceClass = entry.getValue();
+            Collection<PhpClass> phpClasses = phpIndex.getAnyByFQN(serviceClass);
             if (phpClasses.size() > 0) {
                 results.add(new ServiceLookupElement(serviceId, phpClasses.iterator().next()));
-            } else {
-                Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(serviceClass);
-                if (phpInterfaces.size() > 0) {
-                    results.add(new ServiceLookupElement(serviceId, phpInterfaces.iterator().next()));
-                }
             }
         }
 
