@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpStringLiteralExpressionReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -38,6 +39,11 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)
+            .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findDefinition")
+        );
+
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
+            .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findTaggedServiceIds")
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
