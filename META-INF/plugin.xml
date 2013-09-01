@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.19</version>
+    <version>0.9.20</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -76,13 +76,22 @@
 
 <h2><a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
 <ul>
-    <li><a href="https://github.com/adrienbrault">Adrien Brault</a></li>
     <li><a href="https://github.com/Haehnchen">Daniel Espendiller</a></li>
+    <li><a href="https://github.com/adrienbrault">Adrien Brault</a></li>
     <li><a href="https://github.com/Lumbendil">Roger Llopart Pla</a></li>
 </ul>
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.20</h2>
+<ul>
+    <li>Mass improvements in php <a href="http://symfony2-plugin.espend.de/languages/php/index.html#container-builder">Container Builder</a> (setAlias, Definition, Reference, Alias, findTaggedServiceIds)</li>
+    <li>Provide goto for tagged container classes in php and yaml</li>
+    <li>Support php template files</li>
+    <li>Add ui for <a href="http://symfony2-plugin.espend.de/extension/signature_type.html">custom signature type</a> providers</li>
+    <li>Improvements in class doc hash provider and add new one #Interface</li>
+</ul>
 
 <h2>0.9.19</h2>
 <ul>

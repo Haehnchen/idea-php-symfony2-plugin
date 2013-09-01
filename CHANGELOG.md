@@ -1,6 +1,13 @@
 Changelog
 =========
 
+### 0.9.20
+* Mass improvements in php Container Builder (setAlias, Definition, Reference, Alias, findTaggedServiceIds)
+* Provide goto for tagged container classes in php and yaml
+* Support php template files
+* Add ui for custom signature type providers
+* Improvements in class doc hash provider and add new one #Interface
+
 ### 0.9.19
 * Many improvements in template detection
 * Support for translation_domain inside OptionsResolverInterface:setDefaults
