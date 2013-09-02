@@ -169,11 +169,21 @@ public class PhpElementsUtil {
     }
 
     static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {
+        for(Method method: getClassPublicMethod(phpClass)) {
+            completionResultSet.addElement(new PhpLookupElement(method));
+        }
+    }
+
+    static public ArrayList<Method> getClassPublicMethod(PhpClass phpClass) {
+        ArrayList<Method> methods = new ArrayList<Method>();
+
         for(Method method: phpClass.getMethods()) {
             if(method.getAccess().isPublic() && !method.getName().startsWith("__")) {
-                completionResultSet.addElement(new PhpLookupElement(method));
+                methods.add(method);
             }
         }
+
+        return methods;
     }
 
     @Nullable

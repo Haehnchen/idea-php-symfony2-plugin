@@ -16,6 +16,11 @@ public class TagReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private String tagName;
 
+    public TagReference(PsiElement psiElement, String tagName) {
+        super(psiElement);
+        this.tagName = tagName;
+    }
+
     public TagReference(@NotNull StringLiteralExpression element) {
         super(element);
         tagName = element.getContents();
