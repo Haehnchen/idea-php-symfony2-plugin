@@ -309,6 +309,45 @@ public class PhpElementsUtil {
         getImplementedMethods(phpClass.getSuperClass(), method, implementedMethods);
 
         return implementedMethods;
-    }    
+    }
+
+    public static String getStringValue(PsiElement psiElement) {
+        return getStringValue(psiElement, 0);
+    }
+
+    @Nullable
+    private static String getStringValue(PsiElement psiElement, int depth) {
+
+        if(++depth > 5) {
+            return null;
+        }
+
+        if(psiElement instanceof StringLiteralExpression) {
+            return ((StringLiteralExpression) psiElement).getContents();
+        }
+
+        if(psiElement instanceof PhpReference) {
+            PsiElement ref = psiElement.getReference().resolve();
+
+            if(ref instanceof PhpReference) {
+                return getStringValue(psiElement, depth);
+            }
+
+            if(ref instanceof Field) {
+                PsiElement resolved = ((Field) ref).getDefaultValue();
+
+                if(resolved instanceof StringLiteralExpression) {
+                    return ((StringLiteralExpression) resolved).getContents();
+                }
+            }
+
+
+
+        }
+
+        return null;
+
+    }
+
 
 }

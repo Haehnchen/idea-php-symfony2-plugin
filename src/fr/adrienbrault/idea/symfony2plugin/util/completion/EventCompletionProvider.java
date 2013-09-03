@@ -5,7 +5,10 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.util.ProcessingContext;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +25,11 @@ public class EventCompletionProvider extends CompletionProvider<CompletionParame
 
         XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(completionParameters.getPosition().getProject(), XmlEventParser.class);
         for(Map.Entry<String, String> event : xmlEventParser.get().entrySet()) {
-            completionResultSet.addElement(LookupElementBuilder.create(event.getKey()).withTypeText(event.getValue(), true));
+            completionResultSet.addElement(LookupElementBuilder.create(event.getKey()).withTypeText(event.getValue(), true).withIcon(Symfony2Icons.EVENT));
+        }
+
+        for(EventDispatcherSubscribedEvent event: EventDispatcherSubscriberUtil.getSubscribedEvents(completionParameters.getPosition().getProject())) {
+            completionResultSet.addElement(LookupElementBuilder.create(event.getStringValue()).withTypeText("EventSubscriber", true).withIcon(Symfony2Icons.EVENT));
         }
 
     }

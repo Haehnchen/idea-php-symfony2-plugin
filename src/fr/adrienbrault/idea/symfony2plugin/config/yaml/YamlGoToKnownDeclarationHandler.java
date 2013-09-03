@@ -11,6 +11,8 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -53,6 +55,13 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             YamlElementPatternHelper.getSingleLineScalarKey("name")
         ).accepts(psiElement)) {
             this.getTagClassesGoto(psiElement, results);
+        }
+
+        if(StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("event")
+        ).accepts(psiElement)) {
+            this.getEventGoto(psiElement, results);
         }
 
         return results.toArray(new PsiElement[results.size()]);
@@ -103,6 +112,17 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         for(String taggedClass: taggedClasses) {
             Collections.addAll(results, PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), taggedClass));
         }
+    }
+
+    private void getEventGoto(PsiElement psiElement, List<PsiElement> results) {
+
+        for(EventDispatcherSubscribedEvent event: EventDispatcherSubscriberUtil.getSubscribedEvent(psiElement.getProject(), PsiElementUtils.trimQuote(psiElement.getText()))) {
+            PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), event.getFqnClassName());
+            if(phpClass != null) {
+                results.add(phpClass);
+            }
+        }
+
     }
 
     @Nullable
