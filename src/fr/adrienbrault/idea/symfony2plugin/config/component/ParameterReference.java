@@ -1,13 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.config.component;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ParameterReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
+public class ParameterReference  extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private String parameterName;
 
@@ -59,14 +61,6 @@ public class ParameterReference extends PsiReferenceBase<PsiElement> implements 
         }
 
         return results.toArray(new ResolveResult[results.size()]);
-    }
-
-    @Nullable
-    @Override
-    public PsiElement resolve() {
-        ResolveResult[] resolveResults = multiResolve(false);
-
-        return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
     }
 
     @NotNull
