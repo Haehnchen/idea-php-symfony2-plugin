@@ -32,12 +32,13 @@ public class PsiElementUtils {
         String stringValue = stringLiteralExpression.getText();
         String value = stringValue.substring(stringLiteralExpression.getValueRange().getStartOffset(), stringLiteralExpression.getValueRange().getEndOffset());
 
+        return removeIdeaRuleHack(value);
+    }
+
+    public static String removeIdeaRuleHack(String value) {
         // wtf: ???
         // looks like current cursor position is marked :)
-        value = value.replace("IntellijIdeaRulezzz", "");
-        value = value.replace("IntellijIdeaRulezzz ", "");
-
-        return value.trim();
+        return value.replace("IntellijIdeaRulezzz", "").replace("IntellijIdeaRulezzz ", "").trim();
     }
 
     public static String getMethodParameterAt(ParameterList parameterList, int index) {

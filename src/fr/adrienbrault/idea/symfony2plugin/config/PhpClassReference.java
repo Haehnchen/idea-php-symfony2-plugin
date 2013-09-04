@@ -17,7 +17,7 @@ import java.util.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class PhpClassReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
+public class PhpClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private String classFQN;
     private boolean provideVariants = false;
@@ -33,6 +33,11 @@ public class PhpClassReference extends PsiReferenceBase<PsiElement> implements P
     public PhpClassReference(@NotNull PsiElement element, String classFQN) {
         super(element);
         this.classFQN = classFQN;
+    }
+
+    public PhpClassReference(@NotNull PsiElement element, String classFQN, boolean provideVariants) {
+        this(element, classFQN);
+        this.provideVariants = provideVariants;
     }
 
     public PhpClassReference(@NotNull StringLiteralExpression element, boolean provideVariants) {
@@ -62,13 +67,6 @@ public class PhpClassReference extends PsiReferenceBase<PsiElement> implements P
         for (PhpClass phpClass : phpClasses) {
             results.add(new PsiElementResolveResult(phpClass));
         }
-    }
-
-    @Nullable
-    @Override
-    public PsiElement resolve() {
-        ResolveResult[] resolveResults = multiResolve(false);
-        return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
     }
 
     @NotNull
