@@ -7,6 +7,7 @@ public class EventDispatcherSubscribedEvent {
     private String stringValue;
     private String fqnClassName;
     private String signature = null;
+    private String type = "EventSubscriber";
 
     public EventDispatcherSubscribedEvent(String stringValue, String fqnClassName) {
         this.stringValue = stringValue;
@@ -29,6 +30,16 @@ public class EventDispatcherSubscribedEvent {
     @Nullable
     public String getSignature() {
         return signature;
+    }
+
+
+    public String getType() {
+        return type;
+    }
+
+    public EventDispatcherSubscribedEvent setType(String type) {
+        this.type = type;
+        return this;
     }
 
 }

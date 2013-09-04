@@ -20,6 +20,9 @@ public class XmlEventParserTest extends Assert {
 
         assertTrue(tags.containsKey("kernel.controller"));
         assertEquals("kernel.event_listener", tags.get("kernel.controller"));
+
+        assertTrue(serviceMapParser.getEventSubscribers("kernel.controller").size() > 0);
+        assertEquals("Symfony\\Bundle\\FrameworkBundle\\DataCollector\\RouterDataCollector", serviceMapParser.getEventSubscribers("kernel.controller").get(0).getFqnClassName());
     }
 
 }

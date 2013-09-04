@@ -2,16 +2,21 @@ package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class EventDispatcherSubscriberUtil {
 
@@ -74,6 +79,28 @@ public class EventDispatcherSubscriberUtil {
         }
 
         return events;
+    }
+
+    public static ArrayList<PsiElement> getEventPsiElements(Project project, String eventName) {
+
+        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+
+        XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(project, XmlEventParser.class);
+        for(EventDispatcherSubscribedEvent event : xmlEventParser.getEventSubscribers(eventName)) {
+            PhpClass phpClass = PhpElementsUtil.getClass(project, event.getFqnClassName());
+            if(phpClass != null) {
+                psiElements.add(phpClass);
+            }
+        }
+
+        for(EventDispatcherSubscribedEvent event: EventDispatcherSubscriberUtil.getSubscribedEvent(project, eventName)) {
+            PhpClass phpClass = PhpElementsUtil.getClass(project, event.getFqnClassName());
+            if(phpClass != null) {
+                psiElements.add(phpClass);
+            }
+        }
+
+        return psiElements;
     }
 
 }
