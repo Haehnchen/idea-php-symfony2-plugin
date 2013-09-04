@@ -23,9 +23,14 @@ public class EventDispatcherEventReference extends PsiPolyVariantReferenceBase<P
 
     private String eventName;
 
+    public EventDispatcherEventReference(@NotNull PsiElement element, String eventName) {
+        super(element);
+        this.eventName = eventName;
+    }
+
     public EventDispatcherEventReference(@NotNull StringLiteralExpression element) {
         super(element);
-        eventName = element.getContents();
+        this.eventName = element.getContents();
     }
 
     @NotNull

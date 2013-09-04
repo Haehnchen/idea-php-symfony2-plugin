@@ -4,14 +4,15 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlTokenType;
+import com.intellij.psi.xml.*;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
+import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReferenceProvider;
+import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ClassReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ServiceReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
@@ -183,8 +184,55 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             new ClassMethodReferenceProvider()
         );
 
-    }
+        registrar.registerReferenceProvider(
+            XmlPatterns.or(
+                XmlHelper.getParameterWithClassEndingPattern()
+                    .inside(XmlHelper.getInsideTagPattern("parameters"))
+                    .inFile(XmlHelper.getXmlFilePattern()
+                )
+            ),
+            new PsiReferenceProvider() {
 
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(element)) {
+                        return new PsiReference[0];
+                    }
+
+                    if(element instanceof XmlToken) {
+                        return new PsiReference[] {
+                            new PhpClassReference(element, PsiElementUtils.removeIdeaRuleHack(PsiElementUtils.trimQuote(element.getText())), true)
+                        };
+                    }
+
+                    return new PsiReference[0];
+                }
+            }
+        );
+
+        registrar.registerReferenceProvider(
+            XmlHelper.getTagAttributePattern("tag", "event").inside(XmlHelper.getInsideTagPattern("services")),
+            new PsiReferenceProvider() {
+
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(element)) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[] {
+                        new EventDispatcherEventReference(element, PsiElementUtils.removeIdeaRuleHack(PsiElementUtils.trimQuote(element.getText())))
+                    };
+
+                }
+            }
+        );
+
+    }
 
     private class ClassMethodReferenceProvider extends PsiReferenceProvider {
         @NotNull
@@ -215,7 +263,5 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             return new PsiReference[] { new ClassPublicMethodReference(psiElement, classAttribute.getValue())};
         }
     }
-
-
 
 }

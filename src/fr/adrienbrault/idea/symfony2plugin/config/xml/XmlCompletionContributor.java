@@ -17,10 +17,6 @@ public class XmlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-service").inside(XmlHelper.getInsideTagPattern("services")), new ServiceCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-class").inside(XmlHelper.getInsideTagPattern("services")), new PhpClassAndParameterCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("parent").inside(XmlHelper.getInsideTagPattern("services")), new ServiceCompletionProvider());
-        extend(CompletionType.BASIC, XmlHelper.getParameterWithClassEndingPattern().inside(XmlHelper.getInsideTagPattern("parameters")), new PhpClassCompletionProvider());
-
-        extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "event").inside(XmlHelper.getInsideTagPattern("services")), new EventCompletionProvider());
-
     }
 
 }
