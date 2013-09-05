@@ -5,8 +5,9 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -17,8 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -33,35 +33,38 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        if (!(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
-            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement))) {
+        if (!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
+            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
+            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)) {
 
             return new PsiElement[]{};
         }
+        // @TODO migrate all to this
+        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         String psiText = PsiElementUtils.getText(psiElement);
         if(null == psiText || psiText.length() == 0) {
             return new PsiElement[]{};
         }
 
-        if(psiText.startsWith("@") && psiText.length() > 1) {
-            return serviceGoToDeclaration(psiElement, psiText.substring(1));
+        if(psiText.startsWith("@") && psiText.contains(".") && psiText.length() > 1) {
+            psiElements.addAll(Arrays.asList((serviceGoToDeclaration(psiElement, psiText.substring(1)))));
         }
 
         // match: %annotations.reader.class%
         if(psiText.length() > 3 && psiText.startsWith("%") && psiText.endsWith("%")) {
-            return parameterGoToDeclaration(psiElement, psiText.substring(1, psiText.length() - 1));
-        }
-
-        if(psiText.contains(".") && psiText.length() > 1) {
-            return serviceGoToDeclaration(psiElement, psiText);
+            psiElements.addAll(Arrays.asList((parameterGoToDeclaration(psiElement, psiText.substring(1, psiText.length() - 1)))));
         }
 
         if(psiText.contains("\\")) {
-            return classGoToDeclaration(psiElement, psiText);
+            psiElements.addAll(Arrays.asList(classGoToDeclaration(psiElement, psiText))) ;
         }
 
-        return new PsiElement[]{};
+        if(psiText.endsWith(".twig") || psiText.endsWith(".php")) {
+            psiElements.addAll(templateGoto(psiElement, psiText));
+        }
+
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
     protected PsiElement[] classGoToDeclaration(PsiElement psiElement, String className) {
@@ -99,6 +102,16 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), parameterName);
+    }
+
+    protected List<TwigFile> templateGoto(PsiElement psiElement, String templateName) {
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
+        TwigFile twigFile = twigFilesByName.get(templateName);
+        if (null == twigFile) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.asList(twigFile);
     }
 
     @Nullable
