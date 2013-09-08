@@ -1,6 +1,13 @@
 Changelog
 =========
 
+### 0.9.21
+* Support EventDispatcher calls inside php dispatcher and subscriber
+* Improvements of Event and Tag completion / goto in all languages
+* Provide global template goto in yaml
+* Improvements in xml to reflected features of previous release
+* Support locale routing of I18nRoutingBundle
+
 ### 0.9.20
 * Mass improvements in php Container Builder (setAlias, Definition, Reference, Alias, findTaggedServiceIds)
 * Provide goto for tagged container classes in php and yaml
