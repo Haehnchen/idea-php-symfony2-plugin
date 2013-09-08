@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -86,27 +85,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             return this.routes;
         }
 
-        Matcher matcher = null;
         try {
-            // Damn, what has he done!
-            // Right ?
-            // If you find a better way to parse the file ... submit a PR :P
-            matcher = Pattern.compile("'((?:[^'\\\\]|\\\\.)*)' => [^\\n]+'_controller' => '((?:[^'\\\\]|\\\\.)*)'[^\\n]+\n").matcher(VfsUtil.loadText(virtualUrlGeneratorFile));
-        } catch (IOException ignored) {
-        }
-
-        if (null == matcher) {
+            routes = RouteHelper.getRoutes(VfsUtil.loadText(virtualUrlGeneratorFile));
+        } catch (IOException e) {
             return routes;
-        }
-
-        while (matcher.find()) {
-            String routeName = matcher.group(1);
-            // dont add _assetic_04d92f8, _assetic_04d92f8_0
-            if(!routeName.matches("_assetic_[0-9a-z]+[_\\d+]*")) {
-                String controller = matcher.group(2).replace("\\\\", "\\");
-                Route route = new Route(routeName, controller);
-                routes.put(route.getName(), route);
-            }
         }
 
         this.routes = routes;
