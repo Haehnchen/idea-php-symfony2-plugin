@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -18,7 +17,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -182,7 +180,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    ArrayCreationExpression arrayCreationExpression = getCompletableArrayCreationElement(psiElement);
+                    ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
                     if(arrayCreationExpression == null) {
                         return new PsiReference[0];
                     }
@@ -309,7 +307,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    if(getCompletableArrayCreationElement(psiElement) != null) {
+                    if(PhpElementsUtil.getCompletableArrayCreationElement(psiElement) != null) {
                         return new PsiReference[]{
                             new FormExtensionKeyReference((StringLiteralExpression) psiElement),
                             new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "form")
@@ -325,42 +323,5 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
 
     }
-
-    @Nullable
-    public static ArrayCreationExpression getCompletableArrayCreationElement(PsiElement psiElement) {
-
-        // array('<test>' => '')
-        if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_KEY).accepts(psiElement.getContext())) {
-            PsiElement arrayKey = psiElement.getContext();
-            if(arrayKey != null) {
-                PsiElement arrayHashElement = arrayKey.getContext();
-                if(arrayHashElement instanceof ArrayHashElement) {
-                    PsiElement arrayCreationExpression = arrayHashElement.getContext();
-                    if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                        return (ArrayCreationExpression) arrayCreationExpression;
-                    }
-                }
-            }
-
-        }
-
-        // on array creation key dont have value, so provide completion here also
-        // array('foo' => 'bar', '<test>')
-        if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).accepts(psiElement.getContext())) {
-            PsiElement arrayKey = psiElement.getContext();
-            if(arrayKey != null) {
-                PsiElement arrayCreationExpression = arrayKey.getContext();
-                if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                    return (ArrayCreationExpression) arrayCreationExpression;
-                }
-
-            }
-
-        }
-
-        return null;
-    }
-
-
 
 }

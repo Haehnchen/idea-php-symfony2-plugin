@@ -13,6 +13,7 @@ import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -349,5 +350,39 @@ public class PhpElementsUtil {
 
     }
 
+    @Nullable
+    public static ArrayCreationExpression getCompletableArrayCreationElement(PsiElement psiElement) {
+
+        // array('<test>' => '')
+        if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_KEY).accepts(psiElement.getContext())) {
+            PsiElement arrayKey = psiElement.getContext();
+            if(arrayKey != null) {
+                PsiElement arrayHashElement = arrayKey.getContext();
+                if(arrayHashElement instanceof ArrayHashElement) {
+                    PsiElement arrayCreationExpression = arrayHashElement.getContext();
+                    if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                        return (ArrayCreationExpression) arrayCreationExpression;
+                    }
+                }
+            }
+
+        }
+
+        // on array creation key dont have value, so provide completion here also
+        // array('foo' => 'bar', '<test>')
+        if(PhpPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).accepts(psiElement.getContext())) {
+            PsiElement arrayKey = psiElement.getContext();
+            if(arrayKey != null) {
+                PsiElement arrayCreationExpression = arrayKey.getContext();
+                if(arrayCreationExpression instanceof ArrayCreationExpression) {
+                    return (ArrayCreationExpression) arrayCreationExpression;
+                }
+
+            }
+
+        }
+
+        return null;
+    }
 
 }

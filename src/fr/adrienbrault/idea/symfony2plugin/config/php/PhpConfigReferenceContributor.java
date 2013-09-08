@@ -3,12 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.config.php;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.ClassReference;
-import com.jetbrains.php.lang.psi.elements.NewExpression;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
@@ -91,6 +90,43 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[]{ new PhpClassReference((StringLiteralExpression) psiElement, true) };
                 }
             }
+        );
+
+        // array key in return statement
+        // \Symfony\Component\EventDispatcher\EventSubscriberInterface::getSubscribedEvents
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
+                    if(arrayCreationExpression == null || !(arrayCreationExpression.getContext() instanceof PhpReturn)) {
+                        return new PsiReference[0];
+                    }
+
+                    PhpReturn phpReturn = (PhpReturn) arrayCreationExpression.getContext();
+
+                    Method method = PsiTreeUtil.getParentOfType(phpReturn, Method.class);
+                    if(method == null) {
+                        return new PsiReference[0];
+                    }
+
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isCallTo(method, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface", "getSubscribedEvents")) {
+                        return new PsiReference[0];
+                    }
+
+
+                    return new PsiReference[] { new EventDispatcherEventReference((StringLiteralExpression) psiElement) };
+                }
+
+            }
+
         );
 
     }
