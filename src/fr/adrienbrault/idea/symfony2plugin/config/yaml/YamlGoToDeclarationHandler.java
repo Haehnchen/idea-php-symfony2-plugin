@@ -39,15 +39,15 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
             return new PsiElement[]{};
         }
-        // @TODO migrate all to this
-        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         String psiText = PsiElementUtils.getText(psiElement);
         if(null == psiText || psiText.length() == 0) {
             return new PsiElement[]{};
         }
 
-        if(psiText.startsWith("@") && psiText.contains(".") && psiText.length() > 1) {
+        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+
+        if(psiText.startsWith("@") && psiText.length() > 1) {
             psiElements.addAll(Arrays.asList((serviceGoToDeclaration(psiElement, psiText.substring(1)))));
         }
 
