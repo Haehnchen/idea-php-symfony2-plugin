@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.20</version>
+    <version>0.9.21</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -83,6 +83,14 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.21</h2>
+<ul>
+    <li>Support EventDispatcher calls inside <a href="http://symfony2-plugin.espend.de/languages/php/index.html#eventdispatcher">php dispatcher and subscriber</a></li>
+    <li>Improvements of Event, Method and Tag completion / goto in all config languages</li>
+    <li>Provide global template goto in yaml</li>
+    <li>Improvements in xml to reflect features of previous release</li>
+</ul>
 
 <h2>0.9.20</h2>
 <ul>
@@ -199,68 +207,6 @@
     <li>Fix for twig addPath paths</li>
     <li>Fix for twig template pattern, so include function is supported again</li>
     <li>Some smaller pattern fixes in yaml and php</li>
-</ul>
-
-<h2>0.9.6</h2>
-<ul>
-    <li>Add search panel (left sidebar) to find internal known Symfony components and go to them</li>
-    <li>Fix assets "web" reader on Linux</li>
-    <li>Filter yaml parameter annotator on token values</li>
-    <li>Add icons for all known symfony2 components</li>
-</ul>
-
-<h2>0.9.5</h2>
-<ul>
-    <li>Add controller services support for go to and autocomplete</li>
-    <li>Support strict=false syntax in yaml</li>
-    <li>Fix for NullPointerException of plugin enabled check and routing indexing</li>
-    <li>Plugin default state is now "Disabled" per project</li>
-    <li>Support registered extra twig templates path on addPath of container</li>
-    <li>Fix for YamlKeyFinder which provides better matching for translation go to</li>
-</ul>
-
-<h2>0.9.4</h2>
-<ul>
-    <li>Provide a global plugin state toggle per project</li>
-    <li>Notice: Default plugin state will be "Disabled" in next version</li>
-    <li>Provide go to controller method of routing names</li>
-    <li>Autocomplete for _controller in yaml</li>
-    <li>Support Yaml value with quote value</li>
-    <li>Autocomplete and go to for routing resources in yaml</li>
-    <li>Add translation go to for translation key in yaml and php, for yaml files</li>
-    <li>Yaml Annotator for parameter, service and class</li>
-    <li>Many PsiElement Pattern fixes</li>
-</ul>
-
-<h2>0.9.3</h2>
-<ul>
-    <li>Add Annotator which mark unknown route, template, service, assets</li>
-    <li>Settings form can disable every Annotator, if its not suitable in environment</li>
-    <li>Some autocomplete and pattern matches fixes and optimization</li>
-    <li>Add autocomplete for class, factory-service, factory-class in yaml and xml</li>
-    <li>Add notice for missing route and container file on project startup</li>
-</ul>
-
-<h2>0.9.2</h2>
-<ul>
-    <li>Autocomplete for twig blocks</li>
-    <li>Go to for extended twig blocks</li>
-    <li>Some twig translation fixes</li>
-    <li>Yaml: Php class completion for service parameter ending with .class</li>
-    <li>Yaml: Php class completion list service class parameter</li>
-</ul>
-
-<h2>0.9.1</h2>
-<ul>
-    <li>Temporary PhpTypes cache which reduce ide freeze (until fixed on JetBrains side)</li>
-    <li>Add PhpTypes cache lifetime settings</li>
-    <li>Add some more Annotation support</li>
-    <li>Add Annotator and Action to create twig file directly on @Template clicking</li>
-    <li>Autocomplete for FormTypes in FormBuilder</li>
-    <li>Autocomplete of classes in yaml and xml</li>
-    <li>Autocomplete for translation in trans twig and translate php</li>
-    <li>Optimize twig templates searching, which sometimes generated outdated listing</li>
-    <li>Auto use import of some supported Annotation</li>
 </ul>
 
 <br/>
