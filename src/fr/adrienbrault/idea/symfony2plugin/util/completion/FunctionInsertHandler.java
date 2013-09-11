@@ -12,6 +12,12 @@ public class FunctionInsertHandler implements InsertHandler<LookupElement> {
 
     public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement lookupElement) {
 
+        // check this:
+        // {{ form_javasc|() }}
+        // {{ form_javasc| }}
+        if(PhpInsertHandlerUtil.isStringAtCaret(context.getEditor(), "(")) {
+            return;
+        }
 
         String addText = "()";
         PhpInsertHandlerUtil.insertStringAtCaret(context.getEditor(), addText);
