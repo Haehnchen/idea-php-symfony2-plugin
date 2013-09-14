@@ -26,7 +26,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import icons.PhpIcons;
+import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -169,7 +169,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFilesByName.get(templateName)).entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(PhpIcons.TwigFileIcon));
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(TwigIcons.TwigFileIcon));
                     }
 
                 }
@@ -245,11 +245,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     for(TwigMacro twigMacro: TwigUtil.getImportedMacros(psiElement.getContainingFile())) {
-                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate()).withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
                     for(TwigMacro twigMacro: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile())) {
-                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate()).withIcon(PhpIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate()).withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
                     for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {

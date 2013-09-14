@@ -218,7 +218,7 @@
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="129.713"/>
+    <idea-version since-build="130.1"/>
 
     <extensions defaultExtensionNs="com.intellij">
 
@@ -293,6 +293,7 @@
 
     </extensions>
 
+    <depends>com.jetbrains.twig</depends>
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>

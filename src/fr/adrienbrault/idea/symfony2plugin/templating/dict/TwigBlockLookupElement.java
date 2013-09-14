@@ -3,7 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 
-import icons.PhpIcons;
+import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
 public class TwigBlockLookupElement extends LookupElement {
@@ -24,6 +24,6 @@ public class TwigBlockLookupElement extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(twigBlock.getShortcutName());
         presentation.setTypeGrayed(true);
-        presentation.setIcon(PhpIcons.TwigFileIcon);
+        presentation.setIcon(TwigIcons.TwigFileIcon);
     }
 }

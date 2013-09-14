@@ -15,7 +15,6 @@ import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.ui.FilterComponent;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.components.JBList;
-import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
@@ -27,7 +26,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import icons.PhpIcons;
+import icons.TwigIcons;
 
 import javax.swing.*;
 import java.awt.*;
@@ -59,7 +58,7 @@ public class Symfony2SearchForm {
         this.list1.setModel(this.listenModel);
         this.list1.setCellRenderer(new MyLookupCellRenderer());
 
-        this.toggleTemplate.setIcon(PhpIcons.TwigFileIcon);
+        this.toggleTemplate.setIcon(TwigIcons.TwigFileIcon);
 
         list1.addMouseListener(new MouseAdapter() {
             @Override
