@@ -41,22 +41,20 @@ public class ServiceUtil {
     @Nullable
     public static PhpClass getResolvedClassDefinition(Project project, String className) {
 
+        String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(className);
+        if (null != serviceClass) {
+            PsiElement[] psiElements = PhpElementsUtil.getClassInterfacePsiElements(project, serviceClass);
+            for(PsiElement psiElement: psiElements) {
+                if(psiElement instanceof PhpClass) {
+                    return (PhpClass) psiElement;
+                }
+            }
+        }
+
         // parameter and direct class name
         PhpClass phpClass = getResolvedClass(project, className);
         if(phpClass != null) {
             return phpClass;
-        }
-
-        String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(className);
-        if (null == serviceClass) {
-            return null;
-        }
-
-        PsiElement[] psiElements = PhpElementsUtil.getClassInterfacePsiElements(project, serviceClass);
-        for(PsiElement psiElement: psiElements) {
-            if(psiElement instanceof PhpClass) {
-                return (PhpClass) psiElement;
-            }
         }
 
         return null;

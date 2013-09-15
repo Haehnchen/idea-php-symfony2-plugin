@@ -114,6 +114,16 @@ public class PhpElementsUtil {
         return results.toArray(new PsiElement[results.size()]);
     }
 
+    @Nullable
+    static public Method getClassMethod(PhpClass phpClass, String methodName) {
+        for(Method method: phpClass.getMethods()) {
+            if(method.getName().equals(methodName)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
     static public boolean isMethodWithFirstString(PsiElement psiElement, String... methodName) {
 
         // filter out method calls without parameter
