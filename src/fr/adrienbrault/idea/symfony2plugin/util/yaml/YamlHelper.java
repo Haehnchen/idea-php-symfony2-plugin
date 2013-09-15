@@ -1,16 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLArray;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.impl.YAMLPsiElementImpl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class YamlHelper {
 
@@ -20,6 +24,94 @@ public class YamlHelper {
 
     static public Map<String, String> getLocalParameterMap(PsiElement psiElement) {
         return new YamlLocalServiceMap().getLocalParameterMap(psiElement);
+    }
+
+    /**
+     * getChildren eg on YamlArray is empty, provide workaround
+     */
+    static public PsiElement[] getChildrenFix(PsiElement psiElement) {
+        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+
+        psiElements.add(psiElement.getFirstChild());
+
+        for (PsiElement child = psiElement.getFirstChild().getNextSibling(); child != null; child = child.getNextSibling()) {
+            psiElements.add(child);
+        }
+
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
+    }
+
+    /**
+     *  Trx to find psi value which match shoukd be a array value and filter out comma, whitespace...
+     *  [@service, "@lunamas.app_manager2", [""]];
+     */
+    static public ArrayList<PsiElement> getYamlArrayValues(YAMLArray yamlArray) {
+
+
+        // split possible element at comma sperator
+        HashMap<Integer, ArrayList<PsiElement>> argumentSplitter = new HashMap<Integer, ArrayList<PsiElement>>();
+        int currentParameter = 0;
+        argumentSplitter.put(currentParameter, new ArrayList<PsiElement>());
+        for(PsiElement psiElement: getChildrenFix(yamlArray)) {
+            if(psiElement.getText().equals(",")) {
+                argumentSplitter.put(++currentParameter, new ArrayList<PsiElement>());
+            } else {
+                if(!(psiElement instanceof PsiWhiteSpace)) {
+                    argumentSplitter.get(currentParameter).add(psiElement);
+                }
+            }
+        }
+
+        // search for valid psi argument value
+        ArrayList<PsiElement> keys = new ArrayList<PsiElement>();
+        for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
+            PsiElement parameterPsiElement = null;
+            for(PsiElement psiElement: psiEntry.getValue()) {
+                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)) {
+                    parameterPsiElement = psiElement;
+                } else if(psiElement instanceof YAMLPsiElementImpl) {
+                    parameterPsiElement = psiElement;
+                }
+
+            }
+
+            keys.add(parameterPsiElement);
+
+        }
+
+        return keys;
+    }
+
+    @Nullable
+    public static YAMLKeyValue getYamlKeyValue(@Nullable PsiElement yamlCompoundValue, String keyName) {
+
+        if(yamlCompoundValue == null) {
+            return null;
+        }
+
+        YAMLKeyValue classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(keyName));
+
+        if(classKeyValue == null) {
+            return null;
+        }
+
+        return classKeyValue;
+    }
+
+
+
+
+    public static int getYamlParameter(YAMLArray yamlArray, PsiElement psiKeyElement) {
+        int parameter = -1;
+
+        for(PsiElement psiElement: getYamlArrayValues(yamlArray)) {
+            parameter++;
+            if(psiElement != null && psiElement.equals(psiKeyElement)) {
+                return parameter;
+            }
+        }
+
+        return parameter;
     }
 
     private static class YamlLocalServiceMap {

@@ -169,6 +169,21 @@ public class PhpElementsUtil {
         return classes.isEmpty() ? null : classes.iterator().next();
     }
 
+    static public PhpClass getClassInterface(Project project, String className) {
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+        PhpClass phpClass = getClass(phpIndex, className);
+        if(phpClass != null) {
+            return  phpClass;
+        }
+
+        phpClass = getInterface(phpIndex, className);
+        if(phpClass != null) {
+            return  phpClass;
+        }
+
+        return null;
+    }
+
     static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {
         for(Method method: getClassPublicMethod(phpClass)) {
             completionResultSet.addElement(new PhpLookupElement(method));

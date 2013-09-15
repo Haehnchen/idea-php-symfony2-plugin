@@ -2,16 +2,26 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLArray;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 public class YamlAnnotator implements Annotator {
 
@@ -25,7 +35,7 @@ public class YamlAnnotator implements Annotator {
         this.annotateClass(psiElement, holder);
         this.annotateParameter(psiElement, holder);
         this.annotateService(psiElement, holder);
-
+        this.annotateConstructorArguments(psiElement, holder);
     }
 
     private void annotateParameter(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
@@ -85,5 +95,93 @@ public class YamlAnnotator implements Annotator {
             }
         }
 
+    }
+
+
+    private void annotateConstructorArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+
+
+        if(!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
+            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement))
+        {
+            return;
+        }
+
+        // @TODO: simplify code checks
+
+        if(!(psiElement.getContext() instanceof YAMLArray)) {
+            return;
+        }
+
+        YAMLArray yamlArray = (YAMLArray) psiElement.getContext();
+        if(!(yamlArray.getContext() instanceof YAMLCompoundValue)) {
+            return;
+        }
+
+        YAMLCompoundValue yamlCompoundValue = (YAMLCompoundValue) yamlArray.getContext();
+        if(!(yamlCompoundValue.getContext() instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        YAMLKeyValue yamlKeyValue = (YAMLKeyValue) yamlCompoundValue.getContext();
+        if(yamlKeyValue == null || !yamlKeyValue.getKeyText().equals("arguments")) {
+            return;
+        }
+
+        YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue.getContext(), "class");
+        if(classKeyValue == null) {
+            return;
+        }
+
+        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText());
+        if(serviceClass == null) {
+            return;
+        }
+
+        Method constructor = serviceClass.getConstructor();
+        if(constructor == null) {
+            return;
+        }
+
+        int parameterIndex = YamlHelper.getYamlParameter(yamlArray, psiElement);
+        if(parameterIndex == -1) {
+            return;
+        }
+
+        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(psiElement));
+        if(serviceParameterClass == null) {
+            return;
+        }
+
+
+        Parameter[] constructorParameter = constructor.getParameters();
+        if(parameterIndex >= constructorParameter.length) {
+            return;
+        }
+
+        // @TODO: use resolve
+        PhpClass expectedClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), constructorParameter[parameterIndex].getType().toString());
+        if(expectedClass == null) {
+            return;
+        }
+
+        if(!new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
+            holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN());
+        }
+
+    }
+
+    private String getServiceName(PsiElement psiElement) {
+        String serviceName = PsiElementUtils.getText(psiElement);
+        if(serviceName.startsWith("@")) {
+            serviceName = serviceName.substring(1);
+        }
+
+        // yaml strict=false syntax
+        if(serviceName.endsWith("=")) {
+            serviceName = serviceName.substring(0, serviceName.length() -1);
+        }
+
+        return serviceName;
     }
 }
