@@ -114,6 +114,16 @@ public class PhpElementsUtil {
         return results.toArray(new PsiElement[results.size()]);
     }
 
+    @Nullable
+    static public Method getClassMethod(PhpClass phpClass, String methodName) {
+        for(Method method: phpClass.getMethods()) {
+            if(method.getName().equals(methodName)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
     static public boolean isMethodWithFirstString(PsiElement psiElement, String... methodName) {
 
         // filter out method calls without parameter
@@ -167,6 +177,21 @@ public class PhpElementsUtil {
     static public PhpClass getInterface(PhpIndex phpIndex, String className) {
         Collection<PhpClass> classes = phpIndex.getInterfacesByFQN(className);
         return classes.isEmpty() ? null : classes.iterator().next();
+    }
+
+    static public PhpClass getClassInterface(Project project, String className) {
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+        PhpClass phpClass = getClass(phpIndex, className);
+        if(phpClass != null) {
+            return  phpClass;
+        }
+
+        phpClass = getInterface(phpIndex, className);
+        if(phpClass != null) {
+            return  phpClass;
+        }
+
+        return null;
     }
 
     static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {
