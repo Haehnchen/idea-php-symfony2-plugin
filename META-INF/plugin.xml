@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.21</version>
+    <version>0.9.22</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -83,6 +83,13 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+<h2>0.9.22</h2>
+<ul>
+    <li>Add annotator for php instances inside yaml "calls" and "arguments" services</li>
+    <li>Add annotator for method names of yaml "calls"</li>
+    <li>Fix twig function insert handler insert double braces</li>
+</ul>
 
 <h2>0.9.21</h2>
 <ul>

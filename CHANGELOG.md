@@ -1,6 +1,11 @@
 Changelog
 =========
 
+### 0.9.22
+* Add annotator for php instances inside yaml "calls" and "arguments" services
+* Add annotator for method names of yaml "calls"
+* Fix twig function insert handler insert double braces
+
 ### 0.9.21
 * Support EventDispatcher calls inside php dispatcher and subscriber
 * Improvements of Event and Tag completion / goto in all languages
