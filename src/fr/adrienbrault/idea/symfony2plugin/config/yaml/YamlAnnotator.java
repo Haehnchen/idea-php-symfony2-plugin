@@ -36,11 +36,18 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        this.annotateClass(psiElement, holder);
         this.annotateParameter(psiElement, holder);
+        this.annotateClass(psiElement, holder);
         this.annotateService(psiElement, holder);
+
+        // only match inside service definitions
+        if(!YamlElementPatternHelper.getInsideKeyValue("services").accepts(psiElement)) {
+            return;
+        }
+
         this.annotateConstructorArguments(psiElement, holder);
         this.annotateCallsArguments(psiElement, holder);
+        this.annotateCallMethod(psiElement, holder);
     }
 
     private void annotateParameter(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
@@ -237,6 +244,43 @@ public class YamlAnnotator implements Annotator {
         if(!new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
             holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN());
         }
+    }
+
+    private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+
+        if((!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
+            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)))
+        {
+            return;
+        }
+
+        if(!YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)){
+            return;
+        }
+
+        if(psiElement.getParent() == null || !(psiElement.getParent().getContext() instanceof YAMLSequence)) {
+            return;
+        }
+
+        YAMLKeyValue callYamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+        if(callYamlKeyValue == null) {
+            return;
+        }
+
+        YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(callYamlKeyValue.getContext(), "class");
+        if(classKeyValue == null) {
+            return;
+        }
+
+        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(classKeyValue.getValue()));
+        if(serviceParameterClass == null) {
+            return;
+        }
+
+        if(PhpElementsUtil.getClassMethod(serviceParameterClass, PsiElementUtils.trimQuote(psiElement.getText())) == null) {
+            holder.createWeakWarningAnnotation(psiElement, "Unknown method");
+        }
+
     }
 
     private String getServiceName(PsiElement psiElement) {
