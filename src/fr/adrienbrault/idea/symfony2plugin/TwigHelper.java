@@ -12,7 +12,10 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.twig.*;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigLanguage;
+import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigCompositeElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -355,7 +358,7 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(PsiWhiteSpace.class)
                 )
             .withParent(PlatformPatterns
-                .psiElement(getDeprecatedTwigTagWithFileReference())
+                .psiElement(TwigCompositeElement.class)
                 .withText(PlatformPatterns.string().startsWith("{% " + tagName))
             );
     }
