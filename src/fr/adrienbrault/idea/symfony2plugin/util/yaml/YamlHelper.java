@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -20,6 +21,11 @@ public class YamlHelper {
 
     static public Map<String, String> getLocalServiceMap(PsiElement psiElement) {
         return new YamlLocalServiceMap().getLocalServiceMap(psiElement);
+    }
+
+    @Nullable
+    static public PsiElement getLocalServiceName(PsiFile psiFile, String findServiceName) {
+        return new YamlLocalServiceMap().getLocalServiceName(psiFile, findServiceName);
     }
 
     static public Map<String, String> getLocalParameterMap(PsiElement psiElement) {
@@ -149,6 +155,41 @@ public class YamlHelper {
 
             return map;
 
+        }
+
+        @Nullable
+        public PsiElement getLocalServiceName(PsiFile psiFile, String findServiceName) {
+
+            if(!(psiFile.getFirstChild() instanceof YAMLDocument)) {
+                return null;
+            }
+
+            YAMLDocument yamlDocument = (YAMLDocument) psiFile.getFirstChild();
+
+            // get services or parameter key
+            YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
+            if(yamlKeys == null) {
+                return null;
+            }
+
+            for(YAMLKeyValue yamlKeyValue : yamlKeys) {
+                String yamlConfigKey = yamlKeyValue.getName();
+                if(yamlConfigKey != null && yamlConfigKey.equals("services")) {
+
+                    YAMLKeyValue yamlServices[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
+                    if(yamlServices != null) {
+                        for(YAMLKeyValue yamlServiceKeyValue : yamlServices) {
+                            String serviceName = yamlServiceKeyValue.getName();
+                            if(serviceName != null && serviceName.equals(findServiceName)) {
+                                return yamlServiceKeyValue;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         public Map<String, String> getLocalServiceMap(PsiElement psiElement) {

@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,22 @@ public class ServiceMap {
 
     public Map<String, String> getPublicMap() {
         return publicMap;
+    }
+
+    @Nullable
+    public String resolveClassName(String findValue) {
+
+        if(!findValue.startsWith("\\")) {
+            findValue = "\\" + findValue;
+        }
+
+        for (Map.Entry<String, String> entry : this.getMap().entrySet()) {
+            if (entry.getValue().equals(findValue)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
     }
 
 }
