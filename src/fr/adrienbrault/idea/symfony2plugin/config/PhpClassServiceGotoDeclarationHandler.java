@@ -2,17 +2,21 @@ package fr.adrienbrault.idea.symfony2plugin.config;
 
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -23,7 +27,6 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHandler {
 
@@ -55,8 +58,6 @@ public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHan
         return null;
     }
 
-
-
     public static ArrayList<PsiElement> getPossibleServiceTarget(Project project, String serverName) {
 
         ArrayList<PsiElement> items = new ArrayList<PsiElement>();
@@ -70,6 +71,20 @@ public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHan
             if(servicePsiElement != null) {
                 items.add(servicePsiElement);
             }
+        }
+
+        Collection<VirtualFile> xmlVirtualFiles = fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, XmlFileType.INSTANCE, GlobalSearchScope.projectScope(project));
+
+        for (VirtualFile xmlVirtualFile : xmlVirtualFiles) {
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(xmlVirtualFile);
+
+            if(psiFile instanceof XmlFile) {
+                PsiElement servicePsiElement = XmlHelper.getLocalServiceName(psiFile, serverName);
+                if(servicePsiElement != null) {
+                    items.add(servicePsiElement);
+                }
+            }
+
         }
 
         return items;

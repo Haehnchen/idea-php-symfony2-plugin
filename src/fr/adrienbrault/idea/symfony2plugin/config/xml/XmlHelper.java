@@ -8,6 +8,9 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
@@ -138,6 +141,39 @@ public class XmlHelper {
             return unknownParameterMap;
         }
 
+
+        return null;
+    }
+
+    @Nullable
+    public static PsiElement getLocalServiceName(PsiFile psiFile, String serviceName) {
+
+        if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
+            return null;
+        }
+
+        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        if(xmlTags == null) {
+            return null;
+        }
+
+        for(XmlTag xmlTag: xmlTags) {
+            if(xmlTag.getName().equals("container")) {
+                for(XmlTag servicesTag: xmlTag.getSubTags()) {
+                    if(servicesTag.getName().equals("services")) {
+                        for(XmlTag serviceTag: servicesTag.getSubTags()) {
+                            XmlAttribute attrValue = serviceTag.getAttribute("id");
+                            if(attrValue != null) {
+                                String serviceNameId = attrValue.getValue();
+                                if(serviceNameId != null && serviceNameId.equals(serviceName)) {
+                                    return serviceTag;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         return null;
     }
