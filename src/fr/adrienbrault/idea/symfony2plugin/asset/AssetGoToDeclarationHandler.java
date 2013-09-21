@@ -3,22 +3,20 @@ package fr.adrienbrault.idea.symfony2plugin.asset;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Daniel Esoendiller <daniel@espendiller.net>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
 
@@ -35,15 +33,14 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        List<AssetFile> assetFiles = new AssetDirectoryReader().setIncludeBundleDir(true).setProject(psiElement.getProject()).getAssetFiles();
+        ArrayList<VirtualFile> virtualFiles = TwigHelper.resolveAssetsFiles(psiElement.getProject(), psiElement.getText(), null);
 
-        for(AssetFile file: assetFiles) {
-            if(file.toString().equals(psiElement.getText())) {
-                return new PsiElement[] { PsiManager.getInstance(psiElement.getProject()).findFile(file.getFile()) };
-            }
+        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+        for (VirtualFile virtualFile : virtualFiles) {
+            psiElements.add(PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile));
         }
 
-        return null;
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
     private boolean isValidTag(PsiElement psiElement, String... tags) {

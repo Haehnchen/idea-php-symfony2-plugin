@@ -121,27 +121,7 @@ public class TwigAnnotator implements Annotator {
     }
 
     private boolean isKnownAssetFileOrFolder(PsiElement element, String templateName, String... fileTypes) {
-
-        if(!templateName.endsWith("*")) {
-            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
-                if(assetFile.toString().equals(templateName)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        // {% javascripts '@SampleBundle/Resources/public/js/*' %}
-        // {% javascripts 'assets/js/*' %}
-        String pathName = templateName.substring(0, templateName.length() - 1);
-        for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(element.getProject()).getAssetFiles()) {
-            if(assetFile.toString().startsWith(pathName)) {
-                return true;
-            }
-        }
-
-        return false;
+        return TwigHelper.resolveAssetsFiles(element.getProject(), templateName, fileTypes).size() > 0;
     }
 
 }
