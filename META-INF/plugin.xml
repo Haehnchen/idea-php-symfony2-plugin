@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.22</version>
+    <version>0.9.23</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -9,7 +9,7 @@
 
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/><br/>
-<span style="color: red"><b>Notice</b></span>: PhpStorm EAP 7 >= 130.1293 has some <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/124">Api breaks in Twig</a>.
+<span style="color: red"><b>Notice</b></span>: Annotation support will be moved soon and will require <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a>.
 
 <h2>Features:</h2>
 
@@ -83,6 +83,17 @@
       ]]></description>
 
     <change-notes><![CDATA[
+
+0.9.x: PhpStorm 6<br>
+0.10.x: PhpStorm 7<br>
+<br>
+<h2>0.9.23 / 0.10.23</h2>
+<ul>
+    <li>Provide a service line marker</li>
+    <li>Provide goto for class service definition (click on class name) if available in any suitable yaml or xml file</li>
+    <li>Optimize twig assets wildcard detection and goto filter</li>
+    <li>0.10.23: Migrate javascripts and stylesheets to be compatible with twig plugin</li>
+</ul>
 
 <h2>0.9.22</h2>
 <ul>

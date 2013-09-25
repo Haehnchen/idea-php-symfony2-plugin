@@ -1,6 +1,16 @@
 Changelog
 =========
 
+### Version names
+0.9.x: PhpStorm 6
+0.10.x: PhpStorm 7
+
+### 0.9.23 / 0.10.23
+* Provide a service line marker
+* Provide goto for class service definition (click on class name) if available in any suitable yaml or xml file
+* Optimize twig assets wildcard detection and goto filter
+* 0.10.23: Migrate javascripts and stylesheets to be compatible with twig plugin
+
 ### 0.9.22
 * Add annotator for php instances inside yaml "calls" and "arguments" services
 * Add annotator for method names of yaml "calls"
