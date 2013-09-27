@@ -52,6 +52,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean phpAnnotateRoute = true;
     public boolean phpAnnotateTemplateAnnotation = true;
 
+    public boolean phpHighlightServices = false;
+
     public boolean yamlAnnotateServiceConfig = true;
 
     @Nullable

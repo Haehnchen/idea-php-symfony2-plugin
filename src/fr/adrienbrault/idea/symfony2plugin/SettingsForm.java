@@ -55,6 +55,7 @@ public class SettingsForm implements Configurable {
     private JButton pathToTranslationRootTextFieldReset;
     private TextFieldWithBrowseButton pathToTranslationRootTextField;
     private JButton buttonHelp;
+    private JCheckBox highlightServices;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -118,6 +119,7 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
 
             || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
+            || !highlightServices.isSelected() == getSettings().phpHighlightServices
 
             || !directoryToApp.getText().equals(getSettings().directoryToApp)
             || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
@@ -146,6 +148,7 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateService = phpAnnotateService.isSelected();
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
+        getSettings().phpHighlightServices = highlightServices.isSelected();
 
         getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
 
@@ -187,6 +190,7 @@ public class SettingsForm implements Configurable {
         phpAnnotateService.setSelected(getSettings().phpAnnotateService);
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
+        highlightServices.setSelected(getSettings().phpHighlightServices);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
 

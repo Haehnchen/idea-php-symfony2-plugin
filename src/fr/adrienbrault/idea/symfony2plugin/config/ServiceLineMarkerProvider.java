@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -22,7 +23,11 @@ public class ServiceLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
     protected void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof StringLiteralExpression) || !(psiElement.getContext() instanceof ParameterList)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement)
+            || !Settings.getInstance(psiElement.getProject()).phpHighlightServices
+            || !(psiElement instanceof StringLiteralExpression)
+            || !(psiElement.getContext() instanceof ParameterList))
+        {
             return;
         }
 
