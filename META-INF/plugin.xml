@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.23</version>
+    <version>0.9.24</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -87,6 +87,12 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.9.24 / 0.10.24</h2>
+<ul>
+    <li>Provide settings for service line marker and disable it on default</li>
+</ul>
+
 <h2>0.9.23 / 0.10.23</h2>
 <ul>
     <li>Provide a service line marker</li>
