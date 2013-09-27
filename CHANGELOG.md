@@ -5,6 +5,9 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.9.24 / 0.10.24
+* Provide settings for service line marker and disable it on default
+
 ### 0.9.23 / 0.10.23
 * Provide a service line marker
 * Provide goto for class service definition (click on class name) if available in any suitable yaml or xml file
