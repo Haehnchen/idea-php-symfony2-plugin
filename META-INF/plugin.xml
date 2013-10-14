@@ -11,6 +11,13 @@
 <br/><br/>
 <span style="color: red"><b>Notice</b></span>: Annotation support will be moved soon and will require <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a>.
 
+<h2>Feature blocker:</h2>
+Pls vote for higher priority
+<ul>
+<li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
+<li>eap/7: will drop twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
+</ul>
+
 <h2>Features:</h2>
 
 <h3>Dependency Injection Container</h3>
