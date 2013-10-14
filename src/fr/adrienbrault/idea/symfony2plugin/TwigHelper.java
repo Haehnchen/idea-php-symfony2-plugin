@@ -120,8 +120,8 @@ public class TwigHelper {
         TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
         twigPaths.addAll(twigPathServiceParser.getTwigPathIndex().getTwigPaths());
 
-        String appDirectoryName = Settings.getInstance(project).directoryToApp;
-        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName, "Resources", "views");
+        String appDirectoryName = Settings.getInstance(project).directoryToApp + "/Resources/views";
+        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName.split("/"));
         if(globalDirectory != null) {
             twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, TwigPathIndex.NamespaceType.BUNDLE));
         }
