@@ -5,7 +5,6 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -19,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAc
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
 
@@ -67,8 +67,8 @@ public class TwigAnnotator implements Annotator {
             Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
             PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), domainName);
             for(PsiElement psiFile: psiElements) {
-                if(psiFile instanceof PsiFile) {
-                    annotationHolder.registerFix(new TranslationKeyIntentionAction((PsiFile) psiFile, psiElement.getText()));
+                if(psiFile instanceof YAMLFile) {
+                    annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, psiElement.getText()));
                 }
             }
         }

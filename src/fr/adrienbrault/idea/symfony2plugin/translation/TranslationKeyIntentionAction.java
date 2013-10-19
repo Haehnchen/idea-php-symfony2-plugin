@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
@@ -20,22 +21,40 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 public class TranslationKeyIntentionAction extends BaseIntentionAction {
 
-    protected PsiFile psiFile;
+    protected YAMLFile yamlFile;
     protected String keyName;
 
-    public TranslationKeyIntentionAction(PsiFile psiFile, String keyName) {
-        this.psiFile = psiFile;
+    /**
+     *
+     * @param yamlFile Translation file as yaml
+     * @param keyName key name like "translation" or "translation.sub.name"
+     */
+    public TranslationKeyIntentionAction(YAMLFile yamlFile, String keyName) {
+        this.yamlFile = yamlFile;
         this.keyName = keyName;
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Create Translation Key: " + psiFile.getName();
+        String filename = yamlFile.getName();
+
+        // try to find suitable presentable filename
+        VirtualFile virtualFile = yamlFile.getVirtualFile();
+        if(virtualFile != null) {
+            filename = virtualFile.getPath();
+            String relativePath = VfsUtil.getRelativePath(virtualFile, yamlFile.getProject().getBaseDir(), '/');
+            if(relativePath != null) {
+                filename =  relativePath;
+            }
+        }
+
+        return "Create Translation Key: " + filename;
     }
 
     @NotNull
@@ -55,18 +74,18 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
 
             @Override
             public void run() {
-                VirtualFile virtualFile = TranslationKeyIntentionAction.this.psiFile.getVirtualFile();
+                VirtualFile virtualFile = TranslationKeyIntentionAction.this.yamlFile.getVirtualFile();
                 if(virtualFile == null) {
                     return;
                 }
 
-                PsiDocumentManager manager = PsiDocumentManager.getInstance(psiFile.getProject());
-                Document document = manager.getDocument(psiFile);
+                PsiDocumentManager manager = PsiDocumentManager.getInstance(yamlFile.getProject());
+                Document document = manager.getDocument(yamlFile);
                 if (document != null) {
                     manager.commitDocument(document);
                 }
 
-                final PsiElement yamlDocu = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
+                final PsiElement yamlDocu = PsiTreeUtil.findChildOfType(yamlFile, YAMLDocument.class);
                 if(yamlDocu == null) {
                     return;
                 }
@@ -118,7 +137,7 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                         if(psiElement != null) {
                             Symfony2SearchForm.navigateToPsiElement(psiElement.getValue());
                         } else {
-                            Symfony2SearchForm.navigateToPsiElement(psiFile);
+                            Symfony2SearchForm.navigateToPsiElement(yamlFile);
                         }
                     }
                 });
