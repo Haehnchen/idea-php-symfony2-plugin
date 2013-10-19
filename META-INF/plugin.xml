@@ -305,6 +305,8 @@ Pls vote for higher priority
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.PhpClassServiceGotoDeclarationHandler"/>
 
+        <typedHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.WorkaroundTwigTypedHandler"/>
+
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
