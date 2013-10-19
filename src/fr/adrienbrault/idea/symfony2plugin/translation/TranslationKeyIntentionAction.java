@@ -10,10 +10,11 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchForm;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,42 +76,36 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                     return;
                 }
 
-                //CodeStyleManager.getInstance(project).reformatNewlyAddedElement(parent.getNode(), newDoc.getNode());
+                // search indent and EOL value
+                String indent = findIndent(goToPsi.getYamlKeyValue());
+                String eol = findEol(goToPsi.getYamlKeyValue());
 
-                // find indent inside current array value
-                PsiElement psiIndent = PsiElementUtils.getChildrenOfType(goToPsi.getYamlKeyValue(), PlatformPatterns.psiElement(YAMLTokenTypes.INDENT));
-                String indent = "    ";
-                if(psiIndent != null) {
-                    indent = "";
+                String currentIndentOffset = "";
+                PsiElement lastKnownPsiElement = goToPsi.getYamlKeyValue();
+                if(lastKnownPsiElement instanceof YAMLKeyValue) {
+                    currentIndentOffset = ((YAMLKeyValue) lastKnownPsiElement).getValueIndent();
                 }
 
-                // find eol key!?
-                String eol = "\n";
-                PsiElement psiEol = PsiElementUtils.getChildrenOfType(goToPsi.getYamlKeyValue(), PlatformPatterns.psiElement(YAMLTokenTypes.EOL));
-                if(psiEol != null) {
-                    eol = psiEol.getText();
-                }
+                String insertString = "";
+                String[] missingKeys = goToPsi.getMissingKeys();
+                for ( int i = 0; i < missingKeys.length; i++ ) {
+                    String currentKeyName = missingKeys[i];
 
-                String string = "";
-                int current = 0;
+                    // add indent
+                    insertString += eol + currentIndentOffset + StringUtils.repeat(indent, i);
 
-                // we support multiple depth keys here: "key.key.value" and "value"
-                for(String keyName: goToPsi.getMissingKeys()) {
-
-                    // add indent of children
-                    // @TODO: find indent size
-                    string += eol + StringUtils.repeat("    ", current + goToPsi.getStartDepth());
-
-                    if(goToPsi.getMissingKeys().length - 1 == current) {
-                        string += keyName + ": ''";
+                    // on last key name we dont need new lines
+                    if(goToPsi.getMissingKeys().length - 1 == i) {
+                        // we are developer should other translate it
+                        insertString += currentKeyName + ": '" + keyName + "'";
                     } else {
-                        string += keyName + ":";
+                        insertString += currentKeyName + ":";
                     }
-                    current++;
                 }
+
 
                 // @TODO: check is last array line on contains eol and indent and move above this line
-                document.insertString(goToPsi.getYamlKeyValue().getTextRange().getEndOffset(), string);
+                document.insertString(goToPsi.getYamlKeyValue().getTextRange().getEndOffset(), insertString);
                 manager.doPostponedOperationsAndUnblockDocument(document);
                 manager.commitDocument(document);
 
@@ -122,6 +117,8 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                         YAMLKeyValue psiElement = YamlKeyFinder.find(yamlDocu, keyName);
                         if(psiElement != null) {
                             Symfony2SearchForm.navigateToPsiElement(psiElement.getValue());
+                        } else {
+                            Symfony2SearchForm.navigateToPsiElement(psiFile);
                         }
                     }
                 });
@@ -129,4 +126,52 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
             }
         });
     }
+
+
+
+    private String findIndent(PsiElement psiElement) {
+
+        YAMLKeyValue parentYamlKey = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+        if(parentYamlKey != null) {
+            return parentYamlKey.getValueIndent();
+        }
+
+        PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement element) {
+                return PlatformPatterns.psiElement(YAMLTokenTypes.INDENT).accepts(element);
+            }
+        });
+
+        if(indentPsiElements.length > 0) {
+            return indentPsiElements[0].getText();
+        }
+
+        // file without indent; how get default one?
+        return "    ";
+
+    }
+
+    private String findEol(PsiElement psiElement) {
+
+        for(PsiElement child: YamlHelper.getChildrenFix(psiElement)) {
+            if(PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(child)) {
+                return child.getText();
+            }
+        }
+
+        PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement element) {
+                return PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(element);
+            }
+        });
+
+        if(indentPsiElements.length > 0) {
+            return indentPsiElements[0].getText();
+        }
+
+        return "\n";
+    }
+
 }

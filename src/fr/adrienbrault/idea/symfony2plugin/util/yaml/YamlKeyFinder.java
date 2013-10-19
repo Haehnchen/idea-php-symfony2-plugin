@@ -80,7 +80,15 @@ public class YamlKeyFinder {
         int startDepth = 0;
 
         for(String currentKey : keyName.split("\\.")) {
-            YAMLKeyValue foundKey = YamlKeyFinder.find(lastMatchedKey, currentKey);
+
+            YAMLKeyValue foundKey;
+
+            // root file yaml key value are not inside compound value
+            if(lastMatchedKey instanceof YAMLKeyValue) {
+                foundKey = YamlKeyFinder.findKey((YAMLKeyValue) lastMatchedKey, currentKey);
+            } else {
+                foundKey = YamlKeyFinder.find(lastMatchedKey, currentKey);
+            }
 
             if(foundKey == null) {
                 return new MatchedKey(lastMatchedKey, foundKeyName, keyName, startDepth);
