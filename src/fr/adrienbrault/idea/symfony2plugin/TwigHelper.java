@@ -319,15 +319,19 @@ public class TwigHelper {
                 .psiElement(TwigTokenTypes.STRING_TEXT)
                 .beforeLeafSkipping(
                     PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
                         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
                         PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.FILTER),
-                        PlatformPatterns.psiElement(TwigTokenTypes.NUMBER)
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                     ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
-                        PlatformPatterns.string().oneOf(type)
+                    PlatformPatterns.psiElement(TwigTokenTypes.FILTER).beforeLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                            PlatformPatterns.string().oneOf(type)
+                        )
                     )
                 )
                 .withLanguage(TwigLanguage.INSTANCE);
