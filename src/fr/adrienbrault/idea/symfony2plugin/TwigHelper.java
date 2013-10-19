@@ -336,8 +336,10 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getAutocompletableFilterPattern() {
         return
             PlatformPatterns
-                .psiElement()
-                .afterSibling(PlatformPatterns.psiElement(TwigTokenTypes.FILTER))
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .afterLeaf(
+                    PlatformPatterns.psiElement(TwigTokenTypes.FILTER)
+                )
                 .withLanguage(TwigLanguage.INSTANCE);
     }
 

@@ -13,14 +13,18 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -80,6 +84,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getText());
         }
 
+        if(TwigHelper.getAutocompletableFilterPattern().accepts(psiElement)) {
+            return getFilterGoTo(psiElement);
+        }
+
         return null;
     }
 
@@ -97,6 +105,20 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return new PsiElement[] { twigFile };
+    }
+
+    private PsiElement[] getFilterGoTo(PsiElement psiElement) {
+        HashMap<String, TwigExtension> filters = new TwigExtensionParser(psiElement.getProject()).getFilters();
+        if(!filters.containsKey(psiElement.getText())) {
+            return new PsiElement[0];
+        }
+
+        String signature = filters.get(psiElement.getText()).getSignature();
+        if(signature == null) {
+            return new PsiElement[0];
+        }
+
+        return PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), signature);
     }
 
     private PsiElement[] getBlockGoTo(PsiElement psiElement) {

@@ -21,7 +21,7 @@ public class TwigExtensionParser  {
     private Project project;
 
     private HashMap<String, TwigExtension> functions;
-    private HashMap<String, String> filters;
+    private HashMap<String, TwigExtension> filters;
 
     public TwigExtensionParser(Project project) {
         this.project = project;
@@ -34,7 +34,7 @@ public class TwigExtensionParser  {
         return functions;
     }
 
-    public HashMap<String, String> getFilters() {
+    public HashMap<String, TwigExtension> getFilters() {
         if(filters == null) {
             this.parseElementType(TwigElementType.FILTER);
         }
@@ -46,7 +46,7 @@ public class TwigExtensionParser  {
     }
 
     public enum TwigExtensionType {
-        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION
+        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER
     }
 
     private void parseElementType(TwigElementType type) {
@@ -73,13 +73,13 @@ public class TwigExtensionParser  {
     }
 
     private void parseFilters(ArrayList<String> classNames) {
-        this.filters = new HashMap<String, String>();
+        this.filters = new HashMap<String, TwigExtension>();
         for(String phpClassName : classNames) {
             PhpIndex phpIndex = PhpIndex.getInstance(this.project);
             Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature("#M#C" + phpClassName + "." + "getFilters", null, 0);
             for(PhpNamedElement phpNamedElement: phpNamedElementCollections) {
                 if(phpNamedElement instanceof Method) {
-                    parseFilter(phpNamedElement.getText(), this.filters);
+                    parseFilter((Method) phpNamedElement, this.filters);
                 }
             }
         }
@@ -113,17 +113,7 @@ public class TwigExtensionParser  {
         Matcher filterFunction = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Function_Method)\\((.*?),(.*?)[,|)]").matcher(text);
         while(filterFunction.find()){
             if(!filterFunction.group(1).contains("*")) {
-                String type = filterFunction.group(2);
-
-                String signature = null;
-                if(filterFunction.group(3).trim().equals("$this")) {
-                    PhpClass phpClass = method.getContainingClass();
-                    if(phpClass != null) {
-                        signature = "#M#C\\" + phpClass.getPresentableFQN() + "." + PsiElementUtils.trimQuote(filterFunction.group(4).trim());
-                    }
-                }
-
-                filters.put(filterFunction.group(1), new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature));
+                filters.put(filterFunction.group(1), new TwigExtension(TwigExtensionType.FUNCTION_METHOD, findThisMethod(method, filterFunction)));
             }
         }
 
@@ -138,25 +128,48 @@ public class TwigExtensionParser  {
 
     }
 
-    protected HashMap<String, String> parseFilter(String text, HashMap<String, String> filters) {
+    protected HashMap<String, TwigExtension> parseFilter(Method method, HashMap<String, TwigExtension> filters) {
 
-        Matcher simpleFilter = Pattern.compile("[\\\\]*(Twig_SimpleFilter)[\\s+]*\\(['\"](.*?)['\"][\\s+]*").matcher(text);
+        String text = method.getText();
+
+        Matcher simpleFilter = Pattern.compile("[\\\\]*(Twig_SimpleFilter)[\\s+]*\\([\\s+]*['\"](.*?)['\"][\\s+]*,[\\s+]*['\"](.*?)['\"][\\s+]*").matcher(text);
         while(simpleFilter.find()){
-            if(!simpleFilter.group(2).contains("*")) {
-                filters.put(simpleFilter.group(2), simpleFilter.group(1));
+            if(simpleFilter.group(1).matches("\\w+")) {
+                filters.put(simpleFilter.group(2), new TwigExtension(TwigExtensionType.FILTER, "#F" + PsiElementUtils.trimQuote(simpleFilter.group(3).trim())));
             }
         }
 
 
-        Matcher filterFunction = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Filter_Function)").matcher(text);
+        Matcher filterFunction = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Filter_Function)\\((.*?),").matcher(text);
         while(filterFunction.find()){
-            if(!filterFunction.group(1).contains("*")) {
-                filters.put(filterFunction.group(1), filterFunction.group(2));
+            if(filterFunction.group(1).matches("\\w+")) {
+                filters.put(filterFunction.group(1), new TwigExtension(TwigExtensionType.FILTER, "#F" + PsiElementUtils.trimQuote(filterFunction.group(3).trim())));
             }
+        }
+
+        Matcher filterMethod = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Filter_Method)\\((.*?),(.*?)[,|)]").matcher(text);
+        while(filterMethod.find()){
+
+            // we have "$" and also "*_path" test case only?
+            if(filterMethod.group(1).matches("\\w+")) {
+                filters.put(filterMethod.group(1), new TwigExtension(TwigExtensionType.FILTER, findThisMethod(method, filterMethod)));
+            }
+
         }
 
         return filters;
 
+    }
+
+    private String findThisMethod(Method method, Matcher filterMethod) {
+        String signature = null;
+        if(filterMethod.group(3).trim().equals("$this")) {
+            PhpClass phpClass = method.getContainingClass();
+            if(phpClass != null) {
+                signature = "#M#C\\" + phpClass.getPresentableFQN() + "." + PsiElementUtils.trimQuote(filterMethod.group(4).trim());
+            }
+        }
+        return signature;
     }
 
     public static Icon getIcon(TwigExtensionType twigExtensionType) {
@@ -171,6 +184,10 @@ public class TwigExtensionParser  {
 
         if(twigExtensionType == TwigExtensionType.FUNCTION_METHOD) {
             return PhpIcons.METHOD_ICON;
+        }
+
+        if(twigExtensionType == TwigExtensionType.FILTER) {
+            return PhpIcons.STATIC_FIELD;
         }
 
         return PhpIcons.WEB_ICON;
