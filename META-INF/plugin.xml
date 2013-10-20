@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.9.24</version>
+    <version>0.9.25</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -12,10 +12,10 @@
 <span style="color: red"><b>Notice</b></span>: Annotation support will be moved soon and will require <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a>.
 
 <h2>Feature blocker:</h2>
-Pls vote for higher priority
+
 <ul>
-<li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
-<li>eap/7: will drop twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
+    <li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
+    <li>eap/7: will drop twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
 </ul>
 
 <h2>Features:</h2>
@@ -94,6 +94,15 @@ Pls vote for higher priority
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.9.25 / 0.10.25</h2>
+<ul>
+    <li>Translation key and domain annotator for php and twig with yaml key creation quick fix</li>
+    <li>Hack to support twig filter completion on char type event (see blocker) and goto</li>
+    <li>Add yaml and xml service indexer</li>
+    <li>Provide a service definition line marker for classes, based on service index</li>
+    <li>Some more form builder completions</li>
+</ul>
 
 <h2>0.9.24 / 0.10.24</h2>
 <ul>
