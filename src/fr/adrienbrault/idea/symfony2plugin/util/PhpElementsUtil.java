@@ -6,12 +6,14 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -159,6 +161,20 @@ public class PhpElementsUtil {
                         PlatformPatterns.psiElement(PhpElementTypes.METHOD_REFERENCE)
                     )
             )
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
+    /**
+     * class "Foo" extends
+     */
+    static public PsiElementPattern.Capture<PsiElement> getClassNamePattern() {
+        return PlatformPatterns
+            .psiElement(PhpTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(PhpTokenTypes.kwCLASS)
+            )
+            .withParent(PhpClass.class)
             .withLanguage(PhpLanguage.INSTANCE);
     }
 

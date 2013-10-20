@@ -123,8 +123,8 @@ public class TwigHelper {
         TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
         twigPaths.addAll(twigPathServiceParser.getTwigPathIndex().getTwigPaths());
 
-        String appDirectoryName = Settings.getInstance(project).directoryToApp;
-        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName, "Resources", "views");
+        String appDirectoryName = Settings.getInstance(project).directoryToApp + "/Resources/views";
+        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName.split("/"));
         if(globalDirectory != null) {
             twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, TwigPathIndex.NamespaceType.BUNDLE));
         }
@@ -322,15 +322,19 @@ public class TwigHelper {
                 .psiElement(TwigTokenTypes.STRING_TEXT)
                 .beforeLeafSkipping(
                     PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
                         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
                         PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.FILTER),
-                        PlatformPatterns.psiElement(TwigTokenTypes.NUMBER)
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                     ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
-                        PlatformPatterns.string().oneOf(type)
+                    PlatformPatterns.psiElement(TwigTokenTypes.FILTER).beforeLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                            PlatformPatterns.string().oneOf(type)
+                        )
                     )
                 )
                 .withLanguage(TwigLanguage.INSTANCE);
@@ -339,8 +343,10 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getAutocompletableFilterPattern() {
         return
             PlatformPatterns
-                .psiElement()
-                .afterSibling(PlatformPatterns.psiElement(TwigTokenTypes.FILTER))
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .afterLeaf(
+                    PlatformPatterns.psiElement(TwigTokenTypes.FILTER)
+                )
                 .withLanguage(TwigLanguage.INSTANCE);
     }
 

@@ -193,7 +193,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         // provides support for 'a'|<xxx> but currently blocked on phpstorm see WI-19022
         extend(
-            CompletionType.BASIC,
+            CompletionType.SMART,
             PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE)),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
@@ -210,8 +210,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     if ((prevElement != null) && ((prevElement instanceof PsiWhiteSpace))) prevElement = prevElement.getPrevSibling();
 
                     if ((prevElement != null) && (prevElement.getNode().getElementType() == TwigTokenTypes.FILTER)) {
-                        for(Map.Entry<String, String> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFilters().entrySet()) {
-                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()));
+                        for(Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFilters().entrySet()) {
+                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(TwigExtensionParser.getIcon(entry.getValue().getTwigExtensionType())).withTypeText(entry.getValue().getType()));
                         }
                     }
 

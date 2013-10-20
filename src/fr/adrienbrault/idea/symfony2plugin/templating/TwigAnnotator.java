@@ -1,16 +1,24 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAction;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
 
@@ -38,6 +46,45 @@ public class TwigAnnotator implements Annotator {
 
         if(Settings.getInstance(element.getProject()).twigAnnotateTemplate) {
             this.annotateTemplate(element, holder);
+        }
+
+        if(Settings.getInstance(element.getProject()).twigAnnotateTranslation) {
+            this.annotateTranslationKey(element, holder);
+            this.annotateTranslationDomain(element, holder);
+        }
+
+
+    }
+
+    private void annotateTranslationKey(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+        if(!TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
+            return;
+        }
+
+        String domainName = TwigUtil.getPsiElementTranslationDomain(psiElement);
+        if(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), psiElement.getText(), domainName).length == 0) {
+
+            Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
+            PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), domainName);
+            for(PsiElement psiFile: psiElements) {
+                if(psiFile instanceof YAMLFile) {
+                    annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, psiElement.getText()));
+                }
+            }
+        }
+
+    }
+
+    private void annotateTranslationDomain(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+        if(!TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+            return;
+        }
+
+        PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+        if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+            if(TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getText()).length == 0) {
+                holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
+            }
         }
 
     }

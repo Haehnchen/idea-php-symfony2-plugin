@@ -44,7 +44,7 @@ public class AssetDirectoryReader {
         String webDirectoryName = Settings.getInstance(project).directoryToWeb;
 
         VirtualFile projectDirectory = project.getBaseDir();
-        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, webDirectoryName);
+        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, webDirectoryName.split("/"));
 
         if (null == webDirectory) {
             return files;

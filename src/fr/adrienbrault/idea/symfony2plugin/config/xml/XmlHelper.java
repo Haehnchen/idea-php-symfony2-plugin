@@ -15,6 +15,7 @@ import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
+import gnu.trove.THashSet;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
@@ -22,6 +23,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class XmlHelper {
     public static PsiElementPattern.Capture<PsiElement> getTagPattern(String... tags) {
@@ -177,4 +179,39 @@ public class XmlHelper {
 
         return null;
     }
+
+    public static Set<String> getLocalServices(PsiFile psiFile) {
+
+        if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
+            return null;
+        }
+
+        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        if(xmlTags == null) {
+            return null;
+        }
+
+        Set<String> services = new THashSet<String>();
+
+        for(XmlTag xmlTag: xmlTags) {
+            if(xmlTag.getName().equals("container")) {
+                for(XmlTag servicesTag: xmlTag.getSubTags()) {
+                    if(servicesTag.getName().equals("services")) {
+                        for(XmlTag serviceTag: servicesTag.getSubTags()) {
+                            XmlAttribute attrValue = serviceTag.getAttribute("id");
+                            if(attrValue != null) {
+                                String serviceNameId = attrValue.getValue();
+                                if(serviceNameId != null) {
+                                    services.add(serviceNameId);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return services;
+    }
+
 }

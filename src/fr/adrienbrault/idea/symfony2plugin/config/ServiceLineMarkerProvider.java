@@ -6,6 +6,7 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -13,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServerIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,8 +25,15 @@ public class ServiceLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
     protected void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        if (!Symfony2ProjectComponent.isEnabled(psiElement)
-            || !Settings.getInstance(psiElement.getProject()).phpHighlightServices
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return;
+        }
+
+        if(PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
+            this.classNameMarker(psiElement, result);
+        }
+
+        if (!Settings.getInstance(psiElement.getProject()).phpHighlightServices
             || !(psiElement instanceof StringLiteralExpression)
             || !(psiElement.getContext() instanceof ParameterList))
         {
@@ -53,9 +62,24 @@ public class ServiceLineMarkerProvider extends RelatedItemLineMarkerProvider {
             return;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SERVICE).
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SERVICE_LINE_MARKER).
             setTargets(resolveResults).
             setTooltipText("Navigate to service");
+
+        result.add(builder.createLineMarkerInfo(psiElement));
+
+    }
+
+    private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+
+        PsiElement[] psiElements = ServerIndexUtil.getPossibleServiceTargets((PhpClass) psiElement.getContext());
+        if(psiElements.length == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SERVICE_LINE_MARKER).
+            setTargets(psiElements).
+            setTooltipText("Navigate to definition");
 
         result.add(builder.createLineMarkerInfo(psiElement));
 

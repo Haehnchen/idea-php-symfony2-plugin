@@ -5,6 +5,13 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.9.25 / 0.10.25
+* Translation key and domain annotator for php and twig with yaml key creation quick fix
+* Hack to support twig filter completion on char type event (see blocker) and goto
+* Add yaml and xml service indexer
+* Provide a service definition line marker for classes, based on service index
+* Some more form builder completions
+
 ### 0.9.24 / 0.10.24
 * Provide settings for service line marker and disable it on default
 
