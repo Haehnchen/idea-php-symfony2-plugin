@@ -100,6 +100,15 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         }
                     }));
 
+                    methodParameterSettings.add(new MethodParameterSetting(
+                        "\\Symfony\\Component\\Form\\FormBuilderInterface",
+                        "add",
+                        2,
+                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.FORM_TYPE,
+                        DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE,
+                        "type"
+                    ));
+
                     return methodParameterSettings;
                 }
 
