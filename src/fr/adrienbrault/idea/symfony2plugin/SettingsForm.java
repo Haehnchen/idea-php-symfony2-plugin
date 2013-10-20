@@ -57,6 +57,7 @@ public class SettingsForm implements Configurable {
     private JButton buttonHelp;
     private JCheckBox highlightServices;
     private JCheckBox twigAnnotateTranslation;
+    private JCheckBox phpAnnotateTranslation;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -119,9 +120,10 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateService.isSelected() == getSettings().phpAnnotateService
             || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
+            || !phpAnnotateTranslation.isSelected() == getSettings().phpAnnotateTranslation
+            || !highlightServices.isSelected() == getSettings().phpHighlightServices
 
             || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
-            || !highlightServices.isSelected() == getSettings().phpHighlightServices
 
             || !directoryToApp.getText().equals(getSettings().directoryToApp)
             || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
@@ -151,6 +153,7 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateService = phpAnnotateService.isSelected();
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
+        getSettings().phpAnnotateTranslation = phpAnnotateTranslation.isSelected();
         getSettings().phpHighlightServices = highlightServices.isSelected();
 
         getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
@@ -194,6 +197,7 @@ public class SettingsForm implements Configurable {
         phpAnnotateService.setSelected(getSettings().phpAnnotateService);
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
+        phpAnnotateTranslation.setSelected(getSettings().phpAnnotateTranslation);
         highlightServices.setSelected(getSettings().phpHighlightServices);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);

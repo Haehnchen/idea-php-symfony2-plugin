@@ -349,6 +349,15 @@
               <text value="Translation"/>
             </properties>
           </component>
+          <component id="9e0bc" class="javax.swing.JCheckBox" binding="phpAnnotateTranslation">
+            <constraints>
+              <grid row="30" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Translation"/>
+            </properties>
+          </component>
         </children>
       </grid>
       <component id="2ef99" class="javax.swing.JCheckBox" binding="pluginEnabled">

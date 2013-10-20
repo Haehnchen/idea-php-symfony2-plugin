@@ -317,6 +317,7 @@ Pls vote for higher priority
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.PhpServiceAnnotator"/>
+        <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationAnnotator"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
 
