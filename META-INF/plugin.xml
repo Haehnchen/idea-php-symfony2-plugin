@@ -320,6 +320,8 @@ Pls vote for higher priority
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
 
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServicesStubIndex"/>
+
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false"
