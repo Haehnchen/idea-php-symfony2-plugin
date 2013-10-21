@@ -8,8 +8,10 @@ import com.intellij.codeInsight.completion.impl.CompletionServiceImpl;
 import com.intellij.codeInsight.editorActions.CompletionAutoPopupHandler;
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate;
 import com.intellij.ide.PowerSaveMode;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
@@ -17,6 +19,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +32,15 @@ public class WorkaroundTwigTypedHandler extends TypedHandlerDelegate {
 
         if (!(file instanceof TwigFile)) {
             return TypedHandlerDelegate.Result.CONTINUE;
+        }
+
+        if(c == ' ' && PluginManager.getPlugin(PluginId.getId("com.jetbrains.twig")) != null) {
+            PsiElement psiElement = file.findElementAt(editor.getCaretModel().getOffset());
+            if(psiElement == null || TwigHelper.getBlockTagPattern().accepts(psiElement)) {
+                return null;
+            }
+
+            scheduleAutoPopup(project, editor, null);
         }
 
         if ((c != '|')) {
