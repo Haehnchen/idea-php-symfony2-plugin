@@ -4,15 +4,14 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServerIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -31,6 +30,10 @@ public class ServiceLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
         if(PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
             this.classNameMarker(psiElement, result);
+        }
+
+        if(psiElement instanceof StringLiteralExpression && PhpElementsUtil.getMethodReturnPattern().accepts(psiElement)) {
+            this.formNameMarker(psiElement, result);
         }
 
         if (!Settings.getInstance(psiElement.getProject()).phpHighlightServices
@@ -82,6 +85,27 @@ public class ServiceLineMarkerProvider extends RelatedItemLineMarkerProvider {
             setTooltipText("Navigate to definition");
 
         result.add(builder.createLineMarkerInfo(psiElement));
+
+    }
+
+    private void formNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+        Method method = PsiTreeUtil.getParentOfType(psiElement, Method.class);
+
+        if(method == null) {
+            return;
+        }
+
+        if(new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
+            PsiElement psiElement1 = FormUtil.getFormTypeToClass(psiElement.getProject(), ((StringLiteralExpression) psiElement).getContents());
+            if(psiElement1 != null) {
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.FORM_TYPE_LINE_MARKER).
+                    setTargets(psiElement1).
+                    setTooltipText("Navigate to form type");
+
+                result.add(builder.createLineMarkerInfo(psiElement));
+            }
+
+        }
 
     }
 

@@ -178,6 +178,16 @@ public class PhpElementsUtil {
             .withLanguage(PhpLanguage.INSTANCE);
     }
 
+    /**
+     * return 'value' inside class method
+     */
+    static public PsiElementPattern.Capture<StringLiteralExpression> getMethodReturnPattern() {
+        return PlatformPatterns
+            .psiElement(StringLiteralExpression.class)
+            .withParent(PlatformPatterns.psiElement(PhpReturn.class).inside(Method.class))
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
     @Nullable
     static public PhpClass getClass(Project project, String className) {
         return getClass(PhpIndex.getInstance(project), className);

@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.extensions.PluginDescriptor;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
@@ -114,31 +117,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         );
 
         // provides support for {% block |
-        extend(
-            CompletionType.BASIC,
-            TwigHelper.getBlockTagPattern(),
-            new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
+        extend(CompletionType.BASIC, TwigHelper.getBlockTagPattern(), new BlockCompletionProvider());
 
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
-                        return;
-                    }
-
-                    Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-                    ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
-                    ArrayList<String> uniqueList = new ArrayList<String>();
-                    for (TwigBlock block : blocks) {
-                        if(!uniqueList.contains(block.getName())) {
-                            uniqueList.add(block.getName());
-                            resultSet.addElement(new TwigBlockLookupElement(block));
-                        }
-                    }
-
-                }
-            }
-        );
+        // hack for blocked completion on new twig plugin
+        if(PluginManager.getPlugin(PluginId.getId("com.jetbrains.twig")) != null) {
+            extend(CompletionType.SMART, TwigHelper.getBlockTagPattern(), new BlockCompletionProvider());
+        }
 
         // provides support for {% from 'twig..' import |
         extend(
@@ -345,6 +329,27 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     new TemplateLookupElement(entry.getKey(), entry.getValue())
                 );
             }
+        }
+    }
+
+
+    class BlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
+            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+            ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
+            ArrayList<String> uniqueList = new ArrayList<String>();
+            for (TwigBlock block : blocks) {
+                if(!uniqueList.contains(block.getName())) {
+                    uniqueList.add(block.getName());
+                    resultSet.addElement(new TwigBlockLookupElement(block));
+                }
+            }
+
         }
     }
 
