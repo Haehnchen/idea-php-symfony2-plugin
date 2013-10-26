@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.9.26 / 0.10.26
+* Add completion, goto and line marker for FormTypeInterface:getParent
+* Fix FormBuilderInterface:create signature check
+* Last version which support PhpStorm 6
+
 ### 0.9.25 / 0.10.25
 * Translation key and domain annotator for php and twig with yaml key creation quick fix
 * Hack to support twig filter completion on char type event (see blocker) and goto

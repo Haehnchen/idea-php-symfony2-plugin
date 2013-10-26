@@ -95,6 +95,13 @@
 0.10.x: PhpStorm 7<br>
 <br>
 
+<h2>0.9.26 / 0.10.26</h2>
+<ul>
+    <li>Add completion, goto and line marker for FormTypeInterface:getParent</li>
+    <li>Fix FormBuilderInterface:create signature check</li>
+    <li>Info: Last version which supports PhpStorm 6</li>
+</ul>
+
 <h2>0.9.25 / 0.10.25</h2>
 <ul>
     <li>Translation key and domain annotator for php and twig with yaml key creation quick fix</li>
