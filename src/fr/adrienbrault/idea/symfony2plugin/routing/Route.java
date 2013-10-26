@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -14,12 +16,12 @@ public class Route {
     private String name;
     private String controller;
 
-    private HashMap<String, String> variables;
-    private HashMap<String, String> defaults;
-    private HashMap<String, String> requirements;
-    private ArrayList<Collection<String>> tokens;
+    private HashSet<String> variables = new HashSet<String>();
+    private HashMap<String, String> defaults = new HashMap<String, String>();
+    private HashMap<String, String> requirements = new HashMap<String, String>();
+    private ArrayList<Collection<String>> tokens = new ArrayList<Collection<String>>();
 
-    public Route(String name, HashMap<String, String> variables, HashMap<String, String> defaults, HashMap<String, String> requirements, ArrayList<Collection<String>> tokens) {
+    public Route(String name, HashSet<String> variables, HashMap<String, String> defaults, HashMap<String, String> requirements, ArrayList<Collection<String>> tokens) {
         this.name = name;
 
         this.variables = variables;
@@ -46,7 +48,8 @@ public class Route {
         return controller;
     }
 
-    public HashMap<String, String> getVariables() {
+    @NotNull
+    public HashSet<String> getVariables() {
         return variables;
     }
 

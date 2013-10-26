@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,15 +24,25 @@ import java.util.regex.Pattern;
 
 public class RouteHelper {
 
-    public static PsiElement[] getMethods(Project project, String routeName) {
+    @Nullable
+    public static Route getRoute(Project project, String routeName) {
 
         Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
 
         if(!symfony2ProjectComponent.getRoutes().containsKey(routeName)) {
-            return new PsiElement[0];
+            return null;
         }
 
-        Route route = symfony2ProjectComponent.getRoutes().get(routeName);
+        return symfony2ProjectComponent.getRoutes().get(routeName);
+    }
+
+    public static PsiElement[] getMethods(Project project, String routeName) {
+
+        Route route = getRoute(project, routeName);
+
+        if(route == null) {
+            return new PsiElement[0];
+        }
 
         String controllerName = route.getController();
         if(controllerName == null)  {
@@ -126,9 +137,9 @@ public class RouteHelper {
     private static Route convertRouteConfig(String routeName, ArrayCreationExpression hashValue) {
         List<ArrayHashElement> hashElementCollection = makeCollection(hashValue.getHashElements());
 
-        HashMap<String, String> variables = new HashMap<String, String>();
+        HashSet<String> variables = new HashSet<String>();
         if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression) {
-            variables = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(0).getValue());
+            variables.addAll(PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(0).getValue()).values());
         }
 
         HashMap<String, String> defaults = new HashMap<String, String>();

@@ -3,11 +3,10 @@ package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationQuoteInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
