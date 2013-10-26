@@ -36,6 +36,8 @@ public class ServiceXmlParserFactory {
                 if(!this.serviceFiles.get(serviceFile.getAbsolutePath()).equals(serviceFile.lastModified())) {
                     return true;
                 }
+            } else {
+                Symfony2ProjectComponent.getLogger().warn("file not found: " + serviceFiles.toString());
             }
         }
 
@@ -55,6 +57,7 @@ public class ServiceXmlParserFactory {
 
         try {
             this.serviceParserInstance = serviceParser.newInstance();
+            Symfony2ProjectComponent.getLogger().info("new instance: " + serviceParser.getName());
         } catch (InstantiationException ignored) {
         } catch (IllegalAccessException ignored) {
         }
@@ -68,6 +71,8 @@ public class ServiceXmlParserFactory {
                 }
             }
         }
+
+        Symfony2ProjectComponent.getLogger().info("update: " + serviceParser.getName());
 
         return (T) this.serviceParserInstance;
     }

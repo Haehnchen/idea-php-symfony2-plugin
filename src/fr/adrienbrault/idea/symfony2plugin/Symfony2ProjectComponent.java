@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.intellij.openapi.diagnostic.Logger;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -28,6 +29,8 @@ import java.util.Map;
 public class Symfony2ProjectComponent implements ProjectComponent {
 
     public static String HELP_URL = "http://symfony2-plugin.espend.de/";
+
+    final private static Logger LOG = Logger.getInstance("Symfony2-Plugin");
 
     private Project project;
 
@@ -60,6 +63,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         // System.out.println("projectClosed");
     }
 
+    public static Logger getLogger() {
+        return LOG;
+    }
+
     public void showInfoNotification(String content) {
         Notification errorNotification = new Notification("Symfony2 Plugin", "Symfony2 Plugin", content, NotificationType.INFORMATION);
         Notifications.Bus.notify(errorNotification, this.project);
@@ -77,6 +84,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
 
         if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
+            Symfony2ProjectComponent.getLogger().warn("missing routing: " + urlGeneratorFile.toString());
             return routes;
         }
 
@@ -84,6 +92,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         if (routesLastModified.equals(this.routesLastModified)) {
             return this.routes;
         }
+
+        Symfony2ProjectComponent.getLogger().info("update routing: " + urlGeneratorFile.toString());
 
         try {
             routes = RouteHelper.getRoutes(VfsUtil.loadText(virtualUrlGeneratorFile));
@@ -115,6 +125,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         if(containerFiles.size() == 0) {
+            Symfony2ProjectComponent.getLogger().info("no custom container files add default");
             containerFiles.add(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
         }
 
@@ -122,6 +133,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         for(ContainerFile containerFile : containerFiles) {
             if(containerFile.exists(this.project)) {
                 validFiles.add(containerFile.getFile(this.project));
+            } else {
+                Symfony2ProjectComponent.getLogger().warn("container file not exists skipping: " + containerFile.getPath());
             }
         }
 
@@ -152,12 +165,14 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         if(this.getContainerFiles().size() == 0) {
             showInfoNotification("missing at least one container file");
+            Symfony2ProjectComponent.getLogger().warn("missing at least one container file");
         }
 
         String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
         File urlGeneratorFile = new File(urlGeneratorPath);
         if (!urlGeneratorFile.exists()) {
             showInfoNotification("missing routing file: " + urlGeneratorPath);
+            Symfony2ProjectComponent.getLogger().warn("missing routing file: " + urlGeneratorPath);
         }
 
     }

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.Nullable;
@@ -51,6 +52,8 @@ public class TranslationIndex {
             return new TranslationStringMap();
         }
 
+        Symfony2ProjectComponent.getLogger().info("update translations: " + translationDirectory.toString());
+
         this.translationStringMapModified = translationDirectory.lastModified();
         return this.translationStringMap = new TranslationStringParser().parsePathMatcher(translationDirectory.getPath());
     }
@@ -76,6 +79,7 @@ public class TranslationIndex {
 
         File file = new File(translationPath);
         if(!file.exists() || !file.isDirectory()) {
+            Symfony2ProjectComponent.getLogger().warn("missing translation path: " + file.toString());
             return null;
         }
 
