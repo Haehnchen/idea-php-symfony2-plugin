@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 
 import java.util.regex.Pattern;
@@ -41,7 +42,7 @@ public class TwigBlock {
             public boolean isAccepted(PsiElement psiElement) {
 
                 // @TODO: move this to PlatformPatterns; withName?
-                return PlatformPatterns.psiElement(TwigHelper.getDeprecatedBlockTag()).accepts(psiElement)
+                return PlatformPatterns.psiElement(TwigElementTypes.BLOCK_TAG).accepts(psiElement)
                     && Pattern.matches("\\{%[\\s+]block[\\s+]*" + Pattern.quote(name) + "[\\s+]*%}", psiElement.getText());
 
             }

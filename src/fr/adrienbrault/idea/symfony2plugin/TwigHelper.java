@@ -16,6 +16,8 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
+import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
@@ -189,7 +191,7 @@ public class TwigHelper {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
-                PlatformPatterns.psiElement(getDeprecatedPrintBlock())
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)
             )
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -204,14 +206,14 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
-        return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(getDeprecatedPrintBlock())).withLanguage(TwigLanguage.INSTANCE);
+        return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)).withLanguage(TwigLanguage.INSTANCE);
     }
 
     public static ElementPattern<PsiElement> getBlockTagPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
-                PlatformPatterns.psiElement(getDeprecatedBlockTag())
+                PlatformPatterns.psiElement(TwigElementTypes.BLOCK_TAG)
             )
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -230,24 +232,24 @@ public class TwigHelper {
 
         return PlatformPatterns.or(
             PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .withParent(
-                PlatformPatterns.psiElement(getDeprecatedTwigTagWithFileReference())
-            )
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("trans_default_domain")
-            ).withLanguage(TwigLanguage.INSTANCE),
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .withParent(
+                    PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                )
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("trans_default_domain")
+                ).withLanguage(TwigLanguage.INSTANCE),
             PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(
-                PlatformPatterns.psiElement(getDeprecatedTwigTagWithFileReference())
-            )
+                .withParent(
+                    PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                )
                 .afterLeafSkipping(
                     PlatformPatterns.or(
                         PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
@@ -276,7 +278,7 @@ public class TwigHelper {
                 PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
             )
             .withParent(PlatformPatterns
-                .psiElement(getDeprecatedPrintBlock())
+                .psiElement(TwigElementTypes.PRINT_BLOCK)
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
@@ -400,7 +402,7 @@ public class TwigHelper {
             PlatformPatterns.or(
                 PlatformPatterns
                     .psiElement(TwigTokenTypes.IDENTIFIER)
-                    .withParent(getDeprecatedTwigTagWithFileReference())
+                    .withParent(TwigTagWithFileReference.class)
                     .afterLeafSkipping(
                         PlatformPatterns.or(
                             PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -415,7 +417,7 @@ public class TwigHelper {
                     .withLanguage(TwigLanguage.INSTANCE),
                 PlatformPatterns
                     .psiElement(TwigTokenTypes.IDENTIFIER)
-                    .withParent(getDeprecatedTwigTagWithFileReference())
+                    .withParent(TwigTagWithFileReference.class)
                     .afterLeafSkipping(
                         PlatformPatterns.or(
                             PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -427,92 +429,6 @@ public class TwigHelper {
                     )
                     .withLanguage(TwigLanguage.INSTANCE)
             );
-    }
-
-
-    @Nullable
-    public static IElementType getNamedElementType(String className, String fieldName) {
-        IElementType initClass = null;
-        try {
-            Class c = Class.forName(className);
-            initClass = (IElementType) c.getDeclaredField(fieldName).get(c.getDeclaredField(fieldName));
-
-        } catch (ClassNotFoundException e) {
-            System.out.println("ClassNotFoundException: " + className + "." + fieldName);
-        } catch (NoSuchFieldException e) {
-            System.out.println("NoSuchFieldException: " + className + "." + fieldName);
-        } catch (IllegalAccessException e) {
-            System.out.println("IllegalAccessException: " + className + "." + fieldName);
-        }
-
-        return initClass;
-    }
-
-    @Nullable
-    public static Class getDeprecatedTwigTagWithFileReference() {
-        Class c = null;
-        try {
-            c = Class.forName("com.jetbrains.twig.TwigTagWithFileReference");
-            return c;
-        } catch (ClassNotFoundException ignored) {
-        }
-
-        try {
-            c = Class.forName("com.jetbrains.twig.elements.TwigTagWithFileReference");
-            return c;
-        } catch (ClassNotFoundException ignored) {
-        }
-
-
-        throw  new IllegalArgumentException("com.jetbrains.twig.elements.TwigTagWithFileReference");
-
-    }
-
-
-    @Nullable
-    public static IElementType getDeprecatedBlockTag() {
-        IElementType iElementType = getNamedElementType("com.jetbrains.twig.TwigCompositeElementTypes",  "BLOCK_TAG");
-        if(iElementType != null) {
-            return iElementType;
-        }
-
-        iElementType = getNamedElementType("com.jetbrains.twig.elements.TwigElementTypes",  "BLOCK_TAG");
-        if(iElementType != null) {
-            return iElementType;
-        }
-
-        throw new IllegalArgumentException("no BLOCK_TAG found");
-
-    }
-
-    @Nullable
-    public static IElementType getDeprecatedPrintBlock() {
-        IElementType iElementType = getNamedElementType("com.jetbrains.twig.TwigCompositeElementTypes",  "PRINT_BLOCK");
-        if(iElementType != null) {
-            return iElementType;
-        }
-
-        iElementType = getNamedElementType("com.jetbrains.twig.elements.TwigElementTypes",  "PRINT_BLOCK");
-        if(iElementType != null) {
-            return iElementType;
-        }
-
-        throw new IllegalArgumentException("no PRINT_BLOCK found");
-    }
-
-    @Nullable
-    public static IElementType getDeprecatedMacroTag() {
-        IElementType iElementType = getNamedElementType("com.jetbrains.twig.TwigCompositeElementTypes",  "MACRO_TAG");
-        if(iElementType != null) {
-            return iElementType;
-        }
-
-        iElementType = getNamedElementType("com.jetbrains.twig.elements.TwigElementTypes",  "MACRO_TAG");
-        if(iElementType != null) {
-            return iElementType;
-        }
-
-        throw new IllegalArgumentException("no MACRO_TAG found");
     }
 
     public static ArrayList<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {

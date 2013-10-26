@@ -10,6 +10,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.*;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -52,7 +53,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         if (PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
-                PlatformPatterns.psiElement(TwigHelper.getDeprecatedPrintBlock())
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)
             ).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
 
             psiElements.addAll(Arrays.asList(this.getSets(psiElement)));
@@ -63,7 +64,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .beforeLeaf(PlatformPatterns.psiElement(TwigTokenTypes.LBRACE))
             .withParent(
-                PlatformPatterns.psiElement(TwigHelper.getDeprecatedPrintBlock())
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)
             ).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
 
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
@@ -124,7 +125,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
                     TwigFile twigFile = twigFilesByName.get(twigMacro.getTemplate());
 
                     return PsiTreeUtil.collectElements(twigFile, new RegexPsiElementFilter(
-                        TwigHelper.getDeprecatedMacroTag(),
+                        TwigElementTypes.MACRO_TAG,
                         "\\{%\\s?macro\\s?" + Pattern.quote(funcName) + "\\s?\\(.*%}")
                     );
                 }
