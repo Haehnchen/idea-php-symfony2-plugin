@@ -98,7 +98,7 @@ public class Symfony2InterfacesUtil {
     public boolean isFormBuilderFormTypeCall(PsiElement e) {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "add"),
-                getClassMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
+                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
         });
     }
 
