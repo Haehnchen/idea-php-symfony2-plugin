@@ -26,38 +26,38 @@ public class RouteHelper {
     public static PsiElement[] getMethods(Project project, String routeName) {
 
         Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
 
-        for (Route route : routes.values()) {
-            if(route.getName().equals(routeName)) {
-                String controllerName = route.getController();
+        if(!symfony2ProjectComponent.getRoutes().containsKey(routeName)) {
+            return new PsiElement[0];
+        }
 
-                // convert to class: FooBundle\Controller\BarController::fooBarAction
-                // convert to class: foo_service_bar:fooBar
-                if(controllerName.contains("::")) {
-                    String className = controllerName.substring(0, controllerName.lastIndexOf("::"));
-                    String methodName = controllerName.substring(controllerName.lastIndexOf("::") + 2);
+        Route route = symfony2ProjectComponent.getRoutes().get(routeName);
 
-                    PhpIndex phpIndex = PhpIndex.getInstance(project);
-                    Collection<? extends PhpNamedElement> methodCalls = phpIndex.getBySignature("#M#C\\" + className + "." + methodName, null, 0);
-                    return methodCalls.toArray(new PsiElement[methodCalls.size()]);
+        String controllerName = route.getController();
+        if(controllerName == null)  {
+            return new PsiElement[0];
+        }
 
-                } else if(controllerName.contains(":")) {
-                    ControllerIndex controllerIndex = new ControllerIndex(project);
+        // convert to class: FooBundle\Controller\BarController::fooBarAction
+        // convert to class: foo_service_bar:fooBar
+        if(controllerName.contains("::")) {
+            String className = controllerName.substring(0, controllerName.lastIndexOf("::"));
+            String methodName = controllerName.substring(controllerName.lastIndexOf("::") + 2);
 
-                    ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(controllerName);
-                    if(controllerServiceAction != null) {
-                        return new PsiElement[] {controllerServiceAction.getMethod()};
-                    }
+            return PhpElementsUtil.getPsiElementsBySignature(project, "#M#C\\" + className + "." + methodName);
 
-                }
+        } else if(controllerName.contains(":")) {
+            ControllerIndex controllerIndex = new ControllerIndex(project);
 
-                return new PsiElement[0];
+            ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(controllerName);
+            if(controllerServiceAction != null) {
+                return new PsiElement[] {controllerServiceAction.getMethod()};
             }
 
         }
 
         return new PsiElement[0];
+
     }
 
     private static <E> ArrayList<E> makeCollection(Iterable<E> iter) {
@@ -79,7 +79,7 @@ public class RouteHelper {
 
         PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, virtualFile);
         if(!(psiFile instanceof PhpFile)) {
-
+            return routes;
         }
 
         // heavy stuff here, to get nested routing array :)
@@ -136,7 +136,7 @@ public class RouteHelper {
             defaults = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(1).getValue());
         }
 
-        HashMap<String, String> requirements = new HashMap<String, String>();
+        HashMap<String, String>requirements = new HashMap<String, String>();
         if(hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression) {
             requirements = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(2).getValue());
         }

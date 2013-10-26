@@ -28,7 +28,7 @@ public class Route {
         this.tokens = tokens;
 
         if(defaults.containsKey("_controller")) {
-            this.controller = defaults.get("_controller");
+            this.controller = defaults.get("_controller").replace("\\\\", "\\");
         }
     }
 
@@ -45,7 +45,6 @@ public class Route {
     public String getController() {
         return controller;
     }
-
 
     public HashMap<String, String> getVariables() {
         return variables;
