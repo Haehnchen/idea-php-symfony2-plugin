@@ -20,10 +20,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class PhpElementsUtil {
     static public List<ResolveResult> getClassInterfaceResolveResult(Project project, String FQNClassOrInterfaceName) {
@@ -50,6 +47,37 @@ public class PhpElementsUtil {
             PhpPsiElement child = arrayHashElement.getKey();
             if(child instanceof StringLiteralExpression) {
                 keys.add(((StringLiteralExpression) child).getContents());
+            }
+        }
+
+        return keys;
+    }
+
+    /**
+     * array('foo' => 'bar', 'foo1' => 'bar')
+     */
+    static public HashMap<String, String> getArrayKeyValueMap(ArrayCreationExpression arrayCreationExpression) {
+        HashMap<String, String> keys = new HashMap<String, String>();
+
+        for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
+            PhpPsiElement child = arrayHashElement.getKey();
+            if(child != null && ((child instanceof StringLiteralExpression) || PhpPatterns.psiElement(PhpElementTypes.NUMBER).accepts(child))) {
+
+                String key;
+                if(child instanceof StringLiteralExpression) {
+                    key = ((StringLiteralExpression) child).getContents();
+                } else {
+                    key = child.getText();
+                }
+
+                String value = null;
+
+                if(arrayHashElement.getValue() instanceof StringLiteralExpression) {
+                    value = ((StringLiteralExpression) arrayHashElement.getValue()).getContents();
+                }
+
+                keys.put(key, value);
+
             }
         }
 
@@ -205,6 +233,7 @@ public class PhpElementsUtil {
         return classes.isEmpty() ? null : classes.iterator().next();
     }
 
+    @Nullable
     static public PhpClass getClassInterface(Project project, String className) {
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         PhpClass phpClass = getClass(phpIndex, className);

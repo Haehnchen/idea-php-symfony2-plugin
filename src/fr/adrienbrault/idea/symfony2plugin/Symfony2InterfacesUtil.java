@@ -8,6 +8,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -235,6 +236,18 @@ public class Symfony2InterfacesUtil {
         }
 
         return isImplementationOfInterface(phpClass.getSuperClass(), phpInterface);
+    }
+
+    public boolean isInstanceOf(PhpClass subjectClass, String expectedClass) {
+
+        PhpClass instanceClass = PhpElementsUtil.getClassInterface(subjectClass.getProject(), expectedClass);
+
+        if(instanceClass == null) {
+            return false;
+        }
+
+        return isInstanceOf(subjectClass, instanceClass);
+
     }
 
     public boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {

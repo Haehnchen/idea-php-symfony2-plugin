@@ -95,11 +95,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         Symfony2ProjectComponent.getLogger().info("update routing: " + urlGeneratorFile.toString());
 
-        try {
-            routes = RouteHelper.getRoutes(VfsUtil.loadText(virtualUrlGeneratorFile));
-        } catch (IOException e) {
-            return routes;
-        }
+        routes = RouteHelper.getRoutes(project, virtualUrlGeneratorFile);
 
         this.routes = routes;
         this.routesLastModified = routesLastModified;
