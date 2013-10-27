@@ -34,6 +34,7 @@ public class WorkaroundTwigTypedHandler extends TypedHandlerDelegate {
             return TypedHandlerDelegate.Result.CONTINUE;
         }
 
+        /*
         if(c == ' ' && PluginManager.getPlugin(PluginId.getId("com.jetbrains.twig")) != null) {
             PsiElement psiElement = file.findElementAt(editor.getCaretModel().getOffset());
             if(psiElement == null || TwigHelper.getBlockTagPattern().accepts(psiElement)) {
@@ -42,6 +43,7 @@ public class WorkaroundTwigTypedHandler extends TypedHandlerDelegate {
 
             scheduleAutoPopup(project, editor, null);
         }
+        */
 
         if ((c != '|')) {
             return TypedHandlerDelegate.Result.CONTINUE;
