@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,12 @@ public class TwigTypeResolveUtil {
         Collection<? extends PhpNamedElement> type = rootVariable;
         for (int i = 1; i <= typeName.length - 1; i++ ) {
             type = resolveTwigMethodName(type, typeName[i]);
+
+            // we can stop on empty list
+            if(type.size() == 0) {
+                Collections.emptyList();
+            }
+
         }
 
         return type;
@@ -119,18 +126,12 @@ public class TwigTypeResolveUtil {
         ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
 
         for(PhpNamedElement phpNamedElement: previousElement) {
-            if(phpNamedElement instanceof PhpClass) {
-                for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
-                    if(method.getName().toLowerCase().equals("get" + typeName.toLowerCase())) {
-
-                        PhpType phpType = method.getType();
-                        for(String typeString: phpType.getTypes()) {
-                            PhpNamedElement phpNamedElement1 = PhpElementsUtil.getClassInterface(phpNamedElement.getProject(), typeString);
-                            if(phpNamedElement1 != null) {
-                                phpNamedElements.add(phpNamedElement1);
-                            }
-
-                        }
+            for(PhpNamedElement target : getTwigPhpNameTargets(phpNamedElement, typeName)) {
+                PhpType phpType = target.getType();
+                for(String typeString: phpType.getTypes()) {
+                    PhpNamedElement phpNamedElement1 = PhpElementsUtil.getClassInterface(phpNamedElement.getProject(), typeString);
+                    if(phpNamedElement1 != null) {
+                        phpNamedElements.add(phpNamedElement1);
                     }
                 }
             }
@@ -138,4 +139,23 @@ public class TwigTypeResolveUtil {
 
         return phpNamedElements;
     }
+
+    public static Collection<? extends PhpNamedElement> getTwigPhpNameTargets(PhpNamedElement phpNamedElement, String variableName) {
+
+        // make it easy for use
+        variableName = variableName.toLowerCase();
+
+        ArrayList<PhpNamedElement> targets = new ArrayList<PhpNamedElement>();
+        if(phpNamedElement instanceof PhpClass) {
+            for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
+                String methodName = method.getName().toLowerCase();
+                if(methodName.equals(variableName) || methodName.equals("get" + variableName)) {
+                    targets.add(method);
+                }
+            }
+        }
+
+        return targets;
+    }
+
 }

@@ -80,7 +80,13 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {
         Collection<? extends PhpNamedElement> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement));
-        return types.toArray(new PsiElement[types.size()]);
+
+        ArrayList<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
+        for(PhpNamedElement psiTarget: types) {
+            targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiTarget, psiElement.getText()));
+        }
+
+        return targetPsiElements.toArray(new PsiElement[targetPsiElements.size()]);
     }
 
     private PsiElement[] getFunctions(PsiElement psiElement) {
