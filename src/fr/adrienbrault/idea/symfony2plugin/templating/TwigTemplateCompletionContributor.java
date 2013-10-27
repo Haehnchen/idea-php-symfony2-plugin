@@ -10,9 +10,13 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIcons;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.completion.PhpLookupElement;
+import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassIndex;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -38,7 +42,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -334,13 +337,47 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new TypeCompletionProvider()
         );
 
+        // {# variable \Foo\ClassName #}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getTwigTypeDocBlock(),
+            new TwigDocBlockTypeClassCompletionProvider()
+        );
+
+    }
+
+    /**
+     * think of PhpClassCompletionProvider
+     */
+    private class TwigDocBlockTypeClassCompletionProvider extends CompletionProvider<CompletionParameters> {
+
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters paramV, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet resultSet) {
+
+            PsiElement psiElement = paramV.getOriginalPosition();
+
+            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return;
+            }
+
+            PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
+            for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {
+                resultSet.addElement(new PhpLookupElement(className, PhpClassIndex.KEY, psiElement.getProject(), PhpReferenceInsertHandler.getInstance()));
+            }
+
+        }
     }
 
     private class TypeCompletionProvider extends CompletionProvider<CompletionParameters> {
 
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet resultSet) {
+
             PsiElement psiElement = parameters.getOriginalPosition();
+            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return;
+            }
+
             String[] possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
 
             // find core function for that
@@ -362,6 +399,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet paramCompletionResultSet) {
+
+            PsiElement psiElement = parameters.getOriginalPosition();
+            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return;
+            }
 
             String routeName = TwigHelper.getMatchingRouteNameOnParameter(parameters.getOriginalPosition());
             if(routeName == null) {

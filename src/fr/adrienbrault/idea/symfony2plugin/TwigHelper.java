@@ -6,10 +6,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.patterns.PsiElementPattern;
+import com.intellij.psi.*;
 import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.TwigFile;
@@ -309,6 +307,12 @@ public class TwigHelper {
             .afterLeaf(
                 PlatformPatterns.psiElement(TwigTokenTypes.DOT)
             )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static PsiElementPattern.Capture<PsiComment> getTwigTypeDocBlock() {
+        return PlatformPatterns
+            .psiComment().withText(PlatformPatterns.string().matches("\\{#[\\s]+([\\w]+)[\\s]+(.*)[\\s]+#}"))
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
