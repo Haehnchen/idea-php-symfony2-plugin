@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
@@ -428,6 +429,19 @@ public class PhpElementsUtil {
 
         return null;
 
+    }
+
+    public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern) {
+        String prevText = "";
+
+        for (PsiElement child = psiElement.getPrevSibling(); child != null; child = child.getPrevSibling()) {
+            prevText = child.getText() + prevText;
+            if(pattern.accepts(child)) {
+                return prevText;
+            }
+        }
+
+        return prevText;
     }
 
     @Nullable

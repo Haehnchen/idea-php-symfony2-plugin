@@ -1,14 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -24,6 +29,21 @@ import java.util.regex.Pattern;
 
 public class RouteHelper {
 
+    public static LookupElement[] getRouteParameterLookupElements(Project project, String routeName) {
+        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        Route route = RouteHelper.getRoute(project, routeName);
+        if(route == null) {
+            return lookupElements.toArray(new LookupElement[lookupElements.size()]);
+        }
+
+        for(String values: route.getVariables()) {
+            lookupElements.add(LookupElementBuilder.create(values).withIcon(Symfony2Icons.ROUTE));
+        }
+
+        return lookupElements.toArray(new LookupElement[lookupElements.size()]);
+    }
+
     @Nullable
     public static Route getRoute(Project project, String routeName) {
 
@@ -34,6 +54,25 @@ public class RouteHelper {
         }
 
         return symfony2ProjectComponent.getRoutes().get(routeName);
+    }
+    public static PsiElement[] getRouteParameterPsiElements(Project project, String routeName, String parameterName) {
+
+        List<PsiElement> results = new ArrayList<PsiElement>();
+
+        for (PsiElement psiElement : RouteHelper.getMethods(project, routeName)) {
+
+            if(psiElement instanceof Method) {
+                for(Parameter parameter: ((Method) psiElement).getParameters()) {
+                    if(parameter.getName().equals(parameterName)) {
+                        results.add(parameter);
+                    }
+                }
+            }
+
+        }
+
+        return results.toArray(new PsiElement[results.size()]);
+
     }
 
     public static PsiElement[] getMethods(Project project, String routeName) {

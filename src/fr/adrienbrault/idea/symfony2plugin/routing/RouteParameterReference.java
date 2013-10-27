@@ -35,17 +35,8 @@ public class RouteParameterReference extends PsiPolyVariantReferenceBase<PsiElem
 
         List<ResolveResult> results = new ArrayList<ResolveResult>();
 
-        for (PsiElement psiElement : RouteHelper.getMethods(getElement().getProject(), this.routeName)) {
-
-            if(psiElement instanceof Method) {
-                for(Parameter parameter: ((Method) psiElement).getParameters()) {
-                    if(parameter.getName().equals(parameterName)) {
-                        results.add(new PsiElementResolveResult(parameter));
-                    }
-                }
-            }
-
-            //results.add(new PsiElementResolveResult(psiElement));
+        for (PsiElement psiParameter : RouteHelper.getRouteParameterPsiElements(getElement().getProject(), this.routeName, parameterName)) {
+            results.add(new PsiElementResolveResult(psiParameter));
         }
 
         return results.toArray(new ResolveResult[results.size()]);
@@ -54,18 +45,6 @@ public class RouteParameterReference extends PsiPolyVariantReferenceBase<PsiElem
     @NotNull
     @Override
     public Object[] getVariants() {
-
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
-
-        Route route = RouteHelper.getRoute(getElement().getProject(), routeName);
-        if(route == null) {
-            return lookupElements.toArray();
-        }
-
-        for(String values: route.getVariables()) {
-            lookupElements.add(LookupElementBuilder.create(values).withIcon(Symfony2Icons.ROUTE));
-        }
-
-        return lookupElements.toArray();
+        return RouteHelper.getRouteParameterLookupElements(getElement().getProject(), routeName);
     }
 }

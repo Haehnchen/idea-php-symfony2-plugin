@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -18,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
@@ -28,12 +28,11 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -311,6 +310,31 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
         );
 
+        // routing completion like path() function
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getPathAfterLeafPattern(),
+            new PathParameterCompletionProvider()
+        );
+
+
+    }
+
+    private class PathParameterCompletionProvider extends CompletionProvider<CompletionParameters> {
+
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet paramCompletionResultSet) {
+
+            String routeName = TwigHelper.getMatchingRouteNameOnParameter(parameters.getOriginalPosition());
+            if(routeName == null) {
+                return;
+            }
+
+            paramCompletionResultSet.addAllElements(Arrays.asList(
+                RouteHelper.getRouteParameterLookupElements(parameters.getPosition().getProject(), routeName))
+            );
+
+        }
 
     }
 

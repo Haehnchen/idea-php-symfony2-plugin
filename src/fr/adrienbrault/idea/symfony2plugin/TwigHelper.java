@@ -21,6 +21,7 @@ import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -283,6 +284,37 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getPathAfterLeafPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
+                )
+            )
+            .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path")))
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getRoutePattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")
+            .beforeLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
@@ -463,6 +495,25 @@ public class TwigHelper {
         }
 
         return virtualFiles;
+    }
+
+    /**
+     * twig lexer just giving use a flat psi list for a block. we need custom stuff to resolve this
+     * path('route', {'<parameter>':
+     * path('route', {'<parameter>': '', '<parameter2>': ''
+     */
+    @Nullable
+    public static String getMatchingRouteNameOnParameter(PsiElement startPsiElement) {
+        String prevText = PhpElementsUtil.getPrevSiblingAsTextUntil(startPsiElement, TwigHelper.getRoutePattern());
+
+        String regex = "^path\\(([\"|'])([\\w-]+)\\1[\\s]*,[\\s]*\\{[\\s]*.*['|\"]$";
+        Matcher matcher = Pattern.compile(regex).matcher(prevText.replace("\r\n", " ").replace("\n", " "));
+
+        if (matcher.find()) {
+            return matcher.group(2);
+        }
+
+        return null;
     }
 
 }

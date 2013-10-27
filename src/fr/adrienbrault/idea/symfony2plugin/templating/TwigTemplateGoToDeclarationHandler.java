@@ -22,10 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -42,6 +39,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
             return this.getBlockGoTo(psiElement);
+        }
+
+        if (TwigHelper.getPathAfterLeafPattern().accepts(psiElement)) {
+            PsiElement[] psiElements = this.getRouteParameterGoTo(psiElement);
+            if(psiElements.length > 0) {
+                return psiElements;
+            }
         }
 
         // support: {% include() %}, {{ include() }}
@@ -89,6 +93,16 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return null;
+    }
+
+    private PsiElement[] getRouteParameterGoTo(PsiElement psiElement) {
+
+        String routeName = TwigHelper.getMatchingRouteNameOnParameter(psiElement);
+        if(routeName == null) {
+            return new PsiElement[0];
+        }
+
+        return RouteHelper.getRouteParameterPsiElements(psiElement.getProject(), routeName, psiElement.getText());
     }
 
     private PsiElement getControllerGoTo(PsiElement psiElement) {
