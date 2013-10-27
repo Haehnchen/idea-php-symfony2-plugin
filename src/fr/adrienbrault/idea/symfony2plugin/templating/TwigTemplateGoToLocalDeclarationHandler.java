@@ -6,10 +6,10 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.twig.*;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigLanguage;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
@@ -70,7 +71,16 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
         }
 
+        if(TwigHelper.getTypeCompletionPattern().accepts(psiElement)) {
+            psiElements.addAll(Arrays.asList(this.getTypeGoto(psiElement)));
+        }
+
         return psiElements.toArray(new PsiElement[psiElements.size()]);
+    }
+
+    private PsiElement[] getTypeGoto(PsiElement psiElement) {
+        Collection<? extends PhpNamedElement> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement));
+        return types.toArray(new PsiElement[types.size()]);
     }
 
     private PsiElement[] getFunctions(PsiElement psiElement) {

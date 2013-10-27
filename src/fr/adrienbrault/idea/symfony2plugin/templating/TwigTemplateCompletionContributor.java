@@ -9,6 +9,9 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -21,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
@@ -317,6 +321,34 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new PathParameterCompletionProvider()
         );
 
+        // routing completion like path() function
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getTypeCompletionPattern(),
+            new TypeCompletionProvider()
+        );
+
+    }
+
+    private class TypeCompletionProvider extends CompletionProvider<CompletionParameters> {
+
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement psiElement = parameters.getOriginalPosition();
+            String[] possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+
+            // find core function for that
+            for(PhpNamedElement phpNamedElement: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
+                if(phpNamedElement instanceof PhpClass) {
+                    for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
+                        if(!(method.getName().startsWith("set") || method.getName().startsWith("__"))) {
+                            resultSet.addElement(new PhpTwigMethodLookupElement(method));
+                        }
+                    }
+                }
+            }
+
+        }
 
     }
 

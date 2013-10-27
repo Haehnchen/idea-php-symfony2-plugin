@@ -303,6 +303,15 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getTypeCompletionPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeaf(
+                PlatformPatterns.psiElement(TwigTokenTypes.DOT)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getRoutePattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")
