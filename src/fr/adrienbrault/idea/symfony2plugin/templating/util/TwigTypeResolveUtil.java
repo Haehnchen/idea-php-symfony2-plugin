@@ -14,13 +14,16 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
+import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -166,6 +169,16 @@ public class TwigTypeResolveUtil {
         globalVars.putAll(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT));
         globalVars.putAll(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT));
 
+        TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class);
+        for(Map.Entry<String, TwigGlobalVariable> globalVariableEntry: twigPathServiceParser.getTwigGlobals().entrySet()) {
+            if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
+                String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(globalVariableEntry.getValue().getValue());
+                if (serviceClass != null) {
+                    globalVars.put(globalVariableEntry.getKey(), serviceClass);
+                }
+             }
+        }
+
         globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
 
         return globalVars;
@@ -174,12 +187,25 @@ public class TwigTypeResolveUtil {
     private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
 
         HashMap<String, String> globalVars = new HashMap<String, String>();
-        
+
+        // parameter prio?
+        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+
+        TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class);
+        if(twigPathServiceParser.getTwigGlobals().containsKey(variableName)) {
+            String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(twigPathServiceParser.getTwigGlobals().get(variableName).getValue());
+            if (serviceClass != null) {
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), serviceClass);
+                if(phpClass != null) {
+                    phpNamedElements.add(phpClass);
+                    return phpNamedElements;
+                }
+            }
+        }
+
         globalVars.put("app", "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables");
         globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
 
-        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
-        // parameter prio?
         if(globalVars.containsKey(variableName)) {
             PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), globalVars.get(variableName));
             if(phpClass != null) {
