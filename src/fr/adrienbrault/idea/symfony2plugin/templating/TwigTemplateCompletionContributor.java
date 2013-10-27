@@ -28,6 +28,9 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
+import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -37,6 +40,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
@@ -252,6 +256,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.CLASS));
                     }
 
+                    for(Map.Entry<String, TwigGlobalVariable> entry: ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class).getTwigGlobals().entrySet()) {
+                        if(entry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.TEXT) {
+                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue().getValue()).withIcon(PhpIcons.CONSTANT));
+                        }
+                    }
                 }
             }
 
