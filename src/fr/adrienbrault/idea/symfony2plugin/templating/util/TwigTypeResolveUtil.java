@@ -4,8 +4,8 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -14,9 +14,7 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
 import java.util.ArrayList;
@@ -70,13 +68,13 @@ public class TwigTypeResolveUtil {
         return type;
     }
 
-    private static Collection<? extends PhpNamedElement> findInlineDocBlockVariableByName(PsiElement psiInsideBlock, String variableName) {
+    private static Collection<? extends PhpNamedElement> findInlineDocBlockVariableByName(PsiElement psiInsideBlock, String variableName, final IElementType parentStatement) {
 
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, new Condition<PsiElement>() {
             @Override
             public boolean value(PsiElement psiElement) {
                 if (psiElement instanceof TwigCompositeElement) {
-                    if (PlatformPatterns.psiElement(TwigElementTypes.BLOCK_STATEMENT).accepts(psiElement)) {
+                    if (PlatformPatterns.psiElement(parentStatement).accepts(psiElement)) {
                         return true;
                     }
                 }
@@ -109,13 +107,13 @@ public class TwigTypeResolveUtil {
     /**
      * duplicate use a collector interface
      */
-    private static HashMap<String, String> findInlineVariableDocBlock(PsiElement psiInsideBlock) {
+    private static HashMap<String, String> findInlineStatementVariableDocBlock(PsiElement psiInsideBlock, final IElementType parentStatement) {
 
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, new Condition<PsiElement>() {
             @Override
             public boolean value(PsiElement psiElement) {
                 if (psiElement instanceof TwigCompositeElement) {
-                    if (PlatformPatterns.psiElement(TwigElementTypes.BLOCK_STATEMENT).accepts(psiElement)) {
+                    if (PlatformPatterns.psiElement(parentStatement).accepts(psiElement)) {
                         return true;
                     }
                 }
@@ -165,7 +163,8 @@ public class TwigTypeResolveUtil {
         HashMap<String, String> globalVars = new HashMap<String, String>();
         globalVars.put("app", "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables");
 
-        globalVars.putAll(findInlineVariableDocBlock(psiElement));
+        globalVars.putAll(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT));
+        globalVars.putAll(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT));
 
         globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
 
@@ -189,8 +188,10 @@ public class TwigTypeResolveUtil {
             }
         }
 
+        phpNamedElements.addAll(findInlineDocBlockVariableByName(psiElement, variableName, TwigElementTypes.BLOCK_STATEMENT));
+        phpNamedElements.addAll(findInlineDocBlockVariableByName(psiElement, variableName, TwigElementTypes.FOR_STATEMENT));
 
-        return findInlineDocBlockVariableByName(psiElement, variableName);
+        return phpNamedElements;
     }
 
     private static Collection<? extends PhpNamedElement> resolveTwigMethodName(Collection<? extends PhpNamedElement> previousElement, String typeName) {
