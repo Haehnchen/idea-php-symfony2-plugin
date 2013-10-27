@@ -4,15 +4,20 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +48,7 @@ public class TwigTypeResolveUtil {
     public static Collection<? extends PhpNamedElement> resolveTwigMethodName(PsiElement psiElement, String[] typeName) {
 
         if(typeName.length == 0) {
-            return null;
+            return Collections.emptyList();
         }
 
         Collection<? extends PhpNamedElement> rootVariable = getRootVariableByName(psiElement, typeName[0]);
@@ -101,13 +106,80 @@ public class TwigTypeResolveUtil {
         return null;
     }
 
-    private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
+    /**
+     * duplicate use a collector interface
+     */
+    private static HashMap<String, String> findInlineVariableDocBlock(PsiElement psiInsideBlock) {
+
+        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, new Condition<PsiElement>() {
+            @Override
+            public boolean value(PsiElement psiElement) {
+                if (psiElement instanceof TwigCompositeElement) {
+                    if (PlatformPatterns.psiElement(TwigElementTypes.BLOCK_STATEMENT).accepts(psiElement)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        Pattern pattern = Pattern.compile("\\{#[\\s]+([\\w]+)[\\s]+(.*)[\\s]+#}");
+
+        // wtf in completion { | } root we have no comments in child context !?
+        HashMap<String, String> variables = new HashMap<String, String>();
+        for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
+            if(psiComment instanceof PsiComment) {
+                Matcher matcher = pattern.matcher(psiComment.getText());
+                if (matcher.find()) {
+                    variables.put(matcher.group(1), matcher.group(2));
+                }
+            }
+        }
+
+        return variables;
+    }
+
+    /**
+     * duplicate use a collector interface
+     */
+    private static HashMap<String, String> findFileVariableDocBlock(TwigFile twigFile) {
+
+        Pattern pattern = Pattern.compile("\\{#[\\s]+([\\w]+)[\\s]+(.*)[\\s]+#}");
+
+        // wtf in completion { | } root we have no comments in child context !?
+        HashMap<String, String> variables = new HashMap<String, String>();
+        for(PsiElement psiComment: YamlHelper.getChildrenFix(twigFile)) {
+            if(psiComment instanceof PsiComment) {
+                Matcher matcher = pattern.matcher(psiComment.getText());
+                if (matcher.find()) {
+                    variables.put(matcher.group(1), matcher.group(2));
+                }
+            }
+        }
+
+        return variables;
+    }
+
+    public static HashMap<String, String> collectorRootScopeVariables(PsiElement psiElement) {
 
         HashMap<String, String> globalVars = new HashMap<String, String>();
         globalVars.put("app", "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables");
 
-        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        globalVars.putAll(findInlineVariableDocBlock(psiElement));
 
+        globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
+
+        return globalVars;
+    }
+
+    private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
+
+        HashMap<String, String> globalVars = new HashMap<String, String>();
+        
+        globalVars.put("app", "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables");
+        globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
+
+        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
         // parameter prio?
         if(globalVars.containsKey(variableName)) {
             PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), globalVars.get(variableName));

@@ -9,6 +9,7 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -37,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -241,6 +243,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
                         resultSet.addElement(LookupElementBuilder.create(twigSet.getName()).withTypeText("set"));
+                    }
+
+                    for(Map.Entry<String,String> entry: TwigTypeResolveUtil.collectorRootScopeVariables(psiElement).entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.CLASS));
                     }
 
                 }
