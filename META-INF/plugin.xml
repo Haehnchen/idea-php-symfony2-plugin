@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.26</version>
+    <version>0.10.27</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -15,7 +15,7 @@
 
 <ul>
     <li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
-    <li>eap/7: will drop twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
+    <li>phpstorm7: dropped twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
 </ul>
 
 <h2>Features:</h2>
@@ -54,6 +54,7 @@
     <li>Autocomplete for translation in trans</li>
     <li>Action for @Template</li>
     <li>Autocomplete and go to for block tag</li>
+    <li>Variable resolve on php types with scope, providers and doc block support</li>
 </ul>
 
 
@@ -94,6 +95,18 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.27</h2>
+<ul>
+    <li>Add support for route parameter in php and twig</li>
+    <li>Add twig variable type detection with <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">goto and completion</a></li>
+    <li>Add parser for twig globals defined as service and text in container file</li>
+    <li>Add twig variable detection on inline <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">doc block</a> with several scopes</li>
+    <li>Provide some logs for external file loaders like container. (Help -> Show Log ...)</li>
+    <li>Remove deprecated twig workarounds</li>
+    <li>Provide native route parser, to get all available route information</li>
+    <li>Disable twig block name completion, because its blocked now see WI-20266</li>
+</ul>
 
 <h2>0.9.26 / 0.10.26</h2>
 <ul>

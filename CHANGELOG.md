@@ -5,6 +5,16 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.27
+* Add support for route parameter in php and twig
+* Add twig variable type detection with goto and completion
+* Add parser for twig globals defined as service and text in container file
+* Add twig variable detection on inline doc block with several scopes
+* Provide some logs for external file loaders like container. (Help -> Show Log ...)
+* Remove deprecated twig workarounds
+* Provide native route parser, to get all available route information
+* Disable twig block name completion, because its blocked now see WI-20266
+
 ### 0.9.26 / 0.10.26
 * Add completion, goto and line marker for FormTypeInterface:getParent
 * Fix FormBuilderInterface:create signature check
