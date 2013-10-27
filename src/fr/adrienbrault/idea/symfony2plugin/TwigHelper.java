@@ -8,7 +8,6 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
-import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
@@ -19,6 +18,7 @@ import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -312,7 +312,7 @@ public class TwigHelper {
 
     public static PsiElementPattern.Capture<PsiComment> getTwigTypeDocBlock() {
         return PlatformPatterns
-            .psiComment().withText(PlatformPatterns.string().matches("\\{#[\\s]+([\\w]+)[\\s]+(.*)[\\s]+#}"))
+            .psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN))
             .withLanguage(TwigLanguage.INSTANCE);
     }
 

@@ -38,7 +38,12 @@ public class YamlHelper {
     static public PsiElement[] getChildrenFix(PsiElement psiElement) {
         ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
 
-        psiElements.add(psiElement.getFirstChild());
+        PsiElement startElement = psiElement.getFirstChild();
+        if(startElement == null) {
+            return psiElements.toArray(new PsiElement[psiElements.size()]);
+        }
+
+        psiElements.add(startElement);
 
         for (PsiElement child = psiElement.getFirstChild().getNextSibling(); child != null; child = child.getNextSibling()) {
             psiElements.add(child);

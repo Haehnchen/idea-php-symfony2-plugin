@@ -18,7 +18,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -28,6 +27,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TwigTypeResolveUtil {
+
+    public static final String DOC_PATTERN  = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
 
     public static String[] formatPsiTypeName(PsiElement psiElement) {
 
@@ -90,7 +91,7 @@ public class TwigTypeResolveUtil {
         });
 
 
-        Pattern pattern = Pattern.compile("\\{#[\\s]+" + Pattern.quote(variableName) + "[\\s]+(.*)[\\s]+#}");
+        Pattern pattern = Pattern.compile("\\{#[\\s]+" + Pattern.quote(variableName) + "[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}");
         Collection<PsiComment> psiComments = PsiTreeUtil.findChildrenOfType(twigCompositeElement, PsiComment.class);
 
         ArrayList<PhpNamedElement> arrayList = new ArrayList<PhpNamedElement>();
@@ -99,7 +100,7 @@ public class TwigTypeResolveUtil {
             if (matcher.find()) {
 
                 // think of multi resolve
-                PhpClass phpClass = PhpElementsUtil.getClass(psiComment.getProject(), matcher.group(1));
+                PhpClass phpClass = PhpElementsUtil.getClass(psiComment.getProject(), matcher.group(1).trim());
                 if(phpClass != null) {
                     arrayList.add(phpClass);
                     return arrayList;
@@ -128,7 +129,7 @@ public class TwigTypeResolveUtil {
             }
         });
 
-        Pattern pattern = Pattern.compile("\\{#[\\s]+([\\w]+)[\\s]+(.*)[\\s]+#}");
+        Pattern pattern = Pattern.compile(DOC_PATTERN);
 
         // wtf in completion { | } root we have no comments in child context !?
         HashMap<String, String> variables = new HashMap<String, String>();
@@ -149,7 +150,7 @@ public class TwigTypeResolveUtil {
      */
     private static HashMap<String, String> findFileVariableDocBlock(TwigFile twigFile) {
 
-        Pattern pattern = Pattern.compile("\\{#[\\s]+([\\w]+)[\\s]+(.*)[\\s]+#}");
+        Pattern pattern = Pattern.compile(DOC_PATTERN);
 
         // wtf in completion { | } root we have no comments in child context !?
         HashMap<String, String> variables = new HashMap<String, String>();
