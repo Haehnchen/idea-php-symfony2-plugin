@@ -90,11 +90,14 @@ public class TwigTypeResolveUtil {
             }
         });
 
+        ArrayList<PhpNamedElement> arrayList = new ArrayList<PhpNamedElement>();
+        if(twigCompositeElement == null) {
+            return arrayList;
+        }
 
         Pattern pattern = Pattern.compile("\\{#[\\s]+" + Pattern.quote(variableName) + "[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}");
         Collection<PsiComment> psiComments = PsiTreeUtil.findChildrenOfType(twigCompositeElement, PsiComment.class);
 
-        ArrayList<PhpNamedElement> arrayList = new ArrayList<PhpNamedElement>();
         for(PsiComment psiComment: psiComments) {
             Matcher matcher = pattern.matcher(psiComment.getText());
             if (matcher.find()) {
@@ -129,10 +132,13 @@ public class TwigTypeResolveUtil {
             }
         });
 
-        Pattern pattern = Pattern.compile(DOC_PATTERN);
+        HashMap<String, String> variables = new HashMap<String, String>();
+        if(twigCompositeElement == null) {
+            return variables;
+        }
 
         // wtf in completion { | } root we have no comments in child context !?
-        HashMap<String, String> variables = new HashMap<String, String>();
+        Pattern pattern = Pattern.compile(DOC_PATTERN);
         for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
             if(psiComment instanceof PsiComment) {
                 Matcher matcher = pattern.matcher(psiComment.getText());
