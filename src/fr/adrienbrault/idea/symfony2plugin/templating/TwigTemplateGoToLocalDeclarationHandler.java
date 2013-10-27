@@ -71,7 +71,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
         }
 
-        if(TwigHelper.getTypeCompletionPattern().accepts(psiElement)) {
+        if(TwigHelper.getTypeCompletionPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)) {
             psiElements.addAll(Arrays.asList(this.getTypeGoto(psiElement)));
         }
 
@@ -82,8 +82,15 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         Collection<? extends PhpNamedElement> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement));
 
         ArrayList<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
-        for(PhpNamedElement psiTarget: types) {
-            targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiTarget, psiElement.getText()));
+
+        // root need class goto
+        if(types.size() == 1) {
+            targetPsiElements.addAll(types);
+        } else {
+            // provide method / field goto
+            for(PhpNamedElement psiTarget: types) {
+                targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiTarget, psiElement.getText()));
+            }
         }
 
         return targetPsiElements.toArray(new PsiElement[targetPsiElements.size()]);

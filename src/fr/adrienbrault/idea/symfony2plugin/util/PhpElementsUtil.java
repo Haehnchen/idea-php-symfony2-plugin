@@ -435,9 +435,10 @@ public class PhpElementsUtil {
         String prevText = "";
 
         for (PsiElement child = psiElement.getPrevSibling(); child != null; child = child.getPrevSibling()) {
-            prevText = child.getText() + prevText;
             if(pattern.accepts(child)) {
                 return prevText;
+            } else {
+                prevText = child.getText() + prevText;
             }
         }
 

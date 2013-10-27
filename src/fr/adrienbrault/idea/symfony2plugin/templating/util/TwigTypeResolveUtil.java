@@ -31,7 +31,11 @@ public class TwigTypeResolveUtil {
 
     public static String[] formatPsiTypeName(PsiElement psiElement) {
 
-        String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.psiElement(PsiWhiteSpace.class)).trim();
+        String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.psiElement(PsiWhiteSpace.class));
+        if(typeNames.trim().length() == 0) {
+            return new String[]{psiElement.getText()};
+        }
+
         if(typeNames.endsWith(".")) {
             typeNames = typeNames.substring(0, typeNames.length() -1);
         }
@@ -63,7 +67,7 @@ public class TwigTypeResolveUtil {
 
             // we can stop on empty list
             if(type.size() == 0) {
-                Collections.emptyList();
+                return Collections.emptyList();
             }
 
         }
@@ -104,7 +108,7 @@ public class TwigTypeResolveUtil {
             }
         }
 
-        return null;
+        return arrayList;
     }
 
     /**
