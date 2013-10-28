@@ -129,6 +129,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
         ArrayList<TwigMacro> twigMacros;
 
+        // check for complete file as namespace import {% import "file" as foo %}
         if(psiElement.getPrevSibling() != null && PlatformPatterns.psiElement(TwigTokenTypes.DOT).accepts(psiElement.getPrevSibling())) {
             PsiElement psiElement1 = psiElement.getPrevSibling().getPrevSibling();
             if(psiElement1 == null) {
@@ -144,6 +145,9 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         for(TwigMacro twigMacro : twigMacros) {
             if(twigMacro.getName().equals(funcNameSearch)) {
 
+                // switch to alias mode
+                final String macroName = twigMacro.getOriginalName() == null ? funcName : twigMacro.getOriginalName();
+
                 Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
 
                 if(twigFilesByName.containsKey(twigMacro.getTemplate())) {
@@ -151,7 +155,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
                     return PsiTreeUtil.collectElements(twigFile, new RegexPsiElementFilter(
                         TwigElementTypes.MACRO_TAG,
-                        "\\{%\\s?macro\\s?" + Pattern.quote(funcName) + "\\s?\\(.*%}")
+                        "\\{%\\s?macro\\s?" + Pattern.quote(macroName) + "\\s?\\(.*%}")
                     );
                 }
 

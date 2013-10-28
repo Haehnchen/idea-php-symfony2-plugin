@@ -1,11 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiElementFilter;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
@@ -146,18 +150,33 @@ public class TwigUtil {
 
         ArrayList<TwigMacro> macros = new ArrayList<TwigMacro>();
 
-        String str = psiFile.getText();
-
-        // {% from '@foo/bar.html.twig' import macro1, macro_foo_bar %}
-        String regex = "\\{%\\s?from\\s?['\"](.*?)['\"]\\s?import\\s?(.*?)\\s?%}";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
-
-        while (matcher.find()) {
-
-            String templateName = matcher.group(1);
-            for(String macroName : matcher.group(2).split(",")) {
-                macros.add(new TwigMacro(macroName.trim(), templateName));
+        PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement paramPsiElement) {
+                return PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG).accepts(paramPsiElement);
             }
+        });
+
+        for(PsiElement psiImportTag: importPsiElements) {
+            String regex = "\\{%\\s?from\\s?['\"](.*?)['\"]\\s?import\\s?(.*?)\\s?%}";
+            Matcher matcher = Pattern.compile(regex).matcher(psiImportTag.getText().replace("\n", " "));
+
+            while (matcher.find()) {
+
+                String templateName = matcher.group(1);
+                for(String macroName : matcher.group(2).split(",")) {
+
+                    // not nice here search for as "macro as macro_alias"
+                    Matcher asMatcher = Pattern.compile("(\\w+)\\s+as\\s+(\\w+)").matcher(macroName.trim());
+                    if(asMatcher.find()) {
+                        macros.add(new TwigMacro(asMatcher.group(2), templateName, asMatcher.group(1)));
+                    } else {
+                        macros.add(new TwigMacro(macroName.trim(), templateName));
+                    }
+
+                }
+            }
+
         }
 
         return macros;
