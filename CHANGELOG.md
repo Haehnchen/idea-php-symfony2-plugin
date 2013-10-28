@@ -5,6 +5,12 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.28
+* Update twig macro pattern to support new twig elements
+* Add twig macro alias support
+* Add twig variable method resolver for goto provider
+* Fix twig route path parameter pattern
+
 ### 0.10.27
 * Add support for route parameter in php and twig
 * Add twig variable type detection with goto and completion

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.27</version>
+    <version>0.10.28</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -95,6 +95,14 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.28</h2>
+<ul>
+    <li>Update twig macro pattern to support new twig elements</li>
+    <li>Add twig macro alias support</li>
+    <li>Add twig variable method resolver for goto provider</li>
+    <li>Fix twig route path parameter pattern</li>
+</ul>
 
 <h2>0.10.27</h2>
 <ul>
