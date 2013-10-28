@@ -438,42 +438,32 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTemplateImportFileReferenceTagPattern() {
-
-
-        // @TODO: first pattern need some more filter; also 'from' tag would be nice
         // first: {% from '<xxx>' import foo, <|>  %}
         // second: {% from '<xxx>' import <|>  %}
-        return
-            PlatformPatterns.or(
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.IDENTIFIER)
-                    .withParent(TwigTagWithFileReference.class)
-                    .afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withoutText("import"),
-                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
-                            PlatformPatterns.string().oneOf("import")
-                        )
-                    )
-                    .withLanguage(TwigLanguage.INSTANCE),
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.IDENTIFIER)
-                    .withParent(TwigTagWithFileReference.class)
-                    .afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
-                            PlatformPatterns.string().oneOf("import")
-                        )
-                    )
-                    .withLanguage(TwigLanguage.INSTANCE)
-            );
+        // and not: {% from '<xxx>' import foo as <|>  %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .withParent(PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG))
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                    PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IMPORT_KEYWORD)
+            ).andNot(PlatformPatterns
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
     }
 
     public static ArrayList<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
