@@ -431,11 +431,14 @@ public class PhpElementsUtil {
 
     }
 
-    public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern) {
+    public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern, boolean includeMatching) {
         String prevText = "";
 
         for (PsiElement child = psiElement.getPrevSibling(); child != null; child = child.getPrevSibling()) {
             if(pattern.accepts(child)) {
+                if(includeMatching) {
+                    return child.getText() + prevText;
+                }
                 return prevText;
             } else {
                 prevText = child.getText() + prevText;
@@ -443,6 +446,10 @@ public class PhpElementsUtil {
         }
 
         return prevText;
+    }
+
+    public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern) {
+        return getPrevSiblingAsTextUntil(psiElement, pattern, false);
     }
 
     @Nullable
