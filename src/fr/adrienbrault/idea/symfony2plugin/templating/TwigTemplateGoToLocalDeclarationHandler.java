@@ -79,14 +79,16 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
     }
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {
-        Collection<? extends PhpNamedElement> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement));
 
         ArrayList<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
 
-        // root need class goto
-        if(types.size() == 1) {
-            targetPsiElements.addAll(types);
+        // class, class.method, class.method.method
+        // click on first item is our class name
+        String[] beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+        if(beforeLeaf.length == 0) {
+            targetPsiElements.addAll(TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement, true)));
         } else {
+            Collection<? extends PhpNamedElement> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
             // provide method / field goto
             for(PhpNamedElement psiTarget: types) {
                 targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiTarget, psiElement.getText()));

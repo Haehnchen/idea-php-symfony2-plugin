@@ -30,11 +30,17 @@ public class TwigTypeResolveUtil {
 
     public static final String DOC_PATTERN  = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
 
+    public static String[] formatPsiTypeName(PsiElement psiElement, boolean includeCurrent) {
+        ArrayList<String> strings = new ArrayList<String>(Arrays.asList(formatPsiTypeName(psiElement)));
+        strings.add(psiElement.getText());
+        return strings.toArray(new String[strings.size()]);
+    }
+
     public static String[] formatPsiTypeName(PsiElement psiElement) {
 
         String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.psiElement(PsiWhiteSpace.class));
         if(typeNames.trim().length() == 0) {
-            return new String[]{psiElement.getText()};
+            return new String[]{};
         }
 
         if(typeNames.endsWith(".")) {
