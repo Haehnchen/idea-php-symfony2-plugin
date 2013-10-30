@@ -7,6 +7,8 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class DomainMappings extends AbstractServiceParser {
 
@@ -35,8 +37,8 @@ public class DomainMappings extends AbstractServiceParser {
 
     }
 
-    public ArrayList<DomainFileMap> getDomainFileMaps() {
-        return domainFileMaps;
+    public List<DomainFileMap> getDomainFileMaps() {
+        return Collections.synchronizedList(domainFileMaps);
     }
 
 }

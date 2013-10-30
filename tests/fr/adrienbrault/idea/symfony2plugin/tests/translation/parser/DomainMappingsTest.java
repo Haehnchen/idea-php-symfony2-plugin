@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class DomainMappingsTest extends Assert {
@@ -17,7 +18,7 @@ public class DomainMappingsTest extends Assert {
 
         DomainMappings bla = new DomainMappings();
         bla.parser(testFile);
-        ArrayList<DomainFileMap> map = bla.getDomainFileMaps();
+        List<DomainFileMap> map = bla.getDomainFileMaps();
 
         assertEquals(10, map.size());
 
