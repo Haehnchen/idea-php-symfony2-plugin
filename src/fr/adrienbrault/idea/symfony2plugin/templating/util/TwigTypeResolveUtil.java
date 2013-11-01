@@ -4,15 +4,12 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.php.lang.psi.elements.PhpTypedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
@@ -22,8 +19,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
@@ -85,45 +80,6 @@ public class TwigTypeResolveUtil {
         }
 
         return type;
-    }
-
-    private static Collection<? extends PhpNamedElement> findInlineDocBlockVariableByName(PsiElement psiInsideBlock, String variableName, final IElementType parentStatement) {
-
-        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                if (psiElement instanceof TwigCompositeElement) {
-                    if (PlatformPatterns.psiElement(parentStatement).accepts(psiElement)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-
-        ArrayList<PhpNamedElement> arrayList = new ArrayList<PhpNamedElement>();
-        if(twigCompositeElement == null) {
-            return arrayList;
-        }
-
-        Pattern pattern = Pattern.compile("\\{#[\\s]+" + Pattern.quote(variableName) + "[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}");
-        Collection<PsiComment> psiComments = PsiTreeUtil.findChildrenOfType(twigCompositeElement, PsiComment.class);
-
-        for(PsiComment psiComment: psiComments) {
-            Matcher matcher = pattern.matcher(psiComment.getText());
-            if (matcher.find()) {
-
-                // think of multi resolve
-                PhpClass phpClass = PhpElementsUtil.getClass(psiComment.getProject(), matcher.group(1).trim());
-                if(phpClass != null) {
-                    arrayList.add(phpClass);
-                    return arrayList;
-                }
-
-            }
-        }
-
-        return arrayList;
     }
 
     /**
@@ -219,47 +175,19 @@ public class TwigTypeResolveUtil {
 
     private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
 
-        HashMap<String, String> globalVars = new HashMap<String, String>();
-
-        // parameter prio?
         ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
-
-        TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class);
-        if(twigPathServiceParser.getTwigGlobals().containsKey(variableName)) {
-            String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(twigPathServiceParser.getTwigGlobals().get(variableName).getValue());
-            if (serviceClass != null) {
-                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), serviceClass);
+        for(Map.Entry<String, String> variable : collectorRootScopeVariables(psiElement).entrySet()) {
+            if(variable.getKey().equals(variableName)) {
+                PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), variable.getValue());
                 if(phpClass != null) {
                     phpNamedElements.add(phpClass);
-                    return phpNamedElements;
                 }
             }
-        }
 
-        globalVars.put("app", "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables");
-        globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
-
-        if(globalVars.containsKey(variableName)) {
-            PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), globalVars.get(variableName));
-            if(phpClass != null) {
-                phpNamedElements.add(phpClass);
-                return phpNamedElements;
-            }
-        }
-
-        phpNamedElements.addAll(findInlineDocBlockVariableByName(psiElement, variableName, TwigElementTypes.BLOCK_STATEMENT));
-        phpNamedElements.addAll(findInlineDocBlockVariableByName(psiElement, variableName, TwigElementTypes.FOR_STATEMENT));
-
-        for(Map.Entry<String, Set<String>> templateVar: TwigUtil.collectControllerTemplateVariables(psiElement).entrySet()) {
-            if(templateVar.getKey().equals(variableName)) {
-                Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), templateVar.getValue());
-                if(phpClasses.size() > 0) {
-                    return phpClasses;
-                }
-            }
         }
 
         return phpNamedElements;
+
     }
 
     private static Collection<? extends PhpNamedElement> resolveTwigMethodName(Collection<? extends PhpNamedElement> previousElement, String typeName) {
