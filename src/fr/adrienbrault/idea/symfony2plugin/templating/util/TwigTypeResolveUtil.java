@@ -139,36 +139,36 @@ public class TwigTypeResolveUtil {
         return variables;
     }
 
-    public static HashMap<String, String> collectorRootScopeVariables(PsiElement psiElement) {
+    private static HashMap<String, Set<String>> convertHashMapToTypeSet(HashMap<String, String> hashMap) {
+        HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
 
-        HashMap<String, String> globalVars = new HashMap<String, String>();
-        globalVars.put("app", "\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables");
+        for(final Map.Entry<String, String> entry: hashMap.entrySet()) {
+            globalVars.put(entry.getKey(), new HashSet<String>(Arrays.asList(entry.getValue())));
+        }
 
-        globalVars.putAll(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT));
-        globalVars.putAll(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT));
+        return globalVars;
+    }
+
+    public static HashMap<String, Set<String>> collectorRootScopeVariables(PsiElement psiElement) {
+
+        HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
+        globalVars.put("app",  new HashSet<String>(Arrays.asList("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables")));
+
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT)));
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
 
         TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class);
         for(Map.Entry<String, TwigGlobalVariable> globalVariableEntry: twigPathServiceParser.getTwigGlobals().entrySet()) {
             if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
                 String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(globalVariableEntry.getValue().getValue());
                 if (serviceClass != null) {
-                    globalVars.put(globalVariableEntry.getKey(), serviceClass);
+                    globalVars.put(globalVariableEntry.getKey(),  new HashSet<String>(Arrays.asList(serviceClass)));
                 }
              }
         }
 
-        globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
-
-        for(Map.Entry<String, Set<String>> templateVar: TwigUtil.collectControllerTemplateVariables(psiElement).entrySet()) {
-
-            String typeRes = "";
-            Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), templateVar.getValue());
-            if(phpClasses.size() > 0) {
-                typeRes = phpClasses.iterator().next().getPresentableFQN();
-            }
-
-            globalVars.put(templateVar.getKey(), typeRes);
-        }
+        globalVars.putAll(convertHashMapToTypeSet(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile())));
+        globalVars.putAll(TwigUtil.collectControllerTemplateVariables(psiElement));
 
         return globalVars;
     }
@@ -176,12 +176,9 @@ public class TwigTypeResolveUtil {
     private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
 
         ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
-        for(Map.Entry<String, String> variable : collectorRootScopeVariables(psiElement).entrySet()) {
+        for(Map.Entry<String, Set<String>> variable : collectorRootScopeVariables(psiElement).entrySet()) {
             if(variable.getKey().equals(variableName)) {
-                PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), variable.getValue());
-                if(phpClass != null) {
-                    phpNamedElements.add(phpClass);
-                }
+                phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue()));
             }
 
         }
@@ -225,6 +222,20 @@ public class TwigTypeResolveUtil {
         }
 
         return targets;
+    }
+
+
+    public static String getTypeDisplayName(Set<String> types) {
+
+        for(String type: types) {
+            if(type.startsWith("\\")) {
+                return type;
+            }
+
+        }
+
+        return "";
+
     }
 
 }
