@@ -18,6 +18,7 @@ import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -153,6 +154,17 @@ public class PhpElementsUtil {
             }
         }
         return null;
+    }
+
+    @Nullable
+    static public Method getClassMethod(Project project, String phpClassName, String methodName) {
+
+        PhpClass phpClass = getClass(project, phpClassName);
+        if(phpClass == null) {
+            return null;
+        }
+
+        return getClassMethod(phpClass, methodName);
     }
 
     static public boolean isMethodWithFirstString(PsiElement psiElement, String... methodName) {
@@ -485,6 +497,25 @@ public class PhpElementsUtil {
         }
 
         return null;
+    }
+
+    public static Collection<PhpClass> getClassFromPhpTypeSet(Project project, Set<String> types) {
+
+        PhpType phpType = new PhpType();
+        phpType.add(types);
+
+        ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
+
+        for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>()).getTypes()) {
+            if(typeName.startsWith("\\")) {
+                PhpClass phpClass = PhpElementsUtil.getClass(project, typeName);
+                if(phpClass != null) {
+                    phpClasses.add(phpClass);
+                }
+            }
+        }
+
+        return phpClasses;
     }
 
 }

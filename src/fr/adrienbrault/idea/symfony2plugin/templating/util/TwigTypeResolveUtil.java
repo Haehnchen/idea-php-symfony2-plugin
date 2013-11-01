@@ -4,12 +4,15 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.PhpTypedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
@@ -19,6 +22,8 @@ import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
@@ -198,6 +203,17 @@ public class TwigTypeResolveUtil {
 
         globalVars.putAll(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile()));
 
+        for(Map.Entry<String, Set<String>> templateVar: TwigUtil.collectControllerTemplateVariables(psiElement).entrySet()) {
+
+            String typeRes = "";
+            Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), templateVar.getValue());
+            if(phpClasses.size() > 0) {
+                typeRes = phpClasses.iterator().next().getPresentableFQN();
+            }
+
+            globalVars.put(templateVar.getKey(), typeRes);
+        }
+
         return globalVars;
     }
 
@@ -233,6 +249,15 @@ public class TwigTypeResolveUtil {
 
         phpNamedElements.addAll(findInlineDocBlockVariableByName(psiElement, variableName, TwigElementTypes.BLOCK_STATEMENT));
         phpNamedElements.addAll(findInlineDocBlockVariableByName(psiElement, variableName, TwigElementTypes.FOR_STATEMENT));
+
+        for(Map.Entry<String, Set<String>> templateVar: TwigUtil.collectControllerTemplateVariables(psiElement).entrySet()) {
+            if(templateVar.getKey().equals(variableName)) {
+                Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), templateVar.getValue());
+                if(phpClasses.size() > 0) {
+                    return phpClasses;
+                }
+            }
+        }
 
         return phpNamedElements;
     }
@@ -275,3 +300,4 @@ public class TwigTypeResolveUtil {
     }
 
 }
+

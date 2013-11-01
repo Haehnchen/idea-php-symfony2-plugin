@@ -254,7 +254,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(LookupElementBuilder.create(twigSet.getName()).withTypeText("set"));
                     }
 
-                    for(Map.Entry<String,String> entry: TwigTypeResolveUtil.collectorRootScopeVariables(psiElement).entrySet()) {
+                    for(Map.Entry<String,String> entry: TwigTypeResolveUtil.collectorRootScopeVariables(parameters.getOriginalPosition()).entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue()).withIcon(PhpIcons.CLASS));
                     }
 

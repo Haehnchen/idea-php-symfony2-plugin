@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -226,6 +228,42 @@ public class TwigUtil {
         }
 
         return sets;
+
+    }
+
+    public static HashMap<String, Set<String>> collectControllerTemplateVariables(PsiElement psiElement) {
+
+        HashMap<String, Set<String>> vars = new HashMap<String, Set<String>>();
+
+        PsiFile psiFile = psiElement.getContainingFile();
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(psiElement.getProject()).getContainingBundle(psiFile);
+        if(symfonyBundle == null) {
+            return vars;
+        }
+
+        String relativePath = symfonyBundle.getRelativePath(psiFile.getVirtualFile());
+        if(relativePath == null || !relativePath.startsWith("Resources/views/")) {
+            return vars;
+        }
+
+        String viewPath = relativePath.substring("Resources/views/".length());
+
+        Matcher simpleFilter = Pattern.compile(".*/(\\w+)\\.\\w+\\.twig").matcher(viewPath);
+        if(!simpleFilter.find()) {
+            return vars;
+        }
+
+        String methodName = simpleFilter.group(1) + "Action";
+        String className = symfonyBundle.getNamespaceName() + "Controller\\" + viewPath.substring(0, viewPath.lastIndexOf("/")).replace("/", "\\") + "Controller";
+
+        Method method = PhpElementsUtil.getClassMethod(psiElement.getProject(), className, methodName);
+        if(method == null) {
+            return vars;
+        }
+
+
+        return PhpMethodVariableResolveUtil.collectMethodVariables(method);
 
     }
 
