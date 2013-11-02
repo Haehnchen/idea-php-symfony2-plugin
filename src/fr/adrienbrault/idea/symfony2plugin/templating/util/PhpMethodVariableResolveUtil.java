@@ -56,8 +56,10 @@ public class PhpMethodVariableResolveUtil {
         for(PhpReturn phpReturn : phpReturns) {
             PhpPsiElement returnPsiElement = phpReturn.getFirstPsiChild();
 
+            // @TODO: think of support all types here
             // return $template
-            if(returnPsiElement instanceof Variable) {
+            // return array('foo' => $var)
+            if(returnPsiElement instanceof Variable || returnPsiElement instanceof ArrayCreationExpression) {
                 collectedTemplateVariables.add(returnPsiElement);
             }
 
@@ -72,8 +74,6 @@ public class PhpMethodVariableResolveUtil {
                 }
 
             }
-
-            // todo: return array()
 
         }
 
