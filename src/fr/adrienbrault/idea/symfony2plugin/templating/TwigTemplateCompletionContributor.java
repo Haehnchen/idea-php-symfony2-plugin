@@ -254,7 +254,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(LookupElementBuilder.create(twigSet.getName()).withTypeText("set"));
                     }
 
-                    for(Map.Entry<String, Set<String>> entry: TwigTypeResolveUtil.collectorRootScopeVariables(parameters.getOriginalPosition()).entrySet()) {
+                    for(Map.Entry<String, Set<String>> entry: TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue())).withIcon(PhpIcons.CLASS));
                     }
 
@@ -286,7 +286,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    for(Map.Entry<String, Set<String>> entry: TwigTypeResolveUtil.collectorRootScopeVariables(parameters.getOriginalPosition()).entrySet()) {
+                    for(Map.Entry<String, Set<String>> entry: TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue())).withIcon(PhpIcons.CLASS));
                     }
 

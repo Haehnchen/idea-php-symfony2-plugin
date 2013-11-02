@@ -17,13 +17,14 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
-import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
-import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerVariableCollector;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ServiceContainerVariableCollector;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
 import java.util.*;
@@ -33,6 +34,13 @@ import java.util.regex.Pattern;
 public class TwigTypeResolveUtil {
 
     public static final String DOC_PATTERN  = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+
+    private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
+        new StaticVariableCollector(),
+        new ServiceContainerVariableCollector(),
+        new FileDocVariableCollector(),
+        new ControllerVariableCollector(),
+    };
 
     public static String[] formatPsiTypeName(PsiElement psiElement, boolean includeCurrent) {
         ArrayList<String> strings = new ArrayList<String>(Arrays.asList(formatPsiTypeName(psiElement)));
@@ -125,7 +133,7 @@ public class TwigTypeResolveUtil {
     /**
      * duplicate use a collector interface
      */
-    private static HashMap<String, String> findFileVariableDocBlock(TwigFile twigFile) {
+    public static HashMap<String, String> findFileVariableDocBlock(TwigFile twigFile) {
 
         Pattern pattern = Pattern.compile(DOC_PATTERN);
 
@@ -153,26 +161,14 @@ public class TwigTypeResolveUtil {
         return globalVars;
     }
 
-    public static HashMap<String, Set<String>> collectorRootScopeVariables(PsiElement psiElement) {
+    public static HashMap<String, Set<String>> collectScopeVariables(PsiElement psiElement) {
 
         HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
-        globalVars.put("app",  new HashSet<String>(Arrays.asList("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables")));
 
-        TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class);
-        for(Map.Entry<String, TwigGlobalVariable> globalVariableEntry: twigPathServiceParser.getTwigGlobals().entrySet()) {
-            if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
-                String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(globalVariableEntry.getValue().getValue());
-                if (serviceClass != null) {
-                    globalVars.put(globalVariableEntry.getKey(),  new HashSet<String>(Arrays.asList(serviceClass)));
-                }
-             }
+        TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement);
+        for(TwigFileVariableCollector collector: twigFileVariableCollectors) {
+            collector.collect(collectorParameter, globalVars);
         }
-
-        // controller variable should match first
-        globalVars.putAll(TwigUtil.collectControllerTemplateVariables(psiElement));
-
-        // add file docblock types
-        globalVars.putAll(convertHashMapToTypeSet(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile())));
 
         // globals first
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT)));
@@ -237,7 +233,7 @@ public class TwigTypeResolveUtil {
     private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
 
         ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
-        for(Map.Entry<String, Set<String>> variable : collectorRootScopeVariables(psiElement).entrySet()) {
+        for(Map.Entry<String, Set<String>> variable : collectScopeVariables(psiElement).entrySet()) {
             if(variable.getKey().equals(variableName)) {
                 phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue()));
             }
