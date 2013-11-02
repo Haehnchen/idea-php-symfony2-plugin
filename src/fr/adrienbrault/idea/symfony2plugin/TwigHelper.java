@@ -466,11 +466,8 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static ElementPattern<PsiElement> getForTagVariable() {
-
-        // {% for key, user in users %}
-        // {% for user in users %}
-        // {% for user in users|slice(0, 10) %}
+    public static ElementPattern<PsiElement> getForTagVariablePattern() {
+        // {% for "user"  %}
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .beforeLeafSkipping(
@@ -483,11 +480,11 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static ElementPattern<PsiElement> getForTagInVariable() {
+    public static ElementPattern<PsiElement> getForTagInVariablePattern() {
 
-        // {% for key, user in users %}
-        // {% for user in users %}
-        // {% for user in users|slice(0, 10) %}
+        // {% for key, user in "users" %}
+        // {% for user in "users" %}
+        // {% for user in "users"|slice(0, 10) %}
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(

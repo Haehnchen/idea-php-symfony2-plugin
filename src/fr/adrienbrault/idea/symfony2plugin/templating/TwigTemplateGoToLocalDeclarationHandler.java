@@ -71,7 +71,10 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
         }
 
-        if(TwigHelper.getTypeCompletionPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)) {
+        if(TwigHelper.getTypeCompletionPattern().accepts(psiElement)
+            || TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)
+            || TwigHelper.getForTagInVariablePattern().accepts(psiElement))
+        {
             psiElements.addAll(Arrays.asList(this.getTypeGoto(psiElement)));
         }
 

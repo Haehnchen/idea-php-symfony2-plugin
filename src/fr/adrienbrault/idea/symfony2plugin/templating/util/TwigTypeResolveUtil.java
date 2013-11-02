@@ -204,7 +204,7 @@ public class TwigTypeResolveUtil {
 
         // {% for user in "users" %}
         PsiElement forTag = twigCompositeElement.getFirstChild();
-        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagInVariable());
+        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagInVariablePattern());
         if(inVariable == null) {
             return;
         }
@@ -215,7 +215,7 @@ public class TwigTypeResolveUtil {
         }
 
         // {% for "user" in users %}
-        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagVariable());
+        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagVariablePattern());
         if(forScopeVariable == null) {
             return;
         }

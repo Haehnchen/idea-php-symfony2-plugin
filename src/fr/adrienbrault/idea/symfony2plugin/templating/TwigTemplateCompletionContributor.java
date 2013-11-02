@@ -268,6 +268,33 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         );
 
+        // {% for user in "users" %}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getForTagInVariablePattern(),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    PsiElement psiElement = parameters.getOriginalPosition();
+                    if(psiElement == null) {
+                        return;
+                    }
+
+                    for(Map.Entry<String, Set<String>> entry: TwigTypeResolveUtil.collectorRootScopeVariables(parameters.getOriginalPosition()).entrySet()) {
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue())).withIcon(PhpIcons.CLASS));
+                    }
+
+                }
+            }
+
+        );
+
         // {% trans_default_domain <> %}
         // {% trans_default_domain '<>' %}
         extend(
