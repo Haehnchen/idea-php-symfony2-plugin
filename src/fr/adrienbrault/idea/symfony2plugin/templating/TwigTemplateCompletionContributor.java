@@ -2,8 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
@@ -13,6 +11,7 @@ import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -37,7 +36,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
@@ -257,7 +255,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     for(Map.Entry<String, Set<String>> entry: TwigTypeResolveUtil.collectorRootScopeVariables(parameters.getOriginalPosition()).entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(entry.getValue())).withIcon(PhpIcons.CLASS));
+                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue())).withIcon(PhpIcons.CLASS));
                     }
 
                     for(Map.Entry<String, TwigGlobalVariable> entry: ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class).getTwigGlobals().entrySet()) {
@@ -396,11 +394,19 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             // find core function for that
             for(PhpNamedElement phpNamedElement: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
                 if(phpNamedElement instanceof PhpClass) {
+
                     for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
-                        if(!(method.getName().startsWith("set") || method.getName().startsWith("__"))) {
+                        if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(method));
                         }
                     }
+
+                    for(Field field: ((PhpClass) phpNamedElement).getFields()) {
+                        if(field.getModifier().isPublic()) {
+                            resultSet.addElement(new PhpTwigMethodLookupElement(field));
+                        }
+                    }
+
                 }
             }
 

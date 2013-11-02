@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
@@ -7,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -219,19 +221,28 @@ public class TwigTypeResolveUtil {
                     targets.add(method);
                 }
             }
+            for(Field field: ((PhpClass) phpNamedElement).getFields()) {
+                String methodName = field.getName().toLowerCase();
+                if(methodName.equals(variableName)) {
+                    targets.add(field);
+                }
+            }
         }
 
         return targets;
     }
 
 
-    public static String getTypeDisplayName(Set<String> types) {
+    public static String getTypeDisplayName(Project project, Set<String> types) {
 
-        for(String type: types) {
-            if(type.startsWith("\\")) {
-                return type;
+        for(PhpClass phpClass: PhpElementsUtil.getClassFromPhpTypeSet(project, types)) {
+            if(phpClass.getPresentableFQN() != null) {
+                return phpClass.getPresentableFQN();
             }
+        }
 
+        if(types.size() > 0) {
+            return types.iterator().next();
         }
 
         return "";
