@@ -466,6 +466,40 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getForTagVariable() {
+
+        // {% for key, user in users %}
+        // {% for user in users %}
+        // {% for user in users|slice(0, 10) %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .beforeLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IN)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getForTagInVariable() {
+
+        // {% for key, user in users %}
+        // {% for user in users %}
+        // {% for user in users|slice(0, 10) %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IN)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ArrayList<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
 
 

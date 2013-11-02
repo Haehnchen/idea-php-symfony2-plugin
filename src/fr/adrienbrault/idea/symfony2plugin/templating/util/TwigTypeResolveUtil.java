@@ -16,11 +16,13 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 
@@ -156,9 +158,6 @@ public class TwigTypeResolveUtil {
         HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
         globalVars.put("app",  new HashSet<String>(Arrays.asList("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables")));
 
-        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT)));
-        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
-
         TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class);
         for(Map.Entry<String, TwigGlobalVariable> globalVariableEntry: twigPathServiceParser.getTwigGlobals().entrySet()) {
             if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
@@ -169,10 +168,70 @@ public class TwigTypeResolveUtil {
              }
         }
 
-        globalVars.putAll(convertHashMapToTypeSet(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile())));
+        // controller variable should match first
         globalVars.putAll(TwigUtil.collectControllerTemplateVariables(psiElement));
 
+        // add file docblock types
+        globalVars.putAll(convertHashMapToTypeSet(findFileVariableDocBlock((TwigFile) psiElement.getContainingFile())));
+
+        // globals first
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT)));
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
+
+        // check if we are in "for" scope and resolve types ending with []
+        collectForArrayScopeVariables(psiElement, globalVars);
+
         return globalVars;
+    }
+
+    private static void collectForArrayScopeVariables(PsiElement psiElement, HashMap<String, Set<String>> globalVars) {
+
+        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, new Condition<PsiElement>() {
+            @Override
+            public boolean value(PsiElement psiElement) {
+                if (psiElement instanceof TwigCompositeElement) {
+                    if (PlatformPatterns.psiElement(TwigElementTypes.FOR_STATEMENT).accepts(psiElement)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        if(!(twigCompositeElement instanceof TwigCompositeElement)) {
+            return;
+        }
+
+        // {% for user in "users" %}
+        PsiElement forTag = twigCompositeElement.getFirstChild();
+        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagInVariable());
+        if(inVariable == null) {
+            return;
+        }
+
+        String variableName = inVariable.getText();
+        if(!globalVars.containsKey(variableName)) {
+            return;
+        }
+
+        // {% for "user" in users %}
+        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagVariable());
+        if(forScopeVariable == null) {
+            return;
+        }
+
+        String scopeVariable = forScopeVariable.getText();
+
+        // find array types; since they are phptypes they ends with []
+        Set<String> types = new HashSet<String>();
+        for(String arrayType: globalVars.get(variableName)) {
+            if(arrayType.endsWith("[]")) {
+                types.add(arrayType.substring(0, arrayType.length() -2));
+            }
+        }
+
+        globalVars.put(scopeVariable, types);
+
     }
 
     private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
@@ -222,7 +281,7 @@ public class TwigTypeResolveUtil {
                     targets.add(method);
                 }
             }
-            
+
             for(Field field: ((PhpClass) phpNamedElement).getFields()) {
                 String fieldName = field.getName().toLowerCase();
                 if(field.getModifier().isPublic() && fieldName.equals(variableName)) {
