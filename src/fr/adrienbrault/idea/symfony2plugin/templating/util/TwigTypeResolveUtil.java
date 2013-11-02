@@ -215,18 +215,21 @@ public class TwigTypeResolveUtil {
 
         ArrayList<PhpNamedElement> targets = new ArrayList<PhpNamedElement>();
         if(phpNamedElement instanceof PhpClass) {
+
             for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
                 String methodName = method.getName().toLowerCase();
-                if(methodName.equals(variableName) || methodName.equals("get" + variableName)) {
+                if(method.getModifier().isPublic() && (methodName.equals(variableName) || methodName.equals("get" + variableName))) {
                     targets.add(method);
                 }
             }
+            
             for(Field field: ((PhpClass) phpNamedElement).getFields()) {
-                String methodName = field.getName().toLowerCase();
-                if(methodName.equals(variableName)) {
+                String fieldName = field.getName().toLowerCase();
+                if(field.getModifier().isPublic() && fieldName.equals(variableName)) {
                     targets.add(field);
                 }
             }
+
         }
 
         return targets;

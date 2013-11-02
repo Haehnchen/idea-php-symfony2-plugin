@@ -38,7 +38,7 @@ public class PhpTwigMethodLookupElement extends PhpLookupElement {
         String lookupString = super.getLookupString();
 
         // remove getter and set lcfirst
-        if(lookupString.startsWith("get") && lookupString.length() > 3) {
+        if(this.getNamedElement() instanceof Method && lookupString.startsWith("get") && lookupString.length() > 3) {
             lookupString = lookupString.substring(3);
             lookupString = Character.toLowerCase(lookupString.charAt(0)) + lookupString.substring(1);
         }
