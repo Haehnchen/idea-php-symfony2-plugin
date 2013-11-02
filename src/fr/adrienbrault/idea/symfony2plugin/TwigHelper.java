@@ -316,6 +316,12 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static PsiElementPattern.Capture<PsiComment> getTwigDocBlockMatchPattern(String pattern) {
+        return PlatformPatterns
+            .psiComment().withText(PlatformPatterns.string().matches(pattern))
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getRoutePattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")

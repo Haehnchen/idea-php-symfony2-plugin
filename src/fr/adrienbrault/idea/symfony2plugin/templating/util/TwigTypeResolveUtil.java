@@ -19,10 +19,7 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ServiceContainerVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -37,6 +34,7 @@ public class TwigTypeResolveUtil {
 
     private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
         new StaticVariableCollector(),
+        new ControllerDocVariableCollector(),
         new ServiceContainerVariableCollector(),
         new FileDocVariableCollector(),
         new ControllerVariableCollector(),

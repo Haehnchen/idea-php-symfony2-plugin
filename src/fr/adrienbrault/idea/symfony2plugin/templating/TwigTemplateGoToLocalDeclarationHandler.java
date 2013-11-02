@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
@@ -20,11 +21,14 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
+import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationHandler {
@@ -76,6 +80,10 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             || TwigHelper.getForTagInVariablePattern().accepts(psiElement))
         {
             psiElements.addAll(Arrays.asList(this.getTypeGoto(psiElement)));
+        }
+
+        if(TwigHelper.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
+            psiElements.addAll(Arrays.asList(this.getControllerNameGoto(psiElement)));
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
@@ -168,6 +176,23 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         return new PsiElement[0];
     }
 
+
+    private PsiElement[] getControllerNameGoto(PsiElement psiElement) {
+        Pattern pattern = Pattern.compile(ControllerDocVariableCollector.DOC_PATTERN);
+        Matcher matcher = pattern.matcher(psiElement.getText());
+        if (!matcher.find()) {
+            return new PsiElement[0];
+        }
+
+        String controllerName = matcher.group(1);
+
+        Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), controllerName);
+        if(method == null) {
+            return new PsiElement[0];
+        }
+
+        return new PsiElement[] { method };
+    }
 
     @Nullable
     @Override

@@ -33,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsService
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
@@ -380,6 +381,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getTwigTypeDocBlock(),
             new TwigDocBlockTypeClassCompletionProvider()
+        );
+
+        // {# @Container Foo:Bar #}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN_COMPLETION),
+            new ControllerCompletionProvider()
         );
 
     }
