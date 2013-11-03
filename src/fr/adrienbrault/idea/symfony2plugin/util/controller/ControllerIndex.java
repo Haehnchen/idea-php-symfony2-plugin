@@ -132,7 +132,7 @@ public class ControllerIndex {
         // so we search for predefined service controller and use the public methods
         for (Map.Entry<String,Route> entrySet: routes.entrySet()) {
             String controllerName = entrySet.getValue().getController();
-            if(!controllerName.contains("::") && controllerName.contains(":")) {
+            if(controllerName != null && !controllerName.contains("::") && controllerName.contains(":")) {
                 String serviceId = controllerName.substring(0, controllerName.lastIndexOf(":"));
                 if(serviceMap.getMap().containsKey(serviceId)) {
                     String className =  serviceMap.getMap().get(serviceId);
