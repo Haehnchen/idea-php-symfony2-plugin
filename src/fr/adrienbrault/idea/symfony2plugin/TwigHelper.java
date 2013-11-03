@@ -503,6 +503,80 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getIfVariablePattern() {
+
+        // {% if "var" %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(
+                    PlatformPatterns.string().oneOfIgnoreCase("if")
+                )
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getIfConditionVariablePattern() {
+
+        // {% if var < "var1" %}
+        // {% if var == "var1" %}
+        // and so on
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LT),
+                    PlatformPatterns.psiElement(TwigTokenTypes.GE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.GT),
+                    PlatformPatterns.psiElement(TwigTokenTypes.EQ_EQ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.NOT_EQ)
+                )
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getSetVariablePattern() {
+
+        // {% set count1 = "var" %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.EQ)
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getVariableTypePattern() {
+        return PlatformPatterns.or(
+            TwigHelper.getForTagInVariablePattern(),
+            TwigHelper.getIfVariablePattern(),
+            TwigHelper.getIfConditionVariablePattern(),
+            TwigHelper.getSetVariablePattern()
+        );
+    }
+
     public static ArrayList<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
 
 

@@ -272,7 +272,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {% for user in "users" %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getForTagInVariablePattern(),
+            TwigHelper.getVariableTypePattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
