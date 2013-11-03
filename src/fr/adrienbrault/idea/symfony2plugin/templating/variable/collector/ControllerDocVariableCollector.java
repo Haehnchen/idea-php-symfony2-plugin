@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
 
 public class ControllerDocVariableCollector implements TwigFileVariableCollector {
 
-    public static String DOC_PATTERN  = "\\{#[\\s]+@Controller[\\s]+([\\w\\\\\\[\\]:]+)[\\s]+#}";
-    public static String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@Controller[\\s]+.*#}";
+    public static String DOC_PATTERN  = "\\{#[\\s]+@[C|c]ontroller[\\s]+([\\w\\\\\\[\\]:]+)[\\s]+#}";
+    public static String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@[C|c]ontroller[\\s]+.*#}";
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
