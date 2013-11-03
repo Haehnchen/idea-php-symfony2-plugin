@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -188,36 +189,26 @@ public class Symfony2InterfacesUtil {
         return stringValue;
     }
 
+    @Nullable
     protected Method getInterfaceMethod(Project project, String interfaceFQN, String methodName) {
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Object[] interfaces = phpIndex.getInterfacesByFQN(interfaceFQN).toArray();
 
-        if (interfaces.length < 1) {
+        Collection<PhpClass> interfaces = PhpIndex.getInstance(project).getInterfacesByFQN(interfaceFQN);
+
+        if (interfaces.size() < 1) {
             return null;
         }
 
-        return findClassMethodByName((PhpClass)interfaces[0], methodName);
+        return findClassMethodByName(interfaces.iterator().next(), methodName);
     }
 
+    @Nullable
     protected Method getClassMethod(Project project, String classFQN, String methodName) {
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Object[] classes = phpIndex.getClassesByFQN(classFQN).toArray();
-
-        if (classes.length < 1) {
-            return null;
-        }
-
-        return findClassMethodByName((PhpClass)classes[0], methodName);
+        return PhpElementsUtil.getClassMethod(project, classFQN, methodName);
     }
 
+    @Nullable
     protected Method findClassMethodByName(PhpClass phpClass, String methodName) {
-        for (Method method : phpClass.getMethods()) {
-            if (method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-
-        return null;
+        return PhpElementsUtil.getClassMethod(phpClass, methodName);
     }
 
     protected boolean isImplementationOfInterface(PhpClass phpClass, PhpClass phpInterface) {
