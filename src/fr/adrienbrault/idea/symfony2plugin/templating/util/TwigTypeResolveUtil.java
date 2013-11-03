@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -218,7 +219,11 @@ public class TwigTypeResolveUtil {
 
         // find array types; since they are phptypes they ends with []
         Set<String> types = new HashSet<String>();
-        for(String arrayType: globalVars.get(variableName)) {
+
+        PhpType phpType = new PhpType();
+        phpType.add(globalVars.get(variableName));
+
+        for(String arrayType: PhpIndex.getInstance(psiElement.getProject()).completeType(psiElement.getProject(), phpType, new HashSet<String>()).getTypes()) {
             if(arrayType.endsWith("[]")) {
                 types.add(arrayType.substring(0, arrayType.length() -2));
             }
