@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.28</version>
+    <version>0.10.29</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -95,6 +95,15 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.29</h2>
+<ul>
+    <li>Add <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">controller variable collector</a> for twig</li>
+    <li>Add more twig variables pattern</li>
+    <li>Add support for array variables in twig</li>
+    <li>Improvement for completion and insert handler of twig variable</li>
+    <li>Fix some npe and other exception</li>
+</ul>
 
 <h2>0.10.28</h2>
 <ul>

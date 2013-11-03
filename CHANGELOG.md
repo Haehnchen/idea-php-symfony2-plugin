@@ -5,6 +5,13 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.29
+* Add controller variable collector for twig
+* Add more twig variables pattern
+* Add support for array variables in twig
+* Improvement for completion and insert handler of twig variable
+* Fix some npe and other exception
+
 ### 0.10.28
 * Update twig macro pattern to support new twig elements
 * Add twig macro alias support
