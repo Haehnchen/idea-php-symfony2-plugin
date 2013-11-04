@@ -11,7 +11,7 @@ public class FileDocVariableCollector implements TwigFileVariableCollector {
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
-        if(!(parameter.getElement() instanceof TwigFile)) {
+        if(!(parameter.getElement().getContainingFile() instanceof TwigFile)) {
             return;
         }
         variables.putAll(convertHashMapToTypeSet(TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) parameter.getElement().getContainingFile())));
