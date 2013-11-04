@@ -147,7 +147,7 @@ public class PhpMethodVariableResolveUtil {
     /**
      *  array('foo' => $var, 'bar' => $bar)
      */
-    private static HashMap<String, Set<String>> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
+    public static HashMap<String, Set<String>> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
         HashMap<String, Set<String>> collectedTypes = new HashMap<String, Set<String>>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {

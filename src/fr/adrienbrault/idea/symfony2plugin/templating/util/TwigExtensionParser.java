@@ -6,6 +6,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
@@ -55,10 +56,12 @@ public class TwigExtensionParser  {
         PhpIndex phpIndex = PhpIndex.getInstance(this.project);
         ArrayList<String> classNames = new ArrayList<String>();
         for(PhpClass phpClass : phpIndex.getAllSubclasses("\\Twig_ExtensionInterface")) {
-            String className = phpClass.getPresentableFQN();
-            if(className != null) {
-                // signature class names need slash at first
-                classNames.add(className.startsWith("\\") ? className : "\\" + className);
+            if(!PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
+                String className = phpClass.getPresentableFQN();
+                if(className != null) {
+                    // signature class names need slash at first
+                    classNames.add(className.startsWith("\\") ? className : "\\" + className);
+                }
             }
         }
 

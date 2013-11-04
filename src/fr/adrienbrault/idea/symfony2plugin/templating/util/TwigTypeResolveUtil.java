@@ -35,6 +35,7 @@ public class TwigTypeResolveUtil {
 
     private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
         new StaticVariableCollector(),
+        new GlobalExtensionVariableCollector(),
         new ControllerDocVariableCollector(),
         new ServiceContainerVariableCollector(),
         new FileDocVariableCollector(),
