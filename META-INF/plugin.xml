@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.29</version>
+    <version>0.10.30</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -95,6 +95,13 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.30</h2>
+<ul>
+    <li>Add support for twig globals in twig variable types</li>
+    <li>Remove twig extension test classes from parser index</li>
+    <li>Fix twig file scope variable collector</li>
+</ul>
 
 <h2>0.10.29</h2>
 <ul>

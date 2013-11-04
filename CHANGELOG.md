@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.30
+* Add support for twig globals in twig variable types
+* Remove twig extension test classes from parser index
+* Fix twig file scope variable collector
+
 ### 0.10.29
 * Add controller variable collector for twig
 * Add more twig variables pattern
