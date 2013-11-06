@@ -6,21 +6,26 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.io.IOException;
 import java.util.*;
@@ -247,6 +252,69 @@ public class RouteHelper {
         }
 
         return routes;
+    }
+
+
+    /**
+     * Foo\Bar::methodAction
+     */
+    @Nullable
+    public static String convertMethodToRouteControllerName(Method method) {
+
+        PhpClass phpClass = method.getContainingClass();
+        if(phpClass == null) {
+            return null;
+        }
+
+        String className = phpClass.getPresentableFQN();
+        if(className == null) {
+            return null;
+        }
+
+        return (className.startsWith("\\") ? className.substring(1) : className) + "::" + method.getName();
+
+    }
+
+    public static VirtualFile[] getRouteDefinitionInsideFile(Project project, String... routeNames) {
+
+        final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
+
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlRoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
+            @Override
+            public boolean process(VirtualFile virtualFile) {
+                virtualFiles.add(virtualFile);
+                return true;
+            }
+        }, PhpIndex.getInstance(project).getSearchScope());
+
+        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
+
+    }
+
+    @Nullable
+    public static Set<String> getYamlRouteNames(YAMLDocument yamlDocument) {
+
+        Set<String> set = new HashSet<String>();
+
+        // get services or parameter key
+        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
+        if(yamlKeys == null) {
+            return null;
+        }
+
+        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
+
+            PsiElement element = yamlKeyValue.getValue();
+            if(element instanceof YAMLCompoundValue) {
+                Set<String> keySet = YamlHelper.getYamlCompoundValueKeyNames((YAMLCompoundValue) element);
+                if((keySet.contains("path") || keySet.contains("pattern")) && keySet.contains("defaults")) {
+                    set.add(yamlKeyValue.getKeyText());
+                }
+            }
+        }
+
+        return set;
+
     }
 
 }

@@ -9,13 +9,12 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLArray;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.impl.YAMLPsiElementImpl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class YamlHelper {
 
@@ -259,6 +258,29 @@ public class YamlHelper {
 
             return null;
         }
+    }
+
+    public static Set<String> getYamlCompoundValueKeyNames(YAMLCompoundValue yamlCompoundValue) {
+
+        Set<String> stringSet = new HashSet<String>();
+
+        List<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class);
+
+        for(YAMLKeyValue yamlKeyValue: yamlKeyValues) {
+            stringSet.add(yamlKeyValue.getKeyText());
+        }
+
+        return stringSet;
+    }
+
+    @Nullable
+    public static YAMLKeyValue getRootKey(PsiFile psiFile, String keyName) {
+
+        if(psiFile.getFirstChild() instanceof YAMLDocument) {
+            return YamlKeyFinder.find(psiFile.getFirstChild(), keyName);
+        }
+
+        return null;
     }
 
 }

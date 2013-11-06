@@ -220,6 +220,22 @@ public class PhpElementsUtil {
     }
 
     /**
+     * public function indexAction()
+     */
+    static public PsiElementPattern.Capture<PsiElement> getActionMethodPattern() {
+        return PlatformPatterns
+            .psiElement(PhpTokenTypes.IDENTIFIER).withText(
+                PlatformPatterns.string().endsWith("Action")
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(PhpTokenTypes.kwFUNCTION)
+            )
+            .inside(Method.class)
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
+    /**
      * return 'value' inside class method
      */
     static public PsiElementPattern.Capture<StringLiteralExpression> getMethodReturnPattern() {
