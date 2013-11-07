@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
@@ -26,8 +25,7 @@ public class ServiceUtil {
             className = serviceMap.get(className);
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        PhpClass phpClass = PhpElementsUtil.getClass(phpIndex, className);
+        PhpClass phpClass = PhpElementsUtil.getClass(project, className);
         if(phpClass == null) {
             return null;
         }

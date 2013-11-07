@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,26 +37,28 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
 
-        String localClassName = this.className;
-        if(!localClassName.startsWith("\\")) {
-            localClassName = "\\" + localClassName;
+        PhpClass phpClass = ServiceUtil.getResolvedClass(getElement().getProject(), this.className);
+        if(phpClass == null) {
+            return new ResolveResult[0];
         }
 
-        for (PsiElement psiElement : PhpElementsUtil.getPsiElementsBySignature(getElement().getProject(), "#M#C" + localClassName + "." + this.method)) {
-            results.add(new PsiElementResolveResult(psiElement));
+        Method targetMethod = PhpElementsUtil.getClassMethod(phpClass, this.method);
+        if(targetMethod == null) {
+            return new ResolveResult[0];
         }
 
-        return results.toArray(new ResolveResult[results.size()]);
+        return new ResolveResult[] {
+          new PsiElementResolveResult(targetMethod)
+        };
+
     }
 
     @NotNull
     @Override
     public Object[] getVariants() {
 
-        PhpClass phpClass = PhpElementsUtil.getClass(getElement().getProject(), this.className);
-
+        PhpClass phpClass = ServiceUtil.getResolvedClass(getElement().getProject(), this.className);
         if(phpClass == null) {
             return new Object[0];
         }
