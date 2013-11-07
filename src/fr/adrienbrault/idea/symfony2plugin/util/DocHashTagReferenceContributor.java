@@ -84,12 +84,17 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                         psiReferences.add(new RouteReference(psiElement));
                     }
 
-                    if(phpDocParamTag.getTagValue().contains("#Class")) {
+                    // should not match on #ClassInterface
+                    if(phpDocParamTag.getTagValue().contains("#Class") && phpDocParamTag.getTagValue().matches("#Class[\\s]*.*")) {
                         psiReferences.add(new PhpClassReference(psiElement, true));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#Interface")) {
                         psiReferences.add(new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(false));
+                    }
+
+                    if(phpDocParamTag.getTagValue().contains("#ClassInterface")) {
+                        psiReferences.add(new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(true));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#FormType")) {
