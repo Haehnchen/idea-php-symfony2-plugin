@@ -5,9 +5,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TwigTypeInsertHandler;
 import org.jetbrains.annotations.NotNull;
-
 
 public class PhpTwigMethodLookupElement extends PhpLookupElement {
 
@@ -23,7 +23,7 @@ public class PhpTwigMethodLookupElement extends PhpLookupElement {
         PhpNamedElement phpNamedElement = this.getNamedElement();
 
         // reset method to show full name again, which was stripped inside getLookupString
-        if(phpNamedElement instanceof Method && phpNamedElement.getName().startsWith("get") && phpNamedElement.getName().length() > 3) {
+        if(phpNamedElement instanceof Method && TwigTypeResolveUtil.isPropertyShortcutMethod((Method) phpNamedElement)) {
             presentation.setItemText(phpNamedElement.getName());
         }
 
@@ -37,10 +37,9 @@ public class PhpTwigMethodLookupElement extends PhpLookupElement {
     public String getLookupString() {
         String lookupString = super.getLookupString();
 
-        // remove getter and set lcfirst
-        if(this.getNamedElement() instanceof Method && lookupString.startsWith("get") && lookupString.length() > 3) {
-            lookupString = lookupString.substring(3);
-            lookupString = Character.toLowerCase(lookupString.charAt(0)) + lookupString.substring(1);
+        // remove property shortcuts eg getter / issers
+        if(this.getNamedElement() instanceof Method && TwigTypeResolveUtil.isPropertyShortcutMethod((Method) this.getNamedElement())) {
+            lookupString = TwigTypeResolveUtil.getPropertyShortcutMethodName((Method) this.getNamedElement());
         }
 
         return lookupString;

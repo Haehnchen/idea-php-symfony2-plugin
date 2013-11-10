@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 public class TwigTypeResolveUtil {
 
     public static final String DOC_PATTERN  = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+    private static String[] propertyShortcuts = new String[] {"get", "is"};
 
     private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
         new StaticVariableCollector(),
@@ -267,24 +268,29 @@ public class TwigTypeResolveUtil {
         return phpNamedElements;
     }
 
+    /**
+     *
+     * "phpNamedElement.variableName", "phpNamedElement.getVariableName" will resolve php type eg method
+     *
+     * @param phpNamedElement php class method or field
+     * @param variableName variable name shortcut property possible
+     * @return matched php types
+     */
     public static Collection<? extends PhpNamedElement> getTwigPhpNameTargets(PhpNamedElement phpNamedElement, String variableName) {
-
-        // make it easy for use
-        variableName = variableName.toLowerCase();
 
         ArrayList<PhpNamedElement> targets = new ArrayList<PhpNamedElement>();
         if(phpNamedElement instanceof PhpClass) {
 
             for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
-                String methodName = method.getName().toLowerCase();
-                if(method.getModifier().isPublic() && (methodName.equals(variableName) || methodName.equals("get" + variableName))) {
+                String methodName = method.getName();
+                if(method.getModifier().isPublic() && (methodName.equalsIgnoreCase(variableName) || isPropertyShortcutMethodEqual(methodName, variableName))) {
                     targets.add(method);
                 }
             }
 
             for(Field field: ((PhpClass) phpNamedElement).getFields()) {
-                String fieldName = field.getName().toLowerCase();
-                if(field.getModifier().isPublic() && fieldName.equals(variableName)) {
+                String fieldName = field.getName();
+                if(field.getModifier().isPublic() && fieldName.equalsIgnoreCase(variableName)) {
                     targets.add(field);
                 }
             }
@@ -309,6 +315,42 @@ public class TwigTypeResolveUtil {
 
         return "";
 
+    }
+
+    public static boolean isPropertyShortcutMethod(Method method) {
+
+        for(String shortcut: propertyShortcuts) {
+            if(method.getName().startsWith(shortcut) && method.getName().length() > shortcut.length()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isPropertyShortcutMethodEqual(String methodName, String variableName) {
+
+        for(String shortcut: propertyShortcuts) {
+            if(methodName.equalsIgnoreCase(shortcut + variableName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static String getPropertyShortcutMethodName(Method method) {
+
+        String methodName = method.getName();
+        for(String shortcut: propertyShortcuts) {
+            // strip possible property shortcut and make it lcfirst
+            if(method.getName().startsWith(shortcut) && method.getName().length() > shortcut.length()) {
+                methodName = methodName.substring(shortcut.length());
+                return Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
+            }
+        }
+
+        return methodName;
     }
 
 }
