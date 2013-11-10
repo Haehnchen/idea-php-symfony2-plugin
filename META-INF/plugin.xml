@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.30</version>
+    <version>0.10.31</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -16,6 +16,7 @@
 <ul>
     <li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
     <li>phpstorm7: dropped twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
+    <li>yaml: parse error on "}" eg route pattern <a href="http://youtrack.jetbrains.com/issue/RUBY-13914">RUBY-13914</a></li>
 </ul>
 
 <h2>Features:</h2>
@@ -95,6 +96,15 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.31</h2>
+<ul>
+    <li>Add raw yaml routes parser inside index process to provide line marker for controller actions (limited by RUBY-13914)</li>
+    <li>Add new method reference provider ClassInterface</li>
+    <li>Add controller line marker for twig file, if a matching file exists</li>
+    <li>Xml method reference provider support class parameters eg "calls"</li>
+    <li>Twig types support "is" as property shortcut</li>
+</ul>
 
 <h2>0.10.30</h2>
 <ul>
@@ -380,6 +390,7 @@
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.PhpRouteActionLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigControllerLineMarkerProvider"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
