@@ -231,37 +231,46 @@ public class TwigUtil {
 
     }
 
-    public static HashMap<String, Set<String>> collectControllerTemplateVariables(PsiElement psiElement) {
+    @Nullable
+    public static Method findTwigFileController(TwigFile twigFile) {
 
-        HashMap<String, Set<String>> vars = new HashMap<String, Set<String>>();
-
-        PsiFile psiFile = psiElement.getContainingFile();
-
-        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(psiElement.getProject()).getContainingBundle(psiFile);
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(twigFile.getProject()).getContainingBundle(twigFile);
         if(symfonyBundle == null) {
-            return vars;
+            return null;
         }
 
-        String relativePath = symfonyBundle.getRelativePath(psiFile.getVirtualFile());
+        String relativePath = symfonyBundle.getRelativePath(twigFile.getVirtualFile());
         if(relativePath == null || !relativePath.startsWith("Resources/views/")) {
-            return vars;
+            return null;
         }
 
         String viewPath = relativePath.substring("Resources/views/".length());
 
         Matcher simpleFilter = Pattern.compile(".*/(\\w+)\\.\\w+\\.twig").matcher(viewPath);
         if(!simpleFilter.find()) {
-            return vars;
+            return null;
         }
 
         String methodName = simpleFilter.group(1) + "Action";
         String className = symfonyBundle.getNamespaceName() + "Controller\\" + viewPath.substring(0, viewPath.lastIndexOf("/")).replace("/", "\\") + "Controller";
 
-        Method method = PhpElementsUtil.getClassMethod(psiElement.getProject(), className, methodName);
-        if(method == null) {
+        return PhpElementsUtil.getClassMethod(twigFile.getProject(), className, methodName);
+
+    }
+
+    public static HashMap<String, Set<String>> collectControllerTemplateVariables(PsiElement psiElement) {
+
+        HashMap<String, Set<String>> vars = new HashMap<String, Set<String>>();
+
+        PsiFile psiFile = psiElement.getContainingFile();
+        if(!(psiFile instanceof TwigFile)) {
             return vars;
         }
 
+        Method method = findTwigFileController((TwigFile) psiFile);
+        if(method == null) {
+            return vars;
+        }
 
         return PhpMethodVariableResolveUtil.collectMethodVariables(method);
 
