@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class TwigBlockParser {
         // find extend in self
         Matcher matcher = Pattern.compile("^[\\s+]*\\{%\\s+extends[\\s+]*['|\"](.*?)['|\"]").matcher(file.getText());
         while(matcher.find()){
-            if(twigFilesByName.containsKey(matcher.group(1))) {
+            if(twigFilesByName.containsKey(TwigHelper.normalizeTemplateName(matcher.group(1)))) {
                 TwigFile twigFile = twigFilesByName.get(matcher.group(1));
                 this.walk(twigFile, matcher.group(1), current, depth);
             }

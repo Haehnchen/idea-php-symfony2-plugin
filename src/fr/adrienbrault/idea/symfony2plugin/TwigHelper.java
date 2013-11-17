@@ -116,22 +116,33 @@ public class TwigHelper {
         return null;
     }
 
-    public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
+    /**
+     * both are valid names first is internal completion
+     * BarBundle:Foo:steps/step_finish.html.twig
+     * BarBundle:Foo/steps:step_finish.html.twig
+     *
+     * todo: provide setting for that
+     */
+    public static String normalizeTemplateName(String templateName) {
 
-        // both are valid names first is internal completion
-        // @TODO: provide setting for that
-        // BarBundle:Foo:steps/step_finish.html.twig
-        // BarBundle:Foo/steps:step_finish.html.twig
-
-        if(templateName.matches("^.*?:.*?:.*?/.*?$")) {
-            int lastDoublePoint = templateName.lastIndexOf(":");
-            String subFolder = templateName.substring(lastDoublePoint + 1, templateName.lastIndexOf("/"));
-            String file = templateName.substring(templateName.lastIndexOf("/") + 1);
-            templateName = templateName.substring(0, lastDoublePoint) + "/" + subFolder + ":" + file;
+        if(!templateName.matches("^.*?:.*?:.*?/.*?$")) {
+            return templateName;
         }
 
+        int lastDoublePoint = templateName.lastIndexOf(":");
+        String subFolder = templateName.substring(lastDoublePoint + 1, templateName.lastIndexOf("/"));
+        String file = templateName.substring(templateName.lastIndexOf("/") + 1);
+
+        return templateName.substring(0, lastDoublePoint) + "/" + subFolder + ":" + file;
+
+    }
+
+    public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
+
+        String normalizedTemplateName = normalizeTemplateName(templateName);
+
         Map<String, PsiFile> twigFiles = TwigHelper.getTemplateFilesByName(project);
-        if(!twigFiles.containsKey(templateName)) {
+        if(!twigFiles.containsKey(normalizedTemplateName)) {
             return new PsiElement[0];
         }
 
