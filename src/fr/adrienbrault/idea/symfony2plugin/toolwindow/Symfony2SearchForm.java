@@ -108,8 +108,8 @@ public class Symfony2SearchForm {
         }
 
         if(lookupElement instanceof TemplateLookupElement) {
-            Map<String, PsiFile> twigFilesByName = TwigHelper.getTemplateFilesByName(this.project);
-            PsiFile twigFile = twigFilesByName.get(lookupElement.getLookupString());
+
+            PsiFile twigFile = TwigHelper.getTemplateFileByName(this.project, lookupElement.getLookupString());
             if (null != twigFile) {
                psiElement = twigFile;
             }
