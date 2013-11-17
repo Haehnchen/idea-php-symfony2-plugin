@@ -63,7 +63,10 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
             // whitelist here; we can also provide some more but think of performance
             // Service::NAME and $this->name;
             if (parameter instanceof PhpReference && (parameter instanceof ClassConstantReference || parameter instanceof FieldReference)) {
-                return refSignature + TRIM_KEY + ((PhpReference) parameter).getSignature();
+                String signature = ((PhpReference) parameter).getSignature();
+                if (StringUtil.isNotEmpty(signature)) {
+                    return refSignature + TRIM_KEY + signature;
+                }
             }
 
         }
