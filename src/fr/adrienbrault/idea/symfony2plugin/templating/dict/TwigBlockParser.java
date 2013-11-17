@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 public class TwigBlockParser {
 
+    public static String EXTENDS_TEMPLATE_NAME_PATTERN = "^[\\s+]*\\{%\\s+extends[\\s+]*['|\"](.*?)['|\"]";
+
     private Map<String, TwigFile> twigFilesByName;
 
     public TwigBlockParser(Map<String, TwigFile> twigFilesByName) {
@@ -39,7 +41,7 @@ public class TwigBlockParser {
         }
 
         // find extend in self
-        Matcher matcher = Pattern.compile("^[\\s+]*\\{%\\s+extends[\\s+]*['|\"](.*?)['|\"]").matcher(file.getText());
+        Matcher matcher = Pattern.compile(EXTENDS_TEMPLATE_NAME_PATTERN).matcher(file.getText());
         while(matcher.find()){
             if(twigFilesByName.containsKey(TwigHelper.normalizeTemplateName(matcher.group(1)))) {
                 TwigFile twigFile = twigFilesByName.get(matcher.group(1));
