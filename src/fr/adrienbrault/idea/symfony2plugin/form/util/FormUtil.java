@@ -96,7 +96,7 @@ public class FormUtil {
      * $form->get ..
      */
     @Nullable
-    public static String resolveFormGetterCall(MethodReference methodReference) {
+    public static PhpClass resolveFormGetterCall(MethodReference methodReference) {
 
         // "$form"->get('field_name');
         PhpPsiElement variable = methodReference.getFirstPsiChild();
@@ -128,11 +128,8 @@ public class FormUtil {
 
         // $form = "$this->createForm("new Type()", $entity)";
         PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt((MethodReference) calledMethodReference, 0);
-        if(!(formType instanceof PhpTypedElementImpl)) {
-            return null;
-        }
 
-        return ((PhpTypedElementImpl) formType).getType().toString();
+        return getFormTypeClassOnParameter(formType);
 
     }
 
@@ -142,17 +139,32 @@ public class FormUtil {
      */
     @Nullable
     public static Method resolveFormGetterCallMethod(MethodReference methodReference) {
-        String typeName = FormUtil.resolveFormGetterCall(methodReference);
-        if(typeName == null) {
+        PhpClass formPhpClass = FormUtil.resolveFormGetterCall(methodReference);
+        if(formPhpClass == null) {
             return null;
         }
 
-        Method method = PhpElementsUtil.getClassMethod(methodReference.getProject(), typeName, "buildForm");
+        Method method = PhpElementsUtil.getClassMethod(formPhpClass, "buildForm");
         if(method == null) {
             return null;
         }
 
         return method;
+    }
+
+    @Nullable
+    public static PhpClass getFormTypeClassOnParameter(PsiElement psiElement) {
+
+        if(psiElement instanceof StringLiteralExpression) {
+            return getFormTypeToClass(psiElement.getProject(), ((StringLiteralExpression) psiElement).getContents());
+        }
+
+        if(psiElement instanceof PhpTypedElementImpl) {
+            String typeName = ((PhpTypedElementImpl) psiElement).getType().toString();
+            return getFormTypeToClass(psiElement.getProject(), typeName);
+        }
+
+        return null;
     }
 
 }
