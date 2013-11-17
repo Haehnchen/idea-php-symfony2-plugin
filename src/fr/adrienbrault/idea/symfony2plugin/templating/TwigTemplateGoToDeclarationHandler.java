@@ -110,15 +110,17 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return ControllerIndex.getControllerMethod(psiElement.getProject(), text);
     }
 
+    @Nullable
     private PsiElement[] getTwigFiles(PsiElement psiElement) {
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
-        TwigFile twigFile = twigFilesByName.get(psiElement.getText());
 
-        if (null == twigFile) {
+        String templateName = psiElement.getText();
+        PsiElement[] psiElements = TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName);
+
+        if(psiElements.length == 0) {
             return null;
         }
 
-        return new PsiElement[] { twigFile };
+        return psiElements;
     }
 
     private PsiElement[] getFilterGoTo(PsiElement psiElement) {

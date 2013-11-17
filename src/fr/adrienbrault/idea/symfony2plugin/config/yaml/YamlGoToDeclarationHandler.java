@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -104,14 +105,8 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), parameterName);
     }
 
-    protected List<TwigFile> templateGoto(PsiElement psiElement, String templateName) {
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
-        TwigFile twigFile = twigFilesByName.get(templateName);
-        if (null == twigFile) {
-            return Collections.emptyList();
-        }
-
-        return Arrays.asList(twigFile);
+    protected List<PsiFile> templateGoto(PsiElement psiElement, String templateName) {
+        return Arrays.asList(TwigHelper.getTemplateFilesByName(psiElement.getProject(), templateName));
     }
 
     @Nullable

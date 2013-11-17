@@ -25,10 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,6 +86,22 @@ public class TwigHelper {
         }
 
         return null;
+    }
+
+    /**
+     * todo: migrate getTemplatePsiElements to this method. think of support twig and php templates
+     */
+    public static PsiFile[] getTemplateFilesByName(Project project, String templateName) {
+
+        ArrayList<PsiFile> psiFiles = new ArrayList<PsiFile>();
+
+        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(project, templateName)) {
+            if(templateTarget instanceof PsiFile) {
+                psiFiles.add((TwigFile) templateTarget);
+            }
+        }
+
+        return psiFiles.toArray(new PsiFile[psiFiles.size()]);
     }
 
     public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {

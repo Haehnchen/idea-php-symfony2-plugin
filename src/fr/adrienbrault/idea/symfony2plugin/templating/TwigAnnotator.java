@@ -110,9 +110,10 @@ public class TwigAnnotator implements Annotator {
             return;
         }
 
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(element.getProject());
         String templateName = element.getText();
-        if(twigFilesByName.containsKey(templateName))  {
+        PsiElement[] psiElements = TwigHelper.getTemplatePsiElements(element.getProject(), templateName);
+
+        if(psiElements.length > 0)  {
             return;
         }
 
