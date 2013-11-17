@@ -11,6 +11,8 @@ import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
@@ -351,6 +353,49 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
+        // $form->get('field')
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+                    if (parameterList == null) {
+                        return new PsiReference[0];
+                    }
+
+                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference methodReference = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormInterface", "get") &&
+                        !interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormInterface", "has")
+                        ) {
+                        
+                        return new PsiReference[0];
+                    }
+
+                    Method method = FormUtil.resolveFormGetterCallMethod(methodReference);
+                    if(method == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[] {
+                        new FormFieldNameReference((StringLiteralExpression) psiElement, method)
+                    };
+                }
+
+            }
+
+        );
 
     }
 

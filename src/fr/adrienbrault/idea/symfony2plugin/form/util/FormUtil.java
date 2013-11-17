@@ -2,15 +2,22 @@ package fr.adrienbrault.idea.symfony2plugin.form.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.util.PsiElementFilter;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -56,6 +63,96 @@ public class FormUtil {
 
         return null;
 
+    }
+
+    public static MethodReference[] getFormBuilderTypes(Method method) {
+
+        final ArrayList<MethodReference> methodReferences = new ArrayList<MethodReference>();
+
+        final Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
+        PsiTreeUtil.collectElements(method, new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement psiElement) {
+
+                if (psiElement instanceof MethodReference) {
+                    String methodName = ((MethodReference) psiElement).getName();
+                    if (methodName != null && (methodName.equals("add") || methodName.equals("create"))) {
+                        if(symfony2InterfacesUtil.isFormBuilderFormTypeCall(psiElement)) {
+                            methodReferences.add((MethodReference) psiElement);
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        return methodReferences.toArray(new MethodReference[methodReferences.size()]);
+
+    }
+
+    /**
+     * $form->get ..
+     */
+    @Nullable
+    public static String resolveFormGetterCall(MethodReference methodReference) {
+
+        // "$form"->get('field_name');
+        PhpPsiElement variable = methodReference.getFirstPsiChild();
+        if(!(variable instanceof Variable)) {
+            return null;
+        }
+
+        // find "$form = $this->createForm" createView call
+        PsiElement variableDecl = ((Variable) variable).resolve();
+        if(variableDecl == null) {
+            return null;
+        }
+
+        // $form = "$this->createForm(new Type(), $entity)";
+        PsiElement assignmentExpression = variableDecl.getParent();
+        if(!(assignmentExpression instanceof AssignmentExpression)) {
+            return null;
+        }
+
+        // $form = "$this->"createForm(new Type(), $entity)";
+        PhpPsiElement calledMethodReference = ((AssignmentExpression) assignmentExpression).getValue();
+        if(!(calledMethodReference instanceof MethodReference)) {
+            return null;
+        }
+
+        if(new Symfony2InterfacesUtil().isCallTo(calledMethodReference, "\\Symfony\\Component\\Form\\FormFactory", "create")) {
+            return null;
+        }
+
+        // $form = "$this->createForm("new Type()", $entity)";
+        PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt((MethodReference) calledMethodReference, 0);
+        if(!(formType instanceof PhpTypedElementImpl)) {
+            return null;
+        }
+
+        return ((PhpTypedElementImpl) formType).getType().toString();
+
+    }
+
+    /**
+     * Get form builder field for
+     * $form->get('field');
+     */
+    @Nullable
+    public static Method resolveFormGetterCallMethod(MethodReference methodReference) {
+        String typeName = FormUtil.resolveFormGetterCall(methodReference);
+        if(typeName == null) {
+            return null;
+        }
+
+        Method method = PhpElementsUtil.getClassMethod(methodReference.getProject(), typeName, "buildForm");
+        if(method == null) {
+            return null;
+        }
+
+        return method;
     }
 
 }
