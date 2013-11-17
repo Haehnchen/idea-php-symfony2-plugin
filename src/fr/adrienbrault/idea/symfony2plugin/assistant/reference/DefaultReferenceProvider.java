@@ -12,6 +12,8 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 public class DefaultReferenceProvider {
 
@@ -148,7 +150,26 @@ public class DefaultReferenceProvider {
 
         @Override
         public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
-            return new TranslationReference(parameter.getPsiElement(), "messages");
+
+            String translationDomain = "messages";
+
+            // more than self match; search for translation_domain provider
+            if(parameter.getConfigsMethodScope().size() > 1) {
+
+                // last translation domain wins
+                for(MethodParameterSetting config: parameter.getConfigsMethodScope()) {
+                    if(config.getReferenceProviderName().equals("translation_domain")) {
+                        String parameterValue = PsiElementUtils.getMethodParameterAt(parameter.getMethodReference(), config.getIndexParameter());
+                        if(parameterValue != null) {
+                            translationDomain = parameterValue;
+                        }
+                    }
+
+                }
+
+            }
+
+            return new TranslationReference(parameter.getPsiElement(), translationDomain);
         }
 
         @Override

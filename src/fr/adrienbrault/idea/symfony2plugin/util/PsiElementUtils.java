@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.ParameterListOwner;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -42,7 +43,18 @@ public class PsiElementUtils {
     }
 
     @Nullable
-    public static String getMethodParameterAt(ParameterList parameterList, int index) {
+    public static String getMethodParameterAt(@NotNull MethodReference methodReference, int index) {
+
+        ParameterList parameterList = methodReference.getParameterList();
+        if(parameterList == null) {
+            return null;
+        }
+
+        return getMethodParameterAt(parameterList, index);
+    }
+
+    @Nullable
+    public static String getMethodParameterAt(@NotNull ParameterList parameterList, int index) {
         PsiElement[] parameters = parameterList.getParameters();
 
         if(parameters.length < index + 1) {

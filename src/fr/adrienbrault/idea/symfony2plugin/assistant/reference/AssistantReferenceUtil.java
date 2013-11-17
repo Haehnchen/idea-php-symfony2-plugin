@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.assistant.reference;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiReference;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
@@ -72,7 +73,7 @@ public class AssistantReferenceUtil {
     }
 
     @NotNull
-    public static PsiReference[] getPsiReference(MethodParameterSetting methodParameterSetting, StringLiteralExpression psiElement, List<MethodParameterSetting> configsMethodScope) {
+    public static PsiReference[] getPsiReference(MethodParameterSetting methodParameterSetting, StringLiteralExpression psiElement, List<MethodParameterSetting> configsMethodScope, MethodReference method) {
 
         // custom references
         if(methodParameterSetting.hasAssistantPsiReferenceContributor()) {
@@ -83,7 +84,8 @@ public class AssistantReferenceUtil {
         AssistantReferenceProvider.AssistantReferenceProviderParameter assistantReferenceProviderParameter = new AssistantReferenceProvider.AssistantReferenceProviderParameter(
             psiElement,
             methodParameterSetting,
-            configsMethodScope
+            configsMethodScope,
+            method
         );
 
         String ReferenceProvider = methodParameterSetting.getReferenceProviderName();

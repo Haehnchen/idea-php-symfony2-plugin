@@ -73,7 +73,7 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
 
                         AssistantReferenceContributor referenceContributor = AssistantReferenceUtil.getContributor(config);
                         if(referenceContributor != null && referenceContributor.isContributedElement(psiElement, config)) {
-                            Collections.addAll(psiReferences, AssistantReferenceUtil.getPsiReference(config, (StringLiteralExpression) psiElement, methodScopeConfigs));
+                            Collections.addAll(psiReferences, AssistantReferenceUtil.getPsiReference(config, (StringLiteralExpression) psiElement, methodScopeConfigs, method));
                         }
 
                     }
