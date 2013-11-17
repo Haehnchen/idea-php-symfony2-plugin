@@ -5,6 +5,19 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.32
+* Service container supports "field" elements eg properties and class constants #151
+* Better template name detection on non common usage and performance improvements
+* Add new method references provider for translation key with possible domain filter  #155
+* Implement "twig extends" indexer for upcoming features
+
+### 0.10.31
+* Add raw yaml routes parser inside index process to provide line marker for controller actions (limited by RUBY-13914)
+* Add new method reference provider ClassInterface
+* Add controller line marker for twig file, if a matching file exists
+* Xml method reference provider support class parameters eg "calls"
+* Twig types support "is" as property shortcut
+
 ### 0.10.30
 * Add support for twig globals in twig variable types
 * Remove twig extension test classes from parser index

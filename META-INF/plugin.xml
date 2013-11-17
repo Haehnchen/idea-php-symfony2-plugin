@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.31</version>
+    <version>0.10.32</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -96,6 +96,14 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.32</h2>
+<ul>
+    <li>Service container supports "field" elements eg properties and class constants <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/151">#151</a></li>
+    <li>Better template name detection on non common usage and performance improvements</li>
+    <li>Add new method references provider for translation key with possible domain filter <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/155">#155</a></li>
+    <li>Implement "twig extends" indexer for upcoming features</li>
+</ul>
 
 <h2>0.10.31</h2>
 <ul>
