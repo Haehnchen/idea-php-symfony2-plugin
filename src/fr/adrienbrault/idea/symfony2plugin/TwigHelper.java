@@ -104,6 +104,18 @@ public class TwigHelper {
         return psiFiles.toArray(new PsiFile[psiFiles.size()]);
     }
 
+    @Nullable
+    public static PsiFile getTemplateFileByName(Project project, String templateName) {
+
+        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(project, templateName)) {
+            if(templateTarget instanceof PsiFile) {
+                return (PsiFile) templateTarget;
+            }
+        }
+
+        return null;
+    }
+
     public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
 
         // both are valid names first is internal completion

@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -159,12 +160,10 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
                 // switch to alias mode
                 final String macroName = twigMacro.getOriginalName() == null ? funcName : twigMacro.getOriginalName();
 
-                Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
+                PsiFile psiFile = TwigHelper.getTemplateFileByName(psiElement.getProject(), twigMacro.getTemplate());
 
-                if(twigFilesByName.containsKey(twigMacro.getTemplate())) {
-                    TwigFile twigFile = twigFilesByName.get(twigMacro.getTemplate());
-
-                    return PsiTreeUtil.collectElements(twigFile, new RegexPsiElementFilter(
+                if(psiFile != null) {
+                    return PsiTreeUtil.collectElements(psiFile, new RegexPsiElementFilter(
                         TwigElementTypes.MACRO_TAG,
                         "\\{%\\s?macro\\s?" + Pattern.quote(macroName) + "\\s?\\(.*%}")
                     );
