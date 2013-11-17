@@ -5,10 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.ResolveResult;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
@@ -179,6 +176,33 @@ public class PhpElementsUtil {
                 .withFirstChild(PlatformPatterns
                     .psiElement(PhpElementTypes.STRING)
                 )
+            ).accepts(psiElement)) {
+
+            return false;
+        }
+
+        // cant we move it up to PlatformPatterns? withName condition dont looks working
+        String methodRefName = ((MethodReference) psiElement).getName();
+
+        return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
+    }
+
+    /**
+     * $this->methodName('service_name')
+     * $this->methodName(SERVICE::NAME)
+     * $this->methodName($this->name)
+     */
+    static public boolean isMethodWithFirstStringOrFieldReference(PsiElement psiElement, String... methodName) {
+
+        if(!PlatformPatterns
+            .psiElement(PhpElementTypes.METHOD_REFERENCE)
+            .withChild(PlatformPatterns
+                .psiElement(PhpElementTypes.PARAMETER_LIST)
+                .withFirstChild(PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PhpElementTypes.STRING),
+                    PlatformPatterns.psiElement(PhpElementTypes.FIELD_REFERENCE),
+                    PlatformPatterns.psiElement(PhpElementTypes.CLASS_CONSTANT_REFERENCE)
+                ))
             ).accepts(psiElement)) {
 
             return false;
@@ -426,9 +450,9 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    private static String getStringValue(PsiElement psiElement, int depth) {
+    private static String getStringValue(@Nullable PsiElement psiElement, int depth) {
 
-        if(++depth > 5) {
+        if(psiElement == null || ++depth > 5) {
             return null;
         }
 
@@ -436,9 +460,18 @@ public class PhpElementsUtil {
             return ((StringLiteralExpression) psiElement).getContents();
         }
 
-        if(psiElement instanceof PhpReference) {
-            PsiElement ref = psiElement.getReference().resolve();
+        if(psiElement instanceof Field) {
+            return getStringValue(((Field) psiElement).getDefaultValue(), depth);
+        }
 
+        if(psiElement instanceof PhpReference) {
+
+            PsiReference psiReference = psiElement.getReference();
+            if(psiReference == null) {
+                return null;
+            }
+
+            PsiElement ref = psiReference.resolve();
             if(ref instanceof PhpReference) {
                 return getStringValue(psiElement, depth);
             }
@@ -450,8 +483,6 @@ public class PhpElementsUtil {
                     return ((StringLiteralExpression) resolved).getContents();
                 }
             }
-
-
 
         }
 

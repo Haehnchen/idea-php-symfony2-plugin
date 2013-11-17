@@ -39,7 +39,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
         }
 
         // container calls are only on "get" methods
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstString(e, "get")) {
+        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "get")) {
             return null;
         }
 
@@ -53,10 +53,19 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
         PsiElement[] parameters = ((MethodReference)e).getParameters();
         if (parameters.length == 1) {
             PsiElement parameter = parameters[0];
-            if ((parameter instanceof StringLiteralExpression)) {
+            if (parameter instanceof StringLiteralExpression) {
                 String param = ((StringLiteralExpression)parameter).getContents();
-                if (StringUtil.isNotEmpty(param)) return refSignature + TRIM_KEY + param;
+                if (StringUtil.isNotEmpty(param)) {
+                    return refSignature + TRIM_KEY + param;
+                }
             }
+
+            // whitelist here; we can also provide some more but think of performance
+            // Service::NAME and $this->name;
+            if (parameter instanceof PhpReference && (parameter instanceof ClassConstantReference || parameter instanceof FieldReference)) {
+                return refSignature + TRIM_KEY + ((PhpReference) parameter).getSignature();
+            }
+
         }
 
         return null;
@@ -80,6 +89,20 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
         PhpNamedElement phpNamedElement = phpNamedElementCollections.iterator().next();
         if(!(phpNamedElement instanceof Method)) {
             return Collections.emptySet();
+        }
+
+        // we can also pipe php references signatures and resolve them here
+        // overwrite parameter to get string value
+        if(parameter.startsWith("#")) {
+            Collection<? extends PhpNamedElement> signTypes = phpIndex.getBySignature(parameter, null, 0);
+            if(signTypes.size() == 0) {
+                return Arrays.asList(phpNamedElement);
+            }
+
+            parameter = PhpElementsUtil.getStringValue(signTypes.iterator().next());
+            if(parameter == null) {
+                return Arrays.asList(phpNamedElement);
+            }
         }
 
         // finally search the classes
