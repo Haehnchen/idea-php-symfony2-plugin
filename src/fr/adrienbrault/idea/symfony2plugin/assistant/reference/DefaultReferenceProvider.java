@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 
 public class DefaultReferenceProvider {
 
@@ -25,6 +26,7 @@ public class DefaultReferenceProvider {
         new FormOptionReferenceProvider(),
         new PhpInterfaceReferenceProvider(),
         new PhpClassInterfaceReferenceProvider(),
+        new TranslationKeyReferenceProvider(),
     };
 
     public enum DEFAULT_PROVIDER_ENUM {
@@ -73,8 +75,8 @@ public class DefaultReferenceProvider {
     private static class RouteReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new RouteReference(psiElement);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new RouteReference(parameter.getPsiElement());
         }
 
         @Override
@@ -91,8 +93,8 @@ public class DefaultReferenceProvider {
     private static class RepositoryReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new EntityReference(psiElement);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new EntityReference(parameter.getPsiElement());
         }
 
         @Override
@@ -109,8 +111,8 @@ public class DefaultReferenceProvider {
     private static class TemplateProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new TemplateReference(psiElement);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new TemplateReference(parameter.getPsiElement());
         }
 
         @Override
@@ -127,8 +129,8 @@ public class DefaultReferenceProvider {
     private static class TranslationDomainReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new TranslationDomainReference(psiElement);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new TranslationDomainReference(parameter.getPsiElement());
         }
 
         @Override
@@ -142,11 +144,29 @@ public class DefaultReferenceProvider {
         }
     }
 
+    private static class TranslationKeyReferenceProvider implements AssistantReferenceProvider {
+
+        @Override
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new TranslationReference(parameter.getPsiElement(), "messages");
+        }
+
+        @Override
+        public String getAlias() {
+            return "translation_key";
+        }
+
+        @Override
+        public String getDocBlockParamAlias() {
+            return "TranslationKey";
+        }
+    }
+
     private static class PhpClassReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new PhpClassReference(psiElement, true);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new PhpClassReference(parameter.getPsiElement(), true);
         }
 
         @Override
@@ -163,8 +183,8 @@ public class DefaultReferenceProvider {
     private static class PhpInterfaceReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(false);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new PhpClassReference(parameter.getPsiElement(), true).setUseInterfaces(true).setUseClasses(false);
         }
 
         @Override
@@ -181,8 +201,8 @@ public class DefaultReferenceProvider {
     private static class PhpClassInterfaceReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(true);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new PhpClassReference(parameter.getPsiElement(), true).setUseInterfaces(true).setUseClasses(true);
         }
 
         @Override
@@ -199,8 +219,8 @@ public class DefaultReferenceProvider {
     private static class ServiceReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new ServiceReference(psiElement);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new ServiceReference(parameter.getPsiElement());
         }
 
         @Override
@@ -217,8 +237,8 @@ public class DefaultReferenceProvider {
     private static class FormTypeReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new FormTypeReference(psiElement);
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new FormTypeReference(parameter.getPsiElement());
         }
 
         @Override
@@ -235,8 +255,8 @@ public class DefaultReferenceProvider {
     private static class FormOptionReferenceProvider implements AssistantReferenceProvider {
 
         @Override
-        public PsiReference getPsiReference(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting) {
-            return new FormDefaultOptionsKeyReference(psiElement, "form");
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new FormDefaultOptionsKeyReference(parameter.getPsiElement(), "form");
         }
 
         @Override

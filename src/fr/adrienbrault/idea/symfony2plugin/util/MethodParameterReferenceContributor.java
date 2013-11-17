@@ -55,16 +55,25 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                     MethodReference method = (MethodReference) parameterList.getContext();
                     Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
 
-                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
-                    for (MethodParameterSetting config: configs) {
 
-                        if(!interfacesUtil.isCallTo(method, config.getCallTo(), config.getMethodName())) {
-                            continue;
+                    // get config in method scope; so we can pipe them
+                    ArrayList<MethodParameterSetting> methodScopeConfigs = new ArrayList<MethodParameterSetting>();
+                    for (MethodParameterSetting config: configs) {
+                        if(interfacesUtil.isCallTo(method, config.getCallTo(), config.getMethodName())) {
+                            methodScopeConfigs.add(config);
                         }
+                    }
+
+                    if(methodScopeConfigs.size() == 0) {
+                        return new PsiReference[0];
+                    }
+
+                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
+                    for (MethodParameterSetting config: methodScopeConfigs) {
 
                         AssistantReferenceContributor referenceContributor = AssistantReferenceUtil.getContributor(config);
                         if(referenceContributor != null && referenceContributor.isContributedElement(psiElement, config)) {
-                            Collections.addAll(psiReferences, AssistantReferenceUtil.getPsiReference(config, (StringLiteralExpression) psiElement));
+                            Collections.addAll(psiReferences, AssistantReferenceUtil.getPsiReference(config, (StringLiteralExpression) psiElement, methodScopeConfigs));
                         }
 
                     }

@@ -72,16 +72,24 @@ public class AssistantReferenceUtil {
     }
 
     @NotNull
-    public static PsiReference[] getPsiReference(MethodParameterSetting methodParameterSetting, StringLiteralExpression psiElement) {
+    public static PsiReference[] getPsiReference(MethodParameterSetting methodParameterSetting, StringLiteralExpression psiElement, List<MethodParameterSetting> configsMethodScope) {
 
+        // custom references
         if(methodParameterSetting.hasAssistantPsiReferenceContributor()) {
             return methodParameterSetting.getAssistantPsiReferenceContributor().getPsiReferences(psiElement);
         }
 
+        // build provider parameter
+        AssistantReferenceProvider.AssistantReferenceProviderParameter assistantReferenceProviderParameter = new AssistantReferenceProvider.AssistantReferenceProviderParameter(
+            psiElement,
+            methodParameterSetting,
+            configsMethodScope
+        );
+
         String ReferenceProvider = methodParameterSetting.getReferenceProviderName();
         for(AssistantReferenceProvider referenceProvider: DefaultReferenceProvider.DEFAULT_PROVIDERS) {
             if(referenceProvider.getAlias().equals(ReferenceProvider)) {
-                return new PsiReference[] { referenceProvider.getPsiReference(psiElement, methodParameterSetting) };
+                return new PsiReference[] { referenceProvider.getPsiReference(assistantReferenceProviderParameter) };
             }
         }
 
