@@ -146,7 +146,7 @@ public class TwigHelper {
             return new PsiElement[0];
         }
 
-        return new PsiElement[] {twigFiles.get(templateName)};
+        return new PsiElement[] {twigFiles.get(normalizedTemplateName)};
     }
 
     synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project) {
