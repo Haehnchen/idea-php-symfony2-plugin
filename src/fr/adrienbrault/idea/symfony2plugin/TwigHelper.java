@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -125,15 +126,20 @@ public class TwigHelper {
      */
     public static String normalizeTemplateName(String templateName) {
 
-        if(!templateName.matches("^.*?:.*?:.*?/.*?$")) {
+        if(templateName.startsWith("@") || !templateName.matches("^.*?:.*?:.*?/.*?$")) {
             return templateName;
         }
 
-        int lastDoublePoint = templateName.lastIndexOf(":");
-        String subFolder = templateName.substring(lastDoublePoint + 1, templateName.lastIndexOf("/"));
+        templateName = templateName.replace(":", "/");
+
+        int firstDoublePoint = templateName.indexOf("/");
+        int lastDoublePoint = templateName.lastIndexOf("/");
+
+        String bundle = templateName.substring(0, templateName.indexOf("/"));
+        String subFolder = templateName.substring(firstDoublePoint, lastDoublePoint);
         String file = templateName.substring(templateName.lastIndexOf("/") + 1);
 
-        return templateName.substring(0, lastDoublePoint) + "/" + subFolder + ":" + file;
+        return String.format("%s:%s:%s", bundle, StringUtils.strip(subFolder, "/"), file);
 
     }
 
