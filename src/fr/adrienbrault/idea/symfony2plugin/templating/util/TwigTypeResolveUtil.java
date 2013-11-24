@@ -24,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -307,6 +308,14 @@ public class TwigTypeResolveUtil {
             if(phpClass.getPresentableFQN() != null) {
                 return phpClass.getPresentableFQN();
             }
+        }
+
+        PhpType phpType = new PhpType();
+        phpType.add(types);
+        PhpType phpTypeFormatted = PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>());
+
+        if(phpTypeFormatted.getTypes().size() > 0) {
+            return StringUtils.join(phpTypeFormatted.getTypes(), "|");
         }
 
         if(types.size() > 0) {

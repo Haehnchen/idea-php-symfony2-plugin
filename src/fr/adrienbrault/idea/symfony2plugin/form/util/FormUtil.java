@@ -152,6 +152,11 @@ public class FormUtil {
         return method;
     }
 
+    /**
+     * Get form builder field for
+     * $form->get('field', 'file');
+     * $form->get('field', new FileType());
+     */
     @Nullable
     public static PhpClass getFormTypeClassOnParameter(PsiElement psiElement) {
 
