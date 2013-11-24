@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.33
+* Add reference provider for FormInterface::get/has
+* Add more twig template name normalizer #182
+* Improve twig completion type lookup names
+
 ### 0.10.32
 * Service container supports "field" elements eg properties and class constants #151
 * Better template name detection on non common usage and performance improvements

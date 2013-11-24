@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.32</version>
+    <version>0.10.33</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -96,6 +96,13 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.33</h2>
+<ul>
+    <li>Add reference provider for FormInterface::get/has</li>
+    <li>Add more twig template name normalizer <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/182">#182</a></li>
+    <li>Improve twig completion type lookup names</li>
+</ul>
 
 <h2>0.10.32</h2>
 <ul>
