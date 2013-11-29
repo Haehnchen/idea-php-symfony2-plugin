@@ -17,6 +17,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -48,11 +49,16 @@ public class TemplateAnnotationAnnotator implements Annotator {
 
         PhpDocTag phpDocTag = (PhpDocTag) element;
         String docTagName = phpDocTag.getName();
-        if(docTagName == null || !docTagName.equals("@Template")) {
+        if(!docTagName.equals("@Template")) {
             return;
         }
 
-        String tagValue = phpDocTag.getTagValue();
+        PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
+        if(phpDocAttrList == null) {
+            return;
+        }
+
+        String tagValue = phpDocAttrList.getText();
         String templateName;
 
         // @Template("FooBundle:Folder:foo.html.twig")
@@ -63,7 +69,7 @@ public class TemplateAnnotationAnnotator implements Annotator {
             templateName = matcher.group(1);
         } else {
 
-            // find template name on lass method
+            // find template name on last method
             PhpDocComment docComment = PsiTreeUtil.getParentOfType(element, PhpDocComment.class);
             if(null == docComment) {
                 return;

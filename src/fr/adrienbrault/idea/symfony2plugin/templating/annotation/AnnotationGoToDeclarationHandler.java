@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -50,7 +51,12 @@ public class AnnotationGoToDeclarationHandler implements GotoDeclarationHandler 
 
         // find template name on annotation parameter
         // @Template("templatename")
-        String tagValue = ((PhpDocTag) phpDocTagValue).getTagValue();
+        PhpPsiElement phpDocAttrList = ((PhpDocTag) phpDocTagValue).getFirstPsiChild();
+        if(phpDocAttrList == null) {
+            return null;
+        }
+
+        String tagValue = phpDocAttrList.getText();
         Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
         if (matcher.find()) {
             return TwigHelper.getTemplatePsiElements(psiElement.getProject(), matcher.group(1));

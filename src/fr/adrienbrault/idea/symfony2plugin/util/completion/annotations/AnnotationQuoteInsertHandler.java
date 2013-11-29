@@ -18,7 +18,12 @@ public class AnnotationQuoteInsertHandler implements InsertHandler<LookupElement
 
         PsiElement psi = (PsiElement) lookupElement.getObject();
 
-        String annotationText = psi.getParent().getText();
+        // find doc property eg ("")
+        if(psi.getParent() == null) {
+            return;
+        }
+
+        String annotationText = psi.getParent().getParent().getText();
         if(!(annotationText.startsWith("('") || annotationText.startsWith("(\""))) {
             context.getDocument().insertString(context.getStartOffset(), this.getQuoteChar());
         }
