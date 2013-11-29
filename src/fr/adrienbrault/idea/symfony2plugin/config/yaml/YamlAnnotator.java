@@ -55,10 +55,13 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
+        //YamlHelper.
+
         // at least %a%
         // and not this one: %kernel.root_dir%/../web/
+        // %kernel.root_dir%/../web/%webpath_modelmasks%
         String parameterName = PsiElementUtils.getText(psiElement);
-        if(parameterName.length() < 3 || !(parameterName.startsWith("%") && parameterName.endsWith("%"))) {
+        if(!YamlHelper.isValidParameterName(parameterName)) {
             return;
         }
 

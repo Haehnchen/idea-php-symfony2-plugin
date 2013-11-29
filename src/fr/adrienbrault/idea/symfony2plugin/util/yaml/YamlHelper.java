@@ -283,4 +283,25 @@ public class YamlHelper {
         return null;
     }
 
+    public static boolean isValidParameterName(String parameterName) {
+
+        if(parameterName.length() < 3) {
+            return false;
+        }
+
+        if(!parameterName.startsWith("%") || !parameterName.endsWith("%")) {
+            return false;
+        }
+
+        // use regular expr here?
+        // %kernel.root_dir%/../web/%webpath_modelmasks%
+        if(parameterName.contains("/") || parameterName.contains("..")) {
+            return false;
+        }
+        
+        // more than 2x "%" is invalid
+        return !parameterName.substring(1, parameterName.length() - 1).contains("%");
+
+    }
+
 }
