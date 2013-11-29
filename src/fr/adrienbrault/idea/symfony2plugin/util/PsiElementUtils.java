@@ -194,7 +194,7 @@ public class PsiElementUtils {
         return text.replaceAll("^\"|\"$|\'|\'$", "");
     }
 
-    public static String getText(PsiElement psiElement) {
+    public static String getText(@NotNull PsiElement psiElement) {
         return trimQuote(psiElement.getText());
     }
 

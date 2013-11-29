@@ -85,7 +85,9 @@ public class YamlHelper {
 
             }
 
-            keys.add(parameterPsiElement);
+            if(parameterPsiElement != null) {
+                keys.add(parameterPsiElement);
+            }
 
         }
 
