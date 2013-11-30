@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServerIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceIndexUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHandler {
@@ -20,7 +20,7 @@ public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHan
             return new PsiElement[0];
         }
 
-        return ServerIndexUtil.getPossibleServiceTargets((PhpClass) psiElement.getContext());
+        return ServiceIndexUtil.getPossibleServiceTargets((PhpClass) psiElement.getContext());
     }
 
     @Nullable

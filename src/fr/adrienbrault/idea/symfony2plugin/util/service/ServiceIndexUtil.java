@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class ServerIndexUtil {
+public class ServiceIndexUtil {
 
     public static VirtualFile[] getFindServiceDefinitionFiles(Project project, String... serviceName) {
 
@@ -44,7 +44,7 @@ public class ServerIndexUtil {
 
         ArrayList<PsiElement> items = new ArrayList<PsiElement>();
 
-        VirtualFile[] twigVirtualFiles = ServerIndexUtil.getFindServiceDefinitionFiles(project, serviceName);
+        VirtualFile[] twigVirtualFiles = ServiceIndexUtil.getFindServiceDefinitionFiles(project, serviceName);
 
         for (VirtualFile twigVirtualFile : twigVirtualFiles) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(twigVirtualFile);
