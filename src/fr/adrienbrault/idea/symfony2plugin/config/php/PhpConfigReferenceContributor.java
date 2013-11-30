@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceIndexedReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -36,6 +37,9 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has")
             .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has")
+        );
+
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)

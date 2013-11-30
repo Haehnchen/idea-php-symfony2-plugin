@@ -34,35 +34,26 @@ public class ServiceXmlReference extends PsiReferenceBase<PsiElement> implements
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> classInterfaceResolveResult = new ArrayList<ResolveResult>();
+        List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
 
         // search any indexed service
         if(this.useIndexedServices) {
-            PsiElement[] indexedPsiElements = ServiceIndexUtil.getPossibleServiceTargets(getElement().getProject(), serviceId.toLowerCase());
-            if(indexedPsiElements.length > 0) {
-                for(PsiElement indexedPsiElement: indexedPsiElements) {
-                    // prevent self adding
-                    if(!indexedPsiElement.getContainingFile().equals(getElement().getContainingFile())) {
-                        classInterfaceResolveResult.add(new PsiElementResolveResult(indexedPsiElement));
-                    }
-                }
-            }
+            ServiceIndexUtil.attachIndexServiceResolveResults(getElement().getProject(), serviceId.toLowerCase(), resolveResults);
         }
 
         // Return the PsiElement for the class corresponding to the serviceId
         String serviceClass = ServiceXmlParserFactory.getInstance(getElement().getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId.toLowerCase());
-
         if (null == serviceClass) {
             ServiceMap localServiceMap = XmlHelper.getLocalMissingServiceMap(getElement(), null);
             if(localServiceMap == null || !localServiceMap.getMap().containsKey(serviceId)) {
-                return classInterfaceResolveResult.toArray(new ResolveResult[classInterfaceResolveResult.size()]);
+                return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
             }
 
             serviceClass = localServiceMap.getMap().get(serviceId);
         }
 
-        classInterfaceResolveResult.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), serviceClass));
-        return classInterfaceResolveResult.toArray(new ResolveResult[classInterfaceResolveResult.size()]);
+        resolveResults.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), serviceClass));
+        return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
     }
 
     @Nullable
