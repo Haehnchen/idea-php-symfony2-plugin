@@ -55,8 +55,6 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        //YamlHelper.
-
         // at least %a%
         // and not this one: %kernel.root_dir%/../web/
         // %kernel.root_dir%/../web/%webpath_modelmasks%
@@ -65,10 +63,12 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
+        // strip "%"
         parameterName = parameterName.substring(1, parameterName.length() - 1);
 
-        String parameterValue = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(parameterName);
-        if (null == parameterValue && !YamlHelper.getLocalParameterMap(psiElement).containsKey(parameterName)) {
+        // parameter a always lowercase see #179
+        parameterName = parameterName.toLowerCase();
+        if (YamlHelper.resolveParameterName(psiElement, parameterName) == null) {
             holder.createWarningAnnotation(psiElement, "Missing Parameter");
         }
 

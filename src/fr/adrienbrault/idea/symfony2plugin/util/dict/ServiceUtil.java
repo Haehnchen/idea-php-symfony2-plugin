@@ -16,13 +16,14 @@ public class ServiceUtil {
     @Nullable
     public static PhpClass getResolvedClass(Project project, String className) {
 
+        // possible parameter class %class_name%
         if(className.length() > 1 && className.startsWith("%") && className.endsWith("%")) {
-            className = className.substring(1, className.length() - 1);
-            Map<String, String> serviceMap = ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap();
-            if(!serviceMap.containsKey(className)) {
+            String resolvedParameter = getResolvedParameter(project, className);
+            if(resolvedParameter == null) {
                 return null;
             }
-            className = serviceMap.get(className);
+
+            className = resolvedParameter;
         }
 
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
@@ -53,6 +54,33 @@ public class ServiceUtil {
         PhpClass phpClass = getResolvedClass(project, className);
         if(phpClass != null) {
             return phpClass;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get value
+     *
+     * @param parameterName parameter with or without "%"
+     * @return resolved parameter can be eg a classname
+     */
+    @Nullable
+    public static String getResolvedParameter(Project project, String parameterName) {
+
+        // strip "%"
+        if(parameterName.length() > 1 && parameterName.startsWith("%") && parameterName.endsWith("%")) {
+            parameterName = parameterName.substring(1, parameterName.length() - 1);
+        }
+
+        Map<String, String> serviceMap = ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap();
+        if(serviceMap.containsKey(parameterName)) {
+            return serviceMap.get(parameterName);
+        }
+
+        // lowercase also valid
+        if(serviceMap.containsKey(parameterName.toLowerCase())) {
+            return serviceMap.get(parameterName.toLowerCase());
         }
 
         return null;

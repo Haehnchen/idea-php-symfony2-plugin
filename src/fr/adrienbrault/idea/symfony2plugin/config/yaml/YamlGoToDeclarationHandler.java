@@ -89,20 +89,16 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
 
-        String parameterName = ServiceXmlParserFactory.getInstance(psiElement.getProject(), ParameterServiceParser.class).getParameterMap().get(psiParameterName);
-        if (null == parameterName) {
-            // find local parameter
-            Map<String, String> localParameter = YamlHelper.getLocalParameterMap(psiElement);
-            if(localParameter.containsKey(psiParameterName)) {
-                parameterName = localParameter.get(psiParameterName);
-            }
+        if(!YamlHelper.isValidParameterName(psiParameterName)) {
+            return new PsiElement[0];
         }
 
-        if (null == parameterName) {
-            return new PsiElement[]{};
+        String resolvedParameter = YamlHelper.resolveParameterName(psiElement, psiParameterName);
+        if(resolvedParameter == null) {
+            return new PsiElement[0];
         }
 
-        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), parameterName);
+        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), resolvedParameter);
     }
 
     protected List<PsiFile> templateGoto(PsiElement psiElement, String templateName) {

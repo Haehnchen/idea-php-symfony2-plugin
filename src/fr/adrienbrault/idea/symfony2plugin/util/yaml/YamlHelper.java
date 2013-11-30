@@ -5,7 +5,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLArray;
@@ -304,6 +307,38 @@ public class YamlHelper {
         // more than 2x "%" is invalid
         return !parameterName.substring(1, parameterName.length() - 1).contains("%");
 
+    }
+
+    /**
+     * Get value behind a parameter on container or local file
+     *
+     * @param psiElement yaml file
+     * @param psiParameterName´parameter without %
+     */
+    @Nullable
+    public static String resolveParameterName(PsiElement psiElement, String psiParameterName) {
+
+        // parameter is always lower see #179
+        // but we need orig for later compare
+        String psiParameterNameLower = psiParameterName.toLowerCase();
+
+        // search in container file for any parameter
+        String parameterName = ServiceUtil.getResolvedParameter(psiElement.getProject(), psiParameterName);
+
+        // search local file parameter
+        if (parameterName == null) {
+
+            // find local parameter
+            Map<String, String> localParameter = YamlHelper.getLocalParameterMap(psiElement);
+            if(localParameter.containsKey(psiParameterName)) {
+                parameterName = localParameter.get(psiParameterName);
+            } else if(localParameter.containsKey(psiParameterNameLower)) {
+                parameterName = localParameter.get(psiParameterNameLower);
+            }
+
+        }
+
+        return parameterName;
     }
 
 }
