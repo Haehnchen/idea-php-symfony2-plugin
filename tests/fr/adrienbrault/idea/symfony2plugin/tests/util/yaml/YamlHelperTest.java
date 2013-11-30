@@ -8,7 +8,7 @@ import org.junit.Test;
 public class YamlHelperTest extends Assert {
 
     @Test
-    public void testNormalizeTemplateName() {
+    public void testisValidParameterName() {
         assertTrue(YamlHelper.isValidParameterName("%a%"));
         assertTrue(YamlHelper.isValidParameterName("%a.a%"));
         assertTrue(YamlHelper.isValidParameterName("%a.-_a%"));

@@ -24,7 +24,7 @@ public class ServiceReferenceProvider extends PsiReferenceProvider {
         // get the service name "service_container"
         String text = PsiElementUtils.trimQuote(psiElement.getText());
 
-        return new PsiReference[]{ new ServiceXmlReference(psiElement, text) };
+        return new PsiReference[]{ new ServiceXmlReference(psiElement, text, true) };
     }
 
 }

@@ -67,7 +67,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement) };
+                    return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement, true) };
                 }
             }
         );

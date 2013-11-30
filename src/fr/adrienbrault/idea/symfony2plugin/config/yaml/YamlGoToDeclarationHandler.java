@@ -13,6 +13,8 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServ
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
@@ -79,12 +81,18 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             serviceId = serviceId.substring(0, serviceId.length() -1);
         }
 
+        // resolve service on container
         String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId.toLowerCase());
-        if (null == serviceClass) {
-            return new PsiElement[]{};
+        if (serviceClass != null) {
+            PsiElement[] targetElements = PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
+            if(targetElements.length > 0) {
+                return targetElements;
+            }
         }
 
-        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
+        // get container target on index
+        return ServiceIndexUtil.getPossibleServiceTargets(psiElement.getProject(), serviceId);
+
     }
 
     protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {

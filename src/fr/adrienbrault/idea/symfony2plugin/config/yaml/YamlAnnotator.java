@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -16,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
@@ -86,11 +88,24 @@ public class YamlAnnotator implements Annotator {
             serviceName = serviceName.substring(0, serviceName.length() -1);
         }
 
-        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
-        if (null == serviceClass && !YamlHelper.getLocalServiceMap(psiElement).containsKey(serviceName)) {
-            holder.createWarningAnnotation(psiElement, "Missing Service");
+        // search any current open file
+        if(YamlHelper.getLocalServiceMap(psiElement).containsKey(serviceName)) {
+            return;
         }
 
+        // search on container should be slowest
+        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
+        if(serviceClass != null) {
+            return;
+        }
+
+        // indexer should be the fastest, so think moving first
+        VirtualFile[] virtualFiles = ServiceIndexUtil.getFindServiceDefinitionFiles(psiElement.getProject(), serviceName);
+        if(virtualFiles.length > 0) {
+            return;
+        }
+
+        holder.createWarningAnnotation(psiElement, "Missing Service");
     }
 
     private void annotateClass(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {

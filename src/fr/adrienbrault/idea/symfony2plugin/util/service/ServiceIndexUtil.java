@@ -2,12 +2,11 @@ package fr.adrienbrault.idea.symfony2plugin.util.service;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.ID;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServicesStubIndex;
@@ -17,10 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class ServiceIndexUtil {
 
@@ -80,6 +76,23 @@ public class ServiceIndexUtil {
         }
 
         return getPossibleServiceTargets(phpClass.getProject(), serviceName);
+    }
+
+    public static Collection<String>  getAllServiceNames(Project project) {
+        return FileBasedIndexImpl.getInstance().getAllKeys(ServicesStubIndex.KEY, project);
+    }
+
+    public static void attachIndexServiceResolveResults(Project project, String serviceName, List<ResolveResult> resolveResults) {
+
+        PsiElement[] indexedPsiElements = ServiceIndexUtil.getPossibleServiceTargets(project, serviceName);
+        if(indexedPsiElements.length == 0) {
+            return;
+        }
+
+        for(PsiElement indexedPsiElement: indexedPsiElements) {
+           resolveResults.add(new PsiElementResolveResult(indexedPsiElement));
+        }
+
     }
 
 
