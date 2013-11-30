@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
@@ -12,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import gnu.trove.THashMap;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -44,6 +46,19 @@ public class ServicesStubIndex extends FileBasedIndexExtension<String, Void> {
                     return map;
                 }
 
+
+                // Is test file on filename
+                String fileName = psiFile.getName();
+                if(fileName.startsWith(".") || fileName.contains("Test")) {
+                    return map;
+                }
+
+                // is test file on path
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+                if(relativePath != null && relativePath.contains("Test")) {
+                    return map;
+                }
+
                 if(psiFile instanceof YAMLFile) {
                     Map<String, String> localServiceMap = YamlHelper.getLocalServiceMap(psiFile);
 
@@ -52,7 +67,9 @@ public class ServicesStubIndex extends FileBasedIndexExtension<String, Void> {
                     }
 
                     for(Map.Entry<String, String> entry: localServiceMap.entrySet()) {
-                        map.put(entry.getKey(), null);
+                        if(StringUtils.isNotEmpty(entry.getKey())) {
+                            map.put(entry.getKey(), null);
+                        }
                     }
 
                     return map;
@@ -66,7 +83,9 @@ public class ServicesStubIndex extends FileBasedIndexExtension<String, Void> {
                     }
 
                     for(String entry: localServices) {
-                        map.put(entry, null);
+                        if(StringUtils.isNotEmpty(entry)) {
+                            map.put(entry, null);
+                        }
                     }
 
                     return map;
