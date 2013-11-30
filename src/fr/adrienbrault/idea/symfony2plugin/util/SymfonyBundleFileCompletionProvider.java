@@ -12,6 +12,7 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.BundleFile;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ResourceFileInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundleFileLookupElement;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +51,7 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
         }
 
         for(BundleFile bundleFile : bundleFiles) {
-            completionResultSet.addElement(new SymfonyBundleFileLookupElement(bundleFile));
+            completionResultSet.addElement(new SymfonyBundleFileLookupElement(bundleFile, ResourceFileInsertHandler.getInstance()));
         }
 
     }
