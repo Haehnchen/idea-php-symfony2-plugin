@@ -6,8 +6,10 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -28,9 +30,8 @@ import java.util.regex.Pattern;
 
 public class TwigUtil {
 
+    @Nullable
     public static String getControllerMethodShortcut(Method method) {
-
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(method.getProject()));
 
         // indexAction
         String methodName = method.getName();
@@ -50,6 +51,7 @@ public class TwigUtil {
             return null;
         }
 
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(method.getProject()));
         SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(phpClass);
         if(symfonyBundle == null) {
             return null;
@@ -77,6 +79,25 @@ public class TwigUtil {
         // we should support types later on
         // HomeBundle:default:index.html.twig
         return shortcutName + ".html.twig";
+    }
+
+    public static PsiElement[] getTemplateAnnotationFiles(PhpDocTag phpDocTag) {
+
+        // find template name on annotation parameter
+        // @Template("templatename")
+        PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
+        if(phpDocAttrList == null) {
+            return null;
+        }
+
+        String tagValue = phpDocAttrList.getText();
+        Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
+
+        if (matcher.find()) {
+            return TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), matcher.group(1));
+        }
+
+        return new PsiElement[0];
     }
 
 

@@ -1,12 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -315,6 +318,44 @@ public class RouteHelper {
 
         return set;
 
+    }
+
+    @Nullable
+    public static List<Route> getRoutesOnControllerAction(Method method) {
+
+        String methodRouteActionName = RouteHelper.convertMethodToRouteControllerName(method);
+        if(methodRouteActionName == null) {
+            return null;
+        }
+
+        List<Route> routes = new ArrayList<Route>();
+
+        Symfony2ProjectComponent symfony2ProjectComponent = method.getProject().getComponent(Symfony2ProjectComponent.class);
+        for(Map.Entry<String, Route> routeEntry: symfony2ProjectComponent.getRoutes().entrySet()) {
+            if(routeEntry.getValue().getController() != null && routeEntry.getValue().getController().equals(methodRouteActionName)) {
+                routes.add(routeEntry.getValue());
+            }
+        }
+
+        return routes;
+    }
+
+    @Nullable
+    public static PsiElement getRouteNameTarget(Project project, String routeName) {
+
+        VirtualFile[] virtualFiles = RouteHelper.getRouteDefinitionInsideFile(project, routeName);
+        for(VirtualFile virtualFile: virtualFiles) {
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile != null) {
+
+                YAMLKeyValue yamlKeyValue = YamlHelper.getRootKey(psiFile, routeName);
+                if(yamlKeyValue != null) {
+                    return yamlKeyValue;
+                }
+            }
+        }
+
+        return null;
     }
 
 }

@@ -405,7 +405,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigExtendsStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.PhpRouteActionLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigControllerLineMarkerProvider"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false"
