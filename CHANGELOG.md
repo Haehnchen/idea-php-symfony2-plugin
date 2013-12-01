@@ -5,6 +5,16 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.34
+* Add popover line marker to controller method, showing related files like templates and routes
+* Add custom insert handle to not add double "@" on resource paths #185
+* Add more twig template name normalizer and fix npe #186
+* Prevent add empty and testing service to index
+* Fix template annotations pattern are not compatible with phpstorm7 #184
+* Fix yaml parameter annotator warnings on concatenate strings #188
+* Fix parameter case-sensitivity issues #179
+* Move repository to Haehnchen/idea-php-symfony2-plugin
+
 ### 0.10.33
 * Add reference provider for FormInterface::get/has
 * Add more twig template name normalizer #182

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.33</version>
+    <version>0.10.34</version>
     <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
 
     <description><![CDATA[
@@ -96,6 +96,19 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.34</h2>
+<ul>
+    <li>Add popover line marker to controller method, showing related files like templates and routes</li>
+    <li>Add custom insert handle to not add double "@" on resource paths <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/185">#185</a></li>
+    <li>Add plain indexed services to container builder context in php, yml, xml <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/166">#166</a></li>
+    <li>Add more twig template name normalizer and fix npe <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/186">#186</a></li>
+    <li>Prevent add empty and testing service to index</li>
+    <li>Fix template annotations pattern are not compatible with phpstorm7 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/184">#184</a></li>
+    <li>Fix yaml parameter annotator warnings on concatenate strings <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/188">#188</a></li>
+    <li>Fix parameter case-sensitivity issues <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/179">#179</a></li>
+    <li>Move repository to <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin">Haehnchen/idea-php-symfony2-plugin</a></li>
+</ul>
 
 <h2>0.10.33</h2>
 <ul>
