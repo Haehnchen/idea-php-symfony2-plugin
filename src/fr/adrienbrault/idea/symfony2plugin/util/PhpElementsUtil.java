@@ -16,6 +16,7 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -445,6 +446,7 @@ public class PhpElementsUtil {
         return implementedMethods;
     }
 
+    @Nullable
     public static String getStringValue(PsiElement psiElement) {
         return getStringValue(psiElement, 0);
     }
@@ -457,7 +459,12 @@ public class PhpElementsUtil {
         }
 
         if(psiElement instanceof StringLiteralExpression) {
-            return ((StringLiteralExpression) psiElement).getContents();
+            String resolvedString = ((StringLiteralExpression) psiElement).getContents();
+            if(StringUtils.isEmpty(resolvedString)) {
+                return null;
+            }
+
+            return resolvedString;
         }
 
         if(psiElement instanceof Field) {

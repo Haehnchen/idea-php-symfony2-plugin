@@ -81,7 +81,7 @@ public class TwigUtil {
         return shortcutName + ".html.twig";
     }
 
-    public static PsiElement[] getTemplateAnnotationFiles(PhpDocTag phpDocTag) {
+    public static Map<String, PsiElement> getTemplateAnnotationFiles(PhpDocTag phpDocTag) {
 
         // find template name on annotation parameter
         // @Template("templatename")
@@ -93,11 +93,17 @@ public class TwigUtil {
         String tagValue = phpDocAttrList.getText();
         Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
 
+        Map<String, PsiElement> templateFiles = new HashMap<String, PsiElement>();
+
         if (matcher.find()) {
-            return TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), matcher.group(1));
+            // @TODO: only one should possible; refactor getTemplatePsiElements
+            PsiElement[] psiElement = TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), matcher.group(1));
+            if(psiElement.length > 0) {
+                templateFiles.put(matcher.group(1), psiElement[0]);
+            }
         }
 
-        return new PsiElement[0];
+        return templateFiles;
     }
 
 

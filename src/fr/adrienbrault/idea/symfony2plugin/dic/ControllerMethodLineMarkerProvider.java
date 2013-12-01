@@ -7,22 +7,24 @@ import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.ElementBase;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
@@ -109,24 +111,51 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
     private void attachRelatedTemplates(PsiElement psiElement, ArrayList<GotoRelatedItem> gotoRelatedItems) {
 
+        Set<String> uniqueTemplates = new HashSet<String>();
+
         // on @Template annotation
         PhpDocComment phpDocComment = ((Method) psiElement).getDocComment();
         if(phpDocComment != null) {
             PhpDocTag[] phpDocTags = phpDocComment.getTagElementsByName("@Template");
             for(PhpDocTag phpDocTag: phpDocTags) {
-                for(PsiElement templateAnnotationTarget: TwigUtil.getTemplateAnnotationFiles(phpDocTag)) {
-                    gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateAnnotationTarget));
+                for(Map.Entry<String, PsiElement> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
+                    if(!uniqueTemplates.contains(entry.getKey())) {
+                        gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(entry.getValue(), entry.getKey()));
+                        uniqueTemplates.add(entry.getKey());
+                    }
                 }
             }
         }
+
+
 
         // on method name
         String templateName = TwigUtil.getControllerMethodShortcut((Method) psiElement);
         if(templateName != null) {
             for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName)) {
-                gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, templateName));
+                if(!uniqueTemplates.contains(templateName)) {
+                    gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, templateName));
+                    uniqueTemplates.add(templateName);
+                }
             }
         }
+
+        // inside method
+        for(MethodReference methodReference : PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class)) {
+            if(new Symfony2InterfacesUtil().isTemplatingRenderCall(methodReference)) {
+                PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt((methodReference).getParameterList(), 0);
+                if(templateParameter != null) {
+                    String resolveString = PhpElementsUtil.getStringValue(templateParameter);
+                    if(resolveString != null && !uniqueTemplates.contains(resolveString)) {
+                        uniqueTemplates.add(resolveString);
+                        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(psiElement.getProject(), resolveString)) {
+                            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString));
+                        }
+                    }
+                }
+            }
+        }
+
 
     }
 
