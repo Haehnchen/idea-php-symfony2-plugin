@@ -14,6 +14,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -36,6 +37,10 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     public LineMarkerInfo collect(PsiElement psiElement) {
+
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
 
         if(!(psiElement instanceof Method)) {
             return null;
