@@ -6,6 +6,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -19,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -391,6 +393,72 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[] {
                         new FormFieldNameReference((StringLiteralExpression) psiElement, method)
                     };
+                }
+
+            }
+
+        );
+
+        /**
+         * $this->createForm(new FormType(), $entity, array('<foo_key>' => ''));
+         * $this->createForm('foo', $entity, array('<foo_key>'));
+         */
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
+                    if(arrayCreationExpression == null) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement parameterList = arrayCreationExpression.getContext();
+                    if (!(parameterList instanceof ParameterList)) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement methodParameters[] = ((ParameterList) parameterList).getParameters();
+                    if(methodParameters.length < 2) {
+                        return new PsiReference[0];
+                    }
+
+                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodReference methodReference = (MethodReference) parameterList.getContext();
+                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
+                    if (!interfacesUtil.isCallTo(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm") &&
+                        !interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
+                        ) {
+                        return new PsiReference[0];
+                    }
+
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
+                    if(currentIndex == null || currentIndex.getIndex() != 2) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement formType = methodParameters[0];
+                    PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
+                    if(phpClass == null) {
+                        return new PsiReference[]{
+                            new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form")
+                        };
+                    }
+
+                    return new PsiReference[]{
+                        new FormExtensionKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN()),
+                        new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN())
+                    };
+
                 }
 
             }
