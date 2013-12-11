@@ -57,7 +57,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     public TwigTemplateCompletionContributor() {
 
         extend(CompletionType.BASIC, TwigHelper.getTemplateFileReferenceTagPattern(),  new TemplateCompletionProvider());
-        extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("include"),  new TemplateCompletionProvider());
+        extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("include", "source"),  new TemplateCompletionProvider());
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')

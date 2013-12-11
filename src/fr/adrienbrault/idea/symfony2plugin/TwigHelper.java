@@ -228,7 +228,7 @@ public class TwigHelper {
      *
      * @param functionName twig function name
      */
-    public static ElementPattern<PsiElement> getPrintBlockFunctionPattern(String functionName) {
+    public static ElementPattern<PsiElement> getPrintBlockFunctionPattern(String... functionName) {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
@@ -242,7 +242,7 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(functionName)
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }

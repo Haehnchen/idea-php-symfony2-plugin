@@ -49,7 +49,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         // support: {% include() %}, {{ include() }}
-        if(TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("include").accepts(psiElement)) {
+        if(TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("include", "source").accepts(psiElement)) {
             return this.getTwigFiles(psiElement);
         }
 
