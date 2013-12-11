@@ -8,7 +8,7 @@ import org.junit.Test;
 public class YamlHelperTest extends Assert {
 
     @Test
-    public void testisValidParameterName() {
+    public void testIsValidParameterName() {
         assertTrue(YamlHelper.isValidParameterName("%a%"));
         assertTrue(YamlHelper.isValidParameterName("%a.a%"));
         assertTrue(YamlHelper.isValidParameterName("%a.-_a%"));
@@ -19,6 +19,15 @@ public class YamlHelperTest extends Assert {
         assertFalse(YamlHelper.isValidParameterName("%kernel.root_dir%/../web/"));
         assertFalse(YamlHelper.isValidParameterName("%kernel.root_dir%/../web/%"));
         assertFalse(YamlHelper.isValidParameterName("%kernel.root_dir%/../web/%webpath_modelmasks%"));
+    }
+
+    @Test
+    public void testTrimSpecialSyntaxServiceName() {
+        assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("?logger="));
+        assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("?logger"));
+        assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("logger="));
+        assertEquals("", YamlHelper.trimSpecialSyntaxServiceName("?"));
+        assertEquals("", YamlHelper.trimSpecialSyntaxServiceName("="));
     }
 
 }

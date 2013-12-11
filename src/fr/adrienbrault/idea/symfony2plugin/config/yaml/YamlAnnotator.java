@@ -12,7 +12,6 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -81,11 +80,11 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        String serviceName = PsiElementUtils.getText(psiElement).substring(1);
+        String serviceName = getServiceName(psiElement);
 
-        // yaml strict=false syntax
-        if(serviceName.endsWith("=")) {
-            serviceName = serviceName.substring(0, serviceName.length() -1);
+        // dont mark only "@" and "@?"
+        if(serviceName.length() < 2) {
+            return;
         }
 
         // search any current open file
@@ -307,11 +306,6 @@ public class YamlAnnotator implements Annotator {
             serviceName = serviceName.substring(1);
         }
 
-        // yaml strict=false syntax
-        if(serviceName.endsWith("=")) {
-            serviceName = serviceName.substring(0, serviceName.length() -1);
-        }
-
-        return serviceName;
+        return YamlHelper.trimSpecialSyntaxServiceName(serviceName);
     }
 }

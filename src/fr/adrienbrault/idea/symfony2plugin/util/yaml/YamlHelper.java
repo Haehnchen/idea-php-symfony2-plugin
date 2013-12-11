@@ -341,4 +341,20 @@ public class YamlHelper {
         return parameterName;
     }
 
+    public static String trimSpecialSyntaxServiceName(String serviceName) {
+
+        // yaml strict syntax
+        if(serviceName.endsWith("=")) {
+            serviceName = serviceName.substring(0, serviceName.length() -1);
+        }
+
+        // optional syntax
+        if(serviceName.startsWith("?")) {
+            serviceName = serviceName.substring(1, serviceName.length());
+        }
+
+        return serviceName;
+
+    }
+
 }
