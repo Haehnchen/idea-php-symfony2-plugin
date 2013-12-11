@@ -301,11 +301,6 @@ public class YamlAnnotator implements Annotator {
     }
 
     private String getServiceName(PsiElement psiElement) {
-        String serviceName = PsiElementUtils.getText(psiElement);
-        if(serviceName.startsWith("@")) {
-            serviceName = serviceName.substring(1);
-        }
-
-        return YamlHelper.trimSpecialSyntaxServiceName(serviceName);
+        return YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(psiElement));
     }
 }

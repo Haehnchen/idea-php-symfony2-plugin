@@ -343,6 +343,10 @@ public class YamlHelper {
 
     public static String trimSpecialSyntaxServiceName(String serviceName) {
 
+        if(serviceName.startsWith("@")) {
+            serviceName = serviceName.substring(1);
+        }
+
         // yaml strict syntax
         if(serviceName.endsWith("=")) {
             serviceName = serviceName.substring(0, serviceName.length() -1);

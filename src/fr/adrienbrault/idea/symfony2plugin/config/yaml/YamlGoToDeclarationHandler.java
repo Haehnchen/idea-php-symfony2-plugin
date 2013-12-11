@@ -36,6 +36,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
+        // only string values like "foo", foo
         if (!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
             && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
             && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)) {
@@ -76,13 +77,10 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     protected PsiElement[] serviceGoToDeclaration(PsiElement psiElement, String serviceId) {
 
-        // yaml strict=false syntax
-        if(serviceId.endsWith("=")) {
-            serviceId = serviceId.substring(0, serviceId.length() -1);
-        }
+        serviceId = YamlHelper.trimSpecialSyntaxServiceName(serviceId).toLowerCase();
 
         // resolve service on container
-        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId.toLowerCase());
+        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId);
         if (serviceClass != null) {
             PsiElement[] targetElements = PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
             if(targetElements.length > 0) {

@@ -23,6 +23,7 @@ public class YamlHelperTest extends Assert {
 
     @Test
     public void testTrimSpecialSyntaxServiceName() {
+        assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("@?logger="));
         assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("?logger="));
         assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("?logger"));
         assertEquals("logger", YamlHelper.trimSpecialSyntaxServiceName("logger="));
