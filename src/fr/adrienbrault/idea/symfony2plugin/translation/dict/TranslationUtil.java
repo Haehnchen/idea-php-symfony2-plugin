@@ -5,7 +5,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
+import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
@@ -60,6 +62,15 @@ public class TranslationUtil {
         }
 
         return psiFoundElements.toArray(new PsiElement[psiFoundElements.size()]);
+    }
+
+    public static boolean hasTranslationKey(Project project, String keyName, String domainName) {
+
+        if(TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName)) {
+            return false;
+        }
+
+        return TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName).contains(keyName);
     }
 
 }

@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -98,6 +99,21 @@ public class PhpTranslationAnnotator implements Annotator {
 
     private void annotateTranslationKey(StringLiteralExpression psiElement, String domainName, @NotNull AnnotationHolder holder) {
 
+
+        String keyName = psiElement.getContents();
+
+        // should not annotate "foo$bar"
+        // @TODO: regular expression to only notice translation keys and not possible text values
+        if(keyName.contains("$")) {
+            return;
+        }
+
+        // dont annotate non goto available keys
+        if(TranslationUtil.hasTranslationKey(psiElement.getProject(), keyName, domainName)) {
+            return;
+        }
+
+        // search for possible domain targets and provide translation key creation fix
         if(psiElement.getContents().length() > 0 && TranslationUtil.getTranslationPsiElements(psiElement.getProject(), psiElement.getContents(), domainName).length == 0) {
 
             Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
