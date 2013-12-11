@@ -9,10 +9,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DomainMappings extends AbstractServiceParser {
 
-    protected ArrayList<DomainFileMap> domainFileMaps = new ArrayList<DomainFileMap>();
+    protected List<DomainFileMap> domainFileMaps = new CopyOnWriteArrayList<DomainFileMap>();
 
     @Override
     public String getXPathFilter() {

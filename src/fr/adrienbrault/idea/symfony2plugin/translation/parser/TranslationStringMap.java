@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -11,8 +12,8 @@ public class TranslationStringMap {
     private Map<String, ArrayList> domainMap;
 
     public TranslationStringMap() {
-        this.stringMap = new HashMap<String, String>();
-        this.domainMap = new HashMap<String, ArrayList>();
+        this.stringMap = new ConcurrentHashMap<String, String>();
+        this.domainMap = new ConcurrentHashMap<String, ArrayList>();
     }
 
     public Map<String, String> getStringMap() {
