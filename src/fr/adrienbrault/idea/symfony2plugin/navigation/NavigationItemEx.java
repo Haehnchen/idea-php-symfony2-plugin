@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.navigation;
 
+import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.navigation.NavigationItem;
@@ -32,26 +33,7 @@ class NavigationItemEx implements NavigationItem {
     @Nullable
     @Override
     public ItemPresentation getPresentation() {
-
-        return new ItemPresentation() {
-            @Nullable
-            @Override
-            public String getPresentableText() {
-                return name;
-            }
-
-            @Nullable
-            @Override
-            public String getLocationString() {
-                return locationString;
-            }
-
-            @Nullable
-            @Override
-            public Icon getIcon(boolean b) {
-                return icon;
-            }
-        };
+        return new PresentationData(this.name, this.locationString, this.icon, null);
     }
 
     @Override
