@@ -7,6 +7,7 @@ import com.intellij.navigation.LocationPresentation;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -21,12 +22,18 @@ class NavigationItemEx implements NavigationItem, ItemPresentation {
     private String name;
     private Icon icon;
     private String locationString;
+    private boolean appendBundleLocation = true;
 
     public NavigationItemEx(PsiElement psiElement, final String name, final Icon icon, final String locationString) {
         this.psiElement = psiElement;
         this.name = name;
         this.icon = icon;
         this.locationString = locationString;
+    }
+
+    public NavigationItemEx(PsiElement psiElement, final String name, final Icon icon, final String locationString, boolean appendBundleLocation) {
+        this(psiElement, name, icon, locationString);
+        this.appendBundleLocation = appendBundleLocation;
     }
 
     @Nullable
@@ -73,7 +80,29 @@ class NavigationItemEx implements NavigationItem, ItemPresentation {
     @Nullable
     @Override
     public String getLocationString() {
-        return locationString;
+
+        if(!this.appendBundleLocation) {
+            return this.locationString;
+        }
+
+        PsiFile psiFile = psiElement.getContainingFile();
+
+        if(psiFile == null) {
+            return this.locationString;
+        }
+
+        String locationPathString = this.locationString;
+
+        String bundleName = psiFile.getVirtualFile().getPath();
+
+        if(bundleName.contains("Bundle")) {
+            bundleName = bundleName.substring(0, bundleName.lastIndexOf("Bundle"));
+            if(bundleName.length() > 1 && bundleName.contains("/")) {
+                return locationPathString + " " + bundleName.substring(bundleName.lastIndexOf("/") + 1, bundleName.length()) + "::" + psiFile.getName();
+            }
+        }
+
+        return locationPathString + " " + psiFile.getName();
     }
 
     @Nullable

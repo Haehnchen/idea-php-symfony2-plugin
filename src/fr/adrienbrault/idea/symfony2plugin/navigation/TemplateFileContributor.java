@@ -32,7 +32,7 @@ public class TemplateFileContributor implements ChooseByNameContributor {
         }
 
         return new NavigationItemEx[]{
-            new NavigationItemEx(psiFile, templateName, TwigIcons.TwigFileIcon, "Template")
+            new NavigationItemEx(psiFile, templateName, TwigIcons.TwigFileIcon, "Template", false)
         };
 
     }
