@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.navigation;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.navigation.LocationPresentation;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
@@ -10,7 +11,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-class NavigationItemEx implements NavigationItem {
+/**
+ * "Search everywhere" does instance check on NavigationItem, but ChooseByNameContributor use getPresentation :)
+ * Moreover "Search everywhere" dont set icons at all
+ */
+class NavigationItemEx implements NavigationItem, ItemPresentation {
 
     private PsiElement psiElement;
     private String name;
@@ -33,7 +38,7 @@ class NavigationItemEx implements NavigationItem {
     @Nullable
     @Override
     public ItemPresentation getPresentation() {
-        return new PresentationData(this.name, this.locationString, this.icon, null);
+        return this;
     }
 
     @Override
@@ -58,5 +63,24 @@ class NavigationItemEx implements NavigationItem {
     public String toString() {
         return this.name;
     }
+
+    @Nullable
+    @Override
+    public String getPresentableText() {
+        return name;
+    }
+
+    @Nullable
+    @Override
+    public String getLocationString() {
+        return locationString;
+    }
+
+    @Nullable
+    @Override
+    public Icon getIcon(boolean b) {
+        return icon;
+    }
+
 }
 
