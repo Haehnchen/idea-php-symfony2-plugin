@@ -1,22 +1,20 @@
 <idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.34</version>
-    <vendor email="adrien.brault@gmail.com" url="http://adrienbrault.fr">Adrien Brault</vendor>
+    <version>0.10.35</version>
+    <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
 
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
-<br/><br/>
-<span style="color: red"><b>Notice</b></span>: Annotation support will be moved soon and will require <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a>.
+<br/>
 
 <h2>Feature blocker:</h2>
 
 <ul>
     <li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
     <li>phpstorm7: dropped twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
-    <li>yaml: parse error on "}" eg route pattern <a href="http://youtrack.jetbrains.com/issue/RUBY-13914">RUBY-13914</a></li>
 </ul>
 
 <h2>Features:</h2>
@@ -96,6 +94,17 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.35</h2>
+<ul>
+    <li>Add new method reference provider Parameter <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/196">#196</a></li>
+    <li>Add FormFactoryInterface::createForm option keys support</li>
+    <li>Add Symbol and File contributor "Navigate > Symbol / File" <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/189">#189</a></li>
+    <li>Support upcoming "Search Everywhere" of PhpStorm 7.1 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/189">#189</a></li>
+    <li>Support optional service reference syntax in yaml <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/194">#194</a></li>
+    <li>Support twig 1.15 "source" function <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/190">#190</a></li>
+    <li>Translation annotator check global translation file before fallback to yaml parser <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/195">#195</a></li>
+</ul>
 
 <h2>0.10.34</h2>
 <ul>

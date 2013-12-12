@@ -5,6 +5,15 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.35
+* Add new method reference provider Parameter #196
+* Add FormFactoryInterface::createForm option keys support
+* Add Symbol and File contributor "Navigate > Symbol / File" #189
+* Support upcoming "Search Everywhere" of PhpStorm 7.1 #189
+* Support optional service reference syntax in yaml #194
+* Support twig 1.15 "source" function #190
+* Translation annotator check global translation file before fallback to yaml parser #195
+
 ### 0.10.34
 * Add popover line marker to controller method, showing related files like templates and routes
 * Add custom insert handle to not add double "@" on resource paths #185
