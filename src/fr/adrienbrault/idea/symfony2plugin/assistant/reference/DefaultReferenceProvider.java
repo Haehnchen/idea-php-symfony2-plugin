@@ -4,6 +4,7 @@ import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.form.FormDefaultOptionsKeyReference;
@@ -29,6 +30,7 @@ public class DefaultReferenceProvider {
         new PhpInterfaceReferenceProvider(),
         new PhpClassInterfaceReferenceProvider(),
         new TranslationKeyReferenceProvider(),
+        new ParameterReferenceProvider(),
     };
 
     public enum DEFAULT_PROVIDER_ENUM {
@@ -288,6 +290,24 @@ public class DefaultReferenceProvider {
         @Override
         public String getDocBlockParamAlias() {
             return null;
+        }
+    }
+
+    private static class ParameterReferenceProvider implements AssistantReferenceProvider {
+
+        @Override
+        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
+            return new ParameterReference(parameter.getPsiElement());
+        }
+
+        @Override
+        public String getAlias() {
+            return "parameter";
+        }
+
+        @Override
+        public String getDocBlockParamAlias() {
+            return "Parameter";
         }
     }
 

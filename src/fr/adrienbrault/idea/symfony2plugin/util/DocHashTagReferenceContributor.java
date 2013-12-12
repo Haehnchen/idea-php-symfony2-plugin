@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
@@ -95,6 +96,10 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
 
                     if(phpDocParamTag.getTagValue().contains("#ClassInterface")) {
                         psiReferences.add(new PhpClassReference(psiElement, true).setUseInterfaces(true).setUseClasses(true));
+                    }
+
+                    if(phpDocParamTag.getTagValue().contains("#Parameter")) {
+                        psiReferences.add(new ParameterReference(psiElement));
                     }
 
                     if(phpDocParamTag.getTagValue().contains("#FormType")) {
