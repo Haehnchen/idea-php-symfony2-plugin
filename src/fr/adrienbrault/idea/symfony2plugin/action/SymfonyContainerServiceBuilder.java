@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
@@ -29,7 +30,7 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         //Editor editor = (Editor)event.getData(PlatformDataKeys.EDITOR);
         //VirtualFile file = (VirtualFile)event.getData(PlatformDataKeys.VIRTUAL_FILE);
         PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
-        if(!(psiFile instanceof YAMLFile)) {
+        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile)) {
             event.getPresentation().setVisible(false);
             event.getPresentation().setEnabled(false);
         }
@@ -38,9 +39,13 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
     public void actionPerformed(AnActionEvent event) {
 
+        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
 
+        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile)) {
+            return;
+        }
 
-        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject());
+        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject(), psiFile);
         Dimension dim = new Dimension();
         dim.setSize(700, 590);
         symfonyCreateService.setTitle("Create Service");

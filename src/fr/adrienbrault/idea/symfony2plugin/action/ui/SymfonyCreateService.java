@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -42,10 +44,13 @@ public class SymfonyCreateService extends JDialog {
     private Map<String, String> serviceClass;
     private Set<String> serviceSetComplete;
 
-    Project project;
+    private Project project;
+    private PsiFile psiFile;
 
-    public SymfonyCreateService(Project project) {
+    public SymfonyCreateService(Project project, PsiFile psiFile) {
         this.project = project;
+        this.psiFile = psiFile;
+
         setContentPane(panel1);
         setModal(true);
 
@@ -116,7 +121,10 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private void generateServiceDefinition() {
-        textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems()).build(ServiceBuilder.OutputType.Yaml, textFieldClassName.getText()));
+        textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems()).build(
+            this.psiFile instanceof XmlFile ? ServiceBuilder.OutputType.XML : ServiceBuilder.OutputType.Yaml,
+            textFieldClassName.getText())
+        );
     }
 
     private void update() {
@@ -334,6 +342,7 @@ public class SymfonyCreateService extends JDialog {
 
 
 }
+
 
 
 

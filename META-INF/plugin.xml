@@ -450,5 +450,15 @@
             <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
         </component>
     </project-components>
+    <actions>
+        <action id="Symfony.Menu" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder">
+            <!--
+            <add-to-group group-id="MainMenu" anchor="last"  />
+            <add-to-group anchor="after" group-id="ShowPopupMenu" relative-to-action="ShowPopupMenu"/>
+            <action id="Symfony.CreateService" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder" text="Text _Boxes" description="A test menu item" />
+            -->
+            <add-to-group group-id="EditorPopupMenu"/>
+        </action>
+    </actions>
 </idea-plugin>
 
