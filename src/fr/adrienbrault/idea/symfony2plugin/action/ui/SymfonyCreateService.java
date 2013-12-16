@@ -45,11 +45,22 @@ public class SymfonyCreateService extends JDialog {
     private Set<String> serviceSetComplete;
 
     private Project project;
+    private String className;
+
+    @Nullable
     private PsiFile psiFile;
 
-    public SymfonyCreateService(Project project, PsiFile psiFile) {
+    public SymfonyCreateService(Project project, String className) {
+        this(project, (PsiFile) null);
+        this.className = className;
+    }
+
+    public SymfonyCreateService(Project project, @Nullable PsiFile psiFile) {
         this.project = project;
         this.psiFile = psiFile;
+    }
+
+    public void init() {
 
         setContentPane(panel1);
         setModal(true);
@@ -118,6 +129,10 @@ public class SymfonyCreateService extends JDialog {
             }
         });
 
+        if(this.className != null) {
+            this.textFieldClassName.setText(this.className);
+            update();
+        }
     }
 
     private void generateServiceDefinition() {
@@ -196,6 +211,10 @@ public class SymfonyCreateService extends JDialog {
     @Override
     protected void dialogInit() {
         super.dialogInit();
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     private class IsServiceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, Boolean> {

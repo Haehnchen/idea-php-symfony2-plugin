@@ -4,8 +4,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
@@ -21,31 +24,51 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
     public void update(AnActionEvent event) {
         Project project = event.getData(PlatformDataKeys.PROJECT);
+
         if (project == null || !Symfony2ProjectComponent.isEnabled(project)) {
-            event.getPresentation().setVisible(false);
-            event.getPresentation().setEnabled(false);
+            this.setStatus(event, false);
             return;
         }
 
-        //Editor editor = (Editor)event.getData(PlatformDataKeys.EDITOR);
-        //VirtualFile file = (VirtualFile)event.getData(PlatformDataKeys.VIRTUAL_FILE);
         PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
-        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile)) {
-            event.getPresentation().setVisible(false);
-            event.getPresentation().setEnabled(false);
+        if(psiFile instanceof PhpFile) {
+            PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
+            if(!(psiElement instanceof PhpClass)) {
+                this.setStatus(event, false);
+            }
+            return;
         }
 
+        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile)) {
+            this.setStatus(event, false);
+        }
+
+    }
+
+    private void setStatus(AnActionEvent event, boolean status) {
+        event.getPresentation().setVisible(status);
+        event.getPresentation().setEnabled(status);
     }
 
     public void actionPerformed(AnActionEvent event) {
 
         PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
 
-        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile)) {
+        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
             return;
         }
 
         SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject(), psiFile);
+
+        if(psiFile instanceof PhpFile) {
+            PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
+            if(psiElement instanceof PhpClass) {
+                symfonyCreateService.setClassName(((PhpClass) psiElement).getPresentableFQN());
+            }
+        }
+
+        symfonyCreateService.init();
+
         Dimension dim = new Dimension();
         dim.setSize(700, 590);
         symfonyCreateService.setTitle("Create Service");
