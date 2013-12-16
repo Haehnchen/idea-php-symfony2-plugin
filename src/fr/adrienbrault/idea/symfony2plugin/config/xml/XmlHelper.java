@@ -15,6 +15,7 @@ import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
+import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
@@ -180,7 +181,18 @@ public class XmlHelper {
         return null;
     }
 
+    @Nullable
     public static Set<String> getLocalServices(PsiFile psiFile) {
+        Map<String, String> stringSet = getLocalServiceSet(psiFile);
+        if(stringSet == null) {
+            return null;
+        }
+
+        return stringSet.keySet();
+    }
+
+    @Nullable
+    public static Map<String, String> getLocalServiceSet(PsiFile psiFile) {
 
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
             return null;
@@ -191,7 +203,7 @@ public class XmlHelper {
             return null;
         }
 
-        Set<String> services = new THashSet<String>();
+        Map<String, String> services = new THashMap<String, String>();
 
         for(XmlTag xmlTag: xmlTags) {
             if(xmlTag.getName().equals("container")) {
@@ -200,10 +212,21 @@ public class XmlHelper {
                         for(XmlTag serviceTag: servicesTag.getSubTags()) {
                             XmlAttribute attrValue = serviceTag.getAttribute("id");
                             if(attrValue != null) {
+
+                                // <service id="foo.bar" class="Class\Name">
                                 String serviceNameId = attrValue.getValue();
                                 if(serviceNameId != null) {
-                                    services.add(serviceNameId);
+
+                                    String serviceClassName = null;
+
+                                    XmlAttribute attrClass = serviceTag.getAttribute("class");
+                                    if(attrClass != null) {
+                                        serviceClassName = attrClass.getValue();
+                                    }
+
+                                    services.put(serviceNameId, serviceClassName);
                                 }
+
                             }
                         }
                     }
