@@ -7,6 +7,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
+import com.intellij.util.io.DataInputOutputUtil;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -22,10 +23,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, Set<String>> {
@@ -164,10 +162,21 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
 
-        public synchronized void save(DataOutput out, Set<String> value) throws IOException {
-            out.writeInt(value.size());
+        public synchronized void save(DataOutput out, Set<String> values) throws IOException {
+            Set<String> valueStrings = new HashSet<String>();
+            for(String valueString: values) {
+                if(valueString == null) {
+                    valueString = "";
+                }
+                valueStrings.add(valueString);
+            }
+
+            out.writeInt(valueStrings.size());
             String s;
-            for (Iterator i$ = value.iterator(); i$.hasNext(); this.myStringEnumerator.save(out, s)) s = (String)i$.next();
+            for (Iterator i$ = valueStrings.iterator(); i$.hasNext(); this.myStringEnumerator.save(out, s)) {
+                s = (String) i$.next();
+            }
+
         }
 
         public synchronized Set<String> read(DataInput in) throws IOException {

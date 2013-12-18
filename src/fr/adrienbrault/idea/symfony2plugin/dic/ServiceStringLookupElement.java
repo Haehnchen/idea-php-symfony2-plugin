@@ -9,6 +9,7 @@ public class ServiceStringLookupElement extends LookupElement {
 
     private String serviceId;
     private String serviceClass;
+    private boolean isWeakIndexService = false;
 
     public ServiceStringLookupElement(String serviceId) {
         this.serviceId = serviceId;
@@ -17,6 +18,11 @@ public class ServiceStringLookupElement extends LookupElement {
     public ServiceStringLookupElement(String serviceId, String serviceClass) {
         this(serviceId);
         this.serviceClass = serviceClass;
+    }
+
+    public ServiceStringLookupElement(String serviceId, String serviceClass, boolean isWeakIndexService) {
+        this(serviceId, serviceClass);
+        this.isWeakIndexService = isWeakIndexService;
     }
 
     @NotNull
@@ -30,20 +36,19 @@ public class ServiceStringLookupElement extends LookupElement {
         presentation.setTypeGrayed(true);
 
         // private or non container services
-        if(serviceClass == null) {
+        if(this.serviceClass == null || this.isWeakIndexService) {
             presentation.setIcon(Symfony2Icons.SERVICE_OPACITY);
-            return;
+        } else {
+            presentation.setIcon(Symfony2Icons.SERVICE);
         }
 
-        // classnames have "\", more it more readable
-        if(serviceClass.startsWith("\\")) {
-            serviceClass = serviceClass.substring(1);
+        if(serviceClass != null) {
+            // classnames have "\", make it more readable
+            if(serviceClass.startsWith("\\")) {
+                serviceClass = serviceClass.substring(1);
+            }
+            presentation.setTypeText(serviceClass);
         }
-
-        presentation.setTypeText(serviceClass);
-        presentation.setIcon(Symfony2Icons.SERVICE);
-
-
 
     }
 

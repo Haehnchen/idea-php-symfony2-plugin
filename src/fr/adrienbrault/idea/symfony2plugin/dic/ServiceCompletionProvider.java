@@ -50,10 +50,10 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         }
 
         // all service name that for indexed
-        for(String serviceName: ServiceIndexUtil.getAllServiceNames(element.getProject())) {
-            if(!serviceNameLookup.contains(serviceName)) {
+        for(Map.Entry<String, String> entry: ServiceIndexUtil.getIndexedServiceMap(element.getProject()).entrySet()) {
+            if(!serviceNameLookup.contains(entry.getKey())) {
                 resultSet.addElement(
-                    new ServiceStringLookupElement(serviceName)
+                    new ServiceStringLookupElement(entry.getKey(), entry.getValue(), true)
                 );
             }
         }
