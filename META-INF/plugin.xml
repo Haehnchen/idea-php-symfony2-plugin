@@ -425,6 +425,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.dic.YamlRoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigExtendsStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.dic.ServicesDefinitionStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameterStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
@@ -461,5 +462,6 @@
         </action>
     </actions>
 </idea-plugin>
+
 
 

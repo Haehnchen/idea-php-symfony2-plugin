@@ -62,22 +62,6 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
                 return map;
             }
 
-            private boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
-
-                String fileName = psiFile.getName();
-                if(fileName.startsWith(".") || fileName.contains("Test")) {
-                    return false;
-                }
-
-                // is test file on path
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-                if(relativePath == null || relativePath.contains("Test")) {
-                    return false;
-                }
-
-                return true;
-            }
-
             private Map<String, Set<String>> getServiceMap(Map<String, Set<String>> map, XmlFile psiFile) {
                 Map<String, String> localServices = XmlHelper.getLocalServiceSet(psiFile);
 
@@ -189,6 +173,22 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             return set;
         }
 
+    }
+
+    public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
+
+        String fileName = psiFile.getName();
+        if(fileName.startsWith(".") || fileName.contains("Test")) {
+            return false;
+        }
+
+        // is test file on path
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+        if(relativePath == null || relativePath.contains("Test")) {
+            return false;
+        }
+
+        return true;
     }
 
 }

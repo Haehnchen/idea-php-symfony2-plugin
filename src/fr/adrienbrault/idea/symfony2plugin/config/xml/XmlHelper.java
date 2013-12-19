@@ -11,7 +11,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlTagValue;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
@@ -98,6 +100,7 @@ public class XmlHelper {
         return XmlPatterns.psiElement(XmlTag.class).withName(XmlPatterns.string().oneOf(insideTagName));
     }
 
+    @Deprecated
     @Nullable
     public static ServiceMap getLocalMissingServiceMap(PsiElement psiElement,@Nullable Map<String, String> currentServiceMap) {
         try {
@@ -124,6 +127,7 @@ public class XmlHelper {
         return null;
     }
 
+    @Deprecated
     @Nullable
     public static HashMap<String, String> getLocalMissingParameterMap(PsiElement psiElement,@Nullable Map<String, String> currentServiceMap) {
 
@@ -227,6 +231,54 @@ public class XmlHelper {
                                     services.put(serviceNameId, serviceClassName);
                                 }
 
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return services;
+    }
+
+    public static Map<String, String> getFileParameterMap(XmlFile psiFile) {
+
+        if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
+            return null;
+        }
+
+        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        if(xmlTags == null) {
+            return null;
+        }
+
+        Map<String, String> services = new THashMap<String, String>();
+
+        for(XmlTag xmlTag: xmlTags) {
+            if(xmlTag.getName().equals("container")) {
+                for(XmlTag servicesTag: xmlTag.getSubTags()) {
+                    if(servicesTag.getName().equals("parameters")) {
+                        for(XmlTag parameterTag: servicesTag.getSubTags()) {
+
+                            //<parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
+                            if(parameterTag.getName().equals("parameter")) {
+                                XmlAttribute keyAttr = parameterTag.getAttribute("key");
+                                if(keyAttr != null) {
+                                    String parameterName = keyAttr.getValue();
+                                    if(parameterName != null) {
+
+                                        String parameterValue = null;
+
+                                        XmlAttribute typeAttr = parameterTag.getAttribute("type");
+                                        if(typeAttr == null || !"collection".equals(typeAttr.getValue())) {
+                                            XmlTagValue attrClass = parameterTag.getValue();
+                                            parameterValue = attrClass.getText();
+                                        }
+
+                                        services.put(parameterName, parameterValue);
+                                    }
+
+                                }
                             }
                         }
                     }
