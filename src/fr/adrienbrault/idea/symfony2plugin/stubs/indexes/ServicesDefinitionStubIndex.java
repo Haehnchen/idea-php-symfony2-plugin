@@ -21,6 +21,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -185,6 +186,13 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
         String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
         if(relativePath == null || relativePath.contains("Test")) {
             return false;
+        }
+
+        ArrayList<File> settingsServiceFiles = psiFile.getProject().getComponent(Symfony2ProjectComponent.class).getContainerFiles();
+        for(File file: settingsServiceFiles) {
+            if(VfsUtil.isAncestor(VfsUtil.virtualToIoFile(inputData.getFile()), file, false)) {
+                return false;
+            }
         }
 
         return true;

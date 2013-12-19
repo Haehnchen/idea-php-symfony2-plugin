@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
@@ -116,7 +117,7 @@ public class ContainerCollectionResolver {
 
                     // one parameter definition can be in multiple files, use first match for now
                     // @TODO: at least we should skip null
-                    List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, PhpIndex.getInstance(project).getSearchScope());
+                    List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, GlobalSearchScope.projectScope(project));
                     if(parameterValues.size() > 0) {
                         value = parameterValues.get(0);
                     }

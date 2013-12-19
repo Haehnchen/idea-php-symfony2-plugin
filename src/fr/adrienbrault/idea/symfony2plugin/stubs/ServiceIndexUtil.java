@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.stubs;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -98,7 +99,7 @@ public class ServiceIndexUtil {
             return  null;
         }
 
-        for(Set<String> rawServiceNames: FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, PhpIndex.getInstance(project).getSearchScope())) {
+        for(Set<String> rawServiceNames: FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.projectScope(project))) {
             if(rawServiceNames.size() > 0) {
                 // first Set element is class name
                 String first = rawServiceNames.iterator().next();
