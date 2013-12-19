@@ -1,15 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.*;
 
@@ -17,6 +23,61 @@ public class ContainerCollectionResolver {
 
     public static enum Source {
         INDEX, COMPILER
+    }
+
+    public static Collection<ContainerService> getServices(Project project) {
+        return getServices(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
+    }
+
+    public static Collection<ContainerService> getServices(Project project, ContainerCollectionResolver.Source... collectorSources) {
+
+        Set<Source> collectors = new HashSet<Source>(Arrays.asList(collectorSources));
+        HashMap<String, ContainerService> services = new HashMap<String, ContainerService>();
+
+        if(collectors.contains(Source.COMPILER)) {
+            for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
+                services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
+            }
+        }
+
+        if(collectors.contains(Source.INDEX)) {
+            for(String serviceName: FileBasedIndexImpl.getInstance().getAllKeys(ServicesDefinitionStubIndex.KEY, project)) {
+
+                // we have higher priority on compiler, which already has safe value
+                if(!services.containsKey(serviceName)) {
+
+                    List<Set<String>> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+
+                    if(serviceDefinitions.size() == 0) {
+                        services.put(serviceName, new ContainerService(serviceName, null, true));
+                    }
+
+                    for(Set<String> parameterValues: serviceDefinitions) {
+
+                        // 0: class name
+                        // 1: private: (String) "true" if presented
+                        String[] serviceDefinitionArray = parameterValues.toArray(new String[parameterValues.size()]);
+
+                        if(serviceDefinitionArray.length == 0) {
+                            services.put(serviceName, new ContainerService(serviceName, null, true));
+                        }
+
+                        if(serviceDefinitionArray.length == 1) {
+                            services.put(serviceName, new ContainerService(serviceName, resolveParameterClass(project, serviceDefinitionArray[0]), true));
+                        }
+
+                        if(serviceDefinitionArray.length == 2) {
+                            services.put(serviceName, new ContainerService(serviceName, resolveParameterClass(project, serviceDefinitionArray[0]), true, "true".equals(serviceDefinitionArray[1])));
+                        }
+
+                    }
+                }
+
+            }
+        }
+
+
+        return services.values();
     }
 
     @Nullable
@@ -117,7 +178,7 @@ public class ContainerCollectionResolver {
 
                     // one parameter definition can be in multiple files, use first match for now
                     // @TODO: at least we should skip null
-                    List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, GlobalSearchScope.projectScope(project));
+                    List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
                     if(parameterValues.size() > 0) {
                         value = parameterValues.get(0);
                     }
@@ -151,6 +212,31 @@ public class ContainerCollectionResolver {
         }
 
         return parameterNames;
+
+    }
+
+    public static class ServiceCollector {
+
+        Set<Source> sources = new HashSet<Source>();
+        private Project project;
+
+        public ServiceCollector(Project project) {
+            this.project = project;
+        }
+
+        public void addCollectorSource(Source source) {
+            this.sources.add(source);
+        }
+
+        public Collection<ContainerService> collect() {
+            // @TODO: remove static calling and wrap into several collector provider, we have performance issues on parameter resolve
+            return ContainerCollectionResolver.getServices(this.project, this.sources.toArray(new Source[this.sources.size()]));
+        }
+
+        @Nullable
+        public String resolve(String serviceName) {
+            return ContainerCollectionResolver.getClassNameFromService(this.project, serviceName,  this.sources.toArray(new Source[this.sources.size()]));
+        }
 
     }
 

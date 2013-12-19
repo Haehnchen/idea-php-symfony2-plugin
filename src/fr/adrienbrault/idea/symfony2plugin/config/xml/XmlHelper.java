@@ -102,33 +102,6 @@ public class XmlHelper {
 
     @Deprecated
     @Nullable
-    public static ServiceMap getLocalMissingServiceMap(PsiElement psiElement,@Nullable Map<String, String> currentServiceMap) {
-        try {
-            VirtualFile virtualFile = psiElement.getContainingFile().getOriginalFile().getVirtualFile();
-            if(virtualFile != null) {
-                ServiceMap localServiceMap = new ServiceMapParser().parse(virtualFile.getInputStream());
-                ServiceMap unknownServiceMap = new ServiceMap();
-                for(Map.Entry<String, String> entry: localServiceMap.getPublicMap().entrySet()) {
-                    if(currentServiceMap == null) {
-                        unknownServiceMap.getMap().put(entry.getKey(), entry.getValue());
-                    } else if ( !currentServiceMap.containsKey(entry.getKey())) {
-                        unknownServiceMap.getMap().put(entry.getKey(), entry.getValue());
-                    }
-                }
-
-                return unknownServiceMap;
-            }
-
-        } catch (SAXException ignored) {
-        } catch (IOException ignored) {
-        } catch (ParserConfigurationException ignored) {
-        }
-
-        return null;
-    }
-
-    @Deprecated
-    @Nullable
     public static HashMap<String, String> getLocalMissingParameterMap(PsiElement psiElement,@Nullable Map<String, String> currentServiceMap) {
 
         VirtualFile virtualFile = psiElement.getContainingFile().getOriginalFile().getVirtualFile();
@@ -183,16 +156,6 @@ public class XmlHelper {
         }
 
         return null;
-    }
-
-    @Nullable
-    public static Set<String> getLocalServices(PsiFile psiFile) {
-        Map<String, String> stringSet = getLocalServiceSet(psiFile);
-        if(stringSet == null) {
-            return null;
-        }
-
-        return stringSet.keySet();
     }
 
     @Nullable

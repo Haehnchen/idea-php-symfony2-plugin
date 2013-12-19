@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -17,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.*;
@@ -33,7 +35,7 @@ public class ServiceIndexUtil {
                 virtualFiles.add(virtualFile);
                 return true;
             }
-        }, PhpIndex.getInstance(project).getSearchScope());
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
 
         return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
 
@@ -99,7 +101,7 @@ public class ServiceIndexUtil {
             return  null;
         }
 
-        for(Set<String> rawServiceNames: FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.projectScope(project))) {
+        for(Set<String> rawServiceNames: FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML))) {
             if(rawServiceNames.size() > 0) {
                 // first Set element is class name
                 String first = rawServiceNames.iterator().next();

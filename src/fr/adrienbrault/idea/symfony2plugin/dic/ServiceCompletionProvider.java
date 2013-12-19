@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -29,33 +30,10 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
             return;
         }
 
-
-        Set<String> serviceNameLookup = new HashSet<String>();
-
-        Map<String,String> map = ServiceXmlParserFactory.getInstance(element.getProject(), XmlServiceParser.class).getServiceMap().getMap();
-        for( Map.Entry<String, String> entry: map.entrySet() ) {
-            serviceNameLookup.add(entry.getKey());
+        for(ContainerService containerService: ContainerCollectionResolver.getServices(element.getProject())) {
             resultSet.addElement(
-                new ServiceStringLookupElement(entry.getKey(), entry.getValue())
+                new ServiceStringLookupElement(containerService)
             );
-        }
-
-        // local file services
-        for( Map.Entry<String, String> entry: YamlHelper.getLocalServiceMap(element).entrySet()) {
-            if(!serviceNameLookup.contains(entry.getKey())) {
-                resultSet.addElement(
-                    new ServiceStringLookupElement(entry.getKey(), entry.getValue())
-                );
-            }
-        }
-
-        // all service name that for indexed
-        for(Map.Entry<String, String> entry: ServiceIndexUtil.getIndexedServiceMap(element.getProject()).entrySet()) {
-            if(!serviceNameLookup.contains(entry.getKey())) {
-                resultSet.addElement(
-                    new ServiceStringLookupElement(entry.getKey(), entry.getValue(), true)
-                );
-            }
         }
 
     }

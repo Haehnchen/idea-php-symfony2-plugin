@@ -10,6 +10,12 @@ public class ServiceStringLookupElement extends LookupElement {
     private String serviceId;
     private String serviceClass;
     private boolean isWeakIndexService = false;
+    private ContainerService containerService;
+
+    public ServiceStringLookupElement(ContainerService containerService) {
+        this(containerService.getName(), containerService.getClassName(), containerService.isWeak());
+        this.containerService = containerService;
+    }
 
     public ServiceStringLookupElement(String serviceId) {
         this.serviceId = serviceId;

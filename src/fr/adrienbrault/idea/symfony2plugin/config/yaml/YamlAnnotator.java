@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -12,12 +11,12 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -89,11 +88,6 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        // search any current open file
-        if(YamlHelper.getLocalServiceMap(psiElement).containsKey(serviceName)) {
-            return;
-        }
-
         // search on container should be slowest
         String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
         if(serviceClass != null) {
@@ -101,8 +95,7 @@ public class YamlAnnotator implements Annotator {
         }
 
         // indexer should be the fastest, so think moving first
-        VirtualFile[] virtualFiles = ServiceIndexUtil.getFindServiceDefinitionFiles(psiElement.getProject(), serviceName);
-        if(virtualFiles.length > 0) {
+        if(ServiceIndexUtil.getAllServiceNames(psiElement.getProject()).contains(serviceName)) {
             return;
         }
 

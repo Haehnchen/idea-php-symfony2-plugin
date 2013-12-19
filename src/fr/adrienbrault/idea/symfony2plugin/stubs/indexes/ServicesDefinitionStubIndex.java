@@ -71,7 +71,13 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
                 for(Map.Entry<String, String> entry: localServices.entrySet()) {
                     if(StringUtils.isNotEmpty(entry.getKey())) {
-                        map.put(entry.getKey(), new THashSet<String>(Arrays.asList(entry.getValue())));
+
+                        String className = entry.getValue();
+                        if(StringUtils.isBlank(className)) {
+                            className = null;
+                        }
+
+                        map.put(entry.getKey(), new THashSet<String>(Arrays.asList(className)));
                     }
                 }
 
