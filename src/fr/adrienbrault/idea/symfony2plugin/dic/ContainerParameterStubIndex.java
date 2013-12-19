@@ -107,14 +107,17 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
                 value = "";
             }
 
-            this.myStringEnumerator.save(out, value);
+            // container compiler converts parameter to lower; so we too
+            this.myStringEnumerator.save(out, value.toLowerCase());
         }
 
         @Override
         public String read(DataInput in) throws IOException {
 
             String value = this.myStringEnumerator.read(in);
-            if(value.equals("")) {
+
+            // looks like EnumeratorStringDescriptor writes out "null" as string, so workaround here
+            if(value.equals("") || "null".equals(value)) {
                 value = null;
             }
 

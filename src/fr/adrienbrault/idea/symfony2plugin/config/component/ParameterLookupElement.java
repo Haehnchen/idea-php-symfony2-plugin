@@ -6,6 +6,8 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,12 +19,20 @@ public class ParameterLookupElement extends LookupElement {
     private String parameterValue;
     private Object psiElement;
     private InsertHandler<LookupElement> insertHandler = null;
+    private ContainerParameter containerParameter;
 
+    public ParameterLookupElement(ContainerParameter containerParameter, InsertHandler<LookupElement> insertHandler, Object psiElement) {
+        this(containerParameter.getName(), containerParameter.getValue(), insertHandler, psiElement);
+        this.containerParameter = containerParameter;
+    }
+
+    @Deprecated
     public ParameterLookupElement(String parameterKey, String parameterValue) {
         this.parameterKey = parameterKey;
         this.parameterValue = parameterValue;
     }
 
+    @Deprecated
     public ParameterLookupElement(String name, String value, InsertHandler<LookupElement> insertHandler, Object psiElement) {
         this(name, value);
         this.insertHandler = insertHandler;
@@ -49,9 +59,18 @@ public class ParameterLookupElement extends LookupElement {
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
-        presentation.setTypeText(parameterValue);
+
+        if(parameterValue != null && !StringUtils.isBlank(parameterValue)) {
+            presentation.setTypeText(parameterValue);
+        }
+
         presentation.setTypeGrayed(true);
         presentation.setIcon(Symfony2Icons.PARAMETER);
+
+        if(this.containerParameter != null && this.containerParameter.isWeak()) {
+            presentation.setIcon(Symfony2Icons.PARAMETER_OPACITY);
+        }
+
     }
 
 }

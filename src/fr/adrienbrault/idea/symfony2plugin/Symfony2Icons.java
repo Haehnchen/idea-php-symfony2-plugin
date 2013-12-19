@@ -31,5 +31,7 @@ public class Symfony2Icons {
     public static final Icon SYMFONY_LINE_MARKER = IconLoader.getIcon("icons/symfony_line_marker.png");
     public static final Icon TWIG_LINE_MARKER = IconLoader.getIcon("icons/twig_line_marker.png");
 
+    public static final Icon PARAMETER_OPACITY = IconLoader.getIcon("icons/parameter_opacity.png");
+
 }
 

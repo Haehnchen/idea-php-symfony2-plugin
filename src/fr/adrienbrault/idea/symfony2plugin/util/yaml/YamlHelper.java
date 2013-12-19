@@ -309,38 +309,6 @@ public class YamlHelper {
 
     }
 
-    /**
-     * Get value behind a parameter on container or local file
-     *
-     * @param psiElement yaml file
-     * @param psiParameterName´parameter without %
-     */
-    @Nullable
-    public static String resolveParameterName(PsiElement psiElement, String psiParameterName) {
-
-        // parameter is always lower see #179
-        // but we need orig for later compare
-        String psiParameterNameLower = psiParameterName.toLowerCase();
-
-        // search in container file for any parameter
-        String parameterName = ServiceUtil.getResolvedParameter(psiElement.getProject(), psiParameterName);
-
-        // search local file parameter
-        if (parameterName == null) {
-
-            // find local parameter
-            Map<String, String> localParameter = YamlHelper.getLocalParameterMap(psiElement);
-            if(localParameter.containsKey(psiParameterName)) {
-                parameterName = localParameter.get(psiParameterName);
-            } else if(localParameter.containsKey(psiParameterNameLower)) {
-                parameterName = localParameter.get(psiParameterNameLower);
-            }
-
-        }
-
-        return parameterName;
-    }
-
     public static String trimSpecialSyntaxServiceName(String serviceName) {
 
         if(serviceName.startsWith("@")) {

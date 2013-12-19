@@ -3,7 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.util.dict;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -38,25 +40,19 @@ public class ServiceUtil {
      * %test%, service, \Class\Name to PhpClass
      */
     @Nullable
-    public static PhpClass getResolvedClassDefinition(Project project, String className) {
+    public static PhpClass getResolvedClassDefinition(Project project, String classParameterName) {
 
-        String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(className);
-        if (null != serviceClass) {
-            PsiElement[] psiElements = PhpElementsUtil.getClassInterfacePsiElements(project, serviceClass);
-            for(PsiElement psiElement: psiElements) {
-                if(psiElement instanceof PhpClass) {
-                    return (PhpClass) psiElement;
-                }
-            }
+        String serviceClass = ContainerCollectionResolver.getClassNameFromService(project, classParameterName);
+        if(serviceClass != null) {
+            return PhpElementsUtil.getClassInterface(project, serviceClass);
         }
 
-        // parameter and direct class name
-        PhpClass phpClass = getResolvedClass(project, className);
-        if(phpClass != null) {
-            return phpClass;
+        serviceClass = ContainerCollectionResolver.resolveParameterClass(project, classParameterName);
+        if(serviceClass == null) {
+            return null;
         }
 
-        return null;
+        return PhpElementsUtil.getClassInterface(project, serviceClass);
     }
 
     /**

@@ -55,7 +55,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
         // match: %annotations.reader.class%
         if(psiText.length() > 3 && psiText.startsWith("%") && psiText.endsWith("%")) {
-            psiElements.addAll(Arrays.asList((parameterGoToDeclaration(psiElement, psiText.substring(1, psiText.length() - 1)))));
+            psiElements.addAll(Arrays.asList((parameterGoToDeclaration(psiElement, psiText))));
         }
 
         if(psiText.contains("\\")) {
@@ -97,7 +97,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return new PsiElement[0];
         }
 
-        String resolvedParameter = YamlHelper.resolveParameterName(psiElement, psiParameterName);
+        String resolvedParameter = ContainerCollectionResolver.resolveParameterClass(psiElement.getProject(), psiParameterName);
         if(resolvedParameter == null) {
             return new PsiElement[0];
         }

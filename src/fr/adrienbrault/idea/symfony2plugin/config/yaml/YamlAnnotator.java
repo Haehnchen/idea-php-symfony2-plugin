@@ -12,6 +12,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -69,7 +70,7 @@ public class YamlAnnotator implements Annotator {
 
         // parameter a always lowercase see #179
         parameterName = parameterName.toLowerCase();
-        if (YamlHelper.resolveParameterName(psiElement, parameterName) == null) {
+        if (!ContainerCollectionResolver.getParameterNames(psiElement.getProject()).contains(parameterName)) {
             holder.createWarningAnnotation(psiElement, "Missing Parameter");
         }
 

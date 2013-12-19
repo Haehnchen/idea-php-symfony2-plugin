@@ -260,7 +260,11 @@ public class XmlHelper {
                     if(servicesTag.getName().equals("parameters")) {
                         for(XmlTag parameterTag: servicesTag.getSubTags()) {
 
-                            //<parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
+                            // <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
+                            // <parameter key="fos_rest.formats" type="collection">
+                            //    <parameter key="json">false</parameter>
+                            // </parameter>
+
                             if(parameterTag.getName().equals("parameter")) {
                                 XmlAttribute keyAttr = parameterTag.getAttribute("key");
                                 if(keyAttr != null) {
