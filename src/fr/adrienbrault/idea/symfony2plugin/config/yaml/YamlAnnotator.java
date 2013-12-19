@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLArray;
@@ -239,8 +240,18 @@ public class YamlAnnotator implements Annotator {
     }
 
     private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLArray yamlArray, Method constructor) {
+
+        if(psiElement == null) {
+            return;
+        }
+
         int parameterIndex = YamlHelper.getYamlParameter(yamlArray, psiElement);
         if(parameterIndex == -1) {
+            return;
+        }
+
+        String serviceName = getServiceName(psiElement);
+        if(StringUtils.isBlank(serviceName)) {
             return;
         }
 
