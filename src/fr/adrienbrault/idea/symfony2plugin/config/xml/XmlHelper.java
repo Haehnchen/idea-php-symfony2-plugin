@@ -279,7 +279,7 @@ public class XmlHelper {
                                             parameterValue = attrClass.getText();
                                         }
 
-                                        services.put(parameterName, parameterValue);
+                                        services.put(parameterName.toLowerCase(), parameterValue);
                                     }
 
                                 }

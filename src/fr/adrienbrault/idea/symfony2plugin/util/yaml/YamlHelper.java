@@ -155,7 +155,7 @@ public class YamlHelper {
                     if(yamlParameter != null) {
 
                         for(YAMLKeyValue yamlParameterArray:  yamlParameter) {
-                            map.put(yamlParameterArray.getKeyText(), yamlParameterArray.getValue().getText());
+                            map.put(yamlParameterArray.getKeyText().toLowerCase(), yamlParameterArray.getValue().getText());
                         }
                     }
 
