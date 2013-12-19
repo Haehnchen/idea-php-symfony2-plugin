@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHandler {

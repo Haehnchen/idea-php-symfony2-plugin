@@ -85,7 +85,7 @@ public class MethodParameterDialog extends JDialog {
             }
         });
 
-        // allow only number values to index
+        // allow only number values to indexes
         // simple?
         this.textIndex.addKeyListener(new KeyAdapter() {
             private String allowedRegex = "[^0-9]";

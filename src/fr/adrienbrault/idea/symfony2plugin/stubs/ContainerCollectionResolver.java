@@ -1,10 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfony2plugin.stubs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +67,7 @@ public class ContainerCollectionResolver {
                 return parameterMap.get(paramOrClassName);
             }
 
-            // search on index
+            // search on indexes
             ContainerParameter containerParameter = getParameter(project, paramOrClassName);
             if(containerParameter != null) {
                 return containerParameter.getValue();
@@ -107,7 +109,7 @@ public class ContainerCollectionResolver {
 
             for(String parameterName: FileBasedIndexImpl.getInstance().getAllKeys(ContainerParameterStubIndex.KEY, project)) {
 
-                // index is weak stuff, dont overwrite compiled ones
+                // indexes is weak stuff, dont overwrite compiled ones
                 if(!parameterMap.containsKey(parameterName)) {
 
                     String value = null;

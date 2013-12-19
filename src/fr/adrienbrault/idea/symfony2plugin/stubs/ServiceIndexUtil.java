@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.service;
+package fr.adrienbrault.idea.symfony2plugin.stubs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -9,10 +9,10 @@ import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;

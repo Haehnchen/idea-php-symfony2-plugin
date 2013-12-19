@@ -1,12 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;

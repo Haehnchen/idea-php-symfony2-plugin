@@ -71,13 +71,13 @@ public class TwigUtil {
         // strip the controller folder name
         String templateFolderName = phpClass.getNamespaceName().substring(BundleClass.getNamespaceName().length() + 11);
 
-        // HomeBundle:default:index
-        // HomeBundle:default/Test:index
+        // HomeBundle:default:indexes
+        // HomeBundle:default/Test:indexes
         templateFolderName = templateFolderName.replace("\\", "/");
         String shortcutName = symfonyBundle.getName() + ":" + templateFolderName + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
 
         // we should support types later on
-        // HomeBundle:default:index.html.twig
+        // HomeBundle:default:indexes.html.twig
         return shortcutName + ".html.twig";
     }
 

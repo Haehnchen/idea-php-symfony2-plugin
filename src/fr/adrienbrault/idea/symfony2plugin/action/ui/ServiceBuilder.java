@@ -64,7 +64,7 @@ public class ServiceBuilder {
         boolean hasCall = false;
         ArrayList<String> methodCalls = new ArrayList<String>();
 
-        // sort by index parameter
+        // sort by indexes parameter
         Collections.sort(methodModelParameters, new Comparator<MethodParameter.MethodModelParameter>() {
             @Override
             public int compare(MethodParameter.MethodModelParameter o1, MethodParameter.MethodModelParameter o2) {

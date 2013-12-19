@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

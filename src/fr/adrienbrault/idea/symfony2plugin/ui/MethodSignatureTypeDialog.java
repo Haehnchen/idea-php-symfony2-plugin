@@ -72,7 +72,7 @@ public class MethodSignatureTypeDialog extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 
-        // allow only number values to index
+        // allow only number values to indexes
         // simple?
         this.textIndex.addKeyListener(new KeyAdapter() {
             private String allowedRegex = "[^0-9]";
