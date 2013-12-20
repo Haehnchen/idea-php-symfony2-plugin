@@ -38,7 +38,7 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        PhpClass phpClass = ServiceUtil.getResolvedClass(getElement().getProject(), this.className);
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getElement().getProject(), this.className);
         if(phpClass == null) {
             return new ResolveResult[0];
         }
@@ -58,7 +58,7 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     @Override
     public Object[] getVariants() {
 
-        PhpClass phpClass = ServiceUtil.getResolvedClass(getElement().getProject(), this.className);
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getElement().getProject(), this.className);
         if(phpClass == null) {
             return new Object[0];
         }

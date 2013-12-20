@@ -77,7 +77,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
         serviceId = YamlHelper.trimSpecialSyntaxServiceName(serviceId).toLowerCase();
 
-        String serviceClass = ContainerCollectionResolver.getClassNameFromService(psiElement.getProject(), serviceId);
+        String serviceClass = ContainerCollectionResolver.resolveService(psiElement.getProject(), serviceId);
 
         if (serviceClass != null) {
             PsiElement[] targetElements = PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
@@ -87,7 +87,8 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         // get container target on indexes
-        return ServiceIndexUtil.getPossibleServiceTargets(psiElement.getProject(), serviceId);
+        List<PsiElement> possibleServiceTargets = ServiceIndexUtil.getPossibleServiceTargets(psiElement.getProject(), serviceId);
+        return possibleServiceTargets.toArray(new PsiElement[possibleServiceTargets.size()]);
 
     }
 
@@ -97,7 +98,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return new PsiElement[0];
         }
 
-        String resolvedParameter = ContainerCollectionResolver.resolveParameterClass(psiElement.getProject(), psiParameterName);
+        String resolvedParameter = ContainerCollectionResolver.resolveParameter(psiElement.getProject(), psiParameterName);
         if(resolvedParameter == null) {
             return new PsiElement[0];
         }
