@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
+import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.Method;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
@@ -25,9 +28,11 @@ public class ServiceBuilder {
     }
 
     private List<MethodParameter.MethodModelParameter>  methodModelParameter;
+    private Project project;
 
-    public ServiceBuilder(List<MethodParameter.MethodModelParameter> methodModelParameter) {
+    public ServiceBuilder(List<MethodParameter.MethodModelParameter> methodModelParameter, Project project) {
         this.methodModelParameter = methodModelParameter;
+        this.project = project;
     }
 
     @Nullable
@@ -97,6 +102,32 @@ public class ServiceBuilder {
     }
 
     @Nullable
+    private String getClassAsParameter(String className) {
+
+        if(className.startsWith("\\")) {
+            className = className.substring(1);
+        }
+
+        for(Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(this.project).entrySet()) {
+            String parameterValue = entry.getValue().getValue();
+            if(parameterValue != null) {
+                if(parameterValue.startsWith("\\")) {
+                    parameterValue = parameterValue.substring(1);
+                }
+
+                if(parameterValue.equals(className)) {
+                    return entry.getKey();
+                }
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+    @Nullable
     private String buildXml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className) {
 
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -112,7 +143,10 @@ public class ServiceBuilder {
         Document doc = docBuilder.newDocument();
         Element rootElement = doc.createElement("service");
         rootElement.setAttribute("id", generateServiceName(className));
-        rootElement.setAttribute("class", className);
+
+        String classAsParameter = getClassAsParameter(className);
+
+        rootElement.setAttribute("class", classAsParameter != null ? classAsParameter : className);
         doc.appendChild(rootElement);
 
         if(methods.containsKey("__construct")) {
@@ -176,8 +210,10 @@ public class ServiceBuilder {
     private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className) {
         String out = "";
 
+        String classAsParameter = getClassAsParameter(className);
+
         out += generateServiceName(className) + ":\n";
-        out += "  class: " + className + "\n";
+        out += "  class: " + (classAsParameter != null ? "%" + classAsParameter + "%" : className) + "\n";
 
         if(methods.containsKey("__construct")) {
 

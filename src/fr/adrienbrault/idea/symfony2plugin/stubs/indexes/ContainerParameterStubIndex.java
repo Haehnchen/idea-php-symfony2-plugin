@@ -107,8 +107,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
                 value = "";
             }
 
-            // container compiler converts parameter to lower; so we too
-            this.myStringEnumerator.save(out, value.toLowerCase());
+            this.myStringEnumerator.save(out, value);
         }
 
         @Override

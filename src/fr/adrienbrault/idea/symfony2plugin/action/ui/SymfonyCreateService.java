@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.psi.PsiFile;
@@ -136,13 +137,22 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private void generateServiceDefinition() {
-        textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems()).build(
+        textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems(), this.project).build(
             this.psiFile instanceof XmlFile ? ServiceBuilder.OutputType.XML : ServiceBuilder.OutputType.Yaml,
             textFieldClassName.getText())
         );
     }
 
     private void update() {
+        ApplicationManager.getApplication().runReadAction(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                updateTask();
+            }
+        }));
+    }
+
+    private void updateTask() {
 
         String className = textFieldClassName.getText();
         if(className.startsWith("\\")) {
@@ -155,6 +165,7 @@ public class SymfonyCreateService extends JDialog {
 
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
         if(phpClass == null) {
+            JOptionPane.showMessageDialog(null, String.format("invalid %s class", className));
             return;
         }
 
