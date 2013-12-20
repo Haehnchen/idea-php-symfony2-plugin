@@ -4,7 +4,6 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndexImpl;
-import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
@@ -21,6 +20,15 @@ public class ContainerCollectionResolver {
 
     public static enum Source {
         INDEX, COMPILER
+    }
+
+    public static Collection<String> getServiceNames(Project project) {
+        return new ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX).getNames();
+    }
+
+    public static boolean hasServiceNames(Project project, String serviceName) {
+        // @TODO: we dont need a collection here; stop on first match
+        return new ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX).getNames().contains(serviceName);
     }
 
     public static Collection<ContainerService> getServices(Project project) {
@@ -196,6 +204,22 @@ public class ContainerCollectionResolver {
             }
 
             return serviceNames;
+        }
+
+        private Set<String> getNames() {
+
+            Set<String> serviceNames = new HashSet<String>();
+
+            if(this.sources.contains(Source.COMPILER)) {
+                serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
+            }
+
+            if(this.sources.contains(Source.INDEX)) {
+                serviceNames.addAll(FileBasedIndexImpl.getInstance().getAllKeys(ServicesDefinitionStubIndex.KEY, project));
+            }
+
+            return serviceNames;
+
         }
 
 

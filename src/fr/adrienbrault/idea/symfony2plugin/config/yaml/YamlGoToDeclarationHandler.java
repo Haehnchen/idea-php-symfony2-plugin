@@ -87,7 +87,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         // get container target on indexes
-        List<PsiElement> possibleServiceTargets = ServiceIndexUtil.getPossibleServiceTargets(psiElement.getProject(), serviceId);
+        List<PsiElement> possibleServiceTargets = ServiceIndexUtil.findServiceDefinitions(psiElement.getProject(), serviceId);
         return possibleServiceTargets.toArray(new PsiElement[possibleServiceTargets.size()]);
 
     }

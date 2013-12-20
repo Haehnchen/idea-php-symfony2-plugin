@@ -20,7 +20,7 @@ public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHan
             return new PsiElement[0];
         }
 
-        return ServiceIndexUtil.getPossibleServiceTargets((PhpClass) psiElement.getContext());
+        return ServiceIndexUtil.findServiceDefinitions((PhpClass) psiElement.getContext());
     }
 
     @Nullable

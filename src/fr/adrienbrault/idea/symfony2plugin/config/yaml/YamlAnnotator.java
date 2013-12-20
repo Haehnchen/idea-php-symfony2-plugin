@@ -88,14 +88,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        // search on container should be slowest
-        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
-        if(serviceClass != null) {
-            return;
-        }
-
-        // indexer should be the fastest, so think moving first
-        if(ServiceIndexUtil.getAllServiceNames(psiElement.getProject()).contains(serviceName)) {
+        if(ContainerCollectionResolver.hasServiceNames(psiElement.getProject(), serviceName)) {
             return;
         }
 

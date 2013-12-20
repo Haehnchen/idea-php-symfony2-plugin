@@ -21,7 +21,7 @@ import java.util.*;
 
 public class ServiceIndexUtil {
 
-    public static VirtualFile[] getFindServiceDefinitionFiles(Project project, String... serviceName) {
+    private static VirtualFile[] findServiceDefinitionFiles(Project project, String... serviceName) {
 
         final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
 
@@ -37,11 +37,11 @@ public class ServiceIndexUtil {
 
     }
 
-    public static List<PsiElement> getPossibleServiceTargets(Project project, String serviceName) {
+    public static List<PsiElement> findServiceDefinitions(Project project, String serviceName) {
 
         List<PsiElement> items = new ArrayList<PsiElement>();
 
-        VirtualFile[] twigVirtualFiles = ServiceIndexUtil.getFindServiceDefinitionFiles(project, serviceName);
+        VirtualFile[] twigVirtualFiles = ServiceIndexUtil.findServiceDefinitionFiles(project, serviceName);
 
         for (VirtualFile twigVirtualFile : twigVirtualFiles) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(twigVirtualFile);
@@ -65,7 +65,7 @@ public class ServiceIndexUtil {
         return items;
     }
 
-    public static PsiElement[] getPossibleServiceTargets(PhpClass phpClass) {
+    public static PsiElement[] findServiceDefinitions(PhpClass phpClass) {
 
         String phpClassName = phpClass.getPresentableFQN();
 
@@ -77,14 +77,10 @@ public class ServiceIndexUtil {
 
         List<PsiElement> psiElements = new ArrayList<PsiElement>();
         for(String serviceName: serviceNames) {
-            psiElements.addAll(getPossibleServiceTargets(phpClass.getProject(), serviceName));
+            psiElements.addAll(findServiceDefinitions(phpClass.getProject(), serviceName));
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
-    }
-
-    public static Collection<String> getAllServiceNames(Project project) {
-        return FileBasedIndexImpl.getInstance().getAllKeys(ServicesDefinitionStubIndex.KEY, project);
     }
 
 }
