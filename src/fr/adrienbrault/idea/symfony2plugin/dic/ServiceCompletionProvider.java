@@ -30,7 +30,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
             return;
         }
 
-        for(ContainerService containerService: ContainerCollectionResolver.getServices(element.getProject())) {
+        for(ContainerService containerService: ContainerCollectionResolver.getServices(element.getProject()).values()) {
             resultSet.addElement(
                 new ServiceStringLookupElement(containerService)
             );

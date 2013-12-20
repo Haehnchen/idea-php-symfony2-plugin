@@ -11,9 +11,9 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +27,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 public class SymfonyCreateService extends JDialog {
 
@@ -42,7 +43,7 @@ public class SymfonyCreateService extends JDialog {
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
 
-    private Map<String, String> serviceClass;
+    private Map<String, ContainerService> serviceClass;
     private Set<String> serviceSetComplete;
 
     private Project project;
@@ -85,7 +86,9 @@ public class SymfonyCreateService extends JDialog {
             .createPanel()
         );
 
-        this.serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap();
+
+
+        this.serviceClass = ContainerCollectionResolver.getServices(project);
 
         this.serviceSetComplete = new TreeSet<String>();
         serviceSetComplete.add("");
@@ -210,13 +213,12 @@ public class SymfonyCreateService extends JDialog {
 
     @Nullable
     private String getServiceName(Set<String> services) {
-
-        // @TODO:  better name match debug/default name should have lower weight
-        if(services.size() > 0) {
-            return services.iterator().next();
+        if(services.size() == 0) {
+            return null;
         }
 
-        return null;
+        // we have a weight sorted Set, so first one
+        return services.iterator().next();
     }
 
     @Override
@@ -345,31 +347,92 @@ public class SymfonyCreateService extends JDialog {
 
     private Set<String> getPossibleServices(Parameter parameter) {
 
-        Set<String> possibleServices = new TreeSet<String>();
+        Set<String> possibleServices = new LinkedHashSet<String>();
+        List<ContainerService> matchedContainer = new ArrayList<ContainerService>();
 
         PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
-        if(phpPsiElement instanceof ClassReference) {
+        if(!(phpPsiElement instanceof ClassReference)) {
+            return possibleServices;
+        }
 
-            String type = ((ClassReference) phpPsiElement).getFQN();
-            PhpClass typeClass = PhpElementsUtil.getClassInterface(project, type);
-            if(typeClass != null) {
-                for(Map.Entry<String, String> service: serviceClass.entrySet()) {
+        String type = ((ClassReference) phpPsiElement).getFQN();
+        PhpClass typeClass = PhpElementsUtil.getClassInterface(project, type);
+        if(typeClass != null) {
+            for(Map.Entry<String, ContainerService> entry: serviceClass.entrySet()) {
 
-                    PhpClass serviceClass = PhpElementsUtil.getClass(project, service.getValue());
-                    if(serviceClass != null) {
-                        if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, typeClass)) {
-                            possibleServices.add(service.getKey());
-                        }
+                PhpClass serviceClass = PhpElementsUtil.getClass(project, entry.getValue().getClassName());
+                if(serviceClass != null) {
+                    if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, typeClass)) {
+                        matchedContainer.add(entry.getValue());
                     }
-
                 }
+
+            }
+        }
+
+
+        if(matchedContainer.size() > 0) {
+
+            // weak service have lower priority
+            Collections.sort(matchedContainer, new ContainerServicePriorityWeakComparator());
+
+            // lower priority of services like "doctrine.orm.default_entity_manager"
+            Collections.sort(matchedContainer, new ContainerServicePriorityNameComparator());
+
+            for(ContainerService containerService: matchedContainer) {
+                possibleServices.add(containerService.getName());
             }
 
         }
 
+
+
         return possibleServices;
     }
 
+
+    private static class ContainerServicePriorityNameComparator implements Comparator<ContainerService> {
+
+        private static String[] LOWER_PRIORITY = new String[] { "debug", "default", "abstract"};
+
+        @Override
+        public int compare(ContainerService o1, ContainerService o2) {
+
+            if(this.isLowerPriority(o1.getName()) && this.isLowerPriority(o2.getName())) {
+                return 0;
+            }
+
+            if(this.isLowerPriority(o1.getName())) {
+                return 1;
+            }
+
+            return -1;
+        }
+
+        private boolean isLowerPriority(String name) {
+
+            for(String lowerName: LOWER_PRIORITY) {
+                if(name.contains(lowerName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+    }
+
+    private static class ContainerServicePriorityWeakComparator implements Comparator<ContainerService> {
+        @Override
+        public int compare(ContainerService o1, ContainerService o2) {
+
+            if(o1.isWeak() == o2.isWeak()) {
+                return 0;
+            }
+
+            return (o1.isWeak() ? 1 : -1);
+        }
+    }
 
 }
 

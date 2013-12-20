@@ -31,12 +31,12 @@ public class ContainerCollectionResolver {
         return new ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX).getNames().contains(serviceName);
     }
 
-    public static Collection<ContainerService> getServices(Project project) {
+    public static Map<String, ContainerService> getServices(Project project) {
         return getServices(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
     }
 
-    public static Collection<ContainerService> getServices(Project project, ContainerCollectionResolver.Source... collectorSources) {
-        return new ServiceCollector(project, collectorSources).getServices().values();
+    public static Map<String, ContainerService> getServices(Project project, Source... collectorSources) {
+        return new ServiceCollector(project, collectorSources).getServices();
     }
 
     @Nullable
