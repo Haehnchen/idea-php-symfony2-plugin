@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstString(e, "find")) {
+        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "find")) {
             return null;
         }
 
@@ -45,18 +46,11 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-
         // we need the param key on getBySignature(), since we are already in the resolved method there attach it to signature
         // param can have dotted values split with \
         PsiElement[] parameters = ((MethodReference)e).getParameters();
         if (parameters.length == 2) {
-            PsiElement parameter = parameters[0];
-            if ((parameter instanceof StringLiteralExpression)) {
-                String param = ((StringLiteralExpression)parameter).getContents();
-                if (StringUtil.isNotEmpty(param)) {
-                    return refSignature + TRIM_KEY + param;
-                }
-            }
+            return PhpTypeProviderUtil.getReferenceSignature((MethodReference) e, TRIM_KEY, 2);
         }
 
         return null;
@@ -82,12 +76,17 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
         }
 
         if (!new Symfony2InterfacesUtil().isCallTo((Method) phpNamedElement, "\\Doctrine\\Common\\Persistence\\ObjectManager", "find")) {
-            return Arrays.asList(phpNamedElement);
+            return phpNamedElementCollections;
+        }
+
+        parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
+        if(parameter == null) {
+            return phpNamedElementCollections;
         }
 
         PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
         if(phpClass == null) {
-            return Arrays.asList(phpNamedElement);
+            return phpNamedElementCollections;
         }
 
         return Arrays.asList(phpClass);

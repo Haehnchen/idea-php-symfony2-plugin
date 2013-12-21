@@ -166,7 +166,6 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
                 r--;
             }
 
-            System.out.println(Arrays.toString(list.toArray(new String[list.size()])));
             return list.toArray(new String[list.size()]);
         }
 

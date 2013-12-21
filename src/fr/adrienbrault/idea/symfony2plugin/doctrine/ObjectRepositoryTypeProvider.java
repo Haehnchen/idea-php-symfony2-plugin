@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
 
     @Override
     public char getKey() {
-        return '\u0151';  //To change body of implemented methods use File | Settings | File Templates.
+        return '\u0151';
     }
 
     @Nullable
@@ -35,7 +36,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstString(e, "getRepository")) {
+        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")) {
             return null;
         }
 
@@ -45,19 +46,9 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        // we need the param key on getBySignature(), since we are already in the resolved method there attach it to signature
-        // param can have dotted values split with \
-        PsiElement[] parameters = ((MethodReference)e).getParameters();
-        if (parameters.length == 1) {
-            PsiElement parameter = parameters[0];
-            if ((parameter instanceof StringLiteralExpression)) {
-                String param = ((StringLiteralExpression)parameter).getContents();
-                if (StringUtil.isNotEmpty(param)) return refSignature + TRIM_KEY + param;
-            }
-        }
-
-        return null;
+        return PhpTypeProviderUtil.getReferenceSignature((MethodReference) e, TRIM_KEY);
     }
+
 
     @Override
     public Collection<? extends PhpNamedElement> getBySignature(String expression, Project project) {
@@ -75,10 +66,17 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
 
         PhpNamedElement phpNamedElement = phpNamedElementCollections.iterator().next();
         if(!(phpNamedElement instanceof Method)) {
-            return Arrays.asList(phpNamedElement);
+            return phpNamedElementCollections;
         }
 
         if (!new Symfony2InterfacesUtil().isGetRepositoryCall((Method) phpNamedElement)) {
+            return phpNamedElementCollections;
+        }
+
+        // we can also pipe php references signatures and resolve them here
+        // overwrite parameter to get string value
+        parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
+        if(parameter == null) {
             return Arrays.asList(phpNamedElement);
         }
 
@@ -87,7 +85,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
 
         // self add :)
         if(phpClass == null) {
-            return Arrays.asList(phpNamedElement);
+            return phpNamedElementCollections;
         }
 
         return Arrays.asList(phpClass);

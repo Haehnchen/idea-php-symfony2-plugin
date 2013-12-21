@@ -2,14 +2,16 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,35 +45,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        String refSignature = ((MethodReference)e).getSignature();
-        if(StringUtil.isEmpty(refSignature)) {
-            return null;
-        }
-
-        // we need the param key on getBySignature(), since we are already in the resolved method there attach it to signature
-        // param can have dotted values split with \
-        PsiElement[] parameters = ((MethodReference)e).getParameters();
-        if (parameters.length == 1) {
-            PsiElement parameter = parameters[0];
-            if (parameter instanceof StringLiteralExpression) {
-                String param = ((StringLiteralExpression)parameter).getContents();
-                if (StringUtil.isNotEmpty(param)) {
-                    return refSignature + TRIM_KEY + param;
-                }
-            }
-
-            // whitelist here; we can also provide some more but think of performance
-            // Service::NAME and $this->name;
-            if (parameter instanceof PhpReference && (parameter instanceof ClassConstantReference || parameter instanceof FieldReference)) {
-                String signature = ((PhpReference) parameter).getSignature();
-                if (StringUtil.isNotEmpty(signature)) {
-                    return refSignature + TRIM_KEY + signature;
-                }
-            }
-
-        }
-
-        return null;
+        return PhpTypeProviderUtil.getReferenceSignature((MethodReference) e, TRIM_KEY);
     }
 
     @Override
@@ -91,21 +65,12 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
         // get first matched item
         PhpNamedElement phpNamedElement = phpNamedElementCollections.iterator().next();
         if(!(phpNamedElement instanceof Method)) {
-            return Collections.emptySet();
+            return phpNamedElementCollections;
         }
 
-        // we can also pipe php references signatures and resolve them here
-        // overwrite parameter to get string value
-        if(parameter.startsWith("#")) {
-            Collection<? extends PhpNamedElement> signTypes = phpIndex.getBySignature(parameter, null, 0);
-            if(signTypes.size() == 0) {
-                return Arrays.asList(phpNamedElement);
-            }
-
-            parameter = PhpElementsUtil.getStringValue(signTypes.iterator().next());
-            if(parameter == null) {
-                return Arrays.asList(phpNamedElement);
-            }
+        parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
+        if(parameter == null) {
+            return phpNamedElementCollections;
         }
 
         // finally search the classes
@@ -117,7 +82,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
             }
         }
 
-        return Arrays.asList(phpNamedElement);
+        return phpNamedElementCollections;
     }
 
 }

@@ -14,6 +14,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -112,14 +113,21 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return Arrays.asList(method);
         }
 
+        // we can also pipe php references signatures and resolve them here
+        // overwrite parameter to get string value
+        parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
+        if(parameter == null) {
+            return phpNamedElementCollections;
+        }
+
         PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
         if(phpClass == null) {
-            return Arrays.asList(method);
+            return phpNamedElementCollections;
         }
 
         if(method.getName().equals("findAll") || method.getName().equals("findBy")) {
             method.getType().add(phpClass.getFQN() + "[]");
-            return Arrays.asList(method);
+            return phpNamedElementCollections;
         }
 
         return Arrays.asList(phpClass);
