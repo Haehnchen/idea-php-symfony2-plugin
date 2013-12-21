@@ -288,7 +288,7 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public PhpClass getClassInterface(Project project, String className) {
+    static public PhpClass getClassInterface(Project project, @NotNull String className) {
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         PhpClass phpClass = getClass(phpIndex, className);
         if(phpClass != null) {

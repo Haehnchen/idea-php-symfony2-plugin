@@ -16,8 +16,11 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
@@ -39,6 +42,9 @@ public class SymfonyCreateService extends JDialog {
     private JButton generateButton;
     private JButton buttonCopy;
     private JButton closeButton;
+
+    private JRadioButton radioButtonOutXml;
+    private JRadioButton radioButtonOutYaml;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -75,6 +81,13 @@ public class SymfonyCreateService extends JDialog {
             new IsServiceColumn()
         );
 
+        // default is xml
+        radioButtonOutXml.setSelected(true);
+        if(this.psiFile instanceof YAMLFile) {
+            radioButtonOutYaml.setSelected(true);
+        }
+
+
         this.tableView = new TableView<MethodParameter.MethodModelParameter>();
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
@@ -85,8 +98,6 @@ public class SymfonyCreateService extends JDialog {
             .disableUpDownActions()
             .createPanel()
         );
-
-
 
         this.serviceClass = ContainerCollectionResolver.getServices(project);
 
@@ -137,13 +148,38 @@ public class SymfonyCreateService extends JDialog {
             this.textFieldClassName.setText(this.className);
             update();
         }
+
+        radioButtonOutXml.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                generateServiceDefinition();
+            }
+        });
+
+        radioButtonOutYaml.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                generateServiceDefinition();
+            }
+        });
+
     }
 
     private void generateServiceDefinition() {
+
+        if(StringUtils.isBlank(textFieldClassName.getText())) {
+            return;
+        }
+
+        ServiceBuilder.OutputType outputType = ServiceBuilder.OutputType.XML;
+        if(radioButtonOutYaml.isSelected()) {
+            outputType = ServiceBuilder.OutputType.Yaml;
+        }
+
         textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems(), this.project).build(
-            this.psiFile instanceof XmlFile ? ServiceBuilder.OutputType.XML : ServiceBuilder.OutputType.Yaml,
-            textFieldClassName.getText())
-        );
+            outputType,
+            textFieldClassName.getText()
+        ));
     }
 
     private void update() {
@@ -356,20 +392,22 @@ public class SymfonyCreateService extends JDialog {
         }
 
         String type = ((ClassReference) phpPsiElement).getFQN();
-        PhpClass typeClass = PhpElementsUtil.getClassInterface(project, type);
-        if(typeClass != null) {
-            for(Map.Entry<String, ContainerService> entry: serviceClass.entrySet()) {
-
-                PhpClass serviceClass = PhpElementsUtil.getClass(project, entry.getValue().getClassName());
-                if(serviceClass != null) {
-                    if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, typeClass)) {
-                        matchedContainer.add(entry.getValue());
+        if(type != null) {
+            PhpClass typeClass = PhpElementsUtil.getClassInterface(project, type);
+            if(typeClass != null) {
+                for(Map.Entry<String, ContainerService> entry: serviceClass.entrySet()) {
+                    if(entry.getValue().getClassName() != null) {
+                        PhpClass serviceClass = PhpElementsUtil.getClassInterface(project, entry.getValue().getClassName());
+                        if(serviceClass != null) {
+                            if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, typeClass)) {
+                                matchedContainer.add(entry.getValue());
+                            }
+                        }
                     }
-                }
 
+                }
             }
         }
-
 
         if(matchedContainer.size() > 0) {
 
