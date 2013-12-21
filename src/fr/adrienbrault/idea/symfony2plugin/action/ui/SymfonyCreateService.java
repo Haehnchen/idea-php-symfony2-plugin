@@ -319,7 +319,7 @@ public class SymfonyCreateService extends JDialog {
     private class ServiceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, String> {
 
         public ServiceColumn() {
-            super("Method");
+            super("Service");
         }
 
         @Nullable
