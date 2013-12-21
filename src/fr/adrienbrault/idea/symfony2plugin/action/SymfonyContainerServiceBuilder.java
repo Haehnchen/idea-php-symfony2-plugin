@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
@@ -70,9 +71,7 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         symfonyCreateService.init();
 
         Dimension dim = new Dimension();
-        dim.setSize(700, 590);
         symfonyCreateService.setTitle("Create Service");
-        symfonyCreateService.setMinimumSize(dim);
         symfonyCreateService.pack();
         symfonyCreateService.setLocationRelativeTo(null);
         symfonyCreateService.setVisible(true);
@@ -81,3 +80,5 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
     }
 
 }
+
+

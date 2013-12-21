@@ -19,10 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -45,6 +42,7 @@ public class SymfonyCreateService extends JDialog {
 
     private JRadioButton radioButtonOutXml;
     private JRadioButton radioButtonOutYaml;
+    private JTextField textFieldServiceName;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -163,6 +161,23 @@ public class SymfonyCreateService extends JDialog {
             }
         });
 
+        textFieldServiceName.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                generateServiceDefinition();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                generateServiceDefinition();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                generateServiceDefinition();
+            }
+        });
+
     }
 
     private void generateServiceDefinition() {
@@ -178,7 +193,8 @@ public class SymfonyCreateService extends JDialog {
 
         textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems(), this.project).build(
             outputType,
-            textFieldClassName.getText()
+            textFieldClassName.getText(),
+            textFieldServiceName.getText()
         ));
     }
 
@@ -201,6 +217,8 @@ public class SymfonyCreateService extends JDialog {
         if(className.length() == 0) {
             return;
         }
+
+        textFieldServiceName.setText(generateServiceName(className));
 
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
         if(phpClass == null) {
@@ -470,6 +488,17 @@ public class SymfonyCreateService extends JDialog {
 
             return (o1.isWeak() ? 1 : -1);
         }
+    }
+
+    private String generateServiceName(String className) {
+
+        if(className.contains("Bundle")) {
+            String formattedName = className.substring(0, className.indexOf("Bundle") + 6).toLowerCase().replace("\\", "_");
+            formattedName += className.substring(className.indexOf("Bundle") + 6).toLowerCase().replace("\\", ".");
+            return formattedName;
+        }
+
+        return className.toLowerCase().replace("\\", "_");
     }
 
 }

@@ -36,7 +36,7 @@ public class ServiceBuilder {
     }
 
     @Nullable
-    public String build(OutputType outputType, String className) {
+    public String build(OutputType outputType, String className, String serviceName) {
         HashMap<String, ArrayList<MethodParameter.MethodModelParameter>> methods = new HashMap<String, ArrayList<MethodParameter.MethodModelParameter>>();
 
         for(MethodParameter.MethodModelParameter methodModelParameter: this.methodModelParameter) {
@@ -54,11 +54,11 @@ public class ServiceBuilder {
         }
 
         if(outputType == OutputType.Yaml) {
-            return buildYaml(methods, className);
+            return buildYaml(methods, className, serviceName);
         }
 
         if(outputType == OutputType.XML) {
-            return buildXml(methods, className);
+            return buildXml(methods, className, serviceName);
         }
 
         return null;
@@ -128,7 +128,7 @@ public class ServiceBuilder {
     }
 
     @Nullable
-    private String buildXml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className) {
+    private String buildXml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
 
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = null;
@@ -142,7 +142,7 @@ public class ServiceBuilder {
         // root elements
         Document doc = docBuilder.newDocument();
         Element rootElement = doc.createElement("service");
-        rootElement.setAttribute("id", generateServiceName(className));
+        rootElement.setAttribute("id", serviceName);
 
         String classAsParameter = getClassAsParameter(className);
 
@@ -207,12 +207,12 @@ public class ServiceBuilder {
     }
 
 
-    private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className) {
+    private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
         String out = "";
 
         String classAsParameter = getClassAsParameter(className);
 
-        out += generateServiceName(className) + ":\n";
+        out += serviceName + ":\n";
         out += "  class: " + (classAsParameter != null ? "%" + classAsParameter + "%" : className) + "\n";
 
         if(methods.containsKey("__construct")) {
@@ -245,17 +245,6 @@ public class ServiceBuilder {
         }
 
         return out;
-    }
-
-    private String generateServiceName(String className) {
-
-        if(className.contains("Bundle")) {
-            String formattedName = className.substring(0, className.indexOf("Bundle") + 6).toLowerCase().replace("\\", "_");
-            formattedName += className.substring(className.indexOf("Bundle") + 6).toLowerCase().replace("\\", ".");
-            return formattedName;
-        }
-
-        return className.toLowerCase().replace("\\", "_");
     }
 
 }
