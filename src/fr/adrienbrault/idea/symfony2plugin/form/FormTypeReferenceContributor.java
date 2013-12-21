@@ -435,9 +435,10 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     MethodReference methodReference = (MethodReference) parameterList.getContext();
                     Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isCallTo(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm") &&
-                        !interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
-                        ) {
+                    if (!(interfacesUtil.isCallTo(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm") ||
+                        interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormFactoryInterface", "create") ||
+                        interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
+                        )) {
                         return new PsiReference[0];
                     }
 
