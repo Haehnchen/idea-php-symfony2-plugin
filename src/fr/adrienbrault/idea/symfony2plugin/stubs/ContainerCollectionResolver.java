@@ -49,6 +49,11 @@ public class ContainerCollectionResolver {
         return new ServiceCollector(project, collectorSources).resolve(serviceName);
     }
 
+
+    private static GlobalSearchScope getSearchScope(Project project) {
+        return GlobalSearchScope.allScope(project);
+    }
+
     /**
      *
      * Resolve service class name which can be a class name or parameter, unknown parameter returns null
@@ -139,30 +144,12 @@ public class ContainerCollectionResolver {
                     // we have higher priority on compiler, which already has safe value
                     if(!this.services.containsKey(serviceName)) {
 
-                        List<Set<String>> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+                        List<String[]> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
 
                         if(serviceDefinitions.size() == 0) {
                             this.services.put(serviceName, new ContainerService(serviceName, null, true));
                         } else {
-                            for(Set<String> parameterValues: serviceDefinitions) {
-
-                                // 0: class name
-                                // 1: private: (String) "true" if presented
-                                String[] serviceDefinitionArray = parameterValues.toArray(new String[parameterValues.size()]);
-
-                                if(serviceDefinitionArray.length == 0) {
-                                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
-                                }
-
-                                if(serviceDefinitionArray.length == 1) {
-                                    this.services.put(serviceName, new ContainerService(serviceName, getParameterCollector().resolve(serviceDefinitionArray[0]), true));
-                                }
-
-                                if(serviceDefinitionArray.length == 2) {
-                                    this.services.put(serviceName, new ContainerService(serviceName, getParameterCollector().resolve(serviceDefinitionArray[0]), true, "true".equals(serviceDefinitionArray[1])));
-                                }
-
-                            }
+                            convertIndexToService(serviceName, serviceDefinitions);
                         }
 
 
@@ -173,6 +160,35 @@ public class ContainerCollectionResolver {
 
 
             return this.services;
+        }
+
+        private void convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
+            for(String[] serviceDefinitionArray: serviceDefinitions) {
+
+                // 0: class name
+                // 1: private: (String) "true" if presented
+                if(serviceDefinitionArray.length == 0) {
+                    // just a fallback should not happen, but provide at least a service name
+                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                } else {
+
+                    // resolve class value, it can be null or a parameter
+                    String classValue = serviceDefinitionArray[0];
+                    if(classValue != null && !classValue.equals("")) {
+                        classValue = getParameterCollector().resolve(serviceDefinitionArray[0]);
+                    }
+
+                    if(serviceDefinitionArray.length == 1) {
+                        this.services.put(serviceName, new ContainerService(serviceName, classValue, true));
+                    }
+
+                    if(serviceDefinitionArray.length == 2) {
+                        this.services.put(serviceName, new ContainerService(serviceName, classValue, true, "true".equals(serviceDefinitionArray[1])));
+                    }
+
+                }
+
+            }
         }
 
         public Set<String> convertClassNameToServices(String fqnClassName) {
@@ -250,7 +266,11 @@ public class ContainerCollectionResolver {
          *
          */
         @Nullable
-        private String resolve(String paramOrClassName) {
+        private String resolve(@Nullable String paramOrClassName) {
+
+            if(paramOrClassName == null) {
+                return null;
+            }
 
             // strip "%" to get the parameter name
             if(paramOrClassName.length() > 1 && paramOrClassName.startsWith("%") && paramOrClassName.endsWith("%")) {
@@ -296,7 +316,7 @@ public class ContainerCollectionResolver {
 
                         // one parameter definition can be in multiple files, use first match for now
                         // @TODO: at least we should skip null
-                        List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+                        List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, getSearchScope(project));
                         if(parameterValues.size() > 0) {
                             value = parameterValues.get(0);
                         }

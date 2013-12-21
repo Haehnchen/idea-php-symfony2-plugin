@@ -48,6 +48,10 @@ public class ServiceStringLookupElement extends LookupElement {
             presentation.setIcon(Symfony2Icons.SERVICE);
         }
 
+        if(this.containerService != null && this.containerService.isPrivate()) {
+            presentation.setIcon(Symfony2Icons.SERVICE_PRIVATE_OPACITY);
+        }
+
         if(serviceClass != null) {
             // classnames have "\", make it more readable
             if(serviceClass.startsWith("\\")) {

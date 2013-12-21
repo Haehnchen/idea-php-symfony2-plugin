@@ -11,6 +11,8 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
@@ -24,23 +26,24 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 
-public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, Set<String>> {
+public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, String[]> {
 
-    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
+    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
     @Override
-    public DataIndexer<String, Set<String>, FileContent> getIndexer() {
+    public DataIndexer<String, String[], FileContent> getIndexer() {
 
-        return new DataIndexer<String, Set<String>, FileContent>() {
+        return new DataIndexer<String, String[], FileContent>() {
             @NotNull
             @Override
-            public Map<String, Set<String>> map(FileContent inputData) {
+            public Map<String, String[]> map(FileContent inputData) {
 
-                Map<String, Set<String>> map = new THashMap<String, Set<String>>();
+                Map<String, String[]> map = new THashMap<String, String[]>();
 
                 PsiFile psiFile = inputData.getPsiFile();
                 if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
@@ -51,59 +54,53 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
                 }
 
                 if(psiFile instanceof YAMLFile) {
-                    return getServiceMap(map, (YAMLFile) psiFile);
+                    attachServiceMap(map, (YAMLFile) psiFile);
                 }
 
                 if(psiFile instanceof XmlFile) {
-                    return getServiceMap(map, (XmlFile) psiFile);
+                    attachServiceMap(map, (XmlFile) psiFile);
 
                 }
 
                 return map;
             }
 
-            private Map<String, Set<String>> getServiceMap(Map<String, Set<String>> map, XmlFile psiFile) {
-                Map<String, String> localServices = XmlHelper.getLocalServiceSet(psiFile);
-
-                if(localServices == null || localServices.size() == 0) {
-                    return map;
-                }
-
-                for(Map.Entry<String, String> entry: localServices.entrySet()) {
-                    if(StringUtils.isNotEmpty(entry.getKey())) {
-
-                        String className = entry.getValue();
-                        if(StringUtils.isBlank(className)) {
-                            className = null;
-                        }
-
-                        map.put(entry.getKey(), new THashSet<String>(Arrays.asList(className)));
-                    }
-                }
-
-                return map;
+            private void attachServiceMap(Map<String, String[]> map, XmlFile psiFile) {
+                attachServiceMap(map, XmlHelper.getLocalServiceMap(psiFile));
             }
 
-            private Map<String, Set<String>> getServiceMap(Map<String, Set<String>> map, YAMLFile psiFile) {
-                Map<String, String> localServiceMap = YamlHelper.getLocalServiceMap(psiFile);
+            private void attachServiceMap(Map<String, String[]> map, YAMLFile psiFile) {
+                attachServiceMap(map, YamlHelper.getLocalServiceMap(psiFile));
+            }
 
+            private void attachServiceMap(Map<String, String[]> map, Map<String, ContainerService> localServiceMap) {
                 if(localServiceMap.size() == 0) {
-                    return map;
+                    return;
                 }
 
-                for(Map.Entry<String, String> entry: localServiceMap.entrySet()) {
-                    if(StringUtils.isNotEmpty(entry.getKey())) {
+                for(Map.Entry<String, ContainerService> entry: localServiceMap.entrySet()) {
+                    addContainerService(map, entry);
+                }
+            }
 
-                        String className = entry.getValue();
-                        if(StringUtils.isBlank(className)) {
-                            className = null;
-                        }
+            private void addContainerService(Map<String, String[]> map, Map.Entry<String, ContainerService> entry) {
 
-                        map.put(entry.getKey(), new THashSet<String>(Arrays.asList(className)));
-                    }
+                if(StringUtils.isEmpty(entry.getKey())) {
+                    return;
                 }
 
-                return map;
+                String className = entry.getValue().getClassName();
+                if(StringUtils.isBlank(className)) {
+                    className = null;
+                }
+
+                String isPrivate = null;
+                if(entry.getValue().isPrivate()) {
+                    isPrivate = "true";
+                }
+
+                map.put(entry.getKey(), new String[] {className, isPrivate});
+
             }
 
         };
@@ -111,7 +108,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @NotNull
     @Override
-    public ID<String, Set<String>> getName() {
+    public ID<String, String[]> getName() {
         return KEY;
     }
 
@@ -121,7 +118,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
         return this.myKeyDescriptor;
     }
 
-    public DataExternalizer<Set<String>> getValueExternalizer() {
+    public DataExternalizer<String[]> getValueExternalizer() {
         return new MySetDataExternalizer();
     }
 
@@ -148,35 +145,29 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     /**
      * com.jetbrains.php.lang.psi.stubs.indexes.PhpTraitUsageIndex
      */
-    private class MySetDataExternalizer implements DataExternalizer<Set<String>> {
+    private class MySetDataExternalizer implements DataExternalizer<String[]> {
 
         private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
 
-        public synchronized void save(DataOutput out, Set<String> values) throws IOException {
-            Set<String> valueStrings = new HashSet<String>();
-            for(String valueString: values) {
-                if(valueString == null) {
-                    valueString = "";
-                }
-                valueStrings.add(valueString);
-            }
+        public synchronized void save(DataOutput out, String[] values) throws IOException {
 
-            out.writeInt(valueStrings.size());
-            String s;
-            for (Iterator i$ = valueStrings.iterator(); i$.hasNext(); this.myStringEnumerator.save(out, s)) {
-                s = (String) i$.next();
+            out.writeInt(values.length);
+            for(String value: values) {
+                this.myStringEnumerator.save(out, value != null ? value : "");
             }
 
         }
 
-        public synchronized Set<String> read(DataInput in) throws IOException {
-            THashSet<String> set = new THashSet<String>();
+        public synchronized String[] read(DataInput in) throws IOException {
+            List<String> list = new ArrayList<String>();
             int r = in.readInt();
             while (r > 0) {
-                set.add(this.myStringEnumerator.read(in));
+                list.add(this.myStringEnumerator.read(in));
                 r--;
             }
-            return set;
+
+            System.out.println(Arrays.toString(list.toArray(new String[list.size()])));
+            return list.toArray(new String[list.size()]);
         }
 
     }

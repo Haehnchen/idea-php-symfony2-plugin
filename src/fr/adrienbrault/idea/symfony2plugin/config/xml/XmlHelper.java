@@ -15,6 +15,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagValue;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import gnu.trove.THashMap;
@@ -159,7 +160,7 @@ public class XmlHelper {
     }
 
     @Nullable
-    public static Map<String, String> getLocalServiceSet(PsiFile psiFile) {
+    public static Map<String, ContainerService> getLocalServiceMap(PsiFile psiFile) {
 
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
             return null;
@@ -170,7 +171,7 @@ public class XmlHelper {
             return null;
         }
 
-        Map<String, String> services = new THashMap<String, String>();
+        Map<String, ContainerService> services = new THashMap<String, ContainerService>();
 
         for(XmlTag xmlTag: xmlTags) {
             if(xmlTag.getName().equals("container")) {
@@ -184,14 +185,33 @@ public class XmlHelper {
                                 String serviceNameId = attrValue.getValue();
                                 if(serviceNameId != null) {
 
+                                    // <service ... class="%doctrine.orm.proxy_cache_warmer.class%">
                                     String serviceClassName = null;
-
                                     XmlAttribute attrClass = serviceTag.getAttribute("class");
                                     if(attrClass != null) {
                                         serviceClassName = attrClass.getValue();
                                     }
 
-                                    services.put(serviceNameId, serviceClassName);
+                                    // <service ... public="false" />
+                                    boolean isPrivate = false;
+                                    XmlAttribute publicAttr = serviceTag.getAttribute("public");
+                                    if(publicAttr != null && "false".equals(publicAttr.getValue())) {
+                                        isPrivate = true;
+                                    }
+
+                                    // <service id="doctrine.orm.metadata.annotation_reader" alias="annotation_reader"/>
+                                    // @TODO: resolve alias
+                                    XmlAttribute attrAlias = serviceTag.getAttribute("alias");
+                                    if(attrAlias != null && attrAlias.getValue() != null) {
+                                        serviceNameId = attrAlias.getValue();
+
+                                        // if aliased service is in current file use value; not nice here but a simple workaround
+                                        if(serviceClassName == null && services.containsKey(serviceNameId)) {
+                                            serviceClassName = services.get(serviceNameId).getClassName();
+                                        }
+                                    }
+
+                                    services.put(serviceNameId, new ContainerService(serviceNameId, serviceClassName, true, isPrivate));
                                 }
 
                             }

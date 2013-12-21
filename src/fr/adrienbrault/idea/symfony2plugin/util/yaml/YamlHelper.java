@@ -6,6 +6,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -21,7 +22,7 @@ import java.util.*;
 
 public class YamlHelper {
 
-    static public Map<String, String> getLocalServiceMap(PsiElement psiElement) {
+    static public Map<String, ContainerService> getLocalServiceMap(PsiElement psiElement) {
         return new YamlLocalServiceMap().getLocalServiceMap(psiElement);
     }
 
@@ -201,12 +202,12 @@ public class YamlHelper {
             return null;
         }
 
-        public Map<String, String> getLocalServiceMap(PsiElement psiElement) {
+        public Map<String, ContainerService> getLocalServiceMap(PsiElement psiElement) {
 
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, ContainerService> services = new HashMap<String, ContainerService>();
 
             if(!(psiElement.getContainingFile().getFirstChild() instanceof YAMLDocument)) {
-                return map;
+                return services;
             }
 
             YAMLDocument yamlDocument = (YAMLDocument) psiElement.getContainingFile().getFirstChild();
@@ -214,7 +215,7 @@ public class YamlHelper {
             // get services or parameter key
             YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
             if(yamlKeys == null) {
-                return map;
+                return services;
             }
 
             for(YAMLKeyValue yamlKeyValue : yamlKeys) {
@@ -225,28 +226,46 @@ public class YamlHelper {
                     if(yamlServices != null) {
                         for(YAMLKeyValue yamlServiceKeyValue : yamlServices) {
                             String serviceName = yamlServiceKeyValue.getName();
-                            String serviceClass = "";
+                            String serviceClass = null;
+                            boolean isPrivate = false;
 
                             YAMLKeyValue[] yamlServiceKeys = PsiTreeUtil.getChildrenOfType(yamlServiceKeyValue.getValue(),YAMLKeyValue.class);
                             if(yamlServiceKeys != null) {
-                                String serviceClassName = this.getClassValue(yamlServiceKeyValue);
+
+                                String serviceClassName = this.getKeyValue(yamlServiceKeyValue, "class");
                                 if(serviceClassName != null) {
                                     serviceClass = serviceClassName;
                                 }
+
+                                String serviceIsPublic = this.getKeyValue(yamlServiceKeyValue, "public");
+                                if(serviceIsPublic != null && serviceIsPublic.equals("false")) {
+                                    isPrivate = true;
+                                }
+
+                                String serviceAlias = this.getKeyValue(yamlServiceKeyValue, "alias");
+                                if(serviceAlias != null && serviceAlias.length() > 0) {
+                                    serviceName = serviceAlias;
+
+                                    // if aliased service is in current file use value; not nice here but a simple workaound
+                                    if(serviceClass == null && services.containsKey(serviceName)) {
+                                        serviceClass = services.get(serviceName).getClassName();
+                                    }
+                                }
+
                             }
 
-                            map.put(serviceName, serviceClass);
+                            services.put(serviceName, new ContainerService(serviceName, serviceClass, true, isPrivate));
                         }
                     }
                 }
             }
 
-            return map;
+            return services;
 
         }
 
         @Nullable
-        private String getClassValue(YAMLKeyValue yamlServiceKeyValue) {
+        private String getKeyValue(YAMLKeyValue yamlServiceKeyValue, String keyName) {
 
             YAMLKeyValue yamlServiceKeys[] = PsiTreeUtil.getChildrenOfType(yamlServiceKeyValue.getValue(),YAMLKeyValue.class);
 
@@ -256,7 +275,7 @@ public class YamlHelper {
 
             for(YAMLKeyValue yamlServiceDefKeyValue : yamlServiceKeys) {
                 String name = yamlServiceDefKeyValue.getName();
-                if(name != null && name.equals("class")) {
+                if(name != null && name.equals(keyName)) {
                     return yamlServiceDefKeyValue.getValue().getText();
                 }
             }

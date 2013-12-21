@@ -24,6 +24,8 @@ public class Symfony2Icons {
     public static final Icon SERVICE_TAG = IconLoader.getIcon("icons/service_tag.png");
     public static final Icon EVENT = IconLoader.getIcon("icons/event.png");
 
+    public static final Icon SERVICE_PRIVATE_OPACITY = IconLoader.getIcon("icons/service_private_opacity.png");
+
     public static final Icon SERVICE_LINE_MARKER = IconLoader.getIcon("icons/service_line_marker.png");
     public static final Icon FORM_TYPE_LINE_MARKER = IconLoader.getIcon("icons/form_type_line_marker.png");
     public static final Icon ROUTE_LINE_MARKER = IconLoader.getIcon("icons/route_line_marker.png");
