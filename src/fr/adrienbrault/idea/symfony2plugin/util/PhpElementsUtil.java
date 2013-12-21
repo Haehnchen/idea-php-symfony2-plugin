@@ -23,18 +23,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class PhpElementsUtil {
-    static public List<ResolveResult> getClassInterfaceResolveResult(Project project, String FQNClassOrInterfaceName) {
+    static public List<ResolveResult> getClassInterfaceResolveResult(Project project, String fqnClassOrInterfaceName) {
 
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<PhpClass> phpClasses = phpIndex.getClassesByFQN(FQNClassOrInterfaceName);
-        Collection<PhpClass> phpInterfaces = phpIndex.getInterfacesByFQN(FQNClassOrInterfaceName);
+        // api workaround for at least interfaces
+        if(!fqnClassOrInterfaceName.startsWith("\\")) {
+            fqnClassOrInterfaceName = "\\" + fqnClassOrInterfaceName;
+        }
 
         List<ResolveResult> results = new ArrayList<ResolveResult>();
-        for (PhpClass phpClass : phpClasses) {
+        for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(fqnClassOrInterfaceName)) {
             results.add(new PsiElementResolveResult(phpClass));
-        }
-        for (PhpClass phpInterface : phpInterfaces) {
-            results.add(new PsiElementResolveResult(phpInterface));
         }
 
         return results;
@@ -283,24 +281,26 @@ public class PhpElementsUtil {
 
     @Nullable
     static public PhpClass getInterface(PhpIndex phpIndex, String className) {
+
+        // api workaround
+        if(!className.startsWith("\\")) {
+            className = "\\" + className;
+        }
+
         Collection<PhpClass> classes = phpIndex.getInterfacesByFQN(className);
         return classes.isEmpty() ? null : classes.iterator().next();
     }
 
     @Nullable
     static public PhpClass getClassInterface(Project project, @NotNull String className) {
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        PhpClass phpClass = getClass(phpIndex, className);
-        if(phpClass != null) {
-            return  phpClass;
+
+        // api workaround for at least interfaces
+        if(!className.startsWith("\\")) {
+            className = "\\" + className;
         }
 
-        phpClass = getInterface(phpIndex, className);
-        if(phpClass != null) {
-            return  phpClass;
-        }
-
-        return null;
+        Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAnyByFQN(className);
+        return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
 
     static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {
@@ -562,7 +562,7 @@ public class PhpElementsUtil {
 
         for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>()).getTypes()) {
             if(typeName.startsWith("\\")) {
-                PhpClass phpClass = PhpElementsUtil.getClass(project, typeName);
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, typeName);
                 if(phpClass != null) {
                     phpClasses.add(phpClass);
                 }
