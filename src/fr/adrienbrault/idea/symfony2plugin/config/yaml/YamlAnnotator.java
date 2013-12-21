@@ -83,8 +83,8 @@ public class YamlAnnotator implements Annotator {
 
         String serviceName = getServiceName(psiElement);
 
-        // dont mark only "@" and "@?"
-        if(serviceName.length() < 2) {
+        // dont mark "@", "@?", "@@" escaping and expressions
+        if(serviceName.length() < 2 || serviceName.startsWith("=") || serviceName.startsWith("@")) {
             return;
         }
 
