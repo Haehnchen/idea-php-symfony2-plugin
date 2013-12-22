@@ -26,13 +26,11 @@ import java.util.regex.Pattern;
 public class TranslationPsiParser {
 
     private Project project;
+    private TranslationStringMap translationStringMap;
 
     public TranslationPsiParser(Project project) {
         this.project = project;
-    }
-
-    public TranslationStringMap parse(String file) {
-        return this.parse(new File(file));
+        this.translationStringMap = new TranslationStringMap();
     }
 
     public TranslationStringMap parsePathMatcher(String path) {
@@ -41,39 +39,36 @@ public class TranslationPsiParser {
         File[] files = file.listFiles();
 
         if(null == files) {
-            return new TranslationStringMap();
+            return this.translationStringMap;
         }
 
         for (final File fileEntry : files) {
             if (!fileEntry.isDirectory()) {
                 String fileName = fileEntry.getName();
-                if(fileName.endsWith("php")) {
-                    return this.parse(fileEntry);
+                if(fileName.startsWith("catalogue") && fileName.endsWith("php")) {
+                    this.parse(fileEntry);
                 }
             }
         }
 
-        return new TranslationStringMap();
+        return this.translationStringMap;
     }
 
-    @Nullable
-    public TranslationStringMap parse(File file) {
+    public void parse(File file) {
 
         VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, true);
         if(virtualFile == null) {
             Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + file.getPath());
-            return null;
+            return;
         }
 
         PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
         if(psiFile == null) {
             Symfony2ProjectComponent.getLogger().info("PsiManager missing translation: " + file.getPath());
-            return null;
+            return;
         }
 
         Symfony2ProjectComponent.getLogger().info("update translations: " + file.getPath());
-        TranslationStringMap translationMap = new TranslationStringMap();
-
         Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
 
         Collection<NewExpression> messageCatalogues = PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class);
@@ -84,7 +79,7 @@ public class TranslationPsiParser {
                 if(constructorMethod instanceof Method) {
                     PhpClass phpClass = ((Method) constructorMethod).getContainingClass();
                     if(phpClass != null && symfony2InterfacesUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
-                        this.getTranslationMessages(translationMap, newExpression);
+                        this.getTranslationMessages(newExpression);
                     }
 
                 }
@@ -93,10 +88,9 @@ public class TranslationPsiParser {
 
         }
 
-        return translationMap;
     }
 
-    private void getTranslationMessages(TranslationStringMap translationStringMap, NewExpression newExpression) {
+    private void getTranslationMessages(NewExpression newExpression) {
 
         // first parameter hold our huge translation arrays
         PsiElement[] parameters = newExpression.getParameters();
@@ -109,12 +103,12 @@ public class TranslationPsiParser {
             PhpPsiElement arrayKey = arrayHashElement.getKey();
             if(arrayKey instanceof StringLiteralExpression) {
                 String transDomain = ((StringLiteralExpression) arrayKey).getContents();
-                translationStringMap.addDomain(transDomain);
+                this.translationStringMap.addDomain(transDomain);
 
                 // parse translation keys
                 PhpPsiElement arrayValue = arrayHashElement.getValue();
                 if(arrayValue instanceof ArrayCreationExpression) {
-                    getTransKeys(translationStringMap, transDomain, (ArrayCreationExpression) arrayValue);
+                    getTransKeys(transDomain, (ArrayCreationExpression) arrayValue);
                 }
 
             }
@@ -123,13 +117,13 @@ public class TranslationPsiParser {
 
     }
 
-    private void getTransKeys(TranslationStringMap translationStringMap, String domain, ArrayCreationExpression translationArray) {
+    private void getTransKeys(String domain, ArrayCreationExpression translationArray) {
         Collection<ArrayHashElement> test = PsiTreeUtil.getChildrenOfTypeAsList(translationArray, ArrayHashElement.class);
         for(ArrayHashElement arrayHashElement: test) {
             PhpPsiElement translationKey = arrayHashElement.getKey();
             if(translationKey instanceof StringLiteralExpression) {
                 String transKey = ((StringLiteralExpression) translationKey).getContents();
-                translationStringMap.addString(domain, transKey);
+                this.translationStringMap.addString(domain, transKey);
             }
         }
 

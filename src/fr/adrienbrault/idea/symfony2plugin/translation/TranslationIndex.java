@@ -18,7 +18,6 @@ public class TranslationIndex {
     protected static Map<Project, TranslationIndex> instance = new HashMap<Project, TranslationIndex>();
 
     protected Project project;
-    protected boolean isCacheInvalid = false;
 
     private TranslationStringMap translationStringMap;
     private Long translationStringMapModified;
@@ -53,7 +52,7 @@ public class TranslationIndex {
             return new TranslationStringMap();
         }
 
-        Symfony2ProjectComponent.getLogger().info("update translations: " + translationDirectory.toString());
+        Symfony2ProjectComponent.getLogger().info("translations changed: " + translationDirectory.toString());
 
         this.translationStringMapModified = translationDirectory.lastModified();
         return this.translationStringMap = new TranslationPsiParser(project).parsePathMatcher(translationDirectory.getPath());
@@ -61,13 +60,14 @@ public class TranslationIndex {
 
     protected boolean isCacheValid() {
 
+        // symfony2 recreates translation file on change, so folder modtime is caching indicator
         File translationRootPath = this.getTranslationRoot();
         if (null == translationRootPath) {
-            return this.isCacheInvalid = false;
+            return false;
         }
 
         Long translationModified = translationRootPath.lastModified();
-        return this.isCacheInvalid = translationModified.equals(translationStringMapModified);
+        return translationModified.equals(translationStringMapModified);
     }
 
     @Nullable
