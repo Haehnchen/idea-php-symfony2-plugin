@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
@@ -10,11 +13,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +25,7 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class EntityReference  extends PsiPolyVariantReferenceBase<PsiElement> {
+public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private String entityName;
     private boolean useClassNameAsLookupString = false;
 
