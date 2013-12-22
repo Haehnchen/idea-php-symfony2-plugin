@@ -1,7 +1,7 @@
-<idea-plugin version="2" url="https://github.com/adrienbrault/idea-php-symfony2-plugin">
+<idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.35</version>
+    <version>0.10.36</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -85,7 +85,6 @@
 <ul>
     <li><a href="https://github.com/Haehnchen">Daniel Espendiller</a></li>
     <li><a href="https://github.com/adrienbrault">Adrien Brault</a></li>
-    <li><a href="https://github.com/Lumbendil">Roger Llopart Pla</a></li>
 </ul>
       ]]></description>
 
@@ -94,6 +93,23 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.36</h2>
+<ul>
+    <li>Rewrite of all container stuff, which completely based on index now; with massive performance improvements</li>
+    <li>Add service builder/generator for classes (beta) <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/77">#77</a></li>
+    <li>Add private service indexer <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/197">#197</a></li>
+    <li>Add service parameter indexer</li>
+    <li>Add twig variable completion for class interfaces</li>
+    <li>Add support for "PHP 5.5 class constant" in PhpTypeProvider, so Entity::class in getRepository is possible <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/193">#193</a></li>
+    <li>All PhpTypeProvider support references, not only string parameter</li>
+    <li>Use parameter/service index in ContainerBuilder context and mark them as "weak" service</li>
+    <li>Service LineMarker use service index and provide goto to definition</li>
+    <li>Internal workaround for interface with missing trailing backslash WI-21520</li>
+    <li>Fix symfony2.4 expressions detected as service <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/202">#202</a></li>
+    <li>Replace regular expression translation parser with plain psi collector, also allow multiple translation files #195</li>
+    <li>getRepository provides goto for entity and also repository <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/201">#201</a></li>
+</ul>
 
 <h2>0.10.35</h2>
 <ul>
@@ -239,106 +255,6 @@
     <li>Support for translation_domain inside OptionsResolverInterface:setDefaults</li>
     <li>Hash tag docblocks are now searched on parent methods not only in current file</li>
     <li>New provider for form options</li>
-</ul>
-
-<h2>0.9.18</h2>
-<ul>
-    <li>Directly goto into form options definition not only to method</li>
-    <li>Add form child name (underscore method) support on form builder resolve from setDefaultOptions:data_class</li>
-    <li>Resolve parent calls inside setDefaultOptions eg for getting base form options</li>
-    <li>Fix completion option on incomplete array definition (array key)</li>
-    <li>Add php type resolve on form type parameter to not only support form types aliases</li>
-</ul>
-
-<h2>0.9.17</h2>
-<ul>
-    <li>Refactor of FormTypes reference contributor to provide goto and custom provider</li>
-    <li>Provide <a href="http://symfony2-plugin.espend.de/languages/php/index.html#forms">form extension and default option</a> array key completion / goto inside FormBuilder calls</li>
-</ul>
-
-<h2>0.9.16</h2>
-<ul>
-    <li>Improve twig extension parser to support goto and icons</li>
-    <li>Provide domain goto and completion for twig trans_default_domain tag</li>
-    <li>Add factory_method tag support inside yaml</li>
-    <li>"Create Template" annotator is now also available in php and twig render calls</li>
-</ul>
-
-<h2>0.9.15</h2>
-<ul>
-    <li>Implement method parameter completion / goto on custom signatures</li>
-    <li>Provide method parameter completion / goto on docblock hashtag</li>
-    <li>Update help page for <a href="http://symfony2-plugin.espend.de/extension/method_parameter.html">new features</a></li>
-</ul>
-
-<h2>0.9.14</h2>
-<ul>
-    <li>Fix for Settings saving</li>
-    <li>Support PhpStorm EAP 7 build 130.1293</li>
-    <li>Types for getRepository calls dont need backreferences anymore</li>
-</ul>
-
-<h2>0.9.13</h2>
-<ul>
-    <li>Add multi container support</li>
-    <li>Some improvements for Twig namespace ui</li>
-    <li>Settings ui cleanups and improvements</li>
-    <li>Implement help page with reStructuredText and Sphinx, available on <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">GitHub</a></li>
-    <li>Assets annotator support wildcard folder</li>
-</ul>
-
-<h2>0.9.12</h2>
-<ul>
-    <li>Rework of XML Pattern to not fire on HTML</li>
-    <li>Add local Parameter parser for Yaml</li>
-    <li>Add local Parameter and Service parser for XML</li>
-    <li>Fix all unsecured MethodReference casting</li>
-    <li>Make Symfony "web" and "app" folder configurable in Settings form</li>
-    <li>Introduce a Twig ui to manage template namespace (beta)</li>
-</ul>
-
-<h2>0.9.11</h2>
-<ul>
-    <li>Fix icon issue in PhpStorm 7 EAP</li>
-    <li>Support translation and entity goto / completion in FormTypes arrays</li>
-    <li>Quickfix to not fire plugin completion in HTML content since it also interpreted as XML</li>
-</ul>
-
-<h2>0.9.10</h2>
-<ul>
-    <li>Support Controller:forward in php</li>
-    <li>Resolve repositoryClass on yaml or annotation config</li>
-    <li>Support transchoice in php and twig</li>
-    <li>Use trans_default_domain as fallback translation domain in twig</li>
-    <li>Improvements in twig import, set and macro completion / goto</li>
-    <li>Controller goto and completion for twig controller function</li>
-</ul>
-
-<h2>0.9.9</h2>
-<ul>
-    <li>Fix for parameter completion in yaml</li>
-    <li>Provide global template goto in quoted strings of php and twig files</li>
-    <li>Support completion and types for ObjectManager::find calls</li>
-    <li>Implement twig extension parser to support function and filter completion (need JetBrains fix for full support WI-19022)</li>
-    <li>Reduce build limit to make plugin installable on IntelliJ IDEA 12.1.4</li>
-</ul>
-
-<h2>0.9.8</h2>
-<ul>
-    <li>Activate doctrine entity PhpTypes on default</li>
-    <li>Implement basic event and tag autocomplete in yaml and xml on known container elements</li>
-    <li>Add Service method calls autocomplete in yaml and xml</li>
-    <li>Implement a current file scope service parser for yaml, so private services are detected</li>
-    <li>Add autocomplete for macro imports on "from" tag in twig</li>
-</ul>
-
-<h2>0.9.7</h2>
-<ul>
-    <li>Drop outdated PhpTypeProvider which were removed by PhpStorm 6.0.3</li>
-    <li>Support new PhpTypeProvider2 to resolve ide freeze</li>
-    <li>Fix for twig addPath paths</li>
-    <li>Fix for twig template pattern, so include function is supported again</li>
-    <li>Some smaller pattern fixes in yaml and php</li>
 </ul>
 
 <br/>

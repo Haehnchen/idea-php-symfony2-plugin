@@ -5,6 +5,21 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.36
+* Rewrite of all container stuff, which completely based on index now; with massive performance improvements
+* Add service builder/generator for classes (beta) #77
+* Add private service indexer #197
+* Add service parameter indexer
+* Add twig variable completion for class interfaces
+* Add support for "PHP 5.5 class constant" in PhpTypeProvider, so Entity::class in getRepository is possible #193
+* All PhpTypeProvider support references, not only string parameter
+* Use parameter/service index in ContainerBuilder context and mark them as "weak" service
+* Service LineMarker use service index and provide goto to definition
+* Internal workaround for interface with missing trailing backslash WI-21520
+* Fix symfony2.4 expressions detected as service #202
+* Replace regular expression translation parser with plain psi collector, also allow multiple translation files #195
+* getRepository provides goto for entity and also repository #201
+
 ### 0.10.35
 * Add new method reference provider Parameter #196
 * Add FormFactoryInterface::createForm option keys support
