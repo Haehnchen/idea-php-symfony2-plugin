@@ -1,10 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiReferenceBase;
+import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
@@ -13,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +24,7 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class EntityReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+public class EntityReference  extends PsiPolyVariantReferenceBase<PsiElement> {
     private String entityName;
     private boolean useClassNameAsLookupString = false;
 
@@ -40,16 +38,22 @@ public class EntityReference extends PsiReferenceBase<PsiElement> implements Psi
         entityName = element.getContents();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public PsiElement resolve() {
+    public ResolveResult[] multiResolve(boolean incompleteCode) {
+        List<ResolveResult> results = new ArrayList<ResolveResult>();
+
+        PhpClass phpClass = EntityHelper.getEntityRepositoryClass(getElement().getProject(), this.entityName);
+        if(phpClass != null) {
+            results.add(new PsiElementResolveResult(phpClass));
+        }
 
         PhpClass entity = EntityHelper.resolveShortcutName(getElement().getProject(), this.entityName);
         if(entity != null) {
-            return new PsiElementResolveResult(entity).getElement();
+            results.add(new PsiElementResolveResult(entity));
         }
 
-        return null;
+        return results.toArray(new ResolveResult[results.size()]);
     }
 
     @NotNull
