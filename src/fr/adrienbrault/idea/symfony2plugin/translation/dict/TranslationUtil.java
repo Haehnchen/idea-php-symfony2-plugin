@@ -17,6 +17,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class TranslationUtil {
 
@@ -70,7 +71,12 @@ public class TranslationUtil {
             return false;
         }
 
-        return TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName).contains(keyName);
+        Set<String> domainMap = TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName);
+        if(domainMap == null) {
+            return false;
+        }
+
+        return domainMap.contains(keyName);
     }
 
 }

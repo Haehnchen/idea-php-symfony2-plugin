@@ -1,0 +1,138 @@
+package fr.adrienbrault.idea.symfony2plugin.translation.parser;
+
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
+public class TranslationPsiParser {
+
+    private Project project;
+
+    public TranslationPsiParser(Project project) {
+        this.project = project;
+    }
+
+    public TranslationStringMap parse(String file) {
+        return this.parse(new File(file));
+    }
+
+    public TranslationStringMap parsePathMatcher(String path) {
+
+        File file = new File(path);
+        File[] files = file.listFiles();
+
+        if(null == files) {
+            return new TranslationStringMap();
+        }
+
+        for (final File fileEntry : files) {
+            if (!fileEntry.isDirectory()) {
+                String fileName = fileEntry.getName();
+                if(fileName.endsWith("php")) {
+                    return this.parse(fileEntry);
+                }
+            }
+        }
+
+        return new TranslationStringMap();
+    }
+
+    @Nullable
+    public TranslationStringMap parse(File file) {
+
+        VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, true);
+        if(virtualFile == null) {
+            Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + file.getPath());
+            return null;
+        }
+
+        PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
+        if(psiFile == null) {
+            Symfony2ProjectComponent.getLogger().info("PsiManager missing translation: " + file.getPath());
+            return null;
+        }
+
+        Symfony2ProjectComponent.getLogger().info("update translations: " + file.getPath());
+        TranslationStringMap translationMap = new TranslationStringMap();
+
+        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
+
+        Collection<NewExpression> messageCatalogues = PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class);
+        for(NewExpression newExpression: messageCatalogues) {
+            ClassReference classReference = newExpression.getClassReference();
+            if(classReference != null) {
+                PsiElement constructorMethod = classReference.resolve();
+                if(constructorMethod instanceof Method) {
+                    PhpClass phpClass = ((Method) constructorMethod).getContainingClass();
+                    if(phpClass != null && symfony2InterfacesUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
+                        this.getTranslationMessages(translationMap, newExpression);
+                    }
+
+                }
+
+            }
+
+        }
+
+        return translationMap;
+    }
+
+    private void getTranslationMessages(TranslationStringMap translationStringMap, NewExpression newExpression) {
+
+        // first parameter hold our huge translation arrays
+        PsiElement[] parameters = newExpression.getParameters();
+        if(parameters.length < 2 || !(parameters[1] instanceof ArrayCreationExpression)) {
+            return;
+        }
+
+        Collection<ArrayHashElement> domainArrays = PsiTreeUtil.getChildrenOfTypeAsList(parameters[1], ArrayHashElement.class);
+        for(ArrayHashElement arrayHashElement: domainArrays) {
+            PhpPsiElement arrayKey = arrayHashElement.getKey();
+            if(arrayKey instanceof StringLiteralExpression) {
+                String transDomain = ((StringLiteralExpression) arrayKey).getContents();
+                translationStringMap.addDomain(transDomain);
+
+                // parse translation keys
+                PhpPsiElement arrayValue = arrayHashElement.getValue();
+                if(arrayValue instanceof ArrayCreationExpression) {
+                    getTransKeys(translationStringMap, transDomain, (ArrayCreationExpression) arrayValue);
+                }
+
+            }
+
+        }
+
+    }
+
+    private void getTransKeys(TranslationStringMap translationStringMap, String domain, ArrayCreationExpression translationArray) {
+        Collection<ArrayHashElement> test = PsiTreeUtil.getChildrenOfTypeAsList(translationArray, ArrayHashElement.class);
+        for(ArrayHashElement arrayHashElement: test) {
+            PhpPsiElement translationKey = arrayHashElement.getKey();
+            if(translationKey instanceof StringLiteralExpression) {
+                String transKey = ((StringLiteralExpression) translationKey).getContents();
+                translationStringMap.addString(domain, transKey);
+            }
+        }
+
+    }
+
+}

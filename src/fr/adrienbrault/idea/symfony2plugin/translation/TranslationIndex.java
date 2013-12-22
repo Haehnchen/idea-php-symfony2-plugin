@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationPsiParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +56,7 @@ public class TranslationIndex {
         Symfony2ProjectComponent.getLogger().info("update translations: " + translationDirectory.toString());
 
         this.translationStringMapModified = translationDirectory.lastModified();
-        return this.translationStringMap = new TranslationStringParser().parsePathMatcher(translationDirectory.getPath());
+        return this.translationStringMap = new TranslationPsiParser(project).parsePathMatcher(translationDirectory.getPath());
     }
 
     protected boolean isCacheValid() {

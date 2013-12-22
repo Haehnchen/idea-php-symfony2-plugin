@@ -44,10 +44,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -81,7 +78,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     PsiElement psiElement = parameters.getPosition();
                     String domainName =  TwigUtil.getPsiElementTranslationDomain(psiElement);
 
-                    ArrayList<String> domainMap = map.getDomainMap(domainName);
+                    Collection<String> domainMap = map.getDomainMap(domainName);
                     if(domainMap == null) {
                         return;
                     }

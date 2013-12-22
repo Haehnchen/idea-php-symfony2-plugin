@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,43 +10,41 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TranslationStringMap {
 
-    private Map<String, String> stringMap;
-    private Map<String, ArrayList> domainMap;
+    private Map<String, Set<String>> domainMap;
 
     public TranslationStringMap() {
-        this.stringMap = new ConcurrentHashMap<String, String>();
-        this.domainMap = new ConcurrentHashMap<String, ArrayList>();
+        this.domainMap = new ConcurrentHashMap<String, Set<String>>();
     }
 
-    public Map<String, String> getStringMap() {
-        return stringMap;
-    }
-
-    public ArrayList<String> getDomainMap(String domainKey) {
+    @Nullable
+    public Set<String> getDomainMap(String domainKey) {
 
         if(!domainMap.containsKey(domainKey)) {
-            return new ArrayList<String>();
+            return null;
         }
 
         return domainMap.get(domainKey);
     }
 
-    void addString(String domain, String stringId) {
+    public void addString(String domain, String stringId) {
 
         if(!domainMap.containsKey(domain)) {
-            domainMap.put(domain, new ArrayList<String>());
+            domainMap.put(domain, new HashSet<String>());
         }
 
-        stringMap.put(domain + ":" + stringId, stringId);
-
-        if(!domainMap.get(domain).contains(stringId)) {
-            domainMap.get(domain).add(stringId);
-        }
-
+        domainMap.get(domain).add(stringId);
     }
 
     public Set<String> getDomainList() {
         return domainMap.keySet();
+    }
+
+    public void addDomain(String domain) {
+
+        if(!domainMap.containsKey(domain)) {
+            domainMap.put(domain, new HashSet<String>());
+        }
+
     }
 
 

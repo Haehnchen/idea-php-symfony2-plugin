@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,7 +49,11 @@ public class TranslationReference extends PsiPolyVariantReferenceBase<PsiElement
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
         TranslationStringMap map = TranslationIndex.getInstance(getElement().getProject()).getTranslationMap();
-        ArrayList<String> domainMap = map.getDomainMap(domainName);
+        Collection<String> domainMap = map.getDomainMap(domainName);
+        if(domainMap == null) {
+            return lookupElements.toArray();
+        }
+
         for(String stringId : domainMap) {
             lookupElements.add(new TranslatorLookupElement(stringId, domainName));
         }
