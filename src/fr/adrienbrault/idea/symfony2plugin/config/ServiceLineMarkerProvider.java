@@ -75,7 +75,12 @@ public class ServiceLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
     private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        PsiElement[] psiElements = ServiceIndexUtil.findServiceDefinitions((PhpClass) psiElement.getContext());
+        PsiElement phpClassContext = psiElement.getContext();
+        if(!(phpClassContext instanceof PhpClass)) {
+            return;
+        }
+
+        PsiElement[] psiElements = ServiceIndexUtil.findServiceDefinitions((PhpClass) phpClassContext);
         if(psiElements.length == 0) {
             return;
         }
