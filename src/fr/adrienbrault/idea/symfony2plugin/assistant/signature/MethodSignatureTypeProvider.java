@@ -5,13 +5,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -67,6 +65,15 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
                         return refSignature + TRIM_KEY + param;
                     }
                 }
+
+                // @TODO: use PhpTypeProviderUtil
+                if (parameter instanceof PhpReference && (parameter instanceof ClassConstantReference || parameter instanceof FieldReference)) {
+                    String signature = ((PhpReference) parameter).getSignature();
+                    if (StringUtil.isNotEmpty(signature)) {
+                        return refSignature + TRIM_KEY + signature;
+                    }
+                }
+
             }
         }
 
@@ -114,6 +121,11 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
         phpNamedElements.add(phpNamedElement);
 
         PhpTypeSignatureInterface[] signatureTypeProviders = PhpTypeSignatureTypes.DEFAULT_PROVIDER;
+
+        parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
+        if(parameter == null) {
+            return phpNamedElementCollections;
+        }
 
         for(MethodSignatureSetting matchedSignature: signatures) {
             for(PhpTypeSignatureInterface signatureTypeProvider: signatureTypeProviders) {
