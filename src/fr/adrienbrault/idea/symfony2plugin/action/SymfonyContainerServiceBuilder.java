@@ -1,11 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.jetbrains.php.lang.psi.PhpFile;
@@ -31,9 +30,11 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return;
         }
 
-        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
+        // only since phpstorm 7.1; PlatformDataKeys.PSI_FILE
+        Object psiFile = event.getData(DataKey.create("psi.File"));
+
         if(psiFile instanceof PhpFile) {
-            PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
+            Object psiElement = event.getData(DataKey.create("psi.Element"));
             if(!(psiElement instanceof PhpClass)) {
                 this.setStatus(event, false);
             }
@@ -53,16 +54,17 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
     public void actionPerformed(AnActionEvent event) {
 
-        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
+        // only since phpstorm 7.1; PlatformDataKeys.PSI_FILE
+        Object psiFile = event.getData(DataKey.create("psi.File"));
 
         if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
             return;
         }
 
-        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject(), psiFile);
+        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject(), (PsiFile) psiFile);
 
         if(psiFile instanceof PhpFile) {
-            PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
+            Object psiElement = event.getData(DataKey.create("psi.Element"));
             if(psiElement instanceof PhpClass) {
                 symfonyCreateService.setClassName(((PhpClass) psiElement).getPresentableFQN());
             }
