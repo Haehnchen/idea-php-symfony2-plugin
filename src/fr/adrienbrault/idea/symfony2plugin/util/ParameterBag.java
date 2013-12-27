@@ -23,4 +23,8 @@ public class ParameterBag {
         return PsiElementUtils.getMethodParameter(psiElement);
     }
 
+    public PsiElement getElement() {
+        return this.psiElement;
+    }
+
 }

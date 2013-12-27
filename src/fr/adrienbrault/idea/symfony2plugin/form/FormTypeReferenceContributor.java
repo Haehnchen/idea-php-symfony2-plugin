@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -16,11 +15,15 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -363,29 +366,17 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 @Override
                 public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
+                        .withSignature("\\Symfony\\Component\\Form\\FormInterface", "get")
+                        .withSignature("\\Symfony\\Component\\Form\\FormInterface", "has")
+                        .match();
+
+                    if(methodMatchParameter == null) {
                         return new PsiReference[0];
                     }
 
-                    ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
-                    if (parameterList == null) {
-                        return new PsiReference[0];
-                    }
-
-                    if(!(parameterList.getContext() instanceof MethodReference)) {
-                        return new PsiReference[0];
-                    }
-
-                    MethodReference methodReference = (MethodReference) parameterList.getContext();
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormInterface", "get") &&
-                        !interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormInterface", "has")
-                        ) {
-                        
-                        return new PsiReference[0];
-                    }
-
-                    Method method = FormUtil.resolveFormGetterCallMethod(methodReference);
+                    Method method = FormUtil.resolveFormGetterCallMethod(methodMatchParameter.getMethodReference());
                     if(method == null) {
                         return new PsiReference[0];
                     }
@@ -410,46 +401,19 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 @Override
                 public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 2)
+                        .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
+                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
+                        .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
+                        .match();
+
+                    if(methodMatchParameter == null) {
                         return new PsiReference[0];
                     }
 
-                    ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
-                    if(arrayCreationExpression == null) {
-                        return new PsiReference[0];
-                    }
-
-                    PsiElement parameterList = arrayCreationExpression.getContext();
-                    if (!(parameterList instanceof ParameterList)) {
-                        return new PsiReference[0];
-                    }
-
-                    PsiElement methodParameters[] = ((ParameterList) parameterList).getParameters();
-                    if(methodParameters.length < 2) {
-                        return new PsiReference[0];
-                    }
-
-                    if(!(parameterList.getContext() instanceof MethodReference)) {
-                        return new PsiReference[0];
-                    }
-
-                    MethodReference methodReference = (MethodReference) parameterList.getContext();
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!(interfacesUtil.isCallTo(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm") ||
-                        interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormFactoryInterface", "create") ||
-                        interfacesUtil.isCallTo(methodReference, "\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
-                        )) {
-                        return new PsiReference[0];
-                    }
-
-                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
-                    if(currentIndex == null || currentIndex.getIndex() != 2) {
-                        return new PsiReference[0];
-                    }
-
-                    PsiElement formType = methodParameters[0];
+                    PsiElement formType = methodMatchParameter.getParameters()[0];
                     PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
-                    if(phpClass == null) {
+                    if (phpClass == null) {
                         return new PsiReference[]{
                             new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form")
                         };
