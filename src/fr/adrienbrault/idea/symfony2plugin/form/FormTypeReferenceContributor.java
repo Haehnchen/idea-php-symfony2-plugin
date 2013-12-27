@@ -116,38 +116,30 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
+        /**
+         * FormBuilderInterface:add("", "type")
+         */
         psiReferenceRegistrar.registerReferenceProvider(
-                PlatformPatterns.psiElement(StringLiteralExpression.class),
-                new PsiReferenceProvider() {
-                    @NotNull
-                    @Override
-                    public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
-                            return new PsiReference[0];
-                        }
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                        ParameterList parameterList = (ParameterList) psiElement.getContext();
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
+                        .withSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "add")
+                        .withSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "create")
+                        .match();
 
-                        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
-                            return new PsiReference[0];
-                        }
-
-                        MethodReference method = (MethodReference) parameterList.getContext();
-                        Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                        if (!interfacesUtil.isFormBuilderFormTypeCall(method)) {
-                            return new PsiReference[0];
-                        }
-
-                        // only use second parameter
-                        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-                        if(currentIndex == null || currentIndex.getIndex() != 1) {
-                            return new PsiReference[0];
-                        }
-
-                        return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement) };
+                    if(methodMatchParameter == null) {
+                        return new PsiReference[0];
                     }
 
+                    return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement) };
+
                 }
+
+            }
 
         );
 
@@ -411,18 +403,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    PsiElement formType = methodMatchParameter.getParameters()[0];
-                    PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
-                    if (phpClass == null) {
-                        return new PsiReference[]{
-                            new FormExtensionKeyReference((StringLiteralExpression) psiElement, "form")
-                        };
-                    }
-
-                    return new PsiReference[]{
-                        new FormExtensionKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN()),
-                        new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN())
-                    };
+                    return getFormPsiReferences((StringLiteralExpression) psiElement, methodMatchParameter.getParameters()[0]);
 
                 }
 
@@ -430,6 +411,76 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
+        /**
+         * $options lookup
+         * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
+         */
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 3)
+                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
+                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                        .match();
+
+                    if(methodMatchParameter == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return getFormPsiReferences((StringLiteralExpression) psiElement, methodMatchParameter.getParameters()[1]);
+
+                }
+
+            }
+
+        );
+
+        /**
+         * $type lookup
+         * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
+         */
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
+                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
+                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                        .match();
+
+                    if(methodMatchParameter == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement) };
+
+                }
+
+            }
+
+        );
+
+    }
+
+    private PsiReference[] getFormPsiReferences(StringLiteralExpression psiElement, PsiElement formType) {
+        PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
+        if (phpClass == null) {
+            return new PsiReference[]{
+                new FormExtensionKeyReference(psiElement, "form")
+            };
+        }
+
+        return new PsiReference[]{
+            new FormExtensionKeyReference(psiElement, phpClass.getPresentableFQN()),
+            new FormDefaultOptionsKeyReference(psiElement, phpClass.getPresentableFQN())
+        };
     }
 
 }
