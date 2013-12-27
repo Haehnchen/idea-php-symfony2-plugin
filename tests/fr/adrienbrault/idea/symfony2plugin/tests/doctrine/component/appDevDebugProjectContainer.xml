@@ -39,5 +39,14 @@
       </argument>
       <argument type="service" id="service_container"/>
     </service>
+      <service id="doctrine_mongodb.odm.default_configuration" class="Doctrine\ODM\MongoDB\Configuration">
+          <call method="setDocumentNamespaces">
+              <argument type="collection">
+                  <argument key="AcmeProjectFrontendBundle">AcmeProject\FrontendBundle\Document</argument>
+                  <argument key="AcmeProjectApiBundle">AcmeProject\ApiBundle\Document</argument>
+                  <argument key="AcmeProjectCoreBundle">AcmeProject\CoreBundle\Document</argument>
+              </argument>
+          </call>
+      </service>
   </services>
 </container>
