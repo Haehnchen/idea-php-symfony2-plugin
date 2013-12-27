@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
@@ -17,10 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,6 +26,7 @@ import java.util.Map;
 public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private String entityName;
     private boolean useClassNameAsLookupString = false;
+    private List<DoctrineTypes.Manager> doctrineManagers;
 
     public EntityReference(@NotNull StringLiteralExpression element, boolean useClassNameAsLookupString) {
         this(element);
@@ -37,6 +36,10 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     public EntityReference(@NotNull StringLiteralExpression element) {
         super(element);
         entityName = element.getContents();
+
+        this.doctrineManagers = new ArrayList<DoctrineTypes.Manager>();
+        this.doctrineManagers.add(DoctrineTypes.Manager.ORM);
+        this.doctrineManagers.add(DoctrineTypes.Manager.ODM);
     }
 
     @NotNull
@@ -63,7 +66,15 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
-        Map<String, String> entityNamespaces = ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap();
+        Map<String, String> entityNamespaces = new HashMap<String, String>();
+
+        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ORM)) {
+            entityNamespaces.putAll(ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap());
+        }
+
+        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ODM)) {
+            entityNamespaces.putAll(ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap());
+        }
 
         List<LookupElement> results = new ArrayList<LookupElement>();
 
