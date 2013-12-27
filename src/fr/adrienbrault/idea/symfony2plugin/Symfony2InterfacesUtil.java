@@ -8,11 +8,14 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -98,10 +101,8 @@ public class Symfony2InterfacesUtil {
     }
 
     public boolean isFormBuilderFormTypeCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "add"),
-                getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
-        });
+        List<Method> methods = getCallToSignatureInterfaceMethods(e, getFormBuilderInterface());
+        return isCallTo(e, methods.toArray( new Method[methods.size()]));
     }
 
     protected boolean isCallTo(PsiElement e, Method expectedMethod) {
@@ -281,6 +282,28 @@ public class Symfony2InterfacesUtil {
             getInterfaceMethod(e.getProject(), ClassInterfaceName, methodName),
             getClassMethod(e.getProject(), ClassInterfaceName, methodName),
         });
+    }
+
+    private List<Method> getCallToSignatureInterfaceMethods(PsiElement e, Collection<MethodMatcher.CallToSignature> signatures) {
+        List<Method> methods = new ArrayList<Method>();
+        for(MethodMatcher.CallToSignature signature: signatures) {
+            Method method = getInterfaceMethod(e.getProject(), signature.getInstance(), signature.getMethod());
+            if(method != null) {
+                methods.add(method);
+            }
+        }
+        return methods;
+    }
+
+    public static Collection<MethodMatcher.CallToSignature> getFormBuilderInterface() {
+        Collection<MethodMatcher.CallToSignature> signatures = new ArrayList<MethodMatcher.CallToSignature>();
+
+        signatures.add(new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "add"));
+        signatures.add(new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "create"));
+        signatures.add(new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "add"));
+        signatures.add(new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "create"));
+
+        return signatures;
     }
 
 }

@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class MethodMatcher {
@@ -164,6 +165,11 @@ public class MethodMatcher {
 
         public AbstractMethodParameterMatcher withSignature(String instance, String method) {
             this.signatures.add(new CallToSignature(instance, method));
+            return this;
+        }
+
+        public AbstractMethodParameterMatcher withSignature(Collection<CallToSignature> signatures) {
+            this.signatures.addAll(signatures);
             return this;
         }
 
