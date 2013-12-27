@@ -322,7 +322,8 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.PhpClassServiceGotoDeclarationHandler"/>
 
-        <typedHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.WorkaroundTwigTypedHandler"/>
+        <completion.confidence language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpParameterStringCompletionConfidence"
+                               id="asTrue" order="first"/>
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
