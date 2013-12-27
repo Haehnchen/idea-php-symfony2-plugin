@@ -8,12 +8,10 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.ParameterListOwner;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -88,6 +86,17 @@ public class PsiElementUtils {
         }
 
         return parameters[index];
+    }
+
+    @Nullable
+    public static ParameterBag getCurrentParameterIndex(Parameter parameter) {
+
+        PsiElement parameterList = parameter.getContext();
+        if(!(parameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        return getCurrentParameterIndex(((ParameterList) parameterList).getParameters(), parameter);
     }
 
     @Nullable

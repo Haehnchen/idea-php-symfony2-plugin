@@ -466,6 +466,75 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
+        /**
+         * $options
+         * public function buildForm(FormBuilderInterface $builder, array $options) {
+         *   $options['key']
+         * }
+         */
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement context = psiElement.getContext();
+                    if(!(context instanceof ArrayIndex)) {
+                        return new PsiReference[0];
+                    }
+
+                    PhpPsiElement variable = ((ArrayIndex) context).getPrevPsiSibling();
+                    if(!(variable instanceof Variable)) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement parameter = ((Variable) variable).resolve();
+
+                    if(!(parameter instanceof Parameter)) {
+                        return new PsiReference[0];
+                    }
+
+                    // all options keys are at parameter = 1 by now
+                    ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex((Parameter) parameter);
+                    if(parameterBag == null || parameterBag.getIndex() != 1) {
+                        return new PsiReference[0];
+                    }
+
+                    Method method = PsiTreeUtil.getParentOfType(parameter, Method.class);
+                    if(method == null) {
+                        return new PsiReference[0];
+                    }
+
+                    Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
+                    if(!symfony2InterfacesUtil.isCallTo(method, "\\opwoco\\Apptitan\\CoreBundle\\Form\\MenuItemType", "buildForm") &&
+                        !symfony2InterfacesUtil.isCallTo(method, "\\opwoco\\Apptitan\\CoreBundle\\Form\\MenuItemType", "buildView") &&
+                        !symfony2InterfacesUtil.isCallTo(method, "\\opwoco\\Apptitan\\CoreBundle\\Form\\MenuItemType", "finishView"))
+                    {
+                        return new PsiReference[0];
+                    }
+
+                    PhpClass phpClass = method.getContainingClass();
+                    if(phpClass == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{
+                        new FormExtensionKeyReference((StringLiteralExpression) psiElement),
+                        new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN())
+                    };
+
+                }
+
+            }
+
+        );
+
+
     }
 
     private PsiReference[] getFormPsiReferences(StringLiteralExpression psiElement, PsiElement formType) {
