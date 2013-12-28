@@ -372,6 +372,7 @@
 
         <action id="Symfony.Menu" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder">
             <add-to-group group-id="EditorPopupMenu"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
 
         <group id="Symfony2Group" text="Symfony2" popup="true" icon="SymfonyIcons.Symfony">

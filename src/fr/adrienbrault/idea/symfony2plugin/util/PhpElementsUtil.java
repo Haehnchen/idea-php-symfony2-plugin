@@ -14,6 +14,7 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import org.apache.commons.lang.StringUtils;
@@ -570,6 +571,12 @@ public class PhpElementsUtil {
         }
 
         return phpClasses;
+    }
+
+    @Nullable
+    public static PhpClass getFirstClassFromFile(PhpFile phpFile) {
+        Collection<PhpClass> phpClasses = PsiTreeUtil.collectElementsOfType(phpFile, PhpClass.class);
+        return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
 
 }

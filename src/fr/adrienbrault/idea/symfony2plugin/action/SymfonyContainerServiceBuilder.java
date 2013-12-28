@@ -6,12 +6,15 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.awt.*;
@@ -21,6 +24,8 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
     public SymfonyContainerServiceBuilder() {
         super("Create Service", "Generate a new Service definition from class name", Symfony2Icons.SYMFONY);
     }
+
+
 
     public void update(AnActionEvent event) {
         Project project = event.getData(PlatformDataKeys.PROJECT);
@@ -34,10 +39,20 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         Object psiFile = event.getData(DataKey.create("psi.File"));
 
         if(psiFile instanceof PhpFile) {
-            Object psiElement = event.getData(DataKey.create("psi.Element"));
-            if(!(psiElement instanceof PhpClass)) {
-                this.setStatus(event, false);
+
+            if("ProjectViewPopup".equals(event.getPlace())) {
+
+                if(PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile) == null) {
+                    this.setStatus(event, false);
+                }
+
+            } else {
+                Object psiElement = event.getData(DataKey.create("psi.Element"));
+                if(!(psiElement instanceof PhpClass)) {
+                    this.setStatus(event, false);
+                }
             }
+
             return;
         }
 
@@ -64,10 +79,20 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject(), (PsiFile) psiFile);
 
         if(psiFile instanceof PhpFile) {
-            Object psiElement = event.getData(DataKey.create("psi.Element"));
-            if(psiElement instanceof PhpClass) {
-                symfonyCreateService.setClassName(((PhpClass) psiElement).getPresentableFQN());
+
+            if("ProjectViewPopup".equals(event.getPlace())) {
+                PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
+                if(phpClass != null) {
+                    symfonyCreateService.setClassName(phpClass.getPresentableFQN());
+                }
+            } else {
+                Object psiElement = event.getData(DataKey.create("psi.Element"));
+                if(psiElement instanceof PhpClass) {
+                    symfonyCreateService.setClassName(((PhpClass) psiElement).getPresentableFQN());
+                }
             }
+
+
         }
 
         symfonyCreateService.init();
