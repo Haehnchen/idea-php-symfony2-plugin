@@ -9,8 +9,7 @@ import com.intellij.psi.PsiManager;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TwigPathContentIterator implements ContentIterator {
 
@@ -22,9 +21,17 @@ public class TwigPathContentIterator implements ContentIterator {
     private boolean withPhp = false;
     private boolean withTwig = true;
 
+    private Set<String> workedOn = new HashSet<String>();
+
     public TwigPathContentIterator(Project project, TwigPath twigPath) {
         this.twigPath = twigPath;
         this.project = project;
+    }
+
+    public void processCollection(Collection<VirtualFile> virtualFiles) {
+        for(VirtualFile virtualFile: virtualFiles) {
+            processFile(virtualFile);
+        }
     }
 
     public boolean processFile(VirtualFile virtualFile) {
@@ -33,6 +40,14 @@ public class TwigPathContentIterator implements ContentIterator {
         if(!this.isProcessable(virtualFile)) {
             return true;
         }
+
+        // prevent process double file if processCollection and ContentIterator is used in one instance
+        String filePath = virtualFile.getPath();
+        if(workedOn.contains(filePath)) {
+            return true;
+        }
+
+        workedOn.add(filePath);
 
         VirtualFile virtualDirectoryFile = twigPath.getDirectory(this.project);
         if(virtualDirectoryFile == null) {
@@ -81,6 +96,10 @@ public class TwigPathContentIterator implements ContentIterator {
     }
 
     private boolean isProcessable(VirtualFile virtualFile) {
+
+        if(virtualFile.isDirectory()) {
+            return false;
+        }
 
         if(withTwig && virtualFile.getFileType() instanceof TwigFileType) {
             return true;

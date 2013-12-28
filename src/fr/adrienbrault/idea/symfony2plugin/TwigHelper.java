@@ -8,8 +8,14 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.search.FileTypeIndex;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.GlobalSearchScopes;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
@@ -37,17 +43,36 @@ public class TwigHelper {
 
     synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
         Map<String, PsiFile> results = new HashMap<String, PsiFile>();
-        ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
 
         ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
         twigPaths.addAll(getTwigNamespaces(project));
+
+        if(twigPaths.size() == 0) {
+            return results;
+        }
+
+        ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
+        FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
 
         for (TwigPath twigPath : twigPaths) {
             if(twigPath.isEnabled()) {
                 VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
                 if(virtualDirectoryFile != null) {
+
                     TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
+
+                    // @TODO: find any overall file index
+
+                    // we cant not fully rely on processCollection, we dont have all files in there
+                    // so we call this before, as this one looks faster
                     fileIndex.iterateContentUnderDirectory(virtualDirectoryFile, twigPathContentIterator);
+
+                    // in phpstorm 7.1 vendor libs are not in index, they are added to Directory ignore list automatically
+                    // so use here a workaround
+                    GlobalSearchScope dirScope = GlobalSearchScopes.directoryScope(project, virtualDirectoryFile, true);
+                    twigPathContentIterator.processCollection(fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, TwigFileType.INSTANCE, dirScope));
+                    twigPathContentIterator.processCollection(fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, PhpFileType.INSTANCE, dirScope));
+
                     results.putAll(twigPathContentIterator.getResults());
                 }
             }
