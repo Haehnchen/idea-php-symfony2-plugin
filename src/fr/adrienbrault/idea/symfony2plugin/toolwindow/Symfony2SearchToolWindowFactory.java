@@ -13,13 +13,10 @@ import javax.swing.*;
 
 public class Symfony2SearchToolWindowFactory implements ToolWindowFactory, Condition<Project>, DumbAware {
 
-    private static final Icon TOOLWINDOW_ICON = Symfony2Icons.SYMFONY_TOOL_WINDOW;
-
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
         Symfony2SearchPane symfony2SearchPane = new Symfony2SearchPane(project);
         setUpContent((ToolWindowEx)toolWindow, symfony2SearchPane);
-        toolWindow.setIcon(TOOLWINDOW_ICON);
     }
 
     private static void setUpContent(ToolWindowEx toolWindow, Symfony2SearchPane symfony2SearchPane) {

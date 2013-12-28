@@ -352,7 +352,7 @@
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
         <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
 
-        <toolWindow id="Symfony2" anchor="left" secondary="false"
+        <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     />
@@ -369,14 +369,18 @@
         </component>
     </project-components>
     <actions>
+
         <action id="Symfony.Menu" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder">
-            <!--
-            <add-to-group group-id="MainMenu" anchor="last"  />
-            <add-to-group anchor="after" group-id="ShowPopupMenu" relative-to-action="ShowPopupMenu"/>
-            <action id="Symfony.CreateService" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder" text="Text _Boxes" description="A test menu item" />
-            -->
             <add-to-group group-id="EditorPopupMenu"/>
         </action>
+
+        <group id="Symfony2Group" text="Symfony2" popup="true" icon="SymfonyIcons.Symfony">
+            <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
+            <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
+            <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
+            <add-to-group group-id="NewGroup" anchor="last"/>
+        </group>
+
     </actions>
 </idea-plugin>
 

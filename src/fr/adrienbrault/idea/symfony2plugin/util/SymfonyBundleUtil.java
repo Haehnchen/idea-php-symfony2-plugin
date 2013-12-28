@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -89,6 +90,18 @@ public class SymfonyBundleUtil {
 
         for(SymfonyBundle bundle : this.getBundles()) {
             if(bundle.isInBundle(psiFile)) {
+                return bundle;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public SymfonyBundle getContainingBundle(PsiDirectory directory) {
+
+        for(SymfonyBundle bundle : this.getBundles()) {
+            if(bundle.isInBundle(directory.getVirtualFile())) {
                 return bundle;
             }
         }

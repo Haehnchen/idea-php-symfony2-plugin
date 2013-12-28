@@ -97,7 +97,11 @@ public class SymfonyBundle {
     }
 
     public boolean isInBundle(PsiFile psiFile) {
-        VirtualFile virtualFile = psiFile.getVirtualFile();
+        return isInBundle(psiFile.getVirtualFile());
+    }
+
+    public boolean isInBundle(@Nullable VirtualFile virtualFile) {
+
         if(virtualFile == null) {
             return false;
         }
