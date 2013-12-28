@@ -13,6 +13,7 @@ public class Symfony2Icons {
     public static final Icon SYMFONY = IconLoader.getIcon("icons/symfony.png");
     public static final Icon SYMFONY_TOOL_WINDOW = IconLoader.getIcon("icons/symfony_tool_window.png");
     public static final Icon DOCTRINE = IconLoader.getIcon("icons/doctrine.png");
+    public static final Icon MONGODB = IconLoader.getIcon("icons/mongodb.png");
     public static final Icon ROUTE = IconLoader.getIcon("icons/route.png");
     public static final Icon SERVICE = IconLoader.getIcon("icons/service.png");
     public static final Icon SERVICE_OPACITY = IconLoader.getIcon("icons/service_opacity.png");

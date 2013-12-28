@@ -64,19 +64,8 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @Override
     public Object[] getVariants() {
 
-        PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
-
-        Map<String, String> entityNamespaces = new HashMap<String, String>();
-
-        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ORM)) {
-            entityNamespaces.putAll(ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap());
-        }
-
-        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ODM)) {
-            entityNamespaces.putAll(ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap());
-        }
-
         List<LookupElement> results = new ArrayList<LookupElement>();
+        PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
         // find Repository interface to filter RepositoryClasses out
         PhpClass repositoryInterface = PhpElementsUtil.getInterface(phpIndex, DoctrineTypes.REPOSITORY_INTERFACE);
@@ -84,6 +73,18 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             return results.toArray();
         }
 
+        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ORM)) {
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM);
+        }
+
+        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ODM)) {
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.ODM);
+        }
+
+        return results.toArray();
+    }
+
+    private void attachRepositoryNames(List<LookupElement> results, PhpIndex phpIndex, PhpClass repositoryInterface, Map<String, String> entityNamespaces, DoctrineTypes.Manager manager) {
         for (Map.Entry<String, String> entry : entityNamespaces.entrySet()) {
 
             // search for classes that match the symfony2 namings
@@ -101,14 +102,12 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
                 // dont add Repository classes and abstract entities
                 PhpClass entityClass = PhpElementsUtil.getClass(phpIndex, entityNamespaces.get(entry.getKey()) + "\\" + className);
                 if(null != entityClass && isEntity(entityClass, repositoryInterface)) {
-                    results.add(new DoctrineEntityLookupElement(repoName, entityClass, this.useClassNameAsLookupString));
+                    results.add(new DoctrineEntityLookupElement(repoName, entityClass, this.useClassNameAsLookupString).withManager(manager));
                 }
 
             }
 
         }
-
-        return results.toArray();
     }
 
     public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {

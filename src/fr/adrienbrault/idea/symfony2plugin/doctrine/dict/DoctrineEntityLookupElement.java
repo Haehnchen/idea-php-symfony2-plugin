@@ -14,6 +14,7 @@ public class DoctrineEntityLookupElement extends LookupElement {
     private String entityName;
     private PhpClass className;
     private boolean useClassNameAsLookupString = false;
+    private DoctrineTypes.Manager manager;
 
     public DoctrineEntityLookupElement(String entityName, PhpClass className, boolean useClassNameAsLookupString) {
         this(entityName, className);
@@ -23,6 +24,11 @@ public class DoctrineEntityLookupElement extends LookupElement {
     public DoctrineEntityLookupElement(String entityName, PhpClass className) {
         this.entityName = entityName;
         this.className = className;
+    }
+
+    public DoctrineEntityLookupElement withManager(DoctrineTypes.Manager manager) {
+        this.manager = manager;
+        return this;
     }
 
     @NotNull
@@ -48,7 +54,8 @@ public class DoctrineEntityLookupElement extends LookupElement {
         }
 
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.DOCTRINE);
+        presentation.setIcon(manager == null || manager == DoctrineTypes.Manager.ORM ? Symfony2Icons.DOCTRINE : Symfony2Icons.MONGODB);
+
     }
 
 }
