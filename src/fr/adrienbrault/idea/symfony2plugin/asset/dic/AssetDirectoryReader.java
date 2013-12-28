@@ -2,16 +2,15 @@ package fr.adrienbrault.idea.symfony2plugin.asset.dic;
 
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentIterator;
-
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiDirectory;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,14 +49,13 @@ public class AssetDirectoryReader {
             return files;
         }
 
-        ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
-        fileIndex.iterateContentUnderDirectory(webDirectory, new ContentIterator() {
+        VfsUtil.visitChildrenRecursively(webDirectory, new VirtualFileVisitor() {
             @Override
-            public boolean processFile(final VirtualFile virtualFile) {
+            public boolean visitFile(@NotNull VirtualFile virtualFile) {
                 if(isValidFile(virtualFile)) {
                     files.add(new AssetFile(virtualFile, AssetEnum.Position.Web, webDirectory));
                 }
-                return true;
+                return super.visitFile(virtualFile);
             }
         });
 
@@ -74,19 +72,17 @@ public class AssetDirectoryReader {
             }
 
             final VirtualFile bundleDirectoryVirtual = bundleDirectory.getVirtualFile();
-            VirtualFile blaDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources");
+            VirtualFile resourceDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources");
 
-            if (null != blaDirectory) {
+            if (null != resourceDirectory) {
 
-                fileIndex.iterateContentUnderDirectory(blaDirectory, new ContentIterator() {
+                VfsUtil.visitChildrenRecursively(resourceDirectory, new VirtualFileVisitor() {
                     @Override
-                    public boolean processFile(final VirtualFile virtualFile) {
-
+                    public boolean visitFile(@NotNull VirtualFile virtualFile) {
                         if(isValidFile(virtualFile)) {
                             files.add(new AssetFile(virtualFile, AssetEnum.Position.Bundle, bundleDirectoryVirtual, '@' + bundle.getName() + "/"));
                         }
-
-                        return true;
+                        return super.visitFile(virtualFile);
                     }
                 });
 

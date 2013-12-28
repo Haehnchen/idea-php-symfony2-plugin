@@ -1,21 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
-import com.intellij.psi.search.FileTypeIndex;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.GlobalSearchScopes;
-import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFile;
-import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
@@ -30,9 +24,13 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,27 +49,19 @@ public class TwigHelper {
             return results;
         }
 
-        ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(project);
-        FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
-
         for (TwigPath twigPath : twigPaths) {
             if(twigPath.isEnabled()) {
                 VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
                 if(virtualDirectoryFile != null) {
 
-                    TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
-
-                    // @TODO: find any overall file index
-
-                    // we cant not fully rely on processCollection, we dont have all files in there
-                    // so we call this before, as this one looks faster
-                    fileIndex.iterateContentUnderDirectory(virtualDirectoryFile, twigPathContentIterator);
-
-                    // in phpstorm 7.1 vendor libs are not in index, they are added to Directory ignore list automatically
-                    // so use here a workaround
-                    GlobalSearchScope dirScope = GlobalSearchScopes.directoryScope(project, virtualDirectoryFile, true);
-                    twigPathContentIterator.processCollection(fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, TwigFileType.INSTANCE, dirScope));
-                    twigPathContentIterator.processCollection(fileBasedIndex.getContainingFiles(FileTypeIndex.NAME, PhpFileType.INSTANCE, dirScope));
+                    final TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
+                    VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new VirtualFileVisitor() {
+                        @Override
+                        public boolean visitFile(@NotNull VirtualFile virtualFile) {
+                            twigPathContentIterator.processFile(virtualFile);
+                            return super.visitFile(virtualFile);
+                        }
+                    });
 
                     results.putAll(twigPathContentIterator.getResults());
                 }

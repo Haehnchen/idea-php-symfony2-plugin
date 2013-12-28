@@ -6,8 +6,9 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -36,8 +37,6 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
         PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
 
-        ProjectFileIndex fileIndex = ProjectFileIndex.SERVICE.getInstance(completionParameters.getPosition().getProject());
-
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
         ArrayList<BundleFile> bundleFiles = new ArrayList<BundleFile>();
 
@@ -45,7 +44,14 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
             VirtualFile virtualFile = symfonyBundle.getRelative(this.path);
             if(virtualFile != null) {
-                fileIndex.iterateContentUnderDirectory(virtualFile, new BundleContentIterator(symfonyBundle, bundleFiles, completionParameters.getPosition().getProject()));
+                final BundleContentIterator bundleContentIterator = new BundleContentIterator(symfonyBundle, bundleFiles, completionParameters.getPosition().getProject());
+                VfsUtil.visitChildrenRecursively(virtualFile, new VirtualFileVisitor() {
+                    @Override
+                    public boolean visitFile(@NotNull VirtualFile virtualFile) {
+                        bundleContentIterator.processFile(virtualFile);
+                        return super.visitFile(virtualFile);
+                    }
+                });
             }
 
         }
