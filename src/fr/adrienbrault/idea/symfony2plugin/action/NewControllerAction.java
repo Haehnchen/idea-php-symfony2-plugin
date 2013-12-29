@@ -122,10 +122,10 @@ public class NewControllerAction extends AbstractProjectDumbAwareAction {
 
         final PsiFile file = factory.createFileFromText(fileName, PhpFileType.INSTANCE, content);
 
-        CodeStyleManager.getInstance(project).reformat(file);
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             @Override
             public void run() {
+                CodeStyleManager.getInstance(project).reformat(file);
                 initialBaseDir.add(file);
             }
         });
