@@ -1,11 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.completion;
 
 import com.intellij.codeInsight.completion.CompletionConfidence;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.ArrayIndex;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -35,6 +37,11 @@ public class PhpParameterStringCompletionConfidence extends CompletionConfidence
         // $this->method(... array('foo'); array('bar' => 'foo') ...);
         ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(context);
         if(arrayCreationExpression != null && arrayCreationExpression.getContext() instanceof ParameterList) {
+            return ThreeState.NO;
+        }
+
+        // $array['value']
+        if(PlatformPatterns.psiElement().withSuperParent(2, ArrayIndex.class).accepts(contextElement)) {
             return ThreeState.NO;
         }
 
