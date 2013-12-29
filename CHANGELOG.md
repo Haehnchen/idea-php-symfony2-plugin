@@ -5,6 +5,15 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.37
+* Add Doctrine MongoDB repository resolver  #205
+* Add autopopup for string completion values
+* Add support for more form methods  #162
+* Add reference provider for form "options" keys #162 limited by WI-21563
+* Add templates for yaml, xml service files and controller
+* Service builder is accessible inside project browser context menu of php files
+* Fix for missing vendor libs since phpstorm 7.1 #180
+
 ### 0.10.36
 * Rewrite of all container stuff, which completely based on index now; with massive performance improvements
 * Add service builder/generator for classes (beta) #77

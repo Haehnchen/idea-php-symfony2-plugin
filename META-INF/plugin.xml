@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.36</version>
+    <version>0.10.37</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -93,6 +93,17 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.37</h2>
+<ul>
+    <li>Add Doctrine MongoDB repository resolver  <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/205">#205</a></li>
+    <li>Add autopopup for string completion values</li>
+    <li>Add support for more form methods  <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/162">#162</a></li>
+    <li>Add reference provider for form "options" keys <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/162">#162</a> limited by WI-21563</li>
+    <li>Add templates for yaml, xml service files and controller</li>
+    <li>Service builder is accessible inside project browser context menu of php files</li>
+    <li>Fix for missing vendor libs since phpstorm 7.1 <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/180">#180</a></li>
+</ul>
 
 <h2>0.10.36</h2>
 <ul>
