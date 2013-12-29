@@ -242,6 +242,17 @@ public class Symfony2InterfacesUtil {
 
     }
 
+    public boolean isInstanceOf(Project project, String subjectClass, String expectedClass) {
+
+        PhpClass subjectPhpClass = PhpElementsUtil.getClassInterface(project, subjectClass);
+        if(subjectPhpClass == null) {
+            return false;
+        }
+
+        return isInstanceOf(subjectPhpClass, expectedClass);
+
+    }
+
     public boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
         if (subjectClass == expectedClass) {
             return true;

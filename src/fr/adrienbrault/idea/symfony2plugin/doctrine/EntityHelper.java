@@ -6,7 +6,11 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.lang.psi.elements.PhpTypedElement;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
@@ -105,7 +109,7 @@ public class EntityHelper {
 
     @Nullable
     public static PhpClass resolveShortcutName(Project project, String shortcutName) {
-        return resolveShortcutName(project, shortcutName, DoctrineTypes.Manager.ODM, DoctrineTypes.Manager.ODM);
+        return resolveShortcutName(project, shortcutName, DoctrineTypes.Manager.ORM, DoctrineTypes.Manager.MONGO_DB);
     }
 
     /**
@@ -136,7 +140,7 @@ public class EntityHelper {
                 em.putAll(ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap());
             }
 
-            if(managerList.contains(DoctrineTypes.Manager.ODM)) {
+            if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
                 em.putAll(ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap());
             }
 
@@ -164,6 +168,26 @@ public class EntityHelper {
         Collection<PhpClass> entity_classes = phpIndex.getClassesByFQN(entity_name);
         if(!entity_classes.isEmpty()){
             return entity_classes.iterator().next();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static DoctrineTypes.Manager getManager(MethodReference methodReference) {
+
+        PhpPsiElement phpTypedElement = methodReference.getFirstPsiChild();
+        if(!(phpTypedElement instanceof PhpTypedElement)) {
+            return null;
+        }
+
+        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
+        for(String typeString: PhpIndex.getInstance(methodReference.getProject()).completeType(methodReference.getProject(), ((PhpTypedElement) phpTypedElement).getType(), new HashSet<String>()).getTypes()) {
+            for(Map.Entry<DoctrineTypes.Manager, String> entry: DoctrineTypes.getManagerInstanceMap().entrySet()) {
+                if(symfony2InterfacesUtil.isInstanceOf(methodReference.getProject(), typeString, entry.getValue())) {
+                    return entry.getKey();
+                }
+            }
         }
 
         return null;

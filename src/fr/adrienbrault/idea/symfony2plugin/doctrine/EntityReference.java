@@ -39,7 +39,13 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
         this.doctrineManagers = new ArrayList<DoctrineTypes.Manager>();
         this.doctrineManagers.add(DoctrineTypes.Manager.ORM);
-        this.doctrineManagers.add(DoctrineTypes.Manager.ODM);
+        this.doctrineManagers.add(DoctrineTypes.Manager.MONGO_DB);
+    }
+
+    public EntityReference(@NotNull StringLiteralExpression element, DoctrineTypes.Manager... managers) {
+        super(element);
+        entityName = element.getContents();
+        this.doctrineManagers = Arrays.asList(managers);
     }
 
     @NotNull
@@ -77,8 +83,8 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM);
         }
 
-        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ODM)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.ODM);
+        if(this.doctrineManagers.contains(DoctrineTypes.Manager.MONGO_DB)) {
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB);
         }
 
         return results.toArray();
