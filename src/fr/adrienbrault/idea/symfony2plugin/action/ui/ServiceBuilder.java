@@ -208,43 +208,51 @@ public class ServiceBuilder {
 
 
     private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
-        String out = "";
+
+        String indent = "  ";
+
+        ArrayList<String> lines = new ArrayList<String>();
 
         String classAsParameter = getClassAsParameter(className);
 
-        out += serviceName + ":\n";
-        out += "  class: " + (classAsParameter != null ? "%" + classAsParameter + "%" : className) + "\n";
+        lines.add(serviceName + ":");
+        lines.add(indent + "class: " + (classAsParameter != null ? "%" + classAsParameter + "%" : className));
 
         if(methods.containsKey("__construct")) {
 
             List<String> parameters = getParameters(methods.get("__construct"));
             if(parameters != null) {
-                out += String.format("  arguments: [ %s ]", StringUtils.join(parameters, ", ")) + "\n";
+                lines.add(String.format("%sarguments: [ %s ]", indent, StringUtils.join(formatYamlService(parameters), ", ")));
             }
 
             methods.remove("__construct");
         }
 
-        String calls = "";
+        ArrayList<String> calls = new ArrayList<String>();
         for(Map.Entry<String, ArrayList<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
             List<String> parameters = getParameters(entry.getValue());
             if(parameters != null) {
-
-                // append yaml syntax, more will follow...
-                List<String> yamlSyntaxParameters = new ArrayList<String>();
-                for(String parameter: parameters) {
-                    yamlSyntaxParameters.add("@" + parameter);
-                }
-
-                calls += String.format("    - [ %s, [ %s ] ]", entry.getKey(), StringUtils.join(yamlSyntaxParameters, ", ")) + "\n";
+                calls.add(String.format("%s%s- [ %s, [ %s ] ]", indent, indent, entry.getKey(), StringUtils.join(formatYamlService(parameters), ", ")));
             }
         }
 
-        if(!StringUtils.isBlank(calls)) {
-            out+= "  calls:\n" + calls;
+        if(calls.size() > 0) {
+            lines.add(indent + "calls:");
+            lines.addAll(calls);
         }
 
-        return out;
+        return StringUtils.join(lines, "\n");
+    }
+
+    private List<String> formatYamlService(List<String> parameters) {
+
+        // append yaml syntax, more will follow...
+        List<String> yamlSyntaxParameters = new ArrayList<String>();
+        for(String parameter: parameters) {
+            yamlSyntaxParameters.add("@" + parameter);
+        }
+
+        return yamlSyntaxParameters;
     }
 
 }
