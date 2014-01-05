@@ -226,16 +226,16 @@ public class XmlHelper {
 
     public static Map<String, String> getFileParameterMap(XmlFile psiFile) {
 
+        Map<String, String> services = new THashMap<String, String>();
+
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
-            return null;
+            return services;
         }
 
         XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
-            return null;
+            return services;
         }
-
-        Map<String, String> services = new THashMap<String, String>();
 
         for(XmlTag xmlTag: xmlTags) {
             if(xmlTag.getName().equals("container")) {
