@@ -10,6 +10,8 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLArray;
@@ -346,6 +348,59 @@ public class YamlHelper {
 
         return serviceName;
 
+    }
+
+    @Nullable
+    public static String getYamlKeyName(@NotNull YAMLKeyValue yamlKeyValue) {
+
+        PsiElement modelName = yamlKeyValue.getKey();
+        if(modelName == null) {
+            return null;
+        }
+
+        String keyName = StringUtils.trim(modelName.getText());
+        if(keyName.endsWith(":")) {
+            keyName = keyName.substring(0, keyName.length() - 1);
+        }
+
+        return keyName;
+    }
+
+    @Nullable
+    public static Set<String> getKeySet(@Nullable YAMLKeyValue yamlKeyValue) {
+
+        if(yamlKeyValue == null) {
+            return null;
+        }
+
+        PsiElement yamlCompoundValue = yamlKeyValue.getValue();
+        if(yamlCompoundValue == null) {
+            return null;
+        }
+
+        Set<String> keySet = new HashSet<String>();
+        for(YAMLKeyValue yamlKey: PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class)) {
+            String fieldName = getYamlKeyName(yamlKey);
+            if(fieldName != null) {
+                keySet.add(fieldName);
+            }
+        }
+
+        return keySet;
+    }
+
+    @Nullable
+    public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName) {
+        if(yamlKeyValue == null) {
+            return null;
+        }
+
+        PsiElement yamlCompoundValue = yamlKeyValue.getValue();
+        if(!(yamlCompoundValue instanceof YAMLCompoundValue)) {
+            return null;
+        }
+
+        return getYamlKeyValue(yamlCompoundValue, keyName);
     }
 
 }

@@ -2,14 +2,13 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
-import com.jetbrains.php.lang.psi.elements.PhpTypedElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
@@ -18,7 +17,13 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
+import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -66,6 +71,105 @@ public class EntityHelper {
         // old __CLASS__ Repository type
         // @TODO remove this fallback when we implemented all cases
         return resolveShortcutName(project, shortcutName + "Repository");
+    }
+
+    private static Set<String> getModelFieldsSet(YAMLKeyValue yamlKeyValue) {
+        Set<String> fields = new HashSet<String>();
+
+        for(YAMLKeyValue targetYamlKeyValue: getYamlModelFieldKeyValues(yamlKeyValue)) {
+            Set<String> fieldSet = YamlHelper.getKeySet(targetYamlKeyValue);
+            if(fieldSet != null) {
+                fields.addAll(fieldSet);
+            }
+        }
+
+        return fields;
+    }
+
+    public static Collection<YAMLKeyValue> getYamlModelFieldKeyValues(YAMLKeyValue yamlKeyValue) {
+        Collection<YAMLKeyValue> keyValueCollection = new ArrayList<YAMLKeyValue>();
+
+        for(String fieldMaps: new String[] { "fields", "manyToOne", "oneToOne", "manyToMany", "oneToMany"}) {
+            YAMLKeyValue targetYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, fieldMaps);
+            keyValueCollection.add(targetYamlKeyValue);
+        }
+
+        return keyValueCollection;
+    }
+
+    public static PsiElement[] getModelFieldTargets(PhpClass phpClass, String fieldName) {
+
+        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+
+        PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
+
+        if(psiFile instanceof YAMLFile) {
+            PsiElement yamlDocument = psiFile.getFirstChild();
+            if(yamlDocument instanceof YAMLDocument) {
+                PsiElement arrayKeyValue = yamlDocument.getFirstChild();
+                if(arrayKeyValue instanceof YAMLKeyValue) {
+                    for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues((YAMLKeyValue) arrayKeyValue)) {
+                        YAMLKeyValue target = YamlKeyFinder.findKey(yamlKeyValue, fieldName);
+                        if(target != null) {
+                            psiElements.add(target);
+                        }
+                    }
+                }
+            }
+        }
+
+        String methodName = "get" + StringUtils.camelize(fieldName.toLowerCase(), false);
+        Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
+        if(method != null) {
+            psiElements.add(method);
+        }
+
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
+
+    }
+
+    @Nullable
+    public static PsiFile getModelConfigFile(PhpClass phpClass) {
+        for(SymfonyBundle symfonyBundle: new SymfonyBundleUtil(phpClass.getProject()).getBundles()) {
+            for(String modelShortcut: new String[] {"orm", "mongodb"}) {
+                String entityFile = "Resources/config/doctrine/" + phpClass.getName() + String.format(".%s.yml", modelShortcut);
+                VirtualFile virtualFile = symfonyBundle.getRelative(entityFile);
+                if(virtualFile != null) {
+                    PsiFile psiFile = PsiManager.getInstance(phpClass.getProject()).findFile(virtualFile);
+                    if(psiFile != null) {
+                        return psiFile;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static Set<String> getModelFields(PhpClass phpClass) {
+
+        Set<String> modelFields = new HashSet<String>();
+
+        PsiFile psiFile = getModelConfigFile(phpClass);
+
+        if(psiFile instanceof YAMLFile) {
+            PsiElement yamlDocument = psiFile.getFirstChild();
+            if(yamlDocument instanceof YAMLDocument) {
+                PsiElement arrayKeyValue = yamlDocument.getFirstChild();
+                if(arrayKeyValue instanceof YAMLKeyValue) {
+                    String className = YamlHelper.getYamlKeyName(((YAMLKeyValue) arrayKeyValue));
+                    if(PhpElementsUtil.isEqualClassName(phpClass, className)) {
+                        Set<String> fields = getModelFieldsSet((YAMLKeyValue) arrayKeyValue);
+                        if(fields != null) {
+                            modelFields.addAll(fields);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return modelFields;
     }
 
     @Nullable
