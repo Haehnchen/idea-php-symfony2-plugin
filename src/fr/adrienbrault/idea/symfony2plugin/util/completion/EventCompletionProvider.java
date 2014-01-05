@@ -25,7 +25,7 @@ public class EventCompletionProvider extends CompletionProvider<CompletionParame
 
         XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(completionParameters.getPosition().getProject(), XmlEventParser.class);
         for(Map.Entry<String, String> event : xmlEventParser.get().entrySet()) {
-            //completionResultSet.addElement(LookupElementBuilder.create(event.getKey()).withTypeText(event.getValue(), true).withIcon(Symfony2Icons.EVENT));
+            completionResultSet.addElement(LookupElementBuilder.create(event.getKey()).withTypeText(event.getValue(), true).withIcon(Symfony2Icons.EVENT));
         }
 
         for(EventDispatcherSubscribedEvent event: EventDispatcherSubscriberUtil.getSubscribedEvents(completionParameters.getPosition().getProject())) {
