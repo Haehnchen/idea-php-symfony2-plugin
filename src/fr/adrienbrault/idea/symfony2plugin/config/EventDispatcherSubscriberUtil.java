@@ -29,8 +29,8 @@ public class EventDispatcherSubscriberUtil {
         Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface");
 
         for(PhpClass phpClass: phpClasses) {
-            PsiElement method = PhpElementsUtil.getPsiElementsBySignatureSingle(project, "#M#C\\" + phpClass.getPresentableFQN() + ".getSubscribedEvents");
-            if(method instanceof Method) {
+            Method method = PhpElementsUtil.getClassMethod(phpClass, "getSubscribedEvents");
+            if(method != null) {
                 PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
                 if(phpReturn != null) {
                     PhpPsiElement array = phpReturn.getFirstPsiChild();
@@ -43,15 +43,9 @@ public class EventDispatcherSubscriberUtil {
                             if(arrayKey instanceof StringLiteralExpression) {
                                 events.add(new EventDispatcherSubscribedEvent(((StringLiteralExpression) arrayKey).getContents(), phpClass.getPresentableFQN()));
                             } else if(arrayKey instanceof PhpReference) {
-                                PsiReference psiReference = arrayKey.getReference();
-                                if(psiReference != null) {
-                                    PsiElement ref = psiReference.resolve();
-                                    if(ref instanceof Field) {
-                                        PsiElement resolved = ((Field) ref).getDefaultValue();
-                                        if(resolved instanceof StringLiteralExpression)
-                                            events.add(new EventDispatcherSubscribedEvent(((StringLiteralExpression) resolved).getContents(), phpClass.getPresentableFQN(), ((PhpReference) arrayKey).getSignature()));
-                                        }
-                                    }
+                                String resolvedString = PhpElementsUtil.getStringValue(arrayKey);
+                                if(resolvedString != null) {
+                                    events.add(new EventDispatcherSubscribedEvent(resolvedString, phpClass.getPresentableFQN(), ((PhpReference) arrayKey).getSignature()));
                                 }
 
                             }
@@ -64,8 +58,9 @@ public class EventDispatcherSubscriberUtil {
 
             }
 
+        }
 
-            return events;
+       return events;
     }
 
     public static ArrayList<EventDispatcherSubscribedEvent> getSubscribedEvent(Project project, String eventName) {
