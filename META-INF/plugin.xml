@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.37</version>
+    <version>0.10.38</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -93,6 +93,15 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.38</h2>
+<ul>
+    <li>Add parameter references for doctrine findOneBy/findBy, on yaml config</li>
+    <li>Add goto model config inside getRepository</li>
+    <li>Add type resolver for events name</li>
+    <li>Fix missing @ in yaml service builder</li>
+    <li>Fix npe in container index <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/206">#206</a></li>
+</ul>
 
 <h2>0.10.37</h2>
 <ul>

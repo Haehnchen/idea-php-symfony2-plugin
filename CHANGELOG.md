@@ -5,6 +5,13 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.38
+* Add parameter references for doctrine findOneBy/findBy, on yaml config
+* Add goto model config inside getRepository
+* Add type resolver for events name
+* Fix missing @ in yaml service builder
+* Fix npe in container index #206
+
 ### 0.10.37
 * Add Doctrine MongoDB repository resolver  #205
 * Add autopopup for string completion values
