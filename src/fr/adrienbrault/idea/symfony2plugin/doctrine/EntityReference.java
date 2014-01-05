@@ -1,10 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiPolyVariantReferenceBase;
-import com.intellij.psi.ResolveResult;
+import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
@@ -58,9 +55,17 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             results.add(new PsiElementResolveResult(phpClass));
         }
 
+        // search any php model file
         PhpClass entity = EntityHelper.resolveShortcutName(getElement().getProject(), this.entityName);
         if(entity != null) {
             results.add(new PsiElementResolveResult(entity));
+
+            // find model config eg ClassName.orm.yml
+            PsiFile psiFile = EntityHelper.getModelConfigFile(entity);
+            if(psiFile != null) {
+                results.add(new PsiElementResolveResult(psiFile));
+            }
+
         }
 
         return results.toArray(new ResolveResult[results.size()]);
