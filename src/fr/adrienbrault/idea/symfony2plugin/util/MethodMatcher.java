@@ -1,11 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -75,26 +74,79 @@ public class MethodMatcher {
         @Nullable
         public MethodMatchParameter match() {
 
-            if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }
 
-            ParameterList parameterList = (ParameterList) psiElement.getContext();
-            if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+            MethodReferenceBag bag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement, this.parameterIndex);
+            if(bag == null) {
                 return null;
             }
 
-            CallToSignature matchedMethodSignature = this.isCallTo((MethodReference) parameterList.getContext());
+            CallToSignature matchedMethodSignature = this.isCallTo(bag.getMethodReference());
             if(matchedMethodSignature == null) {
                 return null;
             }
 
-            ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(this.psiElement);
-            if(currentIndex == null || currentIndex.getIndex() != this.parameterIndex) {
+            return new MethodMatchParameter(matchedMethodSignature, bag.getParameterBag(), bag.getParameterList().getParameters(), bag.getMethodReference());
+        }
+
+    }
+
+    public static class StringParameterRecursiveMatcher extends AbstractMethodParameterMatcher {
+
+        public StringParameterRecursiveMatcher(PsiElement psiElement) {
+            super(psiElement, -1);
+        }
+
+        @Nullable
+        public MethodMatchParameter match() {
+
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }
 
-            return new MethodMatchParameter(null, currentIndex, parameterList.getParameters(), (MethodReference) parameterList.getContext());
+            MethodReferenceBag bag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
+            if(bag == null) {
+                return null;
+            }
+
+            // try on current method
+            MethodMatcher.MethodMatchParameter methodMatchParameter = new StringParameterMatcher(psiElement, bag.getParameterBag().getIndex())
+                .withSignature(this.signatures)
+                .match();
+
+            if(methodMatchParameter != null) {
+                return methodMatchParameter;
+            }
+
+            // walk down next method
+            MethodReference methodReference = bag.getMethodReference();
+            PsiElement method = methodReference.resolve();
+            if(!(method instanceof Method)) {
+                return null;
+            }
+
+            PsiElement[] parameterReferences = PhpElementsUtil.getMethodParameterReferences((Method) method, bag.getParameterBag().getIndex());
+            if(parameterReferences == null || parameterReferences.length == 0) {
+                return null;
+            }
+
+            for(PsiElement var: parameterReferences) {
+
+                // fyi: we can provide recursive resolve here just use StringParameterRecursiveMatcher again
+                MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, bag.getParameterBag().getIndex())
+                    .withSignature(this.signatures)
+                    .match();
+
+                if(methodMatchParameterRef != null) {
+                    return methodMatchParameterRef;
+                }
+
+            }
+
+            return null;
+
         }
 
     }
@@ -148,6 +200,7 @@ public class MethodMatcher {
     }
 
     public interface MethodParameterMatcherInterface {
+        @Nullable
         public MethodMatchParameter match();
     }
 

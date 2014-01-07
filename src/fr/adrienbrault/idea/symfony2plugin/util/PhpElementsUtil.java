@@ -6,6 +6,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
@@ -17,6 +18,7 @@ import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -599,6 +601,63 @@ public class PhpElementsUtil {
         }
 
         return phpClassName.equals(compareClassName);
+    }
+
+    @Nullable
+    public static PsiElement[] getMethodParameterReferences(Method method, int parameterIndex) {
+
+        // we dont have a parameter on resolved method
+        Parameter[] parameters = method.getParameters();
+        if(parameters.length == 0 || parameterIndex >= parameters.length) {
+            return null;
+        }
+
+        final String tempVariableName = parameters[parameterIndex].getName();
+        return PsiTreeUtil.collectElements(method.getLastChild(), new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement element) {
+                return element instanceof Variable && tempVariableName.equals(((Variable) element).getName());
+            }
+        });
+
+    }
+
+
+    @Nullable
+    public static MethodReferenceBag getMethodParameterReferenceBag(PsiElement psiElement, int wantIndex) {
+
+        PsiElement variableContext = psiElement.getContext();
+        if(!(variableContext instanceof ParameterList)) {
+            return null;
+        }
+
+        ParameterList parameterList = (ParameterList) variableContext;
+        if (!(parameterList.getContext() instanceof MethodReference)) {
+            return null;
+        }
+
+        MethodReference methodReference = (MethodReference) parameterList.getContext();
+        PsiElement method = methodReference.resolve();
+        if(!(method instanceof Method)) {
+            return null;
+        }
+
+        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
+        if(currentIndex == null) {
+            return null;
+        }
+
+        if(wantIndex > 0 && currentIndex.getIndex() != wantIndex) {
+            return null;
+        }
+
+        return new MethodReferenceBag(parameterList, methodReference, currentIndex);
+
+    }
+
+    @Nullable
+    public static MethodReferenceBag getMethodParameterReferenceBag(PsiElement psiElement) {
+        return getMethodParameterReferenceBag(psiElement, -1);
     }
 
 }

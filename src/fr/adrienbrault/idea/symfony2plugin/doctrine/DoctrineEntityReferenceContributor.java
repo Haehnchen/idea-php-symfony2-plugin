@@ -2,8 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiElementFilter;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.CommonProcessors;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -17,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,22 +37,25 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                     @NotNull
                     @Override
                     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+
+                        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
+                            .withSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository")
+                            .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository")
+                            .match();
+
+                        // try on resolved method
+                        if(methodMatchParameter == null) {
+                            methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(psiElement)
+                                .withSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository")
+                                .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository")
+                                .match();
+                        }
+
+                        if(methodMatchParameter == null) {
                             return new PsiReference[0];
                         }
-                        ParameterList parameterList = (ParameterList) psiElement.getContext();
 
-                        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
-                            return new PsiReference[0];
-                        }
-
-                        MethodReference methodReference = (MethodReference) parameterList.getContext();
-                        Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                        if (!interfacesUtil.isGetRepositoryCall(methodReference)) {
-                            return new PsiReference[0];
-                        }
-
-                        DoctrineTypes.Manager manager = EntityHelper.getManager(methodReference);
+                        DoctrineTypes.Manager manager = EntityHelper.getManager(methodMatchParameter.getMethodReference());
                         if(manager != null) {
                             return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, manager) };
                         }
@@ -63,27 +71,16 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                 @NotNull
                 @Override
                 public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
+                        .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "find")
+                        .match();
+
+                    if(methodMatchParameter == null) {
                         return new PsiReference[0];
                     }
 
-                    ParameterList parameterList = (ParameterList) psiElement.getContext();
-                    if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
-                        return new PsiReference[0];
-                    }
-
-                    // only use first parameter
-                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-                    if(currentIndex == null || currentIndex.getIndex() != 0) {
-                        return new PsiReference[0];
-                    }
-
-                    MethodReference methodReference = (MethodReference) parameterList.getContext();
-                    if (!new Symfony2InterfacesUtil().isCallTo(methodReference, "\\Doctrine\\Common\\Persistence\\ObjectManager", "find")) {
-                        return new PsiReference[0];
-                    }
-
-                    DoctrineTypes.Manager manager = EntityHelper.getManager(methodReference);
+                    DoctrineTypes.Manager manager = EntityHelper.getManager(methodMatchParameter.getMethodReference());
                     if(manager != null) {
                         return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, manager) };
                     }
