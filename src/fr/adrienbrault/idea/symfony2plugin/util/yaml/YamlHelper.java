@@ -158,7 +158,10 @@ public class YamlHelper {
                     if(yamlParameter != null) {
 
                         for(YAMLKeyValue yamlParameterArray:  yamlParameter) {
-                            map.put(yamlParameterArray.getKeyText().toLowerCase(), yamlParameterArray.getValue().getText());
+                            String keyName = yamlParameterArray.getKeyText();
+                            if(StringUtils.isNotBlank(keyName)) {
+                                map.put(yamlParameterArray.getKeyText().toLowerCase(), yamlParameterArray.getValue().getText());
+                            }
                         }
                     }
 
@@ -256,7 +259,10 @@ public class YamlHelper {
 
                             }
 
-                            services.put(serviceName, new ContainerService(serviceName, serviceClass, true, isPrivate));
+                            if(StringUtils.isNotBlank(serviceName)) {
+                                services.put(serviceName, new ContainerService(serviceName, serviceClass, true, isPrivate));
+                            }
+
                         }
                     }
                 }

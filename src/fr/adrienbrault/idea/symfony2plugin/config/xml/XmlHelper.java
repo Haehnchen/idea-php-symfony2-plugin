@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
@@ -211,7 +212,10 @@ public class XmlHelper {
                                         }
                                     }
 
-                                    services.put(serviceNameId, new ContainerService(serviceNameId, serviceClassName, true, isPrivate));
+                                    if(StringUtils.isNotBlank(serviceNameId)) {
+                                        services.put(serviceNameId, new ContainerService(serviceNameId, serviceClassName, true, isPrivate));
+                                    }
+
                                 }
 
                             }
@@ -252,7 +256,7 @@ public class XmlHelper {
                                 XmlAttribute keyAttr = parameterTag.getAttribute("key");
                                 if(keyAttr != null) {
                                     String parameterName = keyAttr.getValue();
-                                    if(parameterName != null) {
+                                    if(parameterName != null && StringUtils.isNotBlank(parameterName)) {
 
                                         String parameterValue = null;
 
