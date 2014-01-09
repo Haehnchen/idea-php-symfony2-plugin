@@ -8,6 +8,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -134,13 +135,17 @@ public class MethodMatcher {
 
             for(PsiElement var: parameterReferences) {
 
-                // fyi: we can provide recursive resolve here just use StringParameterRecursiveMatcher again
-                MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, bag.getParameterBag().getIndex())
-                    .withSignature(this.signatures)
-                    .match();
+                // get parameter index of current variable
+                MethodReferenceBag localBag = PhpElementsUtil.getMethodParameterReferenceBag(var);
+                if(localBag != null) {
+                    // fyi: we can provide recursive resolve here just use StringParameterRecursiveMatcher again
+                    MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, localBag.getParameterBag().getIndex())
+                        .withSignature(this.signatures)
+                        .match();
 
-                if(methodMatchParameterRef != null) {
-                    return methodMatchParameterRef;
+                    if(methodMatchParameterRef != null) {
+                        return methodMatchParameterRef;
+                    }
                 }
 
             }
@@ -223,6 +228,11 @@ public class MethodMatcher {
 
         public AbstractMethodParameterMatcher withSignature(Collection<CallToSignature> signatures) {
             this.signatures.addAll(signatures);
+            return this;
+        }
+
+        public AbstractMethodParameterMatcher withSignature(CallToSignature[] callToSignatures) {
+            this.signatures.addAll(Arrays.asList(callToSignatures));
             return this;
         }
 

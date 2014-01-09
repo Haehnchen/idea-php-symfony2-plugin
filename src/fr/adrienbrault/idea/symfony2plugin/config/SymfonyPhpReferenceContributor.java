@@ -1,36 +1,74 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine;
+package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiElementFilter;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.CommonProcessors;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.PhpPsiUtil;
-import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.ModelFieldReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class DoctrineEntityReferenceContributor extends PsiReferenceContributor {
+public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
+
+    private static MethodMatcher.CallToSignature[] CONTAINER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
+    };
+
+    private static MethodMatcher.CallToSignature[] REPOSITORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+    };
+
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
+                        .withSignature(CONTAINER_SIGNATURES)
+                        .match();
+
+                    // try on resolved method
+                    if(methodMatchParameter == null) {
+                        methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(psiElement)
+                            .withSignature(CONTAINER_SIGNATURES)
+                            .match();
+                    }
+
+                    if(methodMatchParameter == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement) };
+
+                }
+            }
+        );
+
         psiReferenceRegistrar.registerReferenceProvider(
                 PlatformPatterns.psiElement(StringLiteralExpression.class),
                 new PsiReferenceProvider() {
@@ -39,15 +77,13 @@ public class DoctrineEntityReferenceContributor extends PsiReferenceContributor 
                     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                         MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
-                            .withSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository")
-                            .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository")
+                            .withSignature(REPOSITORY_SIGNATURES)
                             .match();
 
                         // try on resolved method
                         if(methodMatchParameter == null) {
                             methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(psiElement)
-                                .withSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository")
-                                .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository")
+                                .withSignature(REPOSITORY_SIGNATURES)
                                 .match();
                         }
 
