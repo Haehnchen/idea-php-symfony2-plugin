@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.38</version>
+    <version>0.10.39</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -93,6 +93,12 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.39</h2>
+<ul>
+    <li>Add support of php shortcut methods for repository, route and service references <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/46">#46</a></li>
+    <li>Add blank filter for service stub indexes <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/207">#207</a></li>
+</ul>
 
 <h2>0.10.38</h2>
 <ul>

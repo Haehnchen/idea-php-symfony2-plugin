@@ -5,6 +5,10 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.39
+* Add support of php shortcut methods for repository, route and service references #46
+* Add blank filter for service stub indexes #207
+
 ### 0.10.38
 * Add parameter references for doctrine findOneBy/findBy, on yaml config
 * Add goto model config inside getRepository
