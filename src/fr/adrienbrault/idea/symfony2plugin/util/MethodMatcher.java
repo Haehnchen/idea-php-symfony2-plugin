@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -13,6 +14,32 @@ import java.util.Collection;
 import java.util.List;
 
 public class MethodMatcher {
+
+    @Nullable
+    public static MethodMatcher.MethodMatchParameter getMatchedSignatureWithDepth(PsiElement psiElement, MethodMatcher.CallToSignature[] callToSignatures) {
+        return getMatchedSignatureWithDepth(psiElement, callToSignatures, 0);
+    }
+
+    @Nullable
+    public static MethodMatcher.MethodMatchParameter getMatchedSignatureWithDepth(PsiElement psiElement, MethodMatcher.CallToSignature[] callToSignatures, int defaultParameterIndex) {
+
+        if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
+
+        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, defaultParameterIndex)
+            .withSignature(callToSignatures)
+            .match();
+
+        if(methodMatchParameter != null) {
+            return methodMatchParameter;
+        }
+
+        // try on resolved method
+        return new MethodMatcher.StringParameterRecursiveMatcher(psiElement, defaultParameterIndex)
+            .withSignature(callToSignatures)
+            .match();
+    }
 
     public static class CallToSignature {
 
@@ -96,8 +123,8 @@ public class MethodMatcher {
 
     public static class StringParameterRecursiveMatcher extends AbstractMethodParameterMatcher {
 
-        public StringParameterRecursiveMatcher(PsiElement psiElement) {
-            super(psiElement, -1);
+        public StringParameterRecursiveMatcher(PsiElement psiElement, int parameterIndex) {
+            super(psiElement, parameterIndex);
         }
 
         @Nullable
@@ -113,7 +140,7 @@ public class MethodMatcher {
             }
 
             // try on current method
-            MethodMatcher.MethodMatchParameter methodMatchParameter = new StringParameterMatcher(psiElement, bag.getParameterBag().getIndex())
+            MethodMatcher.MethodMatchParameter methodMatchParameter = new StringParameterMatcher(psiElement, parameterIndex)
                 .withSignature(this.signatures)
                 .match();
 
@@ -135,17 +162,12 @@ public class MethodMatcher {
 
             for(PsiElement var: parameterReferences) {
 
-                // get parameter index of current variable
-                MethodReferenceBag localBag = PhpElementsUtil.getMethodParameterReferenceBag(var);
-                if(localBag != null) {
-                    // fyi: we can provide recursive resolve here just use StringParameterRecursiveMatcher again
-                    MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, localBag.getParameterBag().getIndex())
-                        .withSignature(this.signatures)
-                        .match();
+                MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, parameterIndex)
+                    .withSignature(this.signatures)
+                    .match();
 
-                    if(methodMatchParameterRef != null) {
-                        return methodMatchParameterRef;
-                    }
+                if(methodMatchParameterRef != null) {
+                    return methodMatchParameterRef;
                 }
 
             }

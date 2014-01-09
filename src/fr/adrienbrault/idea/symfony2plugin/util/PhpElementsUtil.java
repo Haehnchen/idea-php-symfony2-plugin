@@ -647,7 +647,7 @@ public class PhpElementsUtil {
             return null;
         }
 
-        if(wantIndex > 0 && currentIndex.getIndex() != wantIndex) {
+        if(wantIndex >= 0 && currentIndex.getIndex() != wantIndex) {
             return null;
         }
 

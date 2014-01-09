@@ -44,22 +44,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                 @Override
                 public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
-                        return new PsiReference[0];
-                    }
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
-                        .withSignature(CONTAINER_SIGNATURES)
-                        .match();
-
-                    // try on resolved method
-                    if(methodMatchParameter == null) {
-                        methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(psiElement)
-                            .withSignature(CONTAINER_SIGNATURES)
-                            .match();
-                    }
-
-                    if(methodMatchParameter == null) {
+                    if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, CONTAINER_SIGNATURES) == null) {
                         return new PsiReference[0];
                     }
 
@@ -76,18 +61,8 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     @Override
                     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
-                            .withSignature(REPOSITORY_SIGNATURES)
-                            .match();
-
-                        // try on resolved method
-                        if(methodMatchParameter == null) {
-                            methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(psiElement)
-                                .withSignature(REPOSITORY_SIGNATURES)
-                                .match();
-                        }
-
-                        if(methodMatchParameter == null) {
+                        MethodMatcher.MethodMatchParameter methodMatchParameter = MethodMatcher.getMatchedSignatureWithDepth(psiElement, REPOSITORY_SIGNATURES);
+                        if (methodMatchParameter == null) {
                             return new PsiReference[0];
                         }
 
