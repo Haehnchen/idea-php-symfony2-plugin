@@ -10,11 +10,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlTagParser extends AbstractServiceParser {
 
     protected HashSet<String> list = new HashSet<String>();
-    protected HashMap<String, ArrayList<String>> taggedClasses = new HashMap<String, ArrayList<String>>();
+    protected Map<String, ArrayList<String>> taggedClasses = new ConcurrentHashMap<String, ArrayList<String>>();
 
     @Override
     public String getXPathFilter() {
@@ -41,7 +43,7 @@ public class XmlTagParser extends AbstractServiceParser {
     }
 
 
-    public HashMap<String, ArrayList<String>> getTaggedClasses() {
+    public Map<String, ArrayList<String>> getTaggedClasses() {
         return taggedClasses;
     }
 
