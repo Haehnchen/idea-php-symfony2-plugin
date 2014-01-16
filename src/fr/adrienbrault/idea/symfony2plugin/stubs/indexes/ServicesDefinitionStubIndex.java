@@ -85,7 +85,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
             private void addContainerService(Map<String, String[]> map, Map.Entry<String, ContainerService> entry) {
 
-                if(StringUtils.isEmpty(entry.getKey())) {
+                if(StringUtils.isBlank(entry.getKey())) {
                     return;
                 }
 
@@ -139,7 +139,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     /**
