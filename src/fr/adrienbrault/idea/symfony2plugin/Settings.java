@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @State(
-       name = "Settings",
+       name = "Symfony2PluginSettings",
        storages = {
                @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
                @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/symfony2.xml", scheme = StorageScheme.DIRECTORY_BASED)
