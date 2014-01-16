@@ -31,6 +31,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
     private static MethodMatcher.CallToSignature[] REPOSITORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\EntityManager", "getReference"),
     };
 
 
