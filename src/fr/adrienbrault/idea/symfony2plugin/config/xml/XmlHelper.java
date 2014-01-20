@@ -163,16 +163,16 @@ public class XmlHelper {
     @Nullable
     public static Map<String, ContainerService> getLocalServiceMap(PsiFile psiFile) {
 
+        Map<String, ContainerService> services = new THashMap<String, ContainerService>();
+
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
-            return null;
+            return services;
         }
 
         XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
-            return null;
+            return services;
         }
-
-        Map<String, ContainerService> services = new THashMap<String, ContainerService>();
 
         for(XmlTag xmlTag: xmlTags) {
             if(xmlTag.getName().equals("container")) {
