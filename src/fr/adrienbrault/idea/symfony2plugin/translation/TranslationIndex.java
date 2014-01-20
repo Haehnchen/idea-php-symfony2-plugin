@@ -43,7 +43,7 @@ public class TranslationIndex {
 
     public TranslationStringMap getTranslationMap() {
 
-        if(this.isCacheValid()) {
+        if(this.translationStringMap != null && this.isCacheValid()) {
             return this.translationStringMap;
         }
 
