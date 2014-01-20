@@ -377,6 +377,8 @@
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
         <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
 
+        <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>
+
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"

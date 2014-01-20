@@ -52,10 +52,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        ArrayList<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
-
-        attachRelatedTemplates(psiElement, gotoRelatedItems);
-        attachRelatedRoutes(psiElement, gotoRelatedItems);
+        List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems((Method) psiElement);
 
         if(gotoRelatedItems.size() == 0) {
             return null;
@@ -90,6 +87,14 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), Symfony2Icons.SYMFONY_LINE_MARKER, 6, new ConstantFunction("Related Files"), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
+    public static List<GotoRelatedItem> getGotoRelatedItems(Method method) {
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+
+        attachRelatedTemplates(method, gotoRelatedItems);
+        attachRelatedRoutes(method, gotoRelatedItems);
+        return gotoRelatedItems;
+    }
+
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
 
@@ -102,7 +107,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void attachRelatedRoutes(PsiElement psiElement, ArrayList<GotoRelatedItem> gotoRelatedItems) {
+    private static void attachRelatedRoutes(PsiElement psiElement, List<GotoRelatedItem> gotoRelatedItems) {
         // find routes
         List<Route> routes = RouteHelper.getRoutesOnControllerAction(((Method) psiElement));
         if(routes != null) {
@@ -115,12 +120,12 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void attachRelatedTemplates(PsiElement psiElement, ArrayList<GotoRelatedItem> gotoRelatedItems) {
+    private static void attachRelatedTemplates(Method method, List<GotoRelatedItem> gotoRelatedItems) {
 
         Set<String> uniqueTemplates = new HashSet<String>();
 
         // on @Template annotation
-        PhpDocComment phpDocComment = ((Method) psiElement).getDocComment();
+        PhpDocComment phpDocComment = method.getDocComment();
         if(phpDocComment != null) {
             PhpDocTag[] phpDocTags = phpDocComment.getTagElementsByName("@Template");
             for(PhpDocTag phpDocTag: phpDocTags) {
@@ -136,9 +141,9 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
 
         // on method name
-        String templateName = TwigUtil.getControllerMethodShortcut((Method) psiElement);
+        String templateName = TwigUtil.getControllerMethodShortcut(method);
         if(templateName != null) {
-            for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName)) {
+            for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(method.getProject(), templateName)) {
                 if(!uniqueTemplates.contains(templateName)) {
                     gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, templateName).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                     uniqueTemplates.add(templateName);
@@ -147,14 +152,14 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         }
 
         // inside method
-        for(MethodReference methodReference : PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class)) {
+        for(MethodReference methodReference : PsiTreeUtil.findChildrenOfType(method, MethodReference.class)) {
             if(new Symfony2InterfacesUtil().isTemplatingRenderCall(methodReference)) {
                 PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt((methodReference).getParameterList(), 0);
                 if(templateParameter != null) {
                     String resolveString = PhpElementsUtil.getStringValue(templateParameter);
                     if(resolveString != null && !uniqueTemplates.contains(resolveString)) {
                         uniqueTemplates.add(resolveString);
-                        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(psiElement.getProject(), resolveString)) {
+                        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(method.getProject(), resolveString)) {
                             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                         }
                     }
