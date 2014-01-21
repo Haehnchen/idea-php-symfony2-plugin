@@ -101,15 +101,9 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        if(element.getText().contains("\\")) {
-            String className = PsiElementUtils.getText(element);
-            if(className.startsWith("\\")) {
-                className = "\\" + className;
-            }
-
-            if(PhpElementsUtil.getClassInterfacePsiElements(element.getProject(), className).length == 0) {
-                holder.createWarningAnnotation(element, "Missing Class");
-            }
+        String className = PsiElementUtils.getText(element);
+        if(PhpElementsUtil.getClassInterface(element.getProject(), className) == null) {
+            holder.createWarningAnnotation(element, "Missing Class");
         }
 
     }
