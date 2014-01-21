@@ -5,6 +5,12 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.40
+* Add support for "Navigate > Related Files" (Ctrl+Alt+Home) inside controller action #191
+* Rename plugin settings key to more unique name "Symfony2PluginSettings" #209 #122
+* Fix accidently removed UrlGeneratorInterface::generate and EntityManager::getReference
+* Fix npe and cme in container index #207, #211 (use "File > Invalidate Cache", if issue still occur)
+
 ### 0.10.39
 * Add support of php shortcut methods for repository, route and service references #46
 * Add blank filter for service stub indexes #207

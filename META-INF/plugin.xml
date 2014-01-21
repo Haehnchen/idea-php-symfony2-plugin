@@ -1,11 +1,15 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.39</version>
+    <version>0.10.40</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
+
+<br/>
+<p style="color:red"><b>New Settings key</b>: Re-enable plugin in project settings! Need settings migration? Rename "Settings" to "Symfony2PluginSettings" in ".idea/symfony2.xml" and reopen PhpStorm</p>
+<br/>
 
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
@@ -93,6 +97,14 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.40</h2>
+<ul>
+    <li>Add support for "Navigate > Related Files" (Ctrl+Alt+Home) inside controller action <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/191">#191</a></li>
+    <li>Rename plugin settings key to more unique name "Symfony2PluginSettings" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/209">#209</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/122">#122</a></li>
+    <li>Fix accidently removed UrlGeneratorInterface::generate and EntityManager::getReference</li>
+    <li>Fix npe and cme in container index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/207">#207</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/211">#211</a> (use "File > Invalidate Cache", if issue still occur)</li>
+</ul>
 
 <h2>0.10.39</h2>
 <ul>
@@ -235,52 +247,6 @@
     <li>Add yaml and xml service indexer</li>
     <li>Provide a service definition line marker for classes, based on service index</li>
     <li>Some more form builder completions</li>
-</ul>
-
-<h2>0.9.24 / 0.10.24</h2>
-<ul>
-    <li>Provide settings for service line marker and disable it on default</li>
-</ul>
-
-<h2>0.9.23 / 0.10.23</h2>
-<ul>
-    <li>Provide a service line marker</li>
-    <li>Provide goto for class service definition (click on class name) if available in any suitable yaml or xml file</li>
-    <li>Optimize twig assets wildcard detection and goto filter</li>
-    <li>0.10.23: Migrate javascripts and stylesheets to be compatible with twig plugin</li>
-</ul>
-
-<h2>0.9.22</h2>
-<ul>
-    <li>Add annotator for php instances inside yaml "calls" and "arguments" services</li>
-    <li>Add annotator for method names of yaml "calls"</li>
-    <li>Fix twig function insert handler insert double braces</li>
-</ul>
-
-<h2>0.9.21</h2>
-<ul>
-    <li>Support EventDispatcher calls inside <a href="http://symfony2-plugin.espend.de/languages/php/index.html#eventdispatcher">php dispatcher and subscriber</a></li>
-    <li>Improvements of Event, Method and Tag completion / goto in all config languages</li>
-    <li>Provide global template goto in yaml</li>
-    <li>Improvements in xml to reflect features of previous release</li>
-    <li>Support locale routing of I18nRoutingBundle</li>
-</ul>
-
-<h2>0.9.20</h2>
-<ul>
-    <li>Mass improvements in php <a href="http://symfony2-plugin.espend.de/languages/php/index.html#container-builder">Container Builder</a> (setAlias, Definition, Reference, Alias, findTaggedServiceIds)</li>
-    <li>Provide goto for tagged container classes in php and yaml</li>
-    <li>Support php template files</li>
-    <li>Add ui for <a href="http://symfony2-plugin.espend.de/extension/signature_type.html">custom signature type</a> providers</li>
-    <li>Improvements in class doc hash provider and add new one #Interface</li>
-</ul>
-
-<h2>0.9.19</h2>
-<ul>
-    <li>Many improvements in template detection</li>
-    <li>Support for translation_domain inside OptionsResolverInterface:setDefaults</li>
-    <li>Hash tag docblocks are now searched on parent methods not only in current file</li>
-    <li>New provider for form options</li>
 </ul>
 
 <br/>
