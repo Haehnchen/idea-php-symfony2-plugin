@@ -356,4 +356,29 @@ public class RouteHelper {
         return null;
     }
 
+    @Nullable
+    public static String getRouteUrl(List<Collection<String>> routeTokens) {
+
+        String url = "";
+
+        // copy list;
+        List<Collection<String>> rokens = new ArrayList<Collection<String>>(routeTokens);
+        Collections.reverse(rokens);
+
+        for(Collection<String> blub: rokens) {
+            ArrayList<String> list = new ArrayList<String>(blub);
+
+            if(list.size() >= 2 && list.get(1).equals("text")) {
+                url = url.concat(list.get(0));
+            }
+
+            if(list.size() >= 4 && list.get(3).equals("variable")) {
+                url = url.concat(list.get(2) + "{" + list.get(0) + "}");
+            }
+
+        }
+
+        return url.length() == 0 ? null : url;
+    }
+
 }

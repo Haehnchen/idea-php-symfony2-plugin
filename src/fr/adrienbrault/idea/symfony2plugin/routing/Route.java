@@ -3,10 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -19,7 +16,7 @@ public class Route {
     private HashSet<String> variables = new HashSet<String>();
     private HashMap<String, String> defaults = new HashMap<String, String>();
     private HashMap<String, String> requirements = new HashMap<String, String>();
-    private ArrayList<Collection<String>> tokens = new ArrayList<Collection<String>>();
+    private List<Collection<String>> tokens = new ArrayList<Collection<String>>();
 
     public Route(String name, HashSet<String> variables, HashMap<String, String> defaults, HashMap<String, String> requirements, ArrayList<Collection<String>> tokens) {
         this.name = name;
@@ -61,7 +58,7 @@ public class Route {
         return requirements;
     }
 
-    public ArrayList<Collection<String>> getTokens() {
+    public List<Collection<String>> getTokens() {
         return tokens;
     }
 

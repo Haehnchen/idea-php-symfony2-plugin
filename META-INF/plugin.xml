@@ -316,6 +316,8 @@
         <completion.confidence language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpParameterStringCompletionConfidence"
                                id="asTrue" order="first"/>
 
+        <lang.foldingBuilder language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.PhpFoldingBuilder"/>
+
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
