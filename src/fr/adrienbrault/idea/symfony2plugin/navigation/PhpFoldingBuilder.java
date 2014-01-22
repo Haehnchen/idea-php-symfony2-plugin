@@ -14,7 +14,6 @@ import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -118,7 +117,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
     private void attachTemplateShortcuts(List<FoldingDescriptor> descriptors, final FoldingGroup group, final StringLiteralExpression stringLiteralExpression) {
 
-        if (MethodMatcher.getMatchedSignatureWithDepth(stringLiteralExpression, PhpTemplateReferenceContributor.TEMPLATE_SIGNATURES) == null) {
+        if (MethodMatcher.getMatchedSignatureWithDepth(stringLiteralExpression, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES) == null) {
             return;
         }
 
