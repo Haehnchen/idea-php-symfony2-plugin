@@ -58,6 +58,11 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public boolean yamlAnnotateServiceConfig = true;
 
+    public boolean codeFoldingPhpRoute = true;
+    public boolean codeFoldingPhpModel = true;
+    public boolean codeFoldingPhpTemplate = true;
+    public boolean codeFoldingTwigRoute = true;
+
     @Nullable
     public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<TwigNamespaceSetting>();
 

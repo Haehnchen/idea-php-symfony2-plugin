@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
@@ -39,7 +40,9 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
         List<FoldingDescriptor> descriptors = new ArrayList<FoldingDescriptor>();
 
-        attachPathFoldingDescriptors(psiElement, descriptors);
+        if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigRoute) {
+            attachPathFoldingDescriptors(psiElement, descriptors);
+        }
 
         return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
     }

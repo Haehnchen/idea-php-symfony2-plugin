@@ -9,6 +9,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
@@ -34,17 +35,36 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
             return new FoldingDescriptor[0];
         }
 
+        boolean codeFoldingPhpRoute = Settings.getInstance(psiElement.getProject()).codeFoldingPhpRoute;
+        boolean codeFoldingPhpModel = Settings.getInstance(psiElement.getProject()).codeFoldingPhpModel;
+        boolean codeFoldingPhpTemplate = Settings.getInstance(psiElement.getProject()).codeFoldingPhpTemplate;
+
+        // we dont need to do anything
+        if(!codeFoldingPhpRoute && !codeFoldingPhpModel && !codeFoldingPhpTemplate) {
+            return new FoldingDescriptor[0];
+        }
+
         List<FoldingDescriptor> descriptors = new ArrayList<FoldingDescriptor>();
         FoldingGroup model = FoldingGroup.newGroup("model");
         FoldingGroup template = FoldingGroup.newGroup("template");
 
         Collection<StringLiteralExpression> stringLiteralExpressiones = PsiTreeUtil.findChildrenOfType(psiElement, StringLiteralExpression.class);
         for(StringLiteralExpression stringLiteralExpression: stringLiteralExpressiones) {
-            attachModelShortcuts(descriptors, model, stringLiteralExpression);
-            attachTemplateShortcuts(descriptors, template, stringLiteralExpression);
+
+            if(codeFoldingPhpRoute) {
+                attachModelShortcuts(descriptors, model, stringLiteralExpression);
+            }
+
+            if(codeFoldingPhpTemplate) {
+                attachTemplateShortcuts(descriptors, template, stringLiteralExpression);
+            }
+
         }
 
-        attachRouteShortcuts(descriptors, stringLiteralExpressiones);
+        // strip ".[php|html].twig"
+        if(codeFoldingPhpModel) {
+            attachRouteShortcuts(descriptors, stringLiteralExpressiones);
+        }
 
         return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
     }

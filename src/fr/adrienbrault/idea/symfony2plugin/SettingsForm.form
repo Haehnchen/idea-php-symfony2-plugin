@@ -358,6 +358,51 @@
               <text value="Translation"/>
             </properties>
           </component>
+          <component id="df4be" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="10" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Code Folding"/>
+            </properties>
+          </component>
+          <component id="b198c" class="javax.swing.JCheckBox" binding="codeFoldingPhpRoute">
+            <constraints>
+              <grid row="12" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Route (PHP)"/>
+            </properties>
+          </component>
+          <component id="2246c" class="javax.swing.JCheckBox" binding="codeFoldingPhpModel">
+            <constraints>
+              <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Repository Entity (PHP)"/>
+            </properties>
+          </component>
+          <component id="d5f04" class="javax.swing.JCheckBox" binding="codeFoldingTwigRoute">
+            <constraints>
+              <grid row="18" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Route (Twig)"/>
+            </properties>
+          </component>
+          <component id="6b688" class="javax.swing.JCheckBox" binding="codeFoldingPhpTemplate">
+            <constraints>
+              <grid row="16" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Template (PHP)"/>
+            </properties>
+          </component>
         </children>
       </grid>
       <component id="2ef99" class="javax.swing.JCheckBox" binding="pluginEnabled">

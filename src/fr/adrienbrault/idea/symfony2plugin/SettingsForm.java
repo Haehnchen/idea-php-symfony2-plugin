@@ -58,6 +58,11 @@ public class SettingsForm implements Configurable {
     private JCheckBox highlightServices;
     private JCheckBox twigAnnotateTranslation;
     private JCheckBox phpAnnotateTranslation;
+    
+    private JCheckBox codeFoldingPhpRoute;
+    private JCheckBox codeFoldingPhpModel;
+    private JCheckBox codeFoldingTwigRoute;
+    private JCheckBox codeFoldingPhpTemplate;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -123,6 +128,11 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateTranslation.isSelected() == getSettings().phpAnnotateTranslation
             || !highlightServices.isSelected() == getSettings().phpHighlightServices
 
+            || !codeFoldingPhpRoute.isSelected() == getSettings().codeFoldingPhpRoute
+            || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
+            || !codeFoldingPhpTemplate.isSelected() == getSettings().codeFoldingPhpTemplate
+            || !codeFoldingTwigRoute.isSelected() == getSettings().codeFoldingTwigRoute
+
             || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
 
             || !directoryToApp.getText().equals(getSettings().directoryToApp)
@@ -155,6 +165,11 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
         getSettings().phpAnnotateTranslation = phpAnnotateTranslation.isSelected();
         getSettings().phpHighlightServices = highlightServices.isSelected();
+
+        getSettings().codeFoldingPhpRoute = codeFoldingPhpRoute.isSelected();
+        getSettings().codeFoldingPhpModel = codeFoldingPhpModel.isSelected();
+        getSettings().codeFoldingPhpTemplate = codeFoldingPhpTemplate.isSelected();
+        getSettings().codeFoldingTwigRoute = codeFoldingTwigRoute.isSelected();
 
         getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
 
@@ -199,6 +214,11 @@ public class SettingsForm implements Configurable {
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
         phpAnnotateTranslation.setSelected(getSettings().phpAnnotateTranslation);
         highlightServices.setSelected(getSettings().phpHighlightServices);
+
+        codeFoldingPhpRoute.setSelected(getSettings().codeFoldingPhpRoute);
+        codeFoldingPhpModel.setSelected(getSettings().codeFoldingPhpModel);
+        codeFoldingPhpTemplate.setSelected(getSettings().codeFoldingPhpTemplate);
+        codeFoldingTwigRoute.setSelected(getSettings().codeFoldingTwigRoute);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
 
