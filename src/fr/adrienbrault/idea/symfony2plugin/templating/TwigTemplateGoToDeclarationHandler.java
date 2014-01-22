@@ -38,7 +38,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
-            return this.getBlockGoTo(psiElement);
+            return getBlockGoTo(psiElement);
         }
 
         if (TwigHelper.getPathAfterLeafPattern().accepts(psiElement)) {
@@ -137,7 +137,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), signature);
     }
 
-    private PsiElement[] getBlockGoTo(PsiElement psiElement) {
+    public static PsiElement[] getBlockGoTo(PsiElement psiElement) {
         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
         ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(psiElement.getContainingFile());
 
