@@ -95,20 +95,23 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
         }
 
         String content = stringLiteralExpression.getContents();
-        if(!content.contains(":")) {
-            return;
-        }
 
-        final String replace = content.substring(content.lastIndexOf(":") + 1);
-        if(replace.length() > 0) {
-            descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
-                new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1), group) {
-                @Nullable
-                @Override
-                public String getPlaceholderText() {
-                    return replace;
+        for(String lastChar: new String[] {":", "\\"}) {
+            if(content.contains(lastChar)) {
+                final String replace = content.substring(content.lastIndexOf(lastChar) + 1);
+                if(replace.length() > 0) {
+                    descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
+                        new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1), group) {
+                        @Nullable
+                        @Override
+                        public String getPlaceholderText() {
+                            return replace;
+                        }
+                    });
                 }
-            });
+
+                return;
+            }
         }
 
     }

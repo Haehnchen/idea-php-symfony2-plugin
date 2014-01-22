@@ -362,11 +362,13 @@ public class RouteHelper {
         String url = "";
 
         // copy list;
-        List<Collection<String>> rokens = new ArrayList<Collection<String>>(routeTokens);
-        Collections.reverse(rokens);
+        List<Collection<String>> tokens = new ArrayList<Collection<String>>(routeTokens);
+        Collections.reverse(tokens);
 
-        for(Collection<String> blub: rokens) {
-            ArrayList<String> list = new ArrayList<String>(blub);
+        for(Collection<String> token: tokens) {
+
+            // copy, we are not allowed to mod list
+            List<String> list = new ArrayList<String>(token);
 
             if(list.size() >= 2 && list.get(1).equals("text")) {
                 url = url.concat(list.get(0));
