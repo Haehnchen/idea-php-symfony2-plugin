@@ -47,7 +47,7 @@ public class YamlElementPatternHelper {
                         PlatformPatterns.string().oneOf(keyName)
                     )
                 )
-            .withLanguage(YAMLLanguage.INSTANCE)
+                .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
 
@@ -272,6 +272,21 @@ public class YamlElementPatternHelper {
                 .inFile(getOrmFilePattern())
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
+    }
+
+    /**
+     * simplified getFilterOnPrevParent :)
+    * 
+     * services:
+     *   foo.name:
+     *     "complete": foo
+     */
+    public static ElementPattern<PsiElement> getSuperParentArrayKey(int levelParent, String... tree) {
+        return PlatformPatterns.psiElement()
+            .withSuperParent(levelParent, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns
+                .string().oneOfIgnoreCase(tree)
+            ))
+            .withLanguage(YAMLLanguage.INSTANCE);
     }
 
     /**
