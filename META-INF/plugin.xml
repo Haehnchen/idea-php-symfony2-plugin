@@ -316,6 +316,7 @@
                                id="asTrue" order="first"/>
 
         <lang.foldingBuilder language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.PhpFoldingBuilder"/>
+        <lang.foldingBuilder language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.TwigFoldingBuilder"/>
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
