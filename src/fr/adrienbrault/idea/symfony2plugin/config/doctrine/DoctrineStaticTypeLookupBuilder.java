@@ -78,7 +78,7 @@ public class DoctrineStaticTypeLookupBuilder {
     }
 
     public ArrayList<LookupElement> getPropertyMappings() {
-        return ListToElements(Arrays.asList("type", "name", "length", "unique", "nullable", "precision", "scale", "columnDefinition"));
+        return ListToElements(Arrays.asList("type", "name", "length", "unique", "nullable", "precision", "scale", "columnDefinition", "datetime"));
     }
 
     public ArrayList<LookupElement> ListToElements(List<String> items) {
