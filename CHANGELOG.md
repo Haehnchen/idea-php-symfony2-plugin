@@ -5,6 +5,16 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.41
+* Add code folding provider for php with support for route, template and repository
+* Add code folding provider for twig path and url function
+* Add settings for all code folding provider (default=true)
+* Add overwrite linemarker for twig blocks #75
+* Add yaml static service config completion (class, arguments, ... )
+* Readd twig completion workaround for filters (hell!)
+* Fix error on class name with trailing backslash on yaml annotator
+* Migrate template references, to resolve #46 fully
+
 ### 0.10.40
 * Add support for "Navigate > Related Files" (Ctrl+Alt+Home) inside controller action #191
 * Rename plugin settings key to more unique name "Symfony2PluginSettings" #209 #122
