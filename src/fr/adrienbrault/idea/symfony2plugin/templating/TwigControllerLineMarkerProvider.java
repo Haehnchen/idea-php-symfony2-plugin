@@ -91,7 +91,7 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
             return;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS).
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED).
             setTargets(blockTargets).
             setTooltipText("Navigate to block");
 
@@ -106,7 +106,7 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
             return;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDEN).
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDES).
             setTargets(blocks).
             setTooltipText("Navigate to block");
 
