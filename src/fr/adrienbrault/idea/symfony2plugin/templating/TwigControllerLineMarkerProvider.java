@@ -3,17 +3,27 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiElementFilter;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import java.util.*;
 
 public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
@@ -30,12 +40,13 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
 
         if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
             this.attachBlockImplementations(psiElement, result);
+            this.attachBlockImplements(psiElement, result);
         }
 
     }
 
     private void attachController(TwigFile psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
-        Method method = TwigUtil.findTwigFileController((TwigFile) psiElement);
+        Method method = TwigUtil.findTwigFileController(psiElement);
         if(method == null) {
             return;
         }
@@ -45,6 +56,47 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
             setTooltipText("Navigate to controller");
 
         result.add(builder.createLineMarkerInfo(psiElement));
+    }
+
+    private void attachBlockImplements(final PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+
+        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, true);
+        PsiFile psiFile = psiElement.getContainingFile();
+        if(psiFile == null) {
+            return;
+        }
+
+        List<PsiFile> twigChild = new ArrayList<PsiFile>();
+        getTwigChildList(files, psiFile, twigChild, 8);
+
+        if(twigChild.size() == 0) {
+            return;
+        }
+
+        final String blockName = psiElement.getText();
+
+        List<PsiElement> blockTargets = new ArrayList<PsiElement>();
+        for(PsiFile psiFile1: twigChild) {
+
+            blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, new PsiElementFilter() {
+                @Override
+                public boolean isAccepted(PsiElement psiElement) {
+                    return TwigHelper.getBlockTagPattern().accepts(psiElement) && blockName.equals(psiElement.getText());
+                }
+            })));
+
+        }
+
+        if(blockTargets.size() == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS).
+            setTargets(blockTargets).
+            setTooltipText("Navigate to block");
+
+        result.add(builder.createLineMarkerInfo(psiElement));
+
     }
 
     private void attachBlockImplementations(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
@@ -59,6 +111,46 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
             setTooltipText("Navigate to block");
 
         result.add(builder.createLineMarkerInfo(psiElement));
+
+    }
+
+
+    private static void getTwigChildList(Map<String, PsiFile> files, final PsiFile psiFile, final List<PsiFile> twigChild, int depth) {
+
+        if(depth <= 0) {
+            return;
+        }
+
+        // use set here, we have multiple shortcut on one file, but only one is required
+        final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<VirtualFile>();
+
+        for(Map.Entry<String, PsiFile> entry: files.entrySet()) {
+
+            // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
+            if(entry.getValue().equals(psiFile)) {
+                String key = entry.getKey();
+                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+                    @Override
+                    public boolean process(VirtualFile virtualFile) {
+                        virtualFiles.add(virtualFile);
+                        return true;
+                    }
+                }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
+
+            }
+
+        }
+
+        // finally resolve virtual file to twig files
+        for(VirtualFile virtualFile: virtualFiles) {
+
+            PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
+            if(resolvedPsiFile != null) {
+                twigChild.add(resolvedPsiFile);
+                getTwigChildList(files, resolvedPsiFile, twigChild, depth--);
+            }
+
+        }
 
     }
 
