@@ -131,7 +131,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             for(PhpDocTag phpDocTag: phpDocTags) {
                 for(Map.Entry<String, PsiElement> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
                     if(!uniqueTemplates.contains(entry.getKey())) {
-                        gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(entry.getValue(), entry.getKey()).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+                        gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(entry.getValue(), TwigUtil.getFoldingTemplateNameOrCurrent(entry.getKey())).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                         uniqueTemplates.add(entry.getKey());
                     }
                 }
@@ -145,7 +145,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         if(templateName != null) {
             for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(method.getProject(), templateName)) {
                 if(!uniqueTemplates.contains(templateName)) {
-                    gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, templateName).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+                    gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, TwigUtil.getFoldingTemplateNameOrCurrent(templateName)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                     uniqueTemplates.add(templateName);
                 }
             }

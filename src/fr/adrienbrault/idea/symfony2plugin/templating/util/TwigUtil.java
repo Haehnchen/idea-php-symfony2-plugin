@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -21,10 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -304,6 +302,12 @@ public class TwigUtil {
     }
 
     @Nullable
+    public static String getFoldingTemplateNameOrCurrent(@Nullable String templateName) {
+        String foldingName = getFoldingTemplateName(templateName);
+        return foldingName != null ? foldingName : templateName;
+    }
+
+    @Nullable
     public static String getFoldingTemplateName(@Nullable String content) {
         if(content == null || content.length() == 0) return null;
 
@@ -330,5 +334,57 @@ public class TwigUtil {
 
         return templateShortcutName;
     }
+    public static String getPresentableTemplateName(Map<String, PsiFile> files, PsiElement psiElement) {
+        return getPresentableTemplateName(files, psiElement, false);
+    }
 
+    public static String getPresentableTemplateName(Map<String, PsiFile> files, PsiElement psiElement, boolean shortMode) {
+
+        PsiFile psiFile = psiElement.getContainingFile();
+
+        List<String> templateNames = new ArrayList<String>();
+        for(Map.Entry<String, PsiFile> entry: files.entrySet()) {
+            if(entry.getValue().equals(psiFile)) {
+                templateNames.add(entry.getKey());
+            }
+        }
+
+        if(templateNames.size() > 0) {
+
+            // bundle names wins
+            if(templateNames.size() > 1) {
+                Collections.sort(templateNames, new TwigUtil.TemplateStringComparator());
+            }
+
+            String templateName = templateNames.iterator().next();
+            if(shortMode) {
+                String shortName = getFoldingTemplateName(templateName);
+                if(shortName != null) {
+                    return shortName;
+                }
+            }
+
+            return templateName;
+        }
+
+        String relativePath = VfsUtil.getRelativePath(psiFile.getVirtualFile(), psiFile.getProject().getBaseDir(), '/');
+        return relativePath != null ? relativePath : psiFile.getVirtualFile().getPath();
+
+    }
+
+    private static class TemplateStringComparator implements Comparator<String> {
+        @Override
+        public int compare(String o1, String o2) {
+
+            if(o1.startsWith("@") && o2.startsWith("@")) {
+                return 0;
+            }
+
+            if(!o1.startsWith("@") && o2.startsWith("@")) {
+                return -1;
+            }
+
+            return 1;
+        }
+    }
 }

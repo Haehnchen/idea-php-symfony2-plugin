@@ -1,8 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
+import com.intellij.codeInsight.daemon.LineMarkerInfo;
+import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -10,6 +12,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.ConstantFunction;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIcons;
@@ -17,35 +20,49 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvider {
+public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
-    protected void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    @Override
+    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
 
-        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
-            return;
-        }
+        for(PsiElement psiElement: psiElements) {
 
-        if(psiElement instanceof TwigFile) {
-            attachController((TwigFile) psiElement, result);
-            return;
-        }
+            // blocks
+            if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
 
-        if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
-            this.attachBlockImplementations(psiElement, result);
-            this.attachBlockImplements(psiElement, result);
+                LineMarkerInfo lineImpl = this.attachBlockImplements(psiElement);
+                if(lineImpl != null) {
+                    results.add(lineImpl);
+                }
+
+                LineMarkerInfo lineOverwrites = this.attachBlockOverwrites(psiElement);
+                if(lineOverwrites != null) {
+                    results.add(lineOverwrites);
+                }
+
+            }
+
+            // controller
+            if(psiElement instanceof TwigFile) {
+                attachController((TwigFile) psiElement, results);
+            }
+
         }
 
     }
 
     private void attachController(TwigFile psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+
         Method method = TwigUtil.findTwigFileController(psiElement);
         if(method == null) {
             return;
@@ -58,19 +75,20 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void attachBlockImplements(final PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    @Nullable
+    private LineMarkerInfo attachBlockImplements(final PsiElement psiElement) {
 
-        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, true);
+        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, false);
         PsiFile psiFile = psiElement.getContainingFile();
         if(psiFile == null) {
-            return;
+            return null;
         }
 
         List<PsiFile> twigChild = new ArrayList<PsiFile>();
         getTwigChildList(files, psiFile, twigChild, 8);
 
         if(twigChild.size() == 0) {
-            return;
+            return null;
         }
 
         final String blockName = psiElement.getText();
@@ -88,32 +106,59 @@ public class TwigControllerLineMarkerProvider extends RelatedItemLineMarkerProvi
         }
 
         if(blockTargets.size() == 0) {
-            return;
+            return null;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED).
-            setTargets(blockTargets).
-            setTooltipText("Navigate to block");
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        for(PsiElement blockTag: blockTargets) {
+            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files, blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+        }
 
-        result.add(builder.createLineMarkerInfo(psiElement));
+        // single item has no popup
+        String title = "Implementations";
+        if(gotoRelatedItems.size() == 1) {
+            String customName = gotoRelatedItems.get(0).getCustomName();
+            if(customName != null) {
+                title = String.format("Impl: %s", customName);
+            }
+        }
+
+        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), PhpIcons.IMPLEMENTED, 6, new ConstantFunction(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
 
     }
 
-    private void attachBlockImplementations(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    @Nullable
+    private LineMarkerInfo attachBlockOverwrites(PsiElement psiElement) {
+
+        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, false);
 
         PsiElement[] blocks = TwigTemplateGoToDeclarationHandler.getBlockGoTo(psiElement);
         if(blocks.length == 0) {
-            return;
+            return null;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDES).
-            setTargets(blocks).
-            setTooltipText("Navigate to block");
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        for(PsiElement blockTag: blocks) {
+            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files, blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+        }
 
-        result.add(builder.createLineMarkerInfo(psiElement));
+        // single item has no popup
+        String title = "Overwrites";
+        if(gotoRelatedItems.size() == 1) {
+            String customName = gotoRelatedItems.get(0).getCustomName();
+            if(customName != null) {
+                title = title.concat(": ").concat(customName);
+            }
+        }
 
+        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), PhpIcons.OVERRIDES, 6, new ConstantFunction(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
+    @Nullable
+    @Override
+    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+        return null;
+    }
 
     private static void getTwigChildList(Map<String, PsiFile> files, final PsiFile psiFile, final List<PsiFile> twigChild, int depth) {
 
