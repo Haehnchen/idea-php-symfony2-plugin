@@ -15,6 +15,9 @@ public class TwigUtilTest extends Assert {
         assertEquals("Bundle:", TwigUtil.getFoldingTemplateName("Bundle:.html.twig"));
         assertEquals("edit", TwigUtil.getFoldingTemplateName("edit.html.twig"));
         assertNull(TwigUtil.getFoldingTemplateName("FooBundle:edit.foo.twig"));
+        assertNull(TwigUtil.getFoldingTemplateName(""));
+        assertNull(TwigUtil.getFoldingTemplateName(null));
+
 
     }
 

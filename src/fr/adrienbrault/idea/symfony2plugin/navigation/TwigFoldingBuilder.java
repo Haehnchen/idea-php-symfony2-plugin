@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -17,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +36,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
     @Override
     public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement psiElement, @NotNull Document document, boolean b) {
 
-        if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof TwigFile)) {
             return new FoldingDescriptor[0];
         }
 
@@ -44,7 +46,42 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             attachPathFoldingDescriptors(psiElement, descriptors);
         }
 
+        if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigTemplate) {
+            attachTemplateFoldingDescriptors(psiElement, descriptors);
+        }
+
         return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
+    }
+
+    private void attachTemplateFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
+        // find path calls in file
+        PsiElement[] fileReferences = PsiTreeUtil.collectElements(psiElement, new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement psiElement) {
+                return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement);
+            }
+        });
+
+        if(fileReferences.length == 0) {
+            return;
+        }
+
+        FoldingGroup group = FoldingGroup.newGroup("template");
+
+        for(PsiElement fileReference: fileReferences) {
+            final String templateShortcutName = TwigUtil.getFoldingTemplateName(fileReference.getText());
+            if(templateShortcutName != null) {
+                descriptors.add(new FoldingDescriptor(fileReference.getNode(),
+                    new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset()), group) {
+                    @Nullable
+                    @Override
+                    public String getPlaceholderText() {
+                        return templateShortcutName;
+                    }
+                });
+            }
+        }
+
     }
 
     private void attachPathFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {

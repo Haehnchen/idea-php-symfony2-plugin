@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.FoldingGroup;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -33,7 +34,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
     @Override
     public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement psiElement, @NotNull Document document, boolean b) {
 
-        if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof PhpFile)) {
             return new FoldingDescriptor[0];
         }
 

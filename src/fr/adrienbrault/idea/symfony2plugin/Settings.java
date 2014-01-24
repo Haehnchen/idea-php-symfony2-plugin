@@ -62,6 +62,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingPhpModel = true;
     public boolean codeFoldingPhpTemplate = true;
     public boolean codeFoldingTwigRoute = true;
+    public boolean codeFoldingTwigTemplate = true;
 
     @Nullable
     public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<TwigNamespaceSetting>();

@@ -63,6 +63,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox codeFoldingPhpModel;
     private JCheckBox codeFoldingTwigRoute;
     private JCheckBox codeFoldingPhpTemplate;
+    private JCheckBox codeFoldingTwigTemplate;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -132,6 +133,7 @@ public class SettingsForm implements Configurable {
             || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
             || !codeFoldingPhpTemplate.isSelected() == getSettings().codeFoldingPhpTemplate
             || !codeFoldingTwigRoute.isSelected() == getSettings().codeFoldingTwigRoute
+            || !codeFoldingTwigTemplate.isSelected() == getSettings().codeFoldingTwigTemplate
 
             || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
 
@@ -170,6 +172,7 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingPhpModel = codeFoldingPhpModel.isSelected();
         getSettings().codeFoldingPhpTemplate = codeFoldingPhpTemplate.isSelected();
         getSettings().codeFoldingTwigRoute = codeFoldingTwigRoute.isSelected();
+        getSettings().codeFoldingTwigTemplate = codeFoldingTwigTemplate.isSelected();
 
         getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
 
@@ -219,6 +222,7 @@ public class SettingsForm implements Configurable {
         codeFoldingPhpModel.setSelected(getSettings().codeFoldingPhpModel);
         codeFoldingPhpTemplate.setSelected(getSettings().codeFoldingPhpTemplate);
         codeFoldingTwigRoute.setSelected(getSettings().codeFoldingTwigRoute);
+        codeFoldingTwigTemplate.setSelected(getSettings().codeFoldingTwigTemplate);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
 

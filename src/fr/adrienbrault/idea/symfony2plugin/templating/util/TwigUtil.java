@@ -304,7 +304,8 @@ public class TwigUtil {
     }
 
     @Nullable
-    public static String getFoldingTemplateName(String content) {
+    public static String getFoldingTemplateName(@Nullable String content) {
+        if(content == null || content.length() == 0) return null;
 
         String templateShortcutName = null;
         if(content.endsWith(".html.twig") && content.length() > 10) {
