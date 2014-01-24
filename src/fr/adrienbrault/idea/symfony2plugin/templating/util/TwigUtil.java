@@ -303,4 +303,31 @@ public class TwigUtil {
 
     }
 
+    @Nullable
+    public static String getFoldingTemplateName(String content) {
+
+        String templateShortcutName = null;
+        if(content.endsWith(".html.twig") && content.length() > 10) {
+            templateShortcutName = content.substring(0, content.length() - 10);
+        } else if(content.endsWith(".html.php") && content.length() > 9) {
+            templateShortcutName = content.substring(0, content.length() - 9);
+        }
+
+        if(templateShortcutName == null || templateShortcutName.length() == 0) {
+            return null;
+        }
+
+        // template FooBundle:Test:edit.html.twig
+        if(templateShortcutName.length() <= "Bundle:".length()) {
+            return templateShortcutName;
+        }
+
+        int split = templateShortcutName.indexOf("Bundle:");
+        if(split > 0) {
+            templateShortcutName = templateShortcutName.substring(0, split) + templateShortcutName.substring("Bundle".length() + split);
+        }
+
+        return templateShortcutName;
+    }
+
 }

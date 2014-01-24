@@ -11,10 +11,12 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -142,15 +144,9 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
         }
 
         String content = stringLiteralExpression.getContents();
-        String templateShortcutName = null;
 
-        if(content.endsWith(".html.twig") && content.length() > 10) {
-            templateShortcutName = content.substring(0, content.length() - 10);
-        } else if(content.endsWith(".html.php") && content.length() > 9) {
-            templateShortcutName = content.substring(0, content.length() - 9);
-        }
-
-        if(templateShortcutName == null || templateShortcutName.length() == 0) {
+        String templateShortcutName = TwigUtil.getFoldingTemplateName(content);
+        if(templateShortcutName == null) {
             return;
         }
 
