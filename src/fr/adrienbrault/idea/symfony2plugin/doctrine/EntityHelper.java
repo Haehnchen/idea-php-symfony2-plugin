@@ -2,10 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -20,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -295,6 +293,30 @@ public class EntityHelper {
         }
 
         return null;
+    }
+
+    public static PsiElement[] getModelPsiTargets(Project project, @NotNull String entityName) {
+        List<PsiElement> results = new ArrayList<PsiElement>();
+
+        PhpClass phpClass = EntityHelper.getEntityRepositoryClass(project, entityName);
+        if(phpClass != null) {
+            results.add(phpClass);
+        }
+
+        // search any php model file
+        PhpClass entity = EntityHelper.resolveShortcutName(project, entityName);
+        if(entity != null) {
+            results.add(entity);
+
+            // find model config eg ClassName.orm.yml
+            PsiFile psiFile = EntityHelper.getModelConfigFile(entity);
+            if(psiFile != null) {
+                results.add(psiFile);
+            }
+
+        }
+
+        return results.toArray(new PsiElement[results.size()]);
     }
 
 }

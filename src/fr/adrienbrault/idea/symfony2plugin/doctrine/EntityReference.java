@@ -48,27 +48,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
-
-        PhpClass phpClass = EntityHelper.getEntityRepositoryClass(getElement().getProject(), this.entityName);
-        if(phpClass != null) {
-            results.add(new PsiElementResolveResult(phpClass));
-        }
-
-        // search any php model file
-        PhpClass entity = EntityHelper.resolveShortcutName(getElement().getProject(), this.entityName);
-        if(entity != null) {
-            results.add(new PsiElementResolveResult(entity));
-
-            // find model config eg ClassName.orm.yml
-            PsiFile psiFile = EntityHelper.getModelConfigFile(entity);
-            if(psiFile != null) {
-                results.add(new PsiElementResolveResult(psiFile));
-            }
-
-        }
-
-        return results.toArray(new ResolveResult[results.size()]);
+        return PsiElementResolveResult.createResults(EntityHelper.getModelPsiTargets(getElement().getProject(), this.entityName));
     }
 
     @NotNull

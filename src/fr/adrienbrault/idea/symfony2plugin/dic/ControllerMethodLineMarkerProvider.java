@@ -4,26 +4,28 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.impl.ElementBase;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import javax.swing.*;
 import java.util.*;
@@ -90,8 +92,19 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
     public static List<GotoRelatedItem> getGotoRelatedItems(Method method) {
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
 
-        attachRelatedTemplates(method, gotoRelatedItems);
+
+        // inside method
+        PsiElement[] methodParameter = PsiTreeUtil.collectElements(method, new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement psiElement) {
+                return psiElement.getParent() instanceof ParameterList;
+            }
+        });
+
+        attachRelatedTemplates(method, methodParameter, gotoRelatedItems);
         attachRelatedRoutes(method, gotoRelatedItems);
+        attachRelatedModels(method, methodParameter, gotoRelatedItems);
+
         return gotoRelatedItems;
     }
 
@@ -120,7 +133,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private static void attachRelatedTemplates(Method method, List<GotoRelatedItem> gotoRelatedItems) {
+    private static void attachRelatedTemplates(Method method, PsiElement[] parameterValues, List<GotoRelatedItem> gotoRelatedItems) {
 
         Set<String> uniqueTemplates = new HashSet<String>();
 
@@ -151,22 +164,45 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        // inside method
-        for(MethodReference methodReference : PsiTreeUtil.findChildrenOfType(method, MethodReference.class)) {
-            if(new Symfony2InterfacesUtil().isTemplatingRenderCall(methodReference)) {
-                PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt((methodReference).getParameterList(), 0);
-                if(templateParameter != null) {
-                    String resolveString = PhpElementsUtil.getStringValue(templateParameter);
-                    if(resolveString != null && !uniqueTemplates.contains(resolveString)) {
-                        uniqueTemplates.add(resolveString);
-                        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(method.getProject(), resolveString)) {
-                            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
-                        }
+        for(PsiElement psiElement: parameterValues) {
+            MethodMatcher.MethodMatchParameter matchedSignature = MethodMatcher.getMatchedSignatureWithDepth(psiElement, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES);
+            if (matchedSignature != null) {
+                String resolveString = PhpElementsUtil.getStringValue(psiElement);
+                if(resolveString != null && !uniqueTemplates.contains(resolveString)) {
+                    uniqueTemplates.add(resolveString);
+                    for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(method.getProject(), resolveString)) {
+                        gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                     }
                 }
             }
+
         }
 
+
+    }
+
+    private static void attachRelatedModels(Method method, PsiElement[] parameterValues, List<GotoRelatedItem> gotoRelatedItems) {
+
+        for(PsiElement psiElement: parameterValues) {
+            MethodMatcher.MethodMatchParameter matchedSignature = MethodMatcher.getMatchedSignatureWithDepth(psiElement, SymfonyPhpReferenceContributor.REPOSITORY_SIGNATURES);
+            if (matchedSignature != null) {
+                String resolveString = PhpElementsUtil.getStringValue(psiElement);
+                if(resolveString != null)  {
+                    for(PsiElement templateTarget: EntityHelper.getModelPsiTargets(method.getProject(), resolveString)) {
+
+                        // we can provide targets to model config and direct class targets
+                        if(templateTarget instanceof PsiFile) {
+                            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(templateTarget.getIcon(0), Symfony2Icons.SYMFONY_LINE_MARKER));
+                        } else {
+                            // @TODO: we can resolve for model types and provide icons, but not for now
+                            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(Symfony2Icons.DOCTRINE, Symfony2Icons.SYMFONY_LINE_MARKER));
+                        }
+
+                    }
+                }
+            }
+
+        }
 
     }
 
