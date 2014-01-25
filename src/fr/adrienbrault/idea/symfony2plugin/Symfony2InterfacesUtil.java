@@ -269,6 +269,13 @@ public class Symfony2InterfacesUtil {
         return isInstanceOf(subjectClass.getSuperClass(), expectedClass);
     }
 
+    public boolean isCallTo(MethodReference e, String ClassInterfaceName, String methodName) {
+        return isCallTo((PsiElement) e, ClassInterfaceName, methodName);
+    }
+
+    /**
+     * @deprecated isCallTo with MethodReference
+     */
     public boolean isCallTo(PsiElement e, String ClassInterfaceName, String methodName) {
 
         // we need a full fqn name

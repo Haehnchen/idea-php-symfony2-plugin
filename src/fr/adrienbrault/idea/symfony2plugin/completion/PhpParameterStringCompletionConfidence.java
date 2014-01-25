@@ -4,12 +4,10 @@ import com.intellij.codeInsight.completion.CompletionConfidence;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.ArrayIndex;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +24,11 @@ public class PhpParameterStringCompletionConfidence extends CompletionConfidence
         PsiElement context = contextElement.getContext();
         if(!(context instanceof StringLiteralExpression)) {
             return ThreeState.UNSURE;
+        }
+
+        // $test == "";
+        if(context.getParent() instanceof BinaryExpression) {
+            return ThreeState.NO;
         }
 
         // $this->container->get("");
