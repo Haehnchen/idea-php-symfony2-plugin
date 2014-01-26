@@ -281,12 +281,83 @@ public class YamlElementPatternHelper {
      *   foo.name:
      *     "complete": foo
      */
-    public static ElementPattern<PsiElement> getSuperParentArrayKey(int levelParent, String... tree) {
-        return PlatformPatterns.psiElement()
-            .withSuperParent(levelParent, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns
-                .string().oneOfIgnoreCase(tree)
-            ))
-            .withLanguage(YAMLLanguage.INSTANCE);
+    public static ElementPattern<PsiElement> getSuperParentArrayKey(String... tree) {
+        return PlatformPatterns.or(
+
+            // match
+            //
+            // tree:
+            //   xxx:
+            //     refer|: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_KEY)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                                .withParent(PlatformPatterns
+                                    .psiElement(YAMLKeyValue.class)
+                                    .withName(PlatformPatterns
+                                        .string().oneOfIgnoreCase(tree)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // tree:
+            //   xxx:
+            //     xxx: xxx
+            //     refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLKeyValue.class)
+                                .withName(PlatformPatterns
+                                    .string().oneOfIgnoreCase(tree)
+                                )
+                            )
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // tree:
+            //   xxx:
+            //     refer|
+            //     xxx: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withName(PlatformPatterns
+                                .string().oneOfIgnoreCase(tree)
+                            )
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
     }
 
     /**
