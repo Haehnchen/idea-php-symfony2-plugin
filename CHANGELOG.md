@@ -5,6 +5,13 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.42
+* Add twig template folding and strip "Bundle"
+* Add twig implements and overwrites block linemarker and provide custom popover #75
+* Add basic implementation of enum like completion behavior eg Response::setStatusCode, Request::getMethod
+* Add doctrine related files to controller method popup
+* Use folding names in related file popup where suitable
+
 ### 0.10.41
 * Add code folding provider for php with support for route, template and repository
 * Add code folding provider for twig path and url function

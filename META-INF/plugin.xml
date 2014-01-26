@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.41</version>
+    <version>0.10.42</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -97,6 +97,15 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.42</h2>
+<ul>
+    <li>Add twig template folding and strip "Bundle"</li>
+    <li>Add twig implements and overwrites block linemarker and provide custom popover <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/75">#75</a></li>
+    <li>Add basic implementation of enum like completion behavior eg Response::setStatusCode, Request::getMethod</li>
+    <li>Add doctrine related files to controller method popup</li>
+    <li>Use folding names in related file popup where suitable</li>
+</ul>
 
 <h2>0.10.41</h2>
 <ul>
