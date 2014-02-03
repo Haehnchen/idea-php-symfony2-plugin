@@ -160,7 +160,13 @@ public class YamlHelper {
                         for(YAMLKeyValue yamlParameterArray:  yamlParameter) {
                             String keyName = yamlParameterArray.getKeyText();
                             if(StringUtils.isNotBlank(keyName)) {
-                                map.put(yamlParameterArray.getKeyText().toLowerCase(), yamlParameterArray.getValue().getText());
+                                PsiElement value = yamlParameterArray.getValue();
+                                if(value != null) {
+                                    String valueText = value.getText();
+                                    if(StringUtils.isNotBlank(valueText)) {
+                                        map.put(keyName.toLowerCase(), valueText);
+                                    }
+                                }
                             }
                         }
                     }
