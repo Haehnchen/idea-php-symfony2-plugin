@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -62,7 +63,11 @@ public class TwigTypeResolveUtil {
 
     public static String[] formatPsiTypeName(PsiElement psiElement) {
 
-        String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.psiElement(PsiWhiteSpace.class));
+        String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.or(
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+            PlatformPatterns.psiElement(PsiWhiteSpace.class
+        )));
+
         if(typeNames.trim().length() == 0) {
             return new String[]{};
         }

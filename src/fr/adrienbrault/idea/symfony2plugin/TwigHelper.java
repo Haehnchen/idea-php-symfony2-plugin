@@ -265,6 +265,18 @@ public class TwigHelper {
         return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)).withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getCompletablePattern() {
+        return  PlatformPatterns.psiElement()
+            .afterLeaf(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class)
+                )
+            )
+            .withParent(PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK))
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getBlockTagPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)

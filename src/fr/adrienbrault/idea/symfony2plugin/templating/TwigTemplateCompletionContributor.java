@@ -221,7 +221,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // provides support for {{ '<xxx>' }}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getPrintBlockFunctionPattern(),
+            TwigHelper.getCompletablePattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,
@@ -232,10 +232,6 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     PsiElement psiElement = parameters.getPosition().getOriginalElement();
-                    PsiElement prevElement = psiElement.getPrevSibling();
-                    if ((prevElement == null) || !(prevElement instanceof PsiWhiteSpace)) {
-                        return;
-                    }
 
                     for(Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFunctions().entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(TwigExtensionParser.getIcon(entry.getValue().getTwigExtensionType())).withTypeText(entry.getValue().getType()).withInsertHandler(FunctionInsertHandler.getInstance()));

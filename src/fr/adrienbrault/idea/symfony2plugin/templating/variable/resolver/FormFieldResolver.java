@@ -25,7 +25,7 @@ public class FormFieldResolver implements TwigTypeResolver {
 
     public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable List<PsiVariable> psiVariables) {
 
-        if(psiVariables == null || previousElements == null || previousElements.size() != 0) {
+        if(targets.size() == 0 || psiVariables == null || previousElements == null || previousElements.size() != 0) {
             return;
         }
 
