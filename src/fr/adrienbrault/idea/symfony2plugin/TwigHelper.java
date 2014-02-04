@@ -379,6 +379,13 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static PsiElementPattern.Capture<PsiElement> getFormThemeFileTag() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().matches("\\{%\\s+form_theme.*")))
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getRoutePattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")

@@ -58,7 +58,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
         PsiElement[] fileReferences = PsiTreeUtil.collectElements(psiElement, new PsiElementFilter() {
             @Override
             public boolean isAccepted(PsiElement psiElement) {
-                return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement);
+                return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigHelper.getFormThemeFileTag().accepts(psiElement);
             }
         });
 

@@ -387,6 +387,35 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new ControllerCompletionProvider()
         );
 
+        // {# @Container Foo:Bar #}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getFormThemeFileTag(),
+            new FormThemeCompletionProvider()
+        );
+
+
+    }
+
+    private class FormThemeCompletionProvider extends CompletionProvider<CompletionParameters> {
+
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+
+            PsiElement psiElement = parameters.getOriginalPosition();
+
+            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return;
+            }
+
+            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+            for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
+                resultSet.addElement(
+                    new TemplateLookupElement(entry.getKey(), entry.getValue())
+                );
+            }
+
+        }
     }
 
     /**
