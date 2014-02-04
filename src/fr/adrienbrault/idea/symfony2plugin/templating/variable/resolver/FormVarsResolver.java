@@ -4,13 +4,15 @@ import com.google.common.collect.Iterables;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
 
 public class FormVarsResolver implements TwigTypeResolver {
 
-    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements) {
+    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable List<PsiVariable> psiVariables) {
 
         if(!"vars".equals(typeName) || previousElements.size() == 0) {
             return;

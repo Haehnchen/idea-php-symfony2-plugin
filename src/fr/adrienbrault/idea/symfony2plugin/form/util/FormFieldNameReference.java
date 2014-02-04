@@ -52,6 +52,10 @@ public class FormFieldNameReference extends PsiReferenceBase<PsiElement> impleme
     @NotNull
     @Override
     public Object[] getVariants() {
+        return getFormLookups(method);
+    }
+
+    public static LookupElement[] getFormLookups(Method method) {
 
         MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
@@ -63,7 +67,7 @@ public class FormFieldNameReference extends PsiReferenceBase<PsiElement> impleme
             }
         }
 
-        return lookupElements.toArray();
+        return lookupElements.toArray(new LookupElement[lookupElements.size()]);
     }
 
 }

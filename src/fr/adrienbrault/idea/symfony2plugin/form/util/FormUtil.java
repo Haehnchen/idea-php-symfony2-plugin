@@ -122,15 +122,24 @@ public class FormUtil {
             return null;
         }
 
+        return getFormTypeClass((MethodReference) calledMethodReference);
+
+    }
+
+    public static PhpClass getFormTypeClass(@Nullable MethodReference calledMethodReference) {
+
+        if(calledMethodReference == null) {
+            return null;
+        }
+
         if(new Symfony2InterfacesUtil().isCallTo(calledMethodReference, "\\Symfony\\Component\\Form\\FormFactory", "create")) {
             return null;
         }
 
         // $form = "$this->createForm("new Type()", $entity)";
-        PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt((MethodReference) calledMethodReference, 0);
+        PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(calledMethodReference, 0);
 
         return getFormTypeClassOnParameter(formType);
-
     }
 
     /**

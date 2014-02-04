@@ -87,19 +87,18 @@ public class TwigTypeResolveUtil {
             return Collections.emptyList();
         }
 
-        Collection<? extends PhpNamedElement> rootVariable = getRootVariableByName(psiElement, typeName[0]);
+        List<PsiVariable> rootVariables = getRootVariableByName(psiElement, typeName[0]);
         if(typeName.length == 1) {
 
-            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(rootVariable);
-
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
             for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
-                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<List<TwigTypeContainer>>());
+                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<List<TwigTypeContainer>>(), rootVariables);
             }
 
             return twigTypeContainers;
         }
 
-        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(rootVariable);
+        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<List<TwigTypeContainer>> ();
         previousElements.add(new ArrayList<TwigTypeContainer>(type));
 
@@ -267,12 +266,13 @@ public class TwigTypeResolveUtil {
 
     }
 
-    private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
+    private static List<PsiVariable> getRootVariableByName(PsiElement psiElement, String variableName) {
 
-        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        List<PsiVariable> phpNamedElements = new ArrayList<PsiVariable>();
         for(Map.Entry<String, PsiVariable> variable : collectScopeVariables(psiElement).entrySet()) {
             if(variable.getKey().equals(variableName)) {
-                phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue().getTypes()));
+                phpNamedElements.add(variable.getValue());
+                //phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue().getTypes()));
             }
 
         }
@@ -300,7 +300,7 @@ public class TwigTypeResolveUtil {
             }
 
             for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
-                twigTypeResolver.resolve(phpNamedElements, previousElement, typeName, twigTypeContainer);
+                twigTypeResolver.resolve(phpNamedElements, previousElement, typeName, twigTypeContainer, null);
             }
 
         }
