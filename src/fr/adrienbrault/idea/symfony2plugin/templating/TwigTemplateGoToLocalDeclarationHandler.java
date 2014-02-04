@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
@@ -98,12 +99,20 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         // click on first item is our class name
         String[] beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
         if(beforeLeaf.length == 0) {
-            targetPsiElements.addAll(TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement, true)));
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement, true));
+            for(TwigTypeContainer twigTypeContainer: twigTypeContainers) {
+                if(twigTypeContainer.getPhpNamedElement() != null) {
+                    targetPsiElements.add(twigTypeContainer.getPhpNamedElement());
+                }
+            }
+
         } else {
-            Collection<? extends PhpNamedElement> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
+            Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
             // provide method / field goto
-            for(PhpNamedElement psiTarget: types) {
-                targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiTarget, psiElement.getText()));
+            for(TwigTypeContainer twigTypeContainer: types) {
+                if(twigTypeContainer.getPhpNamedElement() != null) {
+                    targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(twigTypeContainer.getPhpNamedElement(), psiElement.getText()));
+                }
             }
         }
 

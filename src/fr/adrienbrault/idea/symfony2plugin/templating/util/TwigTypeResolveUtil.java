@@ -20,11 +20,13 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -71,7 +73,7 @@ public class TwigTypeResolveUtil {
         return possibleTypes;
     }
 
-    public static Collection<? extends PhpNamedElement> resolveTwigMethodName(PsiElement psiElement, String[] typeName) {
+    public static Collection<TwigTypeContainer> resolveTwigMethodName(PsiElement psiElement, String[] typeName) {
 
         if(typeName.length == 0) {
             return Collections.emptyList();
@@ -79,10 +81,10 @@ public class TwigTypeResolveUtil {
 
         Collection<? extends PhpNamedElement> rootVariable = getRootVariableByName(psiElement, typeName[0]);
         if(typeName.length == 1) {
-            return rootVariable;
+            return TwigTypeContainer.fromCollection(rootVariable);
         }
 
-        Collection<? extends PhpNamedElement> type = rootVariable;
+        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(rootVariable);
         for (int i = 1; i <= typeName.length - 1; i++ ) {
             type = resolveTwigMethodName(type, typeName[i]);
 
@@ -93,7 +95,7 @@ public class TwigTypeResolveUtil {
 
         }
 
-        return type;
+        return TwigTypeContainer.fromCollection(rootVariable);
     }
 
     /**
@@ -250,20 +252,24 @@ public class TwigTypeResolveUtil {
 
     }
 
-    private static Collection<? extends PhpNamedElement> resolveTwigMethodName(Collection<? extends PhpNamedElement> previousElement, String typeName) {
+    private static Collection<TwigTypeContainer> resolveTwigMethodName(Collection<TwigTypeContainer> previousElement, String typeName) {
 
-        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        ArrayList<TwigTypeContainer> phpNamedElements = new ArrayList<TwigTypeContainer>();
 
-        for(PhpNamedElement phpNamedElement: previousElement) {
-            for(PhpNamedElement target : getTwigPhpNameTargets(phpNamedElement, typeName)) {
-                PhpType phpType = target.getType();
-                for(String typeString: phpType.getTypes()) {
-                    PhpNamedElement phpNamedElement1 = PhpElementsUtil.getClassInterface(phpNamedElement.getProject(), typeString);
-                    if(phpNamedElement1 != null) {
-                        phpNamedElements.add(phpNamedElement1);
+        for(TwigTypeContainer phpNamedElement: previousElement) {
+
+            if(phpNamedElement.getPhpNamedElement() != null) {
+                for(PhpNamedElement target : getTwigPhpNameTargets(phpNamedElement.getPhpNamedElement(), typeName)) {
+                    PhpType phpType = target.getType();
+                    for(String typeString: phpType.getTypes()) {
+                        PhpNamedElement phpNamedElement1 = PhpElementsUtil.getClassInterface(phpNamedElement.getPhpNamedElement().getProject(), typeString);
+                        if(phpNamedElement1 != null) {
+                            phpNamedElements.add(new TwigTypeContainer(phpNamedElement1));
+                        }
                     }
                 }
             }
+
         }
 
         return phpNamedElements;

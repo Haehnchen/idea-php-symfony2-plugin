@@ -33,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsService
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
@@ -453,16 +454,16 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             String[] possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
 
             // find core function for that
-            for(PhpNamedElement phpNamedElement: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
-                if(phpNamedElement instanceof PhpClass) {
+            for(TwigTypeContainer twigTypeContainer: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
+                if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
 
-                    for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
+                    for(Method method: ((PhpClass) twigTypeContainer.getPhpNamedElement()).getMethods()) {
                         if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(method));
                         }
                     }
 
-                    for(Field field: ((PhpClass) phpNamedElement).getFields()) {
+                    for(Field field: ((PhpClass) twigTypeContainer.getPhpNamedElement()).getFields()) {
                         if(field.getModifier().isPublic()) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(field));
                         }
