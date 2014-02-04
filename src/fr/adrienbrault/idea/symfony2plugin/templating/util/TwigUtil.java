@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -283,9 +284,9 @@ public class TwigUtil {
 
     }
 
-    public static HashMap<String, Set<String>> collectControllerTemplateVariables(PsiElement psiElement) {
+    public static HashMap<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
 
-        HashMap<String, Set<String>> vars = new HashMap<String, Set<String>>();
+        HashMap<String, PsiVariable> vars = new HashMap<String, PsiVariable>();
 
         PsiFile psiFile = psiElement.getContainingFile();
         if(!(psiFile instanceof TwigFile)) {

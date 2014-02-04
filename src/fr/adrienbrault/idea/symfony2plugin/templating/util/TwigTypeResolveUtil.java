@@ -22,11 +22,14 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigTypeResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -44,6 +47,11 @@ public class TwigTypeResolveUtil {
         new ServiceContainerVariableCollector(),
         new FileDocVariableCollector(),
         new ControllerVariableCollector(),
+    };
+
+    private static TwigTypeResolver[] twigTypeResolvers = new TwigTypeResolver[] {
+        new FormVarsResolver(),
+        new FormFieldResolver(),
     };
 
     public static String[] formatPsiTypeName(PsiElement psiElement, boolean includeCurrent) {
@@ -81,12 +89,23 @@ public class TwigTypeResolveUtil {
 
         Collection<? extends PhpNamedElement> rootVariable = getRootVariableByName(psiElement, typeName[0]);
         if(typeName.length == 1) {
-            return TwigTypeContainer.fromCollection(rootVariable);
+
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(rootVariable);
+
+            for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
+                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<List<TwigTypeContainer>>());
+            }
+
+            return twigTypeContainers;
         }
 
         Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(rootVariable);
+        Collection<List<TwigTypeContainer>> previousElements = new ArrayList<List<TwigTypeContainer>> ();
+        previousElements.add(new ArrayList<TwigTypeContainer>(type));
+
         for (int i = 1; i <= typeName.length - 1; i++ ) {
-            type = resolveTwigMethodName(type, typeName[i]);
+            type = resolveTwigMethodName(type, typeName[i], previousElements);
+            previousElements.add(new ArrayList<TwigTypeContainer>(type));
 
             // we can stop on empty list
             if(type.size() == 0) {
@@ -95,7 +114,7 @@ public class TwigTypeResolveUtil {
 
         }
 
-        return TwigTypeContainer.fromCollection(rootVariable);
+        return type;
     }
 
     /**
@@ -165,13 +184,19 @@ public class TwigTypeResolveUtil {
         return globalVars;
     }
 
-    public static HashMap<String, Set<String>> collectScopeVariables(PsiElement psiElement) {
+    public static HashMap<String, PsiVariable> collectScopeVariables(PsiElement psiElement) {
 
         HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
+        HashMap<String, PsiVariable> controllerVars = new HashMap<String, PsiVariable>();
 
         TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement);
         for(TwigFileVariableCollector collector: twigFileVariableCollectors) {
             collector.collect(collectorParameter, globalVars);
+
+            if(collector instanceof TwigFileVariableCollector.TwigFileVariableCollectorExt) {
+                ((TwigFileVariableCollector.TwigFileVariableCollectorExt) collector).collectVars(collectorParameter, controllerVars);
+            }
+
         }
 
         // globals first
@@ -179,12 +204,16 @@ public class TwigTypeResolveUtil {
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
 
         // check if we are in "for" scope and resolve types ending with []
-        collectForArrayScopeVariables(psiElement, globalVars);
+        collectForArrayScopeVariables(psiElement, controllerVars);
 
-        return globalVars;
+        for(Map.Entry<String, Set<String>> entry: globalVars.entrySet()) {
+            controllerVars.put(entry.getKey(), new PsiVariable(entry.getValue(), null));
+        }
+
+        return controllerVars;
     }
 
-    private static void collectForArrayScopeVariables(PsiElement psiElement, HashMap<String, Set<String>> globalVars) {
+    private static void collectForArrayScopeVariables(PsiElement psiElement, HashMap<String, PsiVariable> globalVars) {
 
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, new Condition<PsiElement>() {
             @Override
@@ -226,7 +255,7 @@ public class TwigTypeResolveUtil {
         Set<String> types = new HashSet<String>();
 
         PhpType phpType = new PhpType();
-        phpType.add(globalVars.get(variableName));
+        phpType.add(globalVars.get(variableName).getTypes());
 
         for(String arrayType: PhpIndex.getInstance(psiElement.getProject()).completeType(psiElement.getProject(), phpType, new HashSet<String>()).getTypes()) {
             if(arrayType.endsWith("[]")) {
@@ -234,16 +263,16 @@ public class TwigTypeResolveUtil {
             }
         }
 
-        globalVars.put(scopeVariable, types);
+        globalVars.put(scopeVariable, new PsiVariable(types));
 
     }
 
     private static Collection<? extends PhpNamedElement> getRootVariableByName(PsiElement psiElement, String variableName) {
 
         ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
-        for(Map.Entry<String, Set<String>> variable : collectScopeVariables(psiElement).entrySet()) {
+        for(Map.Entry<String, PsiVariable> variable : collectScopeVariables(psiElement).entrySet()) {
             if(variable.getKey().equals(variableName)) {
-                phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue()));
+                phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue().getTypes()));
             }
 
         }
@@ -252,7 +281,7 @@ public class TwigTypeResolveUtil {
 
     }
 
-    private static Collection<TwigTypeContainer> resolveTwigMethodName(Collection<TwigTypeContainer> previousElement, String typeName) {
+    private static Collection<TwigTypeContainer> resolveTwigMethodName(Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> twigTypeContainer) {
 
         ArrayList<TwigTypeContainer> phpNamedElements = new ArrayList<TwigTypeContainer>();
 
@@ -268,6 +297,10 @@ public class TwigTypeResolveUtil {
                         }
                     }
                 }
+            }
+
+            for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
+                twigTypeResolver.resolve(phpNamedElements, previousElement, typeName, twigTypeContainer);
             }
 
         }

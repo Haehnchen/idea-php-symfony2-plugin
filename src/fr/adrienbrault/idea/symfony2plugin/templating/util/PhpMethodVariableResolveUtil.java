@@ -8,6 +8,7 @@ import com.intellij.util.CommonProcessors;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 import java.util.*;
@@ -17,9 +18,9 @@ public class PhpMethodVariableResolveUtil {
     /**
      * search for twig template variable on common use cases
      */
-    public static HashMap<String, Set<String>> collectMethodVariables(Method method) {
+    public static HashMap<String, PsiVariable> collectMethodVariables(Method method) {
 
-        HashMap<String, Set<String>> collectedTypes = new HashMap<String, Set<String>>();
+        HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         ArrayList<PsiElement> psiElements = collectPossibleTemplateArrays(method);
         for(PsiElement templateVariablePsi: psiElements) {
@@ -87,9 +88,9 @@ public class PhpMethodVariableResolveUtil {
      * @param searchScope should be method scope
      * @param variable the variable declaration psi $var = array();
      */
-    private static HashMap<String, Set<String>> collectOnVariableReferences(SearchScope searchScope, Variable variable) {
+    private static HashMap<String, PsiVariable> collectOnVariableReferences(SearchScope searchScope, Variable variable) {
 
-        final HashMap<String, Set<String>> collectedTypes = new HashMap<String, Set<String>>();
+        final HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         PhpPsiUtil.hasReferencesInSearchScope(searchScope, variable, new CommonProcessors.FindProcessor<PsiReference>() {
             @Override
@@ -120,9 +121,9 @@ public class PhpMethodVariableResolveUtil {
     /**
      * $template['var'] = $foo
      */
-    private static HashMap<String, Set<String>> getTypesOnArrayIndex(ArrayAccessExpression arrayAccessExpression) {
+    private static Map<String, PsiVariable> getTypesOnArrayIndex(ArrayAccessExpression arrayAccessExpression) {
 
-        HashMap<String, Set<String>> collectedTypes = new HashMap<String, Set<String>>();
+        HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         ArrayIndex arrayIndex = arrayAccessExpression.getIndex();
         if(arrayIndex != null && arrayIndex.getValue() instanceof StringLiteralExpression) {
@@ -137,7 +138,7 @@ public class PhpMethodVariableResolveUtil {
                 }
             }
 
-            collectedTypes.put(variableName, variableTypes);
+            collectedTypes.put(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) arrayAccessExpression.getParent()).getValue()));
 
         }
 
@@ -147,8 +148,9 @@ public class PhpMethodVariableResolveUtil {
     /**
      *  array('foo' => $var, 'bar' => $bar)
      */
-    public static HashMap<String, Set<String>> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
-        HashMap<String, Set<String>> collectedTypes = new HashMap<String, Set<String>>();
+    public static Map<String, PsiVariable> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
+
+        HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             if(arrayHashElement.getKey() instanceof StringLiteralExpression) {
@@ -160,7 +162,7 @@ public class PhpMethodVariableResolveUtil {
                     variableTypes = ((PhpTypedElement) arrayHashElement.getValue()).getType().getTypes();
                 }
 
-                collectedTypes.put(variableName, variableTypes);
+                collectedTypes.put(variableName, new PsiVariable(variableTypes, arrayHashElement.getValue()));
 
             }
         }

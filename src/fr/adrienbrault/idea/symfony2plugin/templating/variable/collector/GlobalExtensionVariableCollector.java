@@ -7,15 +7,16 @@ import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.util.*;
 
-public class GlobalExtensionVariableCollector implements TwigFileVariableCollector {
+public class GlobalExtensionVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
 
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+    public void collectVars(TwigFileVariableCollectorParameter parameter, HashMap<String, PsiVariable> variables) {
 
         PhpIndex phpIndex = PhpIndex.getInstance(parameter.getProject());
 
@@ -36,4 +37,10 @@ public class GlobalExtensionVariableCollector implements TwigFileVariableCollect
             }
         }
     }
+
+    @Override
+    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+
+    }
+
 }
