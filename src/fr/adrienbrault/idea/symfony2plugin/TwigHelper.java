@@ -265,13 +265,21 @@ public class TwigHelper {
         return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)).withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {{ form(foo) }}, {{ foo }}
+     * NOT: {{ foo.bar }}
+     */
     public static ElementPattern<PsiElement> getCompletablePattern() {
         return  PlatformPatterns.psiElement()
-            .afterLeaf(
+            .andNot(
+                PlatformPatterns.psiElement().afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT))
+            )
+            .afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
                     PlatformPatterns.psiElement(PsiWhiteSpace.class)
-                )
+                ),
+                PlatformPatterns.psiElement()
             )
             .withParent(PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK))
             .withLanguage(TwigLanguage.INSTANCE);
