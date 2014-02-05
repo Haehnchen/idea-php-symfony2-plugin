@@ -53,39 +53,38 @@ public class FormOptionsUtil {
 
     /**
      * finishView, buildView:
-     * $this->vars['test']
+     * $this->vars
      */
     public static Set<String> getFormViewVars(Project project, String... formTypeNames) {
 
         Set<String> stringSet = new HashSet<String>();
 
-        for(Map.Entry<String, String> entry: FormOptionsUtil.getFormExtensionKeys(project, formTypeNames).entrySet()) {
+        ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
+        // attach core form phpclass
+        // @TODO: add formtype itself
+        PhpClass coreForm = FormUtil.getFormTypeToClass(project, "form");
+        if(coreForm != null) {
+            phpClasses.add(coreForm);
+        }
+
+        // for extension can also provide vars
+        for(Map.Entry<String, String> entry: FormOptionsUtil.getFormExtensionKeys(project, formTypeNames).entrySet()) {
             PhpClass phpClass = PhpElementsUtil.getClassInterface(project, entry.getValue());
             if(phpClass != null) {
+                phpClasses.add(phpClass);
+            }
+        }
 
-
-                for(String stringMethod: new String[] {"finishView", "buildView"} ) {
-                    Method method = PhpElementsUtil.getClassMethod(phpClass, stringMethod);
-                    if(method != null) {
-                        Collection<FieldReference> fieldReferences = PsiTreeUtil.collectElementsOfType(method, FieldReference.class);
-                        for(FieldReference fieldReference: fieldReferences) {
-                            PsiElement psiVar = PsiElementUtils.getChildrenOfType(fieldReference, PlatformPatterns.psiElement().withText("vars"));
-                            if(psiVar != null) {
-                                ArrayIndex arrayIndex = PsiTreeUtil.findChildOfType(fieldReference.getContext(), ArrayIndex.class);
-                                if(arrayIndex != null) {
-                                    PsiElement psiElement = arrayIndex.getFirstChild();
-                                    if(psiElement instanceof StringLiteralExpression) {
-                                        String contents = ((StringLiteralExpression) psiElement).getContents();
-                                        if(StringUtils.isNotBlank(contents)) {
-                                            stringSet.add(contents);
-                                        }
-                                    }
-
-                                }
-
-                            }
-
+        for(PhpClass phpClass: phpClasses) {
+            for(String stringMethod: new String[] {"finishView", "buildView"} ) {
+                Method method = PhpElementsUtil.getClassMethod(phpClass, stringMethod);
+                if(method != null) {
+                    Collection<FieldReference> fieldReferences = PsiTreeUtil.collectElementsOfType(method, FieldReference.class);
+                    for(FieldReference fieldReference: fieldReferences) {
+                        PsiElement psiVar = PsiElementUtils.getChildrenOfType(fieldReference, PlatformPatterns.psiElement().withText("vars"));
+                        if(psiVar != null) {
+                            getFormViewVarsAttachKeys(stringSet, fieldReference);
                         }
 
                     }
@@ -95,6 +94,41 @@ public class FormOptionsUtil {
         }
 
         return stringSet;
+    }
+
+    /**
+     * $this->vars['test']
+     * $view->vars = array_replace($view->vars, array(...));
+     */
+    private static void getFormViewVarsAttachKeys(Set<String> stringSet, FieldReference fieldReference) {
+
+        // $this->vars['test']
+        PsiElement context = fieldReference.getContext();
+        if(context instanceof ArrayAccessExpression) {
+            ArrayIndex arrayIndex = PsiTreeUtil.findChildOfType(context, ArrayIndex.class);
+            if(arrayIndex != null) {
+                PsiElement psiElement = arrayIndex.getFirstChild();
+                if(psiElement instanceof StringLiteralExpression) {
+                    String contents = ((StringLiteralExpression) psiElement).getContents();
+                    if(StringUtils.isNotBlank(contents)) {
+                        stringSet.add(contents);
+                    }
+                }
+            }
+        }
+
+        // array_replace($view->vars, array(...))
+        if(context instanceof ParameterList) {
+            PsiElement functionReference = context.getContext();
+            if(functionReference instanceof FunctionReference && "array_replace".equals(((FunctionReference) functionReference).getName())) {
+                PsiElement[] psiElements = ((ParameterList) context).getParameters();
+                if(psiElements.length > 1) {
+                    if(psiElements[1] instanceof ArrayCreationExpression) {
+                        stringSet.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) psiElements[1]));
+                    }
+                }
+            }
+        }
     }
 
     public static HashMap<String, String> getFormDefaultKeys(Project project, String formTypeName) {

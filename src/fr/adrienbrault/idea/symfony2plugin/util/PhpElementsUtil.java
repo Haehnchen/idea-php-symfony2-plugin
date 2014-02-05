@@ -41,7 +41,7 @@ public class PhpElementsUtil {
         return results;
     }
 
-    static public ArrayList<String> getArrayCreationKeys(ArrayCreationExpression arrayCreationExpression) {
+    static public List<String> getArrayCreationKeys(ArrayCreationExpression arrayCreationExpression) {
         ArrayList<String> keys = new ArrayList<String>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
