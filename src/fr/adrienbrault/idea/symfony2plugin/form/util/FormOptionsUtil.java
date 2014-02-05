@@ -1,12 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.form.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormExtensionServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 
@@ -46,6 +49,52 @@ public class FormOptionsUtil {
         }
 
         return extensionKeys;
+    }
+
+    /**
+     * finishView, buildView:
+     * $this->vars['test']
+     */
+    public static Set<String> getFormViewVars(Project project, String... formTypeNames) {
+
+        Set<String> stringSet = new HashSet<String>();
+
+        for(Map.Entry<String, String> entry: FormOptionsUtil.getFormExtensionKeys(project, formTypeNames).entrySet()) {
+
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, entry.getValue());
+            if(phpClass != null) {
+
+
+                for(String stringMethod: new String[] {"finishView", "buildView"} ) {
+                    Method method = PhpElementsUtil.getClassMethod(phpClass, stringMethod);
+                    if(method != null) {
+                        Collection<FieldReference> fieldReferences = PsiTreeUtil.collectElementsOfType(method, FieldReference.class);
+                        for(FieldReference fieldReference: fieldReferences) {
+                            PsiElement psiVar = PsiElementUtils.getChildrenOfType(fieldReference, PlatformPatterns.psiElement().withText("vars"));
+                            if(psiVar != null) {
+                                ArrayIndex arrayIndex = PsiTreeUtil.findChildOfType(fieldReference.getContext(), ArrayIndex.class);
+                                if(arrayIndex != null) {
+                                    PsiElement psiElement = arrayIndex.getFirstChild();
+                                    if(psiElement instanceof StringLiteralExpression) {
+                                        String contents = ((StringLiteralExpression) psiElement).getContents();
+                                        if(StringUtils.isNotBlank(contents)) {
+                                            stringSet.add(contents);
+                                        }
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        return stringSet;
     }
 
     public static HashMap<String, String> getFormDefaultKeys(Project project, String formTypeName) {
