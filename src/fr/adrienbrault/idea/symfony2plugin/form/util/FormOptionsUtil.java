@@ -80,11 +80,22 @@ public class FormOptionsUtil {
             for(String stringMethod: new String[] {"finishView", "buildView"} ) {
                 Method method = PhpElementsUtil.getClassMethod(phpClass, stringMethod);
                 if(method != null) {
-                    Collection<FieldReference> fieldReferences = PsiTreeUtil.collectElementsOfType(method, FieldReference.class);
-                    for(FieldReference fieldReference: fieldReferences) {
-                        PsiElement psiVar = PsiElementUtils.getChildrenOfType(fieldReference, PlatformPatterns.psiElement().withText("vars"));
-                        if(psiVar != null) {
-                            getFormViewVarsAttachKeys(stringSet, fieldReference);
+
+                    // self method
+                    getMethodVars(stringSet, method);
+
+                    // allow parent::
+                    // @TODO: provide global util method
+                    for(ClassReference classReference : PsiTreeUtil.collectElementsOfType(method, ClassReference.class)) {
+                        if("parent".equals(classReference.getName())) {
+                            PsiElement methodReference = classReference.getContext();
+                            if(methodReference instanceof MethodReference) {
+                                PsiElement parentMethod = ((MethodReference) methodReference).resolve();
+                                if(parentMethod instanceof Method) {
+                                    getMethodVars(stringSet, (Method) parentMethod);
+                                }
+                            }
+
                         }
 
                     }
@@ -94,6 +105,17 @@ public class FormOptionsUtil {
         }
 
         return stringSet;
+    }
+
+    private static void getMethodVars(Set<String> stringSet, Method method) {
+        Collection<FieldReference> fieldReferences = PsiTreeUtil.collectElementsOfType(method, FieldReference.class);
+        for(FieldReference fieldReference: fieldReferences) {
+            PsiElement psiVar = PsiElementUtils.getChildrenOfType(fieldReference, PlatformPatterns.psiElement().withText("vars"));
+            if(psiVar != null) {
+                getFormViewVarsAttachKeys(stringSet, fieldReference);
+            }
+
+        }
     }
 
     /**
