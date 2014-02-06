@@ -5,6 +5,14 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.43
+* Add basic form field support in twig types
+* Add twig completion for "form.vars"
+* Add ManagerRegistry:getManagerForClass reference provider #231
+* Add support for twig form_theme #232
+* Add function to twig type whitelist
+* Fix some npe in yaml #227
+
 ### 0.10.42
 * Add twig template folding and strip "Bundle"
 * Add twig implements and overwrites block linemarker and provide custom popover #75

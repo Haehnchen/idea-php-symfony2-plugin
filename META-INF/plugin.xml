@@ -1,15 +1,11 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.42</version>
+    <version>0.10.43</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
 <h1>Symfony2 plugin.</h1>
-
-<br/>
-<p style="color:red"><b>New Settings key</b>: Re-enable plugin in project settings (=<0.10.39) ! Need settings migration? Rename "Settings" to "Symfony2PluginSettings" in ".idea/symfony2.xml" and reopen PhpStorm</p>
-<br/>
 
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
@@ -97,6 +93,16 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.43</h2>
+<ul>
+    <li>Add basic form field support in twig types</li>
+    <li>Add twig completion for "form.vars"</li>
+    <li>Add ManagerRegistry:getManagerForClass reference provider <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/231">#231</a></li>
+    <li>Add support for twig form_theme <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/232">#232</a></li>
+    <li>Add function to twig type whitelist</li>
+    <li>Fix some npe in yaml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/227">#227</a></li>
+</ul>
 
 <h2>0.10.42</h2>
 <ul>
