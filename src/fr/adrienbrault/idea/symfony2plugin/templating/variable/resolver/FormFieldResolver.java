@@ -52,15 +52,31 @@ public class FormFieldResolver implements TwigTypeResolver {
                         }
                     }
 
-                    /*
-                    // $form
+
+                    // nested resolve of form view; @TODO: should be some nicer
+                    // 'foo2' => $form2 => $form2 = $form->createView() => $this->createForm(new Type();
                     if(var instanceof Variable) {
                         PsiElement varDecl = ((Variable) var).resolve();
                         if(varDecl instanceof Variable) {
                             MethodReference methodReference = PsiTreeUtil.getNextSiblingOfType(varDecl, MethodReference.class);
-                            attachFormFields(methodReference, targets);
+                            PsiElement scopeVar = methodReference.getFirstChild();
+
+                            // $form2 = $form->createView()
+                            if(scopeVar instanceof Variable) {
+                                PsiElement varDeclParent = ((Variable) scopeVar).resolve();
+                                if(varDeclParent instanceof Variable) {
+
+                                    // "$form"->createView();
+                                    PsiElement resolve = ((Variable) varDeclParent).resolve();
+                                    if(resolve != null) {
+                                        attachFormFields(PsiTreeUtil.getNextSiblingOfType(resolve, MethodReference.class), targets);
+                                    }
+
+                                }
+                            }
+                            
                         }
-                    } */
+                    }
 
                 }
             }
