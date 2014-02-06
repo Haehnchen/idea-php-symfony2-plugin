@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver;
 
 import com.google.common.collect.Iterables;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -14,10 +15,12 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -86,13 +89,36 @@ public class FormFieldResolver implements TwigTypeResolver {
                     return;
                 }
 
-                for(LookupElement lookupElement: FormFieldNameReference.getFormLookups(method)) {
-                    targets.add(new TwigTypeContainer(lookupElement.getLookupString()));
-                }
+                targets.addAll(getTwigTypeContainer(method));
             }
 
         }
 
+    }
+
+    public static List<TwigTypeContainer> getTwigTypeContainer(Method method) {
+
+        MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
+        List<TwigTypeContainer> twigTypeContainers = new ArrayList<TwigTypeContainer>();
+
+        for(MethodReference methodReference: formBuilderTypes) {
+
+            String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+            PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
+            TwigTypeContainer twigTypeContainer = new TwigTypeContainer(fieldName);
+
+            // find form field type
+            if(psiElement != null) {
+                PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(psiElement);
+                if(phpClass != null) {
+                    twigTypeContainer.withDataHolder(new FormDataHolder(phpClass));
+                }
+            }
+
+            twigTypeContainers.add(twigTypeContainer);
+        }
+
+        return twigTypeContainers;
     }
 
 }

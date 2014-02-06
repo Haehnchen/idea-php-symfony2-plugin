@@ -15,6 +15,7 @@ public class TwigTypeContainer {
 
     private PhpNamedElement phpNamedElement;
     private String stringElement;
+    private Object dataHolder;
 
     public TwigTypeContainer(PhpNamedElement phpNamedElement) {
         this.phpNamedElement = phpNamedElement;
@@ -48,5 +49,13 @@ public class TwigTypeContainer {
         return twigTypeContainerList;
     }
 
+    public TwigTypeContainer withDataHolder(Object object) {
+        this.dataHolder = object;
+        return this;
+    }
+
+    public Object getDataHolder() {
+        return dataHolder;
+    }
 
 }
