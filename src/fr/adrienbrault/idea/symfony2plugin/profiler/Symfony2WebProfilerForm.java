@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.DefaultDataCollector;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailCollector;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
+import icons.TwigIcons;
 import org.jdesktop.swingx.renderer.IconValue;
 import org.jetbrains.annotations.Nullable;
 
@@ -122,7 +123,7 @@ public class Symfony2WebProfilerForm {
         listModel.addElement(new RequestDetails(defaultDataCollector.getStatusCode(), IconValue.NULL_ICON));
         listModel.addElement(new RequestDetails(defaultDataCollector.getRoute(), Symfony2Icons.ROUTE));
         listModel.addElement(new RequestDetails(defaultDataCollector.getController(), PhpIcons.METHOD_ICON));
-        listModel.addElement(new RequestDetails(defaultDataCollector.getTemplate(), icons.PhpIcons.TwigFileIcon));
+        listModel.addElement(new RequestDetails(defaultDataCollector.getTemplate(), TwigIcons.TwigFileIcon));
 
     }
 
@@ -162,25 +163,17 @@ public class Symfony2WebProfilerForm {
     @Nullable
     protected File getTranslationFile() {
 
-        File serviceMapFile = this.getContainerFile();
-        if (null == serviceMapFile) {
-            return null;
-        }
-
-        // root path of translation is our caching indicator
-        System.out.println(serviceMapFile.getParentFile().getPath() + "/profiler/index.csv");
-        File translationRootPath = new File(serviceMapFile.getParentFile().getPath() + "/profiler/index.csv");
-        if (!translationRootPath.exists()) {
-            return null;
-        }
-
-        return translationRootPath;
-    }
-
-    @Nullable
-    protected File getContainerFile() {
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
-        return symfony2ProjectComponent.getPathToProjectContainer();
+        for(File file: symfony2ProjectComponent.getContainerFiles()) {
+            if(file.exists()) {
+                File translationRootPath = new File(file.getParentFile().getPath() + "/profiler/index.csv");
+                if (!translationRootPath.exists()) {
+                    return translationRootPath;
+                }
+            }
+        }
+
+        return null;
     }
 
     private class MyLookupCellRenderer extends SimpleColoredComponent implements ListCellRenderer {

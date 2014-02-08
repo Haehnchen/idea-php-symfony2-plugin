@@ -382,11 +382,13 @@
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     />
 
+        <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"
                     icon="/src/fr/adrienbrault/idea/symfony2plugin/icons/symfony_tool_window.png"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.profiler.SymfonyWebProfilerWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.profiler.SymfonyWebProfilerWindowFactory"
                 />
+        -->
 
     </extensions>
 

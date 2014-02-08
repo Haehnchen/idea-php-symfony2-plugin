@@ -27,7 +27,7 @@ public class DefaultDataCollector implements CollectorInterface {
 
     @Nullable
     public String getTemplate() {
-        return this.pregMatch(this.profilerRequest.getContent(), "\"template.twig \\((.*)\\)\"");
+        return this.pregMatch(this.profilerRequest.getContent(), "\"template.twig \\(([^\"]*\\.html\\.\\w{2,4})\\)\"");
     }
     @Nullable
     protected String pregMatch(@Nullable String content, String regular) {

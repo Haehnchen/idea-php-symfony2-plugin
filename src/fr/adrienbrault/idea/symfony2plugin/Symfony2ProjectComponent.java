@@ -8,15 +8,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.widget.SymfonyProfilerWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,8 +57,20 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectOpened() {
-        // System.out.println("projectOpened");
+
         this.checkProject();
+
+        if(isEnabled()) {
+
+            // attach toolbar popup (right bottom)
+            SymfonyProfilerWidget symfonyProfilerWidget = new SymfonyProfilerWidget(this.project);
+            StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
+            if (statusBar != null) {
+                statusBar.addWidget(symfonyProfilerWidget);
+            }
+
+        }
+
     }
 
     public void projectClosed() {

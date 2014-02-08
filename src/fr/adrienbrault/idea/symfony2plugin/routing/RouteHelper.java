@@ -90,6 +90,12 @@ public class RouteHelper {
         }
 
         String controllerName = route.getController();
+        return getMethodsOnControllerShortcut(project, controllerName);
+
+    }
+
+    public static PsiElement[] getMethodsOnControllerShortcut(Project project, String controllerName) {
+
         if(controllerName == null)  {
             return new PsiElement[0];
         }
@@ -113,7 +119,6 @@ public class RouteHelper {
         }
 
         return new PsiElement[0];
-
     }
 
     private static <E> ArrayList<E> makeCollection(Iterable<E> iter) {
