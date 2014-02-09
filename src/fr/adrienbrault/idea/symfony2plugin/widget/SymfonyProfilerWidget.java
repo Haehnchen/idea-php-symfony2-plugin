@@ -12,10 +12,13 @@ import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
 import com.intellij.util.Consumer;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndex;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.DefaultDataCollector;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailCollector;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.widget.action.SymfonyProfilerWidgetActions;
 import org.jetbrains.annotations.NotNull;
@@ -70,12 +73,42 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         Collection<AnAction> controllerActions = new ArrayList<AnAction>();
         Map<String, Integer> controllerActionsMap = new HashMap<String, Integer>();
 
+        Collection<AnAction> urlActions = new ArrayList<AnAction>();
+
+        Collection<AnAction> mailActions = new ArrayList<AnAction>();
+
         for(ProfilerRequest profilerRequest : requests) {
             DefaultDataCollector collector = profilerRequest.getCollector(DefaultDataCollector.class);
+
+            String statusCode = collector.getStatusCode();
+            urlActions.add(new SymfonyProfilerWidgetActions.UrlAction(this.project, profilerRequest, statusCode));
+
+            // regular expression fails on current version (because of multiple mailer)
+            // ArrayList<MailMessage> messages = profilerRequest.getCollector(MailCollector.class).getMessages();
+
+            // @TODO: use collector
+            String content = profilerRequest.getContent();
+            if(content != null && content.contains("Swift_Mime_Headers_MailboxHeader")) {
+                mailActions.add(new SymfonyProfilerWidgetActions.UrlAction(this.project, profilerRequest, statusCode).withPanel("swiftmailer").withIcon(Symfony2Icons.MAIL));
+            }
 
             attachProfileItem(templateActions, templateActionsMap, collector.getTemplate(), ProfilerTarget.TEMPLATE);
             attachProfileItem(routeActions, routeActionsMap, collector.getRoute(), ProfilerTarget.ROUTE);
             attachProfileItem(controllerActions, controllerActionsMap, collector.getController(), ProfilerTarget.CONTROLLER);
+
+
+        }
+
+        // routes
+        if(urlActions.size() > 0) {
+            actionGroup.addSeparator("Debug-Url");
+            actionGroup.addAll(urlActions);
+        }
+
+        // mails send by request
+        if(mailActions.size() > 0) {
+            actionGroup.addSeparator("E-Mail");
+            actionGroup.addAll(mailActions);
         }
 
         // routes

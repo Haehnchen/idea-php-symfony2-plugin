@@ -36,5 +36,8 @@ public class Symfony2Icons {
 
     public static final Icon PARAMETER_OPACITY = IconLoader.getIcon("icons/parameter_opacity.png");
 
+    public static final Icon MAIL = IconLoader.getIcon("icons/mail.png");
+    public static final Icon PROFILER_LINK = IconLoader.getIcon("icons/profiler_link.png");
+
 }
 
