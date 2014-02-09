@@ -60,15 +60,20 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         this.checkProject();
 
+        // attach toolbar popup (right bottom)
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
+        if(statusBar == null) {
+            return;
+        }
+
+        // clean bar on project open; we can have multiple projects att some time
+        if(statusBar.getWidget(SymfonyProfilerWidget.ID) != null) {
+            statusBar.removeWidget(SymfonyProfilerWidget.ID);
+        }
+
         if(isEnabled()) {
-
-            // attach toolbar popup (right bottom)
             SymfonyProfilerWidget symfonyProfilerWidget = new SymfonyProfilerWidget(this.project);
-            StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
-            if (statusBar != null) {
-                statusBar.addWidget(symfonyProfilerWidget);
-            }
-
+            statusBar.addWidget(symfonyProfilerWidget);
         }
 
     }

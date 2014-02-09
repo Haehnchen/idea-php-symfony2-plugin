@@ -32,6 +32,8 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
 
     private Project project;
 
+    public static String ID = "symfony2.profiler";
+
     public SymfonyProfilerWidget(@NotNull Project project) {
         super(project);
         this.project = project;
@@ -185,7 +187,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     @NotNull
     @Override
     public String ID() {
-        return "symfony2.profiler";
+        return ID;
     }
 
     @Nullable
@@ -209,24 +211,21 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        update();
+        update(event.getManager().getProject());
     }
 
     @Override
     public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-        update();
+        update(source.getProject());
     }
 
     @Override
     public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-        update();
-    }
-
-    private void update() {
-        update(getProject());
+        update(source.getProject());
     }
 
     public void update(final Project project) {
+        this.project = project;
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
