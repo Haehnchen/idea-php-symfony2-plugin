@@ -5,6 +5,12 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.44
+* Close profiler feature and merge into prod
+* Add profiler statusbar widget
+* Provide collector for mail, route, controller, template for profiler
+* Attach all profiler collector to statusbar widget and provide suitable click targets
+
 ### 0.10.43
 * Add basic form field support in twig types
 * Add twig completion for "form.vars"

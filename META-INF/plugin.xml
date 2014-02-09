@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.43</version>
+    <version>0.10.44</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -93,6 +93,14 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.44</h2>
+<ul>
+    <li>Close <a href="http://symfony2-plugin.espend.de/extension/signature_type.html#profiler-statusbar">profiler feature</a> and merge into master</li>
+    <li>Add profiler statusbar widget</li>
+    <li>Provide collector for mail, route, controller, template for profiler</li>
+    <li>Attach all profiler collector to statusbar widget and provide suitable click targets</li>
+</ul>
 
 <h2>0.10.43</h2>
 <ul>
@@ -381,6 +389,7 @@
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     />
+
 
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"
