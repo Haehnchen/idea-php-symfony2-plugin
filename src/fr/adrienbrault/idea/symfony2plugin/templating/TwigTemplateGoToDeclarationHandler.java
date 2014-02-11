@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -138,8 +139,14 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     public static PsiElement[] getBlockGoTo(PsiElement psiElement) {
+
+        PsiFile containingFile = psiElement.getContainingFile();
+        if(containingFile == null) {
+            return new PsiElement[0];
+        }
+
         Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
-        ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(psiElement.getContainingFile());
+        ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(containingFile);
 
         ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
         for (TwigBlock block : blocks) {
