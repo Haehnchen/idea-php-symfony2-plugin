@@ -52,8 +52,14 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
     public Collection<? extends PhpNamedElement> getBySignature(String expression, Project project) {
 
         // get back our original call
-        String originalSignature = expression.substring(0, expression.lastIndexOf(TRIM_KEY));
-        String parameter = expression.substring(expression.lastIndexOf(TRIM_KEY) + 1);
+        // since phpstorm 7.1.2 we need to validate this
+        int endIndex = expression.lastIndexOf(TRIM_KEY);
+        if(endIndex == -1) {
+            return Collections.emptySet();
+        }
+
+        String originalSignature = expression.substring(0, endIndex);
+        String parameter = expression.substring(endIndex + 1);
 
         // search for called method
         PhpIndex phpIndex = PhpIndex.getInstance(project);

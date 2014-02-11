@@ -97,8 +97,13 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
     public Collection<? extends PhpNamedElement> getBySignature(String expression, Project project) {
 
         // get back our original call
-        String originalSignature = expression.substring(0, expression.lastIndexOf(TRIM_KEY));
-        String parameter = expression.substring(expression.lastIndexOf(TRIM_KEY) + 1);
+        int endIndex = expression.lastIndexOf(TRIM_KEY);
+        if(endIndex == -1) {
+            return null;
+        }
+
+        String originalSignature = expression.substring(0, endIndex);
+        String parameter = expression.substring(endIndex + 1);
 
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature(originalSignature, null, 0);
