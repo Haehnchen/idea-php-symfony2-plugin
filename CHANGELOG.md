@@ -5,6 +5,9 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.45
+* Some fixes for phpstorm 7.1.2
+
 ### 0.10.44
 * Close profiler feature and merge into prod
 * Add profiler statusbar widget
