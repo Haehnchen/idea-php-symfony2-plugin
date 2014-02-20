@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -19,11 +20,15 @@ public class TwigBlockParser {
         this.twigFilesByName = twigFilesByName;
     }
 
-    public ArrayList<TwigBlock> walk(PsiFile file) {
+    public ArrayList<TwigBlock> walk(@Nullable PsiFile file) {
         return this.walk(file, "self", new ArrayList<TwigBlock>(), 0);
     }
 
-    public ArrayList<TwigBlock> walk(PsiFile file, String shortcutName, ArrayList<TwigBlock> current, int depth) {
+    public ArrayList<TwigBlock> walk(@Nullable PsiFile file, String shortcutName, ArrayList<TwigBlock> current, int depth) {
+
+        if(file == null) {
+            return current;
+        }
 
         // @TODO: we dont use psielements here, check if Pattern faster or not
 
