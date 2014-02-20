@@ -145,12 +145,16 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return new PsiElement[0];
         }
 
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiElement.getProject());
-        ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(containingFile);
+        String blockName = psiElement.getText();
+        return getBlockNameGoTo(containingFile, blockName);
+    }
 
+    public static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName) {
+        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
+        ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(psiFile);
         ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
         for (TwigBlock block : blocks) {
-            if(block.getName().equals(psiElement.getText())) {
+            if(block.getName().equals(blockName)) {
                 Collections.addAll(psiElements, block.getBlock());
             }
         }

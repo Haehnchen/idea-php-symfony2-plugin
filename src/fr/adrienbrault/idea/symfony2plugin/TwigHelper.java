@@ -382,6 +382,16 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getParentFunctionPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .withText("parent")
+            .beforeLeaf(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getTypeCompletionPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)

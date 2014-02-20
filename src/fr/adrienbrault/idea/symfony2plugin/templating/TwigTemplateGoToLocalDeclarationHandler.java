@@ -12,6 +12,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -86,6 +87,11 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
         if(TwigHelper.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
             psiElements.addAll(Arrays.asList(this.getControllerNameGoto(psiElement)));
+        }
+
+        // {{ parent() }}
+        if(TwigHelper.getParentFunctionPattern().accepts(psiElement)) {
+            psiElements.addAll(Arrays.asList(this.getParentGoto(psiElement)));
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
@@ -200,6 +206,30 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         }
 
         return new PsiElement[] { method };
+    }
+
+    private PsiElement[] getParentGoto(PsiElement psiElement) {
+
+        // find printblock
+        PsiElement printBlock = psiElement.getParent();
+        if(printBlock == null || !PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK).accepts(printBlock)) {
+            return new PsiElement[0];
+        }
+
+        // printblock need to be child block statement
+        PsiElement blockStatement = printBlock.getParent();
+        if(blockStatement == null || !PlatformPatterns.psiElement(TwigElementTypes.BLOCK_STATEMENT).accepts(blockStatement)) {
+            return new PsiElement[0];
+        }
+
+        // BlockTag is first child of block statement
+        PsiElement blockTag = blockStatement.getFirstChild();
+        if(!(blockTag instanceof TwigBlockTag)) {
+            return new PsiElement[0];
+        }
+
+        String blockName = ((TwigBlockTag) blockTag).getName();
+        return TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(psiElement.getContainingFile(), blockName);
     }
 
     @Nullable
