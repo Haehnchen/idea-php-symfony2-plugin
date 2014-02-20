@@ -267,12 +267,16 @@ public class TwigHelper {
 
     /**
      * {{ form(foo) }}, {{ foo }}
-     * NOT: {{ foo.bar }}
+     * NOT: {{ foo.bar }}, {{ 'foo.bar' }}
      */
     public static ElementPattern<PsiElement> getCompletablePattern() {
         return  PlatformPatterns.psiElement()
             .andNot(
-                PlatformPatterns.psiElement().afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT))
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement().afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT)),
+                    PlatformPatterns.psiElement().afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)),
+                    PlatformPatterns.psiElement().afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE))
+                )
             )
             .afterLeafSkipping(
                 PlatformPatterns.or(
