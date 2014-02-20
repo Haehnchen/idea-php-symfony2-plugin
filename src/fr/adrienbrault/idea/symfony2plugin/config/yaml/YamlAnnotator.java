@@ -102,6 +102,14 @@ public class YamlAnnotator implements Annotator {
         }
 
         String className = PsiElementUtils.getText(element);
+
+        if(YamlHelper.isValidParameterName(className)) {
+            String resolvedParameter = ContainerCollectionResolver.resolveParameter(element.getProject(), className);
+            if(resolvedParameter != null && PhpElementsUtil.getClassInterfacePsiElements(element.getProject(), resolvedParameter) != null) {
+                return ;
+            }
+        }
+
         if(PhpElementsUtil.getClassInterface(element.getProject(), className) == null) {
             holder.createWarningAnnotation(element, "Missing Class");
         }
