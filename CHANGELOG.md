@@ -5,6 +5,13 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.46
+* Add goto for twig "parent" function #246
+* Readd parameter class service annotator #242
+* Dont use statusbar in phpstorm < 7.1 is not supported #235
+* Make several services thread safe and implement npe fixes #237, #238
+* Dont fire twig type completion inside string values
+
 ### 0.10.45
 * Some fixes for phpstorm 7.1.2
 
