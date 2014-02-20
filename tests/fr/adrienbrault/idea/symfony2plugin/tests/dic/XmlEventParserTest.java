@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 public class XmlEventParserTest extends Assert {
 
@@ -16,7 +17,7 @@ public class XmlEventParserTest extends Assert {
 
         XmlEventParser serviceMapParser = new XmlEventParser();
         serviceMapParser.parser(testFile);
-        HashMap<String, String> tags = serviceMapParser.get();
+        Map<String, String> tags = serviceMapParser.get();
 
         assertTrue(tags.containsKey("kernel.controller"));
         assertEquals("kernel.event_listener", tags.get("kernel.controller"));

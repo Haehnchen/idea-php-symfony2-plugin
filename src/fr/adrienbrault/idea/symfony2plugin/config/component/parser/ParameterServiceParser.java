@@ -9,10 +9,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ParameterServiceParser extends AbstractServiceParser {
 
-    protected  Map<String, String> parameterMap = new HashMap<String, String>();
+    protected  Map<String, String> parameterMap = new ConcurrentHashMap<String, String>();
 
     @Override
     public String getXPathFilter() {

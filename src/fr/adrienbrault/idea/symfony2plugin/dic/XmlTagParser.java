@@ -7,15 +7,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlTagParser extends AbstractServiceParser {
 
-    protected HashSet<String> list = new HashSet<String>();
+    protected Set<String> list = new HashSet<String>();
     protected Map<String, ArrayList<String>> taggedClasses = new ConcurrentHashMap<String, ArrayList<String>>();
 
     @Override
@@ -64,7 +61,7 @@ public class XmlTagParser extends AbstractServiceParser {
         this.taggedClasses.get(tagName).add(className);
     }
 
-    public HashSet<String> get() {
+    public Set<String> get() {
         return list;
     }
 

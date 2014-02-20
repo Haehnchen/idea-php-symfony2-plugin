@@ -8,10 +8,12 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TwigGlobalsServiceParser extends AbstractServiceParser {
 
-    protected HashMap<String, TwigGlobalVariable> twigGlobals = new HashMap<String, TwigGlobalVariable>();
+    protected Map<String, TwigGlobalVariable> twigGlobals = new ConcurrentHashMap<String, TwigGlobalVariable>();
 
     @Override
     public String getXPathFilter() {
@@ -46,7 +48,7 @@ public class TwigGlobalsServiceParser extends AbstractServiceParser {
 
     }
 
-    public HashMap<String, TwigGlobalVariable> getTwigGlobals() {
+    public Map<String, TwigGlobalVariable> getTwigGlobals() {
         return twigGlobals;
     }
 

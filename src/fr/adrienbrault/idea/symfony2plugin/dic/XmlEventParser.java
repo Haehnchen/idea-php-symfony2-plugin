@@ -8,11 +8,14 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlEventParser extends AbstractServiceParser {
 
-    protected HashMap<String, String> list = new HashMap<String, String>();
-    protected ArrayList<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+    protected Map<String, String> list = new ConcurrentHashMap<String, String>();
+    protected List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
 
     @Override
     public String getXPathFilter() {
@@ -37,15 +40,15 @@ public class XmlEventParser extends AbstractServiceParser {
 
     }
 
-    public HashMap<String, String> get() {
+    public Map<String, String> get() {
         return list;
     }
 
-    public ArrayList<EventDispatcherSubscribedEvent> getEvents() {
+    public List<EventDispatcherSubscribedEvent> getEvents() {
         return events;
     }
 
-    public ArrayList<EventDispatcherSubscribedEvent> getEventSubscribers(String name) {
+    public List<EventDispatcherSubscribedEvent> getEventSubscribers(String name) {
 
         ArrayList<EventDispatcherSubscribedEvent> subscribedEvents = new ArrayList<EventDispatcherSubscribedEvent>();
         for(EventDispatcherSubscribedEvent subscribedEvent: this.getEvents()) {

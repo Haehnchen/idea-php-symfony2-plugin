@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -19,7 +19,7 @@ public class FormExtensionServiceParserTest extends Assert {
 
         FormExtensionServiceParser formExtensionServiceParser = new FormExtensionServiceParser();
         formExtensionServiceParser.parser(testFile);
-        HashMap<String, String> parser = formExtensionServiceParser.getFormExtensions();
+        Map<String, String> parser = formExtensionServiceParser.getFormExtensions();
 
         assertEquals("form", parser.get("Symfony\\Component\\Form\\Extension\\Validator\\Type\\FormTypeValidatorExtension"));
         assertEquals("repeated", parser.get("Symfony\\Component\\Form\\Extension\\Validator\\Type\\RepeatedTypeValidatorExtension"));

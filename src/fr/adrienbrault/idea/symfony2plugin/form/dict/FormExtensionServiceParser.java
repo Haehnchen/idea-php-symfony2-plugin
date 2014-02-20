@@ -6,10 +6,12 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FormExtensionServiceParser extends AbstractServiceParser {
 
-    protected HashMap<String, String> formExtensions = new HashMap<String, String>();
+    protected Map<String, String> formExtensions = new ConcurrentHashMap<String, String>();
 
     @Override
     public String getXPathFilter() {
@@ -30,7 +32,7 @@ public class FormExtensionServiceParser extends AbstractServiceParser {
 
     }
 
-    public HashMap<String, String> getFormExtensions() {
+    public Map<String, String> getFormExtensions() {
         return this.formExtensions;
     }
 

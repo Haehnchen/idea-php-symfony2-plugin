@@ -7,11 +7,12 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityNamesServiceParser extends AbstractServiceParser {
 
 
-    protected Map<String, String> entityNameMap = new HashMap<String, String>();
+    protected Map<String, String> entityNameMap = new ConcurrentHashMap<String, String>();
 
     @Override
     public String getXPathFilter() {
