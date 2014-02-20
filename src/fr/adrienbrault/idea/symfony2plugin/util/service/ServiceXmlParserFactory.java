@@ -81,7 +81,7 @@ public class ServiceXmlParserFactory {
         this.serviceFiles = new HashMap<String, Long>();
     }
 
-    public static <T extends ServiceParserInterface> T getInstance(Project project, Class<T> serviceParser){
+    synchronized public static <T extends ServiceParserInterface> T getInstance(Project project, Class<T> serviceParser){
 
         Map<Class, ServiceXmlParserFactory> projectInstance = instance.get(project);
 
