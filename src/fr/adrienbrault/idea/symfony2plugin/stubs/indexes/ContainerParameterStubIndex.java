@@ -51,11 +51,11 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
                 }
 
                 if(psiFile instanceof YAMLFile) {
-                    map.putAll(YamlHelper.getLocalParameterMap(psiFile));
+                    attachTHashMapNullable(YamlHelper.getLocalParameterMap(psiFile), map);
                 }
 
                 if(psiFile instanceof XmlFile) {
-                    map.putAll(XmlHelper.getFileParameterMap((XmlFile) psiFile));
+                    attachTHashMapNullable(XmlHelper.getFileParameterMap((XmlFile) psiFile), map);
                 }
 
                 return map;
@@ -63,6 +63,17 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
 
         };
 
+    }
+
+    /**
+     * workaround for nullable keys #238
+     */
+    private void attachTHashMapNullable(Map<String, String> source, Map<String, String> tHashMap) {
+        for(Map.Entry<String, String> entry: source.entrySet()) {
+            if(entry.getKey() != null) {
+                tHashMap.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     @Override
@@ -92,7 +103,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     private static class StringDataExternalizer implements DataExternalizer<String> {
