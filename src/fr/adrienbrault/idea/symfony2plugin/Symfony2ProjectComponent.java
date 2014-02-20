@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.widget.SymfonyProfilerWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,6 +60,11 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     public void projectOpened() {
 
         this.checkProject();
+
+        // phpstorm pre 7.1 dont support statusbar api;
+        if(!IdeHelper.supportsStatusBar()) {
+            return;
+        }
 
         // attach toolbar popup (right bottom)
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);

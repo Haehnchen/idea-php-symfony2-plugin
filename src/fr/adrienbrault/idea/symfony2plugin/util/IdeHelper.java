@@ -4,6 +4,8 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -90,6 +92,20 @@ public class IdeHelper {
             if(virtualFile != null) {
                 new OpenFileDescriptor(project, virtualFile, 0).navigate(true);
             }
+        }
+    }
+
+    /**
+     * pre phpstorm 7.1 dont support getStatusBar in this way
+     */
+    public static boolean supportsStatusBar() {
+        try {
+            WindowManager.getInstance().getClass().getMethod("getStatusBar", Project.class);
+            StatusBar.class.getMethod("getWidget", String.class);
+            
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
         }
     }
 
