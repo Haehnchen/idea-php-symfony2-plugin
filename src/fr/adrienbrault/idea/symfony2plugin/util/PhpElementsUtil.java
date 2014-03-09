@@ -158,12 +158,15 @@ public class PhpElementsUtil {
     @Nullable
     static public Method getClassMethod(Project project, String phpClassName, String methodName) {
 
-        PhpClass phpClass = getClass(project, phpClassName);
-        if(phpClass == null) {
-            return null;
+        // we need here an each; because eg Command is non unique because phar file
+        for(PhpClass phpClass: PhpIndex.getInstance(project).getClassesByFQN(phpClassName)) {
+            Method method = getClassMethod(phpClass, methodName);
+            if(method != null) {
+                return method;
+            }
         }
 
-        return getClassMethod(phpClass, methodName);
+        return null;
     }
 
     static public boolean isMethodWithFirstString(PsiElement psiElement, String... methodName) {
