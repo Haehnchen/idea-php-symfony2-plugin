@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.46</version>
+    <version>0.10.47</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -93,6 +93,13 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.47</h2>
+<ul>
+    <li>Add support for scss assets</li>
+    <li>Migrate custom method references provider to variable resolver to support recursive calls <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/251">#251</a></li>
+    <li>Add references provider for console HelperSet <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/243">#243</a></li>
+</ul>
 
 <h2>0.10.46</h2>
 <ul>

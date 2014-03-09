@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.47
+* Add support for scss assets
+* Migrate custom method references provider to variable resolver to support recursive calls #251
+* Add references provider for console HelperSet #243
+
 ### 0.10.46
 * Add goto for twig "parent" function #246
 * Readd parameter class service annotator #242
