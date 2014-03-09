@@ -148,7 +148,7 @@ public class TwigAnnotator implements Annotator {
         if(TwigHelper.getAutocompletableAssetTag("stylesheets").accepts(element)) {
 
             String templateName = element.getText();
-            if (isKnownAssetFileOrFolder(element, templateName, "css", "less", "sass")) {
+            if (isKnownAssetFileOrFolder(element, templateName, TwigHelper.CSS_FILES_EXTENSIONS)) {
                 return;
             }
 
@@ -158,7 +158,7 @@ public class TwigAnnotator implements Annotator {
         if(TwigHelper.getAutocompletableAssetTag("javascripts").accepts(element)) {
 
             String templateName = element.getText();
-            if (isKnownAssetFileOrFolder(element, templateName, "js", "dart", "coffee")) {
+            if (isKnownAssetFileOrFolder(element, templateName, TwigHelper.JS_FILES_EXTENSIONS)) {
                 return;
             }
 

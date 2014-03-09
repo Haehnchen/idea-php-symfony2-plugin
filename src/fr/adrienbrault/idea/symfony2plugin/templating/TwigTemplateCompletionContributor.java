@@ -325,11 +325,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         ));
 
         extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setAssetParser(
-            new AssetDirectoryReader().setFilterExtension("css", "less", "sass").setIncludeBundleDir(true)
+            new AssetDirectoryReader().setFilterExtension(TwigHelper.CSS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
         extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setAssetParser(
-            new AssetDirectoryReader().setFilterExtension("js", "dart", "coffee").setIncludeBundleDir(true)
+            new AssetDirectoryReader().setFilterExtension(TwigHelper.JS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
 

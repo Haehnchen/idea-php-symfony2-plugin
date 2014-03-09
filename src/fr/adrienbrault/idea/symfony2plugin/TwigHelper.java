@@ -39,6 +39,9 @@ import java.util.regex.Pattern;
  */
 public class TwigHelper {
 
+    public static String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
+    public static String[] JS_FILES_EXTENSIONS = new String[] { "js", "dart", "coffee" };
+
     synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
         Map<String, PsiFile> results = new HashMap<String, PsiFile>();
 
