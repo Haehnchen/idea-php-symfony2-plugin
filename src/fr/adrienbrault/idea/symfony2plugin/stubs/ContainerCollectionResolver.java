@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 
@@ -192,7 +193,7 @@ public class ContainerCollectionResolver {
             }
         }
 
-        public Set<String> convertClassNameToServices(String fqnClassName) {
+        public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
 
             Set<String> serviceNames = new HashSet<String>();
 

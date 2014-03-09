@@ -68,6 +68,9 @@ public class ServiceIndexUtil {
     public static PsiElement[] findServiceDefinitions(PhpClass phpClass) {
 
         String phpClassName = phpClass.getPresentableFQN();
+        if(phpClassName == null) {
+            return new PsiElement[0];
+        }
 
         Set<String> serviceNames = new ContainerCollectionResolver.ServiceCollector(phpClass.getProject(), ContainerCollectionResolver.Source.INDEX, ContainerCollectionResolver.Source.COMPILER).convertClassNameToServices(phpClassName);
 
