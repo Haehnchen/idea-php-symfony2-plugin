@@ -50,13 +50,7 @@ public class DefaultReferenceContributor {
 
         @Override
         public boolean isContributedElement(PsiElement psiElement, MethodParameterSetting config) {
-            if(psiElement.getContext() instanceof ParameterList) {
-                if(PsiElementUtils.getParameterIndexValue(psiElement) == config.getIndexParameter()) {
-                    return true;
-                }
-            }
-
-            return false;
+            return psiElement.getContext() instanceof ParameterList;
         }
     }
 
@@ -87,7 +81,7 @@ public class DefaultReferenceContributor {
                         if(arrayKey instanceof StringLiteralExpression && ((StringLiteralExpression) arrayKey).getContents().equals(config.getContributorData())) {
                             PsiElement arrayCreationExpression = arrayHashElement.getContext();
                             if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                                if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == config.getIndexParameter()) {
+                                if(arrayCreationExpression.getParent() instanceof ParameterList) {
                                     return true;
                                 }
                             }
@@ -118,7 +112,7 @@ public class DefaultReferenceContributor {
                     if(arrayHashElement instanceof ArrayHashElement) {
                         PsiElement arrayCreationExpression = arrayHashElement.getContext();
                         if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                            if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == config.getIndexParameter()) {
+                            if(arrayCreationExpression.getParent() instanceof ParameterList) {
                                 return true;
                             }
                         }
@@ -135,7 +129,7 @@ public class DefaultReferenceContributor {
                 if(arrayKey != null) {
                     PsiElement arrayCreationExpression = arrayKey.getContext();
                     if(arrayCreationExpression instanceof ArrayCreationExpression) {
-                        if(PsiElementUtils.getParameterIndexValue(arrayCreationExpression) == config.getIndexParameter()) {
+                        if(arrayCreationExpression.getParent() instanceof ParameterList) {
                             return true;
                         }
                     }

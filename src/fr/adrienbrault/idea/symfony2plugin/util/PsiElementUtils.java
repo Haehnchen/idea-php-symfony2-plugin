@@ -243,4 +243,28 @@ public class PsiElementUtils {
         return true;
     }
 
+
+    @Nullable
+    public static PsiElement getParentOfTypeFirstChild(@Nullable PsiElement element, @NotNull Class aClass) {
+        if (element == null) return null;
+
+        PsiElement lastElement = null;
+        while (element != null) {
+
+            if (aClass.isInstance(element)) {
+                //noinspection unchecked
+                return lastElement;
+            }
+
+            if (element instanceof PsiFile) {
+                return null;
+            }
+
+            lastElement = element;
+            element = element.getParent();
+        }
+
+        return null;
+    }
+
 }

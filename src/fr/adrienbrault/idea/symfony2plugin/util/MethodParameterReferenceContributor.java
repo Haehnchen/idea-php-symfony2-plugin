@@ -56,28 +56,29 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                     Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
 
 
+                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
+
                     // get config in method scope; so we can pipe them
                     ArrayList<MethodParameterSetting> methodScopeConfigs = new ArrayList<MethodParameterSetting>();
                     for (MethodParameterSetting config: configs) {
-                        if(interfacesUtil.isCallTo(method, config.getCallTo(), config.getMethodName())) {
-                            methodScopeConfigs.add(config);
-                        }
-                    }
 
-                    if(methodScopeConfigs.size() == 0) {
-                        return new PsiReference[0];
-                    }
 
-                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
-                    for (MethodParameterSetting config: methodScopeConfigs) {
-
-                        AssistantReferenceContributor referenceContributor = AssistantReferenceUtil.getContributor(config);
-                        if(referenceContributor != null && referenceContributor.isContributedElement(psiElement, config)) {
-                            Collections.addAll(psiReferences, AssistantReferenceUtil.getPsiReference(config, (StringLiteralExpression) psiElement, methodScopeConfigs, method));
+                        // @TODO: fake MethodMatcher call; replace this :)
+                        // we need nearest parameter value
+                        PsiElement psiNearestParameter = PsiElementUtils.getParentOfTypeFirstChild(psiElement, ParameterList.class);
+                        if(psiNearestParameter == null) {
+                            continue;
                         }
 
-                    }
+                        MethodMatcher.MethodMatchParameter matchParameter = MethodMatcher.getMatchedSignatureWithDepth(psiNearestParameter, new MethodMatcher.CallToSignature[]{new MethodMatcher.CallToSignature(config.getCallTo(), config.getMethodName())}, config.getIndexParameter());
+                        if(matchParameter != null) {
+                            AssistantReferenceContributor referenceContributor = AssistantReferenceUtil.getContributor(config);
+                            if(referenceContributor != null && referenceContributor.isContributedElement(psiElement, config)) {
+                                Collections.addAll(psiReferences, AssistantReferenceUtil.getPsiReference(config, (StringLiteralExpression) psiElement, methodScopeConfigs, method));
+                            }
+                        }
 
+                    }
 
                     return psiReferences.toArray(new PsiReference[psiReferences.size()]);
                 }
