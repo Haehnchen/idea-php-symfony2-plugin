@@ -2,12 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.util.service;
 
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ServiceXmlParserFactory {
@@ -23,7 +23,7 @@ public class ServiceXmlParserFactory {
         this.project = project;
     }
 
-    protected boolean isModified(ArrayList<File> serviceFiles) {
+    protected boolean isModified(List<File> serviceFiles) {
         if(this.serviceFiles.size() != serviceFiles.size()) {
             return true;
         }
@@ -49,7 +49,7 @@ public class ServiceXmlParserFactory {
 
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
-        ArrayList<File> settingsServiceFiles = symfony2ProjectComponent.getContainerFiles();
+        List<File> settingsServiceFiles = symfony2ProjectComponent.getContainerFiles();
 
         if (this.serviceParserInstance != null && !this.isModified(settingsServiceFiles)) {
             return (T) this.serviceParserInstance;

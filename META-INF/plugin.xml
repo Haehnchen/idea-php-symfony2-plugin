@@ -423,6 +423,14 @@
 
     </extensions>
 
+    <extensionPoints>
+        <extensionPoint name="extension.ServiceContainerLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader"/>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
+        <ServiceContainerLoader implementation="fr.adrienbrault.idea.symfony2plugin.ServiceContainerSettingsLoader"/>
+    </extensions>
+
     <depends>com.jetbrains.twig</depends>
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>

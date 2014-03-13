@@ -4,6 +4,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -12,6 +13,8 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
@@ -32,11 +35,10 @@ import com.intellij.openapi.diagnostic.Logger;
 public class Symfony2ProjectComponent implements ProjectComponent {
 
     public static String HELP_URL = "http://symfony2-plugin.espend.de/";
-
     final private static Logger LOG = Logger.getInstance("Symfony2-Plugin");
+    private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<ServiceContainerLoader>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
 
     private Project project;
-
     private Map<String, Route> routes;
     private Long routesLastModified;
 
@@ -128,21 +130,17 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return routes;
     }
 
-    public ArrayList<File> getContainerFiles() {
+    public List<File> getContainerFiles() {
         return this.getContainerFiles(true);
     }
 
-    public ArrayList<File> getContainerFiles(boolean attachSetting) {
+    public List<File> getContainerFiles(boolean attachSetting) {
 
-        List<ContainerFile> containerFiles = null;
+        List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
 
-        // provide a default list
-        if(attachSetting) {
-           containerFiles = Settings.getInstance(this.project).containerFiles;
-        }
-
-        if(containerFiles == null) {
-            containerFiles = new ArrayList<ContainerFile>();
+        ServiceContainerLoaderParameter containerLoaderExtensionParameter = new ServiceContainerLoaderParameter(project, containerFiles);
+        for(ServiceContainerLoader loaderExtension : SERVICE_CONTAINER_POINT_NAME.getExtensions()) {
+            loaderExtension.attachContainerFile(containerLoaderExtensionParameter);
         }
 
         if(containerFiles.size() == 0) {
