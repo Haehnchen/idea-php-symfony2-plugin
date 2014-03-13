@@ -103,7 +103,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     private static class StringDataExternalizer implements DataExternalizer<String> {

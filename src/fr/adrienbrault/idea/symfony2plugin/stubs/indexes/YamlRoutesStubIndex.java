@@ -95,7 +95,7 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
 }

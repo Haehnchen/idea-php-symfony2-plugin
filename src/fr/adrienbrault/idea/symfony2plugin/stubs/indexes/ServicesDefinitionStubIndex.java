@@ -139,7 +139,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     /**

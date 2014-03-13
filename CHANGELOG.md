@@ -6,8 +6,8 @@ Changelog
 0.10.x: PhpStorm 7
 
 ### 0.10.47
-* Add support for scss assets
-* Migrate custom method references provider to variable resolver to support recursive calls #251
+* Add support for scss assets #251
+* Migrate custom method references provider to variable resolver to support recursive calls
 * Add references provider for console HelperSet #243
 
 ### 0.10.46

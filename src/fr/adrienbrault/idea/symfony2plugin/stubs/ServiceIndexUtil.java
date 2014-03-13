@@ -14,6 +14,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -65,7 +66,11 @@ public class ServiceIndexUtil {
         return items;
     }
 
-    public static PsiElement[] findServiceDefinitions(PhpClass phpClass) {
+    public static PsiElement[] findServiceDefinitions(@Nullable PhpClass phpClass) {
+
+        if(phpClass == null) {
+            return new PsiElement[0];
+        }
 
         String phpClassName = phpClass.getPresentableFQN();
         if(phpClassName == null) {

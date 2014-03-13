@@ -102,7 +102,7 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
 }
