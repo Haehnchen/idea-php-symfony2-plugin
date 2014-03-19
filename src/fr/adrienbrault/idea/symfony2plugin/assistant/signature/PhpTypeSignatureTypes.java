@@ -7,6 +7,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,9 @@ public class PhpTypeSignatureTypes {
     public static PhpTypeSignatureInterface[] DEFAULT_PROVIDER = new PhpTypeSignatureInterface[] {
         new ServiceType(),
         new ClassType(),
-        new FormTypesType()
+        new FormTypesType(),
+        new InterfaceType(),
+        new ClassInterfaceType(),
     };
 
     private static class ServiceType implements PhpTypeSignatureInterface {
@@ -45,12 +48,40 @@ public class PhpTypeSignatureTypes {
 
         @Nullable
         public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
-            return PhpIndex.getInstance(project).getAnyByFQN(parameter.startsWith("\\") ? parameter : "\\" + parameter);
+            return PhpIndex.getInstance(project).getClassesByFQN(parameter.startsWith("\\") ? parameter : "\\" + parameter);
         }
 
         @NotNull
         public String getName() {
             return "Class";
+        }
+
+    }
+
+    private static class ClassInterfaceType implements PhpTypeSignatureInterface {
+
+        @Nullable
+        public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
+            return Arrays.asList(PhpElementsUtil.getClassInterface(project, parameter));
+        }
+
+        @NotNull
+        public String getName() {
+            return "ClassInterface";
+        }
+
+    }
+
+    private static class InterfaceType implements PhpTypeSignatureInterface {
+
+        @Nullable
+        public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
+            return PhpIndex.getInstance(project).getInterfacesByFQN(parameter.startsWith("\\") ? parameter : "\\" + parameter);
+        }
+
+        @NotNull
+        public String getName() {
+            return "Interface";
         }
 
     }
