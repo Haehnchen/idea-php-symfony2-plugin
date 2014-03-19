@@ -469,8 +469,15 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
         /**
          * $options
          * public function buildForm(FormBuilderInterface $builder, array $options) {
-         *   $options['key']
+         *   $options['foo']
          * }
+         *
+         * public function setDefaultOptions(OptionsResolverInterface $resolver) {
+         *   $resolver->setDefaults(array(
+         *    'foo' => 'bar',
+         * ));
+         }
+
          */
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class),
@@ -511,9 +518,9 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-                    if(!symfony2InterfacesUtil.isCallTo(method, "\\opwoco\\Apptitan\\CoreBundle\\Form\\MenuItemType", "buildForm") &&
-                        !symfony2InterfacesUtil.isCallTo(method, "\\opwoco\\Apptitan\\CoreBundle\\Form\\MenuItemType", "buildView") &&
-                        !symfony2InterfacesUtil.isCallTo(method, "\\opwoco\\Apptitan\\CoreBundle\\Form\\MenuItemType", "finishView"))
+                    if(!symfony2InterfacesUtil.isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "buildForm") &&
+                        !symfony2InterfacesUtil.isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "buildView") &&
+                        !symfony2InterfacesUtil.isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "finishView"))
                     {
                         return new PsiReference[0];
                     }
