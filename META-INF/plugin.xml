@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.47</version>
+    <version>0.10.48</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -93,6 +93,17 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.48</h2>
+<ul>
+    <li>Improvements in repositoryClass detection of doctrine annotations eg namespaces</li>
+    <li>Add typename for repository "find*" lookup elements</li>
+    <li>Add support for annotations based models inside "find*" repository calls</li>
+    <li>Add extension point for container file loading</li>
+    <li>Add "Interface" and "ClassInterface" to type provider <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/254">#254</a></li>
+    <li>Activate $option key references inside FormTypeInterface, because of working api now <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/162">#162</a></li>
+    <li>Refactoring of container related linemarkers to fix some npe (api break?) <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
+</ul>
 
 <h2>0.10.47</h2>
 <ul>

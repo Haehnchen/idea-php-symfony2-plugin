@@ -5,6 +5,15 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.48
+* Improvements in repositoryClass detection of doctrine annotations eg namespaces
+* Add typename for repository "find*" lookup elements
+* Add support for annotations based models inside "find*" repository calls
+* Add extension point for container file loading
+* Add "Interface" and "ClassInterface" to type provider #254
+* Activate $option key references inside FormTypeInterface, because of working api now #162
+* Refactoring of container related linemarkers to fix some npe (api break?) #238
+
 ### 0.10.47
 * Add support for scss assets #251
 * Migrate custom method references provider to variable resolver to support recursive calls
