@@ -146,6 +146,19 @@ public class EntityHelper {
             }
         }
 
+        // provide fallback on annotations
+        // @TODO: better detect annotation switch; yaml and annotation are valid; need deps on annotation plugin
+        PhpDocComment docComment = phpClass.getDocComment();
+        if(docComment != null) {
+            if(docComment.getText().contains("Entity") || docComment.getText().contains("@ORM") || docComment.getText().contains("repositoryClass")) {
+                for(Field field: phpClass.getFields()) {
+                    if(!field.isConstant() && fieldName.equals(field.getName())) {
+                        psiElements.add(field);
+                    }
+                }
+            }
+        }
+
         String methodName = "get" + StringUtils.camelize(fieldName.toLowerCase(), false);
         Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
         if(method != null) {
@@ -193,6 +206,21 @@ public class EntityHelper {
                         }
                     }
 
+                }
+            }
+
+            return modelFields;
+        }
+
+        // provide fallback on annotations
+        // @TODO: better detect annotation switch; yaml and annotation are valid; need deps on annotation plugin
+        PhpDocComment docComment = phpClass.getDocComment();
+        if(docComment != null) {
+            if(docComment.getText().contains("Entity") || docComment.getText().contains("@ORM") || docComment.getText().contains("repositoryClass")) {
+                for(Field field: phpClass.getFields()) {
+                    if(!field.isConstant()) {
+                        modelFields.add(field.getName());
+                    }
                 }
             }
         }
