@@ -3,9 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
@@ -32,6 +34,33 @@ import java.util.regex.Pattern;
  */
 public class EntityHelper {
 
+
+    /**
+     * Resolve shortcut and namespaces classes for current phpclass and attached modelname
+     */
+    public static PhpClass getAnnotationRepositoryClass(PhpClass phpClass, String modelName) {
+
+        // \ns\Class fine we dont need to resolve classname we are in global context
+        if(modelName.startsWith("\\")) {
+            return PhpElementsUtil.getClassInterface(phpClass.getProject(), modelName);
+        }
+
+        // repositoryClass="Classname" pre-append namespace here
+        PhpNamedElementImpl phpNamedElementImpl = PsiTreeUtil.getParentOfType(phpClass, PhpNamedElementImpl.class);
+        if(phpNamedElementImpl != null) {
+            String className = phpNamedElementImpl.getFQN() + "\\" +  modelName;
+            PhpClass namespaceClass = PhpElementsUtil.getClassInterface(phpClass.getProject(), className);
+            if(namespaceClass != null) {
+                return namespaceClass;
+            }
+        }
+
+        // repositoryClass="Classname\Test" trailing backslash can be stripped
+        return  PhpElementsUtil.getClassInterface(phpClass.getProject(), modelName);
+
+    }
+
+
     @Nullable
     public static PhpClass getEntityRepositoryClass(Project project, String shortcutName) {
 
@@ -49,7 +78,7 @@ public class EntityHelper {
             String docAnnotationText = docAnnotation.getText();
             Matcher matcher = Pattern.compile("repositoryClass=[\"|'](.*)[\"|']").matcher(docAnnotationText);
             if (matcher.find()) {
-                return PhpElementsUtil.getClass(PhpIndex.getInstance(project), matcher.group(1));
+                return getAnnotationRepositoryClass(phpClass, matcher.group(1));
             }
         }
 
@@ -62,6 +91,7 @@ public class EntityHelper {
                 if(repositoryClass != null) {
                     return repositoryClass;
                 }
+
             }
 
         }
