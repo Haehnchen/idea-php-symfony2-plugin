@@ -8,6 +8,9 @@ import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -45,8 +48,8 @@ public class ModelFieldReference extends PsiPolyVariantReferenceBase<PsiElement>
         List<LookupElement> results = new ArrayList<LookupElement>();
 
         for(PhpClass phpClass: phpClasses) {
-            for(String field: EntityHelper.getModelFields(phpClass)) {
-                results.add(LookupElementBuilder.create(field));
+            for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                results.add(new DoctrineModelFieldLookupElement(field));
             }
         }
 

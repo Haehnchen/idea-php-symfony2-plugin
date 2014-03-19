@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -28,6 +29,8 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -101,17 +104,66 @@ public class EntityHelper {
         return resolveShortcutName(project, shortcutName + "Repository");
     }
 
-    private static Set<String> getModelFieldsSet(YAMLKeyValue yamlKeyValue) {
-        Set<String> fields = new HashSet<String>();
+    private static List<DoctrineModelField> getModelFieldsSet(YAMLKeyValue yamlKeyValue) {
+
+        List<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
 
         for(YAMLKeyValue targetYamlKeyValue: getYamlModelFieldKeyValues(yamlKeyValue)) {
-            Set<String> fieldSet = YamlHelper.getKeySet(targetYamlKeyValue);
+            List<DoctrineModelField> fieldSet = getKeySet(targetYamlKeyValue);
             if(fieldSet != null) {
                 fields.addAll(fieldSet);
             }
         }
 
         return fields;
+    }
+
+
+    @Nullable
+    public static List<DoctrineModelField> getKeySet(@Nullable YAMLKeyValue yamlKeyValue) {
+
+        if(yamlKeyValue == null) {
+            return null;
+        }
+
+        PsiElement yamlCompoundValue = yamlKeyValue.getValue();
+        if(yamlCompoundValue == null) {
+            return null;
+        }
+
+        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+        for(YAMLKeyValue yamlKey: PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class)) {
+            String fieldName = YamlHelper.getYamlKeyName(yamlKey);
+            if(fieldName != null) {
+
+                String typeName = getYamlFieldTypeName(yamlKey);
+                if(typeName != null) {
+                    modelFields.add(new DoctrineModelField(fieldName, typeName));
+                } else {
+                    modelFields.add(new DoctrineModelField(fieldName));
+                }
+
+            }
+        }
+
+        return modelFields;
+    }
+
+    public static String getYamlFieldTypeName(YAMLKeyValue yamlKeyValue) {
+
+        YAMLKeyValue yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "type");
+        if(yamlType == null) {
+            yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "targetEntity");
+        }
+
+        if(yamlType != null) {
+            String value = yamlType.getValueText();
+            if(value != null) {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     public static Collection<YAMLKeyValue> getYamlModelFieldKeyValues(YAMLKeyValue yamlKeyValue) {
@@ -187,9 +239,9 @@ public class EntityHelper {
         return null;
     }
 
-    public static Set<String> getModelFields(PhpClass phpClass) {
+    public static List<DoctrineModelField> getModelFields(PhpClass phpClass) {
 
-        Set<String> modelFields = new HashSet<String>();
+        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
 
         PsiFile psiFile = getModelConfigFile(phpClass);
 
@@ -200,10 +252,7 @@ public class EntityHelper {
                 if(arrayKeyValue instanceof YAMLKeyValue) {
                     String className = YamlHelper.getYamlKeyName(((YAMLKeyValue) arrayKeyValue));
                     if(PhpElementsUtil.isEqualClassName(phpClass, className)) {
-                        Set<String> fields = getModelFieldsSet((YAMLKeyValue) arrayKeyValue);
-                        if(fields != null) {
-                            modelFields.addAll(fields);
-                        }
+                        modelFields.addAll(getModelFieldsSet((YAMLKeyValue) arrayKeyValue));
                     }
 
                 }
@@ -219,13 +268,42 @@ public class EntityHelper {
             if(docComment.getText().contains("Entity") || docComment.getText().contains("@ORM") || docComment.getText().contains("repositoryClass")) {
                 for(Field field: phpClass.getFields()) {
                     if(!field.isConstant()) {
-                        modelFields.add(field.getName());
+
+                        // find type name on annotation
+                        String typeName = getAnnotationTypeName(field);
+                        if(typeName != null) {
+                            modelFields.add(new DoctrineModelField(field.getName(), typeName));
+                        } else {
+                            modelFields.add(new DoctrineModelField(field.getName()));
+                        }
+
                     }
                 }
             }
         }
 
         return modelFields;
+    }
+
+    @Nullable
+    private static String getAnnotationTypeName(Field field) {
+
+        // find type on regular expression, we are in presentable mode, so fully functional doesnt matter
+        // @ORM\Column(name="id", type="integer", nullable=false)
+        PhpDocComment fieldDoc = field.getDocComment();
+        if(fieldDoc != null) {
+            Matcher matcher = Pattern.compile("type=[\"|'](\\w+)[\"|']").matcher(fieldDoc.getText());
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+
+            matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(fieldDoc.getText());
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+
+        return null;
     }
 
     @Nullable
