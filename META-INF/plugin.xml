@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.48</version>
+    <version>0.10.49</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -73,12 +73,10 @@
     <li>Annotator which notice unknown route, template, service, assets, ...</li>
 </ul>
 
-<h2>Notes</h2>
+<h2>Related Plugins</h2>
 <ul>
-    <li>Play with PhpTypes lifetime cache on freeze</li>
-    <li>Disable Annotator if its not suitable in your environment</li>
-    <li>To trigger the autocompletion, press CTRL + SPACE.</li>
-    <li>Set the type of "classes.php" to text resolved some autocomplete issues for me.</li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
 </ul>
 
 <h2><a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
@@ -93,6 +91,15 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.49</h2>
+<ul>
+    <li>Add translation key and domain indexer</li>
+    <li>Rewrite and refactoring of all translation related stuff</li>
+    <li>Make translations available without a compiled file on indexer as weak references</li>
+    <li>Improvements in multiline values and quote key files for translation keys</li>
+    <li>Rename parameter indexer key name to force a refresh, pls report npe directly to <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a> with your environment data if still occur</li>
+</ul>
 
 <h2>0.10.48</h2>
 <ul>
@@ -255,66 +262,6 @@
     <li>Implement "twig extends" indexer for upcoming features</li>
 </ul>
 
-<h2>0.10.31</h2>
-<ul>
-    <li>Add raw yaml routes parser inside index process to provide line marker for controller actions (limited by RUBY-13914)</li>
-    <li>Add new method reference provider ClassInterface</li>
-    <li>Add controller line marker for twig file, if a matching file exists</li>
-    <li>Xml method reference provider support class parameters eg "calls"</li>
-    <li>Twig types support "is" as property shortcut</li>
-</ul>
-
-<h2>0.10.30</h2>
-<ul>
-    <li>Add support for twig globals in twig variable types</li>
-    <li>Remove twig extension test classes from parser index</li>
-    <li>Fix twig file scope variable collector</li>
-</ul>
-
-<h2>0.10.29</h2>
-<ul>
-    <li>Add <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">controller variable collector</a> for twig</li>
-    <li>Add more twig variables pattern</li>
-    <li>Add support for array variables in twig</li>
-    <li>Improvement for completion and insert handler of twig variable</li>
-    <li>Fix some npe and other exception</li>
-</ul>
-
-<h2>0.10.28</h2>
-<ul>
-    <li>Update twig macro pattern to support new twig elements</li>
-    <li>Add twig macro alias support</li>
-    <li>Add twig variable method resolver for goto provider</li>
-    <li>Fix twig route path parameter pattern</li>
-</ul>
-
-<h2>0.10.27</h2>
-<ul>
-    <li>Add support for route parameter in php and twig</li>
-    <li>Add twig variable type detection with <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">goto and completion</a></li>
-    <li>Add parser for twig globals defined as service and text in container file</li>
-    <li>Add twig variable detection on inline <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">doc block</a> with several scopes</li>
-    <li>Provide some logs for external file loaders like container. (Help -> Show Log ...)</li>
-    <li>Remove deprecated twig workarounds</li>
-    <li>Provide native route parser, to get all available route information</li>
-    <li>Disable twig block name completion, because its blocked now see WI-20266</li>
-</ul>
-
-<h2>0.9.26 / 0.10.26</h2>
-<ul>
-    <li>Add completion, goto and line marker for FormTypeInterface:getParent</li>
-    <li>Fix FormBuilderInterface:create signature check</li>
-    <li>Info: Last version which supports PhpStorm 6</li>
-</ul>
-
-<h2>0.9.25 / 0.10.25</h2>
-<ul>
-    <li>Translation key and domain annotator for php and twig with yaml key creation quick fix</li>
-    <li>Hack to support twig filter completion on char type event (see blocker) and goto</li>
-    <li>Add yaml and xml service indexer</li>
-    <li>Provide a service definition line marker for classes, based on service index</li>
-    <li>Some more form builder completions</li>
-</ul>
 
 <br/>
 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
