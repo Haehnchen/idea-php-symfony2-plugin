@@ -88,9 +88,10 @@ public class TranslationUtil {
                     PsiElement valuePsiElement = yamlKeyValue.getValue();
                     psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
 
-                    return true;
+                    return false;
                 }
-                return false;
+
+                return true;
             }
         };
 
@@ -198,12 +199,12 @@ public class TranslationUtil {
 
         final List<PsiFile> uniqueFileList = new ArrayList<PsiFile>();
 
-        for (PsiElement psiElement : psiElements) {
+        /* for (PsiElement psiElement : psiElements) {
             if(psiElement instanceof PsiFile) {
                 uniqueFileList.add((PsiFile) psiElement);
                 results.add((PsiFile) psiElement);
             }
-        }
+        } */
 
         FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<String>(Arrays.asList(domainName)), new Processor<VirtualFile>() {
             @Override
