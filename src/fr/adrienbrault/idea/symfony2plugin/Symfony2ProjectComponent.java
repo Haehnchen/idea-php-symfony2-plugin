@@ -111,7 +111,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
 
         if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
-            Symfony2ProjectComponent.getLogger().warn("missing routing: " + urlGeneratorFile.toString());
             return routes;
         }
 
@@ -170,27 +169,24 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     private void checkProject() {
 
-        if(!this.isEnabled()) {
+        if(!this.isEnabled() && !Settings.getInstance(project).dismissEnableNotification) {
             if(VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor") != null
-                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "cache", "dev") != null
-                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "cache", "prod") != null
+                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "cache") != null
                 && VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor", "symfony", "symfony") != null
               ) {
-                showInfoNotification("Looks like this a Symfony2 project. Enable the Symfony2 Plugin in Project Settings");
+                IdeHelper.notifyEnableMessage(project);
             }
 
             return;
         }
 
         if(this.getContainerFiles().size() == 0) {
-            showInfoNotification("missing at least one container file");
             Symfony2ProjectComponent.getLogger().warn("missing at least one container file");
         }
 
         String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
         File urlGeneratorFile = new File(urlGeneratorPath);
         if (!urlGeneratorFile.exists()) {
-            showInfoNotification("missing routing file: " + urlGeneratorPath);
             Symfony2ProjectComponent.getLogger().warn("missing routing file: " + urlGeneratorPath);
         }
 

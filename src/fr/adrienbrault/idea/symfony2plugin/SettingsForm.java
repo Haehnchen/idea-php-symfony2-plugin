@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
+import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -298,6 +299,10 @@ public class SettingsForm implements Configurable {
             public void mouseExited(MouseEvent mouseEvent) {
             }
         };
+    }
+
+    public static void show(@NotNull Project project) {
+        ShowSettingsUtilImpl.showSettingsDialog(project, "Symfony2.SettingsForm", null);
     }
 
 }

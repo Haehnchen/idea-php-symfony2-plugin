@@ -1,13 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.SettingsForm;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -107,6 +115,32 @@ public class IdeHelper {
         } catch (NoSuchMethodException e) {
             return false;
         }
+    }
+
+    public static void notifyEnableMessage(final Project project) {
+
+        Notification notification = new Notification("Symfony2 Plugin", "Symfony2 Plugin", "Enable the Symfony2 Plugin in <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, new NotificationListener() {
+            @Override
+            public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+
+                // handle html click events
+                if("config".equals(event.getDescription())) {
+
+                    // open settings dialog and show panel
+                    SettingsForm.show(project);
+
+                } else if("dismiss".equals(event.getDescription())) {
+
+                    // use dont want to show notification again
+                    Settings.getInstance(project).dismissEnableNotification = true;
+                }
+
+                notification.expire();
+            }
+
+        });
+
+        Notifications.Bus.notify(notification, project);
     }
 
 }
