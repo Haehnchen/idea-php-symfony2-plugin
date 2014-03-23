@@ -19,6 +19,7 @@ public class Symfony2Icons {
     public static final Icon SERVICE_OPACITY = IconLoader.getIcon("icons/service_opacity.png");
     public static final Icon FORM_TYPE = IconLoader.getIcon("icons/form_type.png");
     public static final Icon TRANSLATION = IconLoader.getIcon("icons/translation.png");
+    public static final Icon TRANSLATION_WEAK = IconLoader.getIcon("icons/translation_weak.png");
     public static final Icon PARAMETER = IconLoader.getIcon("icons/parameter.png");
     public static final Icon FORM_OPTION = IconLoader.getIcon("icons/form_option.png");
     public static final Icon FORM_EXTENSION = IconLoader.getIcon("icons/form_extension.png");

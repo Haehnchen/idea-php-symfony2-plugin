@@ -5,7 +5,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.twig.TwigFile;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -65,7 +66,7 @@ public class TwigAnnotator implements Annotator {
         if(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), psiElement.getText(), domainName).length == 0) {
 
             Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
-            PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), domainName);
+            List<PsiFile> psiElements = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), domainName);
             for(PsiElement psiFile: psiElements) {
                 if(psiFile instanceof YAMLFile) {
                     annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, psiElement.getText()));
@@ -82,7 +83,7 @@ public class TwigAnnotator implements Annotator {
 
         PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
         if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-            if(TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getText()).length == 0) {
+            if(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText()).size() == 0) {
                 holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
             }
         }

@@ -1,19 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
-import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -45,20 +46,7 @@ public class TranslationReference extends PsiPolyVariantReferenceBase<PsiElement
     @NotNull
     @Override
     public Object[] getVariants() {
-
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
-
-        TranslationStringMap map = TranslationIndex.getInstance(getElement().getProject()).getTranslationMap();
-        Collection<String> domainMap = map.getDomainMap(domainName);
-        if(domainMap == null) {
-            return lookupElements.toArray();
-        }
-
-        for(String stringId : domainMap) {
-            lookupElements.add(new TranslatorLookupElement(stringId, domainName));
-        }
-
-        return lookupElements.toArray();
+        return TranslationUtil.getTranslationLookupElementsOnDomain(getElement().getProject(), domainName).toArray();
     }
 
 }

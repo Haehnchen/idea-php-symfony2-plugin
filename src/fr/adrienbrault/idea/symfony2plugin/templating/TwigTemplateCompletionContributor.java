@@ -37,6 +37,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.Control
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
@@ -79,16 +80,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     PsiElement psiElement = parameters.getPosition();
                     String domainName =  TwigUtil.getPsiElementTranslationDomain(psiElement);
 
-                    Collection<String> domainMap = map.getDomainMap(domainName);
-                    if(domainMap == null) {
-                        return;
-                    }
-
-                    for(String stringId : domainMap) {
-                        resultSet.addElement(
-                            new TranslatorLookupElement(stringId, domainName)
-                        );
-                    }
+                    resultSet.addAllElements(TranslationUtil.getTranslationLookupElementsOnDomain(psiElement.getProject(), domainName));
 
                 }
             }
@@ -113,12 +105,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    TranslationStringMap map = TranslationIndex.getInstance(parameters.getPosition().getProject()).getTranslationMap();
-                    if(map != null) {
-                        for(String domainKey : map.getDomainList()) {
-                            resultSet.addElement(new TranslatorLookupElement(domainKey, domainKey));
-                        }
-                    }
+                    resultSet.addAllElements(
+                        TranslationUtil.getTranslationDomainLookupElements(parameters.getPosition().getProject())
+                    );
 
                 }
 

@@ -1,39 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
-import com.intellij.codeInsight.intention.impl.BaseIntentionAction;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiReference;
-import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
-import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 
 public class PhpTranslationAnnotator implements Annotator {
@@ -117,7 +101,7 @@ public class PhpTranslationAnnotator implements Annotator {
         if(psiElement.getContents().length() > 0 && TranslationUtil.getTranslationPsiElements(psiElement.getProject(), psiElement.getContents(), domainName).length == 0) {
 
             Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
-            PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), domainName);
+            List<PsiFile> psiElements = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), domainName);
             for(PsiElement psiFile: psiElements) {
                 if(psiFile instanceof YAMLFile) {
                     annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, psiElement.getContents()));
@@ -129,7 +113,7 @@ public class PhpTranslationAnnotator implements Annotator {
 
     private void annotateTranslationDomain(StringLiteralExpression psiElement, @NotNull AnnotationHolder holder) {
 
-        if(psiElement.getContents().length() > 0 && TranslationUtil.getDomainFilePsiElements(psiElement.getProject(), psiElement.getContents()).length == 0) {
+        if(psiElement.getContents().length() > 0 && TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getContents()).size() == 0) {
             holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
         }
 

@@ -10,25 +10,37 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TranslatorLookupElement extends LookupElement {
 
-    private String translation_string;
+    private String translationString;
     private String domain;
+    private boolean isWeak;
 
     public TranslatorLookupElement(String translation_string, String domain) {
-        this.translation_string = translation_string;
+        this.translationString = translation_string;
         this.domain = domain;
+    }
+
+    public TranslatorLookupElement(String translationString, String domain, boolean isWeak) {
+        this(translationString, domain);
+        this.isWeak = isWeak;
     }
 
     @NotNull
     @Override
     public String getLookupString() {
-        return translation_string;
+        return translationString;
     }
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(domain);
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.TRANSLATION);
+
+        if(this.isWeak) {
+            presentation.setIcon(Symfony2Icons.TRANSLATION_WEAK);
+        } else {
+            presentation.setIcon(Symfony2Icons.TRANSLATION);
+        }
+
     }
 
 }

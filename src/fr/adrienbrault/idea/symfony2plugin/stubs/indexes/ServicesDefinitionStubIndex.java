@@ -145,7 +145,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     /**
      * com.jetbrains.php.lang.psi.stubs.indexes.PhpTraitUsageIndex
      */
-    private class MySetDataExternalizer implements DataExternalizer<String[]> {
+    public static class MySetDataExternalizer implements DataExternalizer<String[]> {
 
         private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
 
