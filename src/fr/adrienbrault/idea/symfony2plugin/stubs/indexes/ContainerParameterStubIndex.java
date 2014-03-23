@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class ContainerParameterStubIndex extends FileBasedIndexExtension<String, String> {
 
-    public static final ID<String, String> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.parameter");
+    public static final ID<String, String> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.parameter2");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
@@ -103,7 +103,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 4;
+        return 1;
     }
 
     private static class StringDataExternalizer implements DataExternalizer<String> {
