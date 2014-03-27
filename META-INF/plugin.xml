@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.49</version>
+    <version>0.10.50</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -91,6 +91,12 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.50</h2>
+<ul>
+    <li>Add twig include indexer</li>
+    <li>Add twig linemarker for includes</li>
+</ul>
 
 <h2>0.10.49</h2>
 <ul>

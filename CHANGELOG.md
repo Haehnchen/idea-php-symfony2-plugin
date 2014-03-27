@@ -5,6 +5,17 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.50
+* Add twig include indexer
+* Add twig linemarker for includes
+
+### 0.10.49
+* Add translation key and domain indexer
+* Rewrite and refactoring of all translation related stuff
+* Make translations available without a compiled file on indexer as weak references
+* Improvements in multiline values and quote key files for translation keys
+* Rename parameter indexer key name to force a refresh, pls report npe directly to #238 with your environment data if still occur
+
 ### 0.10.48
 * Improvements in repositoryClass detection of doctrine annotations eg namespaces
 * Add typename for repository "find*" lookup elements
