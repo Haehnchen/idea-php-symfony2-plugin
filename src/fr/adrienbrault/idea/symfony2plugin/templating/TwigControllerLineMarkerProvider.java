@@ -5,6 +5,7 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -23,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
@@ -57,6 +59,11 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
                 attachController((TwigFile) psiElement, results);
             }
 
+            // attach parent includes goto
+            if(psiElement instanceof TwigFile) {
+                attachIncludes((TwigFile) psiElement, results);
+            }
+
         }
 
     }
@@ -73,6 +80,40 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             setTooltipText("Navigate to controller");
 
         result.add(builder.createLineMarkerInfo(psiElement));
+    }
+
+    private void attachIncludes(TwigFile twigFile, Collection<? super RelatedItemLineMarkerInfo> result) {
+
+
+        final Collection<PsiFile> targets = new ArrayList<PsiFile>();
+        for(Map.Entry<String, PsiFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
+
+            final Project project = twigFile.getProject();
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<String>(Arrays.asList(entry.getKey())), new Processor<VirtualFile>() {
+                @Override
+                public boolean process(VirtualFile virtualFile) {
+                    PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+
+                    if(psiFile != null) {
+                        targets.add(psiFile);
+                    }
+
+                    return true;
+                }
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
+
+        }
+
+        if(targets.size() == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS).
+            setTargets(targets).
+            setTooltipText("Navigate to parent");
+
+        result.add(builder.createLineMarkerInfo(twigFile));
+
     }
 
     @Nullable

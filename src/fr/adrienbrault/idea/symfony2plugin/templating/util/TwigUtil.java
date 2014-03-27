@@ -284,6 +284,19 @@ public class TwigUtil {
 
     }
 
+    public static Map<String, PsiFile> getTemplateName(TwigFile twigFile) {
+
+        Map<String, PsiFile> map = new HashMap<String, PsiFile>();
+
+        for(Map.Entry<String, PsiFile> entry: TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false).entrySet()) {
+            if(twigFile.getVirtualFile().equals(entry.getValue().getVirtualFile())) {
+                map.put(entry.getKey(), twigFile);
+            }
+        }
+
+        return map;
+    }
+
     public static HashMap<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
 
         HashMap<String, PsiVariable> vars = new HashMap<String, PsiVariable>();

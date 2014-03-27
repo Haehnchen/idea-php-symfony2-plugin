@@ -67,7 +67,6 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
                 }
 
                 String domainName = fileName.substring(0, domainSplit);
-                System.out.println(domainName + fileName);
 
                 final Set<String> translationKeySet = new HashSet<String>();
                 YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, new YamlTranslationCollector() {

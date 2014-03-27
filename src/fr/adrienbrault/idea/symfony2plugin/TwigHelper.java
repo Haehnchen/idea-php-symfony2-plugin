@@ -527,6 +527,10 @@ public class TwigHelper {
             );
     }
     public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern() {
+        return getTemplateFileReferenceTagPattern("extends", "from", "include", "use", "import", "embed");
+    }
+
+    public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern(String... tagNames) {
 
         // {% include '<xxx>' with {'foo' : bar, 'bar' : 'foo'} %}
         return PlatformPatterns
@@ -539,7 +543,7 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("extends", "from", "include", "use", "import", "embed"))
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf(tagNames))
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
