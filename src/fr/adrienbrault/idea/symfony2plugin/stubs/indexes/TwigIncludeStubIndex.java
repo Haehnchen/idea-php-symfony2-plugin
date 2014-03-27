@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
@@ -13,21 +12,15 @@ import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigCompositeElement;
-import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> {
 
@@ -63,6 +56,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
                     @Override
                     public boolean isAccepted(PsiElement psiElement) {
 
+                        // {% include %}
                         if(psiElement instanceof TwigTagWithFileReference) {
                             PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("include"));
                             if(includeTag != null) {
@@ -73,6 +67,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
                             }
                         }
 
+                        // {{ include }}
                         if(psiElement instanceof TwigCompositeElement) {
                             PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getPrintBlockFunctionPattern("include", "source"));
                             if(includeTag != null) {
