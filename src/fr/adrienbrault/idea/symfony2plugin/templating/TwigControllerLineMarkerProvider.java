@@ -25,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFromStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
@@ -61,7 +62,18 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
             // attach parent includes goto
             if(psiElement instanceof TwigFile) {
-                attachIncludes((TwigFile) psiElement, results);
+                LineMarkerInfo lineOverwrites = attachIncludes((TwigFile) psiElement);
+                if(lineOverwrites != null) {
+                    results.add(lineOverwrites);
+                }
+            }
+
+            // attach parent includes goto
+            if(psiElement instanceof TwigFile) {
+                LineMarkerInfo lineOverwrites = attachFromIncludes((TwigFile) psiElement);
+                if(lineOverwrites != null) {
+                    results.add(lineOverwrites);
+                }
             }
 
         }
@@ -82,7 +94,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void attachIncludes(TwigFile twigFile, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private LineMarkerInfo attachIncludes(TwigFile twigFile) {
 
 
         final Collection<PsiFile> targets = new ArrayList<PsiFile>();
@@ -105,25 +117,79 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         }
 
         if(targets.size() == 0) {
-            return;
+            return null;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS).
-            setTargets(targets).
-            setTooltipText("Navigate to parent");
+        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false);
 
-        result.add(builder.createLineMarkerInfo(twigFile));
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        for(PsiElement blockTag: targets) {
+            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files, blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+        }
 
+        return getRelatedPopover("Implementations", "Impl: " ,twigFile, gotoRelatedItems);
+
+    }
+
+    @Nullable
+    private LineMarkerInfo attachFromIncludes(TwigFile twigFile) {
+
+        final Collection<PsiFile> targets = new ArrayList<PsiFile>();
+        for(Map.Entry<String, PsiFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
+
+            final Project project = twigFile.getProject();
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<String>(Arrays.asList(entry.getKey())), new Processor<VirtualFile>() {
+                @Override
+                public boolean process(VirtualFile virtualFile) {
+                    PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+
+                    if(psiFile != null) {
+                        targets.add(psiFile);
+                    }
+
+                    return true;
+                }
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
+
+        }
+
+        if(targets.size() == 0) {
+            return null;
+        }
+
+        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false);
+
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        for(PsiElement blockTag: targets) {
+            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files, blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+        }
+
+        return getRelatedPopover("Implementations", "Impl: " ,twigFile, gotoRelatedItems);
+    }
+
+    private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems) {
+
+        // single item has no popup
+        String title = singleItemTitle;
+        if(gotoRelatedItems.size() == 1) {
+            String customName = gotoRelatedItems.get(0).getCustomName();
+            if(customName != null) {
+                title = String.format(singleItemTooltipPrefix, customName);
+            }
+        }
+
+        return new LineMarkerInfo<PsiElement>(lineMarkerTarget, lineMarkerTarget.getTextOffset(), PhpIcons.IMPLEMENTED, 6, new ConstantFunction<PsiElement, String>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
     @Nullable
     private LineMarkerInfo attachBlockImplements(final PsiElement psiElement) {
 
-        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, false);
         PsiFile psiFile = psiElement.getContainingFile();
         if(psiFile == null) {
             return null;
         }
+
+        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, false);
 
         List<PsiFile> twigChild = new ArrayList<PsiFile>();
         getTwigChildList(files, psiFile, twigChild, 8);
@@ -155,16 +221,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files, blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
 
-        // single item has no popup
-        String title = "Implementations";
-        if(gotoRelatedItems.size() == 1) {
-            String customName = gotoRelatedItems.get(0).getCustomName();
-            if(customName != null) {
-                title = String.format("Impl: %s", customName);
-            }
-        }
-
-        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), PhpIcons.IMPLEMENTED, 6, new ConstantFunction(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems);
 
     }
 
@@ -192,7 +249,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), PhpIcons.OVERRIDES, 6, new ConstantFunction(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), PhpIcons.OVERRIDES, 6, new ConstantFunction<PsiElement, String>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
     @Nullable
