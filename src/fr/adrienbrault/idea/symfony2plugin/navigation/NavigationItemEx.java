@@ -16,7 +16,7 @@ import javax.swing.*;
  * "Search everywhere" does instance check on NavigationItem, but ChooseByNameContributor use getPresentation :)
  * Moreover "Search everywhere" dont set icons at all
  */
-class NavigationItemEx implements NavigationItem, ItemPresentation {
+public class NavigationItemEx implements NavigationItem, ItemPresentation {
 
     private PsiElement psiElement;
     private String name;

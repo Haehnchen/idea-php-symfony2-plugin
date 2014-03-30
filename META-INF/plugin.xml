@@ -420,6 +420,12 @@
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
+        <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony2 Symbol..." icon="SymfonyIcons.Symfony">
+            <keyboard-shortcut first-keystroke="shift alt S" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="control meta S" keymap="Mac OS X" replace-all="true"/>
+            <add-to-group group-id="GoToTargetEx"/>
+        </action>
+
     </actions>
 </idea-plugin>
 
