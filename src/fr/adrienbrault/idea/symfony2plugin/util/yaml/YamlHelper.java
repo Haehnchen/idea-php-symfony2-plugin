@@ -164,7 +164,7 @@ public class YamlHelper {
                                 if(value != null) {
                                     String valueText = value.getText();
                                     if(StringUtils.isNotBlank(valueText)) {
-                                        map.put(keyName.toLowerCase(), valueText);
+                                        map.put(keyName.toLowerCase(), PsiElementUtils.trimQuote(valueText));
                                     }
                                 }
                             }
@@ -213,6 +213,7 @@ public class YamlHelper {
             return null;
         }
 
+        @NotNull
         public Map<String, ContainerService> getLocalServiceMap(PsiElement psiElement) {
 
             Map<String, ContainerService> services = new HashMap<String, ContainerService>();
@@ -245,7 +246,13 @@ public class YamlHelper {
 
                                 String serviceClassName = this.getKeyValue(yamlServiceKeyValue, "class");
                                 if(serviceClassName != null) {
-                                    serviceClass = serviceClassName;
+                                    serviceClass = PsiElementUtils.trimQuote(serviceClassName);
+
+                                    // after trim check empty string again
+                                    if(StringUtils.isBlank(serviceClass)) {
+                                        serviceClass = null;
+                                    }
+
                                 }
 
                                 String serviceIsPublic = this.getKeyValue(yamlServiceKeyValue, "public");

@@ -74,12 +74,15 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             }
 
             private void attachServiceMap(Map<String, String[]> map, Map<String, ContainerService> localServiceMap) {
+
                 if(localServiceMap.size() == 0) {
                     return;
                 }
 
                 for(Map.Entry<String, ContainerService> entry: localServiceMap.entrySet()) {
-                    addContainerService(map, entry);
+                    if(StringUtils.isNotBlank(entry.getKey())) {
+                        addContainerService(map, entry);
+                    }
                 }
             }
 

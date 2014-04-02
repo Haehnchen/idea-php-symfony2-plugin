@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServ
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import org.apache.commons.lang.StringUtils;
@@ -163,7 +164,7 @@ public class XmlHelper {
     @Nullable
     public static Map<String, ContainerService> getLocalServiceMap(PsiFile psiFile) {
 
-        Map<String, ContainerService> services = new THashMap<String, ContainerService>();
+        Map<String, ContainerService> services = new HashMap<String, ContainerService>();
 
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
             return services;
@@ -230,7 +231,7 @@ public class XmlHelper {
 
     public static Map<String, String> getFileParameterMap(XmlFile psiFile) {
 
-        Map<String, String> services = new THashMap<String, String>();
+        Map<String, String> services = new HashMap<String, String>();
 
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
             return services;

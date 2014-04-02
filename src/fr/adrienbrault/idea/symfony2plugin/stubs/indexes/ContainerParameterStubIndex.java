@@ -11,7 +11,6 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -19,6 +18,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerParameterStubIndex extends FileBasedIndexExtension<String, String> {
@@ -39,7 +39,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
             @NotNull
             @Override
             public Map<String, String> map(FileContent inputData) {
-                Map<String, String> map = new THashMap<String, String>();
+                Map<String, String> map = new HashMap<String, String>();
 
                 PsiFile psiFile = inputData.getPsiFile();
                 if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
