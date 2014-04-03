@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.50</version>
+    <version>0.10.51</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -91,6 +91,16 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.51</h2>
+<ul>
+    <li>Add twig macro name indexer</li>
+    <li>Add macro include/from indexer and add implements linemarker</li>
+    <li>Add custom "Symfony2 Symbol" search (Navigate > Symfony2 Symbol) in replacement for toolwindow <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/229">#229</a> (pls report possible keyboard shortcuts :) )</li>
+    <li>Add twig macro and service index to symbol search</li>
+    <li>Allow null keys in all index related stuff to temporary fix <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
+    <li>Strip quoted values inside yaml container indexer</li>
+</ul>
 
 <h2>0.10.50</h2>
 <ul>
@@ -422,8 +432,6 @@
         </group>
 
         <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony2 Symbol..." icon="SymfonyIcons.Symfony">
-            <keyboard-shortcut first-keystroke="shift alt S" keymap="$default"/>
-            <keyboard-shortcut first-keystroke="control meta S" keymap="Mac OS X" replace-all="true"/>
             <add-to-group group-id="GoToTargetEx"/>
         </action>
 
