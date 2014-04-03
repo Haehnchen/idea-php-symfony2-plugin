@@ -28,10 +28,12 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Set;
 
 
 public class SymfonySymbolSearchAction extends GotoActionBase {
@@ -65,6 +67,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         private ContainerCollectionResolver.ServiceCollector serviceCollector;
         private Map<String, PsiFile> templateMap;
         private Map<String, Route> routes;
+        private Set<String> twigMacroSet;
 
         public Symfony2NavigationContributor(Project project) {
             this.project = project;
@@ -99,6 +102,15 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             return this.routes;
         }
 
+        private Set<String> getTwigMacroSet() {
+
+            if(this.twigMacroSet == null) {
+                this.twigMacroSet = TwigHelper.getTwigMacroSet(this.project);
+            }
+
+            return this.twigMacroSet;
+        }
+
         @Override
         public void processNames(@NotNull Processor<String> processor, @NotNull GlobalSearchScope scope, @Nullable IdFilter filter) {
 
@@ -112,6 +124,10 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             }
 
             for(String name: getRoutes().keySet()) {
+                processor.process(name);
+            }
+
+            for(String name: getTwigMacroSet()) {
                 processor.process(name);
             }
 
@@ -145,6 +161,12 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                     for(PsiElement psiElement: RouteHelper.getMethodsOnControllerShortcut(this.project, controllerName)) {
                         processor.process(new NavigationItemEx(psiElement, name, Symfony2Icons.ROUTE, "Route"));
                     }
+                }
+            }
+
+            if(getTwigMacroSet().contains(name)) {
+                for(PsiElement macroTarget: TwigHelper.getTwigMacroTargets(project, name)) {
+                    processor.process(new NavigationItemEx(macroTarget, name, TwigIcons.TwigFileIcon, "Macro"));
                 }
             }
 

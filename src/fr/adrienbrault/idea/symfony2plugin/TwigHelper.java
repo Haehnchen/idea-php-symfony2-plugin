@@ -8,8 +8,14 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiElementProcessor;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
@@ -17,6 +23,7 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -27,10 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -673,6 +677,24 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getTwigMacroNameKnownPattern(String macroName) {
+
+        // {% macro <foo>(user) %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER).withText(macroName)
+            .withParent(PlatformPatterns.psiElement(
+                TwigElementTypes.MACRO_TAG
+            ))
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("macro")
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getSetVariablePattern() {
 
         // {% set count1 = "var" %}
@@ -751,6 +773,51 @@ public class TwigHelper {
         }
 
         return null;
+    }
+
+    public static Set<String> getTwigMacroSet(Project project) {
+
+        final Set<String> stringSet = new HashSet<String>();
+
+        FileBasedIndexImpl.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, new Processor<String>() {
+            @Override
+            public boolean process(String s) {
+                stringSet.add(s);
+                return true;
+            }
+        }, project);
+
+        return stringSet;
+    }
+
+    public static Collection<PsiElement> getTwigMacroTargets(final Project project, final String name) {
+
+        final Collection<PsiElement> targets = new ArrayList<PsiElement>();
+
+        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<String>(Arrays.asList(name)), new Processor<VirtualFile>() {
+            @Override
+            public boolean process(VirtualFile virtualFile) {
+
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(psiFile != null) {
+                    PsiTreeUtil.processElements(psiFile, new PsiElementProcessor() {
+                        public boolean execute(@NotNull PsiElement psiElement) {
+
+                            if(getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
+                                targets.add(psiElement);
+                            }
+
+                            return true;
+
+                        }
+                    });
+                }
+
+                return true;
+            }
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
+
+        return targets;
     }
 
 }
