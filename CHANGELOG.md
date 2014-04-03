@@ -6,12 +6,12 @@ Changelog
 0.10.x: PhpStorm 7
 
 ### 0.10.51
-### Add twig macro name indexer
-### Add macro include/from indexer and add implements linemarker
-### Add custom "Symfony2 Symbol" search (Navigate > Symfony2 Symbol) in replacement for toolwindow #229 (pls report possible keyboard shortcuts :) )
-### Add twig macro and service index to symbol search
-### Allow null keys in all index related stuff to temporary fix #238
-### Strip quoted values inside yaml container indexer
+* Add twig macro name indexer
+* Add macro include/from indexer and add implements linemarker
+* Add custom "Symfony2 Symbol" search (Navigate > Symfony2 Symbol) in replacement for toolwindow #229 (pls report possible keyboard shortcuts :) )
+* Add twig macro and service index to symbol search
+* Allow null keys in all index related stuff to temporary fix #238
+* Strip quoted values inside yaml container indexer
 
 ### 0.10.50
 * Add twig include indexer
