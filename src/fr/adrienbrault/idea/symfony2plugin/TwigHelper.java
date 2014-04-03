@@ -655,6 +655,24 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getTwigMacroNamePattern() {
+
+        // {% macro <foo>(user) %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .withParent(PlatformPatterns.psiElement(
+                TwigElementTypes.MACRO_TAG
+            ))
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("macro")
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getSetVariablePattern() {
 
         // {% set count1 = "var" %}
