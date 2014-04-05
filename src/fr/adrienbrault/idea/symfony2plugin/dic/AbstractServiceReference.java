@@ -16,6 +16,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
 
     protected String serviceId;
     protected boolean useIndexedServices = false;
+    protected boolean usePrivateServices = true;
 
     public AbstractServiceReference(PsiElement psiElement) {
         super(psiElement);
@@ -57,6 +58,12 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
         }
 
         for(ContainerService containerService: collector.collect()) {
+
+            // dont attach private services; if configured
+            if(containerService.isPrivate() && !usePrivateServices) {
+                continue;
+            }
+
             results.add(new ServiceStringLookupElement(containerService));
         }
 

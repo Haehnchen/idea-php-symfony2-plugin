@@ -33,6 +33,12 @@ public class ContainerCollectionResolver {
         return new ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX).getNames().contains(serviceName);
     }
 
+    @Nullable
+    public static ContainerService getService(Project project, String serviceName) {
+        Map<String, ContainerService> services = getServices(project, Source.COMPILER, Source.INDEX);
+        return services.containsKey(serviceName) ? services.get(serviceName) : null;
+    }
+
     public static Map<String, ContainerService> getServices(Project project) {
         return getServices(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
     }

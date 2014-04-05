@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -81,11 +82,15 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
         // finally search the classes
         if(new Symfony2InterfacesUtil().isContainerGetCall((Method) phpNamedElement)) {
-            ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap();
-            String serviceClass = serviceMap.getMap().get(parameter);
-            if(serviceClass != null) {
-                return PhpIndex.getInstance(project).getAnyByFQN(serviceClass);
+
+            ContainerService containerService = ContainerCollectionResolver.getService(project, parameter);
+            if(containerService != null) {
+                String serviceClass = containerService.getClassName();
+                if(serviceClass != null) {
+                    return PhpIndex.getInstance(project).getAnyByFQN(serviceClass);
+                }
             }
+
         }
 
         return phpNamedElementCollections;

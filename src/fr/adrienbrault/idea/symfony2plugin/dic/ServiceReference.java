@@ -16,4 +16,10 @@ public class ServiceReference extends AbstractServiceReference {
         this.useIndexedServices = useIndexedServices;
    }
 
+    public ServiceReference(@NotNull StringLiteralExpression element, boolean useIndexedServices, boolean usePrivateServices) {
+        this(element);
+        this.useIndexedServices = useIndexedServices;
+        this.usePrivateServices = usePrivateServices;
+    }
+
 }
