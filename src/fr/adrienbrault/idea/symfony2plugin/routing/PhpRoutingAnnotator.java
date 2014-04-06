@@ -2,14 +2,20 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Map;
 
@@ -35,15 +41,47 @@ public class PhpRoutingAnnotator implements Annotator {
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
-        String routeName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
 
-        if(routes.containsKey(routeName))  {
-           return;
+        final String routeName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
+        if(routeName == null) {
+            return;
         }
 
-        holder.createWarningAnnotation(element, "Missing Route");
+        annotateRouteName(element, holder, routeName);
 
     }
+
+    public static void annotateRouteName(PsiElement target, @NotNull AnnotationHolder holder, final String routeName) {
+
+        Symfony2ProjectComponent symfony2ProjectComponent = target.getProject().getComponent(Symfony2ProjectComponent.class);
+        Map<String, Route> routes = symfony2ProjectComponent.getRoutes();
+
+
+        if(routes.containsKey(routeName))  {
+            return;
+        }
+
+        final boolean[] isWeak = {false};
+        FileBasedIndexImpl.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, new Processor<String>() {
+            @Override
+            public boolean process(String s) {
+
+                if(routeName.equals(s)) {
+                    isWeak[0] = true;
+                    return false;
+                }
+
+                return true;
+            }
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML), null);
+
+        if(isWeak[0]) {
+            holder.createWeakWarningAnnotation(target, "Weak Route");
+            return;
+        }
+
+        holder.createWarningAnnotation(target, "Missing Route");
+
+    }
+
 }

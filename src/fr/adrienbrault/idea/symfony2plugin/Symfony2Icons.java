@@ -15,6 +15,7 @@ public class Symfony2Icons {
     public static final Icon DOCTRINE = IconLoader.getIcon("icons/doctrine.png");
     public static final Icon MONGODB = IconLoader.getIcon("icons/mongodb.png");
     public static final Icon ROUTE = IconLoader.getIcon("icons/route.png");
+    public static final Icon ROUTE_WEAK = IconLoader.getIcon("icons/route_weak.png");
     public static final Icon SERVICE = IconLoader.getIcon("icons/service.png");
     public static final Icon SERVICE_OPACITY = IconLoader.getIcon("icons/service_opacity.png");
     public static final Icon FORM_TYPE = IconLoader.getIcon("icons/form_type.png");

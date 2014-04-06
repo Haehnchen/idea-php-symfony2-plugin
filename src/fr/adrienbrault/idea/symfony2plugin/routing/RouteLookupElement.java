@@ -10,10 +10,16 @@ import org.jetbrains.annotations.NotNull;
  */
 public class RouteLookupElement  extends LookupElement {
 
-    private Route route;
+    final private Route route;
+    private boolean isWeak = false;
 
     public RouteLookupElement(Route route) {
         this.route = route;
+    }
+
+    public RouteLookupElement(Route route, boolean isWeak) {
+        this(route);
+        this.isWeak = isWeak;
     }
 
     @NotNull
@@ -26,7 +32,7 @@ public class RouteLookupElement  extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(route.getController());
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.ROUTE);
+        presentation.setIcon(!this.isWeak ? Symfony2Icons.ROUTE : Symfony2Icons.ROUTE_WEAK);
     }
 
 }

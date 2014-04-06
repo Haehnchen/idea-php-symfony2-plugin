@@ -335,24 +335,19 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    Symfony2ProjectComponent symfony2ProjectComponent = parameters.getPosition().getProject().getComponent(Symfony2ProjectComponent.class);
-                    Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
-
-                    for (Route route : routes.values()) {
-                        resultSet.addElement(new RouteLookupElement(route));
-                    }
+                    resultSet.addAllElements(RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject()));
                 }
             }
         );
 
-        // routing completion like path() function
+        // routing parameter completion
         extend(
             CompletionType.BASIC,
             TwigHelper.getPathAfterLeafPattern(),
             new PathParameterCompletionProvider()
         );
 
-        // routing completion like path() function
+        // simulated php completion var.<foo>
         extend(
             CompletionType.BASIC,
             TwigHelper.getTypeCompletionPattern(),

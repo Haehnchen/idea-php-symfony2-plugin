@@ -12,11 +12,13 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
+import fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAction;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -91,18 +93,17 @@ public class TwigAnnotator implements Annotator {
     }
 
     private void annotateRoute(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
+
         if(!TwigHelper.getAutocompletableRoutePattern().accepts(element)) {
             return;
         }
 
-        Symfony2ProjectComponent symfony2ProjectComponent = element.getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
-
-        if(routes.containsKey(element.getText()))  {
+        String text = element.getText();
+        if(StringUtils.isBlank(text)) {
             return;
         }
 
-        holder.createWarningAnnotation(element, "Missing Route");
+        PhpRoutingAnnotator.annotateRouteName(element, holder, text);
     }
 
     private void annotateTemplate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {

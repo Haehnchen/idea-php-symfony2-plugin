@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -165,7 +166,20 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     private PsiElement[] getRouteGoTo(PsiElement psiElement) {
-        return RouteHelper.getMethods(psiElement.getProject(), PsiElementUtils.getText(psiElement));
+
+        String text = PsiElementUtils.getText(psiElement);
+
+        if(StringUtils.isBlank(text)) {
+            return new PsiElement[0];
+        }
+
+        PsiElement[] methods = RouteHelper.getMethods(psiElement.getProject(), text);
+        if(methods.length > 0) {
+            return methods;
+        }
+
+        List<PsiElement> psiElementList = RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), text);
+        return psiElementList.toArray(new PsiElement[psiElementList.size()]);
     }
 
     private PsiElement[] getTranslationKeyGoTo(PsiElement psiElement) {
