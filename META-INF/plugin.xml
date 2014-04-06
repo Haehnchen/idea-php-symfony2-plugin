@@ -373,6 +373,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFromStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>

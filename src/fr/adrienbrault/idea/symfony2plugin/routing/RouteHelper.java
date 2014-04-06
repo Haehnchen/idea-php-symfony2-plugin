@@ -5,18 +5,23 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -27,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.io.IOException;
@@ -294,6 +300,14 @@ public class RouteHelper {
             }
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
 
+        FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
+            @Override
+            public boolean process(VirtualFile virtualFile) {
+                virtualFiles.add(virtualFile);
+                return true;
+            }
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE));
+
         return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
 
     }
@@ -349,14 +363,37 @@ public class RouteHelper {
 
         VirtualFile[] virtualFiles = RouteHelper.getRouteDefinitionInsideFile(project, routeName);
         for(VirtualFile virtualFile: virtualFiles) {
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-            if(psiFile != null) {
 
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+
+            if(psiFile instanceof YAMLFile) {
                 YAMLKeyValue yamlKeyValue = YamlHelper.getRootKey(psiFile, routeName);
                 if(yamlKeyValue != null) {
                     return yamlKeyValue;
                 }
             }
+
+            if(psiFile instanceof PhpFile) {
+
+                Collection<PhpDocTag> phpDocTagList = PsiTreeUtil.findChildrenOfType(psiFile, PhpDocTag.class);
+                for(PhpDocTag phpDocTag: phpDocTagList) {
+
+                    String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag);
+                    if("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
+                        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+                        if(phpDocAttributeList != null) {
+                            // @TODO: use pattern
+                            Matcher matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(phpDocAttributeList.getText());
+                            if (matcher.find()) {
+                                return phpDocAttributeList;
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
         }
 
         return null;
@@ -402,6 +439,7 @@ public class RouteHelper {
             uniqueSet.add(route.getName());
         }
 
+        // yaml
         FileBasedIndexImpl.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, new Processor<String>() {
             @Override
             public boolean process(String s) {
@@ -413,6 +451,19 @@ public class RouteHelper {
                 return true;
             }
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML), null);
+
+        // annotations
+        FileBasedIndexImpl.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, new Processor<String>() {
+            @Override
+            public boolean process(String s) {
+
+                if(!uniqueSet.contains(s)) {
+                    lookupElements.add(new RouteLookupElement(new Route(s, null), true));
+                }
+
+                return true;
+            }
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE), null);
 
         return lookupElements;
 

@@ -69,22 +69,6 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
                 return map;
             }
 
-            public boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
-
-                String fileName = psiFile.getName();
-                if(fileName.startsWith(".") || fileName.contains("Test")) {
-                    return false;
-                }
-
-                // is Test file in path name
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-                if(relativePath == null || relativePath.contains("Test")) {
-                    return false;
-                }
-
-                return true;
-            }
-
         };
 
     }
@@ -118,6 +102,24 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
     public int getVersion() {
         return 4;
     }
+
+    public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
+
+        String fileName = psiFile.getName();
+        if(fileName.startsWith(".") || fileName.contains("Test")) {
+            return false;
+        }
+
+        // is Test file in path name
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+        if(relativePath == null || relativePath.contains("Test")) {
+            return false;
+        }
+
+        return true;
+    }
+
+
 
 }
 

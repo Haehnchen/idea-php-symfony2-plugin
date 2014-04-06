@@ -7,10 +7,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -74,6 +76,25 @@ public class PhpRoutingAnnotator implements Annotator {
                 return true;
             }
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML), null);
+
+        if(isWeak[0]) {
+            holder.createWeakWarningAnnotation(target, "Weak Route");
+            return;
+        }
+
+        // annotations
+        FileBasedIndexImpl.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, new Processor<String>() {
+            @Override
+            public boolean process(String s) {
+
+                if(routeName.equals(s)) {
+                    isWeak[0] = true;
+                    return false;
+                }
+
+                return true;
+            }
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), PhpFileType.INSTANCE), null);
 
         if(isWeak[0]) {
             holder.createWeakWarningAnnotation(target, "Weak Route");
