@@ -187,6 +187,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             return false;
         }
 
+        // dont add configured service paths
         List<File> settingsServiceFiles = psiFile.getProject().getComponent(Symfony2ProjectComponent.class).getContainerFiles();
         for(File file: settingsServiceFiles) {
             if(VfsUtil.isAncestor(VfsUtil.virtualToIoFile(inputData.getFile()), file, false)) {

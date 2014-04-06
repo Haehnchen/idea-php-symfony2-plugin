@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
@@ -44,6 +45,10 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
 
                 if(psiFile instanceof YAMLFile) {
 
+                    if(!isValidForIndex(inputData, psiFile)) {
+                        return map;
+                    }
+
                     if(!(psiFile.getFirstChild() instanceof YAMLDocument)) {
                         return map;
                     }
@@ -62,6 +67,22 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
 
 
                 return map;
+            }
+
+            public boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
+
+                String fileName = psiFile.getName();
+                if(fileName.startsWith(".") || fileName.contains("Test")) {
+                    return false;
+                }
+
+                // is Test file in path name
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+                if(relativePath == null || relativePath.contains("Test")) {
+                    return false;
+                }
+
+                return true;
             }
 
         };
@@ -95,7 +116,7 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
 }
