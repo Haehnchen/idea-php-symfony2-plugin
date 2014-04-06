@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -65,17 +66,17 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         }
 
         if(this.doctrineManagers.contains(DoctrineTypes.Manager.ORM)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM);
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, this.useClassNameAsLookupString);
         }
 
         if(this.doctrineManagers.contains(DoctrineTypes.Manager.MONGO_DB)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB);
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, this.useClassNameAsLookupString);
         }
 
         return results.toArray();
     }
 
-    private void attachRepositoryNames(List<LookupElement> results, PhpIndex phpIndex, PhpClass repositoryInterface, Map<String, String> entityNamespaces, DoctrineTypes.Manager manager) {
+    private static void attachRepositoryNames(List<LookupElement> results, PhpIndex phpIndex, PhpClass repositoryInterface, Map<String, String> entityNamespaces, DoctrineTypes.Manager manager, boolean useClassNameAsLookupString) {
         for (Map.Entry<String, String> entry : entityNamespaces.entrySet()) {
 
             // search for classes that match the symfony2 namings
@@ -93,7 +94,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
                 // dont add Repository classes and abstract entities
                 PhpClass entityClass = PhpElementsUtil.getClass(phpIndex, entityNamespaces.get(entry.getKey()) + "\\" + className);
                 if(null != entityClass && isEntity(entityClass, repositoryInterface)) {
-                    results.add(new DoctrineEntityLookupElement(repoName, entityClass, this.useClassNameAsLookupString).withManager(manager));
+                    results.add(new DoctrineEntityLookupElement(repoName, entityClass, useClassNameAsLookupString).withManager(manager));
                 }
 
             }
@@ -110,5 +111,32 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         Symfony2InterfacesUtil symfony2Util = new Symfony2InterfacesUtil();
         return !symfony2Util.isInstanceOf(entityClass, repositoryClass);
     }
+
+
+    public static List<LookupElement> getModelLookupElements(Project project, DoctrineTypes.Manager... managers) {
+
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+
+        List<LookupElement> results = new ArrayList<LookupElement>();
+
+        PhpClass repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), DoctrineTypes.REPOSITORY_INTERFACE);
+        if(null == repositoryInterface) {
+            return results;
+        }
+
+        List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
+
+
+        if(managerList.contains(DoctrineTypes.Manager.ORM)) {
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, false);
+        }
+
+        if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
+            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, false);
+        }
+
+        return results;
+    }
+
 
 }
