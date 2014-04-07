@@ -128,15 +128,6 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         null
                     ));
 
-                    methodParameterSettings.add(new MethodParameterSetting(
-                        "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller",
-                        "createForm",
-                        0,
-                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.FORM_TYPE,
-                        DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.PARAMETER,
-                        null
-                    ));
-
                     return methodParameterSettings;
                 }
 
