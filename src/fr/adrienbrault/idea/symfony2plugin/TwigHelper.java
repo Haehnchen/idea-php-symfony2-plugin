@@ -23,6 +23,7 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
+import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -776,18 +777,8 @@ public class TwigHelper {
     }
 
     public static Set<String> getTwigMacroSet(Project project) {
-
-        final Set<String> stringSet = new HashSet<String>();
-
-        FileBasedIndexImpl.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, new Processor<String>() {
-            @Override
-            public boolean process(String s) {
-                stringSet.add(s);
-                return true;
-            }
-        }, project);
-
-        return stringSet;
+        SymfonyProcessors.CollectProjectUniqueKeys ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeys(project, TwigMacroFunctionStubIndex.KEY);
+        return ymlProjectProcessor.getResult();
     }
 
     public static Collection<PsiElement> getTwigMacroTargets(final Project project, final String name) {

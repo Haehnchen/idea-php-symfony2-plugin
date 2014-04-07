@@ -2,11 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.Processor;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -19,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
+import java.util.Collection;
 import java.util.Map;
 
 
@@ -58,45 +57,18 @@ public class PhpRoutingAnnotator implements Annotator {
         Symfony2ProjectComponent symfony2ProjectComponent = target.getProject().getComponent(Symfony2ProjectComponent.class);
         Map<String, Route> routes = symfony2ProjectComponent.getRoutes();
 
-
         if(routes.containsKey(routeName))  {
             return;
         }
 
-        final boolean[] isWeak = {false};
-        FileBasedIndexImpl.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, new Processor<String>() {
-            @Override
-            public boolean process(String s) {
-
-                if(routeName.equals(s)) {
-                    isWeak[0] = true;
-                    return false;
-                }
-
-                return true;
-            }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML), null);
-
-        if(isWeak[0]) {
+        Collection fileCollection = FileBasedIndex.getInstance().getContainingFiles(YamlRoutesStubIndex.KEY, routeName,  GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML));
+        if(fileCollection.size() > 0) {
             holder.createWeakWarningAnnotation(target, "Weak Route");
             return;
         }
 
-        // annotations
-        FileBasedIndexImpl.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, new Processor<String>() {
-            @Override
-            public boolean process(String s) {
-
-                if(routeName.equals(s)) {
-                    isWeak[0] = true;
-                    return false;
-                }
-
-                return true;
-            }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), PhpFileType.INSTANCE), null);
-
-        if(isWeak[0]) {
+        fileCollection = FileBasedIndex.getInstance().getContainingFiles(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), PhpFileType.INSTANCE));
+        if(fileCollection.size() > 0) {
             holder.createWeakWarningAnnotation(target, "Weak Route");
             return;
         }
