@@ -6,21 +6,23 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -28,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -426,7 +429,7 @@ public class RouteHelper {
         return url.length() == 0 ? null : url;
     }
 
-    public static List<LookupElement> getRoutesLookupElements(Project project) {
+    public static List<LookupElement> getRoutesLookupElements(final @NotNull Project project) {
 
         Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
         Map<String, Route> routes = symfony2ProjectComponent.getRoutes();
@@ -439,31 +442,19 @@ public class RouteHelper {
             uniqueSet.add(route.getName());
         }
 
-        // yaml
-        FileBasedIndexImpl.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, new Processor<String>() {
-            @Override
-            public boolean process(String s) {
+        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlRoutesStubIndex.KEY, uniqueSet);
+        FileBasedIndex.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, ymlProjectProcessor, project);
+        for(String s: ymlProjectProcessor.getResult()) {
+            lookupElements.add(new RouteLookupElement(new Route(s, null), true));
+            uniqueSet.add(s);
+        }
 
-                if(!uniqueSet.contains(s)) {
-                    lookupElements.add(new RouteLookupElement(new Route(s, null), true));
-                }
-
-                return true;
-            }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML), null);
-
-        // annotations
-        FileBasedIndexImpl.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, new Processor<String>() {
-            @Override
-            public boolean process(String s) {
-
-                if(!uniqueSet.contains(s)) {
-                    lookupElements.add(new RouteLookupElement(new Route(s, null), true));
-                }
-
-                return true;
-            }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE), null);
+        SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueSet);
+        FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
+        for(String s: annotationProjectProcessor.getResult()) {
+            lookupElements.add(new RouteLookupElement(new Route(s, null), true));
+            uniqueSet.add(s);
+        }
 
         return lookupElements;
 
