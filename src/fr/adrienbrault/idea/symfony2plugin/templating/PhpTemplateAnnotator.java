@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -50,7 +51,7 @@ public class PhpTemplateAnnotator implements Annotator {
 
 
         String templateName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
-        if(templateName == null) {
+        if(templateName == null || StringUtils.isBlank(templateName)) {
             return;
         }
 

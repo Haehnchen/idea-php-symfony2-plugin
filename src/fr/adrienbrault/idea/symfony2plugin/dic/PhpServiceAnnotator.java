@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -35,7 +36,7 @@ public class PhpServiceAnnotator implements Annotator {
         }
 
         String serviceName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
-        if(serviceName == null) {
+        if(serviceName == null || StringUtils.isBlank(serviceName)) {
             return;
         }
 
