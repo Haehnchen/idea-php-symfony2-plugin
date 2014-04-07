@@ -5,6 +5,15 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.52
+* Globally use weak service and route index #261
+* Add new weak annotator for routes and services
+* Add route name indexer for annotation
+* Add custom index keys processor for filter them in project context
+* Add extension point to load custom doctrine model classes
+* Fix annotate blank string values
+* Remove duplicate from type completion #260
+
 ### 0.10.51
 * Add twig macro name indexer
 * Add macro include/from indexer and add implements linemarker

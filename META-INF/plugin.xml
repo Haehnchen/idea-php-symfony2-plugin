@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.51</version>
+    <version>0.10.52</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -91,6 +91,17 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.52</h2>
+<ul>
+    <li>Globally use weak service and route index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/261">#261</a></li>
+    <li>Add new weak annotator for routes and services</li>
+    <li>Add route name indexer for annotation </li>
+    <li>Add custom index keys processor for filter them in project context</li>
+    <li>Add extension point to load custom doctrine model classes</li>
+    <li>Fix annotate blank string values</li>
+    <li>Remove duplicate from type completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/260">#260</a></li>
+</ul>
 
 <h2>0.10.51</h2>
 <ul>
