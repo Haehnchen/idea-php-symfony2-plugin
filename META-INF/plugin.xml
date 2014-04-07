@@ -403,6 +403,7 @@
 
     <extensionPoints>
         <extensionPoint name="extension.ServiceContainerLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader"/>
+        <extensionPoint name="extension.DoctrineModelProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">

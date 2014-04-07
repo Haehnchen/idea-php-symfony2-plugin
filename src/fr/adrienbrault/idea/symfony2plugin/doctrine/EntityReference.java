@@ -2,7 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
@@ -12,6 +15,8 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespaces
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
+import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -77,6 +82,8 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     }
 
     private static void attachRepositoryNames(List<LookupElement> results, PhpIndex phpIndex, PhpClass repositoryInterface, Map<String, String> entityNamespaces, DoctrineTypes.Manager manager, boolean useClassNameAsLookupString) {
+
+        // search for models in namespaces
         for (Map.Entry<String, String> entry : entityNamespaces.entrySet()) {
 
             // search for classes that match the symfony2 namings
@@ -100,6 +107,16 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             }
 
         }
+
+        // add custom doctrine classes
+        Collection<DoctrineModelProviderParameter.DoctrineModel> doctrineModels = new ArrayList<DoctrineModelProviderParameter.DoctrineModel>();
+        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(repositoryInterface.getProject(), doctrineModels);
+        for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
+            for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
+                results.add(new DoctrineEntityLookupElement(doctrineModel.getName(), doctrineModel.getPhpClass(), useClassNameAsLookupString));
+            }
+        }
+
     }
 
     public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
