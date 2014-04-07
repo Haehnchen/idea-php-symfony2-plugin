@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubInd
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
@@ -44,7 +45,7 @@ public class PhpRoutingAnnotator implements Annotator {
 
 
         final String routeName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
-        if(routeName == null) {
+        if(StringUtils.isBlank(routeName)) {
             return;
         }
 
