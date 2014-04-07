@@ -12,6 +12,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
@@ -181,8 +183,11 @@ public class TranslationUtil {
             lookupElements.add(new TranslatorLookupElement(domainKey, domainKey));
         }
 
+        SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlTranslationStubIndex.KEY, domainList);
+        FileBasedIndexImpl.getInstance().processAllKeys(YamlTranslationStubIndex.KEY, projectUniqueKeysStrong, project);
+
         // attach index domains as weak one
-        for(String domainKey: FileBasedIndexImpl.getInstance().getAllKeys(YamlTranslationStubIndex.KEY, project)) {
+        for(String domainKey: projectUniqueKeysStrong.getResult()) {
             if(!domainList.contains(domainKey)) {
                 lookupElements.add(new TranslatorLookupElement(domainKey, domainKey, true));
             }

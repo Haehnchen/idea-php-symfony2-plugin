@@ -4,7 +4,6 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndexImpl;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
@@ -147,7 +146,10 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                for(String serviceName: FileBasedIndexImpl.getInstance().getAllKeys(ServicesDefinitionStubIndex.KEY, project)) {
+                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ServicesDefinitionStubIndex.KEY, this.services.keySet());
+                FileBasedIndexImpl.getInstance().processAllKeys(ServicesDefinitionStubIndex.KEY, projectUniqueKeysStrong, project);
+
+                for(String serviceName: projectUniqueKeysStrong.getResult()) {
 
                     // we have higher priority on compiler, which already has safe value
                     if(!this.services.containsKey(serviceName)) {
@@ -239,7 +241,9 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                serviceNames.addAll(FileBasedIndexImpl.getInstance().getAllKeys(ServicesDefinitionStubIndex.KEY, project));
+                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ServicesDefinitionStubIndex.KEY, serviceNames);
+                FileBasedIndexImpl.getInstance().processAllKeys(ServicesDefinitionStubIndex.KEY, projectUniqueKeysStrong, project);
+                serviceNames.addAll(projectUniqueKeysStrong.getResult());
             }
 
             return serviceNames;
@@ -314,8 +318,10 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
+                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ContainerParameterStubIndex.KEY, this.containerParameterMap.keySet());
+                FileBasedIndexImpl.getInstance().processAllKeys(ContainerParameterStubIndex.KEY, projectUniqueKeysStrong, project);
 
-                for(String parameterName: FileBasedIndexImpl.getInstance().getAllKeys(ContainerParameterStubIndex.KEY, project)) {
+                for(String parameterName: projectUniqueKeysStrong.getResult()) {
 
                     // indexes is weak stuff, dont overwrite compiled ones
                     if(!this.containerParameterMap.containsKey(parameterName)) {
@@ -354,7 +360,9 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                parameterNames.addAll(FileBasedIndexImpl.getInstance().getAllKeys(ContainerParameterStubIndex.KEY, project));
+                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ContainerParameterStubIndex.KEY, parameterNames);
+                FileBasedIndexImpl.getInstance().processAllKeys(ContainerParameterStubIndex.KEY, projectUniqueKeysStrong, project);
+                parameterNames.addAll(projectUniqueKeysStrong.getResult());
             }
 
             return parameterNames;
