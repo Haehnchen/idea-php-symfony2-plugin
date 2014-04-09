@@ -387,7 +387,7 @@ public class RouteHelper {
                         if(phpDocAttributeList != null) {
                             // @TODO: use pattern
                             Matcher matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(phpDocAttributeList.getText());
-                            if (matcher.find()) {
+                            if (matcher.find() && matcher.group(1).equals(routeName)) {
                                 return phpDocAttributeList;
                             }
                         }
