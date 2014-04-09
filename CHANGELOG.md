@@ -5,6 +5,10 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.53
+* Fix slow index on large files #261
+* Fix weak route annotation goto
+
 ### 0.10.52
 * Globally use weak service and route index #261
 * Add new weak annotator for routes and services
