@@ -112,7 +112,7 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
 
         // is Test file in path name
         String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-        if(relativePath == null || relativePath.contains("Test")) {
+        if(relativePath == null || relativePath.contains("Test") || relativePath.contains("Fixtures")) {
             return false;
         }
 

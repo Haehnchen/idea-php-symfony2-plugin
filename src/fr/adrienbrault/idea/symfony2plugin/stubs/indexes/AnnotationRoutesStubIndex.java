@@ -9,6 +9,7 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
@@ -21,9 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,22 +59,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
                     return map;
                 }
 
-                Collection<PhpDocTag> phpDocTagList = PsiTreeUtil.findChildrenOfType(psiFile, PhpDocTag.class);
-                for(PhpDocTag phpDocTag: phpDocTagList) {
-
-                    String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag);
-                    if("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
-                        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
-                        if(phpDocAttributeList != null) {
-                            // @TODO: use pattern
-                            Matcher matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(phpDocAttributeList.getText());
-                            if (matcher.find()) {
-                                map.put(matcher.group(1), null);
-                            }
-                        }
-                    }
-
-                }
+                psiFile.accept(new MyPsiRecursiveElementWalkingVisitor(map));
 
                 return map;
             }
@@ -107,27 +91,11 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
         return 8;
     }
 
-    @Nullable
-    public static String getClassNameReference(PhpDocTag phpDocTag) {
-
-        // only usable on eap7 because of "@ORM\OneToMany()" bug before
-        String name = phpDocTag.getName();
-        if(StringUtils.isBlank(name)) {
-            return null;
-        }
-
-        String annotationName = name.substring(1);
-
-        // @TODO: remove this
-        // phpstorm6 fallback;
-        String tagText = phpDocTag.getText();
-        if(tagText.contains("(")) {
-            annotationName = tagText.substring(1, tagText.indexOf("("));
-        }
+    public static Map<String, String> getFileUseImports(PsiFile psiFile) {
 
         // search for use alias in local file
         final Map<String, String> useImports = new HashMap<String, String>();
-        phpDocTag.getContainingFile().acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+        psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {
                 if(element instanceof PhpUse) {
@@ -147,6 +115,30 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
             }
 
         });
+
+        return useImports;
+    }
+
+    @Nullable
+    public static String getClassNameReference(PhpDocTag phpDocTag) {
+        return getClassNameReference(phpDocTag, getFileUseImports(phpDocTag.getContainingFile()));
+    }
+
+    @Nullable
+    public static String getClassNameReference(PhpDocTag phpDocTag, Map<String, String> useImports) {
+
+        if(useImports.size() == 0) {
+            return null;
+        }
+
+        String annotationName = phpDocTag.getName();
+        if(StringUtils.isBlank(annotationName)) {
+            return null;
+        }
+
+        if(annotationName.startsWith("@")) {
+            annotationName = annotationName.substring(1);
+        }
 
         String className = annotationName;
         String subNamespaceName = "";
@@ -169,6 +161,61 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
 
     }
 
+    private static class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
+
+        private final Map<String, Void> map;
+        private Map<String, String> fileImports;
+        private Set<String> blacklistedTags;
+
+        public MyPsiRecursiveElementWalkingVisitor(Map<String, Void> map) {
+            this.map = map;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            if ((element instanceof PhpDocTag)) {
+                visitPhpDocTag((PhpDocTag) element);
+            }
+            super.visitElement(element);
+        }
+
+        public void visitPhpDocTag(PhpDocTag phpDocTag) {
+
+            // init blacklist
+            if(blacklistedTags == null) {
+                blacklistedTags = new HashSet<String>();
+                blacklistedTags.addAll(Arrays.asList(PhpDocUtil.ALL_TAGS));
+                blacklistedTags.add("@inheritDoc");
+            }
+
+            // "@var" and user non related tags dont need an action
+            if(blacklistedTags.contains(phpDocTag.getName())) {
+                return;
+            }
+
+            // init file imports
+            if(this.fileImports == null) {
+                this.fileImports = getFileUseImports(phpDocTag.getContainingFile());
+            }
+
+            if(this.fileImports.size() == 0) {
+                return;
+            }
+
+            String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, this.fileImports);
+            if("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
+                PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+                if(phpDocAttributeList != null) {
+                    // @TODO: use pattern
+                    Matcher matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(phpDocAttributeList.getText());
+                    if (matcher.find()) {
+                        map.put(matcher.group(1), null);
+                    }
+                }
+            }
+        }
+
+    }
 }
 
 
