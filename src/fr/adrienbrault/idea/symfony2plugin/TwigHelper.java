@@ -778,6 +778,7 @@ public class TwigHelper {
 
     public static Set<String> getTwigMacroSet(Project project) {
         SymfonyProcessors.CollectProjectUniqueKeys ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeys(project, TwigMacroFunctionStubIndex.KEY);
+        FileBasedIndexImpl.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, ymlProjectProcessor, project);
         return ymlProjectProcessor.getResult();
     }
 
