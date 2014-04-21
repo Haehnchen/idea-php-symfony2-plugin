@@ -358,6 +358,7 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.PhpClassServiceGotoDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderGotoDeclarationHandler"/>
 
         <completion.confidence language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpParameterStringCompletionConfidence"
                                id="asTrue" order="first"/>
@@ -370,6 +371,8 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
+
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
@@ -427,10 +430,17 @@
         <ServiceContainerLoader implementation="fr.adrienbrault.idea.symfony2plugin.ServiceContainerSettingsLoader"/>
     </extensions>
 
+    <extensions defaultExtensionNs="de.espend.idea.php.annotation">
+        <PhpAnnotationCompletionProvider implementation="fr.adrienbrault.idea.symfony2plugin.TestBlub"/>
+    </extensions>
+
+
     <depends>com.jetbrains.twig</depends>
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
+    <depends optional="true">de.espend.idea.php.annotation</depends>
+
     <project-components>
         <component>
             <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>

@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -456,6 +458,39 @@ public class EntityHelper {
         }
 
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    public static LookupElementBuilder attachAnnotationInfoToLookupElement(Field field, LookupElementBuilder lookupElement) {
+
+        // get some more presentable completion information
+        // dont resolve docblocks; just extract them from doc comment
+        PhpDocComment docBlock = field.getDocComment();
+
+        if(docBlock == null) {
+            return lookupElement;
+        }
+
+        String text = docBlock.getText();
+
+        // column type
+        Matcher matcher = Pattern.compile("type=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
+        if (matcher.find()) {
+            lookupElement = lookupElement.withTypeText(matcher.group(1), true);
+        }
+
+        // targetEntity name
+        matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
+        if (matcher.find()) {
+            lookupElement = lookupElement.withTypeText(matcher.group(1), true);
+        }
+
+        // relation type
+        matcher = Pattern.compile("((Many|One)To(Many|One))\\(").matcher(text);
+        if (matcher.find()) {
+            lookupElement = lookupElement.withTailText(matcher.group(1), true);
+        }
+
+        return lookupElement;
     }
 
 }
