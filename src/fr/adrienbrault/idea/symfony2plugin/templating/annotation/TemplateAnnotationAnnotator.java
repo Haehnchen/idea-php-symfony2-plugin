@@ -24,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackPortUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -49,7 +50,17 @@ public class TemplateAnnotationAnnotator implements Annotator {
 
         PhpDocTag phpDocTag = (PhpDocTag) element;
         String docTagName = phpDocTag.getName();
-        if(!docTagName.equals("@Template")) {
+
+        if(AnnotationBackPortUtil.NON_ANNOTATION_TAGS.contains(docTagName)) {
+            return;
+        }
+
+        PhpClass phpClass = AnnotationBackPortUtil.getAnnotationReference(phpDocTag);
+        if(phpClass == null) {
+            return;
+        }
+
+        if(!PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
             return;
         }
 

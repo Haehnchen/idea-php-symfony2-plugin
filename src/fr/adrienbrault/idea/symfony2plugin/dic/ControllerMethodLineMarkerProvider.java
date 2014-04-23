@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackPortUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.TwigIcons;
@@ -140,15 +141,28 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         // on @Template annotation
         PhpDocComment phpDocComment = method.getDocComment();
         if(phpDocComment != null) {
-            PhpDocTag[] phpDocTags = phpDocComment.getTagElementsByName("@Template");
-            for(PhpDocTag phpDocTag: phpDocTags) {
-                for(Map.Entry<String, PsiElement> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
-                    if(!uniqueTemplates.contains(entry.getKey())) {
-                        gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(entry.getValue(), TwigUtil.getFoldingTemplateNameOrCurrent(entry.getKey())).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
-                        uniqueTemplates.add(entry.getKey());
+            Collection<PhpDocTag> phpDocTags = AnnotationBackPortUtil.filterValidDocTags(PsiTreeUtil.findChildrenOfType(phpDocComment, PhpDocTag.class));
+            if(phpDocTags.size() > 0) {
+                // cache use map for this phpDocComment
+                Map<String, String> importMap = AnnotationBackPortUtil.getUseImportMap(phpDocComment);
+                if(importMap.size() > 0) {
+                    for(PhpDocTag phpDocTag: phpDocTags) {
+
+                        // resolve annotation and check for template
+                        PhpClass phpClass = AnnotationBackPortUtil.getAnnotationReference(phpDocTag, importMap);
+                        if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
+                            for(Map.Entry<String, PsiElement> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
+                                if(!uniqueTemplates.contains(entry.getKey())) {
+                                    gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(entry.getValue(), TwigUtil.getFoldingTemplateNameOrCurrent(entry.getKey())).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+                                    uniqueTemplates.add(entry.getKey());
+                                }
+                            }
+                        }
                     }
                 }
+
             }
+
         }
 
 
