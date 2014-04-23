@@ -609,7 +609,18 @@ public class PhpElementsUtil {
         return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
 
-    public static boolean isEqualClassName(@Nullable PhpClass phpClass,@Nullable String compareClassName) {
+    public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String... compareClassNames) {
+
+        for(String className: compareClassNames) {
+            if(isEqualClassName(phpClass, className)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String compareClassName) {
 
         if(phpClass == null || compareClassName == null) {
             return false;
