@@ -150,7 +150,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), methodMatchParameter.getMethodReference().getType().getTypes());
+                    Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(psiElement.getProject(), methodMatchParameter.getMethodReference().getType().getTypes());
                     return new PsiReference[]{ new ModelFieldReference((StringLiteralExpression) psiElement, phpClasses)};
                 }
             }
