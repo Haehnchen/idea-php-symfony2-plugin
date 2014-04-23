@@ -355,7 +355,6 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToKnownDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.AnnotationGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.PhpClassServiceGotoDeclarationHandler"/>
 
@@ -430,6 +429,11 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
     <depends optional="true">de.espend.idea.php.annotation</depends>
+
+    <extensions defaultExtensionNs="de.espend.idea.php.annotation">
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationReferences"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
+    </extensions>
 
     <project-components>
         <component>

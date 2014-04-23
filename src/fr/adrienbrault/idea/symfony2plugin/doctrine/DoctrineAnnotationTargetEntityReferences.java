@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
+package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -9,7 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
-public class DoctrineTargetEntityReferences implements PhpAnnotationReferenceProvider {
+public class DoctrineAnnotationTargetEntityReferences implements PhpAnnotationReferenceProvider {
     @Nullable
     @Override
     public PsiReference[] getPropertyReferences(AnnotationPropertyParameter annotationPropertyParameter, PhpAnnotationReferenceProviderParameter phpAnnotationReferenceProviderParameter) {
