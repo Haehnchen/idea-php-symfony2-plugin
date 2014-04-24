@@ -163,7 +163,8 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                 // get scope of variable statement
                 if(variable != null) {
-                    PsiElement statement = variable.getParent();
+                    // querybuilder call can be nested so find nearest statement and then collect methods refs again
+                    Statement statement = PsiTreeUtil.getParentOfType(variable, Statement.class);
                     if(statement != null) {
                         psiElements.addAll(PsiTreeUtil.collectElementsOfType(statement, MethodReference.class));
                     }
