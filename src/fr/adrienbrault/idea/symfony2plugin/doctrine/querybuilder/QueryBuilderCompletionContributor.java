@@ -67,6 +67,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                 MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
                     .withSignature("\\Doctrine\\ORM\\QueryBuilder", "join")
+                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin")
+                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "rightJoin")
+                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin")
                     .match();
 
                 if(methodMatchParameter == null) {

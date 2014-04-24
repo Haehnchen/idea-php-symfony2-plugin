@@ -3,11 +3,15 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
@@ -32,8 +36,82 @@ public class QueryBuilderParser  {
         this.project = project;
     }
 
+    private Map<String, String> findRootDefinition(Collection<MethodReference> methodReferences) {
+
+        Map<String, String> roots = new HashMap<String, String>();
+
+        if(methodReferences.size() == 0) {
+            return roots;
+        }
+
+        String rootAlias = null;
+        String repository = null;
+
+        // getRepository('Foo')->createQueryBuilder('test');
+        for(MethodReference methodReference: methodReferences) {
+            String methodReferenceName = methodReference.getName();
+
+            if("createQueryBuilder".equals(methodReferenceName)) {
+                // @TODO: resolve string
+                String possibleAlias = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+                if(possibleAlias != null) {
+                    rootAlias = possibleAlias;
+                }
+            }
+
+            if("getRepository".equals(methodReferenceName)) {
+                // @TODO: resolve string
+                String possibleRepository = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+                if(possibleRepository != null) {
+                    repository = possibleRepository;
+                }
+            }
+
+            // $qb->from('Foo\Class', 'article')
+            if("from".equals(methodReferenceName)) {
+                String table = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+                String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
+                if(table != null && alias != null) {
+                    roots.put(table, alias);
+                }
+            }
+
+        }
+
+        if(rootAlias != null && repository != null) {
+            roots.put(repository, rootAlias);
+        }
+
+        // we found a alias but not a repository, so try a scope search
+        // class implements \Doctrine\Common\Persistence\ObjectRepository, so search for model name of "repositoryClass"
+        if(rootAlias != null && repository == null) {
+            MethodReference methodReference = methodReferences.iterator().next();
+            PhpClass phpClass = PsiTreeUtil.getParentOfType(methodReference, PhpClass.class);
+            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
+                // @TODO: bad performance; because of namespace search
+                for(String model: EntityReference.getEntityNames(project)) {
+                    PhpClass resolvedRepoName = EntityHelper.getEntityRepositoryClass(project, model);
+                    if(PhpElementsUtil.isEqualClassName(resolvedRepoName, phpClass.getPresentableFQN())) {
+                        roots.put(model, rootAlias);
+                        return roots;
+                    }
+                }
+            }
+
+        }
+
+        return roots;
+    }
+
     public QueryBuilderScopeContext collect() {
         QueryBuilderScopeContext qb = new QueryBuilderScopeContext();
+
+        // doctrine needs valid root with an alias, try to find one in method references or scope
+        Map<String, String> map = this.findRootDefinition(methodReferences);
+        if(map.size() > 0) {
+            Map.Entry<String, String> entry = map.entrySet().iterator().next();
+            qb.addTable(entry.getKey(), entry.getValue());
+        }
 
         for(MethodReference methodReference: methodReferences) {
 
@@ -51,17 +129,6 @@ public class QueryBuilderParser  {
                             qb.addParameter(matcher.group(1));
                         }
                     }
-                }
-            }
-
-            if(collectFrom == true) {
-                if(name.equals("from")) {
-                    String table = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-                    String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
-                    if(table != null && alias != null) {
-                        qb.addTable(table, alias);
-                    }
-
                 }
             }
 
