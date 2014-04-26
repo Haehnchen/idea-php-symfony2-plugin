@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -115,6 +116,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     if(field instanceof Field) {
                         LookupElementBuilder lookupElementBuilder = LookupElementBuilder.create(entry.getKey());
                         lookupElementBuilder = EntityHelper.attachAnnotationInfoToLookupElement((Field) field, lookupElementBuilder.withIcon(((Field) field).getIcon()));
+                        if(collect.getSelects().contains(entry.getValue().getAlias())) {
+                            lookupElementBuilder = lookupElementBuilder.withBoldness(true);
+                        }
                         completionResultSet.addElement(lookupElementBuilder);
 
                     }

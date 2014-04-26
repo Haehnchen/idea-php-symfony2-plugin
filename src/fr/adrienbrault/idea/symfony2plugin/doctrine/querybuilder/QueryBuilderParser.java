@@ -185,6 +185,16 @@ public class QueryBuilderParser  {
             Map.Entry<String, String> entry = qb.getTableMap().entrySet().iterator().next();
             String className = entry.getKey();
             PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
+
+            // add root select fields
+            if(phpClass != null) {
+                for(Field field: phpClass.getFields()) {
+                    if(!field.isConstant()) {
+                        qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
+                    }
+                }
+            }
+
             qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
 
             Resolver resolver = new Resolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap());
@@ -206,6 +216,7 @@ public class QueryBuilderParser  {
                     }
                 }
             }
+
         }
 
         return qb;

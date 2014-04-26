@@ -39,6 +39,10 @@ public class QueryBuilderScopeContext {
         this.selects.addAll(selects);
     }
 
+    public Set<String> getSelects() {
+        return selects;
+    }
+
     public Set<String> getParameters() {
         return parameters;
     }
