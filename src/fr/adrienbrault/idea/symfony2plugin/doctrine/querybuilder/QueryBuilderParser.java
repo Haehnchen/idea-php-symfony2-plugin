@@ -2,9 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -141,6 +144,40 @@ public class QueryBuilderParser  {
                     }
                 }
             }
+
+
+            if("select".equals(name) || "addSelect".equals(name)) {
+
+                // $qb->select('foo')
+                PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
+                String literalValue = PhpElementsUtil.getStringValue(psiElement);
+                if(literalValue != null) {
+                    qb.addSelect(literalValue);
+                }
+
+                // $qb->select(array('foo', 'bar', 'accessoryDetail'))
+                if(psiElement instanceof ArrayCreationExpression) {
+                    for(PsiElement arrayValue: PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE))) {
+                        if(arrayValue.getChildren().length == 1) {
+                            String arrayValueString = PhpElementsUtil.getStringValue(arrayValue.getChildren()[0]);
+                            if(arrayValueString != null) {
+                                qb.addSelect(arrayValueString);
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            // $qb->from('foo', 'select')
+            if("from".equals(name)) {
+                PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
+                String literalValue = PhpElementsUtil.getStringValue(psiElement);
+                if(literalValue != null) {
+                    qb.addSelect(literalValue);
+                }
+            }
+
 
         }
 

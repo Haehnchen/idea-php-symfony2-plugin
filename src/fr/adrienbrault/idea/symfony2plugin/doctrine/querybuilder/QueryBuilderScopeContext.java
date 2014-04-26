@@ -5,6 +5,7 @@ import java.util.*;
 public class QueryBuilderScopeContext {
 
     final private Set<String> parameters = new HashSet<String>();
+    final private Set<String> selects = new HashSet<String>();
     final private Map<String, String> tableMap = new HashMap<String, String>();
     final private Map<String, QueryBuilderParser.QueryBuilderJoin> joinMap = new HashMap<String, QueryBuilderParser.QueryBuilderJoin>();
     final private Map<String, List<QueryBuilderParser.QueryBuilderRelation>> relationMap = new HashMap<String, List<QueryBuilderParser.QueryBuilderRelation>>();
@@ -28,6 +29,14 @@ public class QueryBuilderScopeContext {
 
     public void addJoin(String join, QueryBuilderParser.QueryBuilderJoin queryBuilderJoin) {
         this.joinMap.put(join, queryBuilderJoin);
+    }
+
+    public void addSelect(String select) {
+        this.selects.add(select);
+    }
+
+    public void addSelect(Collection<String> selects) {
+        this.selects.addAll(selects);
     }
 
     public Set<String> getParameters() {

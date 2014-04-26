@@ -16,6 +16,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -176,6 +179,25 @@ public class PsiElementUtils {
         }
 
         return null;
+    }
+
+    @Nullable
+    public static <T extends PsiElement> Collection<T> getChildrenOfTypeAsList(@Nullable PsiElement element, ElementPattern<T> pattern) {
+
+        Collection<T> collection = new ArrayList<T>();
+
+        if (element == null) {
+            return collection;
+        }
+
+        for (PsiElement child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (pattern.accepts(child)) {
+                //noinspection unchecked
+                collection.add((T)child);
+            }
+        }
+
+        return collection;
     }
 
     @Nullable
