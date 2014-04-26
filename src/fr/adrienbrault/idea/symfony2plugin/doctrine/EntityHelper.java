@@ -230,9 +230,22 @@ public class EntityHelper {
 
     @Nullable
     public static PsiFile getModelConfigFile(PhpClass phpClass) {
-        for(SymfonyBundle symfonyBundle: new SymfonyBundleUtil(phpClass.getProject()).getBundles()) {
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
+        if(symfonyBundle != null) {
             for(String modelShortcut: new String[] {"orm", "mongodb"}) {
-                String entityFile = "Resources/config/doctrine/" + phpClass.getName() + String.format(".%s.yml", modelShortcut);
+                String fqn = phpClass.getPresentableFQN();
+
+                String className = phpClass.getName();
+
+                if(fqn != null) {
+                    int n = fqn.indexOf("\\Entity\\");
+                    if(n > 0) {
+                        className = fqn.substring(n + 8).replace("\\", ".");
+                    }
+                }
+
+                String entityFile = "Resources/config/doctrine/" + className + String.format(".%s.yml", modelShortcut);
                 VirtualFile virtualFile = symfonyBundle.getRelative(entityFile);
                 if(virtualFile != null) {
                     PsiFile psiFile = PsiManager.getInstance(phpClass.getProject()).findFile(virtualFile);
