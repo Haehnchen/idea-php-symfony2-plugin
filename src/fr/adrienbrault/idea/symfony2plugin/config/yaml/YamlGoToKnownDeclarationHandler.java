@@ -48,6 +48,10 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getControllerGoto(psiElement, results);
         }
 
+        if(YamlElementPatternHelper.getSingleLineScalarKey("class").accepts(psiElement)) {
+            this.getClassGoto(psiElement, results);
+        }
+
         if(YamlElementPatternHelper.getSingleLineScalarKey("resource").accepts(psiElement)) {
             this.getResourceGoto(psiElement, results);
         }
@@ -73,6 +77,15 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         }
 
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    private void getClassGoto(PsiElement psiElement, List<PsiElement> results) {
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), text);
+        if(phpClass != null) {
+            results.add(phpClass);
+        }
+
     }
 
     private void getMethodGoto(PsiElement psiElement, List<PsiElement> results) {
