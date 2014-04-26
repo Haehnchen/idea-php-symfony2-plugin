@@ -8,7 +8,6 @@ import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
@@ -18,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -70,47 +70,23 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             return results.toArray();
         }
 
-        if(this.doctrineManagers.contains(DoctrineTypes.Manager.ORM)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, this.useClassNameAsLookupString);
-        }
-
-        if(this.doctrineManagers.contains(DoctrineTypes.Manager.MONGO_DB)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(getElement().getProject(), DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, this.useClassNameAsLookupString);
-        }
+        results.addAll(getModelLookupElements(getElement().getProject(), this.useClassNameAsLookupString, this.doctrineManagers.toArray(new DoctrineTypes.Manager[this.doctrineManagers.size()])));
 
         return results.toArray();
     }
 
-    private static void attachRepositoryNames(List<LookupElement> results, PhpIndex phpIndex, PhpClass repositoryInterface, Map<String, String> entityNamespaces, DoctrineTypes.Manager manager, boolean useClassNameAsLookupString) {
+    private static void attachRepositoryNames(Project project, final List<LookupElement> results, Map<String, String> entityNamespaces, final DoctrineTypes.Manager manager, final boolean useClassNameAsLookupString) {
 
-        // search for models in namespaces
-        for (Map.Entry<String, String> entry : entityNamespaces.entrySet()) {
-
-            // search for classes that match the symfony2 namings
-            Collection<PhpNamespace> entities = phpIndex.getNamespacesByName(entry.getValue());
-
-            // @TODO: it looks like PhpIndex cant search for classes like \ns\Path\*\...
-            // temporary only use flat entities and dont support "MyBundle:Folder\Entity"
-            for (PhpNamespace entity_files : entities) {
-
-                // build our symfony2 shortcut
-                String filename = entity_files.getContainingFile().getName();
-                String className = filename.substring(0, filename.lastIndexOf('.'));
-                String repoName = entry.getKey() + ':'  + className;
-
-                // dont add Repository classes and abstract entities
-                PhpClass entityClass = PhpElementsUtil.getClass(phpIndex, entityNamespaces.get(entry.getKey()) + "\\" + className);
-                if(null != entityClass && isEntity(entityClass, repositoryInterface)) {
-                    results.add(new DoctrineEntityLookupElement(repoName, entityClass, useClassNameAsLookupString).withManager(manager));
-                }
-
+        for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(project, entityNamespaces)) {
+            String repositoryName = doctrineModel.getRepositoryName();
+            if(repositoryName != null) {
+                results.add(new DoctrineEntityLookupElement(repositoryName, doctrineModel.getPhpClass(), useClassNameAsLookupString).withManager(manager));
             }
-
         }
 
         // add custom doctrine classes
         Collection<DoctrineModelProviderParameter.DoctrineModel> doctrineModels = new ArrayList<DoctrineModelProviderParameter.DoctrineModel>();
-        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(repositoryInterface.getProject(), doctrineModels);
+        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, doctrineModels);
         for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
             for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
                 results.add(new DoctrineEntityLookupElement(doctrineModel.getName(), doctrineModel.getPhpClass(), useClassNameAsLookupString));
@@ -119,37 +95,22 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     }
 
-    public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
-
-        if(entityClass.isAbstract()) {
-            return false;
-        }
-
-        Symfony2InterfacesUtil symfony2Util = new Symfony2InterfacesUtil();
-        return !symfony2Util.isInstanceOf(entityClass, repositoryClass);
+    public static List<LookupElement> getModelLookupElements(Project project, DoctrineTypes.Manager... managers) {
+        return getModelLookupElements(project, false, managers);
     }
 
-
-    public static List<LookupElement> getModelLookupElements(Project project, DoctrineTypes.Manager... managers) {
-
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
+    private static List<LookupElement> getModelLookupElements(Project project, boolean useClassNameAsLookupString, DoctrineTypes.Manager... managers) {
 
         List<LookupElement> results = new ArrayList<LookupElement>();
 
-        PhpClass repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), DoctrineTypes.REPOSITORY_INTERFACE);
-        if(null == repositoryInterface) {
-            return results;
-        }
-
         List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
 
-
         if(managerList.contains(DoctrineTypes.Manager.ORM)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, false);
+            attachRepositoryNames(project, results, ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, useClassNameAsLookupString);
         }
 
         if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
-            attachRepositoryNames(results, phpIndex, repositoryInterface, ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, false);
+            attachRepositoryNames(project, results, ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString);
         }
 
         return results;

@@ -14,6 +14,18 @@ public class DoctrineAnnotationTargetEntityReferences implements PhpAnnotationRe
     @Override
     public PsiReference[] getPropertyReferences(AnnotationPropertyParameter annotationPropertyParameter, PhpAnnotationReferenceProviderParameter phpAnnotationReferenceProviderParameter) {
 
+
+        if(!(annotationPropertyParameter.getElement() instanceof StringLiteralExpression) || !PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(),
+            "\\Doctrine\\ORM\\Mapping\\ManyToOne",
+            "\\Doctrine\\ORM\\Mapping\\ManyToMany",
+            "\\Doctrine\\ORM\\Mapping\\OneToOne",
+            "\\Doctrine\\ORM\\Mapping\\OneToMany")
+            )
+        {
+            return new PsiReference[0];
+        }
+
+
         if(!(annotationPropertyParameter.getElement() instanceof StringLiteralExpression) || !PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(),
             "\\Doctrine\\ORM\\Mapping\\ManyToOne",
             "\\Doctrine\\ORM\\Mapping\\ManyToMany",

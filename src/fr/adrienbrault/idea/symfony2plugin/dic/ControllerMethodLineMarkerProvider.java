@@ -20,13 +20,12 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackPortUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLFile;
 
 import javax.swing.*;
 import java.util.*;
@@ -141,15 +140,15 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         // on @Template annotation
         PhpDocComment phpDocComment = method.getDocComment();
         if(phpDocComment != null) {
-            Collection<PhpDocTag> phpDocTags = AnnotationBackPortUtil.filterValidDocTags(PsiTreeUtil.findChildrenOfType(phpDocComment, PhpDocTag.class));
+            Collection<PhpDocTag> phpDocTags = AnnotationBackportUtil.filterValidDocTags(PsiTreeUtil.findChildrenOfType(phpDocComment, PhpDocTag.class));
             if(phpDocTags.size() > 0) {
                 // cache use map for this phpDocComment
-                Map<String, String> importMap = AnnotationBackPortUtil.getUseImportMap(phpDocComment);
+                Map<String, String> importMap = AnnotationBackportUtil.getUseImportMap(phpDocComment);
                 if(importMap.size() > 0) {
                     for(PhpDocTag phpDocTag: phpDocTags) {
 
                         // resolve annotation and check for template
-                        PhpClass phpClass = AnnotationBackPortUtil.getAnnotationReference(phpDocTag, importMap);
+                        PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag, importMap);
                         if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
                             for(Map.Entry<String, PsiElement> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
                                 if(!uniqueTemplates.contains(entry.getKey())) {

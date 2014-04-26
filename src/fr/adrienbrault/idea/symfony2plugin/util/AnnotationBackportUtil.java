@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * Some method from Php Annotations plugin to not fully set a "depends" entry on it
  */
-public class AnnotationBackPortUtil {
+public class AnnotationBackportUtil {
 
     public static Set<String> NON_ANNOTATION_TAGS = new HashSet<String>() {{
         addAll(Arrays.asList(PhpDocUtil.ALL_TAGS));
