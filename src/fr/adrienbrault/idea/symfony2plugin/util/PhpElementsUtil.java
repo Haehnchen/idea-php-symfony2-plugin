@@ -578,13 +578,49 @@ public class PhpElementsUtil {
         return phpClasses;
     }
 
+    public static Collection<PhpClass> getClassFromPhpTypeSetArrayClean(Project project, Set<String> types) {
+
+        PhpType phpType = new PhpType();
+        phpType.add(types);
+
+        ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
+
+        for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>()).getTypes()) {
+            if(typeName.startsWith("\\")) {
+
+                // we clean array types \Foo[]
+                if(typeName.endsWith("[]")) {
+                    typeName = typeName.substring(0, typeName.length() - 2);
+                }
+
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, typeName);
+                if(phpClass != null) {
+                    phpClasses.add(phpClass);
+                }
+            }
+        }
+
+        return phpClasses;
+    }
+
     @Nullable
     public static PhpClass getFirstClassFromFile(PhpFile phpFile) {
         Collection<PhpClass> phpClasses = PsiTreeUtil.collectElementsOfType(phpFile, PhpClass.class);
         return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
 
-    public static boolean isEqualClassName(@Nullable PhpClass phpClass,@Nullable String compareClassName) {
+    public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String... compareClassNames) {
+
+        for(String className: compareClassNames) {
+            if(isEqualClassName(phpClass, className)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String compareClassName) {
 
         if(phpClass == null || compareClassName == null) {
             return false;

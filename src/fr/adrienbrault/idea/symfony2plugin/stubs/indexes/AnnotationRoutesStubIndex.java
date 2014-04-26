@@ -4,18 +4,17 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpUse;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
@@ -165,7 +164,6 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
 
         private final Map<String, Void> map;
         private Map<String, String> fileImports;
-        private Set<String> blacklistedTags;
 
         public MyPsiRecursiveElementWalkingVisitor(Map<String, Void> map) {
             this.map = map;
@@ -181,15 +179,8 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
 
         public void visitPhpDocTag(PhpDocTag phpDocTag) {
 
-            // init blacklist
-            if(blacklistedTags == null) {
-                blacklistedTags = new HashSet<String>();
-                blacklistedTags.addAll(Arrays.asList(PhpDocUtil.ALL_TAGS));
-                blacklistedTags.add("@inheritDoc");
-            }
-
             // "@var" and user non related tags dont need an action
-            if(blacklistedTags.contains(phpDocTag.getName())) {
+            if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                 return;
             }
 

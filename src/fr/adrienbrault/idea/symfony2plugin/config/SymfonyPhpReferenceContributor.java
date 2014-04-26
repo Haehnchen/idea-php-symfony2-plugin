@@ -35,6 +35,9 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\EntityManager", "getReference"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getManagerForClass"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "update"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "delete"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "from"),
     };
 
     public static MethodMatcher.CallToSignature[] TEMPLATE_SIGNATURES = new MethodMatcher.CallToSignature[] {
@@ -150,7 +153,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), methodMatchParameter.getMethodReference().getType().getTypes());
+                    Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(psiElement.getProject(), methodMatchParameter.getMethodReference().getType().getTypes());
                     return new PsiReference[]{ new ModelFieldReference((StringLiteralExpression) psiElement, phpClasses)};
                 }
             }

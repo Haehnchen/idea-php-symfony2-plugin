@@ -16,12 +16,16 @@ import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
+import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -228,9 +232,22 @@ public class EntityHelper {
 
     @Nullable
     public static PsiFile getModelConfigFile(PhpClass phpClass) {
-        for(SymfonyBundle symfonyBundle: new SymfonyBundleUtil(phpClass.getProject()).getBundles()) {
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
+        if(symfonyBundle != null) {
             for(String modelShortcut: new String[] {"orm", "mongodb"}) {
-                String entityFile = "Resources/config/doctrine/" + phpClass.getName() + String.format(".%s.yml", modelShortcut);
+                String fqn = phpClass.getPresentableFQN();
+
+                String className = phpClass.getName();
+
+                if(fqn != null) {
+                    int n = fqn.indexOf("\\Entity\\");
+                    if(n > 0) {
+                        className = fqn.substring(n + 8).replace("\\", ".");
+                    }
+                }
+
+                String entityFile = "Resources/config/doctrine/" + className + String.format(".%s.yml", modelShortcut);
                 VirtualFile virtualFile = symfonyBundle.getRelative(entityFile);
                 if(virtualFile != null) {
                     PsiFile psiFile = PsiManager.getInstance(phpClass.getProject()).findFile(virtualFile);
@@ -492,5 +509,39 @@ public class EntityHelper {
 
         return lookupElement;
     }
+
+    public static Collection<DoctrineModel> getModelClasses(Project project, Map<String, String> shortcutNames) {
+
+        Collection<DoctrineModel> models = new ArrayList<DoctrineModel>();
+
+        PhpClass repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), DoctrineTypes.REPOSITORY_INTERFACE);
+        if(null == repositoryInterface) {
+            return models;
+        }
+
+        for (Map.Entry<String, String> entry : shortcutNames.entrySet()) {
+
+            Collection<PhpClass> phpClasses = PhpIndexUtil.getPhpClassInsideNamespace(repositoryInterface.getProject(), entry.getValue());
+            for(PhpClass phpClass: phpClasses) {
+                if(isEntity(phpClass, repositoryInterface)) {
+                    models.add(new DoctrineModel(phpClass, entry.getKey(), entry.getValue()));
+                }
+            }
+
+        }
+
+        return models;
+    }
+
+    public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
+
+        if(entityClass.isAbstract()) {
+            return false;
+        }
+
+        Symfony2InterfacesUtil symfony2Util = new Symfony2InterfacesUtil();
+        return !symfony2Util.isInstanceOf(entityClass, repositoryClass);
+    }
+
 
 }

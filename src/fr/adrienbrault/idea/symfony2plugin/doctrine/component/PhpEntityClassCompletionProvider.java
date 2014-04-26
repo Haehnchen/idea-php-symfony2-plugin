@@ -12,7 +12,7 @@ import com.jetbrains.php.completion.PhpCompletionUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassReferenceInsertHandler;
@@ -50,7 +50,7 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
                 String namespaceFqn = PhpLangUtil.toFQN(entry.getValue());
                 Collection<PhpClass> filtered = PhpCompletionUtil.filterByNamespace(classes, namespaceFqn);
                 for (PhpClass phpClass : filtered) {
-                    if(EntityReference.isEntity(phpClass, repositoryInterface)) {
+                    if(EntityHelper.isEntity(phpClass, repositoryInterface)) {
                         resultSet.addElement(new PhpClassLookupElement(phpClass, true, PhpClassReferenceInsertHandler.getInstance()));
                     }
                 }

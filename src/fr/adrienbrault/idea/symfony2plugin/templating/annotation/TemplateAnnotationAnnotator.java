@@ -7,7 +7,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -18,19 +17,18 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
-import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,7 +47,17 @@ public class TemplateAnnotationAnnotator implements Annotator {
 
         PhpDocTag phpDocTag = (PhpDocTag) element;
         String docTagName = phpDocTag.getName();
-        if(!docTagName.equals("@Template")) {
+
+        if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(docTagName)) {
+            return;
+        }
+
+        PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag);
+        if(phpClass == null) {
+            return;
+        }
+
+        if(!PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
             return;
         }
 
