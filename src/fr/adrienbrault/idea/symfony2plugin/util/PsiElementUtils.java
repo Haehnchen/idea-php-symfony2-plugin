@@ -181,7 +181,7 @@ public class PsiElementUtils {
         return null;
     }
 
-    @Nullable
+    @NotNull
     public static <T extends PsiElement> Collection<T> getChildrenOfTypeAsList(@Nullable PsiElement element, ElementPattern<T> pattern) {
 
         Collection<T> collection = new ArrayList<T>();

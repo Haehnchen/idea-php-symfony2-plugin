@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -12,9 +11,8 @@ import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
@@ -193,12 +191,11 @@ public class QueryBuilderParser  {
 
             // add root select fields
             if(phpClass != null) {
-                qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, phpClass));
+
+                qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, new DoctrineModelField(entry.getValue()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
                 qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
-                for(Field field: phpClass.getFields()) {
-                    if(!field.isConstant()) {
-                        qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
-                    }
+                for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                    qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
                 }
             }
 
@@ -213,15 +210,11 @@ public class QueryBuilderParser  {
                 if(className != null) {
                     PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
                     if(phpClass != null) {
-
-                        // add main alias;
-                        qb.addPropertyAlias(join.getAlias(), new QueryBuilderPropertyAlias(join.getAlias(), null, phpClass));
+                        qb.addPropertyAlias(join.getAlias(), new QueryBuilderPropertyAlias(join.getAlias(), null, new DoctrineModelField(join.getAlias()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
 
                         // add entity properties
-                        for(Field field: phpClass.getFields()) {
-                            if(!field.isConstant()) {
-                                qb.addPropertyAlias(join.getAlias() + "." + field.getName(), new QueryBuilderPropertyAlias(join.getAlias(), field.getName(), field));
-                            }
+                        for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                            qb.addPropertyAlias(join.getAlias() + "." + field.getName(), new QueryBuilderPropertyAlias(join.getAlias(), field.getName(), field));
                         }
                     }
                 }
@@ -333,12 +326,19 @@ public class QueryBuilderParser  {
 
         final private String alias;
         final private String fieldName;
-        final private PsiElement psiTarget;
+        final private Collection<PsiElement> psiTargets = new ArrayList<PsiElement>();
+        private DoctrineModelField field;
 
-        public QueryBuilderPropertyAlias(String alias, String fieldName, PsiElement psiTarget) {
+        public QueryBuilderPropertyAlias(String alias, String fieldName, DoctrineModelField field) {
             this.alias = alias;
             this.fieldName = fieldName;
-            this.psiTarget = psiTarget;
+            this.field = field;
+        }
+
+        public QueryBuilderPropertyAlias(String alias, String fieldName) {
+            this.alias = alias;
+            this.fieldName = fieldName;
+            this.psiTargets.addAll(psiTargets);
         }
 
         public String getFieldName() {
@@ -349,8 +349,13 @@ public class QueryBuilderParser  {
             return alias;
         }
 
-        public PsiElement getPsiTarget() {
-            return psiTarget;
+        public Collection<PsiElement> getPsiTargets() {
+            return field == null ? Collections.EMPTY_LIST : field.getTargets();
+        }
+
+        @Nullable
+        public DoctrineModelField getField() {
+            return field;
         }
 
     }

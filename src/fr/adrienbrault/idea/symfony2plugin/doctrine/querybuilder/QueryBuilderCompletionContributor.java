@@ -6,10 +6,13 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.ui.JBColor;
 import com.intellij.util.CommonProcessors;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
@@ -121,19 +124,26 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                 QueryBuilderScopeContext collect = qb.collect();
                 for(Map.Entry<String, QueryBuilderParser.QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
-                    PsiElement field = entry.getValue().getPsiTarget();
-                    if(field instanceof Field) {
-                        LookupElementBuilder lookupElementBuilder = LookupElementBuilder.create(entry.getKey());
-                        lookupElementBuilder = EntityHelper.attachAnnotationInfoToLookupElement((Field) field, lookupElementBuilder.withIcon(((Field) field).getIcon()));
-                        if(collect.getSelects().contains(entry.getValue().getAlias())) {
-                            lookupElementBuilder = lookupElementBuilder.withBoldness(true);
+
+                    LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey());
+                    lookup = lookup.withIcon(Symfony2Icons.DOCTRINE);
+                    if(entry.getValue().getField() != null) {
+                        lookup = lookup.withTypeText(entry.getValue().getField().getTypeName(), true);
+
+                        if(entry.getValue().getField().getRelationType() != null) {
+                            lookup = lookup.withTailText(entry.getValue().getField().getRelationType(), true);
+                            lookup = lookup.withTypeText(entry.getValue().getField().getRelation(), true);
+                            lookup = lookup.withIcon(PhpIcons.CLASS_ICON);
                         }
-                        completionResultSet.addElement(lookupElementBuilder);
-                    } else if(field instanceof PhpClass) {
-                        completionResultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(((PhpClass) field).getIcon()).withTypeText(((PhpClass) field).getPresentableFQN(), true));
-                    } else {
-                        completionResultSet.addElement(LookupElementBuilder.create(entry.getKey()));
+
                     }
+
+                    // highlight fields which are possible in select statement
+                    if(collect.getSelects().contains(entry.getValue().getAlias())) {
+                        lookup = lookup.withBoldness(true);
+                    }
+
+                    completionResultSet.addElement(lookup);
 
                 }
 

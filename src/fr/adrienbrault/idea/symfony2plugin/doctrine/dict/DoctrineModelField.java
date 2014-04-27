@@ -2,11 +2,23 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.dict;
 
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class DoctrineModelField {
 
+    private String relation;
+    private String relationType;
     private final String name;
     private String typeName;
+    private Collection<PsiElement> targets = new ArrayList<PsiElement>();
+
+    public DoctrineModelField setTypeName(String typeName) {
+        this.typeName = typeName;
+        return this;
+    }
 
     public DoctrineModelField(String name) {
         this.name = name;
@@ -22,8 +34,38 @@ public class DoctrineModelField {
         return this.name;
     }
 
+    @Nullable
     public String getTypeName() {
         return this.typeName;
+    }
+
+    @NotNull
+    public Collection<PsiElement> getTargets() {
+        return targets;
+    }
+
+    public DoctrineModelField addTarget(PsiElement target) {
+        this.targets.add(target);
+        return this;
+    }
+
+    @Nullable
+    public String getRelation() {
+        return relation;
+    }
+
+    public DoctrineModelField setRelation(String relation) {
+        this.relation = relation;
+        return this;
+    }
+
+    public String getRelationType() {
+        return relationType;
+    }
+
+    public DoctrineModelField setRelationType(String relationType) {
+        this.relationType = relationType;
+        return this;
     }
 
 }

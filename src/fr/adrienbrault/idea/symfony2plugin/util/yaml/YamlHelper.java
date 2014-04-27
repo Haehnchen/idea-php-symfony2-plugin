@@ -5,11 +5,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
-import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -102,12 +99,22 @@ public class YamlHelper {
 
     @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable PsiElement yamlCompoundValue, String keyName) {
+        return getYamlKeyValue(yamlCompoundValue, keyName, false);
+    }
+
+    @Nullable
+    public static YAMLKeyValue getYamlKeyValue(@Nullable PsiElement yamlCompoundValue, String keyName, boolean ignoreCase) {
 
         if(yamlCompoundValue == null) {
             return null;
         }
 
-        YAMLKeyValue classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(keyName));
+        YAMLKeyValue classKeyValue;
+        if(ignoreCase) {
+            classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns.string().oneOfIgnoreCase(keyName)));
+        } else {
+            classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(keyName));
+        }
 
         if(classKeyValue == null) {
             return null;
@@ -407,9 +414,13 @@ public class YamlHelper {
 
         return keySet;
     }
-
     @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName) {
+        return getYamlKeyValue(yamlKeyValue, keyName, false);
+    }
+
+    @Nullable
+    public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName, boolean ignoreCase) {
         if(yamlKeyValue == null) {
             return null;
         }
@@ -419,7 +430,7 @@ public class YamlHelper {
             return null;
         }
 
-        return getYamlKeyValue(yamlCompoundValue, keyName);
+        return getYamlKeyValue(yamlCompoundValue, keyName, ignoreCase);
     }
 
 }

@@ -8,9 +8,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.elements.PhpUse;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -168,6 +170,22 @@ public class AnnotationBackportUtil {
         }
 
         return filteredPhpDocTags;
+    }
+
+    public static boolean hasReference(PhpDocComment docComment, String className) {
+        Map<String, String> uses = AnnotationBackportUtil.getUseImportMap(docComment);
+
+        for(PhpDocTag phpDocTag: PsiTreeUtil.findChildrenOfAnyType(docComment, PhpDocTag.class)) {
+            if(!AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                PhpClass annotationReference = AnnotationBackportUtil.getAnnotationReference(phpDocTag, uses);
+                if(annotationReference != null && PhpElementsUtil.isEqualClassName(annotationReference, className)) {
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
     }
 
 }

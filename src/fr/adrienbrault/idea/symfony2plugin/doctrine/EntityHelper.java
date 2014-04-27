@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -11,20 +9,17 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
-import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -117,8 +112,8 @@ public class EntityHelper {
 
         List<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
 
-        for(YAMLKeyValue targetYamlKeyValue: getYamlModelFieldKeyValues(yamlKeyValue)) {
-            List<DoctrineModelField> fieldSet = getKeySet(targetYamlKeyValue);
+        for(Map.Entry<String, YAMLKeyValue> entry: getYamlModelFieldKeyValues(yamlKeyValue).entrySet()) {
+            List<DoctrineModelField> fieldSet = getYamlDoctrineFields(entry.getKey(), entry.getValue());
             if(fieldSet != null) {
                 fields.addAll(fieldSet);
             }
@@ -129,7 +124,7 @@ public class EntityHelper {
 
 
     @Nullable
-    public static List<DoctrineModelField> getKeySet(@Nullable YAMLKeyValue yamlKeyValue) {
+    public static List<DoctrineModelField> getYamlDoctrineFields(String keyName, @Nullable YAMLKeyValue yamlKeyValue) {
 
         if(yamlKeyValue == null) {
             return null;
@@ -144,43 +139,50 @@ public class EntityHelper {
         for(YAMLKeyValue yamlKey: PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class)) {
             String fieldName = YamlHelper.getYamlKeyName(yamlKey);
             if(fieldName != null) {
-
-                String typeName = getYamlFieldTypeName(yamlKey);
-                if(typeName != null) {
-                    modelFields.add(new DoctrineModelField(fieldName, typeName));
-                } else {
-                    modelFields.add(new DoctrineModelField(fieldName));
-                }
-
+                DoctrineModelField modelField = new DoctrineModelField(fieldName);
+                modelField.addTarget(yamlKey);
+                attachYamlFieldTypeName(keyName, modelField, yamlKey);
+                modelFields.add(modelField);
             }
         }
 
         return modelFields;
     }
 
-    public static String getYamlFieldTypeName(YAMLKeyValue yamlKeyValue) {
+    public static void attachYamlFieldTypeName(String keyName, DoctrineModelField doctrineModelField, YAMLKeyValue yamlKeyValue) {
 
-        YAMLKeyValue yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "type");
-        if(yamlType == null) {
-            yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "targetEntity");
+        if("fields".equals(keyName)) {
+
+            YAMLKeyValue yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "type");
+            if(yamlType != null && yamlType.getValueText() != null) {
+                doctrineModelField.setTypeName(yamlType.getValueText());
+            }
+
+            return;
         }
 
-        if(yamlType != null) {
-            String value = yamlType.getValueText();
-            if(value != null) {
-                return value;
+        if(Arrays.asList("manytoone", "manytomany", "onetotone", "onetomany").contains(keyName.toLowerCase())) {
+            YAMLKeyValue targetEntity = YamlHelper.getYamlKeyValue(yamlKeyValue, "targetEntity");
+            if(targetEntity != null) {
+                doctrineModelField.setRelationType(keyName);
+                String value = targetEntity.getValueText();
+                if(value != null) {
+                    doctrineModelField.setRelation(value);
+                }
             }
         }
 
-        return null;
     }
 
-    public static Collection<YAMLKeyValue> getYamlModelFieldKeyValues(YAMLKeyValue yamlKeyValue) {
-        Collection<YAMLKeyValue> keyValueCollection = new ArrayList<YAMLKeyValue>();
+    @NotNull
+    public static Map<String, YAMLKeyValue> getYamlModelFieldKeyValues(YAMLKeyValue yamlKeyValue) {
+        Map<String, YAMLKeyValue> keyValueCollection = new HashMap<String, YAMLKeyValue>();
 
-        for(String fieldMaps: new String[] { "fields", "manyToOne", "oneToOne", "manyToMany", "oneToMany"}) {
-            YAMLKeyValue targetYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, fieldMaps);
-            keyValueCollection.add(targetYamlKeyValue);
+        for(String fieldMap: new String[] { "fields", "manyToOne", "oneToOne", "manyToMany", "oneToMany"}) {
+            YAMLKeyValue targetYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, fieldMap, true);
+            if(targetYamlKeyValue != null) {
+                keyValueCollection.put(fieldMap, targetYamlKeyValue);
+            }
         }
 
         return keyValueCollection;
@@ -197,7 +199,7 @@ public class EntityHelper {
             if(yamlDocument instanceof YAMLDocument) {
                 PsiElement arrayKeyValue = yamlDocument.getFirstChild();
                 if(arrayKeyValue instanceof YAMLKeyValue) {
-                    for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues((YAMLKeyValue) arrayKeyValue)) {
+                    for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues((YAMLKeyValue) arrayKeyValue).values()) {
                         YAMLKeyValue target = YamlKeyFinder.findKey(yamlKeyValue, fieldName);
                         if(target != null) {
                             psiElements.add(target);
@@ -272,6 +274,8 @@ public class EntityHelper {
             if(yamlDocument instanceof YAMLDocument) {
                 PsiElement arrayKeyValue = yamlDocument.getFirstChild();
                 if(arrayKeyValue instanceof YAMLKeyValue) {
+
+                    // first line is class name; check of we are right
                     String className = YamlHelper.getYamlKeyName(((YAMLKeyValue) arrayKeyValue));
                     if(PhpElementsUtil.isEqualClassName(phpClass, className)) {
                         modelFields.addAll(getModelFieldsSet((YAMLKeyValue) arrayKeyValue));
@@ -284,48 +288,20 @@ public class EntityHelper {
         }
 
         // provide fallback on annotations
-        // @TODO: better detect annotation switch; yaml and annotation are valid; need deps on annotation plugin
         PhpDocComment docComment = phpClass.getDocComment();
         if(docComment != null) {
-            if(docComment.getText().contains("Entity") || docComment.getText().contains("@ORM") || docComment.getText().contains("repositoryClass")) {
+            if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
                 for(Field field: phpClass.getFields()) {
                     if(!field.isConstant()) {
-
-                        // find type name on annotation
-                        String typeName = getAnnotationTypeName(field);
-                        if(typeName != null) {
-                            modelFields.add(new DoctrineModelField(field.getName(), typeName));
-                        } else {
-                            modelFields.add(new DoctrineModelField(field.getName()));
-                        }
-
+                        DoctrineModelField modelField = new DoctrineModelField(field.getName());
+                        attachAnnotationInformation(field, modelField.addTarget(field));
+                        modelFields.add(modelField);
                     }
                 }
             }
         }
 
         return modelFields;
-    }
-
-    @Nullable
-    private static String getAnnotationTypeName(Field field) {
-
-        // find type on regular expression, we are in presentable mode, so fully functional doesnt matter
-        // @ORM\Column(name="id", type="integer", nullable=false)
-        PhpDocComment fieldDoc = field.getDocComment();
-        if(fieldDoc != null) {
-            Matcher matcher = Pattern.compile("type=[\"|'](\\w+)[\"|']").matcher(fieldDoc.getText());
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
-
-            matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(fieldDoc.getText());
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
-        }
-
-        return null;
     }
 
     @Nullable
@@ -477,14 +453,14 @@ public class EntityHelper {
         return results.toArray(new PsiElement[results.size()]);
     }
 
-    public static LookupElementBuilder attachAnnotationInfoToLookupElement(Field field, LookupElementBuilder lookupElement) {
+    public static void attachAnnotationInformation(Field field, DoctrineModelField doctrineModelField) {
 
         // get some more presentable completion information
         // dont resolve docblocks; just extract them from doc comment
         PhpDocComment docBlock = field.getDocComment();
 
         if(docBlock == null) {
-            return lookupElement;
+            return;
         }
 
         String text = docBlock.getText();
@@ -492,22 +468,21 @@ public class EntityHelper {
         // column type
         Matcher matcher = Pattern.compile("type=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
         if (matcher.find()) {
-            lookupElement = lookupElement.withTypeText(matcher.group(1), true);
+            doctrineModelField.setTypeName(matcher.group(1));
         }
 
         // targetEntity name
         matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
         if (matcher.find()) {
-            lookupElement = lookupElement.withTypeText(matcher.group(1), true);
+            doctrineModelField.setRelation(matcher.group(1));
         }
 
         // relation type
         matcher = Pattern.compile("((Many|One)To(Many|One))\\(").matcher(text);
         if (matcher.find()) {
-            lookupElement = lookupElement.withTailText(matcher.group(1), true);
+            doctrineModelField.setRelationType(matcher.group(1));
         }
 
-        return lookupElement;
     }
 
     public static Collection<DoctrineModel> getModelClasses(final Project project) {

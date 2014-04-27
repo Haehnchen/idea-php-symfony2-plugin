@@ -88,7 +88,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
 
         for(Map.Entry<String, QueryBuilderParser.QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
             if(entry.getKey().equals(propertyContent)) {
-                targets.add(entry.getValue().getPsiTarget());
+                targets.addAll(entry.getValue().getPsiTargets());
             }
         }
 
