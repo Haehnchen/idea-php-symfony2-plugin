@@ -7,6 +7,8 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -57,8 +59,8 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
             return;
         }
 
-        List<QueryBuilderParser.QueryBuilderRelation> relations = collect.getRelationMap().get(joinSplit[0]);
-        for(QueryBuilderParser.QueryBuilderRelation relation: relations) {
+        List<QueryBuilderRelation> relations = collect.getRelationMap().get(joinSplit[0]);
+        for(QueryBuilderRelation relation: relations) {
             if(joinSplit[1].equals(relation.getFieldName()) && relation.getTargetEntity() != null) {
                 PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), relation.getTargetEntity());
                 if(phpClass != null) {
@@ -86,7 +88,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         QueryBuilderScopeContext collect = qb.collect();
         String propertyContent = psiElement.getContents();
 
-        for(Map.Entry<String, QueryBuilderParser.QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+        for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
             if(entry.getKey().equals(propertyContent)) {
                 targets.addAll(entry.getValue().getPsiTargets());
             }

@@ -1,5 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
+
 import java.util.*;
 
 public class QueryBuilderScopeContext {
@@ -7,19 +11,19 @@ public class QueryBuilderScopeContext {
     final private Set<String> parameters = new HashSet<String>();
     final private Set<String> selects = new HashSet<String>();
     final private Map<String, String> tableMap = new HashMap<String, String>();
-    final private Map<String, QueryBuilderParser.QueryBuilderJoin> joinMap = new HashMap<String, QueryBuilderParser.QueryBuilderJoin>();
-    final private Map<String, List<QueryBuilderParser.QueryBuilderRelation>> relationMap = new HashMap<String, List<QueryBuilderParser.QueryBuilderRelation>>();
-    final private Map<String, QueryBuilderParser.QueryBuilderPropertyAlias> propertyAliasMap = new HashMap<String, QueryBuilderParser.QueryBuilderPropertyAlias>();
+    final private Map<String, QueryBuilderJoin> joinMap = new HashMap<String, QueryBuilderJoin>();
+    final private Map<String, List<QueryBuilderRelation>> relationMap = new HashMap<String, List<QueryBuilderRelation>>();
+    final private Map<String, QueryBuilderPropertyAlias> propertyAliasMap = new HashMap<String, QueryBuilderPropertyAlias>();
 
     public void addParameter(String parameterName) {
         this.parameters.add(parameterName);
     }
 
-    public void addRelation(String relationName, List<QueryBuilderParser.QueryBuilderRelation> relations) {
+    public void addRelation(String relationName, List<QueryBuilderRelation> relations) {
         this.relationMap.put(relationName, relations);
     }
 
-    public void addPropertyAlias(String relationName, QueryBuilderParser.QueryBuilderPropertyAlias propertyAlias) {
+    public void addPropertyAlias(String relationName, QueryBuilderPropertyAlias propertyAlias) {
         this.propertyAliasMap.put(relationName, propertyAlias);
     }
 
@@ -27,7 +31,7 @@ public class QueryBuilderScopeContext {
         this.tableMap.put(model, alias);
     }
 
-    public void addJoin(String join, QueryBuilderParser.QueryBuilderJoin queryBuilderJoin) {
+    public void addJoin(String join, QueryBuilderJoin queryBuilderJoin) {
         this.joinMap.put(join, queryBuilderJoin);
     }
 
@@ -47,7 +51,7 @@ public class QueryBuilderScopeContext {
         return parameters;
     }
 
-    public Map<String, QueryBuilderParser.QueryBuilderJoin> getJoinMap() {
+    public Map<String, QueryBuilderJoin> getJoinMap() {
         return joinMap;
     }
 
@@ -55,11 +59,11 @@ public class QueryBuilderScopeContext {
         return tableMap;
     }
 
-    public Map<String, List<QueryBuilderParser.QueryBuilderRelation>> getRelationMap() {
+    public Map<String, List<QueryBuilderRelation>> getRelationMap() {
         return relationMap;
     }
 
-    public Map<String, QueryBuilderParser.QueryBuilderPropertyAlias> getPropertyAliasMap() {
+    public Map<String, QueryBuilderPropertyAlias> getPropertyAliasMap() {
         return propertyAliasMap;
     }
 

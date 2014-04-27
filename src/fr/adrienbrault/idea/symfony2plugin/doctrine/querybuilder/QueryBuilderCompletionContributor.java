@@ -6,7 +6,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.ui.JBColor;
 import com.intellij.util.CommonProcessors;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIcons;
@@ -14,13 +13,13 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -92,8 +91,8 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderScopeContext collect = qb.collect();
-                for(Map.Entry<String, List<QueryBuilderParser.QueryBuilderRelation>> parameter: collect.getRelationMap().entrySet()) {
-                    for(QueryBuilderParser.QueryBuilderRelation relation: parameter.getValue()) {
+                for(Map.Entry<String, List<QueryBuilderRelation>> parameter: collect.getRelationMap().entrySet()) {
+                    for(QueryBuilderRelation relation: parameter.getValue()) {
                         completionResultSet.addElement(LookupElementBuilder.create(parameter.getKey() + "." + relation.getFieldName()).withTypeText(relation.getTargetEntity(), true));
                     }
                 }
@@ -123,7 +122,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderScopeContext collect = qb.collect();
-                for(Map.Entry<String, QueryBuilderParser.QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+                for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
 
                     LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey());
                     lookup = lookup.withIcon(Symfony2Icons.DOCTRINE);
