@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class QueryBuilderParser  {
+public class QueryBuilderMethodReferenceParser {
 
     private boolean collectParameter = true;
     private boolean collectFrom = true;
@@ -34,10 +34,132 @@ public class QueryBuilderParser  {
 
     final private Collection<MethodReference> methodReferences;
 
-    public QueryBuilderParser(Project project, Collection<MethodReference> methodReferences) {
+    public QueryBuilderMethodReferenceParser(Project project, Collection<MethodReference> methodReferences) {
         this.methodReferences = methodReferences;
         this.project = project;
     }
+
+    public QueryBuilderScopeContext collect() {
+        QueryBuilderScopeContext qb = new QueryBuilderScopeContext();
+
+        // doctrine needs valid root with an alias, try to find one in method references or scope
+        Map<String, String> map = this.findRootDefinition(methodReferences);
+        if(map.size() > 0) {
+            Map.Entry<String, String> entry = map.entrySet().iterator().next();
+            qb.addTable(entry.getKey(), entry.getValue());
+        }
+
+        for(MethodReference methodReference: methodReferences) {
+
+            String name = methodReference.getName();
+            if(name != null) {
+                collectParameter(qb, methodReference, name);
+                collectJoins(qb, methodReference, name);
+                collectSelects(qb, methodReference, name);
+                collectSelectInForm(qb, methodReference, name);
+            }
+
+        }
+
+        if(qb.getTableMap().size() > 0) {
+            Map.Entry<String, String> entry = qb.getTableMap().entrySet().iterator().next();
+            String className = entry.getKey();
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
+
+            // add root select fields
+            if(phpClass != null) {
+
+                qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, new DoctrineModelField(entry.getValue()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
+                qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
+                for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                    qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
+                }
+            }
+
+            QueryBuilderRelationClassResolver resolver = new QueryBuilderRelationClassResolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap());
+            resolver.collect();
+
+        }
+
+        buildPropertyMap(qb);
+
+        return qb;
+
+    }
+
+    private void collectSelectInForm(QueryBuilderScopeContext qb, MethodReference methodReference, String name) {
+
+        // $qb->from('foo', 'select')
+        if(!"from".equals(name)) {
+            return;
+        }
+
+        PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
+        String literalValue = PhpElementsUtil.getStringValue(psiElement);
+        if(literalValue != null) {
+            qb.addSelect(literalValue);
+        }
+
+    }
+
+    private void collectSelects(QueryBuilderScopeContext qb, MethodReference methodReference, String name) {
+
+        if(!Arrays.asList("select", "addSelect").contains(name)) {
+            return;
+        }
+
+        // $qb->select('foo')
+        PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
+        String literalValue = PhpElementsUtil.getStringValue(psiElement);
+        if(literalValue != null) {
+            qb.addSelect(literalValue);
+            return;
+        }
+
+        // $qb->select(array('foo', 'bar', 'accessoryDetail'))
+        if(psiElement instanceof ArrayCreationExpression) {
+            for(PsiElement arrayValue: PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE))) {
+                if(arrayValue.getChildren().length == 1) {
+                    String arrayValueString = PhpElementsUtil.getStringValue(arrayValue.getChildren()[0]);
+                    if(arrayValueString != null) {
+                        qb.addSelect(arrayValueString);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void collectJoins(QueryBuilderScopeContext qb, MethodReference methodReference, String name) {
+
+        if(!collectJoins || !Arrays.asList("join", "leftJoin", "rightJoin", "innerJoin").contains(name)) {
+            return;
+        }
+
+        String join = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+        String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
+        if(join != null && alias != null) {
+            qb.addJoin(alias, new QueryBuilderJoin(join, alias));
+        }
+
+    }
+
+    private void collectParameter(QueryBuilderScopeContext qb, MethodReference methodReference, String name) {
+
+        if(!collectParameter || !Arrays.asList("where", "andWhere").contains(name)) {
+            return;
+        }
+
+        String value = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+        if(value != null) {
+            Matcher matcher = Pattern.compile(":(\\w+)", Pattern.MULTILINE).matcher(value);
+            while(matcher.find()){
+                qb.addParameter(matcher.group(1));
+            }
+        }
+
+    }
+
 
     private Map<String, String> findRootDefinition(Collection<MethodReference> methodReferences) {
 
@@ -120,120 +242,26 @@ public class QueryBuilderParser  {
         return roots;
     }
 
-    public QueryBuilderScopeContext collect() {
-        QueryBuilderScopeContext qb = new QueryBuilderScopeContext();
+    private void buildPropertyMap(QueryBuilderScopeContext qb) {
 
-        // doctrine needs valid root with an alias, try to find one in method references or scope
-        Map<String, String> map = this.findRootDefinition(methodReferences);
-        if(map.size() > 0) {
-            Map.Entry<String, String> entry = map.entrySet().iterator().next();
-            qb.addTable(entry.getKey(), entry.getValue());
+        if(!collectProperties) {
+            return;
         }
 
-        for(MethodReference methodReference: methodReferences) {
+        for(QueryBuilderJoin join: qb.getJoinMap().values()) {
+            String className = join.getResolvedClass();
+            if(className != null) {
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
+                if(phpClass != null) {
+                    qb.addPropertyAlias(join.getAlias(), new QueryBuilderPropertyAlias(join.getAlias(), null, new DoctrineModelField(join.getAlias()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
 
-            String name = methodReference.getName();
-            if(name == null) {
-                continue;
-            }
-
-            if(collectParameter == true) {
-                if(name.equals("where") || name.equals("andWhere")) {
-                    String value = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-                    if(value != null) {
-                        Matcher matcher = Pattern.compile(":(\\w+)", Pattern.MULTILINE).matcher(value);
-                        while(matcher.find()){
-                            qb.addParameter(matcher.group(1));
-                        }
+                    // add entity properties
+                    for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                        qb.addPropertyAlias(join.getAlias() + "." + field.getName(), new QueryBuilderPropertyAlias(join.getAlias(), field.getName(), field));
                     }
                 }
             }
-
-            if(collectJoins == true) {
-                if(name.equals("join") || name.equals("leftJoin") || name.equals("rightJoin") || name.equals("innerJoin")) {
-                    String join = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-                    String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
-                    if(join != null && alias != null) {
-                        qb.addJoin(alias, new QueryBuilderJoin(join, alias));
-                    }
-                }
-            }
-
-
-            if("select".equals(name) || "addSelect".equals(name)) {
-
-                // $qb->select('foo')
-                PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
-                String literalValue = PhpElementsUtil.getStringValue(psiElement);
-                if(literalValue != null) {
-                    qb.addSelect(literalValue);
-                }
-
-                // $qb->select(array('foo', 'bar', 'accessoryDetail'))
-                if(psiElement instanceof ArrayCreationExpression) {
-                    for(PsiElement arrayValue: PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE))) {
-                        if(arrayValue.getChildren().length == 1) {
-                            String arrayValueString = PhpElementsUtil.getStringValue(arrayValue.getChildren()[0]);
-                            if(arrayValueString != null) {
-                                qb.addSelect(arrayValueString);
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            // $qb->from('foo', 'select')
-            if("from".equals(name)) {
-                PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
-                String literalValue = PhpElementsUtil.getStringValue(psiElement);
-                if(literalValue != null) {
-                    qb.addSelect(literalValue);
-                }
-            }
-
-
         }
-
-        if(qb.getTableMap().size() > 0) {
-            Map.Entry<String, String> entry = qb.getTableMap().entrySet().iterator().next();
-            String className = entry.getKey();
-            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
-
-            // add root select fields
-            if(phpClass != null) {
-
-                qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, new DoctrineModelField(entry.getValue()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
-                qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
-                for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
-                    qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
-                }
-            }
-
-            Resolver resolver = new Resolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap());
-            resolver.collect();
-
-        }
-
-        if(collectProperties == true) {
-            for(QueryBuilderJoin join: qb.getJoinMap().values()) {
-                String className = join.getResolvedClass();
-                if(className != null) {
-                    PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
-                    if(phpClass != null) {
-                        qb.addPropertyAlias(join.getAlias(), new QueryBuilderPropertyAlias(join.getAlias(), null, new DoctrineModelField(join.getAlias()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
-
-                        // add entity properties
-                        for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
-                            qb.addPropertyAlias(join.getAlias() + "." + field.getName(), new QueryBuilderPropertyAlias(join.getAlias(), field.getName(), field));
-                        }
-                    }
-                }
-            }
-
-        }
-
-        return qb;
 
     }
 

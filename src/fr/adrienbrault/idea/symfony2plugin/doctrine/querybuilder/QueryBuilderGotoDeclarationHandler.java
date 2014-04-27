@@ -44,7 +44,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
             return;
         }
 
-        QueryBuilderParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
+        QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
         if(qb == null) {
             return;
         }
@@ -80,7 +80,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
             return;
         }
 
-        QueryBuilderParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
+        QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
         if(qb == null) {
             return;
         }

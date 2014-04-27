@@ -11,17 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
-* Created by daniel on 27.04.14.
-*/
-class Resolver {
+class QueryBuilderRelationClassResolver {
 
     final private Project project;
     final private Map<String, String> joins = new HashMap<String, String>();
     final private Map<String, List<QueryBuilderRelation>> relationMap;
     final private Map<String, QueryBuilderJoin> joinMap = new HashMap<String, QueryBuilderJoin>();
 
-    public Resolver(Project project, String aliasRoot, String aliasClass, Map<String, List<QueryBuilderRelation>> relationMap, Map<String, QueryBuilderJoin> joinMap) {
+    public QueryBuilderRelationClassResolver(Project project, String aliasRoot, String aliasClass, Map<String, List<QueryBuilderRelation>> relationMap, Map<String, QueryBuilderJoin> joinMap) {
         this.project = project;
         this.joins.put(aliasRoot, aliasClass);
         this.relationMap = relationMap;
@@ -47,7 +44,7 @@ class Resolver {
                                 if(targetEntity != null) {
                                     PhpClass phpClass = PhpElementsUtil.getClassInterface(project, targetEntity);
                                     if(phpClass != null) {
-                                        relationMap.put(queryBuilderJoin.getAlias(), QueryBuilderParser.attachRelationFields(phpClass));
+                                        relationMap.put(queryBuilderJoin.getAlias(), QueryBuilderMethodReferenceParser.attachRelationFields(phpClass));
                                         queryBuilderJoin.setResolvedClass(targetEntity);
                                         collect();
                                     }
@@ -59,7 +56,6 @@ class Resolver {
                     }
 
                 }
-
 
             }
         }

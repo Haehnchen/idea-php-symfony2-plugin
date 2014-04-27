@@ -52,7 +52,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                QueryBuilderParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 if(qb == null) {
                     return;
                 }
@@ -85,7 +85,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                QueryBuilderParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 if(qb == null) {
                     return;
                 }
@@ -116,7 +116,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                QueryBuilderParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 if(qb == null) {
                     return;
                 }
@@ -153,7 +153,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
     }
 
     @Nullable
-    public static QueryBuilderParser getQueryBuilderParser(PsiElement psiElement) {
+    public static QueryBuilderMethodReferenceParser getQueryBuilderParser(PsiElement psiElement) {
 
         final Collection<MethodReference> psiElements = new ArrayList<MethodReference>();
 
@@ -169,14 +169,14 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         // are we in var scope? "$qb->" and var declaration
         Variable variable = PsiTreeUtil.findChildOfAnyType(statement, Variable.class);
         if(variable == null) {
-            return new QueryBuilderParser(psiElement.getProject(), psiElements);
+            return new QueryBuilderMethodReferenceParser(psiElement.getProject(), psiElements);
         }
 
         // resolve non variable declarations so we can search for references
         if(!variable.isDeclaration()) {
             variable = (Variable) variable.resolve();
             if(variable == null) {
-                return new QueryBuilderParser(psiElement.getProject(), psiElements);
+                return new QueryBuilderMethodReferenceParser(psiElement.getProject(), psiElements);
             }
         }
 
@@ -199,7 +199,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             }
         });
 
-        return new QueryBuilderParser(psiElement.getProject(), psiElements);
+        return new QueryBuilderMethodReferenceParser(psiElement.getProject(), psiElements);
     }
 
 
