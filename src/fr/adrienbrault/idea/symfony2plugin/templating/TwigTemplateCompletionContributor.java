@@ -116,15 +116,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         );
 
-        /*
         // provides support for {% block |
         extend(CompletionType.BASIC, TwigHelper.getBlockTagPattern(), new BlockCompletionProvider());
-
-        // hack for blocked completion on new twig plugin
-        if(PluginManager.getPlugin(PluginId.getId("com.jetbrains.twig")) != null) {
-            extend(CompletionType.SMART, TwigHelper.getBlockTagPattern(), new BlockCompletionProvider());
-        }
-         */
 
         // provides support for {% from 'twig..' import |
         extend(
