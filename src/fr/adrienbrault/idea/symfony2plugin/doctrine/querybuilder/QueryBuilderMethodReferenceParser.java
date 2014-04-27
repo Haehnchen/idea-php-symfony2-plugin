@@ -7,10 +7,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider;
@@ -322,9 +319,21 @@ public class QueryBuilderMethodReferenceParser {
         // targetEntity name
         // @TODO: replace with annotation references
         String targetEntity = null;
-        Matcher matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
+        Matcher matcher = Pattern.compile("targetEntity[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
         if (matcher.find()) {
             targetEntity = matcher.group(1);
+
+            // how to resolve class is same namespace in a proper way?
+            // @TODO: targetEntity="Foo" same as targetEntity="Ns\Eentiy\Foo"
+            if(PhpElementsUtil.getClassInterface(field.getProject(), targetEntity) == null) {
+                PhpNamespace phpNamespace = PsiTreeUtil.getParentOfType(field, PhpNamespace.class);
+                if(phpNamespace != null) {
+                    PhpClass phpClass = PhpElementsUtil.getClassInterface(field.getProject(), phpNamespace.getFQN()  + "\\" + matcher.group(1));
+                    if(phpClass != null) {
+                        targetEntity = phpClass.getPresentableFQN();
+                    }
+                }
+            }
         }
 
         // relation type
