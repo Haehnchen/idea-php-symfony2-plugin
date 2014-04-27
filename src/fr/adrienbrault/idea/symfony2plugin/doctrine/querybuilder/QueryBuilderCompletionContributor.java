@@ -41,6 +41,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .match();
 
                 if(methodMatchParameter == null) {
+                    methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement.getContext(), 0)
+                        .withSignature("\\Doctrine\\ORM\\QueryBuilder", "setParameters")
+                        .match();
+                }
+
+                if(methodMatchParameter == null) {
                     return;
                 }
 
@@ -99,6 +105,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
+                if(psiElement == null) {
+                    return;
+                }
 
                 MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchPropertyField(psiElement.getContext());
                 if(methodMatchParameter == null) {
@@ -120,7 +129,10 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                             lookupElementBuilder = lookupElementBuilder.withBoldness(true);
                         }
                         completionResultSet.addElement(lookupElementBuilder);
-
+                    } else if(field instanceof PhpClass) {
+                        completionResultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(((PhpClass) field).getIcon()).withTypeText(((PhpClass) field).getPresentableFQN(), true));
+                    } else {
+                        completionResultSet.addElement(LookupElementBuilder.create(entry.getKey()));
                     }
 
                 }

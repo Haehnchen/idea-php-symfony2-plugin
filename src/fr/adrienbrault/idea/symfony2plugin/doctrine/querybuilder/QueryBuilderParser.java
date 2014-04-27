@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,12 +92,14 @@ public class QueryBuilderParser  {
             MethodReference methodReference = methodReferences.iterator().next();
             PhpClass phpClass = PsiTreeUtil.getParentOfType(methodReference, PhpClass.class);
             if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
-                // @TODO: bad performance; because of namespace search
-                for(String model: EntityReference.getEntityNames(project)) {
-                    PhpClass resolvedRepoName = EntityHelper.getEntityRepositoryClass(project, model);
-                    if(PhpElementsUtil.isEqualClassName(resolvedRepoName, phpClass.getPresentableFQN())) {
-                        roots.put(model, rootAlias);
-                        return roots;
+                for(DoctrineModel model: EntityHelper.getModelClasses(project)) {
+                    String className = model.getPhpClass().getPresentableFQN();
+                    if(className != null) {
+                        PhpClass resolvedRepoName = EntityHelper.getEntityRepositoryClass(project, className);
+                        if(PhpElementsUtil.isEqualClassName(resolvedRepoName, phpClass.getPresentableFQN())) {
+                            roots.put(className, rootAlias);
+                            return roots;
+                        }
                     }
                 }
             }
@@ -188,14 +191,14 @@ public class QueryBuilderParser  {
 
             // add root select fields
             if(phpClass != null) {
+                qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, phpClass));
+                qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
                 for(Field field: phpClass.getFields()) {
                     if(!field.isConstant()) {
                         qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
                     }
                 }
             }
-
-            qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
 
             Resolver resolver = new Resolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap());
             resolver.collect();
@@ -208,6 +211,11 @@ public class QueryBuilderParser  {
                 if(className != null) {
                     PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
                     if(phpClass != null) {
+
+                        // add main alias;
+                        qb.addPropertyAlias(join.getAlias(), new QueryBuilderPropertyAlias(join.getAlias(), null, phpClass));
+
+                        // add entity properties
                         for(Field field: phpClass.getFields()) {
                             if(!field.isConstant()) {
                                 qb.addPropertyAlias(join.getAlias() + "." + field.getName(), new QueryBuilderPropertyAlias(join.getAlias(), field.getName(), field));

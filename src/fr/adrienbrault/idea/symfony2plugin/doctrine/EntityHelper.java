@@ -510,6 +510,13 @@ public class EntityHelper {
         return lookupElement;
     }
 
+    public static Collection<DoctrineModel> getModelClasses(final Project project) {
+        return getModelClasses(project, new HashMap<String, String>() {{
+            putAll(ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap());
+            putAll(ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap());
+        }});
+    }
+
     public static Collection<DoctrineModel> getModelClasses(Project project, Map<String, String> shortcutNames) {
 
         Collection<DoctrineModel> models = new ArrayList<DoctrineModel>();
