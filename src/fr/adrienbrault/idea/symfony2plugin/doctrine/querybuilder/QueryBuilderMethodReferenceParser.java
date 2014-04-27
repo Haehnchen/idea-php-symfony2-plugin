@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
@@ -12,11 +13,14 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 
@@ -237,6 +241,32 @@ public class QueryBuilderMethodReferenceParser {
                 }
             }
 
+        }
+
+        // search on PhpTypeProvider
+        // $er->createQueryBuilder()
+        if(rootAlias != null && repository == null) {
+            for(MethodReference methodReference: methodReferences) {
+                if("createQueryBuilder".equals(methodReference.getName())) {
+                    String signature = methodReference.getSignature();
+                    int endIndex = signature.lastIndexOf(ObjectRepositoryTypeProvider.TRIM_KEY);
+                    if(endIndex != -1) {
+                        String parameter = signature.substring(endIndex + 1);
+                        int point = parameter.indexOf(".");
+                        if(point > -1) {
+                            parameter = parameter.substring(0, point);
+                            parameter = PhpTypeProviderUtil.getResolvedParameter(PhpIndex.getInstance(project), parameter);
+                            if(parameter != null) {
+                                PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
+                                if(phpClass != null && phpClass.getPresentableFQN() != null) {
+                                    roots.put(phpClass.getPresentableFQN(), rootAlias);
+                                    return roots;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return roots;

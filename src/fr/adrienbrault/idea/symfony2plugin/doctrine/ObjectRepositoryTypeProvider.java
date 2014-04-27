@@ -22,7 +22,7 @@ import java.util.Collections;
  */
 public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
 
-    final static char TRIM_KEY = '\u0180';
+    final public static char TRIM_KEY = '\u0180';
 
     @Override
     public char getKey() {
