@@ -172,7 +172,9 @@ public class AnnotationBackportUtil {
         return filteredPhpDocTags;
     }
 
-    public static boolean hasReference(PhpDocComment docComment, String className) {
+    public static boolean hasReference(@Nullable PhpDocComment docComment, String... className) {
+        if(docComment == null) return false;
+
         Map<String, String> uses = AnnotationBackportUtil.getUseImportMap(docComment);
 
         for(PhpDocTag phpDocTag: PsiTreeUtil.findChildrenOfAnyType(docComment, PhpDocTag.class)) {

@@ -42,6 +42,14 @@ public class EntityHelper {
 
     public static final ExtensionPointName<DoctrineModelProvider> MODEL_POINT_NAME = new ExtensionPointName<DoctrineModelProvider>("fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider");
 
+    final public static String[] ANNOTATION_FIELDS = new String[] {
+        "\\Doctrine\\ORM\\Mapping\\Column",
+        "\\Doctrine\\ORM\\Mapping\\ManyToOne",
+        "\\Doctrine\\ORM\\Mapping\\ManyToOne",
+        "\\Doctrine\\ORM\\Mapping\\OneToMany",
+        "\\Doctrine\\ORM\\Mapping\\ManyToMany",
+    };
+
     /**
      * Resolve shortcut and namespaces classes for current phpclass and attached modelname
      */
@@ -83,7 +91,7 @@ public class EntityHelper {
             // search for repositoryClass="Foo\Bar\RegisterRepository"
             // @MongoDB\Document; @ORM\Entity
             String docAnnotationText = docAnnotation.getText();
-            Matcher matcher = Pattern.compile("repositoryClass=[\"|'](.*)[\"|']").matcher(docAnnotationText);
+            Matcher matcher = Pattern.compile("repositoryClass[\\s]*=[\\s]*[\"|'](.*)[\"|']").matcher(docAnnotationText);
             if (matcher.find()) {
                 return getAnnotationRepositoryClass(phpClass, matcher.group(1));
             }
@@ -293,9 +301,11 @@ public class EntityHelper {
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
                 for(Field field: phpClass.getFields()) {
                     if(!field.isConstant()) {
-                        DoctrineModelField modelField = new DoctrineModelField(field.getName());
-                        attachAnnotationInformation(field, modelField.addTarget(field));
-                        modelFields.add(modelField);
+                        if(AnnotationBackportUtil.hasReference(field.getDocComment(), ANNOTATION_FIELDS)) {
+                            DoctrineModelField modelField = new DoctrineModelField(field.getName());
+                            attachAnnotationInformation(field, modelField.addTarget(field));
+                            modelFields.add(modelField);
+                        }
                     }
                 }
             }
@@ -466,13 +476,13 @@ public class EntityHelper {
         String text = docBlock.getText();
 
         // column type
-        Matcher matcher = Pattern.compile("type=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
+        Matcher matcher = Pattern.compile("type[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
         if (matcher.find()) {
             doctrineModelField.setTypeName(matcher.group(1));
         }
 
         // targetEntity name
-        matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
+        matcher = Pattern.compile("targetEntity[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
         if (matcher.find()) {
             doctrineModelField.setRelation(matcher.group(1));
         }
