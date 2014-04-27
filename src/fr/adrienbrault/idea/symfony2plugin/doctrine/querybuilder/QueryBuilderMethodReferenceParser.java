@@ -31,11 +31,10 @@ import java.util.regex.Pattern;
 public class QueryBuilderMethodReferenceParser {
 
     private boolean collectParameter = true;
-    private boolean collectFrom = true;
     private boolean collectJoins = true;
     private boolean collectProperties = true;
-    private Project project;
 
+    final private Project project;
     final private Collection<MethodReference> methodReferences;
 
     public QueryBuilderMethodReferenceParser(Project project, Collection<MethodReference> methodReferences) {
@@ -65,6 +64,7 @@ public class QueryBuilderMethodReferenceParser {
 
         }
 
+        // first tableMap entry is root, we add several initial data
         if(qb.getTableMap().size() > 0) {
             Map.Entry<String, String> entry = qb.getTableMap().entrySet().iterator().next();
             String className = entry.getKey();
@@ -85,7 +85,9 @@ public class QueryBuilderMethodReferenceParser {
 
         }
 
-        buildPropertyMap(qb);
+        // we have a querybuilder which complete known elements now
+        // se we can builder a property (field) map table from it
+        this.buildPropertyMap(qb);
 
         return qb;
 
@@ -318,6 +320,7 @@ public class QueryBuilderMethodReferenceParser {
         String text = docBlock.getText();
 
         // targetEntity name
+        // @TODO: replace with annotation references
         String targetEntity = null;
         Matcher matcher = Pattern.compile("targetEntity=[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
         if (matcher.find()) {
@@ -325,6 +328,7 @@ public class QueryBuilderMethodReferenceParser {
         }
 
         // relation type
+        // @TODO: replace with annotation references
         matcher = Pattern.compile("((Many|One)To(Many|One))\\(").matcher(text);
         if (matcher.find()) {
             if(targetEntity != null) {
