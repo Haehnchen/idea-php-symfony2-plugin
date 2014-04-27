@@ -56,25 +56,27 @@ public class QueryBuilderParser  {
             String methodReferenceName = methodReference.getName();
 
             if("createQueryBuilder".equals(methodReferenceName)) {
-                // @TODO: resolve string
-                String possibleAlias = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+                String possibleAlias = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
                 if(possibleAlias != null) {
                     rootAlias = possibleAlias;
                 }
             }
 
             if("getRepository".equals(methodReferenceName)) {
-                // @TODO: resolve string
-                String possibleRepository = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+                String possibleRepository = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
                 if(possibleRepository != null) {
                     repository = possibleRepository;
+                    PhpClass phpClass = EntityHelper.resolveShortcutName(project, repository);
+                    if(phpClass != null) {
+                        repository = phpClass.getPresentableFQN();
+                    }
                 }
             }
 
             // $qb->from('Foo\Class', 'article')
             if("from".equals(methodReferenceName)) {
-                String table = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-                String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
+                String table = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
+                String alias = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1));
                 if(table != null && alias != null) {
                     roots.put(table, alias);
                 }
