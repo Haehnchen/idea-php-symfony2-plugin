@@ -71,10 +71,18 @@ public class QueryBuilderMethodReferenceParser {
             if(phpClass != null) {
 
                 qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, new DoctrineModelField(entry.getValue()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
-                qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
+
+                List<QueryBuilderRelation> relationList = new ArrayList<QueryBuilderRelation>();
+
+                //qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
                 for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
                     qb.addPropertyAlias(entry.getValue() + "." + field.getName(), new QueryBuilderPropertyAlias(entry.getValue(), field.getName(), field));
+                    if(field.getRelation() != null && field.getRelationType() != null) {
+                        relationList.add(new QueryBuilderRelation(field.getName(), field.getRelation()));
+                    }
                 }
+
+                qb.addRelation(entry.getValue(), relationList);
             }
 
             QueryBuilderRelationClassResolver resolver = new QueryBuilderRelationClassResolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap());
@@ -298,56 +306,13 @@ public class QueryBuilderMethodReferenceParser {
 
         List<QueryBuilderRelation> relations = new ArrayList<QueryBuilderRelation>();
 
-        for(Field field: phpClass.getFields()) {
-            if(!field.isConstant()) {
-                attachRelationFields(field, relations);
+        for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+            if(field.getRelation() != null && field.getRelationType() != null) {
+                relations.add(new QueryBuilderRelation(field.getName(), field.getRelation()));
             }
         }
 
         return relations;
-    }
-
-    static private void attachRelationFields(Field field, List<QueryBuilderRelation> relationFields) {
-
-        PhpDocComment docBlock = field.getDocComment();
-        if(docBlock == null) {
-            return;
-        }
-
-        String text = docBlock.getText();
-
-        // targetEntity name
-        // @TODO: replace with annotation references
-        String targetEntity = null;
-        Matcher matcher = Pattern.compile("targetEntity[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
-        if (matcher.find()) {
-            targetEntity = matcher.group(1);
-
-            // how to resolve class is same namespace in a proper way?
-            // @TODO: targetEntity="Foo" same as targetEntity="Ns\Eentiy\Foo"
-            if(PhpElementsUtil.getClassInterface(field.getProject(), targetEntity) == null) {
-                PhpNamespace phpNamespace = PsiTreeUtil.getParentOfType(field, PhpNamespace.class);
-                if(phpNamespace != null) {
-                    PhpClass phpClass = PhpElementsUtil.getClassInterface(field.getProject(), phpNamespace.getFQN()  + "\\" + matcher.group(1));
-                    if(phpClass != null) {
-                        targetEntity = phpClass.getPresentableFQN();
-                    }
-                }
-            }
-        }
-
-        // relation type
-        // @TODO: replace with annotation references
-        matcher = Pattern.compile("((Many|One)To(Many|One))\\(").matcher(text);
-        if (matcher.find()) {
-            if(targetEntity != null) {
-                relationFields.add(new QueryBuilderRelation(field.getName(), targetEntity));
-            } else {
-                relationFields.add(new QueryBuilderRelation(field.getName()));
-            }
-
-        }
-
     }
 
 }

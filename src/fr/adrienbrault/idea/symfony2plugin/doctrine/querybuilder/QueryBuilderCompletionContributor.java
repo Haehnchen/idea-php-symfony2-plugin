@@ -17,15 +17,22 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuild
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class QueryBuilderCompletionContributor extends CompletionContributor {
+
+    private static MethodMatcher.CallToSignature[] JOINS = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "join"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "rightJoin"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin"),
+    };
 
     public QueryBuilderCompletionContributor() {
 
@@ -75,10 +82,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
-                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "join")
-                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin")
-                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "rightJoin")
-                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin")
+                    .withSignature(JOINS)
                     .match();
 
                 if(methodMatchParameter == null) {
@@ -100,7 +104,6 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             }
 
         });
-
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
             @Override
@@ -144,6 +147,50 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                     completionResultSet.addElement(lookup);
 
+                }
+
+            }
+
+        });
+
+        // $qb->join('test.foo', 'foo');
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 1)
+                    .withSignature(JOINS)
+                    .match();
+
+                if(methodMatchParameter != null) {
+                    MethodReference methodReference = PsiTreeUtil.getParentOfType(psiElement, MethodReference.class);
+                    if(methodReference != null) {
+                        String joinTable = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
+                        if(joinTable != null && StringUtils.isNotBlank(joinTable)) {
+                            int pos = joinTable.lastIndexOf(".");
+                            if(pos > 0) {
+                                final String aliasName = joinTable.substring(pos + 1);
+                                if(StringUtils.isNotBlank(aliasName)) {
+
+                                    Set<String> strings = new HashSet<String>() {{
+                                        add(aliasName);
+                                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(aliasName, true));
+                                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(aliasName));
+                                    }};
+
+                                    for(String string: strings) {
+                                        completionResultSet.addElement(LookupElementBuilder.create(string));
+                                    }
+
+                                }
+                            }
+                        }
+                    }
                 }
 
             }
