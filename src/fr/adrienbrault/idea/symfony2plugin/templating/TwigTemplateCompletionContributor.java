@@ -170,34 +170,19 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
         );
 
-        // provides support for 'a'|<xxx> but currently blocked on phpstorm see WI-19022
+        // workaround for blocked twig filter completion in pre PhpStorm8 (WI-19022)
         extend(
             CompletionType.SMART,
             PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE)),
-            new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
+            new FilterCompletionProvider()
+        );
 
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
-                        return;
-                    }
-
-                    // move this stuff to pattern fixed event stopping by phpstorm
-                    PsiElement currElement = parameters.getPosition().getOriginalElement();
-                    PsiElement prevElement = currElement.getPrevSibling();
-                    if ((prevElement != null) && ((prevElement instanceof PsiWhiteSpace))) prevElement = prevElement.getPrevSibling();
-
-                    if ((prevElement != null) && (prevElement.getNode().getElementType() == TwigTokenTypes.FILTER)) {
-                        for(Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFilters().entrySet()) {
-                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(TwigExtensionParser.getIcon(entry.getValue().getTwigExtensionType())).withTypeText(entry.getValue().getType()));
-                        }
-                    }
-
-                }
-
-            }
-
+        // PhpStorm8 (since Twig plugin 136.1770.) allows twig filter completion without hack
+        // @TODO: use twig FILTER pattern if we have a working eap
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE)),
+            new FilterCompletionProvider()
         );
 
         // provides support for {{ '<xxx>' }}
@@ -368,6 +353,30 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new FormThemeCompletionProvider()
         );
 
+
+    }
+
+    private static class FilterCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters,
+                                   ProcessingContext context,
+                                   @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
+            // move this stuff to pattern fixed event stopping by phpstorm
+            PsiElement currElement = parameters.getPosition().getOriginalElement();
+            PsiElement prevElement = currElement.getPrevSibling();
+            if ((prevElement != null) && ((prevElement instanceof PsiWhiteSpace))) prevElement = prevElement.getPrevSibling();
+
+            if ((prevElement != null) && (prevElement.getNode().getElementType() == TwigTokenTypes.FILTER)) {
+                for(Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(parameters.getPosition().getProject()).getFilters().entrySet()) {
+                    resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withIcon(TwigExtensionParser.getIcon(entry.getValue().getTwigExtensionType())).withTypeText(entry.getValue().getType()));
+                }
+            }
+
+        }
 
     }
 
