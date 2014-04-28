@@ -1,67 +1,34 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 
-import com.intellij.codeInsight.intention.impl.BaseIntentionAction;
-import com.intellij.lang.annotation.AnnotationHolder;
-import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.IncorrectOperationException;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import de.espend.idea.php.annotation.extension.PhpAnnotationDocTagAnnotator;
+import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TemplateAnnotationAnnotator implements Annotator {
+public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator {
 
     @Override
-    public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
+    public void annotate(PhpAnnotationDocTagAnnotatorParameter parameter) {
 
-        if(!Symfony2ProjectComponent.isEnabled(element.getProject()) || !Settings.getInstance(element.getProject()).phpAnnotateTemplateAnnotation) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject()) ||
+           !Settings.getInstance(parameter.getProject()).phpAnnotateTemplateAnnotation ||
+           !PhpElementsUtil.isEqualClassName(parameter.getAnnotationClass(), TwigHelper.TEMPLATE_ANNOTATION_CLASS))
+        {
             return;
         }
 
-        if(!(element instanceof PhpDocTag)) {
-            return;
-        }
-
-        PhpDocTag phpDocTag = (PhpDocTag) element;
-        String docTagName = phpDocTag.getName();
-
-        if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(docTagName)) {
-            return;
-        }
-
-        PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag);
-        if(phpClass == null) {
-            return;
-        }
-
-        if(!PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
-            return;
-        }
-
-        PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
+        PhpPsiElement phpDocAttrList = parameter.getPhpDocTag().getFirstPsiChild();
         if(phpDocAttrList == null) {
             return;
         }
@@ -78,7 +45,7 @@ public class TemplateAnnotationAnnotator implements Annotator {
         } else {
 
             // find template name on last method
-            PhpDocComment docComment = PsiTreeUtil.getParentOfType(element, PhpDocComment.class);
+            PhpDocComment docComment = PsiTreeUtil.getParentOfType(parameter.getPhpDocTag(), PhpDocComment.class);
             if(null == docComment) {
                 return;
             }
@@ -95,99 +62,16 @@ public class TemplateAnnotationAnnotator implements Annotator {
             return;
         }
 
-        if ( TwigHelper.getTemplatePsiElements(element.getProject(), templateName).length > 0) {
+        if ( TwigHelper.getTemplatePsiElements(parameter.getProject(), templateName).length > 0) {
             return;
         }
 
-        if(null != element.getFirstChild()) {
-            holder.createWarningAnnotation(element.getFirstChild().getTextRange(), "Create Template")
+        if(null != parameter.getPhpDocTag().getFirstChild()) {
+            parameter.getHolder().createWarningAnnotation(parameter.getPhpDocTag().getFirstChild().getTextRange(), "Create Template")
                 .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName));
         }
 
 
-    }
-
-    class CreatePropertyQuickFix extends BaseIntentionAction {
-        private String key;
-
-        private Method method;
-        public CreatePropertyQuickFix(Method method) {
-            this.method = method;
-        }
-
-        @NotNull
-        @Override
-        public String getText() {
-            return "Create Template";
-        }
-
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return "Symfony2";
-        }
-
-        @Override
-        public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
-            return true;
-        }
-
-        @Override
-        public void invoke(@NotNull final Project project, final Editor editor, final PsiFile file) throws IncorrectOperationException {
-            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-
-                    SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(project));
-
-                    final SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(file);
-                    if(null == symfonyBundle) {
-                        return;
-                    }
-
-                    VirtualFile bundleDirectory = symfonyBundle.getVirtualDirectory();
-                    if(bundleDirectory == null) {
-                        return;
-                    }
-
-                    String actionName = method.getName();
-                    actionName = actionName.substring(0, actionName.lastIndexOf("Action"));
-                    String twigFileName = actionName + ".html.twig";
-
-                    VirtualFile controllerFile = method.getContainingFile().getVirtualFile();
-                    if(controllerFile == null) {
-                        return;
-                    }
-
-                    // the directory of the controller file: can be in sub folder or bundle controller root dir
-                    VirtualFile bundleController = controllerFile.getParent();
-
-                    // get controller name from class name
-                    PhpClass phpClass = method.getContainingClass();
-                    if(phpClass == null) {
-                        return;
-                    }
-
-                    // all controllers need to be in <bundle>/Controller
-                    String path = symfonyBundle.getRelative(bundleController);
-                    if(path == null || !path.startsWith("Controller")) {
-                        return;
-                    }
-
-                    // gave use: Controller[/<subfolder>]/DefaultController
-                    path = path.substring(10);
-                    path += "/" + phpClass.getName();
-
-                    // strip the last Controller from the class name
-                    if(path.endsWith("Controller")) {
-                        path = path.substring(0, path.length() - 10);
-                    }
-
-                    ApplicationManager.getApplication().runWriteAction(IdeHelper.getRunnableCreateAndOpenFile(project, bundleDirectory, "Resources/views" + path + "/" + twigFileName));
-
-                }
-            });
-        }
     }
 
 }
