@@ -374,7 +374,6 @@
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
 
-        <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.PhpServiceAnnotator"/>
@@ -437,6 +436,7 @@
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyAnnotationReferences"/>
+        <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
     </extensions>
 
     <project-components>
