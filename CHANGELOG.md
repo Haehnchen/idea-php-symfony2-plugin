@@ -5,6 +5,23 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.54
+* Initial doctrine querybuilder support, see what is in doc
+* Improvements in doctrine field property parser
+* Activate twig filter and block name completion for upcoming
+  PhpStorm8 (eap); resolved issues WI-19022, WI-20266
+* Support entity in sub namespace, use indexer and improve
+  performance
+* Add repository references for QueryBuilder::update/delete/from #272
+* Fix goto for class names without namespace in yaml scalar key #271
+* Fix field name array completion for ObjectRepository::findBy
+* Fix macro name set collector
+* Form field completion should respect property names #259
+* Integrate PHP-Annotations plugins as optional dependency
+* PHP Annotations: Allow alias for all @Template extension #236
+* PHP Annotations: Remove static list fully inside external plugin
+* PHP Annotations: Route::service and some other references #245
+
 ### 0.10.53
 * Fix slow index on large files #261
 * Fix weak route annotation goto

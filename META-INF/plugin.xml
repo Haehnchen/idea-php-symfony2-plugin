@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.53</version>
+    <version>0.10.54</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -10,11 +10,11 @@
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
 
-<h2>Feature blocker:</h2>
+<h2>Install</h2>
 
 <ul>
-    <li>twig filter support <a href="http://youtrack.jetbrains.com/issue/WI-19022">WI-19022</a></li>
-    <li>phpstorm7: dropped twig block name completion <a href="http://youtrack.jetbrains.com/issue/WI-20266">WI-20266</a></li>
+    <li>Active plugin per project in Settings -> Plugins and reopen project</li>
+    <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
 </ul>
 
 <h2>Features:</h2>
@@ -91,6 +91,23 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.54</h2>
+<ul>
+    <li>Initial doctrine querybuilder support, see what is in <a href="http://symfony2-plugin.espend.de/extension/doctrine_querybuilder.html">doc</a></li>
+    <li>Improvements in doctrine field property parser</li>
+    <li>Activate twig filter and block name completion for upcoming PhpStorm8 (eap); resolved issues WI-19022, WI-20266</li>
+    <li>Support entity in sub namespace, use indexer and improve performance</li>
+    <li>Add repository references for QueryBuilder::update/delete/from <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/272">#272</a></li>
+    <li>Fix goto for class names without namespace in yaml scalar key <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/271">#271</a></li>
+    <li>Fix field name array completion for ObjectRepository::findBy</li>
+    <li>Fix macro name set collector</li>
+    <li>Form field completion should respect property names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/259">#259</a></li>
+    <li>Integrate PHP-Annotations plugins as optional dependency</li>
+    <li>PHP Annotations: Allow alias for all @Template extension <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/236">#236</a></li>
+    <li>PHP Annotations: Remove static list fully inside external plugin</li>
+    <li>PHP Annotations: Route::service and some other references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/245">#245</a></li>
+</ul>
 
 <h2>0.10.53</h2>
 <ul>
