@@ -386,7 +386,7 @@ public class YamlHelper {
 
         String keyName = StringUtils.trim(modelName.getText());
         if(keyName.endsWith(":")) {
-            keyName = keyName.substring(0, keyName.length() - 1);
+            keyName = StringUtils.trim((keyName.substring(0, keyName.length() - 1)));
         }
 
         return keyName;

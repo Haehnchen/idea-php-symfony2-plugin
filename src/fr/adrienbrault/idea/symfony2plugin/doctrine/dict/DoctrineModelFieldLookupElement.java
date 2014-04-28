@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
@@ -11,27 +12,46 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DoctrineModelFieldLookupElement extends LookupElement {
 
-    final private DoctrineModelField modelField;
+    final private DoctrineModelField doctrineModelField;
+    private boolean withBoldness = false;
 
-    public DoctrineModelFieldLookupElement(DoctrineModelField modelField) {
-        this.modelField = modelField;
+    public DoctrineModelFieldLookupElement(@NotNull DoctrineModelField doctrineModelField) {
+        this.doctrineModelField = doctrineModelField;
     }
 
     @NotNull
     @Override
     public String getLookupString() {
-        return modelField.getName();
+        return this.doctrineModelField.getName();
     }
 
+    @Override
     public void renderElement(LookupElementPresentation presentation) {
+        super.renderElement(presentation);
 
+        presentation.setItemTextBold(withBoldness);
         presentation.setIcon(Symfony2Icons.DOCTRINE);
-        presentation.setItemText(modelField.getName());
+        presentation.setTypeGrayed(true);
 
-        if(modelField.getTypeName() != null) {
-            presentation.setTypeText(modelField.getTypeName());
+        if(this.doctrineModelField.getTypeName() != null) {
+            presentation.setTypeText(this.doctrineModelField.getTypeName());
         }
 
+        if(this.doctrineModelField.getRelationType() != null) {
+            presentation.setTailText(String.format("(%s)", this.doctrineModelField.getRelationType()), true);
+        }
+
+        if(this.doctrineModelField.getRelation() != null) {
+            presentation.setTypeText(this.doctrineModelField.getRelation());
+            presentation.setIcon(PhpIcons.CLASS_ICON);
+        }
+
+    }
+
+
+    public DoctrineModelFieldLookupElement withBoldness(boolean withBoldness) {
+        this.withBoldness = withBoldness;
+        return this;
     }
 
 }

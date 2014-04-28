@@ -2,22 +2,25 @@ package fr.adrienbrault.idea.symfony2plugin.form;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiReferenceBase;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormUnderscoreMethodReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+public class FormUnderscoreMethodReference  extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private StringLiteralExpression element;
     private PhpClass phpClass;
@@ -28,32 +31,27 @@ public class FormUnderscoreMethodReference extends PsiReferenceBase<PsiElement> 
         this.phpClass = phpClass;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public PsiElement resolve() {
+    public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        String methodCamel = this.toCamelCase(element.getContents());
-        PsiElement psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(this.getElement().getProject(), "#M#C\\" + phpClass.getPresentableFQN() + ".set" + methodCamel);
-        if(psiElement != null) {
-          return psiElement;
+        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+
+        String value = element.getContents();
+        for(DoctrineModelField field: EntityHelper.getModelFields(this.phpClass)) {
+            if(value.equals(field.getName())) {
+                psiElements.addAll(field.getTargets());
+            }
         }
 
-        psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(this.getElement().getProject(), "#M#C\\" + phpClass.getPresentableFQN() + ".get" + methodCamel);
-        if(psiElement != null) {
-            return psiElement;
+        // provide setter fallback for non model class or or unknown methods
+        String methodCamel = StringUtils.camelize(element.getContents());
+        Method method = PhpElementsUtil.getClassMethod(phpClass, "set" + methodCamel);
+        if(method != null) {
+            psiElements.add(method);
         }
 
-        psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(this.getElement().getProject(), "#M#C\\" + phpClass.getPresentableFQN() + "." + methodCamel);
-        if(psiElement != null) {
-            return psiElement;
-        }
-
-        psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(this.getElement().getProject(), "#M#C\\" + phpClass.getPresentableFQN() + "." + element.getContents());
-        if(psiElement != null) {
-            return psiElement;
-        }
-
-        return null;
+        return PsiElementResolveResult.createResults(psiElements);
     }
 
     @NotNull
@@ -62,33 +60,34 @@ public class FormUnderscoreMethodReference extends PsiReferenceBase<PsiElement> 
 
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
+        Set<String> strings = new HashSet<String>();
+        for(DoctrineModelField field: EntityHelper.getModelFields(this.phpClass)) {
+            addCamelUnderscoreName(strings, org.apache.commons.lang.StringUtils.trim(field.getName()));
+            lookupElements.add(new DoctrineModelFieldLookupElement(field).withBoldness(true));
+        }
+
+        // provide setter fallback for non model class or unknown methods
         for(Method method: this.phpClass.getMethods()) {
-            // @TODO: find symfony method filter
-            if(method.getName().startsWith("set")) {
-                lookupElements.add(new PhpUnderscoreMethodLookupElement(method));
+            String name = method.getName();
+            if(name.length() > 3 && name.startsWith("set")) {
+                name = name.substring(3);
+                if(!isCamelUnderscoreEqual(strings, name)) {
+                    // @TODO: should we really stay this underscore way?
+                    lookupElements.add(new PhpUnderscoreMethodLookupElement(method));
+                }
             }
         }
 
         return lookupElements.toArray();
     }
 
-    private String toCamelCase(String s) {
-        StringBuilder sb = new StringBuilder();
-        String[] x = s.replaceAll("[^A-Za-z]", " ").replaceAll("\\s+", " ")
-            .trim().split(" ");
-
-        for (int i = 0; i < x.length; i++) {
-            if (i == 0) {
-                x[i] = x[i].toLowerCase();
-            } else {
-                String r = x[i].substring(1);
-                x[i] = String.valueOf(x[i].charAt(0)).toUpperCase() + r;
-
-            }
-            sb.append(x[i]);
-        }
-        return sb.toString();
+    private boolean isCamelUnderscoreEqual(Set<String> strings, String string) {
+        return strings.contains(string) || strings.contains(StringUtils.camelize(string)) || strings.contains(StringUtils.underscore(string));
     }
 
+    private void addCamelUnderscoreName(Set<String> strings, String string) {
+        strings.add(StringUtils.camelize(string));
+        strings.add(StringUtils.underscore(string));
+    }
 
 }
