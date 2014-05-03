@@ -44,7 +44,7 @@ public class EntityHelper {
 
     final public static String[] ANNOTATION_FIELDS = new String[] {
         "\\Doctrine\\ORM\\Mapping\\Column",
-        "\\Doctrine\\ORM\\Mapping\\ManyToOne",
+        "\\Doctrine\\ORM\\Mapping\\OneToOne",
         "\\Doctrine\\ORM\\Mapping\\ManyToOne",
         "\\Doctrine\\ORM\\Mapping\\OneToMany",
         "\\Doctrine\\ORM\\Mapping\\ManyToMany",
