@@ -8,6 +8,7 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.CommonProcessors;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
@@ -16,6 +17,7 @@ import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
@@ -697,6 +699,50 @@ public class PhpElementsUtil {
     @Nullable
     public static MethodReferenceBag getMethodParameterReferenceBag(PsiElement psiElement) {
         return getMethodParameterReferenceBag(psiElement, -1);
+    }
+
+    public static List<Variable> getVariableReferencesInScope(final Variable variable, final boolean includeSelf) {
+
+        final List<Variable> variables = new ArrayList<Variable>();
+
+        Variable variableDecl = null;
+        if(!variable.isDeclaration()) {
+            PsiElement psiElement = variable.resolve();
+            if(psiElement instanceof Variable) {
+                variableDecl = (Variable) psiElement;
+            }
+        } else {
+            variableDecl = variable;
+        }
+
+        if(variableDecl == null) {
+            return variables;
+        }
+
+        Method method = PsiTreeUtil.getParentOfType(variable, Method.class);
+
+        PhpPsiUtil.hasReferencesInSearchScope(method.getUseScope(), variableDecl, new CommonProcessors.FindProcessor<PsiReference>() {
+            @Override
+            protected boolean accept(PsiReference psiReference) {
+
+                PsiElement variableRef = psiReference.getElement();
+                if (variableRef instanceof Variable) {
+                    if(includeSelf) {
+                        variables.add((Variable) variableRef);
+                    } else {
+                        if (!variableRef.equals(variable)) {
+                            variables.add((Variable) variableRef);
+                        }
+                    }
+
+                }
+
+                return false;
+            }
+        });
+
+        return variables;
+
     }
 
 }
