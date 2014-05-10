@@ -22,10 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class QueryBuilderCompletionContributor extends CompletionContributor {
 
@@ -202,11 +199,15 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
     }
 
     @Nullable
-    public static QueryBuilderMethodReferenceParser getQueryBuilderParser(MethodReference psiElement) {
-        QueryBuilderChainProcessor queryBuilderRecursiveProcessor = new QueryBuilderChainProcessor(psiElement);
-        final List<MethodReference> methodReferences = queryBuilderRecursiveProcessor.collectMethods();
+    public static QueryBuilderMethodReferenceParser getQueryBuilderParser(MethodReference methodReference) {
+        final QueryBuilderChainProcessor processor = new QueryBuilderChainProcessor(methodReference);
+        processor.collectMethods();
 
-        return new QueryBuilderMethodReferenceParser(psiElement.getProject(), methodReferences);
+        // @TODO: pipe factory method
+        return new QueryBuilderMethodReferenceParser(methodReference.getProject(), new ArrayList<MethodReference>() {{
+            addAll(processor.getQueryBuilderFactoryMethods());
+            addAll(processor.getQueryBuilderMethodReferences());
+        }});
 
     }
 

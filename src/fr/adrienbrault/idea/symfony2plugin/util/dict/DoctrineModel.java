@@ -6,19 +6,24 @@ import org.jetbrains.annotations.Nullable;
 public class DoctrineModel {
 
     private final PhpClass phpClass;
-    private final String doctrineNamespace;
+    private String doctrineNamespace;
     private final String doctrineShortcut;
 
-    public DoctrineModel(PhpClass phpClass, String doctrineShortcut, String doctrineNamespace) {
+    public DoctrineModel(PhpClass phpClass, String doctrineShortcut) {
         this.phpClass = phpClass;
-        this.doctrineNamespace = doctrineNamespace;
         this.doctrineShortcut = doctrineShortcut;
+    }
+
+    public DoctrineModel(PhpClass phpClass, String doctrineShortcut, String doctrineNamespace) {
+        this(phpClass, doctrineShortcut);
+        this.doctrineNamespace = doctrineNamespace;
     }
 
     public PhpClass getPhpClass() {
         return phpClass;
     }
 
+    @Nullable
     public String getDoctrineNamespace() {
         return doctrineNamespace;
     }

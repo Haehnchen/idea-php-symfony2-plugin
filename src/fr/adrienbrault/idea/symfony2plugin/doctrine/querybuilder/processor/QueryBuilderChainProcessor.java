@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,11 +18,14 @@ public class QueryBuilderChainProcessor {
     private static final String DOCTRINE_ORM_QUERY_BUILDER = "\\Doctrine\\ORM\\QueryBuilder";
     final private MethodReference startMethodRef;
 
+    private List<MethodReference> queryBuilderMethodReferences;
+    private List<MethodReference> queryBuilderFactoryMethods;
+
     public QueryBuilderChainProcessor(MethodReference psiElement) {
         this.startMethodRef = psiElement;
     }
 
-    public List<MethodReference> collectMethods() {
+    public void collectMethods() {
 
         // get chaining methods references after current one and reverse it; to get some right ordering
         List<MethodReference> methodReferences = getMethodReferencesAfter(startMethodRef);
@@ -32,7 +34,16 @@ public class QueryBuilderChainProcessor {
         List<MethodReference> factoryReferences = new ArrayList<MethodReference>();
         processUpChainingMethods(startMethodRef, methodReferences, factoryReferences, true);
 
-        return methodReferences;
+        this.queryBuilderMethodReferences = methodReferences;
+        this.queryBuilderFactoryMethods = factoryReferences;
+    }
+
+    public List<MethodReference> getQueryBuilderMethodReferences() {
+        return queryBuilderMethodReferences;
+    }
+
+    public List<MethodReference> getQueryBuilderFactoryMethods() {
+        return queryBuilderFactoryMethods;
     }
 
     /**
