@@ -454,6 +454,7 @@
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyAnnotationReferences"/>
         <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
+        <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationGotoHandler"/>
     </extensions>
 
     <project-components>

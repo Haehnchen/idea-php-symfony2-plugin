@@ -7,6 +7,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -82,6 +83,10 @@ public class TwigUtil {
 
     public static Map<String, PsiElement> getTemplateAnnotationFiles(PhpDocTag phpDocTag) {
 
+        // @TODO: @Template(template="templatename")
+        // Also replace "Matcher" with annotation psi elements; now possible
+        // Wait for "annotation plugin" update; to not implement whole stuff here again?
+
         // find template name on annotation parameter
         // @Template("templatename")
         PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
@@ -105,6 +110,24 @@ public class TwigUtil {
         return templateFiles;
     }
 
+    public static Map<String, PsiElement> getTemplateAnnotationFilesWithSiblingMethod(PhpDocTag phpDocTag) {
+        Map<String, PsiElement> targets = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
+
+        PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+        if(phpDocComment != null) {
+            PsiElement method = phpDocComment.getNextPsiSibling();
+            if(method instanceof Method) {
+                String templateName = TwigUtil.getControllerMethodShortcut((Method) method);
+                if(templateName != null) {
+                    for(PsiElement psiElement: TwigHelper.getTemplatePsiElements(method.getProject(), templateName)) {
+                        targets.put(templateName, psiElement);
+                    }
+                }
+            }
+        }
+
+        return targets;
+    }
 
     @Nullable
     public static String getTwigFileTransDefaultDomain(PsiFile psiFile) {
