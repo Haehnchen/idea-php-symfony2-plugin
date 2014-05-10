@@ -70,8 +70,17 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
      */
     private void attachTHashMapNullable(Map<String, String> source, Map<String, String> tHashMap) {
         for(Map.Entry<String, String> entry: source.entrySet()) {
-            if(entry.getKey() != null) {
-                tHashMap.put(entry.getKey(), entry.getValue());
+
+            // we can remove empty key check now? error is in "value" #238, #277
+            String key = entry.getKey();
+            if(key != null) {
+
+                // we are not allowed to save null values;
+                // but we can have them so provide empty value then
+                String value = entry.getValue();
+                if(value == null) value = "";
+
+                tHashMap.put(key, value);
             }
         }
     }
@@ -126,10 +135,13 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
 
             String value = this.myStringEnumerator.read(in);
 
-            // looks like EnumeratorStringDescriptor writes out "null" as string, so workaround here
-            if(value.equals("") || "null".equals(value)) {
-                value = null;
+            // EnumeratorStringDescriptor writes out "null" as string, so workaround here
+            if("null".equals(value)) {
+                value = "";
             }
+
+            // it looks like this is our "null keys not supported" #238, #277
+            // so dont force null values here
 
             return value;
         }
