@@ -467,6 +467,10 @@ public class EntityHelper {
 
     public static void attachAnnotationInformation(Field field, DoctrineModelField doctrineModelField) {
 
+        // we already have that without regular expression
+        // @TODO: de.espend.idea.php.annotation.util.AnnotationUtil.getPhpDocCommentAnnotationContainer()
+        // fully require plugin now?
+
         // get some more presentable completion information
         // dont resolve docblocks; just extract them from doc comment
         PhpDocComment docBlock = field.getDocComment();
