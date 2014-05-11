@@ -392,7 +392,7 @@
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
 
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
-        <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator"/>
+
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.PhpServiceAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationAnnotator"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
@@ -417,6 +417,16 @@
         <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
 
         <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>
+
+        <localInspection groupPath="Symfony2" shortName="Symfony2PhpRouteWeakInspection" displayName="Weak Route"
+                         groupName="Route"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteWeakInspection"/>
+
+        <localInspection groupPath="Symfony2" shortName="Symfony2PhpRouteMissingInspection" displayName="Route Missing"
+                         groupName="Route"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
