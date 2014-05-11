@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.54</version>
+    <version>0.10.55</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -91,6 +91,15 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.55</h2>
+<ul>
+    <li>Finally(?) fix NullPointerException on index values <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/277">#277</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
+    <li>Optimize Doctrine QueryBuilder chaining method collector to resolve methods and also fix some errors <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/278">#278</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/274">#274</a></li>
+    <li>Reimplementation of Twig @Template goto on PHP Annotations extension <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/276">#276</a></li>
+    <li>Migrate Route annotator to inspections <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/273">#273</a></li>
+    <li>Typo fix to support Doctrine OneToOne relations</li>
+</ul>
 
 <h2>0.10.54</h2>
 <ul>
@@ -221,97 +230,6 @@
     <li>Fix error on class name with trailing backslash on yaml annotator</li>
     <li>Migrate template references, to resolve #46 fully</li>
 </ul>
-
-<h2>0.10.40</h2>
-<ul>
-    <li>Add support for "Navigate > Related Files" (Ctrl+Alt+Home) inside controller action <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/191">#191</a></li>
-    <li>Rename plugin settings key to more unique name "Symfony2PluginSettings" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/209">#209</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/122">#122</a></li>
-    <li>Fix accidently removed UrlGeneratorInterface::generate and EntityManager::getReference</li>
-    <li>Fix npe and cme in container index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/207">#207</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/211">#211</a> (use "File > Invalidate Cache", if issue still occur)</li>
-</ul>
-
-<h2>0.10.39</h2>
-<ul>
-    <li>Add support of php shortcut methods for repository, route and service references <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/46">#46</a></li>
-    <li>Add blank filter for service stub indexes <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/207">#207</a></li>
-</ul>
-
-<h2>0.10.38</h2>
-<ul>
-    <li>Add parameter references for doctrine findOneBy/findBy, on yaml config</li>
-    <li>Add goto model config inside getRepository</li>
-    <li>Add type resolver for events name</li>
-    <li>Fix missing @ in yaml service builder</li>
-    <li>Fix npe in container index <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/206">#206</a></li>
-</ul>
-
-<h2>0.10.37</h2>
-<ul>
-    <li>Add Doctrine MongoDB repository resolver  <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/205">#205</a></li>
-    <li>Add autopopup for string completion values</li>
-    <li>Add support for more form methods  <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/162">#162</a></li>
-    <li>Add reference provider for form "options" keys <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/162">#162</a> limited by WI-21563</li>
-    <li>Add templates for yaml, xml service files and controller</li>
-    <li>Service builder is accessible inside project browser context menu of php files</li>
-    <li>Fix for missing vendor libs since phpstorm 7.1 <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/180">#180</a></li>
-</ul>
-
-<h2>0.10.36</h2>
-<ul>
-    <li>Rewrite of all container stuff, which completely based on index now; with massive performance improvements</li>
-    <li>Add service builder/generator for classes (beta) <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/77">#77</a></li>
-    <li>Add private service indexer <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/197">#197</a></li>
-    <li>Add service parameter indexer</li>
-    <li>Add twig variable completion for class interfaces</li>
-    <li>Add support for "PHP 5.5 class constant" in PhpTypeProvider, so Entity::class in getRepository is possible <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/193">#193</a></li>
-    <li>All PhpTypeProvider support references, not only string parameter</li>
-    <li>Use parameter/service index in ContainerBuilder context and mark them as "weak" service</li>
-    <li>Service LineMarker use service index and provide goto to definition</li>
-    <li>Internal workaround for interface with missing trailing backslash WI-21520</li>
-    <li>Fix symfony2.4 expressions detected as service <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/202">#202</a></li>
-    <li>Replace regular expression translation parser with plain psi collector, also allow multiple translation files #195</li>
-    <li>getRepository provides goto for entity and also repository <a href="https://github.com/haehnchen/idea-php-symfony2-plugin/issues/201">#201</a></li>
-</ul>
-
-<h2>0.10.35</h2>
-<ul>
-    <li>Add new method reference provider Parameter <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/196">#196</a></li>
-    <li>Add FormFactoryInterface::createForm option keys support</li>
-    <li>Add Symbol and File contributor "Navigate > Symbol / File" <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/189">#189</a></li>
-    <li>Support upcoming "Search Everywhere" of PhpStorm 7.1 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/189">#189</a></li>
-    <li>Support optional service reference syntax in yaml <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/194">#194</a></li>
-    <li>Support twig 1.15 "source" function <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/190">#190</a></li>
-    <li>Translation annotator check global translation file before fallback to yaml parser <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/195">#195</a></li>
-</ul>
-
-<h2>0.10.34</h2>
-<ul>
-    <li>Add popover line marker to controller method, showing related files like templates and routes</li>
-    <li>Add custom insert handle to not add double "@" on resource paths <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/185">#185</a></li>
-    <li>Add plain indexed services to container builder context in php, yml, xml <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/166">#166</a></li>
-    <li>Add more twig template name normalizer and fix npe <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/186">#186</a></li>
-    <li>Prevent add empty and testing service to index</li>
-    <li>Fix template annotations pattern are not compatible with phpstorm7 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/184">#184</a></li>
-    <li>Fix yaml parameter annotator warnings on concatenate strings <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/188">#188</a></li>
-    <li>Fix parameter case-sensitivity issues <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/179">#179</a></li>
-    <li>Move repository to <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin">Haehnchen/idea-php-symfony2-plugin</a></li>
-</ul>
-
-<h2>0.10.33</h2>
-<ul>
-    <li>Add reference provider for FormInterface::get/has</li>
-    <li>Add more twig template name normalizer <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/182">#182</a></li>
-    <li>Improve twig completion type lookup names</li>
-</ul>
-
-<h2>0.10.32</h2>
-<ul>
-    <li>Service container supports "field" elements eg properties and class constants <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/151">#151</a></li>
-    <li>Better template name detection on non common usage and performance improvements</li>
-    <li>Add new method references provider for translation key with possible domain filter <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/issues/155">#155</a></li>
-    <li>Implement "twig extends" indexer for upcoming features</li>
-</ul>
-
 
 <br/>
 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>

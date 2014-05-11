@@ -5,6 +5,13 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.55
+* Finally(?) fix NullPointerException on index values #277, #238
+* Optimize Doctrine QueryBuilder chaining method collector to resolve methods and also fix some errors #278, #274
+* Reimplementation of Twig @Template goto on PHP Annotations extension #276
+* Migrate Route annotator to inspections #273
+* Typo fix to support Doctrine OneToOne relations
+
 ### 0.10.54
 * Initial doctrine querybuilder support, see what is in doc
 * Improvements in doctrine field property parser
