@@ -1,84 +1,28 @@
-package fr.adrienbrault.idea.symfony2plugin.translation;
+package fr.adrienbrault.idea.symfony2plugin.translation.util;
 
-import com.intellij.codeInsight.intention.impl.BaseIntentionAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.IncorrectOperationException;
 import fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchForm;
-import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
-public class TranslationKeyIntentionAction extends BaseIntentionAction {
+public class TranslationInsertUtil {
 
-    protected YAMLFile yamlFile;
-    protected String keyName;
-
-    /**
-     *
-     * @param yamlFile Translation file as yaml
-     * @param keyName key name like "translation" or "translation.sub.name"
-     */
-    public TranslationKeyIntentionAction(YAMLFile yamlFile, String keyName) {
-        this.yamlFile = yamlFile;
-        this.keyName = keyName;
-    }
-
-    @NotNull
-    @Override
-    public String getText() {
-        String filename = yamlFile.getName();
-
-        // try to find suitable presentable filename
-        VirtualFile virtualFile = yamlFile.getVirtualFile();
-        if(virtualFile != null) {
-            filename = virtualFile.getPath();
-            String relativePath = VfsUtil.getRelativePath(virtualFile, yamlFile.getProject().getBaseDir(), '/');
-            if(relativePath != null) {
-                filename =  relativePath;
-            }
-        }
-
-        return "Create Translation Key: " + filename;
-    }
-
-    @NotNull
-    @Override
-    public String getFamilyName() {
-        return "Symfony2";
-    }
-
-    @Override
-    public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
-        return true;
-    }
-
-    @Override
-    public void invoke(@NotNull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
+    public static void invokeTranslation(final String keyName, final String translation, final PsiFile yamlFile, final boolean openFile) {
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
 
             @Override
             public void run() {
-                VirtualFile virtualFile = TranslationKeyIntentionAction.this.yamlFile.getVirtualFile();
-                if(virtualFile == null) {
-                    return;
-                }
 
                 PsiDocumentManager manager = PsiDocumentManager.getInstance(yamlFile.getProject());
                 Document document = manager.getDocument(yamlFile);
@@ -97,8 +41,8 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                 }
 
                 // search indent and EOL value
-                String indent = TranslationInsertUtil.findIndent(goToPsi.getYamlKeyValue());
-                String eol = TranslationInsertUtil.findEol(goToPsi.getYamlKeyValue());
+                String indent = findIndent(goToPsi.getYamlKeyValue());
+                String eol = findEol(goToPsi.getYamlKeyValue());
 
                 String currentIndentOffset = "";
                 PsiElement lastKnownPsiElement = goToPsi.getYamlKeyValue();
@@ -117,7 +61,7 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                     // on last key name we dont need new lines
                     if(goToPsi.getMissingKeys().length - 1 == i) {
                         // we are developer should other translate it
-                        insertString += currentKeyName + ": '" + keyName + "'";
+                        insertString += currentKeyName + ": '" + translation + "'";
                     } else {
                         insertString += currentKeyName + ":";
                     }
@@ -128,6 +72,10 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                 document.insertString(goToPsi.getYamlKeyValue().getTextRange().getEndOffset(), insertString);
                 manager.doPostponedOperationsAndUnblockDocument(document);
                 manager.commitDocument(document);
+
+                if(!openFile) {
+                    return;
+                }
 
                 // navigate to new psi element
                 // @TODO: jump into quote value
@@ -145,6 +93,51 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
 
             }
         });
+    }
+
+    public static String findIndent(PsiElement psiElement) {
+
+        YAMLKeyValue parentYamlKey = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+        if(parentYamlKey != null) {
+            return parentYamlKey.getValueIndent();
+        }
+
+        PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement element) {
+                return PlatformPatterns.psiElement(YAMLTokenTypes.INDENT).accepts(element);
+            }
+        });
+
+        if(indentPsiElements.length > 0) {
+            return indentPsiElements[0].getText();
+        }
+
+        // file without indent; how get default one?
+        return "    ";
+
+    }
+
+    public static String findEol(PsiElement psiElement) {
+
+        for(PsiElement child: YamlHelper.getChildrenFix(psiElement)) {
+            if(PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(child)) {
+                return child.getText();
+            }
+        }
+
+        PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement element) {
+                return PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(element);
+            }
+        });
+
+        if(indentPsiElements.length > 0) {
+            return indentPsiElements[0].getText();
+        }
+
+        return "\n";
     }
 
 }

@@ -397,6 +397,11 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
 
+        <action id="Symfony.TwigLanugage" class="fr.adrienbrault.idea.symfony2plugin.action.TwigExtractLanguageAction">
+            <add-to-group group-id="EditorPopupMenu"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+
         <group id="Symfony2Group" text="Symfony2" popup="true" icon="SymfonyIcons.Symfony">
             <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
             <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
