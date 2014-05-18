@@ -33,6 +33,16 @@ public class TranslationFileModel {
         return VfsUtil.getRelativePath(psiFile.getVirtualFile(), psiFile.getProject().getBaseDir(), '/');
     }
 
+    public String getDomain() {
+        String domainName = this.psiFile.getName();
+        int indexOfPoint = domainName.indexOf(".");
+        if(indexOfPoint > 0) {
+            domainName = domainName.substring(0, indexOfPoint);
+        }
+
+        return domainName;
+    }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

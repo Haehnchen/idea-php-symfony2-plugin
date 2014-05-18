@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TranslatorKeyExtractorDialog extends JDialog {
@@ -21,12 +22,21 @@ public class TranslatorKeyExtractorDialog extends JDialog {
     private JButton buttonCancel;
     private JTextField textTranslationKey;
     private JPanel panelTableView;
+    private JComboBox comboBox1;
+    private JCheckBox checkNavigateTo;
+
     private final ListTableModel<TranslationFileModel> listTableModel;
     private final OnOkCallback okCallback;
+    private final List<TranslationFileModel> translationFileModels;
 
-    public TranslatorKeyExtractorDialog(List<TranslationFileModel> translationFileModels, OnOkCallback okCallback) {
+    public TranslatorKeyExtractorDialog(List<TranslationFileModel> translationFileModels, Collection<String> domains, String defaultDomain, OnOkCallback okCallback) {
 
         this.okCallback = okCallback;
+        this.translationFileModels = translationFileModels;
+
+        for(String domain: domains) {
+            comboBox1.addItem(domain);
+        }
 
         setContentPane(contentPane);
         setModal(true);
@@ -41,6 +51,18 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
+            }
+        });
+
+        comboBox1.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    Object item = e.getItem();
+                    if(item instanceof String) {
+                        filterList((String) item);
+                    }
+                }
             }
         });
 
@@ -64,7 +86,8 @@ public class TranslatorKeyExtractorDialog extends JDialog {
             new BooleanColumn("Create")
         );
 
-        listTableModel.addRows(translationFileModels);
+        comboBox1.setSelectedItem(defaultDomain);
+        filterList(defaultDomain);
 
         TableView<TranslationFileModel> tableView = new TableView<TranslationFileModel>();
         tableView.setModelAndUpdateColumns(listTableModel);
@@ -76,6 +99,25 @@ public class TranslatorKeyExtractorDialog extends JDialog {
             .disableUpDownActions()
             .createPanel()
         );
+
+    }
+
+    private void filterList(String domainName) {
+
+        while(this.listTableModel.getRowCount() > 0) {
+            this.listTableModel.removeRow(0);
+        }
+
+        for(TranslationFileModel trans: translationFileModels) {
+            trans.setEnabled(false);
+            if(domainName.equals(trans.getDomain())) {
+                this.listTableModel.addRow(trans);
+            }
+        }
+
+        if(this.listTableModel.getRowCount() == 1) {
+            ((TranslationFileModel) this.listTableModel.getItem(0)).setEnabled(true);
+        }
 
     }
 
@@ -91,7 +133,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
             }
 
             if(psiFiles.size() > 0) {
-                okCallback.onClick(psiFiles, text);
+                okCallback.onClick(psiFiles, text, (String) comboBox1.getSelectedItem(), checkNavigateTo.isSelected());
                 dispose();
                 return;
             }
@@ -180,7 +222,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
 
     public static interface OnOkCallback {
-        public void onClick(List<TranslationFileModel> files, String keyName);
+        public void onClick(List<TranslationFileModel> files, String keyName, String domain, boolean navigateTo);
     }
 
 }

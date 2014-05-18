@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -12,18 +13,31 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.search.PsiElementProcessor;
+import com.intellij.psi.templateLanguages.OuterLanguageElementImpl;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiElementFilter;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTokenType;
+import com.intellij.util.containers.OrderedSet;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.action.comparator.PsiWeightListComparator;
 import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtractorDialog;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.*;
@@ -79,6 +93,23 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         event.getPresentation().setEnabled(status);
     }
 
+    public static class ValueComparator implements Comparator<String> {
+
+        Map<String, Integer> base;
+
+        public ValueComparator(Map<String, Integer> base) {
+            this.base = base;
+        }
+
+        public int compare(String a, String b) {
+            if (base.get(a) >= base.get(b)) {
+                return -1;
+            } else {
+                return 1;
+            } // returning 0 would merge keys
+        }
+    }
+
     public void actionPerformed(AnActionEvent event) {
 
         final Editor editor = event.getData(PlatformDataKeys.EDITOR);
@@ -127,43 +158,88 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             psiFilesSorted.add(psiWeightList);
         }
 
+        final Set<String> domainNames = new TreeSet<String>();
+        for(LookupElement lookupElement: TranslationUtil.getTranslationDomainLookupElements(psiElement.getProject())) {
+            domainNames.add(lookupElement.getLookupString());
+        }
+
         Collections.sort(psiFilesSorted, new PsiWeightListComparator());
 
-        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiFilesSorted, new TranslatorKeyExtractorDialog.OnOkCallback() {
+        String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain(psiElement.getContainingFile());
+        if(defaultDomain == null) {
+            defaultDomain = "messages";
+        }
+
+        final Map<String,Integer> found = new HashMap<String, Integer>();
+        PsiTreeUtil.collectElements((TwigFile) psiFile, new PsiElementFilter() {
             @Override
-            public void onClick(List<TranslationFileModel> files, final String keyName) {
+            public boolean isAccepted(PsiElement psiElement) {
+
+                if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+                    PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+                    if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+                        String text = psiElement.getText();
+                        if(StringUtils.isNotBlank(text) && domainNames.contains(text)) {
+                            if(found.containsKey(text)) {
+                                found.put(text, found.get(text) + 1);
+                            } else {
+                                found.put(text, 1);
+                            }
+                        }
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        ValueComparator vc =  new ValueComparator(found);
+        TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(vc);
+        sortedMap.putAll(found);
+
+        String nextDomain = "messages";
+        if(sortedMap.size() > 0) {
+            nextDomain = sortedMap.firstKey();
+        }
+
+        final String finalDefaultDomain = defaultDomain;
+        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiFilesSorted, domainNames, nextDomain, new TranslatorKeyExtractorDialog.OnOkCallback() {
+            @Override
+            public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
 
                 PsiDocumentManager.getInstance(psiElement.getProject()).doPostponedOperationsAndUnblockDocument(editor.getDocument());
                 final TextRange range = psiElement.getTextRange();
 
-                String domainName = files.get(0).getPsiFile().getName();
-                int indexOfPoint = domainName.indexOf(".");
-                if(indexOfPoint > 0) {
-                    domainName = domainName.substring(0, indexOfPoint);
-                }
-
-                final String finalDomainName = domainName;
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     @Override
                     public void run() {
-                        editor.getDocument().replaceString(range.getStartOffset(), range.getEndOffset(), String.format("{{ '%s'|trans({}, '%s') }}", keyName, finalDomainName));
+                        String insertString;
+
+                        // check for file context domain
+                        if(finalDefaultDomain.equals(domain)) {
+                            insertString = String.format("{{ '%s'|trans }}", keyName);
+                        } else {
+                            insertString = String.format("{{ '%s'|trans({}, '%s') }}", keyName, domain);
+                        }
+
+                        editor.getDocument().replaceString(range.getStartOffset(), range.getEndOffset(), insertString);
                         editor.getCaretModel().moveToOffset(range.getStartOffset());
                     }
                 });
 
                 for(TranslationFileModel transPsiFile: files) {
-                    TranslationInsertUtil.invokeTranslation(keyName, translationText, transPsiFile.getPsiFile(), false);
+                    TranslationInsertUtil.invokeTranslation(keyName, translationText, transPsiFile.getPsiFile(), navigateTo);
+                    navigateTo = false;
                 }
 
             }
         });
 
-        extractorDialog.setTitle("Extract Key");
-        extractorDialog.setMinimumSize(new Dimension(600, 300));
+        extractorDialog.setTitle("Symfony2: Extract Translation Key");
+        extractorDialog.setMinimumSize(new Dimension(600, 200));
         extractorDialog.pack();
         extractorDialog.setLocationRelativeTo(null);
         extractorDialog.setVisible(true);
-
 
     }
 
