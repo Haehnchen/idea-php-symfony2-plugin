@@ -1,18 +1,27 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.form;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.action.comparator.PsiWeightListComparator;
 import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
+import fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class TranslatorKeyExtractorDialog extends JDialog {
@@ -27,12 +36,15 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
     private final ListTableModel<TranslationFileModel> listTableModel;
     private final OnOkCallback okCallback;
-    private final List<TranslationFileModel> translationFileModels;
 
-    public TranslatorKeyExtractorDialog(List<TranslationFileModel> translationFileModels, Collection<String> domains, String defaultDomain, OnOkCallback okCallback) {
+    private final Project project;
+    private final PsiFile fileContext;
 
+    public TranslatorKeyExtractorDialog(Project project, PsiFile fileContext, Collection<String> domains, String defaultDomain, OnOkCallback okCallback) {
+
+        this.project = project;
+        this.fileContext = fileContext;
         this.okCallback = okCallback;
-        this.translationFileModels = translationFileModels;
 
         for(String domain: domains) {
             comboBox1.addItem(domain);
@@ -81,6 +93,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
 
         listTableModel = new ListTableModel<TranslationFileModel>(
+            new IconColumn(),
             new PathNameColumn(),
             new FileNameColumn(),
             new BooleanColumn("Create")
@@ -104,17 +117,14 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
     private void filterList(String domainName) {
 
+        // clear list no all*() method?
         while(this.listTableModel.getRowCount() > 0) {
             this.listTableModel.removeRow(0);
         }
 
-        for(TranslationFileModel trans: translationFileModels) {
-            trans.setEnabled(false);
-            if(domainName.equals(trans.getDomain())) {
-                this.listTableModel.addRow(trans);
-            }
-        }
+        this.listTableModel.addRows(this.getFormattedFileModelList(TranslationUtil.getDomainPsiFiles(this.project, domainName)));
 
+        // only one domain; fine preselect it
         if(this.listTableModel.getRowCount() == 1) {
             ((TranslationFileModel) this.listTableModel.getItem(0)).setEnabled(true);
         }
@@ -218,6 +228,64 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         public int getWidth(JTable table) {
             return 50;
         }
+    }
+
+    private class IconColumn extends ColumnInfo<TranslationFileModel, Icon> {
+
+        public IconColumn() {
+            super("");
+        }
+
+        @Nullable
+        @Override
+        public Icon valueOf(TranslationFileModel modelParameter) {
+
+            if(modelParameter.isBoldness()) {
+                return Symfony2Icons.SYMFONY;
+            }
+
+            return modelParameter.getPsiFile().getIcon(0);
+        }
+
+        public java.lang.Class getColumnClass() {
+            return ImageIcon.class;
+        }
+
+        @Override
+        public int getWidth(JTable table) {
+            return 32;
+        }
+
+    }
+
+    private List<TranslationFileModel> getFormattedFileModelList(List<PsiFile> psiFiles) {
+
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(this.project);
+        final SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(fileContext);
+
+        List<TranslationFileModel> psiFilesSorted = new ArrayList<TranslationFileModel>();
+        for(PsiFile psiFile: psiFiles) {
+            TranslationFileModel psiWeightList = new TranslationFileModel(psiFile);
+
+            if(symfonyBundle != null && symfonyBundle.isInBundle(psiFile)) {
+                psiWeightList.setSymfonyBundle(symfonyBundle);
+                psiWeightList.setBoldness(true);
+                psiWeightList.addWeight(2);
+            } else {
+                psiWeightList.setSymfonyBundle(symfonyBundleUtil.getContainingBundle(psiFile));
+            }
+
+            String relativePath = psiWeightList.getRelativePath();
+            if(relativePath != null && (relativePath.startsWith("src") || relativePath.startsWith("app"))) {
+                psiWeightList.addWeight(1);
+            }
+
+            psiFilesSorted.add(psiWeightList);
+        }
+
+        Collections.sort(psiFilesSorted, new PsiWeightListComparator());
+
+        return psiFilesSorted;
     }
 
 

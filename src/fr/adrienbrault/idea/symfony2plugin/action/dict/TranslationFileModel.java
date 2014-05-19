@@ -11,6 +11,7 @@ public class TranslationFileModel {
     private int weight = 0;
     private boolean enabled = false;
     private SymfonyBundle symfonyBundle;
+    private boolean boldness = false;
 
     public TranslationFileModel(PsiFile psiFile) {
         this.psiFile = psiFile;
@@ -59,5 +60,15 @@ public class TranslationFileModel {
     public void setSymfonyBundle(@Nullable SymfonyBundle symfonyBundle) {
         this.symfonyBundle = symfonyBundle;
     }
+
+    public TranslationFileModel setBoldness(boolean bold) {
+        this.boldness = bold;
+        return this;
+    }
+
+    public boolean isBoldness() {
+        return boldness;
+    }
+
 
 }

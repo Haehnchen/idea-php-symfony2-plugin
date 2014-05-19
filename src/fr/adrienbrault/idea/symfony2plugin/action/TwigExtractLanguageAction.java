@@ -13,31 +13,23 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.intellij.psi.search.PsiElementProcessor;
-import com.intellij.psi.templateLanguages.OuterLanguageElementImpl;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTokenType;
-import com.intellij.util.containers.OrderedSet;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
-import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.action.comparator.PsiWeightListComparator;
+import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
 import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtractorDialog;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.*;
@@ -93,23 +85,6 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         event.getPresentation().setEnabled(status);
     }
 
-    public static class ValueComparator implements Comparator<String> {
-
-        Map<String, Integer> base;
-
-        public ValueComparator(Map<String, Integer> base) {
-            this.base = base;
-        }
-
-        public int compare(String a, String b) {
-            if (base.get(a) >= base.get(b)) {
-                return -1;
-            } else {
-                return 1;
-            } // returning 0 would merge keys
-        }
-    }
-
     public void actionPerformed(AnActionEvent event) {
 
         final Editor editor = event.getData(PlatformDataKeys.EDITOR);
@@ -133,29 +108,8 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         }
 
         final String translationText = psiElement.getText();
-
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(psiElement.getProject());
-        final SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(psiElement.getContainingFile());
-
-        final List<PsiFile> psiFiles = TranslationUtil.getAllTranslationFiles(psiElement.getProject());
-
-        final List<TranslationFileModel> psiFilesSorted = new ArrayList<TranslationFileModel>();
-        for(PsiFile psiFile1: psiFiles) {
-            TranslationFileModel psiWeightList = new TranslationFileModel(psiFile1);
-
-            if(symfonyBundle != null && symfonyBundle.isInBundle(psiFile1)) {
-                psiWeightList.setSymfonyBundle(symfonyBundle);
-                psiWeightList.addWeight(2);
-            } else {
-                psiWeightList.setSymfonyBundle(symfonyBundleUtil.getContainingBundle(psiFile1));
-            }
-
-            String relativePath = psiWeightList.getRelativePath();
-            if(relativePath != null && (relativePath.startsWith("src") || relativePath.startsWith("app"))) {
-                psiWeightList.addWeight(1);
-            }
-
-            psiFilesSorted.add(psiWeightList);
+        if(StringUtils.isBlank(translationText)) {
+            return;
         }
 
         final Set<String> domainNames = new TreeSet<String>();
@@ -163,47 +117,23 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             domainNames.add(lookupElement.getLookupString());
         }
 
-        Collections.sort(psiFilesSorted, new PsiWeightListComparator());
-
+        // get default domain on twig tag
+        // also pipe it to insert handler; to append it as parameter
         String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain(psiElement.getContainingFile());
         if(defaultDomain == null) {
             defaultDomain = "messages";
         }
 
-        final Map<String,Integer> found = new HashMap<String, Integer>();
-        PsiTreeUtil.collectElements((TwigFile) psiFile, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
+        TreeMap<String, Integer> sortedMap = getPossibleDomainTreeMap((TwigFile) psiFile, domainNames);
 
-                if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
-                    PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
-                    if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-                        String text = psiElement.getText();
-                        if(StringUtils.isNotBlank(text) && domainNames.contains(text)) {
-                            if(found.containsKey(text)) {
-                                found.put(text, found.get(text) + 1);
-                            } else {
-                                found.put(text, 1);
-                            }
-                        }
-                    }
-                }
-
-                return false;
-            }
-        });
-
-        ValueComparator vc =  new ValueComparator(found);
-        TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(vc);
-        sortedMap.putAll(found);
-
-        String nextDomain = "messages";
+        // we want to have mostly used domain preselected
+        String reselectedDomain = defaultDomain;
         if(sortedMap.size() > 0) {
-            nextDomain = sortedMap.firstKey();
+            reselectedDomain = sortedMap.firstKey();
         }
 
         final String finalDefaultDomain = defaultDomain;
-        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiFilesSorted, domainNames, nextDomain, new TranslatorKeyExtractorDialog.OnOkCallback() {
+        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiElement.getProject(), (PsiFile) psiFile, domainNames, reselectedDomain, new TranslatorKeyExtractorDialog.OnOkCallback() {
             @Override
             public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
 
@@ -227,6 +157,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
                     }
                 });
 
+                // so finally insert it; first file can be a navigation target
                 for(TranslationFileModel transPsiFile: files) {
                     TranslationInsertUtil.invokeTranslation(keyName, translationText, transPsiFile.getPsiFile(), navigateTo);
                     navigateTo = false;
@@ -241,6 +172,41 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         extractorDialog.setLocationRelativeTo(null);
         extractorDialog.setVisible(true);
 
+    }
+
+    private TreeMap<String, Integer> getPossibleDomainTreeMap(TwigFile psiFile, final Set<String> domainNames) {
+
+        final Map<String, Integer> found = new HashMap<String, Integer>();
+
+        // visit every trans or transchoice to get possible domain names
+        PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement psiElement) {
+
+                if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+                    PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+                    if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+                        String text = psiElement.getText();
+                        if (StringUtils.isNotBlank(text) && domainNames.contains(text)) {
+                            if (found.containsKey(text)) {
+                                found.put(text, found.get(text) + 1);
+                            } else {
+                                found.put(text, 1);
+                            }
+                        }
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        // sort in found integer value
+        ValueComparator vc =  new ValueComparator(found);
+        TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(vc);
+        sortedMap.putAll(found);
+
+        return sortedMap;
     }
 
 }
