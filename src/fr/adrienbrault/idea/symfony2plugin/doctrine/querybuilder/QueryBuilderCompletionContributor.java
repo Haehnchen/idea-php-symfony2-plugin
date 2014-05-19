@@ -33,6 +33,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin"),
     };
 
+    private static MethodMatcher.CallToSignature[] WHERES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "where"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "andWhere"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "orWhere"),
+    };
+
     public QueryBuilderCompletionContributor() {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
@@ -124,29 +130,46 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderScopeContext collect = qb.collect();
-                for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+                buildLookupElements(completionResultSet, collect);
 
-                    LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey());
-                    lookup = lookup.withIcon(Symfony2Icons.DOCTRINE);
-                    if(entry.getValue().getField() != null) {
-                        lookup = lookup.withTypeText(entry.getValue().getField().getTypeName(), true);
+            }
 
-                        if(entry.getValue().getField().getRelationType() != null) {
-                            lookup = lookup.withTailText(entry.getValue().getField().getRelationType(), true);
-                            lookup = lookup.withTypeText(entry.getValue().getField().getRelation(), true);
-                            lookup = lookup.withIcon(PhpIcons.CLASS_ICON);
-                        }
+        });
 
-                    }
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
-                    // highlight fields which are possible in select statement
-                    if(collect.getSelects().contains(entry.getValue().getAlias())) {
-                        lookup = lookup.withBoldness(true);
-                    }
-
-                    completionResultSet.addElement(lookup);
-
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if(psiElement == null) {
+                    return;
                 }
+
+                // querybuilder parser is too slow longer values, and that dont make sense here at all
+                // user can fire a manual completion event, when needed...
+                if(completionParameters.isAutoPopup()) {
+                    if(psiElement instanceof StringLiteralExpression) {
+                        if(((StringLiteralExpression) psiElement).getContents().length() > 5) {
+                            return;
+                        }
+                    }
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
+                    .withSignature(WHERES)
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                if(qb == null) {
+                    return;
+                }
+
+                QueryBuilderScopeContext collect = qb.collect();
+                buildLookupElements(completionResultSet, collect);
 
             }
 
@@ -196,6 +219,32 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         });
 
+    }
+
+    private void buildLookupElements(CompletionResultSet completionResultSet, QueryBuilderScopeContext collect) {
+        for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+
+            LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey());
+            lookup = lookup.withIcon(Symfony2Icons.DOCTRINE);
+            if(entry.getValue().getField() != null) {
+                lookup = lookup.withTypeText(entry.getValue().getField().getTypeName(), true);
+
+                if(entry.getValue().getField().getRelationType() != null) {
+                    lookup = lookup.withTailText(entry.getValue().getField().getRelationType(), true);
+                    lookup = lookup.withTypeText(entry.getValue().getField().getRelation(), true);
+                    lookup = lookup.withIcon(PhpIcons.CLASS_ICON);
+                }
+
+            }
+
+            // highlight fields which are possible in select statement
+            if(collect.getSelects().contains(entry.getValue().getAlias())) {
+                lookup = lookup.withBoldness(true);
+            }
+
+            completionResultSet.addElement(lookup);
+
+        }
     }
 
     @Nullable
