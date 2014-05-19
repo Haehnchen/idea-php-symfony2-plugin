@@ -132,8 +132,13 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             reselectedDomain = sortedMap.firstKey();
         }
 
+        String defaultKey = null;
+        if(translationText.length() < 15) {
+            defaultKey = translationText.toLowerCase().replace(" ", ".");
+        }
+
         final String finalDefaultDomain = defaultDomain;
-        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiElement.getProject(), (PsiFile) psiFile, domainNames, reselectedDomain, new TranslatorKeyExtractorDialog.OnOkCallback() {
+        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiElement.getProject(), (PsiFile) psiFile, domainNames, defaultKey, reselectedDomain, new TranslatorKeyExtractorDialog.OnOkCallback() {
             @Override
             public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
 

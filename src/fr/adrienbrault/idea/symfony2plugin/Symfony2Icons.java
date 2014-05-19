@@ -26,6 +26,7 @@ public class Symfony2Icons {
     public static final Icon FORM_EXTENSION = IconLoader.getIcon("icons/form_extension.png");
     public static final Icon SERVICE_TAG = IconLoader.getIcon("icons/service_tag.png");
     public static final Icon EVENT = IconLoader.getIcon("icons/event.png");
+    public static final Icon BUNDLE = IconLoader.getIcon("icons/bundle.png");
 
     public static final Icon SERVICE_PRIVATE_OPACITY = IconLoader.getIcon("icons/service_private_opacity.png");
 

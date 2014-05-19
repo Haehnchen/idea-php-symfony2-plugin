@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -40,7 +41,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
     private final Project project;
     private final PsiFile fileContext;
 
-    public TranslatorKeyExtractorDialog(Project project, PsiFile fileContext, Collection<String> domains, String defaultDomain, OnOkCallback okCallback) {
+    public TranslatorKeyExtractorDialog(@NotNull Project project, @NotNull PsiFile fileContext, @NotNull Collection<String> domains, @Nullable String defaultKey, @NotNull String defaultDomain, @NotNull OnOkCallback okCallback) {
 
         this.project = project;
         this.fileContext = fileContext;
@@ -48,6 +49,10 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
         for(String domain: domains) {
             comboBox1.addItem(domain);
+        }
+
+        if(defaultKey != null) {
+            textTranslationKey.setText(defaultKey);
         }
 
         setContentPane(contentPane);
@@ -241,7 +246,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         public Icon valueOf(TranslationFileModel modelParameter) {
 
             if(modelParameter.isBoldness()) {
-                return Symfony2Icons.SYMFONY;
+                return Symfony2Icons.BUNDLE;
             }
 
             return modelParameter.getPsiFile().getIcon(0);
