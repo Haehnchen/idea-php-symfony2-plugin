@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.56
+* Add twig translation extraction action #213
+* Fix data_class in form types should autocomplete any class #280
+* Add completion for QueryBuilder:(*)where
+
 ### 0.10.55
 * Finally(?) fix NullPointerException on index values #277, #238
 * Optimize Doctrine QueryBuilder chaining method collector to resolve methods and also fix some errors #278, #274

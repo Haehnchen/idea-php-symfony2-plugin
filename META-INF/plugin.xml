@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.55</version>
+    <version>0.10.56</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -21,56 +21,56 @@
 
 <h3>Dependency Injection Container</h3>
 <ul>
-    <li>Autocomplete service id in ContainerInterface::get() calls</li>
-    <li>Clickable service id in ContainerInterface::get() first argument</li>
-    <li>Detect ContainerInterface::get() result type and thus provide autocomplete</li>
-    <li>Autocomplete and click to go to, service ids inside services.yml/xml</li>
-    <li>Click to go services class inside services.xml</li>
-    <li>Autocomplete container parameters in php/xml/yaml</li>
-    <li>Autocomplete class and parameters</li>
+    <li>References for services in ContainerInterface::get()</li>
+    <li>Detect ContainerInterface::get() result type</li>
+    <li>References for services, tags, events, methods, ... inside yaml, xml and php</li>
+    <li>Indexer to provide live editing without a compiled container</li>
 </ul>
 
 <h3>Doctrine</h3>
 <ul>
-    <li>Autocomplete ORM\XXX annotations and properties</li>
-    <li>Autocomplete some key and values inside doctrine .orm.yml configurations</li>
-    <li>Autocomplete doctrine getRepository argument</li>
-    <li>Go to entity class on getRepository argument</li>
-    <li>Detect getRepository() result type</li>
-    <li>Detect EntityRepository::find/findOneBy/findAll/findBy result type</li>
+    <li>ORM QueryBuilder support, including chaining and nested methods</li>
+    <li>References and TypeProvider for doctrine getRepository</li>
+    <li>TypeProvider for EntityRepository::find/findOneBy/findAll/findBy</li>
+    <li>Field and relations resolving and annotation and yaml</li>
 </ul>
 
-<h3>Templates/twig</h3>
+<h3>Templates/Twig</h3>
 <ul>
-    <li>Autocomplete template name in render() calls</li>
-    <li>Clickable template name in render() calls</li>
-    <li>Autocomplete template name in twig templates</li>
-    <li>Clickable template name in twig templates</li>
-    <li>Autocomplete assets in twig asset()/{% javascript/{% stylesheets</li>
-    <li>Go to assets file in twig asset()/{% javascript/{% stylesheets</li>
-    <li>Autocomplete twig files in @Template annotations</li>
-    <li>Go to twig file on @Template annotation</li>
-    <li>Autocomplete for translation in trans</li>
-    <li>Action for @Template</li>
-    <li>Autocomplete and go to for block tag</li>
-    <li>Variable resolve on php types with scope, providers and doc block support</li>
+    <li>Template names in all file references</li>
+    <li>Provide Template implements and extends goto on linemarker </li>
+    <li>Assets file references like javascript, stylesheets and more</li>
+    <li>Support @Template annotations</li>
+    <li>Trans and transchoice support with annotator, quickquick and translation extraction action</li>
+    <li>References for block names (completion back since PhpStorm8)</li>
+    <li>Variable TypeProvider similar to php with several scopes and providers like doc block and controller actions</li>
+    <li>Macro implements goto on linemarker</li>
+    <li>Filter, Function, Macro and Extension support</li>
 </ul>
 
+<h3>Forms</h3>
+<ul>
+    <li>References for form types</li>
+    <li>Form field name references on data_class</li>
+    <li>References for form options, extension, ...</li>
+</ul>
 
 <h3>Routing</h3>
 <ul>
-    <li>Autocomplete route name in UrlGenerator::generate() calls</li>
+    <li>References for UrlGenerator::generate() related calls</li>
     <li>Autocomplete route name in twig templates</li>
     <li>Go to for routing name methods</li>
+    <li>CodeFolding to display real route uri instead of its name</li>
+    <li>Route parameter completion</li>
 </ul>
 
 <h3>Other</h3>
 <ul>
-    <li>Autocomplete and go to for translation in trans twig and translate php</li>
-    <li>FormTypes in FormBuilder</li>
-    <li>PHP Class Autocomplete in yaml and xml</li>
-    <li>Some basic Annotation support</li>
     <li>Annotator which notice unknown route, template, service, assets, ...</li>
+    <li>Several stub indexer to provide some live generation provider in replacement for compiled container</li>
+    <li>Linemarker and "Related File" to provide possible goto targets and controller action</li>
+    <li>Search Everywhere support and custom search for only Symfony2 related Symbols "Navigate > Symfony2 Symbol"</li>
+    <li>Bridge for <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a> to support annotation related stuff</li>
 </ul>
 
 <h2>Related Plugins</h2>
@@ -91,6 +91,13 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.56</h2>
+<ul>
+    <li>Add twig <a href="http://symfony2-plugin.espend.de/actions/index.html#translation-extractor">translation extraction action</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/213">#213</a></li>
+    <li>Fix data_class in form types should autocomplete any class <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/280">#280</a></li>
+    <li>Add completion for QueryBuilder:(*)where</li>
+</ul>
 
 <h2>0.10.55</h2>
 <ul>
