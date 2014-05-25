@@ -44,5 +44,6 @@ public class Symfony2Icons {
 
     public static final Icon CONFIG_PROTOTYPE = IconLoader.getIcon("icons/config_prototype.png");
     public static final Icon CONFIG_VALUE = IconLoader.getIcon("icons/config_value.png");
+    public static final Icon CONFIG_VALUE_SHORTCUT = IconLoader.getIcon("icons/config_value_shortcut.png");
 }
 

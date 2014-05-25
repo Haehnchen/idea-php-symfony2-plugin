@@ -87,13 +87,32 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             return;
         }
 
+        getConfigPathLookupElements(completionResultSet, configNode, false);
+
+        // map shortcuts like eg <dbal default-connection="">
+        if(configNode instanceof Element) {
+            NamedNodeMap attributes = configNode.getAttributes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                String attributeName = attributes.item(i).getNodeName();
+                if(attributeName.startsWith("default-")) {
+                    Node defaultNode = getElementByTagNameWithUnPluralize((Element) configNode, attributeName.substring("default-".length()));
+                    if(defaultNode != null) {
+                        getConfigPathLookupElements(completionResultSet, defaultNode, true);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void getConfigPathLookupElements(CompletionResultSet completionResultSet, Node configNode, boolean isShortcut) {
 
         // get config on node attributes
         NamedNodeMap attributes = configNode.getAttributes();
         if(attributes.getLength() > 0) {
             Map<String, String> nodeDocVars = getNodeCommentVars(configNode);
             for (int i = 0; i < attributes.getLength(); i++) {
-                completionResultSet.addElement(getNodeAttributeLookupElement(attributes.item(i), nodeDocVars));
+                completionResultSet.addElement(getNodeAttributeLookupElement(attributes.item(i), nodeDocVars, isShortcut));
             }
         }
 
@@ -103,7 +122,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
             NodeList nodeList1 = ((Element) configNode).getElementsByTagName("*");
             for (int i = 0; i < nodeList1.getLength(); i++) {
-                LookupElementBuilder nodeTagLookupElement = getNodeTagLookupElement(nodeList1.item(i));
+                LookupElementBuilder nodeTagLookupElement = getNodeTagLookupElement(nodeList1.item(i), isShortcut);
                 if(nodeTagLookupElement != null) {
                     completionResultSet.addElement(nodeTagLookupElement);
                 }
@@ -114,7 +133,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
     }
 
-    private LookupElementBuilder getNodeAttributeLookupElement(Node node, Map<String, String> nodeVars) {
+    private LookupElementBuilder getNodeAttributeLookupElement(Node node, Map<String, String> nodeVars, boolean isShortcut) {
 
         String nodeName = getNodeName(node);
         LookupElementBuilder lookupElementBuilder = LookupElementBuilder.create(nodeName).withIcon(Symfony2Icons.CONFIG_VALUE);
@@ -128,11 +147,15 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             lookupElementBuilder = lookupElementBuilder.withTypeText(StringUtil.shortenTextWithEllipsis(nodeVars.get(nodeName), 100, 0), true);
         }
 
+        if(isShortcut) {
+            lookupElementBuilder = lookupElementBuilder.withIcon(Symfony2Icons.CONFIG_VALUE_SHORTCUT);
+        }
+
         return lookupElementBuilder;
     }
 
     @Nullable
-    private LookupElementBuilder getNodeTagLookupElement(Node node) {
+    private LookupElementBuilder getNodeTagLookupElement(Node node, boolean isShortcut) {
 
         String nodeName = getNodeName(node);
         boolean prototype = isPrototype(node);
@@ -146,6 +169,10 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
         if(prototype) {
             lookupElementBuilder = lookupElementBuilder.withTypeText("Prototype", true);
+        }
+
+        if(isShortcut) {
+            lookupElementBuilder = lookupElementBuilder.withIcon(Symfony2Icons.CONFIG_VALUE_SHORTCUT);
         }
 
         return lookupElementBuilder;
