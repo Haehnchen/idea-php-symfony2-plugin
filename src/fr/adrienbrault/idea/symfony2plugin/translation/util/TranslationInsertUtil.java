@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.util;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.Result;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
@@ -24,8 +26,8 @@ public class TranslationInsertUtil {
             @Override
             public void run() {
 
-                PsiDocumentManager manager = PsiDocumentManager.getInstance(yamlFile.getProject());
-                Document document = manager.getDocument(yamlFile);
+                final PsiDocumentManager manager = PsiDocumentManager.getInstance(yamlFile.getProject());
+                final Document document = manager.getDocument(yamlFile);
                 if (document != null) {
                     manager.commitDocument(document);
                 }
@@ -69,9 +71,22 @@ public class TranslationInsertUtil {
 
 
                 // @TODO: check is last array line on contains eol and indent and move above this line
-                document.insertString(goToPsi.getYamlKeyValue().getTextRange().getEndOffset(), insertString);
-                manager.doPostponedOperationsAndUnblockDocument(document);
-                manager.commitDocument(document);
+
+                final String finalInsertString = insertString;
+                new WriteCommandAction(yamlFile.getProject()) {
+                    @Override
+                    protected void run(Result result) throws Throwable {
+                        document.insertString(goToPsi.getYamlKeyValue().getTextRange().getEndOffset(), finalInsertString);
+                        manager.doPostponedOperationsAndUnblockDocument(document);
+                        manager.commitDocument(document);
+                    }
+
+                    @Override
+                    public String getGroupID() {
+                        return "Translation Extraction";
+                    }
+                }.execute();
+
 
                 if(!openFile) {
                     return;

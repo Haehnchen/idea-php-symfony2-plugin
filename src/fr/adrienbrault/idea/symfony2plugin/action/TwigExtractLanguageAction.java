@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.Result;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
@@ -145,9 +147,9 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
                 PsiDocumentManager.getInstance(psiElement.getProject()).doPostponedOperationsAndUnblockDocument(editor.getDocument());
                 final TextRange range = psiElement.getTextRange();
 
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                new WriteCommandAction(psiElement.getProject()) {
                     @Override
-                    public void run() {
+                    protected void run(Result result) throws Throwable {
                         String insertString;
 
                         // check for file context domain
@@ -160,7 +162,12 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
                         editor.getDocument().replaceString(range.getStartOffset(), range.getEndOffset(), insertString);
                         editor.getCaretModel().moveToOffset(range.getStartOffset());
                     }
-                });
+
+                    @Override
+                    public String getGroupID() {
+                        return "Translation Extraction";
+                    }
+                }.execute();
 
                 // so finally insert it; first file can be a navigation target
                 for(TranslationFileModel transPsiFile: files) {
