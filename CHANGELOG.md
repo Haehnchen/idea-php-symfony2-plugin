@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.57
+* Add yaml key completion for config / security files on "config:dump-reference"
+* Add completion for QueryBuilder:set
+* Make Twig translation key extractor compatible with PhpStorm8 and allow undo #213
+
 ### 0.10.56
 * Add twig translation extraction action #213
 * Fix data_class in form types should autocomplete any class #280
