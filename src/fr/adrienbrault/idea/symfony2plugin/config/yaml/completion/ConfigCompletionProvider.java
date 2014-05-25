@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.dom.CommentImpl;
@@ -39,7 +40,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
         PsiElement element = completionParameters.getOriginalPosition();
-        if(element == null) {
+        if(element == null || !Symfony2ProjectComponent.isEnabled(element)) {
             return;
         }
 
