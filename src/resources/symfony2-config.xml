@@ -11,13 +11,13 @@
 >
 
     <!-- prototype -->
-    <trusted_proxies>scalar value</trusted_proxies>
+    <trusted-proxies>scalar value</trusted-proxies>
 
     <!-- prototype -->
-    <trusted_hosts>scalar value</trusted_hosts>
+    <trusted-hosts>scalar value</trusted-hosts>
 
     <!-- field-name: Deprecated since 2.4, to be removed in 3.0. Use form.csrf_protection.field_name instead -->
-    <csrf_protection
+    <csrf-protection
         enabled="false"
         field-name="_token"
     />
@@ -25,7 +25,7 @@
     <!-- form configuration -->
     <form enabled="false">
 
-        <csrf_protection
+        <csrf-protection
             enabled="null"
             field-name="null"
         />
@@ -126,7 +126,7 @@
 
         </form>
 
-        <assets_base_url>
+        <assets-base-url>
 
             <!-- prototype -->
             <http>scalar value</http>
@@ -134,7 +134,7 @@
             <!-- prototype -->
             <ssl>scalar value</ssl>
 
-        </assets_base_url>
+        </assets-base-url>
 
         <!-- prototype -->
         <engine>scalar value</engine>
@@ -149,7 +149,7 @@
             version-format="%%s?%%s"
         >
 
-            <base_url>
+            <base-url>
 
                 <!-- prototype -->
                 <http>scalar value</http>
@@ -157,7 +157,7 @@
                 <!-- prototype -->
                 <ssl>scalar value</ssl>
 
-            </base_url>
+            </base-url>
 
         </package>
 
@@ -181,7 +181,7 @@
     >
 
         <!-- prototype -->
-        <static_method>scalar value</static_method>
+        <static-method>scalar value</static-method>
 
     </validation>
 
@@ -208,7 +208,7 @@
     erase-credentials="true"
 >
 
-    <access_decision_manager
+    <access-decision-manager
         strategy="affirmative"
         allow-if-all-abstain="false"
         allow-if-equal-granted-denied="true"
@@ -295,8 +295,8 @@
         >
 
             <!-- prototype -->
-            <delete_cookie
-                name="delete_cookie name"
+            <delete-cookie
+                name="delete cookie name"
                 path="null"
                 domain="null"
             />
@@ -306,9 +306,9 @@
 
         </logout>
 
-        <anonymous key="5381b54e9efe1" />
+        <anonymous key="5381ccb5d996e" />
 
-        <switch_user
+        <switch-user
             provider=""
             parameter="_switch_user"
             role="ROLE_ALLOWED_TO_SWITCH"
@@ -428,7 +428,7 @@
     >
 
         <!-- prototype -->
-        <excluded_404>scalar value</excluded_404>
+        <excluded-404>scalar value</excluded-404>
 
         <publisher
             id=""
@@ -451,10 +451,10 @@
         <member>scalar value</member>
 
         <!-- prototype -->
-        <to_email>scalar value</to_email>
+        <to-email>scalar value</to-email>
 
         <!-- id: Required -->
-        <email_prototype
+        <email-prototype
             id=""
             method="null"
         />
@@ -462,7 +462,7 @@
         <!-- prototype -->
         <tag>scalar value</tag>
 
-        <verbosity_levels
+        <verbosity-levels
             VERBOSITY-NORMAL="WARNING"
             VERBOSITY-VERBOSE="NOTICE"
             VERBOSITY-VERY-VERBOSE="INFO"
@@ -514,7 +514,7 @@
         />
 
         <!-- prototype -->
-        <delivery_whitelist_pattern>scalar value</delivery_whitelist_pattern>
+        <delivery-whitelist-pattern>scalar value</delivery-whitelist-pattern>
 
     </mailer>
 
@@ -531,13 +531,13 @@
     sass="/usr/bin/sass"
 >
 
-    <use_controller
+    <use-controller
         enabled="%kernel.debug%"
         profiler="false"
     />
 
     <!-- prototype -->
-    <node_paths>scalar value</node_paths>
+    <node-paths>scalar value</node-paths>
 
     <!-- prototype -->
     <variable name="variable name" />
@@ -623,7 +623,7 @@
             <option key="option key">scalar value</option>
 
             <!-- prototype -->
-            <mapping_type name="mapping_type name">scalar value</mapping_type>
+            <mapping-type name="mapping type name">scalar value</mapping-type>
 
             <!-- prototype -->
             <!-- unix-socket: The unix socket to use for MySQL -->
@@ -664,8 +664,8 @@
     >
 
         <!-- prototype -->
-        <entity_manager
-            name="entity_manager name"
+        <entity-manager
+            name="entity manager name"
             connection=""
             class-metadata-factory-name="Doctrine\ORM\Mapping\ClassMetadataFactory"
             default-repository-class="Doctrine\ORM\EntityRepository"
@@ -673,7 +673,7 @@
             naming-strategy="doctrine.orm.naming_strategy.default"
         >
 
-            <query_cache_driver
+            <query-cache-driver
                 type="array"
                 host=""
                 port=""
@@ -682,7 +682,7 @@
                 id=""
             />
 
-            <metadata_cache_driver
+            <metadata-cache-driver
                 type="array"
                 host=""
                 port=""
@@ -691,7 +691,7 @@
                 id=""
             />
 
-            <result_cache_driver
+            <result-cache-driver
                 type="array"
                 host=""
                 port=""
@@ -717,13 +717,13 @@
             <dql>
 
                 <!-- prototype -->
-                <string_function name="string_function name">scalar value</string_function>
+                <string-function name="string function name">scalar value</string-function>
 
                 <!-- prototype -->
-                <numeric_function name="numeric_function name">scalar value</numeric_function>
+                <numeric-function name="numeric function name">scalar value</numeric-function>
 
                 <!-- prototype -->
-                <datetime_function name="datetime_function name">scalar value</datetime_function>
+                <datetime-function name="datetime function name">scalar value</datetime-function>
 
             </dql>
 
@@ -741,17 +741,17 @@
 
             </filter>
 
-        </entity_manager>
+        </entity-manager>
 
         <!-- prototype -->
-        <resolve_target_entity interface="resolve_target_entity interface">scalar value</resolve_target_entity>
+        <resolve-target-entity interface="resolve target entity interface">scalar value</resolve-target-entity>
 
     </orm>
 
 </doctrine>
 
 <!-- Namespace: http://symfony.com/schema/dic/symfony_extra -->
-<sensio_framework_extra>
+<sensio-framework-extra>
 
     <router annotations="true" />
 
@@ -763,10 +763,10 @@
 
     <security annotations="true" />
 
-</sensio_framework_extra>
+</sensio-framework-extra>
 
 <!-- Namespace: http://symfony.com/schema/dic/webprofiler -->
-<web_profiler
+<web-profiler
     toolbar="false"
     position="bottom"
     intercept-redirects="false"

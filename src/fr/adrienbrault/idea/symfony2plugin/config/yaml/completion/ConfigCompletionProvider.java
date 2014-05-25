@@ -54,6 +54,10 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             return;
         }
 
+        for (int i = 0; i < items.size(); i++) {
+            items.set(i, items.get(i).replace('_', '-'));
+        }
+
         // reverse to get top most item first
         Collections.reverse(items);
 
@@ -111,7 +115,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
     private LookupElementBuilder getNodeAttributeLookupElement(Node node, Map<String, String> nodeVars) {
 
-        String nodeName = node.getNodeName();
+        String nodeName = getNodeName(node);
         LookupElementBuilder lookupElementBuilder = LookupElementBuilder.create(nodeName).withIcon(Symfony2Icons.CONFIG_VALUE);
 
         String textContent = node.getTextContent();
@@ -129,7 +133,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
     @Nullable
     private LookupElementBuilder getNodeTagLookupElement(Node node) {
 
-        String nodeName = node.getNodeName();
+        String nodeName = getNodeName(node);
         boolean prototype = isPrototype(node);
 
         // prototype "connection" must be "connections" so pluralize
@@ -144,6 +148,10 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         }
 
         return lookupElementBuilder;
+    }
+
+    private String getNodeName(Node node) {
+        return node.getNodeName().replace("-", "_");
     }
 
     @Nullable
