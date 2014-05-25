@@ -261,7 +261,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
                 String trim = StringUtils.trim(comment.getTextContent());
                 Matcher matcher = compile.matcher(trim);
                 if (matcher.find()) {
-                    comments.put(matcher.group(1), matcher.group(2));
+                    comments.put(matcher.group(1).replace("-", "_"), matcher.group(2));
                 }
 
             }
