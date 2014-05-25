@@ -14,6 +14,7 @@ public class MatcherUtil {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "addSelect"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "groupBy"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "addGroupBy"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "set"),
     };
 
     @Nullable
