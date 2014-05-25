@@ -1,11 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
-import com.intellij.patterns.*;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -429,6 +433,19 @@ public class YamlElementPatternHelper {
                     PlatformPatterns.string().equalTo(keyName)
                 )
             );
+    }
+
+    /**
+     * Possible config key completion
+     */
+    public static ElementPattern<PsiElement> getConfigKeyPattern() {
+        return PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
+            PlatformPatterns.psiElement(YAMLCompoundValue.class),
+            PlatformPatterns.psiElement(YAMLKeyValue.class)
+        )).inFile(
+            // not should fire this in all yaml files
+            PlatformPatterns.psiFile().withName(PlatformPatterns.string().matches("[security|config].*\\.yml"))
+        );
     }
 
     /**

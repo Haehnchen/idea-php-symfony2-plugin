@@ -433,4 +433,45 @@ public class YamlHelper {
         return getYamlKeyValue(yamlCompoundValue, keyName, ignoreCase);
     }
 
+
+    /**
+     * foo:
+     *   bar:
+     *     |
+     *
+     *  Will return [foo, bar]
+     *
+     * @param psiElement any PsiElement inside a key value
+     */
+    public static List<String> getParentArrayKeys(PsiElement psiElement) {
+        List<String> keys = new ArrayList<String>();
+
+        YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+        if(yamlKeyValue != null) {
+            getParentArrayKeys(yamlKeyValue, keys);
+        }
+
+        return keys;
+    }
+
+
+    /**
+     * Attach all parent array keys to list (foo:\n bar:): [foo, bar]
+     *
+     * @param yamlKeyValue current key value context
+     * @param key the key list
+     */
+    public static void getParentArrayKeys(YAMLKeyValue yamlKeyValue, List<String> key) {
+        key.add(yamlKeyValue.getKeyText());
+
+        PsiElement yamlCompount = yamlKeyValue.getParent();
+        if(yamlCompount instanceof YAMLCompoundValue) {
+            PsiElement yamlKeyValueParent = yamlCompount.getParent();
+            if(yamlKeyValueParent instanceof YAMLKeyValue) {
+                getParentArrayKeys((YAMLKeyValue) yamlKeyValueParent, key);
+            }
+        }
+
+    }
+
 }

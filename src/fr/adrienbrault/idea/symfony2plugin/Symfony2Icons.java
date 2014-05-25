@@ -42,5 +42,7 @@ public class Symfony2Icons {
     public static final Icon MAIL = IconLoader.getIcon("icons/mail.png");
     public static final Icon PROFILER_LINK = IconLoader.getIcon("icons/profiler_link.png");
 
+    public static final Icon CONFIG_PROTOTYPE = IconLoader.getIcon("icons/config_prototype.png");
+    public static final Icon CONFIG_VALUE = IconLoader.getIcon("icons/config_value.png");
 }
 

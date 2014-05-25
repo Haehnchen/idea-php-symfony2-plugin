@@ -10,10 +10,11 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvider;
@@ -38,6 +39,11 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC, YamlElementPatternHelper.getServiceDefinition(),
             new ServiceCompletionProvider()
+        );
+
+        extend(
+            CompletionType.BASIC, YamlElementPatternHelper.getConfigKeyPattern(),
+            new ConfigCompletionProvider()
         );
 
         extend(

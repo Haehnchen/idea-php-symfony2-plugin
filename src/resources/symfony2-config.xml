@@ -1,0 +1,775 @@
+<!-- Dumping default configuration for all bundles -->
+<config>
+<!-- Namespace: http://symfony.com/schema/dic/symfony -->
+<!-- http-method-override: Set true to enable support for the '_method' request parameter to determine the intended HTTP method on POST requests. Note: When using the HttpCache, you need to call the method in your front controller instead -->
+<framework
+    secret=""
+    http-method-override="true"
+    ide="null"
+    test=""
+    default-locale="en"
+>
+
+    <!-- prototype -->
+    <trusted_proxies>scalar value</trusted_proxies>
+
+    <!-- prototype -->
+    <trusted_hosts>scalar value</trusted_hosts>
+
+    <!-- field-name: Deprecated since 2.4, to be removed in 3.0. Use form.csrf_protection.field_name instead -->
+    <csrf_protection
+        enabled="false"
+        field-name="_token"
+    />
+
+    <!-- form configuration -->
+    <form enabled="false">
+
+        <csrf_protection
+            enabled="null"
+            field-name="null"
+        />
+
+    </form>
+
+    <!-- esi configuration -->
+    <esi enabled="false" />
+
+    <!-- fragments configuration -->
+    <fragments
+        enabled="false"
+        path="/_fragment"
+    />
+
+    <!-- profiler configuration -->
+    <profiler
+        enabled="false"
+        collect="true"
+        only-exceptions="false"
+        only-master-requests="false"
+        dsn="file:%kernel.cache_dir%/profiler"
+        username=""
+        password=""
+        lifetime="86400"
+    >
+
+        <!--
+            path: use the urldecoded format;
+                  Example: ^/path to resource/
+        -->
+        <matcher
+            path=""
+            service=""
+        >
+
+            <!-- prototype -->
+            <ip>scalar value</ip>
+
+        </matcher>
+
+    </profiler>
+
+    <!-- router configuration -->
+    <!-- resource: Required -->
+    <!--
+        strict-requirements: set to true to throw an exception when a parameter does not match the requirements
+                             set to false to disable exceptions when a parameter does not match the requirements (and return null instead)
+                             set to null to disable parameter checks against requirements
+                             'true' is the preferred configuration in development mode, while 'false' or 'null' might be preferred in production
+    -->
+    <router
+        resource=""
+        type=""
+        http-port="80"
+        https-port="443"
+        strict-requirements="true"
+    />
+
+    <!-- session configuration -->
+    <!-- metadata-update-threshold: seconds to wait between 2 session metadata updates, it will also prevent the session handler to write if the session has not changed -->
+    <session
+        storage-id="session.storage.native"
+        handler-id="session.handler.native_file"
+        name=""
+        cookie-lifetime=""
+        cookie-path=""
+        cookie-domain=""
+        cookie-secure=""
+        cookie-httponly=""
+        gc-divisor=""
+        gc-probability="1"
+        gc-maxlifetime=""
+        save-path="%kernel.cache_dir%/sessions"
+        metadata-update-threshold="0"
+    />
+
+    <!-- request configuration -->
+    <request>
+
+        <!-- prototype -->
+        <format name="format name" />
+
+    </request>
+
+    <!-- templating configuration -->
+    <templating
+        assets-version="null"
+        assets-version-format="%%s?%%s"
+        hinclude-default-template="null"
+        cache=""
+    >
+
+        <form>
+
+            <!-- prototype -->
+            <resource>FrameworkBundle:Form</resource>
+
+        </form>
+
+        <assets_base_url>
+
+            <!-- prototype -->
+            <http>scalar value</http>
+
+            <!-- prototype -->
+            <ssl>scalar value</ssl>
+
+        </assets_base_url>
+
+        <!-- prototype -->
+        <engine>scalar value</engine>
+
+        <!-- prototype -->
+        <loader>scalar value</loader>
+
+        <!-- prototype -->
+        <package
+            name="package name"
+            version="null"
+            version-format="%%s?%%s"
+        >
+
+            <base_url>
+
+                <!-- prototype -->
+                <http>scalar value</http>
+
+                <!-- prototype -->
+                <ssl>scalar value</ssl>
+
+            </base_url>
+
+        </package>
+
+    </templating>
+
+    <!-- translator configuration -->
+    <translator
+        enabled="false"
+        fallback="en"
+    />
+
+    <!-- validation configuration -->
+    <!-- api: One of "2.4"; "2.5"; "2.5-bc"; "auto" -->
+    <validation
+        enabled="false"
+        cache=""
+        enable-annotations="false"
+        translation-domain="validators"
+        strict-email="false"
+        api="auto"
+    >
+
+        <!-- prototype -->
+        <static_method>scalar value</static_method>
+
+    </validation>
+
+    <!-- annotation configuration -->
+    <annotations
+        cache="file"
+        file-cache-dir="%kernel.cache_dir%/annotations"
+        debug="%kernel.debug%"
+    />
+
+    <!-- serializer configuration -->
+    <serializer enabled="false" />
+
+</framework>
+
+<!-- Namespace: http://symfony.com/schema/dic/security -->
+<!-- access-denied-url: Example: /foo/error403 -->
+<!-- session-fixation-strategy: strategy can be: none, migrate, invalidate -->
+<security
+    access-denied-url="null"
+    session-fixation-strategy="migrate"
+    hide-user-not-found="true"
+    always-authenticate-before-granting="false"
+    erase-credentials="true"
+>
+
+    <access_decision_manager
+        strategy="affirmative"
+        allow-if-all-abstain="false"
+        allow-if-equal-granted-denied="true"
+    />
+
+    <!-- connection: any name configured in doctrine.dbal section -->
+    <acl
+        connection="null"
+        provider=""
+    >
+
+        <cache
+            id=""
+            prefix="sf2_acl_"
+        />
+
+        <tables
+            class="acl_classes"
+            entry="acl_entries"
+            object-identity="acl_object_identities"
+            object-identity-ancestors="acl_object_identity_ancestors"
+            security-identity="acl_security_identities"
+        />
+
+        <voter allow-if-object-identity-unavailable="true" />
+
+    </acl>
+
+    <!-- prototype -->
+    <!-- hash-algorithm: Name of hashing algorithm for PBKDF2 (i.e. sha256, sha512, etc..) See hash_algos() for a list of supported algorithms. -->
+    <encoder
+        class="encoder class"
+        algorithm=""
+        hash-algorithm="sha512"
+        key-length="40"
+        ignore-case="false"
+        encode-as-base64="true"
+        iterations="5000"
+        cost="13"
+        id=""
+    />
+
+    <!-- prototype -->
+    <provider
+        name="provider name"
+        id=""
+    >
+
+        <chain>
+
+            <!-- prototype -->
+            <provider>scalar value</provider>
+
+        </chain>
+
+    </provider>
+
+    <!-- prototype -->
+    <firewall
+        name="firewall name"
+        pattern=""
+        host=""
+        security="true"
+        request-matcher=""
+        access-denied-url=""
+        access-denied-handler=""
+        entry-point=""
+        provider=""
+        stateless="false"
+        context=""
+    >
+
+        <!-- prototype -->
+        <methods>scalar value</methods>
+
+        <logout
+            csrf-parameter="_csrf_token"
+            csrf-token-generator=""
+            csrf-token-id="logout"
+            path="/logout"
+            target="/"
+            success-handler=""
+            invalidate-session="true"
+        >
+
+            <!-- prototype -->
+            <delete_cookie
+                name="delete_cookie name"
+                path="null"
+                domain="null"
+            />
+
+            <!-- prototype -->
+            <handler>scalar value</handler>
+
+        </logout>
+
+        <anonymous key="5381b54e9efe1" />
+
+        <switch_user
+            provider=""
+            parameter="_switch_user"
+            role="ROLE_ALLOWED_TO_SWITCH"
+        />
+
+    </firewall>
+
+    <!-- prototype -->
+    <!--
+        path: use the urldecoded format;
+              Example: ^/path to resource/
+    -->
+    <rule
+        requires-channel="null"
+        path="null"
+        host="null"
+        allow-if="null"
+    >
+
+        <!-- prototype -->
+        <ip>scalar value</ip>
+
+        <!-- prototype -->
+        <methods>scalar value</methods>
+
+        <!-- prototype -->
+        <role>scalar value</role>
+
+    </rule>
+
+    <!-- prototype -->
+    <role id="role id" />
+
+</security>
+
+<!-- Namespace: http://symfony.com/schema/dic/twig -->
+<!-- base-template-class: Example: Twig_Template -->
+<twig
+    exception-controller="twig.controller.exception:showAction"
+    autoescape=""
+    autoescape-service="null"
+    autoescape-service-method="null"
+    base-template-class=""
+    cache="%kernel.cache_dir%/twig"
+    charset="%kernel.charset%"
+    debug="%kernel.debug%"
+    strict-variables=""
+    auto-reload=""
+    optimizations=""
+>
+
+    <form>
+
+        <!-- prototype -->
+        <resource>form_div_layout.html.twig</resource>
+
+    </form>
+
+    <!-- prototype -->
+    <global
+        key="global key"
+        id=""
+        type=""
+        value=""
+    />
+
+    <!-- prototype -->
+    <path>value</path>
+
+</twig>
+
+<!-- Namespace: http://symfony.com/schema/dic/monolog -->
+<monolog>
+
+    <!-- prototype -->
+    <channel>scalar value</channel>
+
+    <!-- prototype -->
+    <!-- type: Required -->
+    <handler
+        name="handler name"
+        type=""
+        id=""
+        priority="0"
+        level="DEBUG"
+        bubble="true"
+        path="%kernel.logs_dir%/%kernel.environment%.log"
+        ident="false"
+        logopts="1"
+        facility="user"
+        max-files="0"
+        action-level="WARNING"
+        activation-strategy="null"
+        stop-buffering="true"
+        buffer-size="0"
+        handler=""
+        url=""
+        exchange=""
+        exchange-name="log"
+        room=""
+        notify="false"
+        nickname="Monolog"
+        token=""
+        user=""
+        title="null"
+        from-email=""
+        subject=""
+        content-type="null"
+        mailer="mailer"
+        connection-string=""
+        timeout=""
+        connection-timeout=""
+        persistent=""
+        dsn=""
+        message-type="0"
+        formatter=""
+    >
+
+        <!-- prototype -->
+        <excluded_404>scalar value</excluded_404>
+
+        <publisher
+            id=""
+            hostname=""
+            port="12201"
+            chunk-size="1420"
+        />
+
+        <mongo
+            id=""
+            host=""
+            port="27017"
+            user=""
+            pass=""
+            database="monolog"
+            collection="logs"
+        />
+
+        <!-- prototype -->
+        <member>scalar value</member>
+
+        <!-- prototype -->
+        <to_email>scalar value</to_email>
+
+        <!-- id: Required -->
+        <email_prototype
+            id=""
+            method="null"
+        />
+
+        <!-- prototype -->
+        <tag>scalar value</tag>
+
+        <verbosity_levels
+            VERBOSITY-NORMAL="WARNING"
+            VERBOSITY-VERBOSE="NOTICE"
+            VERBOSITY-VERY-VERBOSE="INFO"
+            VERBOSITY-DEBUG="DEBUG"
+        />
+
+        <channels type="">
+
+            <!-- prototype -->
+            <channel>scalar value</channel>
+
+        </channels>
+
+    </handler>
+
+</monolog>
+
+<!-- Namespace: http://symfony.com/schema/dic/swiftmailer -->
+<swiftmailer default-mailer="">
+
+    <!-- prototype -->
+    <mailer
+        name="mailer name"
+        transport="smtp"
+        username="null"
+        password="null"
+        host="localhost"
+        port="null"
+        timeout="30"
+        source-ip="null"
+        encryption="null"
+        auth-mode="null"
+        sender-address=""
+        delivery-address=""
+        logging="true"
+        disable-delivery=""
+    >
+
+        <antiflood
+            threshold="99"
+            sleep="0"
+        />
+
+        <!-- id: Used by "service" type -->
+        <spool
+            type="file"
+            path="%kernel.cache_dir%/swiftmailer/spool"
+            id="null"
+        />
+
+        <!-- prototype -->
+        <delivery_whitelist_pattern>scalar value</delivery_whitelist_pattern>
+
+    </mailer>
+
+</swiftmailer>
+
+<!-- Namespace: http://symfony.com/schema/dic/assetic -->
+<assetic
+    debug="%kernel.debug%"
+    read-from="%kernel.root_dir%/../web"
+    write-to="%assetic.read_from%"
+    java="C:\Windows\system32\java.EXE"
+    node="C:\Program Files\nodejs\\node.EXE"
+    ruby="/usr/bin/ruby"
+    sass="/usr/bin/sass"
+>
+
+    <use_controller
+        enabled="%kernel.debug%"
+        profiler="false"
+    />
+
+    <!-- prototype -->
+    <node_paths>scalar value</node_paths>
+
+    <!-- prototype -->
+    <variable name="variable name" />
+
+    <!-- prototype -->
+    <bundle>scalar value</bundle>
+
+    <!-- prototype -->
+    <asset name="asset name">
+
+        <!-- prototype -->
+        <input>scalar value</input>
+
+        <!-- prototype -->
+        <filter>scalar value</filter>
+
+        <!-- prototype -->
+        <options name="options name">value</options>
+
+    </asset>
+
+    <!-- prototype -->
+    <filter name="filter name">value</filter>
+
+    <twig>
+
+        <!-- prototype -->
+        <function name="function name">value</function>
+
+    </twig>
+
+</assetic>
+
+<!-- Namespace: http://symfony.com/schema/dic/doctrine -->
+<doctrine>
+
+    <dbal default-connection="">
+
+        <!-- prototype -->
+        <!-- class: Required -->
+        <type
+            name="type name"
+            class=""
+            commented="true"
+        />
+
+        <!-- prototype -->
+        <!-- unix-socket: The unix socket to use for MySQL -->
+        <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
+        <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if ommited) -->
+        <!-- service: True to use dbname as service name instead of SID for Oracle -->
+        <!-- sessionMode: The session mode to use for the oci8 driver -->
+        <!-- pooled: True to use a pooled server with the oci8 driver -->
+        <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
+        <connection
+            name="connection name"
+            dbname=""
+            host="localhost"
+            port="null"
+            user="root"
+            password="null"
+            charset=""
+            path=""
+            memory=""
+            unix-socket=""
+            persistent=""
+            protocol=""
+            service=""
+            sessionMode=""
+            pooled=""
+            MultipleActiveResultSets=""
+            driver="pdo_mysql"
+            platform-service=""
+            schema-filter=""
+            logging="true"
+            profiling="true"
+            driver-class=""
+            wrapper-class=""
+            keep-slave=""
+        >
+
+            <!-- prototype -->
+            <option key="option key">scalar value</option>
+
+            <!-- prototype -->
+            <mapping_type name="mapping_type name">scalar value</mapping_type>
+
+            <!-- prototype -->
+            <!-- unix-socket: The unix socket to use for MySQL -->
+            <!-- persistent: True to use as persistent connection for the ibm_db2 driver -->
+            <!-- protocol: The protocol to use for the ibm_db2 driver (default to TCPIP if ommited) -->
+            <!-- service: True to use dbname as service name instead of SID for Oracle -->
+            <!-- sessionMode: The session mode to use for the oci8 driver -->
+            <!-- pooled: True to use a pooled server with the oci8 driver -->
+            <!-- MultipleActiveResultSets: Configuring MultipleActiveResultSets for the pdo_sqlsrv driver -->
+            <slave
+                name="slave name"
+                dbname=""
+                host="localhost"
+                port="null"
+                user="root"
+                password="null"
+                charset=""
+                path=""
+                memory=""
+                unix-socket=""
+                persistent=""
+                protocol=""
+                service=""
+                sessionMode=""
+                pooled=""
+                MultipleActiveResultSets=""
+            />
+
+        </connection>
+
+    </dbal>
+
+    <orm
+        default-entity-manager=""
+        auto-generate-proxy-classes="false"
+        proxy-dir="%kernel.cache_dir%/doctrine/orm/Proxies"
+        proxy-namespace="Proxies"
+    >
+
+        <!-- prototype -->
+        <entity_manager
+            name="entity_manager name"
+            connection=""
+            class-metadata-factory-name="Doctrine\ORM\Mapping\ClassMetadataFactory"
+            default-repository-class="Doctrine\ORM\EntityRepository"
+            auto-mapping="false"
+            naming-strategy="doctrine.orm.naming_strategy.default"
+        >
+
+            <query_cache_driver
+                type="array"
+                host=""
+                port=""
+                instance-class=""
+                class=""
+                id=""
+            />
+
+            <metadata_cache_driver
+                type="array"
+                host=""
+                port=""
+                instance-class=""
+                class=""
+                id=""
+            />
+
+            <result_cache_driver
+                type="array"
+                host=""
+                port=""
+                instance-class=""
+                class=""
+                id=""
+            />
+
+            <!-- prototype -->
+            <hydrator name="hydrator name">scalar value</hydrator>
+
+            <!-- prototype -->
+            <mapping
+                name="mapping name"
+                mapping="true"
+                type=""
+                dir=""
+                alias=""
+                prefix=""
+                is-bundle=""
+            />
+
+            <dql>
+
+                <!-- prototype -->
+                <string_function name="string_function name">scalar value</string_function>
+
+                <!-- prototype -->
+                <numeric_function name="numeric_function name">scalar value</numeric_function>
+
+                <!-- prototype -->
+                <datetime_function name="datetime_function name">scalar value</datetime_function>
+
+            </dql>
+
+            <!-- prototype -->
+            <!-- Register SQL Filters in the entity manager -->
+            <!-- class: Required -->
+            <filter
+                name="filter name"
+                class=""
+                enabled="false"
+            >
+
+                <!-- prototype -->
+                <parameter name="parameter name">value</parameter>
+
+            </filter>
+
+        </entity_manager>
+
+        <!-- prototype -->
+        <resolve_target_entity interface="resolve_target_entity interface">scalar value</resolve_target_entity>
+
+    </orm>
+
+</doctrine>
+
+<!-- Namespace: http://symfony.com/schema/dic/symfony_extra -->
+<sensio_framework_extra>
+
+    <router annotations="true" />
+
+    <request converters="true" />
+
+    <view annotations="true" />
+
+    <cache annotations="true" />
+
+    <security annotations="true" />
+
+</sensio_framework_extra>
+
+<!-- Namespace: http://symfony.com/schema/dic/webprofiler -->
+<web_profiler
+    toolbar="false"
+    position="bottom"
+    intercept-redirects="false"
+/>
+
+</config>
