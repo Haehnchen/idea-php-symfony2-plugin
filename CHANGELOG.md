@@ -5,6 +5,10 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.58
+* Add completion for yaml config root keys
+* Fix npe in config completion #284
+
 ### 0.10.57
 * Add yaml key completion for config / security files on "config:dump-reference"
 * Add completion for QueryBuilder:set
