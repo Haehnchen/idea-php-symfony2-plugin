@@ -437,9 +437,11 @@ public class YamlElementPatternHelper {
 
     /**
      * Possible config key completion
+     * In document root or key value context
      */
     public static ElementPattern<PsiElement> getConfigKeyPattern() {
         return PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
+            PlatformPatterns.psiElement(YAMLDocument.class),
             PlatformPatterns.psiElement(YAMLCompoundValue.class),
             PlatformPatterns.psiElement(YAMLKeyValue.class)
         )).inFile(

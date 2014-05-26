@@ -18,6 +18,7 @@ import org.apache.xerces.dom.DeferredTextImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -25,6 +26,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,12 +43,20 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
-        PsiElement element = completionParameters.getOriginalPosition();
-        if(element == null || !Symfony2ProjectComponent.isEnabled(element)) {
+        PsiElement element = completionParameters.getPosition();
+        if(!Symfony2ProjectComponent.isEnabled(element)) {
             return;
         }
 
         PsiElement yamlCompount = element.getParent();
+
+        // yaml document root context
+        if(yamlCompount instanceof YAMLDocument) {
+            attachRootConfig(completionResultSet, element);
+            return;
+        }
+
+        // check inside yaml key value context
         if(!(yamlCompount instanceof YAMLCompoundValue || yamlCompount instanceof YAMLKeyValue)) {
             return;
         }
@@ -62,25 +74,10 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         // reverse to get top most item first
         Collections.reverse(items);
 
-        Document document;
-        try {
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-
-            VirtualFile virtualFile = VfsUtil.findRelativeFile(element.getProject().getBaseDir(), ".idea", "symfony2-config.xml");
-            if(virtualFile != null) {
-                document = builder.parse(VfsUtil.virtualToIoFile(virtualFile));
-            } else {
-                document = builder.parse(ConfigCompletionProvider.class.getResourceAsStream("/resources/symfony2-config.xml"));
-            }
-
-        } catch (ParserConfigurationException e) {
-            return;
-        } catch (SAXException e) {
-            return;
-        } catch (IOException e) {
+        Document document = getConfigTemplate(element.getProject().getBaseDir());
+        if(document == null) {
             return;
         }
-
 
         Node configNode = getMatchingConfigNode(document, items);
         if(configNode == null) {
@@ -103,6 +100,31 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             }
         }
 
+    }
+
+    private Document getConfigTemplate(VirtualFile projectBaseDir) {
+
+        Document document;
+
+        try {
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+
+            VirtualFile virtualFile = VfsUtil.findRelativeFile(projectBaseDir, ".idea", "symfony2-config.xml");
+            if(virtualFile != null) {
+                document = builder.parse(VfsUtil.virtualToIoFile(virtualFile));
+            } else {
+                document = builder.parse(ConfigCompletionProvider.class.getResourceAsStream("/resources/symfony2-config.xml"));
+            }
+
+            return document;
+
+        } catch (ParserConfigurationException e) {
+            return null;
+        } catch (SAXException e) {
+            return null;
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private void getConfigPathLookupElements(CompletionResultSet completionResultSet, Node configNode, boolean isShortcut) {
@@ -302,6 +324,27 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         }
 
         return comments;
+    }
+
+
+    private void attachRootConfig(CompletionResultSet completionResultSet, PsiElement element) {
+
+        Document document = getConfigTemplate(element.getProject().getBaseDir());
+        if(document == null) {
+            return;
+        }
+
+        try {
+
+            // attach config aliases
+            NodeList nodeList  = (NodeList) XPathFactory.newInstance().newXPath().compile("//config/*").evaluate(document, XPathConstants.NODESET);
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                completionResultSet.addElement(LookupElementBuilder.create(getNodeName(nodeList.item(i))).withIcon(Symfony2Icons.CONFIG_VALUE));
+            }
+
+        } catch (XPathExpressionException ignored) {
+        }
+
     }
 
 }
