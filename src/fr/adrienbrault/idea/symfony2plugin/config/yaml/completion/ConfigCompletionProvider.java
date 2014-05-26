@@ -183,7 +183,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
     }
 
     @Nullable
-    private Element getElementByTagNameWithUnPluralize(Element element, String tagName) {
+    private Element getElementByTagNameWithUnPluralize(@NotNull Element element, String tagName) {
 
         NodeList nodeList = element.getElementsByTagName(tagName);
         if(nodeList.getLength() > 0) {
@@ -224,6 +224,10 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         }
 
         Element currentNodeItem = getElementByTagName(document, items.get(0));
+        if(currentNodeItem == null) {
+            return null;
+        }
+        
         for (int i = 1; i < items.size(); i++) {
 
             currentNodeItem = getElementByTagNameWithUnPluralize(currentNodeItem, items.get(i));
