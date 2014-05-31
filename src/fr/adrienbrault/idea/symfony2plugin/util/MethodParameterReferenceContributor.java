@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -16,12 +18,19 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceC
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension;
+import fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorParameter;
+import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class MethodParameterReferenceContributor extends PsiReferenceContributor {
+
+    private static final ExtensionPointName<MethodParameterReferenceContributorExtension> EXTENSIONS = new ExtensionPointName<MethodParameterReferenceContributorExtension>("fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension");
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
@@ -38,10 +47,11 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         return new PsiReference[0];
                     }
 
-                    ArrayList<MethodParameterSetting> configs = new ArrayList<MethodParameterSetting>();
+                    List<MethodParameterSetting> configs = new ArrayList<MethodParameterSetting>();
 
                     configs.addAll(AssistantReferenceUtil.getMethodsParameterSettings(psiElement.getProject()));
                     configs.addAll(getInternalMethodParameterSetting());
+                    configs.addAll(getExtensionMethodParameterSetting(psiElement.getProject()));
 
                     ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
                     if (parameterList == null) {
@@ -53,10 +63,8 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                     }
 
                     MethodReference method = (MethodReference) parameterList.getContext();
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
 
-
-                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
+                    List<PsiReference> psiReferences = new ArrayList<PsiReference>();
 
                     // get config in method scope; so we can pipe them
                     ArrayList<MethodParameterSetting> methodScopeConfigs = new ArrayList<MethodParameterSetting>();
@@ -84,8 +92,8 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                 }
 
 
-                private ArrayList<MethodParameterSetting> getInternalMethodParameterSetting() {
-                    ArrayList<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+                private Collection<MethodParameterSetting> getInternalMethodParameterSetting() {
+                    Collection<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
 
                     methodParameterSettings.add(new MethodParameterSetting(
                         "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface",
@@ -122,6 +130,23 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.PARAMETER,
                         null
                     ));
+
+                    return methodParameterSettings;
+                }
+
+                private Collection<MethodParameterSetting> getExtensionMethodParameterSetting(Project project) {
+
+                    Collection<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+
+                    MethodParameterReferenceContributorExtension[] extensions = EXTENSIONS.getExtensions();
+                    if(extensions.length == 0) {
+                        return methodParameterSettings;
+                    }
+
+                    MethodParameterReferenceContributorParameter parameter = new MethodParameterReferenceContributorParameter(project);
+                    for(MethodParameterReferenceContributorExtension extension: extensions) {
+                        methodParameterSettings.addAll(extension.getSettings(parameter));
+                    }
 
                     return methodParameterSettings;
                 }

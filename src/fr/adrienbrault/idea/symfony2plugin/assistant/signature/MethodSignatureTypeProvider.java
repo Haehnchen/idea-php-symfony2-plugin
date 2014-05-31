@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.assistant.signature;
 
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -9,6 +10,8 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension;
+import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +26,7 @@ import java.util.List;
 public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
 
     final static char TRIM_KEY = '\u0180';
+    private static final ExtensionPointName<MethodSignatureTypeProviderExtension> EXTENSIONS = new ExtensionPointName<MethodSignatureTypeProviderExtension>("fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension");
 
     @Override
     public char getKey() {
@@ -33,12 +37,31 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
     @Override
     public String getType(PsiElement e) {
 
-        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).objectSignatureTypeProvider) {
+        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !(e instanceof MethodReference)) {
             return null;
         }
 
-        List<MethodSignatureSetting> signatures = Settings.getInstance(e.getProject()).methodSignatureSettings;
-        if(signatures == null || !(e instanceof MethodReference)) {
+        List<MethodSignatureSetting> signatures = new ArrayList<MethodSignatureSetting>();
+
+        // get user defined settings
+        if(Settings.getInstance(e.getProject()).objectSignatureTypeProvider) {
+            List<MethodSignatureSetting> settingSignatures = Settings.getInstance(e.getProject()).methodSignatureSettings;
+            if(settingSignatures != null) {
+                signatures.addAll(settingSignatures);
+            }
+        }
+
+        // load extension
+        MethodSignatureTypeProviderExtension[] extensions = EXTENSIONS.getExtensions();
+        if(extensions.length > 0) {
+            MethodSignatureTypeProviderParameter parameter = new MethodSignatureTypeProviderParameter(e);
+            for(MethodSignatureTypeProviderExtension extension: extensions){
+                signatures.addAll(extension.getSignatures(parameter));
+            }
+        }
+
+        // we not have custom settings
+        if(signatures.size() == 0) {
             return null;
         }
 
