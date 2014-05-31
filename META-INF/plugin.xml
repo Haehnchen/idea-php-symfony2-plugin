@@ -335,6 +335,7 @@
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationAnnotator"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
+        <annotator language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator"/>
 
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>

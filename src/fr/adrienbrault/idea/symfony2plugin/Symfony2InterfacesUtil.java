@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -253,7 +254,7 @@ public class Symfony2InterfacesUtil {
 
     }
 
-    public boolean isInstanceOf(PhpClass subjectClass, PhpClass expectedClass) {
+    public boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
         if (subjectClass == expectedClass) {
             return true;
         }

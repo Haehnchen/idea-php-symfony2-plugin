@@ -29,23 +29,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
         // <argument type="service" id="service_container" />
         registrar.registerReferenceProvider(
-            XmlPatterns
-                .xmlAttributeValue()
-                .withParent(XmlPatterns
-                    .xmlAttribute("id")
-                    .withParent(XmlPatterns
-                        .xmlTag()
-                        .withChild(XmlPatterns
-                            .xmlAttribute("type")
-                            .withValue(
-                                StandardPatterns.string().equalTo("service")
-                            )
-                        )
-                    )
-                ).inside(
-                    XmlHelper.getInsideTagPattern("services")
-                ).inFile(XmlHelper.getXmlFilePattern()),
-
+            XmlHelper.getArgumentServiceIdPattern(),
             new ServiceReferenceProvider()
         );
 

@@ -2,10 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.patterns.PsiFilePattern;
-import com.intellij.patterns.StandardPatterns;
-import com.intellij.patterns.XmlPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
@@ -86,6 +83,28 @@ public class XmlHelper {
             ).inside(
                 XmlPatterns.psiElement(XmlTag.class).withName("parameters")
             ).inFile(getXmlFilePattern());
+    }
+
+    /**
+     * <argument type="service" id="service_container" />
+     */
+    public static XmlAttributeValuePattern getArgumentServiceIdPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("id")
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withChild(XmlPatterns
+                        .xmlAttribute("type")
+                        .withValue(
+                            StandardPatterns.string().equalTo("service")
+                        )
+                    )
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
     }
 
     public static PsiFilePattern.Capture<PsiFile> getXmlFilePattern() {
