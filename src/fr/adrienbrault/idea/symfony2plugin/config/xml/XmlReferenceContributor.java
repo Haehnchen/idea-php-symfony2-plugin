@@ -11,9 +11,12 @@ import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ServiceReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -227,7 +230,18 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         @Override
         public ResolveResult[] multiResolve(boolean b) {
             String value = this.psiElement.getValue();
-            return PsiElementResolveResult.createResults(ServiceUtil.getServiceClassTargets(getElement().getProject(), value));
+
+
+            Collection<PsiElement> serviceClassTargets = ServiceUtil.getServiceClassTargets(getElement().getProject(), value);
+
+            // @TODO: on implement multiple service resolve; we can make it nicer here
+            // self add on compiler parameter, in this case we dont have a target;
+            // to not get ide warnings
+            if(serviceClassTargets.size() == 0 && value.startsWith("%") && value.endsWith("%") && ContainerCollectionResolver.getParameterNames(getElement().getProject()).contains(value.substring(1, value.length() - 1))) {
+                serviceClassTargets.add(getElement());
+            }
+
+            return PsiElementResolveResult.createResults(serviceClassTargets);
         }
 
         @NotNull
