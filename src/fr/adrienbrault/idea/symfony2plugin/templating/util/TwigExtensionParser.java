@@ -384,10 +384,10 @@ public class TwigExtensionParser  {
                             PsiElement[] parameters = element.getParameters();
                             String signature = null;
                             if(parameters.length > 0) {
-                                String className = PhpElementsUtil.getStringValue(parameters[1]);
+                                String className = PhpElementsUtil.getStringValue(parameters[0]);
                                 if(className != null) {
 
-                                    if(!className.startsWith("\\")) {
+                                    if(className.startsWith("\\")) {
                                         className = className.substring(1);
                                     }
 
