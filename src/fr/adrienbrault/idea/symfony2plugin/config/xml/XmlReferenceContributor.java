@@ -1,29 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
-import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.*;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlToken;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ClassReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ServiceReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -62,57 +56,28 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         );
 
         // <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
-        // <argument>FOS\UserBundle\Doctrine\UserManager</argument>
         registrar.registerReferenceProvider(
-            XmlPatterns.or(
-                XmlPatterns
-                    .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-                    .withText(StandardPatterns.string().contains("\\"))
-                    .withParent(XmlPatterns
-                        .xmlText()
-                        .withParent(XmlPatterns
-                            .xmlTag()
-                            .withName("parameter")
-                            .withAnyAttribute("key")
-                        ).inside(
-                            XmlHelper.getInsideTagPattern("services")
-                    ).inFile(XmlHelper.getXmlFilePattern())
-                    ),
-                XmlPatterns
-                    .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-                    .withText(StandardPatterns.string().contains("\\"))
-                    .withParent(XmlPatterns
-                        .xmlText()
-                        .withParent(XmlPatterns
-                            .xmlTag()
-                            .withName("argument")
-                        )
-                    ).inside(
-                        XmlHelper.getInsideTagPattern("services")
-                    ).inFile(XmlHelper.getXmlFilePattern())
-            ),
+            XmlHelper.getParameterClassValuePattern(),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-            new ClassReferenceProvider(false)
+                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    // get the service name "service_container"
+                    String text = psiElement.getText();
+                    return new PsiReference[]{ new PhpClassReference(psiElement, text) };
+
+                }
+            }
         );
 
-        // <service id="fos_user.group_manager.default" class="%fos_user.group_manager.class%"
         // <argument>%form.resolved_type_factory.class%</argument>
         registrar.registerReferenceProvider(
-
-            XmlPatterns
-                .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-                .withText(StandardPatterns.string().startsWith("%"))
-                .withParent(XmlPatterns
-                    .xmlText()
-                    .withParent(XmlPatterns
-                        .xmlTag()
-                        .withName("argument")
-                    )
-                ).inside(
-                XmlHelper.getInsideTagPattern("services")
-            ).inFile(XmlHelper.getXmlFilePattern()),
-
-
+            XmlHelper.getArgumentValuePattern(),
             new ParameterReferenceProvider().setTrimPercent(true).setTrimQuote(true)
         );
 

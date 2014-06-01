@@ -7,10 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlTagValue;
+import com.intellij.psi.xml.*;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
@@ -101,6 +98,44 @@ public class XmlHelper {
                             StandardPatterns.string().equalTo("service")
                         )
                     )
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
+     * <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getParameterClassValuePattern() {
+        // @TODO: check attribute value ends with ".class"
+        return XmlPatterns
+            .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
+            .withText(StandardPatterns.string().contains("\\"))
+            .withParent(XmlPatterns
+                .xmlText()
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withName("parameter")
+                    .withAnyAttribute("key")
+                ).inside(
+                    XmlHelper.getInsideTagPattern("services")
+                )
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
+     * <argument>%form.resolved_type_factory.class%</argument>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getArgumentValuePattern() {
+        return XmlPatterns
+            .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
+            .withText(StandardPatterns.string().startsWith("%"))
+            .withParent(XmlPatterns
+                .xmlText()
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withName("argument")
                 )
             ).inside(
                 XmlHelper.getInsideTagPattern("services")
