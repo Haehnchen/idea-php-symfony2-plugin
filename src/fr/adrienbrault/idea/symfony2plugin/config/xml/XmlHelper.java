@@ -130,7 +130,6 @@ public class XmlHelper {
     public static PsiElementPattern.Capture<PsiElement> getArgumentValuePattern() {
         return XmlPatterns
             .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-            .withText(StandardPatterns.string().startsWith("%"))
             .withParent(XmlPatterns
                 .xmlText()
                 .withParent(XmlPatterns

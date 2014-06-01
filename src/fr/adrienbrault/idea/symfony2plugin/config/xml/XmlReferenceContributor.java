@@ -3,15 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.xml.*;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ServiceReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
@@ -78,7 +74,23 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         // <argument>%form.resolved_type_factory.class%</argument>
         registrar.registerReferenceProvider(
             XmlHelper.getArgumentValuePattern(),
-            new ParameterReferenceProvider().setTrimPercent(true).setTrimQuote(true)
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement parent = psiElement.getParent();
+                    if(!(parent instanceof XmlText)) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new ParameterXmlReference(((XmlText) parent)) };
+                }
+            }
         );
 
         // <tag name="kernel.event_subscriber" />
@@ -123,11 +135,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         );
 
         registrar.registerReferenceProvider(
-            XmlPatterns.or(
-                XmlHelper.getParameterWithClassEndingPattern()
-                    .inside(XmlHelper.getInsideTagPattern("parameters"))
-                    .inFile(XmlHelper.getXmlFilePattern()
-                )
+
+            XmlHelper.getParameterWithClassEndingPattern()
+                .inside(XmlHelper.getInsideTagPattern("parameters"))
+                .inFile(XmlHelper.getXmlFilePattern()
+
             ),
             new PsiReferenceProvider() {
 
