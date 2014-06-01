@@ -5,6 +5,14 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.59
+* Add extensions for type and reference provider
+* Add instance check annotator for service classes of xml arguments
+* Add goto for parameter definition inside yaml and xml
+* Refactoring of xml service container references to provide many improvements in completion and navigation
+* Remove regular expressions from Twig_Extensions parser and use internal lexer to support more use cases
+* Add tail text for all Twig extensions and improve navigation
+
 ### 0.10.58
 * Add completion for yaml config root keys
 * Fix npe in config completion #284

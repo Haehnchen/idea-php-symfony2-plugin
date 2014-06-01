@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.58</version>
+    <version>0.10.59</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -91,6 +91,16 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.59</h2>
+<ul>
+    <li>Add extensions for type and reference provider</li>
+    <li>Add instance check annotator for service classes of xml arguments</li>
+    <li>Add goto for parameter definition inside yaml and xml</li>
+    <li>Refactoring of xml service container references to provide many improvements in completion and navigation</li>
+    <li>Remove regular expressions from Twig_Extensions parser and use internal lexer to support more use cases</li>
+    <li>Add tail text for all Twig extensions and improve navigation</li>
+</ul>
 
 <h2>0.10.58</h2>
 <ul>
