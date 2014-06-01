@@ -6,6 +6,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
@@ -17,7 +18,12 @@ import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ClassReferencePro
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ServiceReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -33,26 +39,26 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             new ServiceReferenceProvider()
         );
 
-        // <service id="fos_user.user_provider.username" class="FOS\UserBundle\Security\UserProvider">
+        // <service class="%foo.class%">
+        // <service class="Class\Name">
         registrar.registerReferenceProvider(
-            XmlPatterns
-                .xmlAttributeValue()
-                .withParent(XmlPatterns
-                    .xmlAttribute("class")
-                    .withValue(StandardPatterns
-                        .string().contains("\\")
-                    )
-                    .withParent(XmlPatterns
-                        .xmlTag()
-                        .withChild(
-                            XmlPatterns.xmlAttribute("id")
-                        )
-                    )
-                ).inside(
-                    XmlHelper.getInsideTagPattern("services")
-                ).inFile(XmlHelper.getXmlFilePattern()),
+            XmlHelper.getServiceIdPattern(),
 
-            new ClassReferenceProvider()
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof XmlAttributeValue)) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new ServiceIdReference(
+                        (XmlAttributeValue) psiElement)
+                    };
+
+                }
+            }
         );
 
         // <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
@@ -93,36 +99,19 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         // <argument>%form.resolved_type_factory.class%</argument>
         registrar.registerReferenceProvider(
 
-            XmlPatterns.or(
-                XmlPatterns
-                    .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-                    .withText(StandardPatterns.string().startsWith("%"))
+            XmlPatterns
+                .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
+                .withText(StandardPatterns.string().startsWith("%"))
+                .withParent(XmlPatterns
+                    .xmlText()
                     .withParent(XmlPatterns
-                        .xmlText()
-                        .withParent(XmlPatterns
-                            .xmlTag()
-                            .withName("argument")
-                        )
-                    ).inside(
-                        XmlHelper.getInsideTagPattern("services")
-                    ).inFile(XmlHelper.getXmlFilePattern()),
-                XmlPatterns
-                    .xmlAttributeValue()
-                    .withParent(XmlPatterns
-                        .xmlAttribute("class")
-                        .withValue(StandardPatterns
-                            .string().startsWith("%")
-                        )
-                        .withParent(XmlPatterns
-                            .xmlTag()
-                            .withChild(
-                                XmlPatterns.xmlAttribute("id")
-                            )
-                        )
-                    ).inside(
-                        XmlHelper.getInsideTagPattern("services")
-                    ).inFile(XmlHelper.getXmlFilePattern())
-            ),
+                        .xmlTag()
+                        .withName("argument")
+                    )
+                ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern()),
+
 
             new ParameterReferenceProvider().setTrimPercent(true).setTrimQuote(true)
         );
@@ -246,6 +235,30 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
             return new PsiReference[] { new ClassPublicMethodReference(psiElement, classAttribute.getValue())};
         }
+    }
+
+    private static class ServiceIdReference extends PsiPolyVariantReferenceBase<PsiElement> {
+
+        private final XmlAttributeValue psiElement;
+
+        public ServiceIdReference(XmlAttributeValue psiElement) {
+            super(psiElement);
+            this.psiElement = psiElement;
+        }
+
+        @NotNull
+        @Override
+        public ResolveResult[] multiResolve(boolean b) {
+            String value = this.psiElement.getValue();
+            return PsiElementResolveResult.createResults(ServiceUtil.getServiceClassTargets(getElement().getProject(), value));
+        }
+
+        @NotNull
+        @Override
+        public Object[] getVariants() {
+            return new Object[0];
+        }
+
     }
 
 }

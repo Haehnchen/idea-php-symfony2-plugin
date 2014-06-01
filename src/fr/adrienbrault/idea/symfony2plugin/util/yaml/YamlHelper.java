@@ -34,6 +34,10 @@ public class YamlHelper {
         return new YamlLocalServiceMap().getLocalParameterMap(psiElement);
     }
 
+    static public PsiElement getLocalParameterMap(PsiFile psiFile, String parameterName) {
+        return new YamlLocalServiceMap().getLocalParameterName(psiFile, parameterName);
+    }
+
     /**
      * getChildren eg on YamlArray is empty, provide workaround
      */
@@ -187,6 +191,16 @@ public class YamlHelper {
 
         @Nullable
         public PsiElement getLocalServiceName(PsiFile psiFile, String findServiceName) {
+            return getYamlKeyPath(psiFile, findServiceName, "services");
+        }
+
+        @Nullable
+        public PsiElement getLocalParameterName(PsiFile psiFile, String findServiceName) {
+            return getYamlKeyPath(psiFile, findServiceName, "parameters");
+        }
+
+        @Nullable
+        private PsiElement getYamlKeyPath(PsiFile psiFile, String findServiceName, String rootKey) {
 
             if(!(psiFile.getFirstChild() instanceof YAMLDocument)) {
                 return null;
@@ -202,7 +216,7 @@ public class YamlHelper {
 
             for(YAMLKeyValue yamlKeyValue : yamlKeys) {
                 String yamlConfigKey = yamlKeyValue.getName();
-                if(yamlConfigKey != null && yamlConfigKey.equals("services")) {
+                if(yamlConfigKey != null && yamlConfigKey.equals(rootKey)) {
 
                     YAMLKeyValue yamlServices[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
                     if(yamlServices != null) {

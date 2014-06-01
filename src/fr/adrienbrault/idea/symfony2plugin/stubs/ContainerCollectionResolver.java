@@ -325,18 +325,8 @@ public class ContainerCollectionResolver {
 
                     // indexes is weak stuff, dont overwrite compiled ones
                     if(!this.containerParameterMap.containsKey(parameterName)) {
-
-                        String value = null;
-
-                        // one parameter definition can be in multiple files, use first match for now
-                        // @TODO: at least we should skip null
                         List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, getSearchScope(project));
-                        if(parameterValues.size() > 0) {
-                            value = parameterValues.get(0);
-                        }
-
-                        this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, value, true));
-
+                        this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, parameterValues, true));
                     }
                 }
 

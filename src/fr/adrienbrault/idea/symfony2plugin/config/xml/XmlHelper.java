@@ -107,6 +107,25 @@ public class XmlHelper {
             ).inFile(XmlHelper.getXmlFilePattern());
     }
 
+    /**
+     * <service class="%foo.class%">
+     */
+    public static XmlAttributeValuePattern getServiceIdPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("class")
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withChild(
+                        XmlPatterns.xmlAttribute("id")
+                    )
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
     public static PsiFilePattern.Capture<PsiFile> getXmlFilePattern() {
         return XmlPatterns.psiFile()
             .withName(XmlPatterns
@@ -165,6 +184,39 @@ public class XmlHelper {
                     if(servicesTag.getName().equals("services")) {
                         for(XmlTag serviceTag: servicesTag.getSubTags()) {
                             XmlAttribute attrValue = serviceTag.getAttribute("id");
+                            if(attrValue != null) {
+                                String serviceNameId = attrValue.getValue();
+                                if(serviceNameId != null && serviceNameId.equals(serviceName)) {
+                                    return serviceTag;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static PsiElement getLocalParameterName(PsiFile psiFile, String serviceName) {
+
+        if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
+            return null;
+        }
+
+        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        if(xmlTags == null) {
+            return null;
+        }
+
+        for(XmlTag xmlTag: xmlTags) {
+            if(xmlTag.getName().equals("container")) {
+                for(XmlTag servicesTag: xmlTag.getSubTags()) {
+                    if(servicesTag.getName().equals("parameters")) {
+                        for(XmlTag serviceTag: servicesTag.getSubTags()) {
+                            XmlAttribute attrValue = serviceTag.getAttribute("key");
                             if(attrValue != null) {
                                 String serviceNameId = attrValue.getValue();
                                 if(serviceNameId != null && serviceNameId.equals(serviceName)) {

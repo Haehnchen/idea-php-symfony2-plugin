@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
@@ -19,6 +20,7 @@ import org.jetbrains.yaml.YAMLTokenTypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -98,12 +100,8 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return new PsiElement[0];
         }
 
-        String resolvedParameter = ContainerCollectionResolver.resolveParameter(psiElement.getProject(), psiParameterName);
-        if(resolvedParameter == null) {
-            return new PsiElement[0];
-        }
-
-        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), resolvedParameter);
+        Collection<PsiElement> targets = ServiceUtil.getServiceClassTargets(psiElement.getProject(), psiParameterName);
+        return targets.toArray(new PsiElement[targets.size()]);
     }
 
     protected List<PsiFile> templateGoto(PsiElement psiElement, String templateName) {

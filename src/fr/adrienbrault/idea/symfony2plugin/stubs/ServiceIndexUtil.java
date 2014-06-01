@@ -66,6 +66,27 @@ public class ServiceIndexUtil {
         return items;
     }
 
+    public static List<PsiElement> findParameterDefinitions(PsiFile psiFile, String parameterName) {
+
+        List<PsiElement> items = new ArrayList<PsiElement>();
+
+        if(psiFile instanceof YAMLFile) {
+            PsiElement servicePsiElement = YamlHelper.getLocalParameterMap(psiFile, parameterName);
+            if(servicePsiElement != null) {
+                items.add(servicePsiElement);
+            }
+        }
+
+        if(psiFile instanceof XmlFile) {
+            PsiElement localParameterName = XmlHelper.getLocalParameterName(psiFile, parameterName);
+            if(localParameterName != null) {
+                items.add(localParameterName);
+            }
+        }
+
+        return items;
+    }
+
     public static PsiElement[] findServiceDefinitions(@Nullable PhpClass phpClass) {
 
         if(phpClass == null) {
