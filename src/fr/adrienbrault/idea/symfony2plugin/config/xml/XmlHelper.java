@@ -175,31 +175,6 @@ public class XmlHelper {
         return XmlPatterns.psiElement(XmlTag.class).withName(XmlPatterns.string().oneOf(insideTagName));
     }
 
-    @Deprecated
-    @Nullable
-    public static HashMap<String, String> getLocalMissingParameterMap(PsiElement psiElement,@Nullable Map<String, String> currentServiceMap) {
-
-        VirtualFile virtualFile = psiElement.getContainingFile().getOriginalFile().getVirtualFile();
-        if(virtualFile != null) {
-            ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
-            parameterServiceParser.parser(VfsUtil.virtualToIoFile(virtualFile));
-            HashMap<String, String> unknownParameterMap = new HashMap<String, String>();
-
-            for(Map.Entry<String, String> entry: parameterServiceParser.getParameterMap().entrySet()) {
-                if(currentServiceMap == null) {
-                    unknownParameterMap.put(entry.getKey(), entry.getValue());
-                } else if ( !currentServiceMap.containsKey(entry.getKey())) {
-                    unknownParameterMap.put(entry.getKey(), entry.getValue());
-                }
-            }
-
-            return unknownParameterMap;
-        }
-
-
-        return null;
-    }
-
     @Nullable
     public static PsiElement getLocalServiceName(PsiFile psiFile, String serviceName) {
 
