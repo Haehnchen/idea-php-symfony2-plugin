@@ -8,12 +8,11 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +28,7 @@ public class TwigExtensionParser  {
     }
 
     public HashMap<String, TwigExtension> getFunctions() {
-        if(filters == null) {
+        if(functions == null) {
             this.parseElementType(TwigElementType.METHOD);
         }
         return functions;
@@ -52,15 +51,16 @@ public class TwigExtensionParser  {
 
     private void parseElementType(TwigElementType type) {
 
+
+        Set<String> classNames = new HashSet<String>();
+
         // only the interface gaves use all elements; container dont hold all
-        PhpIndex phpIndex = PhpIndex.getInstance(this.project);
-        ArrayList<String> classNames = new ArrayList<String>();
-        for(PhpClass phpClass : phpIndex.getAllSubclasses("\\Twig_ExtensionInterface")) {
+        for(PhpClass phpClass : PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface")) {
+            // dont add unit tests classes
             if(!PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
                 String className = phpClass.getPresentableFQN();
                 if(className != null) {
-                    // signature class names need slash at first
-                    classNames.add(className.startsWith("\\") ? className : "\\" + className);
+                    classNames.add(className);
                 }
             }
         }
@@ -75,29 +75,22 @@ public class TwigExtensionParser  {
 
     }
 
-    private void parseFilters(ArrayList<String> classNames) {
+    private void parseFilters(Collection<String> classNames) {
         this.filters = new HashMap<String, TwigExtension>();
         for(String phpClassName : classNames) {
-            PhpIndex phpIndex = PhpIndex.getInstance(this.project);
-            Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature("#M#C" + phpClassName + "." + "getFilters", null, 0);
-            for(PhpNamedElement phpNamedElement: phpNamedElementCollections) {
-                if(phpNamedElement instanceof Method) {
-                    parseFilter((Method) phpNamedElement, this.filters);
-                }
+            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getFilters");
+            if(method != null) {
+                parseFilter(method, this.filters);
             }
         }
     }
 
-    private void parseFunctions(ArrayList<String> classNames) {
+    private void parseFunctions(Collection<String> classNames) {
         this.functions = new HashMap<String, TwigExtension>();
         for(String phpClassName : classNames) {
-
-            PhpIndex phpIndex = PhpIndex.getInstance(this.project);
-            Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature("#M#C" + phpClassName + "." + "getFunctions", null, 0);
-            for(PhpNamedElement phpNamedElement: phpNamedElementCollections) {
-                if(phpNamedElement instanceof Method) {
-                    parseFunctions((Method) phpNamedElement, this.functions);
-                }
+            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getFunctions");
+            if(method != null) {
+                parseFunctions(method, this.functions);
             }
         }
     }
