@@ -12,7 +12,7 @@ public class TwigExtension {
         this.twigExtensionType = twigExtensionType;
     }
 
-    public TwigExtension(TwigExtensionParser.TwigExtensionType twigExtensionType, String signature) {
+    public TwigExtension(TwigExtensionParser.TwigExtensionType twigExtensionType, @Nullable String signature) {
         this(twigExtensionType);
         this.signature = signature;
     }

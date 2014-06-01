@@ -1,15 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.impl.NewExpressionImpl;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
@@ -95,33 +100,49 @@ public class TwigExtensionParser  {
         }
     }
 
-    protected HashMap<String, TwigExtension> parseFunctions(Method method, HashMap<String, TwigExtension> filters) {
+    protected Map<String, TwigExtension> parseFunctions(final Method method, final HashMap<String, TwigExtension> filters) {
 
-        String text = method.getText();
-
-        Matcher simpleFunction = Pattern.compile("[\\\\]*(Twig_SimpleFunction)[\\s+]*\\(['\"](.*?)['\"][\\s+]*,(.*?)[,|)]").matcher(text);
-        while(simpleFunction.find()){
-            if(!simpleFunction.group(2).contains("*")) {
-                filters.put(simpleFunction.group(2),  new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, "#F" + PsiElementUtils.trimQuote(simpleFunction.group(3).trim())));
-            }
+        final PhpClass containingClass = method.getContainingClass();
+        if(containingClass == null) {
+            return new HashMap<String, TwigExtension>();
         }
 
-        Matcher filterFunction = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Function_Method)\\((.*?),(.*?)[,|)]").matcher(text);
-        while(filterFunction.find()){
-            if(!filterFunction.group(1).contains("*")) {
-                filters.put(filterFunction.group(1), new TwigExtension(TwigExtensionType.FUNCTION_METHOD, findThisMethod(method, filterFunction)));
-            }
-        }
-
-        Matcher filterFunctionNode = Pattern.compile("['\"](.*?)['\"][\\s+]*=>[\\s+]*new[\\s+]*[\\\\]*(Twig_Function_Node)\\((.*?),").matcher(text);
-        while(filterFunctionNode.find()){
-            if(!filterFunctionNode.group(1).contains("*")) {
-                filters.put(filterFunctionNode.group(1), new TwigExtension(TwigExtensionType.FUNCTION_NODE, "#M#C\\" + PsiElementUtils.trimQuote(filterFunctionNode.group(3).trim()) + ".compile"));
-            }
-        }
+        method.acceptChildren(new TwigFunctionVisitor(method, filters, containingClass));
 
         return filters;
 
+    }
+
+    /**
+     *  Get signature for callable like array($this, 'getUrl'), or 'function'
+     */
+    @Nullable
+    private String getCallableSignature(PsiElement psiElement, Method method) {
+
+        // array($this, 'getUrl')
+        if(psiElement instanceof ArrayCreationExpression) {
+            List<PsiElement> arrayValues = (List<PsiElement>) PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE));
+            if(arrayValues.size() > 1) {
+                PsiElement firstChild = arrayValues.get(0).getFirstChild();
+                if(firstChild instanceof Variable && "this".equals(((Variable) firstChild).getName())) {
+                    String methodName = PhpElementsUtil.getStringValue(arrayValues.get(1).getFirstChild());
+                    if(StringUtils.isNotBlank(methodName)) {
+                        PhpClass phpClass = method.getContainingClass();
+                        if(phpClass != null) {
+                            return String.format("#M#C\\%s.%s", phpClass.getPresentableFQN(), methodName);
+                        }
+                    }
+                }
+            }
+
+        } else {
+            String funcTargetName = PhpElementsUtil.getStringValue(psiElement);
+            if(funcTargetName != null) {
+                return "#F" + funcTargetName;
+            }
+        }
+
+        return null;
     }
 
     protected HashMap<String, TwigExtension> parseFilter(Method method, HashMap<String, TwigExtension> filters) {
@@ -189,4 +210,120 @@ public class TwigExtensionParser  {
         return PhpIcons.WEB_ICON;
     }
 
+    private class TwigFunctionVisitor extends PsiRecursiveElementWalkingVisitor {
+        private final Method method;
+        private final HashMap<String, TwigExtension> filters;
+        private final PhpClass containingClass;
+
+        public TwigFunctionVisitor(Method method, HashMap<String, TwigExtension> filters, PhpClass containingClass) {
+            this.method = method;
+            this.filters = filters;
+            this.containingClass = containingClass;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            if(element instanceof NewExpressionImpl) {
+                this.visitNewExpression((NewExpressionImpl) element);
+            }
+            super.visitElement(element);
+        }
+
+        private void visitNewExpression(NewExpressionImpl element) {
+
+            ClassReference classReference = element.getClassReference();
+            if(classReference == null) {
+                return;
+            }
+
+            String expressionName = classReference.getName();
+
+            // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
+            if("Twig_SimpleFunction".equals(expressionName)) {
+                PsiElement[] psiElement = element.getParameters();
+                if(psiElement.length > 0) {
+                    String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
+                    if(funcName != null && !funcName.contains("*")) {
+
+                        String signature = null;
+                        if(psiElement.length > 1) {
+                            signature = getCallableSignature(psiElement[1], method);
+                        }
+
+                        filters.put(funcName,  new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, signature));
+
+                    }
+
+                }
+
+                return;
+            }
+
+            //array('form_javascript' => new \Twig_Function_Method($this, 'renderJavascript', array('is_safe' => array('html'))),);
+            if("Twig_Function_Method".equals(expressionName)) {
+                PsiElement arrayValue = element.getParent();
+                if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+                    PsiElement arrayHash = arrayValue.getParent();
+                    if(arrayHash instanceof ArrayHashElement) {
+                        PsiElement arrayKey = ((ArrayHashElement) arrayHash).getKey();
+                        String funcName = PhpElementsUtil.getStringValue(arrayKey);
+                        if(funcName != null && !funcName.contains("*")) {
+
+                            PsiElement[] parameters = element.getParameters();
+                            String signature = null;
+                            if(parameters.length > 1) {
+                                if(parameters[0] instanceof Variable && "this".equals(((Variable) parameters[0]).getName())) {
+                                    String methodName = PhpElementsUtil.getStringValue(parameters[1]);
+                                    if(methodName != null) {
+                                        String presentableFQN = containingClass.getPresentableFQN();
+                                        if(presentableFQN != null) {
+                                            signature = String.format("#M#C\\%s.%s", presentableFQN, methodName);
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            filters.put(funcName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature));
+                        }
+                    }
+                }
+
+                return;
+            }
+
+            // array('form_help' => new \Twig_Function_Node('Symfony\Bridge\Twig\Node\SearchAndRenderBlockNode', array('is_safe' => array('html'))),)
+            if("Twig_Function_Node".equals(expressionName)) {
+                PsiElement arrayValue = element.getParent();
+                if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+                    PsiElement arrayHash = arrayValue.getParent();
+                    if(arrayHash instanceof ArrayHashElement) {
+                        PsiElement arrayKey = ((ArrayHashElement) arrayHash).getKey();
+                        String funcName = PhpElementsUtil.getStringValue(arrayKey);
+                        if(funcName != null && !funcName.contains("*")) {
+
+                            PsiElement[] parameters = element.getParameters();
+                            String signature = null;
+                            if(parameters.length > 0) {
+                                String className = PhpElementsUtil.getStringValue(parameters[1]);
+                                if(className != null) {
+
+                                    if(!className.startsWith("\\")) {
+                                        className = className.substring(1);
+                                    }
+
+                                    signature = String.format("#M#C\\%s.%s", className, "compile");
+                                }
+
+                            }
+
+                            filters.put(funcName, new TwigExtension(TwigExtensionType.FUNCTION_NODE, signature));
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
 }
