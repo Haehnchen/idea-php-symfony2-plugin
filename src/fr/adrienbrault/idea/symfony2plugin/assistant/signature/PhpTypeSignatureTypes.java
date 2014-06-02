@@ -2,13 +2,11 @@ package fr.adrienbrault.idea.symfony2plugin.assistant.signature;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,12 +27,16 @@ public class PhpTypeSignatureTypes {
 
         @Nullable
         public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
-            String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(parameter);
-            if (null == serviceClass) {
-                return null;
+
+            ContainerService containerService = ContainerCollectionResolver.getService(project, parameter);
+            if(containerService != null) {
+                String serviceClass = containerService.getClassName();
+                if(serviceClass != null) {
+                    return PhpIndex.getInstance(project).getAnyByFQN(serviceClass);
+                }
             }
 
-            return PhpIndex.getInstance(project).getAnyByFQN(serviceClass);
+            return null;
         }
 
         @NotNull
