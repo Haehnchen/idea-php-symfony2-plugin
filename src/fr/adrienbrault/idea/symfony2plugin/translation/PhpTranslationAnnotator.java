@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -86,6 +87,7 @@ public class PhpTranslationAnnotator implements Annotator {
 
         String keyName = psiElement.getContents();
 
+
         // should not annotate "foo$bar"
         // @TODO: regular expression to only notice translation keys and not possible text values
         if(keyName.contains("$")) {
@@ -98,13 +100,13 @@ public class PhpTranslationAnnotator implements Annotator {
         }
 
         // search for possible domain targets and provide translation key creation fix
-        if(psiElement.getContents().length() > 0 && TranslationUtil.getTranslationPsiElements(psiElement.getProject(), psiElement.getContents(), domainName).length == 0) {
+        if(StringUtils.isNotBlank(keyName) && !TranslationUtil.hasTranslationKey(psiElement.getProject(), keyName, domainName)) {
 
             Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
             List<PsiFile> psiElements = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), domainName);
             for(PsiElement psiFile: psiElements) {
                 if(psiFile instanceof YAMLFile) {
-                    annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, psiElement.getContents()));
+                    annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, keyName));
                 }
             }
         }
@@ -113,9 +115,12 @@ public class PhpTranslationAnnotator implements Annotator {
 
     private void annotateTranslationDomain(StringLiteralExpression psiElement, @NotNull AnnotationHolder holder) {
 
-        if(psiElement.getContents().length() > 0 && TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getContents()).size() == 0) {
-            holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
+        String contents = psiElement.getContents();
+        if(StringUtils.isBlank(contents) || TranslationUtil.hasDomain(psiElement.getProject(), contents)) {
+            return;
         }
+
+        holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
 
     }
 

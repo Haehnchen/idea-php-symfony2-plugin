@@ -62,18 +62,25 @@ public class TwigAnnotator implements Annotator {
     }
 
     private void annotateTranslationKey(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+
         if(!TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
             return;
         }
 
-        String domainName = TwigUtil.getPsiElementTranslationDomain(psiElement);
-        if(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), psiElement.getText(), domainName).length == 0) {
+        String text = psiElement.getText();
+        if(StringUtils.isBlank(text)) {
+            return;
+        }
 
+        // get domain on file scope or method parameter
+        String domainName = TwigUtil.getPsiElementTranslationDomain(psiElement);
+
+        if(!TranslationUtil.hasTranslationKey(psiElement.getProject(), text, domainName)) {
             Annotation annotationHolder = holder.createWarningAnnotation(psiElement, "Missing Translation");
             List<PsiFile> psiElements = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), domainName);
             for(PsiElement psiFile: psiElements) {
                 if(psiFile instanceof YAMLFile) {
-                    annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, psiElement.getText()));
+                    annotationHolder.registerFix(new TranslationKeyIntentionAction((YAMLFile) psiFile, text));
                 }
             }
         }
@@ -81,13 +88,15 @@ public class TwigAnnotator implements Annotator {
     }
 
     private void annotateTranslationDomain(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+
         if(!TwigHelper.getTransDomainPattern().accepts(psiElement)) {
             return;
         }
 
         PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
         if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-            if(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText()).size() == 0) {
+            String text = psiElement.getText();
+            if(StringUtils.isNotBlank(text) && !TranslationUtil.hasDomain(psiElement.getProject(), text)) {
                 holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
             }
         }

@@ -25,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -134,18 +135,33 @@ public class TranslationUtil {
         return psiFoundElements.toArray(new PsiElement[psiFoundElements.size()]);
     }
 
-    public static boolean hasTranslationKey(Project project, String keyName, String domainName) {
+    public static boolean hasDomain(Project project, String domainName) {
+        return TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName) ||
+            FileBasedIndexImpl.getInstance().getValues(
+                YamlTranslationStubIndex.KEY,
+                domainName,
+                GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML)
+            ).size() > 0;
+    }
 
-        if(TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName)) {
+    public static boolean hasTranslationKey(@NotNull Project project, String keyName, String domainName) {
+
+        if(!hasDomain(project, domainName)) {
             return false;
         }
 
         Set<String> domainMap = TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName);
-        if(domainMap == null) {
-            return false;
+        if(domainMap != null && domainMap.contains(keyName)) {
+            return true;
         }
 
-        return domainMap.contains(keyName);
+        for(String keys[]: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML))){
+            if(Arrays.asList(keys).contains(keyName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

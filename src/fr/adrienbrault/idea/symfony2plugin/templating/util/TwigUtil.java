@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -151,6 +152,7 @@ public class TwigUtil {
      * @param psiElement some print block like that 'a'|trans
      * @return matched domain or "messages" fallback
      */
+    @NotNull
     public static String getPsiElementTranslationDomain(PsiElement psiElement) {
         String domain = getDomainTrans(psiElement);
         if(domain == null) {
