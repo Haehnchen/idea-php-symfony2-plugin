@@ -43,6 +43,7 @@ public class TranslationPsiParser {
                 String fileName = fileEntry.getName();
                 if(fileName.startsWith("catalogue") && fileName.endsWith("php")) {
                     this.parse(fileEntry);
+                    this.translationStringMap.addFile(fileName, fileEntry.lastModified());
                 }
             }
         }

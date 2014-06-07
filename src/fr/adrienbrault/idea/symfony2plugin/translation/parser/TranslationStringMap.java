@@ -11,9 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TranslationStringMap {
 
     private Map<String, Set<String>> domainMap;
+    private Map<String, Long> fileNames;
+
+    public Map<String, Long>getFileNames() {
+        return fileNames;
+    }
 
     public TranslationStringMap() {
         this.domainMap = new ConcurrentHashMap<String, Set<String>>();
+        this.fileNames = new HashMap<String, Long>();
     }
 
     @Nullable
@@ -47,6 +53,9 @@ public class TranslationStringMap {
 
     }
 
+    public void addFile(String filename, Long changed) {
+        this.fileNames.put(filename, changed);
+    }
 
 }
 

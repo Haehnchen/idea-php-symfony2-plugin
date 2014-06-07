@@ -19,6 +19,7 @@ public class TranslationIndex {
 
     protected Project project;
 
+    @Nullable
     private TranslationStringMap translationStringMap;
     private Long translationStringMapModified;
 
@@ -41,7 +42,7 @@ public class TranslationIndex {
     }
 
 
-    public TranslationStringMap getTranslationMap() {
+    synchronized public TranslationStringMap getTranslationMap() {
 
         if(this.translationStringMap != null && this.isCacheValid()) {
             return this.translationStringMap;
@@ -67,7 +68,51 @@ public class TranslationIndex {
         }
 
         Long translationModified = translationRootPath.lastModified();
-        return translationModified.equals(translationStringMapModified);
+        if(!translationModified.equals(translationStringMapModified)) {
+            return false;
+        }
+
+        // @TODO make this more abstract
+        // we check for possible file modifications here per translation file
+        if(this.translationStringMap != null) {
+
+
+            File file = new File(translationRootPath.getPath());
+
+            // use cache in any i/o error
+            File[] files = file.listFiles();
+            if(null == files) {
+                return true;
+            }
+
+            // directory is empty or not exits, before and after instance
+            Map<String, Long> fileNames = this.translationStringMap.getFileNames();
+            if(files.length == 0 && fileNames.size() == 0) {
+                return true;
+            }
+
+            for (File fileEntry : files) {
+                if (!fileEntry.isDirectory()) {
+                    String fileName = fileEntry.getName();
+                    if(fileName.startsWith("catalogue") && fileName.endsWith("php")) {
+
+
+                        if(!fileNames.containsKey(fileName)) {
+                            return false;
+                        }
+
+                        if(!fileNames.get(fileName).equals(fileEntry.lastModified())) {
+                            return false;
+                        }
+
+                    }
+                }
+            }
+
+
+        }
+
+        return true;
     }
 
     @Nullable
