@@ -309,17 +309,21 @@ public class TwigUtil {
 
     }
 
-    public static Map<String, PsiFile> getTemplateName(TwigFile twigFile) {
+    public static Map<String, PsiFile> getTemplateName(TwigFile twigFile, Map<String, PsiFile> templateMap) {
 
         Map<String, PsiFile> map = new HashMap<String, PsiFile>();
 
-        for(Map.Entry<String, PsiFile> entry: TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false).entrySet()) {
+        for(Map.Entry<String, PsiFile> entry: templateMap.entrySet()) {
             if(twigFile.getVirtualFile().equals(entry.getValue().getVirtualFile())) {
                 map.put(entry.getKey(), twigFile);
             }
         }
 
         return map;
+    }
+
+    public static Map<String, PsiFile> getTemplateName(TwigFile twigFile) {
+        return getTemplateName(twigFile, TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false));
     }
 
     public static HashMap<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {

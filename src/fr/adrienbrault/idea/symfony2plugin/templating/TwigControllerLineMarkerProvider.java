@@ -35,6 +35,9 @@ import java.util.*;
 
 public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
+
+    private Map<String, PsiFile> templateMapCache = null;
+
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
 
@@ -58,25 +61,24 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             // controller
             if(psiElement instanceof TwigFile) {
                 attachController((TwigFile) psiElement, results);
-            }
 
-            // attach parent includes goto
-            if(psiElement instanceof TwigFile) {
-                LineMarkerInfo lineOverwrites = attachIncludes((TwigFile) psiElement);
-                if(lineOverwrites != null) {
-                    results.add(lineOverwrites);
+                // attach parent includes goto
+                LineMarkerInfo lineIncludes = attachIncludes((TwigFile) psiElement);
+                if(lineIncludes != null) {
+                    results.add(lineIncludes);
                 }
-            }
 
-            // attach parent includes goto
-            if(psiElement instanceof TwigFile) {
-                LineMarkerInfo lineOverwrites = attachFromIncludes((TwigFile) psiElement);
-                if(lineOverwrites != null) {
-                    results.add(lineOverwrites);
+                // attach parent includes goto
+                LineMarkerInfo lineFromInclude = attachFromIncludes((TwigFile) psiElement);
+                if(lineFromInclude != null) {
+                    results.add(lineFromInclude);
                 }
             }
 
         }
+
+        // reset cache
+        templateMapCache = null;
 
     }
 
@@ -120,7 +122,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false);
+        Map<String, PsiFile> files = getTemplateFilesByName(twigFile.getProject());
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
         for(PsiElement blockTag: targets) {
@@ -129,6 +131,10 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
         return getRelatedPopover("Implementations", "Impl: " ,twigFile, gotoRelatedItems);
 
+    }
+
+    private Map<String, PsiFile> getTemplateFilesByName(Project project) {
+        return this.templateMapCache == null ? TwigHelper.getTemplateFilesByName(project, true, false) : this.templateMapCache;
     }
 
     @Nullable
@@ -157,7 +163,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false);
+        Map<String, PsiFile> files = getTemplateFilesByName(twigFile.getProject());
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
         for(PsiElement blockTag: targets) {
@@ -189,7 +195,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, false);
+        Map<String, PsiFile> files = getTemplateFilesByName(psiElement.getProject());
 
         List<PsiFile> twigChild = new ArrayList<PsiFile>();
         getTwigChildList(files, psiFile, twigChild, 8);
@@ -228,12 +234,12 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
     @Nullable
     private LineMarkerInfo attachBlockOverwrites(PsiElement psiElement) {
 
-        Map<String, PsiFile> files = TwigHelper.getTemplateFilesByName(psiElement.getProject(), true, false);
-
         PsiElement[] blocks = TwigTemplateGoToDeclarationHandler.getBlockGoTo(psiElement);
         if(blocks.length == 0) {
             return null;
         }
+
+        Map<String, PsiFile> files = getTemplateFilesByName(psiElement.getProject());
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
         for(PsiElement blockTag: blocks) {
