@@ -1,24 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -62,9 +58,14 @@ public class TranslationPsiParser {
             return;
         }
 
-        PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
+        PsiFile psiFile;
+        try {
+            psiFile = PhpPsiElementFactory.createPsiFileFromText(this.project, StreamUtil.readText(virtualFile.getInputStream(), "UTF-8"));
+        } catch (IOException e) {
+            return;
+        }
+
         if(psiFile == null) {
-            Symfony2ProjectComponent.getLogger().info("PsiManager missing translation: " + file.getPath());
             return;
         }
 
