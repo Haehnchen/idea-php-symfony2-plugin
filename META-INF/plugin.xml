@@ -378,6 +378,24 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection"/>
 
+        <localInspection groupPath="Symfony2" shortName="Symfony2YamlRouteDuplicateInspection" displayName="Duplicate Route"
+                         groupName="Route"
+                         enabledByDefault="true" level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection"/>
+
+        <localInspection groupPath="Symfony2" shortName="Symfony2YamlDuplicateServiceKeyInspection" displayName="Duplicate Key"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection"/>
+
+        <localInspection groupPath="Symfony2" shortName="Symfony2YamlDuplicateParameterKeyInspection" displayName="Duplicate Key"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateParameterKeyInspection"/>
+
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"

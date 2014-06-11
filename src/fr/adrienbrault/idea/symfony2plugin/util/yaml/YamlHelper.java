@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 
+import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -483,6 +485,40 @@ public class YamlHelper {
             PsiElement yamlKeyValueParent = yamlCompount.getParent();
             if(yamlKeyValueParent instanceof YAMLKeyValue) {
                 getParentArrayKeys((YAMLKeyValue) yamlKeyValueParent, key);
+            }
+        }
+
+    }
+
+    /**
+     *
+     * @param keyContext Should be Document or YAMLCompoundValueImpl which holds the key value children
+     */
+    public static void attachDuplicateKeyInspection(PsiElement keyContext, @NotNull ProblemsHolder holder) {
+
+        Map<String, PsiElement> psiElementMap = new HashMap<String, PsiElement>();
+        Set<PsiElement> yamlKeyValues = new HashSet<PsiElement>();
+
+        Collection<YAMLKeyValue> collection = PsiTreeUtil.getChildrenOfTypeAsList(keyContext, YAMLKeyValue.class);
+        for(YAMLKeyValue yamlKeyValue: collection) {
+            String keyText = PsiElementUtils.trimQuote(yamlKeyValue.getKeyText());
+            if(StringUtils.isNotBlank(keyText)) {
+                if(psiElementMap.containsKey(keyText)) {
+                    yamlKeyValues.add(psiElementMap.get(keyText));
+                    yamlKeyValues.add(yamlKeyValue);
+                } else {
+                    psiElementMap.put(keyText, yamlKeyValue);
+                }
+
+            }
+
+        }
+
+        if(yamlKeyValues.size() > 0) {
+            for(PsiElement psiElement: yamlKeyValues) {
+                if(psiElement instanceof YAMLKeyValue) {
+                    holder.registerProblem(((YAMLKeyValue) psiElement).getKey(), "Duplicate Key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                }
             }
         }
 
