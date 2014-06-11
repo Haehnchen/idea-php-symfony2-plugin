@@ -5,8 +5,8 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Method;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +50,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
                             Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), yamlKeyValue1.getValueText());
                             if(method != null) {
-                                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.METHOD).
+                                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
                                     setTargets(method).
                                     setTooltipText("Navigate to action");
 
