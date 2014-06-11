@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.59</version>
+    <version>0.10.60</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -91,6 +91,17 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.60</h2>
+<ul>
+    <li>Fix translation annotator to not highlight compiled elements <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/262">#262</a></li>
+    <li>Fix non reload of translations which are outside PhpStorm index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/262">#262</a></li>
+    <li>Add per translation file change indicator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/262">#262</a></li>
+    <li>Cache twig file linemaker per file change request</li>
+    <li>Add linemaker for routes in yaml</li>
+    <li>Add duplicate key inspection for container files of yaml and xml</li>
+    <li>Add duplicate route name inspection for yaml file</li>
+</ul>
 
 <h2>0.10.59</h2>
 <ul>

@@ -5,6 +5,15 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.60
+* Fix translation annotator to not highlight compiled elements #262
+* Fix non reload of translations which are outside PhpStorm index #262
+* Add per translation file change indicator #262
+* Cache twig file linemaker per file change request
+* Add linemaker for routes in yaml
+* Add duplicate key inspection for container files of yaml and xml
+* Add duplicate route name inspection for yaml file
+
 ### 0.10.59
 * Add extensions for type and reference provider
 * Add instance check annotator for service classes of xml arguments
