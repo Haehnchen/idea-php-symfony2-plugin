@@ -396,6 +396,18 @@
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateParameterKeyInspection"/>
 
+        <localInspection groupPath="Symfony2" shortName="Symfony2XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection"/>
+
+        <localInspection groupPath="Symfony2" shortName="Symfony2XmlDuplicateParameterKeyInspection" displayName="Duplicate Key"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateParameterKeyInspection"/>
+
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
