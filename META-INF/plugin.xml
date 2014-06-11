@@ -1,4 +1,4 @@
-<idea-plugin version="2" url="https://github.com/haehnchen/idea-php-symfony2-plugin">
+<idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
     <version>0.10.59</version>
@@ -360,6 +360,7 @@
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigControllerLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.YamlLineMarkerProvider"/>
 
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
