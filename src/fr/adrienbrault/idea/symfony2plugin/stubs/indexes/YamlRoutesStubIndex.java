@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -49,11 +50,12 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
                         return map;
                     }
 
-                    if(!(psiFile.getFirstChild() instanceof YAMLDocument)) {
+                    YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+                    if(yamlDocument == null) {
                         return map;
                     }
 
-                    Set<String> localServiceMap = RouteHelper.getYamlRouteNames((YAMLDocument) psiFile.getFirstChild());
+                    Set<String> localServiceMap = RouteHelper.getYamlRouteNames(yamlDocument);
                     if(localServiceMap == null || localServiceMap.size() == 0) {
                         return map;
                     }
