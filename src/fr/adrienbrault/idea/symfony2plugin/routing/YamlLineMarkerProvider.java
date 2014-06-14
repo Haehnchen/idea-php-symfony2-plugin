@@ -35,6 +35,8 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         /*
          * foo:
          *   defaults: { _controller: "Bundle:Foo:Bar" }
+         *   defaults:
+         *      _controller: "Bundle:Foo:Bar"
          */
         if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLDocument) {
             YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue((YAMLKeyValue) psiElement, "defaults");
@@ -42,13 +44,18 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
                 YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(yamlKeyValue, YAMLCompoundValue.class);
                 if(yamlCompoundValue != null) {
 
-                    // @TODO: not only support hash elements
-                    YAMLHash yamlHashElement = PsiTreeUtil.getChildOfType(yamlCompoundValue, YAMLHash.class);
-                    if(yamlHashElement != null) {
-                        YAMLKeyValue yamlKeyValue1 = YamlHelper.getYamlKeyValue(yamlHashElement, "_controller", true);
-                        if(yamlKeyValue1 != null) {
+                    // if we have a child of YAMLKeyValue, we need to go back to parent
+                    // else on YAMLHash we can directly visit array keys
+                    PsiElement yamlHashElement = PsiTreeUtil.getChildOfAnyType(yamlCompoundValue, YAMLHash.class, YAMLKeyValue.class);
+                    if(yamlHashElement instanceof YAMLKeyValue) {
+                        yamlHashElement = yamlCompoundValue;
+                    }
 
-                            Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), yamlKeyValue1.getValueText());
+                    if(yamlHashElement != null) {
+                        YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(yamlHashElement, "_controller", true);
+                        if(yamlKeyValueController != null) {
+
+                            Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), yamlKeyValueController.getValueText());
                             if(method != null) {
                                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
                                     setTargets(method).
