@@ -23,7 +23,7 @@ import java.util.*;
 
 public class YamlHelper {
 
-    static public Map<String, ContainerService> getLocalServiceMap(PsiElement psiElement) {
+    static public Map<String, ContainerService> getLocalServiceMap(PsiFile psiElement) {
         return new YamlLocalServiceMap().getLocalServiceMap(psiElement);
     }
 
@@ -32,7 +32,7 @@ public class YamlHelper {
         return new YamlLocalServiceMap().getLocalServiceName(psiFile, findServiceName);
     }
 
-    static public Map<String, String> getLocalParameterMap(PsiElement psiElement) {
+    static public Map<String, String> getLocalParameterMap(PsiFile psiElement) {
         return new YamlLocalServiceMap().getLocalParameterMap(psiElement);
     }
 
@@ -147,15 +147,14 @@ public class YamlHelper {
 
     private static class YamlLocalServiceMap {
 
-        public Map<String, String> getLocalParameterMap(PsiElement psiElement) {
+        public Map<String, String> getLocalParameterMap(PsiFile psiFile) {
 
             Map<String, String> map = new HashMap<String, String>();
 
-            if(!(psiElement.getContainingFile().getFirstChild() instanceof YAMLDocument)) {
+            YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+            if(yamlDocument == null) {
                 return map;
             }
-
-            YAMLDocument yamlDocument = (YAMLDocument) psiElement.getContainingFile().getFirstChild();
 
             // get services or parameter key
             YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
@@ -237,15 +236,14 @@ public class YamlHelper {
         }
 
         @NotNull
-        public Map<String, ContainerService> getLocalServiceMap(PsiElement psiElement) {
+        public Map<String, ContainerService> getLocalServiceMap(PsiFile psiFile) {
 
             Map<String, ContainerService> services = new HashMap<String, ContainerService>();
 
-            if(!(psiElement.getContainingFile().getFirstChild() instanceof YAMLDocument)) {
+            YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+            if(yamlDocument == null) {
                 return services;
             }
-
-            YAMLDocument yamlDocument = (YAMLDocument) psiElement.getContainingFile().getFirstChild();
 
             // get services or parameter key
             YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
