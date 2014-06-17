@@ -5,6 +5,12 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.61
+* Add support for doctrine id orm mapping of yaml files
+* Add support for yaml CompoundValues inside routes action linemarker #289
+* Fix that yaml files starting with whitespace not indexed for routes and services files
+* Fix cast error on php array variables of twig types provider #290
+
 ### 0.10.60
 * Fix translation annotator to not highlight compiled elements #262
 * Fix non reload of translations which are outside PhpStorm index #262
