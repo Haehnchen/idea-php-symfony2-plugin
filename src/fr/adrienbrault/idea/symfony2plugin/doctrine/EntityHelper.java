@@ -161,7 +161,7 @@ public class EntityHelper {
 
     public static void attachYamlFieldTypeName(String keyName, DoctrineModelField doctrineModelField, YAMLKeyValue yamlKeyValue) {
 
-        if("fields".equals(keyName)) {
+        if("fields".equals(keyName) || "id".equals(keyName)) {
 
             YAMLKeyValue yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "type");
             if(yamlType != null && yamlType.getValueText() != null) {
@@ -188,7 +188,7 @@ public class EntityHelper {
     public static Map<String, YAMLKeyValue> getYamlModelFieldKeyValues(YAMLKeyValue yamlKeyValue) {
         Map<String, YAMLKeyValue> keyValueCollection = new HashMap<String, YAMLKeyValue>();
 
-        for(String fieldMap: new String[] { "fields", "manyToOne", "oneToOne", "manyToMany", "oneToMany"}) {
+        for(String fieldMap: new String[] { "id", "fields", "manyToOne", "oneToOne", "manyToMany", "oneToMany"}) {
             YAMLKeyValue targetYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, fieldMap, true);
             if(targetYamlKeyValue != null) {
                 keyValueCollection.put(fieldMap, targetYamlKeyValue);
