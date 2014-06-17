@@ -131,14 +131,19 @@ public class PhpMethodVariableResolveUtil {
             String variableName = ((StringLiteralExpression) arrayIndex.getValue()).getContents();
             Set<String> variableTypes = new HashSet<String>();
 
-            if(arrayAccessExpression.getParent() instanceof AssignmentExpression) {
-                PsiElement arrayValue = ((AssignmentExpression) arrayAccessExpression.getParent()).getValue();
+            PsiElement parent = arrayAccessExpression.getParent();
+            if(parent instanceof AssignmentExpression) {
+                PsiElement arrayValue = ((AssignmentExpression) parent).getValue();
                 if(arrayValue instanceof PhpTypedElement) {
                     variableTypes = ((PhpTypedElement) arrayValue).getType().getTypes();
                 }
+
+                collectedTypes.put(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) parent).getValue()));
+
+            } else {
+                collectedTypes.put(variableName, new PsiVariable(variableTypes, null));
             }
 
-            collectedTypes.put(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) arrayAccessExpression.getParent()).getValue()));
 
         }
 
