@@ -24,10 +24,13 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class IncludeVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
@@ -57,7 +60,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                             if(StringUtils.isNotBlank(templateName)) {
                                 for(PsiFile templateFile: TwigHelper.getTemplateFilesByName(element.getProject(), templateName)) {
                                     if(templateFile.equals(psiFile)) {
-                                        collectIncludeContextVars(includeTag, variables);
+                                        collectIncludeContextVars((TwigTagWithFileReference) element, includeTag, variables);
                                     }
                                 }
 
@@ -72,14 +75,61 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     }
 
-    private void collectIncludeContextVars(PsiElement includeTag, HashMap<String, PsiVariable> variables) {
+    private void collectIncludeContextVars(TwigTagWithFileReference tag, PsiElement templatePsiName, HashMap<String, PsiVariable> variables) {
 
-        // @TODO: support "only" and variable alias
-        for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(includeTag).entrySet()) {
-            variables.put(entry.getKey(), entry.getValue());
+        PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
+        Map<String, String> varAliasMap = getIncludeWithVarNames(tag.getText());
+
+        // "onyl" and no alias, dont provide context
+        if(onlyElement != null && varAliasMap.size() == 0) {
+            return;
+        }
+
+        HashMap<String, PsiVariable> stringPsiVariableHashMap = TwigTypeResolveUtil.collectScopeVariables(templatePsiName);
+
+        // add context vars
+        if(onlyElement == null) {
+            for(Map.Entry<String, PsiVariable> entry: stringPsiVariableHashMap.entrySet()) {
+                variables.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        // add alias vars
+        if(varAliasMap.size() > 0) {
+            for(Map.Entry<String, String> entry: varAliasMap.entrySet()) {
+                if(stringPsiVariableHashMap.containsKey(entry.getValue())) {
+                    variables.put(entry.getKey(), stringPsiVariableHashMap.get(entry.getValue()));
+                }
+            }
         }
 
     }
+
+    public static Map<String, String> getIncludeWithVarNames(String includeText) {
+
+        String regex = "with\\s*\\{\\s*(.*[^%])\\}\\s*";
+        Matcher matcher = Pattern.compile(regex).matcher(includeText.replace("\r\n", " ").replace("\n", " "));
+
+        if (matcher.find()) {
+            String group = matcher.group(1);
+            return getVariableAliasMap("{" + group + "}");
+        }
+
+        return new HashMap<String, String>();
+    }
+
+    private static Map<String, String> getVariableAliasMap(String jsonLike) {
+        Map<String, String> map = new HashMap<String, String>();
+
+        String[] parts = jsonLike.replaceAll("^\\{|\\}$","").split("\"?(:|,)(?![^\\{]*\\})\"?");
+
+        for (int i = 0; i < parts.length -1; i+=2) {
+            map.put(StringUtils.trim(parts[i]).replaceAll("^\"|\"$|\'|\'$", ""), StringUtils.trim(parts[i+1]).replaceAll("^\"|\"$|\'|\'$", ""));
+        }
+
+        return map;
+    }
+
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {

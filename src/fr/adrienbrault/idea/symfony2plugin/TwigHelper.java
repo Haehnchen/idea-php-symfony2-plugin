@@ -716,6 +716,24 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {% include 'foo.html.twig' {'foo': 'foo'} only %}
+     */
+    public static ElementPattern<PsiElement> getIncludeOnlyPattern() {
+
+        // {% set count1 = "var" %}
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER).withText("only")
+            .beforeLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getVariableTypePattern() {
         return PlatformPatterns.or(
             TwigHelper.getForTagInVariablePattern(),
