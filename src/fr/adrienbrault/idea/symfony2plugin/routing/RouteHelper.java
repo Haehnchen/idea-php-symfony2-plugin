@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -307,7 +308,7 @@ public class RouteHelper {
                 virtualFiles.add(virtualFile);
                 return true;
             }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
+        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML, XmlFileType.INSTANCE));
 
         FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
             @Override
@@ -383,6 +384,33 @@ public class RouteHelper {
     }
 
     @Nullable
+    public static PsiElement getXmlRouteNameTarget(@NotNull XmlFile psiFile,@NotNull String routeName) {
+
+        XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);
+        if(document == null) {
+            return null;
+        }
+
+        for(XmlTag xmlTag: PsiTreeUtil.getChildrenOfTypeAsList(psiFile.getFirstChild(), XmlTag.class)) {
+            if(xmlTag.getName().equals("routes")) {
+                for(XmlTag routeTag: xmlTag.getSubTags()) {
+                    if(routeTag.getName().equals("route")) {
+                        XmlAttribute xmlAttribute = routeTag.getAttribute("id");
+                        if(xmlAttribute != null) {
+                            String attrValue = xmlAttribute.getValue();
+                            if(routeName.equals(attrValue)) {
+                                return xmlAttribute;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
     public static List<Route> getRoutesOnControllerAction(Method method) {
 
         String methodRouteActionName = RouteHelper.convertMethodToRouteControllerName(method);
@@ -414,6 +442,13 @@ public class RouteHelper {
                 YAMLKeyValue yamlKeyValue = YamlHelper.getRootKey(psiFile, routeName);
                 if(yamlKeyValue != null) {
                     return yamlKeyValue;
+                }
+            }
+
+            if(psiFile instanceof XmlFile) {
+                PsiElement target = RouteHelper.getXmlRouteNameTarget((XmlFile) psiFile, routeName);
+                if(target != null) {
+                    return target;
                 }
             }
 
