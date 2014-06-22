@@ -342,8 +342,9 @@ public class YamlHelper {
     @Nullable
     public static YAMLKeyValue getRootKey(PsiFile psiFile, String keyName) {
 
-        if(psiFile.getFirstChild() instanceof YAMLDocument) {
-            return YamlKeyFinder.find(psiFile.getFirstChild(), keyName);
+        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+        if(yamlDocument != null) {
+            return YamlKeyFinder.find(yamlDocument, keyName);
         }
 
         return null;
