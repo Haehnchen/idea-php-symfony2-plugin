@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -27,7 +28,7 @@ public class PhpRouteMissingInspection extends AbstractPhpRouteInspection {
             return;
         }
 
-        Collection fileCollection = FileBasedIndex.getInstance().getContainingFiles(YamlRoutesStubIndex.KEY, routeName,  GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML));
+        Collection fileCollection = FileBasedIndex.getInstance().getContainingFiles(YamlRoutesStubIndex.KEY, routeName,  GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML, XmlFileType.INSTANCE));
         if(fileCollection.size() > 0) {
             return;
         }

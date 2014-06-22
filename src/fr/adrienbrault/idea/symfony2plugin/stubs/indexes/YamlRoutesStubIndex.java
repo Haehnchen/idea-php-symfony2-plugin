@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -67,6 +69,11 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
                     return map;
                 }
 
+                if(psiFile instanceof XmlFile) {
+                    for(String keyName: RouteHelper.getXmlRouteNames((XmlFile) psiFile)) {
+                        map.put(keyName, null);
+                    }
+                }
 
                 return map;
             }
@@ -90,7 +97,7 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
         return new FileBasedIndex.InputFilter() {
             @Override
             public boolean acceptInput(VirtualFile file) {
-                return file.getFileType() == YAMLFileType.YML;
+                return file.getFileType() == YAMLFileType.YML || file.getFileType() == XmlFileType.INSTANCE;
             }
         };
     }

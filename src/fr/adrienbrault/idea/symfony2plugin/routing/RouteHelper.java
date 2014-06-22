@@ -9,8 +9,13 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlTagValue;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -30,6 +35,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
@@ -339,6 +345,41 @@ public class RouteHelper {
 
         return set;
 
+    }
+
+    public static Set<String> getXmlRouteNames(XmlFile psiFile) {
+
+        Set<String> set = new HashSet<String>();
+
+        XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);
+        if(document == null) {
+            return set;
+        }
+
+        /**
+         * <routes>
+         *   <route id="foo" path="/blog/{slug}">
+         *     <default key="_controller">Foo</default>
+         *   </route>
+         * </routes>
+         */
+        for(XmlTag xmlTag: PsiTreeUtil.getChildrenOfTypeAsList(psiFile.getFirstChild(), XmlTag.class)) {
+            if(xmlTag.getName().equals("routes")) {
+                for(XmlTag servicesTag: xmlTag.getSubTags()) {
+                    if(servicesTag.getName().equals("route")) {
+                        XmlAttribute xmlAttribute = servicesTag.getAttribute("id");
+                        if(xmlAttribute != null) {
+                            String attrValue = xmlAttribute.getValue();
+                            if(StringUtils.isNotBlank(attrValue)) {
+                                set.add(attrValue);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return set;
     }
 
     @Nullable
