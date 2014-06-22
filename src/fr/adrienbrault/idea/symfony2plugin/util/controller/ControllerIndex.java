@@ -16,10 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ControllerIndex {
 
@@ -172,7 +169,7 @@ public class ControllerIndex {
         return null;
     }
 
-    static public ArrayList<LookupElement> getControllerLookupElements(Project project) {
+    static public List<LookupElement> getControllerLookupElements(Project project) {
         ArrayList<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
         ControllerIndex controllerIndex = new ControllerIndex(project);
