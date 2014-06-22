@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.61</version>
+    <version>0.10.62</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -77,6 +77,7 @@
 <ul>
     <li><a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
     <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7487">Drupal Symfony2 Bridge</a></li>
 </ul>
 
 <h2><a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
@@ -91,6 +92,13 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.62</h2>
+<ul>
+    <li>Add support for routes in xml files</li>
+    <li>Provide twig context variables for <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">include statements</a></li>
+    <li>Fix some whitespace documents issue in yaml files</li>
+</ul>
 
 <h2>0.10.61</h2>
 <ul>

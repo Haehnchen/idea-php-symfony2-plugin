@@ -5,6 +5,11 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.62
+* Add support for routes in xml files
+* Provide twig context variables for include statements
+* Fix some whitespace documents issue in yaml files
+
 ### 0.10.61
 * Add support for doctrine id orm mapping of yaml files
 * Add support for yaml CompoundValues inside routes action linemarker #289
