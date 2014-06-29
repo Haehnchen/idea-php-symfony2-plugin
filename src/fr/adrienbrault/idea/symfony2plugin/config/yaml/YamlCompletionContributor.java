@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompleti
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -24,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionPro
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -98,6 +100,11 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getInsideKeyValue("tags"),
             YamlElementPatternHelper.getSingleLineScalarKey("event")
         ), new EventCompletionProvider());
+
+        extend(CompletionType.BASIC, StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("alias")
+        ), new FormAliasCompletionProvider());
 
         extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("calls")
@@ -212,6 +219,35 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
+    private static class FormAliasCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            PsiElement psiElement = completionParameters.getPosition();
+            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
+            if(yamlCompoundValue == null) {
+                return;
+            }
+
+            yamlCompoundValue = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
+            if(yamlCompoundValue == null) {
+                return;
+            }
+
+            String value = YamlHelper.getYamlKeyValueAsString(yamlCompoundValue, "class", true);
+            if(value != null) {
+                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), value);
+                if(phpClass != null) {
+                    FormUtil.attachFormAliasesCompletions(phpClass, completionResultSet);
+                }
+            }
+
+        }
+    }
 
 }
 
