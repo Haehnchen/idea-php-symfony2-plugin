@@ -435,6 +435,22 @@ public class YamlHelper {
     }
 
     @Nullable
+    public static String getYamlKeyValueAsString(@Nullable YAMLCompoundValue yamlCompoundValue, String keyName, boolean ignoreCase) {
+        YAMLKeyValue yamlKeyValue1 = getYamlKeyValue(yamlCompoundValue, keyName, false);
+
+        if(yamlKeyValue1 == null) {
+            return null;
+        }
+
+        String valueText = yamlKeyValue1.getValueText();
+        if(valueText == null) {
+            return null;
+        }
+
+        return PsiElementUtils.trimQuote(valueText);
+    }
+
+    @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName, boolean ignoreCase) {
         if(yamlKeyValue == null) {
             return null;

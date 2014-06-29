@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -28,6 +29,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class YamlAnnotator implements Annotator {
 
@@ -47,6 +49,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
+        this.annotateConstructorSequenceArguments(psiElement, holder);
         this.annotateConstructorArguments(psiElement, holder);
         this.annotateCallsArguments(psiElement, holder);
         this.annotateCallMethod(psiElement, holder);
@@ -116,6 +119,51 @@ public class YamlAnnotator implements Annotator {
 
     }
 
+    /**
+     * arguments:
+     *    - @twig
+     *    - @twig
+     */
+    private void annotateConstructorSequenceArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
+
+        IElementType elementType = psiElement.getNode().getElementType();
+        if(elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING) {
+
+            PsiElement yamlSequence = psiElement.getContext();
+            if(yamlSequence instanceof YAMLSequence) {
+                PsiElement yamlCompoundValue = yamlSequence.getContext();
+                if(yamlCompoundValue instanceof YAMLCompoundValue) {
+                    PsiElement yamlKeyValue = yamlCompoundValue.getContext();
+                    if(yamlKeyValue instanceof YAMLKeyValue) {
+                        String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
+                        if("arguments".equals(keyText)) {
+                            List<YAMLSequence> test = PsiElementUtils.getPrevSiblingsOfType(yamlSequence, PlatformPatterns.psiElement(YAMLSequence.class));
+                            //System.out.println(test.size());
+
+                            PsiElement yamlCompoundValueService = yamlKeyValue.getParent();
+                            if(yamlCompoundValueService instanceof YAMLCompoundValue) {
+                                String className = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) yamlCompoundValueService, "class", false);
+                                if(className != null) {
+                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), className);
+                                    if(serviceClass != null) {
+                                        Method constructor = serviceClass.getConstructor();
+                                        if(constructor != null) {
+                                            attachInstanceAnnotation(psiElement, holder, test.size(), constructor);
+                                        }
+                                    }
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return;
+    }
 
     private void annotateConstructorArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
 
@@ -226,17 +274,7 @@ public class YamlAnnotator implements Annotator {
         attachInstanceAnnotation(psiElement, holder, yamlCallParameterArray, method);
 
     }
-
-    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLArray yamlArray, Method constructor) {
-
-        if(psiElement == null) {
-            return;
-        }
-
-        int parameterIndex = YamlHelper.getYamlParameter(yamlArray, psiElement);
-        if(parameterIndex == -1) {
-            return;
-        }
+    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, int parameterIndex, Method constructor) {
 
         String serviceName = getServiceName(psiElement);
         if(StringUtils.isBlank(serviceName)) {
@@ -261,6 +299,20 @@ public class YamlAnnotator implements Annotator {
         if(!new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
             holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN());
         }
+    }
+
+    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLArray yamlArray, Method constructor) {
+
+        if(psiElement == null) {
+            return;
+        }
+
+        int parameterIndex = YamlHelper.getYamlParameter(yamlArray, psiElement);
+        if(parameterIndex == -1) {
+            return;
+        }
+
+        attachInstanceAnnotation(psiElement, holder, parameterIndex, constructor);
     }
 
     private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {

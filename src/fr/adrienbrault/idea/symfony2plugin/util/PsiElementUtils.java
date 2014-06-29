@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -287,6 +288,20 @@ public class PsiElementUtils {
         }
 
         return null;
+    }
+
+    public static <T extends PsiElement> List<T> getPrevSiblingsOfType(@Nullable PsiElement sibling, ElementPattern<T> pattern) {
+
+        List<T> elements = new ArrayList<T>();
+
+        if (sibling == null) return null;
+        for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
+            if (pattern.accepts(child)) {
+                // noinspection unchecked
+                elements.add((T)child);
+            }
+        }
+        return elements;
     }
 
 }
