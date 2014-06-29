@@ -171,7 +171,7 @@ public class EntityHelper {
             return;
         }
 
-        if(Arrays.asList("manytoone", "manytomany", "onetotone", "onetomany").contains(keyName.toLowerCase())) {
+        if(Arrays.asList("manytoone", "manytomany", "onetoone", "onetomany").contains(keyName.toLowerCase())) {
             YAMLKeyValue targetEntity = YamlHelper.getYamlKeyValue(yamlKeyValue, "targetEntity");
             if(targetEntity != null) {
                 doctrineModelField.setRelationType(keyName);
