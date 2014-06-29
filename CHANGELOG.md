@@ -5,6 +5,12 @@ Changelog
 0.9.x: PhpStorm 6
 0.10.x: PhpStorm 7
 
+### 0.10.63
+* Add completion for form alias tag in xml and yaml container files
+* Support for yaml sequences in arguments instance annotator
+* Service creator adds form alias as tag where possible #281
+* Fix typo inside querybuilder resolver for oneToOne relations
+
 ### 0.10.62
 * Add support for routes in xml files
 * Provide twig context variables for include statements

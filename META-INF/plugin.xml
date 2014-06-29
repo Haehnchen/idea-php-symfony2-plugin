@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.62</version>
+    <version>0.10.63</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -15,6 +15,13 @@
 <ul>
     <li>Active plugin per project in Settings -> Plugins and reopen project</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
+</ul>
+
+<h2>Upcoming PhpStorm 8</h2>
+<ul>
+    <li>Twig filter ("|") completion without hack</li>
+    <li>Twig block name completion "{% block foo %}" on "extends" templates</li>
+    <li>(hopefully) Major bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-2372">WI-23727</a>; our issues <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
 </ul>
 
 <h2>Features:</h2>
@@ -43,7 +50,7 @@
     <li>Support @Template annotations</li>
     <li>Trans and transchoice support with annotator, quickquick and translation extraction action</li>
     <li>References for block names (completion back since PhpStorm8)</li>
-    <li>Variable TypeProvider similar to php with several scopes and providers like doc block and controller actions</li>
+    <li>Variable TypeProvider similar to php with several scopes and providers like docblocks, controller, actions, template inclusion, ...</li>
     <li>Macro implements goto on linemarker</li>
     <li>Filter, Function, Macro and Extension support</li>
 </ul>
@@ -92,6 +99,14 @@
 0.9.x: PhpStorm 6<br>
 0.10.x: PhpStorm 7<br>
 <br>
+
+<h2>0.10.63</h2>
+<ul>
+    <li>Add completion for form alias tag in xml and yaml container files</li>
+    <li>Support for yaml sequences in arguments instance annotator</li>
+    <li>Service creator adds form alias as tag where possible <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/281">#281</a></li>
+    <li>Fix typo inside querybuilder resolver for oneToOne relations</li>
+</ul>
 
 <h2>0.10.62</h2>
 <ul>
