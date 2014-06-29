@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.form.util;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiElementFilter;
@@ -9,16 +12,21 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class FormUtil {
@@ -179,6 +187,41 @@ public class FormUtil {
         }
 
         return null;
+    }
+
+
+
+    private static Set<String> getFormAliases(@NotNull PhpClass phpClass) {
+        final Set<String> aliases = new HashSet<String>();
+
+        if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")) {
+            return aliases;
+        }
+
+        Method method = PhpElementsUtil.getClassMethod(phpClass, "getName");
+        if(method != null) {
+            method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+                @Override
+                public void visitElement(PsiElement element) {
+                    if(PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
+                        String value = PhpElementsUtil.getStringValue(element);
+                        if(value != null && StringUtils.isNotBlank(value)) {
+                            aliases.add(value);
+                        }
+                    }
+                    super.visitElement(element);
+                }
+            });
+        }
+
+        return aliases;
+
+    }
+
+    public static void attachFormAliasesCompletions(@NotNull PhpClass phpClass, @NotNull CompletionResultSet completionResultSet) {
+        for(String alias: getFormAliases(phpClass)) {
+            completionResultSet.addElement(LookupElementBuilder.create(alias).withIcon(Symfony2Icons.FORM_TYPE).withTypeText(phpClass.getPresentableFQN(), true));
+        }
     }
 
 }
