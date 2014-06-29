@@ -31,6 +31,8 @@ import java.util.Set;
 
 public class FormUtil {
 
+    final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
+
     @Nullable
     public static PhpClass getFormTypeToClass(Project project,@Nullable String formType) {
 
@@ -189,12 +191,10 @@ public class FormUtil {
         return null;
     }
 
-
-
-    private static Set<String> getFormAliases(@NotNull PhpClass phpClass) {
+    public static Set<String> getFormAliases(@NotNull PhpClass phpClass) {
         final Set<String> aliases = new HashSet<String>();
 
-        if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")) {
+        if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, ABSTRACT_FORM_INTERFACE)) {
             return aliases;
         }
 

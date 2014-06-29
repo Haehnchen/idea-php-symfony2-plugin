@@ -2,8 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
@@ -140,8 +144,8 @@ public class ServiceBuilder {
 
 
         // root elements
-        Document doc = docBuilder.newDocument();
-        Element rootElement = doc.createElement("service");
+        final Document doc = docBuilder.newDocument();
+        final Element rootElement = doc.createElement("service");
         rootElement.setAttribute("id", serviceName);
 
         String classAsParameter = getClassAsParameter(className);
@@ -183,6 +187,19 @@ public class ServiceBuilder {
             }
         }
 
+        formTypeCallback(className, new CallbackFormTypeInterface() {
+            @Override
+            public void onFormTypeAlias(String alias) {
+                // <tag name="form.type" alias="gender" />
+                Element tag = doc.createElement("tags");
+
+                tag.setAttribute("alias", alias);
+                tag.setAttribute("name", "form.type");
+
+                rootElement.appendChild(tag);
+            }
+        });
+
 
         try {
             return getStringFromDocument(doc);
@@ -209,9 +226,8 @@ public class ServiceBuilder {
 
     private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
 
-        String indent = "  ";
-
-        ArrayList<String> lines = new ArrayList<String>();
+        final String indent = "\t";
+        final List<String> lines = new ArrayList<String>();
 
         String classAsParameter = getClassAsParameter(className);
 
@@ -241,7 +257,25 @@ public class ServiceBuilder {
             lines.addAll(calls);
         }
 
+        formTypeCallback(className, new CallbackFormTypeInterface() {
+            @Override
+            public void onFormTypeAlias(String alias) {
+                lines.add(indent + "tags:");
+                lines.add(indent+ indent + "- { name: form.type, alias: "+ alias + " }");
+            }
+        });
+
         return StringUtils.join(lines, "\n");
+    }
+
+    private void formTypeCallback(String className, CallbackFormTypeInterface callback) {
+        PhpClass phpClass = PhpElementsUtil.getClass(project, className);
+        if(phpClass != null && new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.ABSTRACT_FORM_INTERFACE)) {
+            Set<String> aliases = FormUtil.getFormAliases(phpClass);
+            if(aliases.size() > 0) {
+                callback.onFormTypeAlias(aliases.iterator().next());
+            }
+        }
     }
 
     private List<String> formatYamlService(List<String> parameters) {
@@ -253,6 +287,10 @@ public class ServiceBuilder {
         }
 
         return yamlSyntaxParameters;
+    }
+
+    public interface CallbackFormTypeInterface {
+        public void onFormTypeAlias(String alias);
     }
 
 }
