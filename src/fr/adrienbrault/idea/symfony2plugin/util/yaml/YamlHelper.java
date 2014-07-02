@@ -436,7 +436,7 @@ public class YamlHelper {
 
     @Nullable
     public static String getYamlKeyValueAsString(@Nullable YAMLCompoundValue yamlCompoundValue, String keyName, boolean ignoreCase) {
-        YAMLKeyValue yamlKeyValue1 = getYamlKeyValue(yamlCompoundValue, keyName, false);
+        YAMLKeyValue yamlKeyValue1 = getYamlKeyValue(yamlCompoundValue, keyName, ignoreCase);
 
         if(yamlKeyValue1 == null) {
             return null;

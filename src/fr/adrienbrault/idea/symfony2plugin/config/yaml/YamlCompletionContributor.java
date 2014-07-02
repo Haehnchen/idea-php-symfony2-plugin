@@ -15,7 +15,10 @@ import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLoo
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -94,6 +97,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("repositoryClass"), new RepositoryClassCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("mappedBy", "inversedBy"), new OrmRelationCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config"));
@@ -271,6 +275,40 @@ public class YamlCompletionContributor extends CompletionContributor {
 
 
         }
+    }
+
+    private static class OrmRelationCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            PsiElement position = completionParameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(position, YAMLCompoundValue.class);
+            if(yamlCompoundValue == null) {
+                return;
+            }
+
+            String className = YamlHelper.getYamlKeyValueAsString(yamlCompoundValue, "targetEntity", false);
+            if(className == null) {
+                return;
+            }
+
+            PhpClass phpClass = PhpElementsUtil.getClass(position.getProject(), className);
+            if(phpClass == null) {
+                return;
+            }
+
+            for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                if(field.getRelation() != null) {
+                    completionResultSet.addElement(new DoctrineModelFieldLookupElement(field));
+                }
+            }
+
+        }
+
     }
 
 }
