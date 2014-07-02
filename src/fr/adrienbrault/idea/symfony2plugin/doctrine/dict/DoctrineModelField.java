@@ -14,6 +14,7 @@ public class DoctrineModelField {
     private final String name;
     private String typeName;
     private Collection<PsiElement> targets = new ArrayList<PsiElement>();
+    private String column;
 
     public DoctrineModelField setTypeName(String typeName) {
         this.typeName = typeName;
@@ -66,6 +67,15 @@ public class DoctrineModelField {
     public DoctrineModelField setRelationType(String relationType) {
         this.relationType = relationType;
         return this;
+    }
+
+    @Nullable
+    public String getColumn() {
+        return column;
+    }
+
+    public void setColumn(@Nullable String column) {
+        this.column = column;
     }
 
 }

@@ -9,14 +9,11 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
-import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
@@ -51,6 +48,8 @@ public class EntityHelper {
         "\\Doctrine\\ORM\\Mapping\\OneToMany",
         "\\Doctrine\\ORM\\Mapping\\ManyToMany",
     };
+
+    final public static Set<String> RELATIONS = new HashSet<String>(Arrays.asList("manytoone", "manytomany", "onetoone", "onetomany"));
 
     /**
      * Resolve shortcut and namespaces classes for current phpclass and attached modelname
@@ -168,10 +167,15 @@ public class EntityHelper {
                 doctrineModelField.setTypeName(yamlType.getValueText());
             }
 
+            YAMLKeyValue yamlColumn = YamlHelper.getYamlKeyValue(yamlKeyValue, "column");
+            if(yamlColumn != null) {
+                doctrineModelField.setColumn(yamlColumn.getValueText());
+            }
+
             return;
         }
 
-        if(Arrays.asList("manytoone", "manytomany", "onetoone", "onetomany").contains(keyName.toLowerCase())) {
+        if(RELATIONS.contains(keyName.toLowerCase())) {
             YAMLKeyValue targetEntity = YamlHelper.getYamlKeyValue(yamlKeyValue, "targetEntity");
             if(targetEntity != null) {
                 doctrineModelField.setRelationType(keyName);

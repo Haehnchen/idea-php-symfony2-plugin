@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
@@ -9,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
@@ -98,6 +100,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("repositoryClass"), new RepositoryClassCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("mappedBy", "inversedBy"), new OrmRelationCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("referencedColumnName"), new ReferencedColumnCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config"));
@@ -309,6 +312,72 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         }
 
+    }
+
+    /**
+     * many_to_many:
+     *      targetEntity: espend\Doctrine\RelationBundle\Entity\ForeignEntity
+     *      joinTable:
+     *          name: cms_users_groups
+     *           joinColumns:
+     *               user_id:
+     *                   referencedColumnName: id
+     */
+    private static class ReferencedColumnCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            PsiElement position = completionParameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            PsiElement psiElement = PsiTreeUtil.findFirstParent(position, new Condition<PsiElement>() {
+                @Override
+                public boolean value(PsiElement psiElement) {
+
+                    if (psiElement instanceof YAMLKeyValue) {
+                        String s = ((YAMLKeyValue) psiElement).getKeyText().toLowerCase();
+                        if ("joinTable".equalsIgnoreCase(s)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+            });
+
+            if(psiElement == null) {
+                return;
+            }
+
+            PsiElement yamlCompoundValue = psiElement.getParent();
+            if(!(yamlCompoundValue instanceof YAMLCompoundValue)) {
+                return;
+            }
+
+            String className = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) yamlCompoundValue, "targetEntity", false);
+            if(className == null) {
+                return;
+            }
+
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), className);
+            if(phpClass == null) {
+                return;
+            }
+
+            for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                if(field.getRelation() == null) {
+                    String columnName = field.getColumn();
+                    if(columnName == null) {
+                        completionResultSet.addElement(LookupElementBuilder.create(field.getName()).withIcon(Symfony2Icons.DOCTRINE));
+                    } else {
+                        completionResultSet.addElement(LookupElementBuilder.create(columnName).withTypeText(field.getName(), false).withIcon(Symfony2Icons.DOCTRINE));
+                    }
+                }
+            }
+
+        }
     }
 
 }
