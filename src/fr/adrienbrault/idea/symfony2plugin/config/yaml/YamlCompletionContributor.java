@@ -1,11 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
@@ -91,6 +93,8 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParameterClassPattern(), new PhpClassCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity"), new PhpEntityClassCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("repositoryClass"), new RepositoryClassCompletionProvider());
+
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config"));
 
@@ -245,6 +249,26 @@ public class YamlCompletionContributor extends CompletionContributor {
                     FormUtil.attachFormAliasesCompletions(phpClass, completionResultSet);
                 }
             }
+
+        }
+    }
+
+    private static class RepositoryClassCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
+            PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
+            for(PhpClass phpClass: phpIndex.getAllSubclasses("\\Doctrine\\ORM\\EntityRepository")) {
+                String presentableFQN = phpClass.getPresentableFQN();
+                if(presentableFQN != null) {
+                    completionResultSet.addElement(LookupElementBuilder.create(phpClass.getName()).withTypeText(phpClass.getPresentableFQN(), true).withIcon(phpClass.getIcon()));
+                }
+            }
+
 
         }
     }
