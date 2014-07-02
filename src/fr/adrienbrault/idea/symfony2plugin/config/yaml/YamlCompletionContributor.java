@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLoo
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineYamlAnnotationLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
@@ -82,15 +83,23 @@ public class YamlCompletionContributor extends CompletionContributor {
 
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getTypes()));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmParentLookup("joinColumn"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getJoinColumns()));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmRoot(), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getRootItems()));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("fields", "id"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getPropertyMappings()));
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("oneToOne"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToOne)));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("oneToMany"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.oneToMany)));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToOne"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToOne)));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getAssociationMapping(DoctrineStaticTypeLookupBuilder.Association.manyToMany)));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("unique"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("associationKey"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));
+
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmParentLookup("joinColumn"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\JoinColumn"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("joinColumns"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\JoinColumn"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmParentLookup("joinTable"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\JoinTable"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmRoot(), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getRootItems()));
+
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("id"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\Column", "associationKey"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("fields"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\Column"));
+
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("oneToOne"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\OneToOne"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("oneToMany"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\OneToMany"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToOne"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\ManyToOne"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\ManyToMany"));
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class"), new PhpClassAndParameterCompletionProvider());
 
