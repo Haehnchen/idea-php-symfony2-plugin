@@ -8,6 +8,7 @@ import com.intellij.psi.PsiReferenceBase;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeMap;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
@@ -63,7 +64,14 @@ public class FormFieldNameReference extends PsiReferenceBase<PsiElement> impleme
         for(MethodReference methodReference: formBuilderTypes) {
             String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
             if(fieldName != null) {
-                lookupElements.add(LookupElementBuilder.create(fieldName));
+
+                LookupElementBuilder lookup = LookupElementBuilder.create(fieldName).withIcon(Symfony2Icons.FORM_TYPE);
+                String fieldType = PsiElementUtils.getMethodParameterAt(methodReference, 1);
+                if(fieldType != null) {
+                    lookup = lookup.withTypeText(fieldType, true);
+                }
+
+                lookupElements.add(lookup);
             }
         }
 
