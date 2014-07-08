@@ -26,7 +26,7 @@ public class DoctrineAnnotationTargetEntityReferences implements PhpAnnotationRe
         }
 
         // @Foo(targetEntity="Foo\Class")
-        if(annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.PROPERTY_VALUE || "targetEntity".equals(annotationPropertyParameter.getPropertyName())) {
+        if(annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.PROPERTY_VALUE && "targetEntity".equals(annotationPropertyParameter.getPropertyName())) {
             return new PsiReference[]{ new EntityReference((StringLiteralExpression) annotationPropertyParameter.getElement(), true) };
         }
 
