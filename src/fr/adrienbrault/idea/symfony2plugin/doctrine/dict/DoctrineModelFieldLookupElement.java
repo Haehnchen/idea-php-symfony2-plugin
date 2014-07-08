@@ -14,6 +14,7 @@ public class DoctrineModelFieldLookupElement extends LookupElement {
 
     final private DoctrineModelField doctrineModelField;
     private boolean withBoldness = false;
+    private String withLookupName = null;
 
     public DoctrineModelFieldLookupElement(@NotNull DoctrineModelField doctrineModelField) {
         this.doctrineModelField = doctrineModelField;
@@ -22,6 +23,10 @@ public class DoctrineModelFieldLookupElement extends LookupElement {
     @NotNull
     @Override
     public String getLookupString() {
+        if(this.withLookupName != null) {
+            return this.withLookupName;
+        }
+
         return this.doctrineModelField.getName();
     }
 
@@ -51,6 +56,11 @@ public class DoctrineModelFieldLookupElement extends LookupElement {
 
     public DoctrineModelFieldLookupElement withBoldness(boolean withBoldness) {
         this.withBoldness = withBoldness;
+        return this;
+    }
+
+    public DoctrineModelFieldLookupElement withLookupName(String withLookupName) {
+        this.withLookupName = withLookupName;
         return this;
     }
 

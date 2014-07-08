@@ -503,6 +503,15 @@ public class EntityHelper {
             doctrineModelField.setRelationType(matcher.group(1));
         }
 
+        matcher = Pattern.compile("Column\\(").matcher(text);
+        if (matcher.find()) {
+            matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(text);
+            if(matcher.find()) {
+                doctrineModelField.setColumn(matcher.group(1));
+            }
+
+        }
+
     }
 
     public static Collection<DoctrineModel> getModelClasses(final Project project) {
