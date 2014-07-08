@@ -2,8 +2,18 @@ Changelog
 =========
 
 ### Version names
-0.9.x: PhpStorm 6
-0.10.x: PhpStorm 7
+0.11.x: PhpStorm 8 (upcoming)
+0.10.x: PhpStorm 7 (support until PhpStorm8 release)
+0.9.x: PhpStorm 6 (not support)
+
+### 0.10.64
+* Add completion for repositoryClass in yaml
+* Add completion for mappedBy and inversedBy in yaml
+* Add referencedColumnName references for yaml and annotations
+* Completely remove static doctrine yaml mapping list and use annotations fields
+* Fix annotation targetEntity condition
+* Prettify form field completion
+* (Pls be careful on next PhpStorm 8 eap update!)
 
 ### 0.10.63
 * Add completion for form alias tag in xml and yaml container files

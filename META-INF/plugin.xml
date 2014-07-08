@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.63</version>
+    <version>0.10.64</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -19,6 +19,7 @@
 
 <h2>Upcoming PhpStorm 8</h2>
 <ul>
+    <li><font color="red">PhpStorm 8 eap api breaks in builds >= 138.1023; wait for 0.11.x branch!</font> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/297">#297</a></li>
     <li>Twig filter ("|") completion without hack</li>
     <li>Twig block name completion "{% block foo %}" on "extends" templates</li>
     <li>(hopefully) Major bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-2372">WI-23727</a>; our issues <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
@@ -96,9 +97,22 @@
 
     <change-notes><![CDATA[
 
-0.9.x: PhpStorm 6<br>
-0.10.x: PhpStorm 7<br>
+0.11.x: PhpStorm 8 (upcoming)<br>
+0.10.x: PhpStorm 7 (support until PhpStorm8 release)<br>
+0.9.x: PhpStorm 6 (not support)<br>
+
 <br>
+
+<h2>0.10.64</h2>
+<ul>
+    <li>Add completion for repositoryClass in yaml</li>
+    <li>Add completion for mappedBy and inversedBy in yaml</li>
+    <li>Add referencedColumnName references for yaml and annotations</li>
+    <li>Completely remove static doctrine yaml mapping list and use annotations fields</li>
+    <li>Fix annotation targetEntity condition</li>
+    <li>Prettify form field completion</li>
+    <li>(Pls be careful on next PhpStorm 8 eap update!)</li>
+</ul>
 
 <h2>0.10.63</h2>
 <ul>
@@ -241,66 +255,6 @@
     <li>Add "Interface" and "ClassInterface" to type provider <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/254">#254</a></li>
     <li>Activate $option key references inside FormTypeInterface, because of working api now <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/162">#162</a></li>
     <li>Refactoring of container related linemarkers to fix some npe (api break?) <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
-</ul>
-
-<h2>0.10.47</h2>
-<ul>
-    <li>Add support for scss assets <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/251">#251</a></li>
-    <li>Migrate custom method references provider to variable resolver to support recursive calls</li>
-    <li>Add references provider for console HelperSet <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/243">#243</a></li>
-</ul>
-
-<h2>0.10.46</h2>
-<ul>
-    <li>Add goto for twig "parent" function <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/246">#246</a></li>
-    <li>Readd parameter class service annotator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/242">#242</a></li>
-    <li>Dont use statusbar in phpstorm < 7.1 is not supported <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/235">#235</a></li>
-    <li>Make several services thread safe and implement npe fixes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/237">#237</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
-    <li>Dont fire twig type completion inside string values</li>
-</ul>
-
-<h2>0.10.45</h2>
-<ul>
-    <li>Some fixes for phpstorm 7.1.2</li>
-</ul>
-
-<h2>0.10.44</h2>
-<ul>
-    <li>Close <a href="http://symfony2-plugin.espend.de/extension/signature_type.html#profiler-statusbar">profiler feature</a> and merge into master</li>
-    <li>Add profiler statusbar widget</li>
-    <li>Provide collector for mail, route, controller, template for profiler</li>
-    <li>Attach all profiler collector to statusbar widget and provide suitable click targets</li>
-</ul>
-
-<h2>0.10.43</h2>
-<ul>
-    <li>Add basic form field support in twig types</li>
-    <li>Add twig completion for "form.vars"</li>
-    <li>Add ManagerRegistry:getManagerForClass reference provider <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/231">#231</a></li>
-    <li>Add support for twig form_theme <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/232">#232</a></li>
-    <li>Add function to twig type whitelist</li>
-    <li>Fix some npe in yaml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/227">#227</a></li>
-</ul>
-
-<h2>0.10.42</h2>
-<ul>
-    <li>Add twig template folding and strip "Bundle"</li>
-    <li>Add twig implements and overwrites block linemarker and provide custom popover <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/75">#75</a></li>
-    <li>Add basic implementation of enum like completion behavior eg Response::setStatusCode, Request::getMethod</li>
-    <li>Add doctrine related files to controller method popup</li>
-    <li>Use folding names in related file popup where suitable</li>
-</ul>
-
-<h2>0.10.41</h2>
-<ul>
-    <li>Add code folding provider for php with support for route, template and repository</li>
-    <li>Add code folding provider for twig path and url function</li>
-    <li>Add settings for all code folding provider (default=true)</li>
-    <li>Add overwrite linemarker for twig blocks #75</li>
-    <li>Add yaml static service config completion (class, arguments, ... )</li>
-    <li>Readd twig completion workaround for filters (hell!)</li>
-    <li>Fix error on class name with trailing backslash on yaml annotator</li>
-    <li>Migrate template references, to resolve #46 fully</li>
 </ul>
 
 <br/>
