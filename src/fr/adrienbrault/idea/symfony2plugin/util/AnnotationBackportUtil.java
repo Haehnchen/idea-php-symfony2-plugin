@@ -31,40 +31,6 @@ public class AnnotationBackportUtil {
     }};
 
     @Nullable
-    public static PhpClass getAnnotationReference(PhpDocTag phpDocTag) {
-
-        PsiFile containingFile;
-        try {
-            containingFile = phpDocTag.getContainingFile();
-        } catch (PsiInvalidElementAccessException e) {
-            return null;
-        }
-
-        // check annoation in current namespace
-        String tagName = phpDocTag.getName();
-        if(tagName.startsWith("@")) {
-            tagName = tagName.substring(1);
-        }
-
-        PhpNamespace phpNamespace = PsiTreeUtil.getParentOfType(phpDocTag, PhpNamespace.class);
-        if(phpNamespace != null) {
-            String currentNsClass = phpNamespace.getFQN() + "\\" + tagName;
-            PhpClass phpClass = PhpElementsUtil.getClass(phpDocTag.getProject(), currentNsClass);
-            if(phpClass != null) {
-                return phpClass;
-            }
-        }
-
-        // resolve class name on imports and aliases
-        if(getUseImportMap(containingFile).size() == 0) {
-            return null;
-        }
-
-        return getAnnotationReference(phpDocTag, getUseImportMap(containingFile));
-
-    }
-
-    @Nullable
     public static PhpClass getAnnotationReference(PhpDocTag phpDocTag, final Map<String, String> useImports) {
 
         String tagName = phpDocTag.getName();

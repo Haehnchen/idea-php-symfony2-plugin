@@ -74,32 +74,6 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         return results.toArray();
     }
 
-    /**
-     * TODO: dont use lookup elements, refactor complete class we need more soon
-     */
-    public static Collection<String> getEntityNames(Project project) {
-
-        List<LookupElement> results = new ArrayList<LookupElement>();
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Set<String> models = new HashSet<String>();
-
-        // find Repository interface to filter RepositoryClasses out
-        PhpClass repositoryInterface = PhpElementsUtil.getInterface(phpIndex, DoctrineTypes.REPOSITORY_INTERFACE);
-        if(null == repositoryInterface) {
-            return models;
-        }
-
-        attachRepositoryNames(project, results, ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, true);
-        attachRepositoryNames(project, results, ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, true);
-
-        for(LookupElement lookupElement: results) {
-            models.add(lookupElement.getLookupString());
-        }
-
-        return models;
-
-    }
-
     private static void attachRepositoryNames(Project project, final List<LookupElement> results, Map<String, String> entityNamespaces, final DoctrineTypes.Manager manager, final boolean useClassNameAsLookupString) {
 
         for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(project, entityNamespaces)) {

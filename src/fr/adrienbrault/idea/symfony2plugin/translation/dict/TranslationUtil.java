@@ -50,22 +50,6 @@ public class TranslationUtil {
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
-    static public List<PsiFile> getAllTranslationFiles(Project project) {
-
-        DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-        List<PsiFile> psiElements = new ArrayList<PsiFile>();
-
-        for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
-            PsiFile psiFile = domain.getPsiFile(project);
-            if(psiFile instanceof YAMLFile) {
-                psiElements.add(psiFile);
-            }
-        }
-
-        return psiElements;
-    }
-
-
     public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, String domain) {
 
         // search for available domain files

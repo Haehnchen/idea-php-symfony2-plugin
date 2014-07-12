@@ -30,7 +30,7 @@ public class ProfilerIndex {
             }
 
             in.close();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
 
         }
 
@@ -85,7 +85,7 @@ public class ProfilerIndex {
                 content.append(str).append(System.getProperty("line.separator"));
             }
             in.close();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
 
 
