@@ -3,11 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlTagParser extends AbstractServiceParser {

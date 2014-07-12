@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.profiler;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleColoredComponent;
 import com.jetbrains.php.PhpIcons;

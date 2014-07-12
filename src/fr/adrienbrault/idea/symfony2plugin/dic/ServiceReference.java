@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.xml.XmlAttributeValue;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import org.jetbrains.annotations.NotNull;
 

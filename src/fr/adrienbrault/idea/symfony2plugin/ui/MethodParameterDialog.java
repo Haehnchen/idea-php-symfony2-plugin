@@ -8,7 +8,8 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.reference.AssistantReferenc
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.event.*;
 

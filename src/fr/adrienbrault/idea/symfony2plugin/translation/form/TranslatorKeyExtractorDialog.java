@@ -9,7 +9,6 @@ import com.intellij.util.ui.ListTableModel;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.comparator.PsiWeightListComparator;
 import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
-import fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -18,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collection;

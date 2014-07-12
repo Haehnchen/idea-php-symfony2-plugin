@@ -5,9 +5,6 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 public class DefaultReferenceContributor {
 

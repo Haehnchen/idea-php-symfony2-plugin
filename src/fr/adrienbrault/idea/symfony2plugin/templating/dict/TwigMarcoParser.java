@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 
 import com.intellij.psi.PsiFile;
+
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

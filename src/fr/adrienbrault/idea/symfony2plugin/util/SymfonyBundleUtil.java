@@ -6,11 +6,10 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
-
-import org.jetbrains.annotations.Nullable;
 
 public class SymfonyBundleUtil {
 

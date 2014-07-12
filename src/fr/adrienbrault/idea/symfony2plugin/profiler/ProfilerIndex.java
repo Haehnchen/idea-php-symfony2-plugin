@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.profiler;
 
-import com.intellij.openapi.vfs.VfsUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,7 +8,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class ProfilerIndex {
 

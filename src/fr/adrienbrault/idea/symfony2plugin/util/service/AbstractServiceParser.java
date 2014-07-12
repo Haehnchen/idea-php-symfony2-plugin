@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.service;
 
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceParserInterface;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;

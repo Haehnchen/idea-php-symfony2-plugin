@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.dict;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

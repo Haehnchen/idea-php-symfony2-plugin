@@ -1,20 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import com.intellij.util.Processor;
-import com.intellij.util.indexing.FileBasedIndexImpl;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

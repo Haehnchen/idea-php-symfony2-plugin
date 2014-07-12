@@ -7,8 +7,6 @@ import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.annotation.AnnotationValue;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.annotation.Annotation;
-
 public class AnnotationMethodInsertHandler implements InsertHandler<LookupElement> {
 
     private static final AnnotationMethodInsertHandler instance = new AnnotationMethodInsertHandler();

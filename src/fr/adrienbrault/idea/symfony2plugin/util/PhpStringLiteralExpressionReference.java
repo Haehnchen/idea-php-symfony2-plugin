@@ -13,7 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
 
 public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
 

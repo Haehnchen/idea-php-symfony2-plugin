@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.asset.dic;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetEnum;
 
 public class AssetFile {
 

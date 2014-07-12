@@ -1,10 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.util.completion;
 
+import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
-import org.jetbrains.annotations.NotNull;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.intellij.codeInsight.completion.InsertHandler;
+import org.jetbrains.annotations.NotNull;
 
 /**
 * simplified PhpReferenceInsertHandler which not use trailing quote

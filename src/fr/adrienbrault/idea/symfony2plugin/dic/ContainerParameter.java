@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 
 
 import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.Collection;
 

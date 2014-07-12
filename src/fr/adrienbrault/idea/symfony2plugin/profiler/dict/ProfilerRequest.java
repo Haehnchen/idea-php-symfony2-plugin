@@ -4,7 +4,6 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndex;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 public class ProfilerRequest {

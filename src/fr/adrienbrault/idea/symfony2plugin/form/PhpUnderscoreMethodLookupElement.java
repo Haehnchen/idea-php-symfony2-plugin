@@ -5,8 +5,6 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.regex.Pattern;
-
 
 public class PhpUnderscoreMethodLookupElement extends PhpLookupElement {
 

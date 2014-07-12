@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.assistant.signature;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 
 @Tag("method_signature_settings")

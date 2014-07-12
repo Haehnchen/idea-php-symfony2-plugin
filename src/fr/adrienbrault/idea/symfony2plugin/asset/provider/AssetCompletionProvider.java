@@ -7,9 +7,9 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import org.jetbrains.annotations.NotNull;
 
 public class AssetCompletionProvider extends CompletionProvider<CompletionParameters> {

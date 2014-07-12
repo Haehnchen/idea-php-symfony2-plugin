@@ -44,7 +44,7 @@ public class YamlHelper {
      * getChildren eg on YamlArray is empty, provide workaround
      */
     static public PsiElement[] getChildrenFix(PsiElement psiElement) {
-        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         PsiElement startElement = psiElement.getFirstChild();
         if(startElement == null) {
@@ -61,10 +61,10 @@ public class YamlHelper {
     }
 
     /**
-     *  Trx to find psi value which match shoukd be a array value and filter out comma, whitespace...
-     *  [@service, "@lunamas.app_manager2", [""]];
+     *  Try to find psi value which match should be a array value and filter out comma, whitespace...
+     *  [@service, "@service2", [""]];
      */
-    static public ArrayList<PsiElement> getYamlArrayValues(YAMLArray yamlArray) {
+    static public List<PsiElement> getYamlArrayValues(YAMLArray yamlArray) {
 
 
         // split possible element at comma sperator
@@ -82,7 +82,7 @@ public class YamlHelper {
         }
 
         // search for valid psi argument value
-        ArrayList<PsiElement> keys = new ArrayList<PsiElement>();
+        List<PsiElement> keys = new ArrayList<PsiElement>();
         for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
             PsiElement parameterPsiElement = null;
             for(PsiElement psiElement: psiEntry.getValue()) {

@@ -2,7 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

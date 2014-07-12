@@ -1,8 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class StringUtils {
 
     public static String camelize(String input) {

@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.widget;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionGroup;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -13,12 +15,9 @@ import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
 import com.intellij.util.Consumer;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndex;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.DefaultDataCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.widget.action.SymfonyProfilerWidgetActions;
 import org.jetbrains.annotations.NotNull;

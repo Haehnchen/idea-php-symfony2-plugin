@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.annotation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class AnnotationIndex {

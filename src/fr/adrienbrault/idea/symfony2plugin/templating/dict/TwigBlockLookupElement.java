@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 

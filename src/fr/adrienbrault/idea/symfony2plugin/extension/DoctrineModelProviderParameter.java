@@ -2,10 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.extension;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 public class DoctrineModelProviderParameter {

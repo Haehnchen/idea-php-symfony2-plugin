@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.util.annotation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class AnnotationConfig {
 

@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder;
 
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 
 public class FormDataHolder {

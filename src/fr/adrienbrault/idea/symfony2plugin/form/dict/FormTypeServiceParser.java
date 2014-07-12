@@ -5,8 +5,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FormTypeServiceParser extends AbstractServiceParser {
 

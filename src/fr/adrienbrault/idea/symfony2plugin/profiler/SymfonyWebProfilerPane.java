@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchForm;
 
 public class SymfonyWebProfilerPane {
 

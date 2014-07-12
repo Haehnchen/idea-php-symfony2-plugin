@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationPsiParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringParser;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

@@ -9,18 +9,14 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.AssistantReferenceUtil;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorParameter;
-import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

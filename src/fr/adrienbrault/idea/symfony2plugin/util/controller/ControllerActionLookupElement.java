@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util.controller;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-
 import com.jetbrains.php.PhpIcons;
 import org.jetbrains.annotations.NotNull;
 

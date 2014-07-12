@@ -1,9 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.navigation;
 
-import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.navigation.ItemPresentation;
-import com.intellij.navigation.LocationPresentation;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
