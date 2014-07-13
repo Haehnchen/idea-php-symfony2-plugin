@@ -18,6 +18,7 @@ import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -52,31 +53,35 @@ public class FormUtil {
             }
         }
 
-        // find on registered formtype aliases
+        return getFormTypeClass(project, formType);
+
+    }
+
+    @Nullable
+    public static PhpClass getFormTypeClass(Project project, String formTypeName) {
+
+        // find on registered formtype aliases on compiled container
         FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(project, FormTypeServiceParser.class);
-        String serviceName = formTypeServiceParser.getFormTypeMap().getServiceName(formType);
-        if(serviceName == null) {
+        String serviceName = formTypeServiceParser.getFormTypeMap().getServiceName(formTypeName);
+
+        // compiled container resolve
+        if(serviceName != null) {
+            String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
+            if (null != serviceClass) {
+                PhpClass phpClass = PhpElementsUtil.getClass(project, serviceClass);
+                if(phpClass != null) {
+                    return phpClass;
+                }
+            }
+        }
+
+        // on indexer
+        Map<String, FormTypeClass> forms = FormUtil.getFormTypeClasses(project);
+        if(!forms.containsKey(formTypeName)) {
             return null;
         }
 
-        String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
-        if (null == serviceClass) {
-            return null;
-        }
-
-        List<ResolveResult> resolveResults = PhpElementsUtil.getClassInterfaceResolveResult(project, serviceClass);
-        if(resolveResults.size() == 0) {
-            return null;
-        }
-
-        PsiElement psiElement = resolveResults.iterator().next().getElement();
-
-        if(psiElement instanceof PhpClass) {
-           return (PhpClass) resolveResults.iterator().next().getElement();
-        }
-
-        return null;
-
+        return forms.get(formTypeName).getPhpClass();
     }
 
     public static MethodReference[] getFormBuilderTypes(Method method) {

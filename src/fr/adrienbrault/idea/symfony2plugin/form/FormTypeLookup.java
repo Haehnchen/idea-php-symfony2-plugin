@@ -12,6 +12,7 @@ public class FormTypeLookup extends LookupElement {
 
     private String key;
     private String name;
+    private boolean isWeak;
 
     public FormTypeLookup(String key, String name) {
         this.key = key;
@@ -28,7 +29,13 @@ public class FormTypeLookup extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(key);
         presentation.setTypeGrayed(true);
-        presentation.setIcon(Symfony2Icons.FORM_TYPE);
+
+        presentation.setIcon(isWeak ? Symfony2Icons.FORM_TYPE_WEAK : Symfony2Icons.FORM_TYPE);
+    }
+
+    public FormTypeLookup withWeak(boolean isWeak) {
+        this.isWeak = isWeak;
+        return this;
     }
 
 }

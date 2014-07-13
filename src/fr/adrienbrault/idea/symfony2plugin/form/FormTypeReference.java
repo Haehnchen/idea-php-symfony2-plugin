@@ -13,9 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -42,13 +40,20 @@ public class FormTypeReference extends PsiReferenceBase<PsiElement> implements P
         final List<LookupElement> lookupElements = new ArrayList<LookupElement>();
         FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(getElement().getProject(), FormTypeServiceParser.class);
 
+        Set<String> unique = new HashSet<String>();
+
         FormTypeMap map = formTypeServiceParser.getFormTypeMap();
         for(String key : map.getMap().keySet()) {
-            lookupElements.add(new FormTypeLookup(key, map.getMap().get(key)));
+            String name = map.getMap().get(key);
+            lookupElements.add(new FormTypeLookup(key, name));
+            unique.add(name);
         }
 
         for(Map.Entry<String, FormTypeClass> entry: FormUtil.getFormTypeClasses(getElement().getProject()).entrySet()) {
-            lookupElements.add(new FormTypeLookup(entry.getValue().getPhpClass().getName(), entry.getValue().getName()));
+            String name = entry.getValue().getName();
+            if(!unique.contains(name)) {
+                lookupElements.add(new FormTypeLookup(entry.getValue().getPhpClass().getName(), name).withWeak(true));
+            }
         }
 
         return lookupElements.toArray();
