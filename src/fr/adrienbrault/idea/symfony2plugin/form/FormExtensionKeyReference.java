@@ -38,7 +38,7 @@ public class FormExtensionKeyReference extends PsiReferenceBase<PsiElement> impl
     @Nullable
     @Override
     public PsiElement resolve() {
-        HashMap<String, String> test = FormOptionsUtil.getFormExtensionKeys(this.getElement().getProject(), this.formTypes);
+        Map<String, String> test = FormOptionsUtil.getFormExtensionKeys(this.getElement().getProject(), this.formTypes);
         String value = this.element.getContents();
 
         if(!test.containsKey(value)) {

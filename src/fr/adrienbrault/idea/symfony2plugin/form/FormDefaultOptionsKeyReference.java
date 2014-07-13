@@ -34,7 +34,7 @@ public class FormDefaultOptionsKeyReference extends PsiReferenceBase<PsiElement>
     @Nullable
     @Override
     public PsiElement resolve() {
-        HashMap<String, String> test = FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType);
+        Map<String, String> test = FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType);
         String value = this.element.getContents();
 
         if(!test.containsKey(value)) {

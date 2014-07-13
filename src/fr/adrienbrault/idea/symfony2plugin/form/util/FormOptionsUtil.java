@@ -15,11 +15,11 @@ import java.util.*;
 
 public class FormOptionsUtil {
 
-    public static ArrayList<String> getExtendedTypeClasses(Project project, String... formTypeNames) {
+    public static List<String> getExtendedTypeClasses(Project project, String... formTypeNames) {
 
         List<String> formTypeNamesList = Arrays.asList(formTypeNames);
 
-        ArrayList<String> extendedTypeClasses = new ArrayList<String>();
+        List<String> extendedTypeClasses = new ArrayList<String>();
 
         FormExtensionServiceParser formExtensionServiceParser = ServiceXmlParserFactory.getInstance(project, FormExtensionServiceParser.class);
         for(String formClass: formExtensionServiceParser.getFormExtensions().keySet()) {
@@ -40,9 +40,9 @@ public class FormOptionsUtil {
         return extendedTypeClasses;
     }
 
-    public static HashMap<String, String> getFormExtensionKeys(Project project, String... formTypeNames) {
-        HashMap<String, String> extensionKeys = new HashMap<String, String>();
-        ArrayList<String> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
+    public static Map<String, String> getFormExtensionKeys(Project project, String... formTypeNames) {
+        Map<String, String> extensionKeys = new HashMap<String, String>();
+        List<String> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
 
         for(String typeClass: typeClasses) {
             attachOnDefaultOptions(project, extensionKeys, typeClass);
@@ -59,7 +59,7 @@ public class FormOptionsUtil {
 
         Set<String> stringSet = new HashSet<String>();
 
-        ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        List<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
         // attach core form phpclass
         // @TODO: add formtype itself
@@ -153,11 +153,11 @@ public class FormOptionsUtil {
         }
     }
 
-    public static HashMap<String, String> getFormDefaultKeys(Project project, String formTypeName) {
+    public static Map<String, String> getFormDefaultKeys(Project project, String formTypeName) {
         return getFormDefaultKeys(project, formTypeName, new HashMap<String, String>(), 0);
     }
 
-    private static HashMap<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, int depth) {
+    private static Map<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, int depth) {
 
         PhpClass phpClass = FormUtil.getFormTypeToClass(project, formTypeName);
         if(phpClass == null) {
@@ -184,7 +184,7 @@ public class FormOptionsUtil {
         return defaultValues;
     }
 
-    private static void attachOnDefaultOptions(Project project, HashMap<String, String> defaultValues, String typeClass) {
+    private static void attachOnDefaultOptions(Project project, Map<String, String> defaultValues, String typeClass) {
 
         PsiElement setDefaultOptions =  PhpElementsUtil.getPsiElementsBySignatureSingle(project, "#M#C\\" + typeClass + ".setDefaultOptions");
         if(setDefaultOptions == null) {
