@@ -13,5 +13,8 @@ public class TwigHelperTest extends Assert {
         assertEquals("BarBundle:Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("BarBundle::Foo/steps/step_finish.html.twig"));
         assertEquals("@BarBundle/Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("@BarBundle/Foo/steps:step_finish.html.twig"));
         assertEquals("step_finish.html.twig", TwigHelper.normalizeTemplateName("step_finish.html.twig"));
+
+        assertEquals("BarBundle:Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("BarBundle:Foo:steps\\step_finish.html.twig"));
+        assertEquals("@BarBundle/Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("@BarBundle\\Foo/steps:step_finish.html.twig"));
     }
 }
