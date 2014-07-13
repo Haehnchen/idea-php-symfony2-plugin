@@ -151,6 +151,9 @@ public class TwigHelper {
      */
     public static String normalizeTemplateName(String templateName) {
 
+        // force linux path style
+        templateName = templateName.replace("\\", "/");
+
         if(templateName.startsWith("@") || !templateName.matches("^.*?:.*?:.*?/.*?$")) {
             return templateName;
         }
