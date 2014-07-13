@@ -18,9 +18,11 @@ import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -356,6 +358,32 @@ public class FormUtil {
                         }
                     }
                 }
+            }
+        }
+
+        return map;
+    }
+
+    public static Map<String, FormTypeClass> getFormTypeClasses(Project project) {
+
+        Collection<PhpClass> phpClasses = ServiceUtil.getTaggedClasses(project, "form.type");
+        final Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
+
+        for(final PhpClass phpClass: phpClasses) {
+            Method method = PhpElementsUtil.getClassMethod(phpClass, "getName");
+            if(method != null) {
+                method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+                    @Override
+                    public void visitElement(PsiElement element) {
+                        if(element instanceof StringLiteralExpression && PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
+                            String formTypeName = ((StringLiteralExpression) element).getContents();
+                            if(StringUtils.isNotBlank(formTypeName)) {
+                                map.put(formTypeName, new FormTypeClass(formTypeName, phpClass, element));
+                            }
+                        }
+                        super.visitElement(element);
+                    }
+                });
             }
         }
 

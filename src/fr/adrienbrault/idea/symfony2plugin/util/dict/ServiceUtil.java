@@ -8,18 +8,19 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class ServiceUtil {
 
@@ -96,5 +97,50 @@ public class ServiceUtil {
 
         return resolveResults;
     }
+
+    public static Set<String> getTaggedServices(Project project, String tagName) {
+
+        SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
+        FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
+
+        Set<String> service = new HashSet<String>();
+
+        for(String serviceName: projectUniqueKeysStrong.getResult()) {
+
+            List<String[]> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            for(String[] strings: serviceDefinitions) {
+                if(Arrays.asList(strings).contains(tagName)) {
+                    service.add(serviceName);
+                }
+            }
+
+        }
+
+        return service;
+    }
+
+    public static Collection<PhpClass> getTaggedClasses(Project project, String tagName) {
+
+        List<PhpClass> phpClasses = new ArrayList<PhpClass>();
+
+        Set<String> taggedServices = getTaggedServices(project, tagName);
+        if(taggedServices.size() == 0) {
+            return phpClasses;
+        }
+
+        ContainerCollectionResolver.ServiceCollector collector = new ContainerCollectionResolver.ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
+        for(String serviceName: taggedServices) {
+            String resolvedService = collector.resolve(serviceName);
+            if(resolvedService != null) {
+                PhpClass phpClass = PhpElementsUtil.getClass(project, resolvedService);
+                if(phpClass != null) {
+                    phpClasses.add(phpClass);
+                }
+            }
+        }
+
+        return phpClasses;
+    }
+
 
 }
