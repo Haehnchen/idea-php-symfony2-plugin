@@ -6,8 +6,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
@@ -18,14 +22,13 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class FormUtil {
@@ -221,6 +224,142 @@ public class FormUtil {
         for(String alias: getFormAliases(phpClass)) {
             completionResultSet.addElement(LookupElementBuilder.create(alias).withIcon(Symfony2Icons.FORM_TYPE).withTypeText(phpClass.getPresentableFQN(), true));
         }
+    }
+
+    public static Map<String, Set<String>> getTags(YAMLFile psiFile) {
+
+        Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+
+        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+        if(yamlDocument == null) {
+            return map;
+        }
+
+        // get services or parameter key
+        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
+        if(yamlKeys == null) {
+            return map;
+        }
+
+        /**
+         * acme_demo.form.type.gender:
+         * class: espend\Form\TypeBundle\Form\FooType
+         * tags:
+         *   - { name: form.type, alias: foo_type_alias  }
+         *   - { name: foo  }
+         */
+
+        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
+            String yamlConfigKey = yamlKeyValue.getName();
+            if(yamlConfigKey != null && yamlConfigKey.equals("services")) {
+
+                for(YAMLKeyValue yamlServiceKeyValue : PsiTreeUtil.getChildrenOfTypeAsList(yamlKeyValue.getValue(), YAMLKeyValue.class)) {
+                    String serviceName = yamlServiceKeyValue.getName();
+
+                    YAMLKeyValue tagTag = YamlHelper.getYamlKeyValue(yamlServiceKeyValue, "tags");
+                    if(tagTag != null) {
+                        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(tagTag, YAMLCompoundValue.class);
+                        if(yamlCompoundValue != null) {
+                            Collection<YAMLSequence> yamlSequences = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class);
+                            for(YAMLSequence yamlSequence: yamlSequences) {
+                                YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
+
+                                if(yamlHash != null) {
+                                    YAMLKeyValue yamlTagNameKeyValue = YamlHelper.getYamlKeyValue(yamlHash, "name");
+                                    if(yamlTagNameKeyValue != null) {
+                                        String tagName = yamlTagNameKeyValue.getValueText();
+                                        if(tagName != null) {
+
+                                            tagName = PsiElementUtils.trimQuote(tagName);
+                                            if(StringUtils.isNotBlank(tagName)) {
+                                                if(!map.containsKey(serviceName)) {
+                                                    map.put(serviceName, new HashSet<String>());
+                                                }
+
+                                                map.get(serviceName).add(tagName);
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+
+        return map;
+    }
+
+
+    public static Map<String, Set<String>> getTags(XmlFile psiFile) {
+
+        Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+
+        XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);
+        if(document == null) {
+            return map;
+        }
+
+        /**
+         * <services>
+         *   <service id="espend_form.foo_type" class="%espend_form.foo_type.class%">
+         *     <tag name="form.type" alias="foo_type_alias" />
+         *   </service>
+         * </services>
+         */
+
+        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        if(xmlTags == null) {
+            return map;
+        }
+
+        for(XmlTag xmlTag: xmlTags) {
+            if(xmlTag.getName().equals("container")) {
+                for(XmlTag servicesTag: xmlTag.getSubTags()) {
+                    if(servicesTag.getName().equals("services")) {
+                        for(XmlTag serviceTag: servicesTag.getSubTags()) {
+                            XmlAttribute attrValue = serviceTag.getAttribute("id");
+                            if(attrValue != null) {
+
+                                // <service id="foo.bar" class="Class\Name">
+                                String serviceNameId = attrValue.getValue();
+                                if(serviceNameId != null) {
+
+                                    for(XmlTag serviceSubTag: serviceTag.getSubTags()) {
+                                        if("tag".equals(serviceSubTag.getName())) {
+                                            XmlAttribute attribute = serviceSubTag.getAttribute("name");
+                                            if(attribute != null) {
+                                                String tagName = attribute.getValue();
+                                                if(tagName != null) {
+
+                                                    if(!map.containsKey(serviceNameId)) {
+                                                        map.put(serviceNameId, new HashSet<String>());
+                                                    }
+
+                                                    map.get(serviceNameId).add(tagName);
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return map;
     }
 
 }
