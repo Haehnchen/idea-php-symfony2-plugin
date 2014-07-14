@@ -12,16 +12,19 @@ public class FormTypeClass {
     private PhpClass phpClass;
     private String phpClassName;
     private PsiElement returnPsiElement;
+    final private EnumFormTypeSource source;
 
-    public FormTypeClass(String name, PhpClass phpClass, PsiElement returnPsiElement) {
+    public FormTypeClass(String name, PhpClass phpClass, PsiElement returnPsiElement, EnumFormTypeSource source) {
         this.name = name;
         this.phpClass = phpClass;
         this.returnPsiElement = returnPsiElement;
+        this.source = source;
     }
 
-    public FormTypeClass(String name, String phpClassName) {
+    public FormTypeClass(String name, String phpClassName, EnumFormTypeSource source) {
         this.name = name;
         this.phpClassName = phpClassName;
+        this.source = source;
     }
 
     public String getName() {
@@ -50,6 +53,14 @@ public class FormTypeClass {
     @Nullable
     public PsiElement getReturnPsiElement() {
         return returnPsiElement;
+    }
+
+    public EnumFormTypeSource getSource() {
+        return source;
+    }
+
+    public String getPhpClassName() {
+        return phpClassName;
     }
 
 }

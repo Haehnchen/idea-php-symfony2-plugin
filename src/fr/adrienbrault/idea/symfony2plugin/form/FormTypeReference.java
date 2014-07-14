@@ -4,16 +4,17 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceBase;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeMap;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -38,22 +39,24 @@ public class FormTypeReference extends PsiReferenceBase<PsiElement> implements P
     public Object[] getVariants() {
 
         final List<LookupElement> lookupElements = new ArrayList<LookupElement>();
-        FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(getElement().getProject(), FormTypeServiceParser.class);
 
-        Set<String> unique = new HashSet<String>();
+        FormUtil.FormTypeCollector collector = new FormUtil.FormTypeCollector(getElement().getProject()).collect();
 
-        FormTypeMap map = formTypeServiceParser.getFormTypeMap();
-        for(String key : map.getMap().keySet()) {
-            String name = map.getMap().get(key);
-            lookupElements.add(new FormTypeLookup(key, name));
-            unique.add(name);
-        }
-
-        for(Map.Entry<String, FormTypeClass> entry: FormUtil.getFormTypeClasses(getElement().getProject()).entrySet()) {
+        for(Map.Entry<String, FormTypeClass> entry: collector.getFormTypesMap().entrySet()) {
             String name = entry.getValue().getName();
-            if(!unique.contains(name)) {
-                lookupElements.add(new FormTypeLookup(entry.getValue().getPhpClass().getName(), name).withWeak(true));
+            String typeText = entry.getValue().getPhpClassName();
+
+            PhpClass phpClass = entry.getValue().getPhpClass();
+            if(phpClass != null) {
+                typeText = phpClass.getName();
             }
+
+            FormTypeLookup formTypeLookup = new FormTypeLookup(typeText, name);
+            if(entry.getValue().getSource() == EnumFormTypeSource.INDEX) {
+                formTypeLookup.withWeak(true);
+            }
+
+            lookupElements.add(formTypeLookup);
         }
 
         return lookupElements.toArray();

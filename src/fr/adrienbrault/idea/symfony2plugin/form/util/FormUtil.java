@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -342,7 +343,7 @@ public class FormUtil {
                         if(element instanceof StringLiteralExpression && PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
                             String formTypeName = ((StringLiteralExpression) element).getContents();
                             if(StringUtils.isNotBlank(formTypeName)) {
-                                map.put(formTypeName, new FormTypeClass(formTypeName, phpClass, element));
+                                map.put(formTypeName, new FormTypeClass(formTypeName, phpClass, element, EnumFormTypeSource.INDEX));
                             }
                         }
                         super.visitElement(element);
@@ -366,15 +367,15 @@ public class FormUtil {
 
         public FormTypeCollector collect() {
 
+            // on indexer, compiler wins...
+            formTypesMap.putAll(FormUtil.getFormTypeClasses(project));
+
             // find on registered formtype aliases on compiled container
             FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(project, FormTypeServiceParser.class);
             for(Map.Entry<String, String> entry: formTypeServiceParser.getFormTypeMap().getMap().entrySet()) {
                 String formTypeName = entry.getValue();
-                formTypesMap.put(formTypeName, new FormTypeClass(formTypeName, entry.getKey()));
+                formTypesMap.put(formTypeName, new FormTypeClass(formTypeName, entry.getKey(), EnumFormTypeSource.COMPILER));
             }
-
-            // on indexer
-            formTypesMap.putAll(FormUtil.getFormTypeClasses(project));
 
             return this;
         }
@@ -430,6 +431,10 @@ public class FormUtil {
             }
 
             return forms.get(formTypeName).getPhpClass();
+        }
+
+        public Map<String, FormTypeClass> getFormTypesMap() {
+            return formTypesMap;
         }
 
     }

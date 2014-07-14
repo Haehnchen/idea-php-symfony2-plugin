@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -14,7 +15,7 @@ public class FormTypeLookup extends LookupElement {
     private String name;
     private boolean isWeak;
 
-    public FormTypeLookup(String key, String name) {
+    public FormTypeLookup(@Nullable String key, String name) {
         this.key = key;
         this.name = name;
     }
