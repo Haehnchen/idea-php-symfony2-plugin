@@ -4,7 +4,12 @@ Changelog
 ### Version names
 0.11.x: PhpStorm 8 (upcoming)
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
-0.9.x: PhpStorm 6 (not support)
+0.9.x: PhpStorm 6 (no support)
+
+### 0.10.65
+* Allow window path style in twig template names #296
+* Add service indexer for tags in xml and yaml container files #282
+* Add weak form types on new service tag indexer #282
 
 ### 0.10.64
 * Add completion for repositoryClass in yaml
