@@ -154,12 +154,12 @@ public class FormOptionsUtil {
     }
 
     public static Map<String, String> getFormDefaultKeys(Project project, String formTypeName) {
-        return getFormDefaultKeys(project, formTypeName, new HashMap<String, String>(), 0);
+        return getFormDefaultKeys(project, formTypeName, new HashMap<String, String>(), new FormUtil.FormTypeCollector(project).collect(), 0);
     }
 
-    private static Map<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, int depth) {
+    private static Map<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth) {
 
-        PhpClass phpClass = FormUtil.getFormTypeToClass(project, formTypeName);
+        PhpClass phpClass = collector.getFormTypeToClass(formTypeName);
         if(phpClass == null) {
             return defaultValues;
         }
@@ -174,7 +174,7 @@ public class FormOptionsUtil {
             if(phpReturn != null) {
                 PhpPsiElement returnValue = phpReturn.getFirstPsiChild();
                 if(returnValue instanceof StringLiteralExpression) {
-                    getFormDefaultKeys(project, ((StringLiteralExpression) returnValue).getContents(), defaultValues, depth++);
+                    getFormDefaultKeys(project, ((StringLiteralExpression) returnValue).getContents(), defaultValues, collector, ++depth);
                 }
 
             }

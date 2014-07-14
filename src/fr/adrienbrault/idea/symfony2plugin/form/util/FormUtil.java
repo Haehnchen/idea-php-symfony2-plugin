@@ -39,54 +39,13 @@ public class FormUtil {
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
 
     @Nullable
-    public static PhpClass getFormTypeToClass(Project project,@Nullable String formType) {
-
-        if(formType == null) {
-            return null;
-        }
-
-        // formtype can also be a direct class name
-        if(formType.contains("\\")) {
-            PhpClass phpClass = PhpElementsUtil.getClass(PhpIndex.getInstance(project), formType);
-            if(phpClass != null) {
-                return phpClass;
-            }
-        }
-
-        return getFormTypeClass(project, formType);
-
-    }
-
-    @Nullable
-    public static PhpClass getFormTypeClass(Project project, String formTypeName) {
-
-        // find on registered formtype aliases on compiled container
-        FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(project, FormTypeServiceParser.class);
-        String serviceName = formTypeServiceParser.getFormTypeMap().getServiceName(formTypeName);
-
-        // compiled container resolve
-        if(serviceName != null) {
-            String serviceClass = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().get(serviceName);
-            if (null != serviceClass) {
-                PhpClass phpClass = PhpElementsUtil.getClass(project, serviceClass);
-                if(phpClass != null) {
-                    return phpClass;
-                }
-            }
-        }
-
-        // on indexer
-        Map<String, FormTypeClass> forms = FormUtil.getFormTypeClasses(project);
-        if(!forms.containsKey(formTypeName)) {
-            return null;
-        }
-
-        return forms.get(formTypeName).getPhpClass();
+    public static PhpClass getFormTypeToClass(Project project, @Nullable String formType) {
+        return new FormTypeCollector(project).collect().getFormTypeToClass(formType);
     }
 
     public static MethodReference[] getFormBuilderTypes(Method method) {
 
-        final ArrayList<MethodReference> methodReferences = new ArrayList<MethodReference>();
+        final List<MethodReference> methodReferences = new ArrayList<MethodReference>();
 
         final Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
         PsiTreeUtil.collectElements(method, new PsiElementFilter() {
@@ -393,6 +352,86 @@ public class FormUtil {
         }
 
         return map;
+    }
+
+    public static class FormTypeCollector {
+
+        private final Map<String, FormTypeClass> formTypesMap;
+        private final Project project;
+
+        public FormTypeCollector(Project project) {
+            this.project = project;
+            this.formTypesMap = new HashMap<String, FormTypeClass>();
+        }
+
+        public FormTypeCollector collect() {
+
+            // find on registered formtype aliases on compiled container
+            FormTypeServiceParser formTypeServiceParser = ServiceXmlParserFactory.getInstance(project, FormTypeServiceParser.class);
+            for(Map.Entry<String, String> entry: formTypeServiceParser.getFormTypeMap().getMap().entrySet()) {
+                String formTypeName = entry.getValue();
+                formTypesMap.put(formTypeName, new FormTypeClass(formTypeName, entry.getKey()));
+            }
+
+            // on indexer
+            formTypesMap.putAll(FormUtil.getFormTypeClasses(project));
+
+            return this;
+        }
+
+        @Nullable
+        public FormTypeClass getFormType(String formTypeName) {
+
+            if(this.formTypesMap.containsKey(formTypeName)) {
+                return this.formTypesMap.get(formTypeName);
+            }
+
+            return null;
+        }
+
+        @Nullable
+        public PhpClass getFormTypeToClass(@Nullable String formType) {
+
+            if(formType == null) {
+                return null;
+            }
+
+            // formtype can also be a direct class name
+            if(formType.contains("\\")) {
+                PhpClass phpClass = PhpElementsUtil.getClass(PhpIndex.getInstance(project), formType);
+                if(phpClass != null) {
+                    return phpClass;
+                }
+            }
+
+            return this.getFormTypeClass(formType);
+
+        }
+
+        @Nullable
+        public PhpClass getFormTypeClass(String formTypeName) {
+
+            // find on registered formtype aliases on compiled container
+
+            FormTypeClass serviceName = this.formTypesMap.get(formTypeName);
+
+            // compiled container resolve
+            if(serviceName != null) {
+                PhpClass phpClass = serviceName.getPhpClass(project);
+                if (phpClass != null) {
+                    return phpClass;
+                }
+            }
+
+            // on indexer
+            Map<String, FormTypeClass> forms = FormUtil.getFormTypeClasses(project);
+            if(!forms.containsKey(formTypeName)) {
+                return null;
+            }
+
+            return forms.get(formTypeName).getPhpClass();
+        }
+
     }
 
 }
