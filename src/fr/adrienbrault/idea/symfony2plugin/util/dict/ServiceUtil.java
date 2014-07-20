@@ -10,12 +10,15 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
@@ -140,6 +143,35 @@ public class ServiceUtil {
         }
 
         return phpClasses;
+    }
+
+    public static Collection<PhpClass> getTaggedClassesWithCompiled(Project project, String tagName) {
+
+        Set<String> uniqueClass = new HashSet<String>();
+
+        Collection<PhpClass> taggedClasses = new ArrayList<PhpClass>();
+        for(PhpClass phpClass: getTaggedClasses(project, tagName)) {
+            String presentableFQN = phpClass.getPresentableFQN();
+            if(presentableFQN != null && !uniqueClass.contains(presentableFQN)) {
+                uniqueClass.add(presentableFQN);
+                taggedClasses.add(phpClass);
+            }
+        }
+
+        XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(project, XmlTagParser.class);
+
+        List<String> taggedCompiledClasses= xmlTagParser.getTaggedClass(tagName);
+        if(taggedCompiledClasses == null) {
+            return taggedClasses;
+        }
+
+        for(String className: taggedCompiledClasses) {
+            if(!uniqueClass.contains(className)) {
+                taggedClasses.add(PhpElementsUtil.getClass(project, className));
+            }
+        }
+
+        return taggedClasses;
     }
 
 

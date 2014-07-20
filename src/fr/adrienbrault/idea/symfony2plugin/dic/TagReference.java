@@ -5,7 +5,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,33 +32,13 @@ public class TagReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-
-        XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(this.getElement().getProject(), XmlTagParser.class);
-        ArrayList<String> taggedClasses = xmlTagParser.getTaggedClass(this.tagName);
-
-        if(taggedClasses == null) {
-            return new ResolveResult[]{};
-        }
-
-        List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
-        for(String taggedClass: taggedClasses) {
-            resolveResults.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), taggedClass));
-        }
-
-        return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
+        return PhpResolveResult.createResults(ServiceUtil.getTaggedClassesWithCompiled(getElement().getProject(), this.tagName));
     }
 
     @NotNull
     @Override
     public Object[] getVariants() {
-
-        List<LookupElement> results = new ArrayList<LookupElement>();
-
-        XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(this.getElement().getProject(), XmlTagParser.class);
-        for(String tag : xmlTagParser.get()) {
-            results.add(new ParameterLookupElement(tag));
-        }
-
-        return results.toArray();
+        return TagNameCompletionProvider.getTagLookupElements(getElement().getProject()).toArray();
     }
+
 }

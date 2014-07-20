@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -151,15 +152,8 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
     private void getTagClassesGoto(PsiElement psiElement, List<PsiElement> results) {
         String tagName = PsiElementUtils.trimQuote(psiElement.getText());
 
-        XmlTagParser xmlTagParser = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlTagParser.class);
-        ArrayList<String> taggedClasses = xmlTagParser.getTaggedClass(tagName);
-
-        if(taggedClasses == null) {
-            return;
-        }
-
-        for(String taggedClass: taggedClasses) {
-            Collections.addAll(results, PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), taggedClass));
+        if(StringUtils.isNotBlank(tagName)) {
+            results.addAll(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tagName));
         }
     }
 
