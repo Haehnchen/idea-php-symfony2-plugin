@@ -6,6 +6,11 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.66 / 0.11.66
+* Add weak tag references for xml and yaml container files
+* 0.11.x: build against eap to resolve StringPattern#oneOf issues #299
+* 0.11.x: reflect renaming of GotoRelatedFileAction #297
+
 ### 0.10.65
 * Allow window path style in twig template names #296
 * Add service indexer for tags in xml and yaml container files #282
