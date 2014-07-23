@@ -4,8 +4,10 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ConstraintPropertyReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.MapClassReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
@@ -13,9 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.ModelFieldReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
-import fr.adrienbrault.idea.symfony2plugin.util.CommandUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -173,6 +173,68 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[]{ new MapClassReference((StringLiteralExpression) psiElement, CommandUtil.getCommandHelper(psiElement.getProject()))};
                 }
             }
+        );
+
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    PhpClass phpClass = getClassArrayCreationParameter(psiElement, 0, "\\Symfony\\Component\\Validator\\Constraint");
+                    if(phpClass != null) {
+                        return new PsiReference[] { new ConstraintPropertyReference((StringLiteralExpression) psiElement, phpClass)};
+                    }
+
+                    return new PsiReference[0];
+                }
+
+                private PhpClass getClassArrayCreationParameter(PsiElement psiElement, int parameterIndex, String instance) {
+
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return null;
+                    }
+
+                    ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
+                    if (arrayCreationExpression != null) {
+
+                        PsiElement parameterList = arrayCreationExpression.getContext();
+                        if (parameterList instanceof ParameterList) {
+                            PsiElement methodParameters[] = ((ParameterList) parameterList).getParameters();
+                            if (!(methodParameters.length < parameterIndex)) {
+                                PsiElement newExpression = parameterList.getContext();
+                                if (newExpression instanceof NewExpression) {
+                                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
+                                    if (currentIndex != null && currentIndex.getIndex() == parameterIndex) {
+                                        ClassReference classReference = ((NewExpression) newExpression).getClassReference();
+                                        if(classReference != null) {
+                                            String fqn = classReference.getFQN();
+                                            if(fqn != null) {
+                                                PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), fqn);
+                                                if(phpClass != null) {
+                                                    if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, instance)) {
+                                                        return phpClass;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return null;
+                }
+            }
+
+
         );
 
     }
