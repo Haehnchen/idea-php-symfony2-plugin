@@ -27,6 +27,8 @@ import java.util.*;
 
 public class ServiceBuilder {
 
+    final private static String TWIG_EXTENSION = "\\Twig_Extension";
+
     public enum OutputType {
         Yaml, XML,
     }
@@ -187,7 +189,7 @@ public class ServiceBuilder {
             }
         }
 
-        formTypeCallback(className, new CallbackFormTypeInterface() {
+        serviceTagCallback(className, new TagCallbackInterface() {
             @Override
             public void onFormTypeAlias(String alias) {
                 // <tag name="form.type" alias="gender" />
@@ -198,6 +200,15 @@ public class ServiceBuilder {
 
                 rootElement.appendChild(tag);
             }
+
+            @Override
+            public void onTag(String tagName) {
+                // <tag name="form.type" />
+                Element tag = doc.createElement("tags");
+                tag.setAttribute("name", tagName);
+                rootElement.appendChild(tag);
+            }
+
         });
 
 
@@ -257,24 +268,41 @@ public class ServiceBuilder {
             lines.addAll(calls);
         }
 
-        formTypeCallback(className, new CallbackFormTypeInterface() {
+        serviceTagCallback(className, new TagCallbackInterface() {
             @Override
             public void onFormTypeAlias(String alias) {
                 lines.add(indent + "tags:");
-                lines.add(indent+ indent + "- { name: form.type, alias: "+ alias + " }");
+                lines.add(indent + indent + "- { name: form.type, alias: " + alias + " }");
+            }
+
+            @Override
+            public void onTag(String tagName) {
+                lines.add(indent + "tags:");
+                lines.add(indent + indent + String.format("- { name: %s }", tagName));
             }
         });
 
         return StringUtils.join(lines, "\n");
     }
 
-    private void formTypeCallback(String className, CallbackFormTypeInterface callback) {
+    private void serviceTagCallback(String className, TagCallbackInterface callback) {
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
-        if(phpClass != null && new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.ABSTRACT_FORM_INTERFACE)) {
-            Set<String> aliases = FormUtil.getFormAliases(phpClass);
-            if(aliases.size() > 0) {
-                callback.onFormTypeAlias(aliases.iterator().next());
+        if(phpClass != null) {
+            if( new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.ABSTRACT_FORM_INTERFACE)) {
+                Set<String> aliases = FormUtil.getFormAliases(phpClass);
+                if(aliases.size() > 0) {
+                    callback.onFormTypeAlias(aliases.iterator().next());
+                }
             }
+
+            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, TWIG_EXTENSION)) {
+                callback.onTag("twig.extension");
+            }
+
+            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.FORM_EXTENSION_INTERFACE)) {
+                callback.onTag("form.type_extension");
+            }
+
         }
     }
 
@@ -289,8 +317,9 @@ public class ServiceBuilder {
         return yamlSyntaxParameters;
     }
 
-    public interface CallbackFormTypeInterface {
+    public interface TagCallbackInterface {
         public void onFormTypeAlias(String alias);
+        public void onTag(String tagName);
     }
 
 }

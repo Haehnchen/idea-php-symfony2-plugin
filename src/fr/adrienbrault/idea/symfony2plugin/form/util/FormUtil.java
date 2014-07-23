@@ -38,6 +38,7 @@ import java.util.*;
 public class FormUtil {
 
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
+    final public static String FORM_EXTENSION_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeExtensionInterface";
 
     @Nullable
     public static PhpClass getFormTypeToClass(Project project, @Nullable String formType) {
