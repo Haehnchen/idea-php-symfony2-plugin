@@ -6,6 +6,15 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.67 / 0.11.67
+* Add array completion for constraints constructor #304
+* Add support for twig.extension and form.type_extension in service generator #308
+* Add bundle controller path to resource completion whitelist #307
+* Map entity class with orm.yml file as linemarker #309
+* Add current namespace resolving for yaml targetEntity #305
+* Add class linemarker for yaml entities
+* Add doctrine entity column names as lookup tail text in querybuilder completion
+
 ### 0.10.66 / 0.11.66
 * Add weak tag references for xml and yaml container files
 * 0.11.x: build against eap to resolve StringPattern#oneOf issues #299
