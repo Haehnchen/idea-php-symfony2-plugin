@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.processor.QueryBuilderChainProcessor;
@@ -223,16 +224,22 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
     private void buildLookupElements(CompletionResultSet completionResultSet, QueryBuilderScopeContext collect) {
         for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
-
+            DoctrineModelField field = entry.getValue().getField();
             LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey());
             lookup = lookup.withIcon(Symfony2Icons.DOCTRINE);
-            if(entry.getValue().getField() != null) {
-                lookup = lookup.withTypeText(entry.getValue().getField().getTypeName(), true);
+            if(field != null) {
+                lookup = lookup.withTypeText(field.getTypeName(), true);
 
-                if(entry.getValue().getField().getRelationType() != null) {
-                    lookup = lookup.withTailText(entry.getValue().getField().getRelationType(), true);
-                    lookup = lookup.withTypeText(entry.getValue().getField().getRelation(), true);
+                if(field.getRelationType() != null) {
+                    lookup = lookup.withTailText("(" + field.getRelationType() + ")", true);
+                    lookup = lookup.withTypeText(field.getRelation(), true);
                     lookup = lookup.withIcon(PhpIcons.CLASS_ICON);
+                } else {
+                    // relation tail text wins
+                    String column = field.getColumn();
+                    if(column != null) {
+                        lookup = lookup.withTailText("(" + column + ")", true);
+                    }
                 }
 
             }
