@@ -6,6 +6,7 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -13,9 +14,11 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -55,6 +58,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
             if(PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
                 this.classNameMarker(psiElement, results);
+                this.entityClassMarker(psiElement, results);
             }
 
             if(phpHighlightServices) {
@@ -118,6 +122,38 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             setTooltipText("Navigate to definition");
 
         result.add(builder.createLineMarkerInfo(psiElement));
+
+    }
+
+    private void entityClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+
+        PsiElement phpClassContext = psiElement.getContext();
+        if(!(phpClassContext instanceof PhpClass)) {
+            return;
+        }
+
+        String originFqn = ((PhpClass) phpClassContext).getPresentableFQN();
+        if(originFqn == null || !originFqn.toLowerCase().contains("entity")) {
+            return;
+        }
+
+        for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(psiElement.getProject())) {
+            PhpClass phpClass = doctrineModel.getPhpClass();
+            if(phpClass != null) {
+                String presentableFQN = phpClass.getPresentableFQN();
+
+                if(presentableFQN != null && presentableFQN.equals(originFqn)) {
+                    PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
+                    if(psiFile != null) {
+                        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
+                            setTarget(psiFile).
+                            setTooltipText("Navigate to model");
+
+                        result.add(builder.createLineMarkerInfo(psiElement));
+                    }
+                }
+            }
+        }
 
     }
 

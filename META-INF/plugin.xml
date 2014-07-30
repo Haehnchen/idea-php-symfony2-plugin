@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.66</version>
+    <version>0.10.67</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -19,7 +19,7 @@
 
 <h2>Upcoming PhpStorm 8</h2>
 <ul>
-    <li><font color="red">PhpStorm 8 eap api breaks in builds >= 138.1023; use 0.11.x!</font></li>
+    <li><font color="red">Again compatible with PhpStorm 8 >= 138.1289. 0.11.x will follow to replace deprecated method calls</font></li>
     <li>Twig filter ("|") completion without hack</li>
     <li>Twig block name completion "{% block foo %}" on "extends" templates</li>
     <li>(hopefully) Major bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-2372">WI-23727</a>; our issues <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
@@ -103,6 +103,17 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.67 / 0.11.67</h2>
+<ul>
+    <li>Add array completion for constraints constructor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/304">#304</a></li>
+    <li>Add support for twig.extension and form.type_extension in service generator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/308">#308</a></li>
+    <li>Add bundle controller path to resource completion whitelist <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/307">#307</a></li>
+    <li>Map entity class with orm.yml file as linemarker <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/309">#309</a></li>
+    <li>Add current namespace resolving for yaml targetEntity <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/305">#305</a></li>
+    <li>Add class linemarker for yaml entities</li>
+    <li>Add doctrine entity column names as lookup tail text in querybuilder completion</li>
+</ul>
 
 <h2>0.10.66 / 0.11.66</h2>
 <ul>

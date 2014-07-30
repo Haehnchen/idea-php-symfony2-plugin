@@ -181,11 +181,43 @@ public class EntityHelper {
                 doctrineModelField.setRelationType(keyName);
                 String value = targetEntity.getValueText();
                 if(value != null) {
-                    doctrineModelField.setRelation(value);
+                    doctrineModelField.setRelation(getYamlOrmClass(yamlKeyValue.getContainingFile(), value));
                 }
             }
         }
 
+    }
+
+    private static String getYamlOrmClass(PsiFile yamlFile, String className) {
+
+        // force global namespace not need to search for class
+        if(className.startsWith("\\")) {
+            return className;
+        }
+
+        // espend\Doctrine\ModelBundle\Entity\Bike:
+        // ...
+        // targetEntity: Foo
+        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(yamlFile, YAMLDocument.class);
+        if(yamlDocument != null) {
+            YAMLKeyValue entityKeyValue = PsiTreeUtil.getChildOfType(yamlDocument, YAMLKeyValue.class);
+            if(entityKeyValue != null) {
+                String entityName = entityKeyValue.getKeyText();
+                if(entityName != null) {
+
+                    // trim class name
+                    int lastBackSlash = entityName.lastIndexOf("\\");
+                    if(lastBackSlash > 0) {
+                        String fqnClass = entityName.substring(0, lastBackSlash + 1) + className;
+                        if(PhpElementsUtil.getClass(yamlFile.getProject(), fqnClass) != null) {
+                            return fqnClass;
+                        }
+                    }
+                }
+            }
+        }
+
+        return className;
     }
 
     @NotNull

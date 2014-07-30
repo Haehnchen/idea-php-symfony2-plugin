@@ -19,13 +19,14 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundleFileLookupElem
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SymfonyBundleFileCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private String path;
+    private String[] paths;
 
-    public SymfonyBundleFileCompletionProvider(String path) {
-        this.path = path;
+    public SymfonyBundleFileCompletionProvider(String... paths) {
+        this.paths = paths;
     }
 
     @Override
@@ -38,22 +39,12 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
         PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
 
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
-        ArrayList<BundleFile> bundleFiles = new ArrayList<BundleFile>();
+        List<BundleFile> bundleFiles = new ArrayList<BundleFile>();
 
         for(SymfonyBundle symfonyBundle : symfonyBundleUtil.getBundles()) {
-
-            VirtualFile virtualFile = symfonyBundle.getRelative(this.path);
-            if(virtualFile != null) {
-                final BundleContentIterator bundleContentIterator = new BundleContentIterator(symfonyBundle, bundleFiles, completionParameters.getPosition().getProject());
-                VfsUtil.visitChildrenRecursively(virtualFile, new VirtualFileVisitor() {
-                    @Override
-                    public boolean visitFile(@NotNull VirtualFile virtualFile) {
-                        bundleContentIterator.processFile(virtualFile);
-                        return super.visitFile(virtualFile);
-                    }
-                });
+            for(String path: this.paths) {
+                visitPath(completionParameters, bundleFiles, symfonyBundle, path);
             }
-
         }
 
         for(BundleFile bundleFile : bundleFiles) {
@@ -62,13 +53,31 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
     }
 
+    private void visitPath(CompletionParameters completionParameters, List<BundleFile> bundleFiles, SymfonyBundle symfonyBundle, String path) {
+
+        VirtualFile virtualFile = symfonyBundle.getRelative(path);
+        if(virtualFile == null) {
+            return;
+        }
+
+        final BundleContentIterator bundleContentIterator = new BundleContentIterator(symfonyBundle, bundleFiles, completionParameters.getPosition().getProject());
+        VfsUtil.visitChildrenRecursively(virtualFile, new VirtualFileVisitor() {
+            @Override
+            public boolean visitFile(@NotNull VirtualFile virtualFile) {
+                bundleContentIterator.processFile(virtualFile);
+                return super.visitFile(virtualFile);
+            }
+        });
+
+    }
+
     private class BundleContentIterator implements ContentIterator{
 
         private SymfonyBundle symfonyBundle;
-        private ArrayList<BundleFile> bundleFiles;
+        private List<BundleFile> bundleFiles;
         private Project project;
 
-        public BundleContentIterator(SymfonyBundle symfonyBundle, ArrayList<BundleFile> bundleFiles, Project project) {
+        public BundleContentIterator(SymfonyBundle symfonyBundle, List<BundleFile> bundleFiles, Project project) {
             this.symfonyBundle = symfonyBundle;
             this.bundleFiles = bundleFiles;
             this.project = project;
