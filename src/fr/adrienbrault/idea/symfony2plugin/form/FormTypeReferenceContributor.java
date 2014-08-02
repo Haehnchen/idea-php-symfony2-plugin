@@ -193,7 +193,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     // unknown formtype so provide form fallback
                     if(!(parameterList instanceof ParameterList)) {
-                        // unknown formtype so provide form fallback
                         return new PsiReference[]{ new FormExtensionKeyReference(psiElement, "form") };
                     }
 
