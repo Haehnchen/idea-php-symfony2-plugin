@@ -355,6 +355,9 @@
 
         <typedHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.WorkaroundTwigTypedHandler"/>
 
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInsight.completion.CompletionContributor"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.navigation.GotoHandler"/>
+
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
 
