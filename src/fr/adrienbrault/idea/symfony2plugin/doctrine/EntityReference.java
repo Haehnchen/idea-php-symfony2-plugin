@@ -16,7 +16,9 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -105,14 +107,44 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
 
         if(managerList.contains(DoctrineTypes.Manager.ORM)) {
-            attachRepositoryNames(project, results, ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap(), DoctrineTypes.Manager.ORM, useClassNameAsLookupString);
+
+            Map<String, String> entityNameMap = new HashMap<String, String>(
+                ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap()
+            );
+
+            // add bundle entity namespace
+            addWeakBundleNamespaces(project, entityNameMap, "Entity");
+
+            attachRepositoryNames(project, results, entityNameMap, DoctrineTypes.Manager.ORM, useClassNameAsLookupString);
         }
 
         if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
-            attachRepositoryNames(project, results, ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap(), DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString);
+
+            Map<String, String> documentNameMap = new HashMap<String, String>(
+                ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap()
+            );
+
+            // add bundle document namespace
+            addWeakBundleNamespaces(project, documentNameMap, "Document");
+
+            attachRepositoryNames(project, results, documentNameMap, DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString);
         }
 
         return results;
+    }
+
+    private static void addWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {
+        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(project).getBundles();
+        for(SymfonyBundle symfonyBundle: symfonyBundles) {
+            if(!symfonyBundle.isTestBundle()) {
+                String bundleName = symfonyBundle.getName();
+
+                if(!entityNameMap.containsKey(bundleName) && symfonyBundle.getRelative(subFolder) != null) {
+                    String entityNs = symfonyBundle.getNamespaceName() + subFolder;
+                    entityNameMap.put(bundleName, entityNs);
+                }
+            }
+        }
     }
 
 
