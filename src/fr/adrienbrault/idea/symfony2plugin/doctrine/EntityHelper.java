@@ -418,14 +418,19 @@ public class EntityHelper {
         // MyBundle:Folder\Model -> MyBundle\Entity\Folder\Model
         if (shortcutName.contains(":")) {
 
+            // collect entitymanager namespaces on bundle or container file
             Map<String, String> em = new HashMap<String, String>();
 
             if(managerList.contains(DoctrineTypes.Manager.ORM)) {
-                em.putAll(ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap());
+                Map<String, String> entityNameMap = ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap();
+                em.putAll(entityNameMap);
+                em.putAll(EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"));
             }
 
             if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
-                em.putAll(ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap());
+                Map<String, String> documentMap = ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap();
+                em.putAll(documentMap);
+                em.putAll(EntityHelper.getWeakBundleNamespaces(project, documentMap, "Document"));
             }
 
             int firstDirectorySeparatorIndex = shortcutName.indexOf(":");
@@ -597,5 +602,23 @@ public class EntityHelper {
         return !symfony2Util.isInstanceOf(entityClass, repositoryClass);
     }
 
+    public static Map<String, String> getWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {
+
+        Map<String, String> missingMap = new HashMap<String, String>();
+
+        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(project).getBundles();
+        for(SymfonyBundle symfonyBundle: symfonyBundles) {
+            if(!symfonyBundle.isTestBundle()) {
+                String bundleName = symfonyBundle.getName();
+
+                if(!entityNameMap.containsKey(bundleName) && symfonyBundle.getRelative(subFolder) != null) {
+                    String entityNs = symfonyBundle.getNamespaceName() + subFolder;
+                    missingMap.put(bundleName, entityNs);
+                }
+            }
+        }
+
+        return missingMap;
+    }
 
 }

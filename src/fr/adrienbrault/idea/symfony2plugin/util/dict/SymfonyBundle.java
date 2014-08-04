@@ -161,4 +161,14 @@ public class SymfonyBundle {
         return "@" + this.getName() + "/" + relativePath;
     }
 
+    public boolean isTestBundle() {
+        PsiDirectory directory = this.getDirectory();
+        if(directory == null) {
+            return false;
+        }
+
+        // @TODO: filter vendor, src before?
+        return directory.getVirtualFile().toString().contains("/Tests/");
+    }
+
 }

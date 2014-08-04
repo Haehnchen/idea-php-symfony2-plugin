@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.67</version>
+    <version>0.11.68</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -103,6 +103,16 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.68 / 0.11.68</h2>
+<ul>
+    <li>Provide weak form extension option completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/317">#317</a></li>
+    <li>Speedup form option completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/318">#318</a></li>
+    <li>Add new custom abstract reference replacements for deprecated getVariants <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/313">#313</a></li>
+    <li>Add weak doctrine namespaces on bundle names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/316">#316</a></li>
+    <li>Add twig macro statement scope resolve for variables <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/315">#315</a></li>
+    <li>Add some missing retina icons <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/312">#312</a></li>
+</ul>
 
 <h2>0.10.67 / 0.11.67</h2>
 <ul>
@@ -354,6 +364,9 @@
         <lang.foldingBuilder language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.TwigFoldingBuilder"/>
 
         <typedHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.WorkaroundTwigTypedHandler"/>
+
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInsight.completion.CompletionContributor"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.navigation.GotoHandler"/>
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>

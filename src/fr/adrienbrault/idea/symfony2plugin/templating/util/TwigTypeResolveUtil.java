@@ -206,6 +206,7 @@ public class TwigTypeResolveUtil {
 
         // globals first
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT)));
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.MACRO_STATEMENT)));
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
 
         // check if we are in "for" scope and resolve types ending with []

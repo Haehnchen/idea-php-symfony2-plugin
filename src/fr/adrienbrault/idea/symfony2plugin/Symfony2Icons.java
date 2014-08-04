@@ -14,7 +14,9 @@ public class Symfony2Icons {
     public static final Icon SYMFONY_TOOL_WINDOW = IconLoader.getIcon("icons/symfony_tool_window.png");
     public static final Icon DOCTRINE = IconLoader.getIcon("icons/doctrine.png");
     public static final Icon DOCTRINE_LINE_MARKER = IconLoader.getIcon("icons/doctrine_line_marker.png");
+    public static final Icon DOCTRINE_WEAK = IconLoader.getIcon("icons/doctrine_weak.png");
     public static final Icon MONGODB = IconLoader.getIcon("icons/mongodb.png");
+    public static final Icon MONGODB_WEAK = IconLoader.getIcon("icons/mongodb.png");
     public static final Icon ROUTE = IconLoader.getIcon("icons/route.png");
     public static final Icon ROUTE_WEAK = IconLoader.getIcon("icons/route_weak.png");
     public static final Icon SERVICE = IconLoader.getIcon("icons/service.png");
@@ -26,6 +28,7 @@ public class Symfony2Icons {
     public static final Icon PARAMETER = IconLoader.getIcon("icons/parameter.png");
     public static final Icon FORM_OPTION = IconLoader.getIcon("icons/form_option.png");
     public static final Icon FORM_EXTENSION = IconLoader.getIcon("icons/form_extension.png");
+    public static final Icon FORM_EXTENSION_WEAK = IconLoader.getIcon("icons/form_extension_weak.png");
     public static final Icon SERVICE_TAG = IconLoader.getIcon("icons/service_tag.png");
     public static final Icon SERVICE_TAG_WEAK = IconLoader.getIcon("icons/service_tag_weak.png");
     public static final Icon EVENT = IconLoader.getIcon("icons/event.png");

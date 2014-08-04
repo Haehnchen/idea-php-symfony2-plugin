@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.form.util;
 
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -7,69 +9,81 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormExtensionClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClassEnum;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormExtensionServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOption;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class FormOptionsUtil {
 
-    public static List<FormExtensionClass> getExtendedTypeClasses(Project project, String... formTypeNames) {
+    private static final String EXTENDED_TYPE_METHOD = "getExtendedType";
+
+    public static List<FormClass> getExtendedTypeClasses(Project project, String... formTypeNames) {
 
         List<String> formTypeNamesList = Arrays.asList(formTypeNames);
 
-        List<FormExtensionClass> extendedTypeClasses = new ArrayList<FormExtensionClass>();
+        // get compiler container services
+        Set<String> stringSet = ServiceXmlParserFactory.getInstance(project, FormExtensionServiceParser.class).getFormExtensions().keySet();
 
-        FormExtensionServiceParser formExtensionServiceParser = ServiceXmlParserFactory.getInstance(project, FormExtensionServiceParser.class);
-        Set<String> stringSet = formExtensionServiceParser.getFormExtensions().keySet();
+        List<FormClass> extendedTypeClasses = new ArrayList<FormClass>();
 
         for(String formClass: stringSet) {
+            visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, false, PhpElementsUtil.getClassMethod(project, formClass, EXTENDED_TYPE_METHOD));
+        }
 
-            Method method = PhpElementsUtil.getClassMethod(project, formClass, "getExtendedType");
-            if(method != null) {
-                PhpClass containingClass = method.getContainingClass();
-                if(containingClass != null) {
-                    PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
-                    if(phpReturn != null) {
-                        PhpPsiElement returnValue = phpReturn.getFirstPsiChild();
-                        if(returnValue instanceof StringLiteralExpression && formTypeNamesList.contains(((StringLiteralExpression) returnValue).getContents())) {
-                            extendedTypeClasses.add(new FormExtensionClass(containingClass, false));
-                        }
-
-                    }
-
+        // use form extension interface if service is empty
+        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Form\\FormTypeExtensionInterface")) {
+            if(!phpClass.isAbstract() && !phpClass.isInterface() && !PhpUnitUtil.isTestClass(phpClass)) {
+                String className = phpClass.getPresentableFQN();
+                if(className != null && !stringSet.contains(className)) {
+                    visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, true, PhpElementsUtil.getClassMethod(phpClass, EXTENDED_TYPE_METHOD));
                 }
             }
         }
-
-        // @TODO: implement this
-        /* for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Form\\FormTypeExtensionInterface")) {
-            if(!phpClass.isAbstract() && !phpClass.isInterface() && !PhpUnitUtil.isTestClass(phpClass)) {
-
-                String fqn = phpClass.getPresentableFQN();
-                if(!stringSet.contains(fqn)) {
-                    extendedTypeClasses.add(new FormExtensionClass(phpClass, true));
-                }
-
-            }
-        } */
 
         return extendedTypeClasses;
     }
 
-    public static Map<String, String> getFormExtensionKeys(Project project, String... formTypeNames) {
-        Map<String, String> extensionKeys = new HashMap<String, String>();
-        List<FormExtensionClass> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
-
-        for(FormExtensionClass extensionClass: typeClasses) {
-            attachOnDefaultOptions(project, extensionKeys, extensionClass.getPhpClass());
+    private static void visitExtendedTypeMethod(List<String> formTypeNamesList, List<FormClass> extendedTypeClasses, boolean isWeak, @Nullable Method method) {
+        if(method == null) {
+            return;
         }
 
-        return extensionKeys;
+        // method without class, exit we need fqn class name
+        PhpClass containingClass = method.getContainingClass();
+        if(containingClass == null) {
+            return;
+        }
+
+        PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
+        if(phpReturn != null) {
+            PhpPsiElement returnValue = phpReturn.getFirstPsiChild();
+            if(returnValue instanceof StringLiteralExpression && formTypeNamesList.contains(((StringLiteralExpression) returnValue).getContents())) {
+                extendedTypeClasses.add(new FormClass(FormClassEnum.EXTENSION, containingClass, isWeak));
+            }
+        }
+
+    }
+
+    public static Map<String, FormOption> getFormExtensionKeys(Project project, String... formTypeNames) {
+
+        List<FormClass> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
+        Map<String, FormOption> extensionClassMap = new HashMap<String, FormOption>();
+
+        for(FormClass extensionClass: typeClasses) {
+            extensionClassMap.putAll(getDefaultOptions(project, extensionClass.getPhpClass(), extensionClass));
+        }
+
+        return extensionClassMap;
     }
 
     /**
@@ -80,6 +94,7 @@ public class FormOptionsUtil {
 
         Set<String> stringSet = new HashSet<String>();
 
+        Set<String> uniqueClass = new HashSet<String>();
         List<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
         // attach core form phpclass
@@ -87,12 +102,13 @@ public class FormOptionsUtil {
         PhpClass coreForm = FormUtil.getFormTypeToClass(project, "form");
         if(coreForm != null) {
             phpClasses.add(coreForm);
+            uniqueClass.add(coreForm.getPresentableFQN());
         }
 
         // for extension can also provide vars
-        for(Map.Entry<String, String> entry: FormOptionsUtil.getFormExtensionKeys(project, formTypeNames).entrySet()) {
-            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, entry.getValue());
-            if(phpClass != null) {
+        for(FormOption entry: FormOptionsUtil.getFormExtensionKeys(project, formTypeNames).values()) {
+            PhpClass phpClass = entry.getFormClass().getPhpClass();
+            if(!uniqueClass.contains(phpClass.getPresentableFQN())) {
                 phpClasses.add(phpClass);
             }
         }
@@ -203,6 +219,10 @@ public class FormOptionsUtil {
         return defaultValues;
     }
 
+    /**
+     * use getDefaultOptions
+     */
+    @Deprecated
     private static void attachOnDefaultOptions(Project project, Map<String, String> defaultValues, PhpClass phpClass) {
 
         Method setDefaultOptionsMethod =  PhpElementsUtil.getClassMethod(phpClass, "setDefaultOptions");
@@ -239,12 +259,76 @@ public class FormOptionsUtil {
         }
     }
 
+    @NotNull
+    private static Map<String, FormOption> getDefaultOptions(Project project, PhpClass phpClass, FormClass formClass) {
+
+        Map<String, FormOption> options = new HashMap<String, FormOption>();
+
+        Method setDefaultOptionsMethod =  PhpElementsUtil.getClassMethod(phpClass, "setDefaultOptions");
+        if(setDefaultOptionsMethod == null) {
+            return options;
+        }
+
+        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(setDefaultOptionsMethod, MethodReference.class);
+        for(MethodReference methodReference: tests) {
+            // instance check
+            // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
+            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
+                PsiElement[] parameters = methodReference.getParameters();
+                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
+                    for(String key: PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameters[0])) {
+                        options.put(key, new FormOption(key, formClass));
+                    }
+                }
+
+            }
+
+            // support: parent::setDefaultOptions($resolver)
+            // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
+            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaultOptions") && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
+                PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
+                if(parentMethod instanceof Method) {
+                    PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
+                    if(phpClassInner != null) {
+                        // @TODO only use setDefaultOptions, recursive call get setDefaults again
+                        options.putAll(getDefaultOptions(project, phpClassInner, formClass));
+                    }
+                }
+            }
+
+        }
+
+        return options;
+    }
+
     @Deprecated
     private static void attachOnDefaultOptions(Project project, Map<String, String> defaultValues, String typeClass) {
         PhpClass phpClass = PhpElementsUtil.getClass(project, typeClass);
         if(phpClass != null) {
             attachOnDefaultOptions(project, defaultValues, phpClass);
         }
+    }
+
+    /**
+     * Build completion lookup element for form options
+     * Reformat class name to make it more readable
+     *
+     * @param formOption Extension or a default option
+     * @return lookup element
+     */
+    public static LookupElement getOptionLookupElement(FormOption formOption) {
+
+        String typeText = formOption.getFormClass().getPhpClass().getPresentableFQN();
+        if(typeText != null && typeText.lastIndexOf("\\") != -1) {
+            typeText = typeText.substring(typeText.lastIndexOf("\\") + 1);
+            if(typeText.endsWith("Extension")) {
+                typeText = typeText.substring(0, typeText.length() - 9);
+            }
+        }
+
+        return LookupElementBuilder.create(formOption.getOption())
+            .withTypeText(typeText, true)
+            .withIcon(formOption.getFormClass().isWeak() ? Symfony2Icons.FORM_EXTENSION_WEAK : Symfony2Icons.FORM_EXTENSION);
     }
 
 }
