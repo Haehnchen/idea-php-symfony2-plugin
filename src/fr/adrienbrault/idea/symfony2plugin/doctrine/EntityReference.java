@@ -103,7 +103,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             attachRepositoryNames(project, results, entityNameMap, DoctrineTypes.Manager.ORM, useClassNameAsLookupString, false);
 
             // add bundle entity namespace
-            attachRepositoryNames(project, results, getWeakBundleNamespaces(project, entityNameMap, "Entity"), DoctrineTypes.Manager.ORM, useClassNameAsLookupString, true);
+            attachRepositoryNames(project, results, EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"), DoctrineTypes.Manager.ORM, useClassNameAsLookupString, true);
         }
 
         if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
@@ -115,7 +115,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             attachRepositoryNames(project, results, documentNameMap, DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString, false);
 
             // add bundle document namespace
-            attachRepositoryNames(project, results, getWeakBundleNamespaces(project, documentNameMap, "Document"), DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString, true);
+            attachRepositoryNames(project, results, EntityHelper.getWeakBundleNamespaces(project, documentNameMap, "Document"), DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString, true);
         }
 
         // add custom doctrine classes
@@ -129,25 +129,5 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
         return results;
     }
-
-    private static Map<String, String> getWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {
-
-        Map<String, String> missingMap = new HashMap<String, String>();
-
-        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(project).getBundles();
-        for(SymfonyBundle symfonyBundle: symfonyBundles) {
-            if(!symfonyBundle.isTestBundle()) {
-                String bundleName = symfonyBundle.getName();
-
-                if(!entityNameMap.containsKey(bundleName) && symfonyBundle.getRelative(subFolder) != null) {
-                    String entityNs = symfonyBundle.getNamespaceName() + subFolder;
-                    missingMap.put(bundleName, entityNs);
-                }
-            }
-        }
-
-        return missingMap;
-    }
-
 
 }
