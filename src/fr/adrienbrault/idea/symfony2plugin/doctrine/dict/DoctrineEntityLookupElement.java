@@ -15,10 +15,16 @@ public class DoctrineEntityLookupElement extends LookupElement {
     private PhpClass className;
     private boolean useClassNameAsLookupString = false;
     private DoctrineTypes.Manager manager;
+    private boolean isWeak = false;
 
     public DoctrineEntityLookupElement(String entityName, PhpClass className, boolean useClassNameAsLookupString) {
         this(entityName, className);
         this.useClassNameAsLookupString = useClassNameAsLookupString;
+    }
+
+    public DoctrineEntityLookupElement(String entityName, PhpClass className, boolean useClassNameAsLookupString, boolean isWeak) {
+        this(entityName, className, useClassNameAsLookupString);
+        this.isWeak = isWeak;
     }
 
     public DoctrineEntityLookupElement(String entityName, PhpClass className) {
@@ -54,7 +60,12 @@ public class DoctrineEntityLookupElement extends LookupElement {
         }
 
         presentation.setTypeGrayed(true);
-        presentation.setIcon(manager == null || manager == DoctrineTypes.Manager.ORM ? Symfony2Icons.DOCTRINE : Symfony2Icons.MONGODB);
+        if(isWeak) {
+            presentation.setIcon(manager == null || manager == DoctrineTypes.Manager.ORM ? Symfony2Icons.DOCTRINE_WEAK : Symfony2Icons.MONGODB_WEAK);
+        } else {
+            presentation.setIcon(manager == null || manager == DoctrineTypes.Manager.ORM ? Symfony2Icons.DOCTRINE : Symfony2Icons.MONGODB);
+        }
+
 
     }
 

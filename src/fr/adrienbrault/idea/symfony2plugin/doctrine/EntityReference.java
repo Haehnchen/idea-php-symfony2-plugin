@@ -76,24 +76,13 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         return results.toArray();
     }
 
-    private static void attachRepositoryNames(Project project, final List<LookupElement> results, Map<String, String> entityNamespaces, final DoctrineTypes.Manager manager, final boolean useClassNameAsLookupString) {
-
+    private static void attachRepositoryNames(Project project, final List<LookupElement> results, Map<String, String> entityNamespaces, final DoctrineTypes.Manager manager, final boolean useClassNameAsLookupString, final boolean isWeak) {
         for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(project, entityNamespaces)) {
             String repositoryName = doctrineModel.getRepositoryName();
             if(repositoryName != null) {
-                results.add(new DoctrineEntityLookupElement(repositoryName, doctrineModel.getPhpClass(), useClassNameAsLookupString).withManager(manager));
+                results.add(new DoctrineEntityLookupElement(repositoryName, doctrineModel.getPhpClass(), useClassNameAsLookupString, isWeak).withManager(manager));
             }
         }
-
-        // add custom doctrine classes
-        Collection<DoctrineModelProviderParameter.DoctrineModel> doctrineModels = new ArrayList<DoctrineModelProviderParameter.DoctrineModel>();
-        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, doctrineModels);
-        for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
-            for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
-                results.add(new DoctrineEntityLookupElement(doctrineModel.getName(), doctrineModel.getPhpClass(), useClassNameAsLookupString));
-            }
-        }
-
     }
 
     public static List<LookupElement> getModelLookupElements(Project project, DoctrineTypes.Manager... managers) {
@@ -103,7 +92,6 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private static List<LookupElement> getModelLookupElements(Project project, boolean useClassNameAsLookupString, DoctrineTypes.Manager... managers) {
 
         List<LookupElement> results = new ArrayList<LookupElement>();
-
         List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
 
         if(managerList.contains(DoctrineTypes.Manager.ORM)) {
@@ -112,10 +100,10 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
                 ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap()
             );
 
-            // add bundle entity namespace
-            addWeakBundleNamespaces(project, entityNameMap, "Entity");
+            attachRepositoryNames(project, results, entityNameMap, DoctrineTypes.Manager.ORM, useClassNameAsLookupString, false);
 
-            attachRepositoryNames(project, results, entityNameMap, DoctrineTypes.Manager.ORM, useClassNameAsLookupString);
+            // add bundle entity namespace
+            attachRepositoryNames(project, results, getWeakBundleNamespaces(project, entityNameMap, "Entity"), DoctrineTypes.Manager.ORM, useClassNameAsLookupString, true);
         }
 
         if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
@@ -124,16 +112,28 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
                 ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap()
             );
 
-            // add bundle document namespace
-            addWeakBundleNamespaces(project, documentNameMap, "Document");
+            attachRepositoryNames(project, results, documentNameMap, DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString, false);
 
-            attachRepositoryNames(project, results, documentNameMap, DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString);
+            // add bundle document namespace
+            attachRepositoryNames(project, results, getWeakBundleNamespaces(project, documentNameMap, "Document"), DoctrineTypes.Manager.MONGO_DB, useClassNameAsLookupString, true);
+        }
+
+        // add custom doctrine classes
+        Collection<DoctrineModelProviderParameter.DoctrineModel> doctrineModels = new ArrayList<DoctrineModelProviderParameter.DoctrineModel>();
+        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, doctrineModels);
+        for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
+            for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
+                results.add(new DoctrineEntityLookupElement(doctrineModel.getName(), doctrineModel.getPhpClass(), useClassNameAsLookupString, false));
+            }
         }
 
         return results;
     }
 
-    private static void addWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {
+    private static Map<String, String> getWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {
+
+        Map<String, String> missingMap = new HashMap<String, String>();
+
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(project).getBundles();
         for(SymfonyBundle symfonyBundle: symfonyBundles) {
             if(!symfonyBundle.isTestBundle()) {
@@ -141,10 +141,12 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
                 if(!entityNameMap.containsKey(bundleName) && symfonyBundle.getRelative(subFolder) != null) {
                     String entityNs = symfonyBundle.getNamespaceName() + subFolder;
-                    entityNameMap.put(bundleName, entityNs);
+                    missingMap.put(bundleName, entityNs);
                 }
             }
         }
+
+        return missingMap;
     }
 
 
