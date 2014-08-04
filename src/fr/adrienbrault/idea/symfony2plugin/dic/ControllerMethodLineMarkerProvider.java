@@ -212,10 +212,10 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
                             uniqueTargets.add(templateTarget);
                             // we can provide targets to model config and direct class targets
                             if(templateTarget instanceof PsiFile) {
-                                gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(templateTarget.getIcon(0), Symfony2Icons.SYMFONY_LINE_MARKER));
+                                gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(templateTarget.getIcon(0), Symfony2Icons.DOCTRINE_LINE_MARKER));
                             } else {
                                 // @TODO: we can resolve for model types and provide icons, but not for now
-                                gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(Symfony2Icons.DOCTRINE, Symfony2Icons.SYMFONY_LINE_MARKER));
+                                gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(Symfony2Icons.DOCTRINE, Symfony2Icons.DOCTRINE_LINE_MARKER));
                             }
                         }
 
