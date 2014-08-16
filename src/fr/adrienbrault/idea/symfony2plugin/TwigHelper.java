@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.FileIndexUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -9,12 +10,17 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.include.FileIncludeIndex;
+import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
@@ -260,6 +266,7 @@ public class TwigHelper {
      * @param functionName twig function name
      */
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern(String... functionName) {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
@@ -286,6 +293,7 @@ public class TwigHelper {
      * NOT: {{ foo.bar }}, {{ 'foo.bar' }}
      */
     public static ElementPattern<PsiElement> getCompletablePattern() {
+        //noinspection unchecked
         return  PlatformPatterns.psiElement()
             .andNot(
                 PlatformPatterns.or(
@@ -306,6 +314,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getBlockTagPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
@@ -325,7 +334,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTransDefaultDomain() {
-
+        //noinspection unchecked
         return PlatformPatterns.or(
             PlatformPatterns
                 .psiElement(TwigTokenTypes.IDENTIFIER)
@@ -363,6 +372,7 @@ public class TwigHelper {
      * match 'dddd') on ending
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .beforeLeafSkipping(
@@ -380,6 +390,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getPathAfterLeafPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -437,6 +448,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getRoutePattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")
             .beforeLeafSkipping(
@@ -449,6 +461,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -468,6 +481,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableAssetPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -484,6 +498,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTranslationPattern(String... type) {
+        //noinspection unchecked
         return
             PlatformPatterns
                 .psiElement(TwigTokenTypes.STRING_TEXT)
@@ -518,13 +533,13 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableAssetTag(String tagName) {
-
         // @TODO: withChild is not working so we are filtering on text
 
         // pattern to match '..foo.css' but not match eg ='...'
         //
         // {% stylesheets filter='cssrewrite'
         //  'assets/css/foo.css'
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
                 .afterLeafSkipping(
@@ -546,6 +561,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern(String... tagNames) {
 
         // {% include '<xxx>' with {'foo' : bar, 'bar' : 'foo'} %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -562,9 +579,12 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTemplateImportFileReferenceTagPattern() {
+
         // first: {% from '<xxx>' import foo, <|>  %}
         // second: {% from '<xxx>' import <|>  %}
         // and not: {% from '<xxx>' import foo as <|>  %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG))
@@ -592,6 +612,8 @@ public class TwigHelper {
 
     public static ElementPattern<PsiElement> getForTagVariablePattern() {
         // {% for "user"  %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .beforeLeafSkipping(
@@ -609,6 +631,8 @@ public class TwigHelper {
         // {% for key, user in "users" %}
         // {% for user in "users" %}
         // {% for user in "users"|slice(0, 10) %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -624,6 +648,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getIfVariablePattern() {
 
         // {% if "var" %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -646,6 +672,8 @@ public class TwigHelper {
         // {% if var < "var1" %}
         // {% if var == "var1" %}
         // and so on
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -671,6 +699,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getTwigMacroNamePattern() {
 
         // {% macro <foo>(user) %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(PlatformPatterns.psiElement(
@@ -689,6 +719,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getTwigMacroNameKnownPattern(String macroName) {
 
         // {% macro <foo>(user) %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText(macroName)
             .withParent(PlatformPatterns.psiElement(
@@ -707,6 +739,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getSetVariablePattern() {
 
         // {% set count1 = "var" %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -728,6 +762,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getIncludeOnlyPattern() {
 
         // {% set count1 = "var" %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("only")
             .beforeLeafSkipping(
@@ -741,6 +777,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getVariableTypePattern() {
+        //noinspection unchecked
         return PlatformPatterns.or(
             TwigHelper.getForTagInVariablePattern(),
             TwigHelper.getIfVariablePattern(),
