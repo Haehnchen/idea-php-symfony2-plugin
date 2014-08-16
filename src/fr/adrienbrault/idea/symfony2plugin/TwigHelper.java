@@ -20,7 +20,11 @@ import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.PhpPresentationUtil;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.ClassReference;
+import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
@@ -49,6 +53,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigHelper {
 
@@ -945,4 +950,36 @@ public class TwigHelper {
 
         return lookupElements;
     }
+
+    /**
+     * Paramater formatter for twig extension to remove Twig_Environment parameter from completion display
+     * ported from com.jetbrains.php.PhpPresentationUtil#formatParameters
+     *
+     */
+    public static StringBuilder formatParameters(@Nullable StringBuilder b, @NotNull Parameter[] parameters) {
+        if (b == null) b = new StringBuilder();
+        b.append('(');
+        for (int i = 0; i < parameters.length; i++) {
+
+            if(i == 0) {
+                PhpPsiElement classReference =  parameters[i].getFirstPsiChild();
+                if(classReference instanceof ClassReference) {
+                    String className = ((ClassReference) classReference).getFQN();
+                    if(new Symfony2InterfacesUtil().isInstanceOf(parameters[i].getProject(), className, "Twig_Environment")) {
+                        continue;
+                    }
+                }
+            }
+
+            b.append(PhpPresentationUtil.getParameterPresentation(parameters[i]));
+            if (parameters.length - i > 1) {
+                b.append(", ");
+            }
+
+        }
+
+        b.append(')');
+        return b;
+    }
+
 }

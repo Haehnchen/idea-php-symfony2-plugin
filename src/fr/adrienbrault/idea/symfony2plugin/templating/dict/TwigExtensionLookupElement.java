@@ -7,6 +7,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.PhpPresentationUtil;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.elements.impl.FunctionImpl;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,7 @@ public class TwigExtensionLookupElement extends LookupElement {
 
                 PhpNamedElement function = phpNamedElements.iterator().next();
                 if(function instanceof FunctionImpl) {
-                    presentation.setTailText(PhpPresentationUtil.formatParameters(null, ((FunctionImpl) function).getParameters()).toString(), true);
+                    presentation.setTailText(TwigHelper.formatParameters(null, ((FunctionImpl) function).getParameters()).toString(), true);
                 }
 
             }
