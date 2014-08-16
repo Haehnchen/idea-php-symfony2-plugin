@@ -221,6 +221,13 @@ public class TwigHelper {
                     addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
                 }
 
+                // Bundle overwrite:
+                // FooBundle:index.html -> app/views/FooBundle:index.html
+                if(twigPath.isGlobalNamespace() && !normalizedTemplateName.startsWith(":") && !normalizedTemplateName.startsWith("@")) {
+                    String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/").replace("//", "/"), "/");
+                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                }
+
             }
 
         }
