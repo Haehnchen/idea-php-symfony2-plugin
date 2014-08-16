@@ -240,11 +240,11 @@ public class TwigHelper {
         }
     }
 
-    public static List<TwigPath> getTwigNamespaces(Project project) {
+    public static List<TwigPath> getTwigNamespaces(@NotNull Project project) {
        return getTwigNamespaces(project, true);
     }
 
-    public static List<TwigPath> getTwigNamespaces(Project project, boolean includeSettings) {
+    public static List<TwigPath> getTwigNamespaces(@NotNull Project project, boolean includeSettings) {
         List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         PhpIndex phpIndex = PhpIndex.getInstance(project);
 
