@@ -17,7 +17,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -167,7 +166,10 @@ public class ServiceUtil {
 
         for(String className: taggedCompiledClasses) {
             if(!uniqueClass.contains(className)) {
-                taggedClasses.add(PhpElementsUtil.getClass(project, className));
+                PhpClass phpClass = PhpElementsUtil.getClass(project, className);
+                if(phpClass != null) {
+                    taggedClasses.add(phpClass);
+                }
             }
         }
 
