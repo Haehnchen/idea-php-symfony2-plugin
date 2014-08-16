@@ -39,7 +39,7 @@ public class SymfonyProfilerWidgetActions {
         @Override
         public void actionPerformed(AnActionEvent e) {
 
-            List<PsiFile> psiFiles = Arrays.asList(TwigHelper.getTemplateFilesByName(project, templateName));
+            List<PsiFile> psiFiles = Arrays.asList(TwigHelper.getTemplatePsiElements(project, templateName));
 
             // @TODO: multiple targets?
             if(psiFiles.size() > 0) {

@@ -105,7 +105,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
     }
 
     protected List<PsiFile> templateGoto(PsiElement psiElement, String templateName) {
-        return Arrays.asList(TwigHelper.getTemplateFilesByName(psiElement.getProject(), templateName));
+        return Arrays.asList(TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName));
     }
 
     @Nullable
