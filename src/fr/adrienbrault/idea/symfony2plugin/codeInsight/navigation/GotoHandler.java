@@ -26,16 +26,11 @@ public class GotoHandler implements GotoDeclarationHandler {
             return new PsiElement[0];
         }
 
-        PsiElement parent = psiElement.getParent();
-        if(!(parent instanceof StringLiteralExpression)) {
-            return new PsiElement[0];
-        }
-
         Collection<PsiElement> psiTargets = new ArrayList<PsiElement>();
         for(GotoCompletionContributor contributor: GotoCompletionUtil.getContributors(psiElement)) {
             GotoCompletionProviderInterface formReferenceCompletionContributor = contributor.getProvider(psiElement);
             if(formReferenceCompletionContributor != null) {
-                psiTargets.addAll(formReferenceCompletionContributor.getPsiTargets((StringLiteralExpression) parent));
+                psiTargets.addAll(formReferenceCompletionContributor.getPsiTargets(psiElement));
             }
         }
 

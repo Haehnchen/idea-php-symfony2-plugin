@@ -20,8 +20,8 @@ public class CompletionContributor extends com.intellij.codeInsight.completion.C
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
-                PsiElement psiElement = completionParameters.getOriginalPosition();
-                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                PsiElement psiElement = completionParameters.getPosition();
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
