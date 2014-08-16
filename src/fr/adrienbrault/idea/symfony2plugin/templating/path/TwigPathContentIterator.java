@@ -16,7 +16,7 @@ public class TwigPathContentIterator implements ContentIterator {
     private TwigPath twigPath;
     private Project project;
 
-    private Map<String, PsiFile> results = new HashMap<String, PsiFile>();
+    private Map<String, VirtualFile> results = new HashMap<String, VirtualFile>();
 
     private boolean withPhp = false;
     private boolean withTwig = true;
@@ -88,9 +88,7 @@ public class TwigPathContentIterator implements ContentIterator {
             }
         }
 
-
-        PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
-        this.results.put(templateFinalName, psiFile);
+        this.results.put(templateFinalName, virtualFile);
 
         return true;
     }
@@ -122,7 +120,7 @@ public class TwigPathContentIterator implements ContentIterator {
         return this;
     }
 
-    public Map<String, PsiFile> getResults() {
+    public Map<String, VirtualFile> getResults() {
         return results;
     }
 }

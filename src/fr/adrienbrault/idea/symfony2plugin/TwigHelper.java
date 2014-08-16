@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -25,6 +26,7 @@ import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -49,10 +51,11 @@ public class TwigHelper {
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
-    synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
-        Map<String, PsiFile> results = new HashMap<String, PsiFile>();
+    public static Map<String, VirtualFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
 
-        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        Map<String, VirtualFile> results = new HashMap<String, VirtualFile>();
+
+        List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         twigPaths.addAll(getTwigNamespaces(project));
 
         if(twigPaths.size() == 0) {
@@ -82,18 +85,11 @@ public class TwigHelper {
         return results;
     }
 
-    synchronized public static Map<String, TwigFile> getTwigFilesByName(Project project) {
-        Map<String, TwigFile> results = new HashMap<String, TwigFile>();
-        for(Map.Entry<String, PsiFile> entry: getTemplateFilesByName(project, true, true).entrySet()) {
-            if(entry.getValue() instanceof TwigFile) {
-                results.put(entry.getKey(), (TwigFile) entry.getValue());
-            }
-        }
-
-        return results;
+    public static Map<String, VirtualFile> getTwigFilesByName(Project project) {
+        return getTemplateFilesByName(project, true, false);
     }
 
-    synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project) {
+    public static Map<String, VirtualFile> getTemplateFilesByName(Project project) {
         return getTemplateFilesByName(project, true, true);
     }
 
@@ -175,20 +171,27 @@ public class TwigHelper {
 
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
-        Map<String, PsiFile> twigFiles = TwigHelper.getTemplateFilesByName(project);
+        Map<String, VirtualFile> twigFiles = TwigHelper.getTemplateFilesByName(project);
         if(!twigFiles.containsKey(normalizedTemplateName)) {
             return new PsiElement[0];
         }
 
-        return new PsiElement[] {twigFiles.get(normalizedTemplateName)};
+        VirtualFile virtualFile = twigFiles.get(normalizedTemplateName);
+
+        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+        if(psiFile != null) {
+            return new PsiElement[] {psiFile};
+        }
+
+        return new PsiElement[0];
     }
 
-    synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project) {
+    public static List<TwigPath> getTwigNamespaces(Project project) {
        return getTwigNamespaces(project, true);
     }
 
-    synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project, boolean includeSettings) {
-        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
+    public static List<TwigPath> getTwigNamespaces(Project project, boolean includeSettings) {
+        List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         PhpIndex phpIndex = PhpIndex.getInstance(project);
 
         TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
@@ -219,7 +222,7 @@ public class TwigHelper {
             return twigPaths;
         }
 
-        ArrayList<TwigNamespaceSetting> twigNamespaceSettings = (ArrayList<TwigNamespaceSetting>) Settings.getInstance(project).twigNamespaces;
+        List<TwigNamespaceSetting> twigNamespaceSettings = Settings.getInstance(project).twigNamespaces;
         if(twigNamespaceSettings != null) {
             for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
                 if(twigNamespaceSetting.isCustom()) {
@@ -835,4 +838,31 @@ public class TwigHelper {
         return targets;
     }
 
+    public static Collection<LookupElement> getTwigLookupElements(Project project) {
+        VirtualFile baseDir = project.getBaseDir();
+
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigFilesByName(project).entrySet()) {
+            lookupElements.add(
+                new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
+            );
+        }
+
+        return lookupElements;
+    }
+
+    public static Collection<LookupElement> getAllTemplateLookupElements(Project project) {
+        VirtualFile baseDir = project.getBaseDir();
+
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTemplateFilesByName(project).entrySet()) {
+            lookupElements.add(
+                new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
+            );
+        }
+
+        return lookupElements;
+    }
 }

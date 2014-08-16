@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -25,16 +26,7 @@ public class TemplateReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public Object[] getVariants() {
-        List<LookupElement> results = new ArrayList<LookupElement>();
-
-        Map<String, PsiFile> PsiFileMap = TwigHelper.getTemplateFilesByName(getElement().getProject());
-        for (Map.Entry<String, PsiFile> entry : PsiFileMap.entrySet()) {
-            results.add(
-                new TemplateLookupElement(entry.getKey(), entry.getValue())
-            );
-        }
-
-        return results.toArray();
+        return TwigHelper.getAllTemplateLookupElements(getElement().getProject()).toArray();
     }
 
     @NotNull

@@ -2,9 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIcons;
@@ -46,6 +49,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -142,13 +146,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     String templateName = psiElement.getText();
 
-                    Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+                    Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
                     if(!twigFilesByName.containsKey(templateName)) {
                         return;
                     }
 
-                    for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFilesByName.get(templateName)).entrySet()) {
-                        resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(TwigIcons.TwigFileIcon));
+                    VirtualFile virtualFile = twigFilesByName.get(templateName);
+                    PsiFile psiFile = PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile);
+                    if(psiFile != null) {
+                        for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(psiFile).entrySet()) {
+                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(TwigIcons.TwigFileIcon));
+                        }
                     }
 
                 }
@@ -391,12 +399,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-            for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
-                resultSet.addElement(
-                    new TemplateLookupElement(entry.getKey(), entry.getValue())
-                );
-            }
+            resultSet.addAllElements(TwigHelper.getTwigLookupElements(parameters.getPosition().getProject()));
 
         }
     }
@@ -494,12 +497,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-            for (Map.Entry<String, TwigFile> entry : twigFilesByName.entrySet()) {
-                resultSet.addElement(
-                    new TemplateLookupElement(entry.getKey(), entry.getValue())
-                );
-            }
+            resultSet.addAllElements(TwigHelper.getTwigLookupElements(parameters.getPosition().getProject()));
         }
     }
 
@@ -511,9 +509,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-            ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
-            ArrayList<String> uniqueList = new ArrayList<String>();
+            Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
+            List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
+            List<String> uniqueList = new ArrayList<String>();
             for (TwigBlock block : blocks) {
                 if(!uniqueList.contains(block.getName())) {
                     uniqueList.add(block.getName());

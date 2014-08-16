@@ -153,10 +153,10 @@ public class Symfony2SearchForm {
         }
 
         if(this.toggleTemplate.isSelected()) {
-            Map<String, PsiFile> twigFilesByName = TwigHelper.getTemplateFilesByName(this.project);
-            for (Map.Entry<String, PsiFile> entry : twigFilesByName.entrySet()) {
+            VirtualFile baseDir = this.project.getBaseDir();
+            for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTemplateFilesByName(this.project).entrySet()) {
                 if(entry.getKey().toLowerCase().contains(filter)) {
-                    items.add(new TemplateLookupElement(entry.getKey(), entry.getValue()));
+                    items.add(new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir));
                 }
             }
         }

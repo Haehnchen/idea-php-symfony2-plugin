@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
 
 public class TwigMarcoParser {
 
+
+    /**
+     * TODO: remove regular expression
+     */
     public HashMap<String, String> getMacros(PsiFile file) {
 
         HashMap<String, String> current = new HashMap<String, String>();

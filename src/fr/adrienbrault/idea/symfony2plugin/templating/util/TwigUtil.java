@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
@@ -246,15 +248,19 @@ public class TwigUtil {
         String regex = "\\{%\\s?import\\s?['\"](.*?)['\"]\\s?as\\s?(.*?)\\s?%}";
         Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
 
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
+        Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
         while (matcher.find()) {
 
             String templateName = matcher.group(1);
             String asName = matcher.group(2);
 
             if(twigFilesByName.containsKey(templateName)) {
-                for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFilesByName.get(templateName)).entrySet()) {
-                    macros.add(new TwigMacro(asName + '.' + entry.getKey(), templateName));
+                VirtualFile virtualFile = twigFilesByName.get(templateName);
+                PsiFile twigFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
+                if(twigFile != null) {
+                    for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFile).entrySet()) {
+                        macros.add(new TwigMacro(asName + '.' + entry.getKey(), templateName));
+                    }
                 }
             }
 
@@ -309,20 +315,20 @@ public class TwigUtil {
 
     }
 
-    public static Map<String, PsiFile> getTemplateName(TwigFile twigFile, Map<String, PsiFile> templateMap) {
+    public static Map<String, VirtualFile> getTemplateName(TwigFile twigFile, Map<String, VirtualFile> templateMap) {
 
-        Map<String, PsiFile> map = new HashMap<String, PsiFile>();
+        Map<String, VirtualFile> map = new HashMap<String, VirtualFile>();
 
-        for(Map.Entry<String, PsiFile> entry: templateMap.entrySet()) {
-            if(twigFile.getVirtualFile().equals(entry.getValue().getVirtualFile())) {
-                map.put(entry.getKey(), twigFile);
+        for(Map.Entry<String, VirtualFile> entry: templateMap.entrySet()) {
+            if(twigFile.getVirtualFile().equals(entry.getValue())) {
+                map.put(entry.getKey(), twigFile.getVirtualFile());
             }
         }
 
         return map;
     }
 
-    public static Map<String, PsiFile> getTemplateName(TwigFile twigFile) {
+    public static Map<String, VirtualFile> getTemplateName(TwigFile twigFile) {
         return getTemplateName(twigFile, TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false));
     }
 
@@ -377,17 +383,18 @@ public class TwigUtil {
 
         return templateShortcutName;
     }
-    public static String getPresentableTemplateName(Map<String, PsiFile> files, PsiElement psiElement) {
+
+    public static String getPresentableTemplateName(Map<String, VirtualFile> files, PsiElement psiElement) {
         return getPresentableTemplateName(files, psiElement, false);
     }
 
-    public static String getPresentableTemplateName(Map<String, PsiFile> files, PsiElement psiElement, boolean shortMode) {
+    public static String getPresentableTemplateName(Map<String, VirtualFile> files, PsiElement psiElement, boolean shortMode) {
 
-        PsiFile psiFile = psiElement.getContainingFile();
+        VirtualFile currentFile = psiElement.getContainingFile().getVirtualFile();
 
         List<String> templateNames = new ArrayList<String>();
-        for(Map.Entry<String, PsiFile> entry: files.entrySet()) {
-            if(entry.getValue().equals(psiFile)) {
+        for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
+            if(entry.getValue().equals(currentFile)) {
                 templateNames.add(entry.getKey());
             }
         }
@@ -410,8 +417,8 @@ public class TwigUtil {
             return templateName;
         }
 
-        String relativePath = VfsUtil.getRelativePath(psiFile.getVirtualFile(), psiFile.getProject().getBaseDir(), '/');
-        return relativePath != null ? relativePath : psiFile.getVirtualFile().getPath();
+        String relativePath = VfsUtil.getRelativePath(currentFile, psiElement.getProject().getBaseDir(), '/');
+        return relativePath != null ? relativePath : currentFile.getPath();
 
     }
 

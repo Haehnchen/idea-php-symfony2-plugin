@@ -14,7 +14,7 @@ public class TwigPathIndex {
       return this;
     }
 
-    public List<TwigPath> getTwigPaths() {
+    synchronized public List<TwigPath> getTwigPaths() {
         return twigPaths;
     }
 

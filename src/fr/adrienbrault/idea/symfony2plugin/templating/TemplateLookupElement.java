@@ -6,6 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
@@ -17,39 +18,36 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TemplateLookupElement extends LookupElement {
 
-    private String templateName;
-    private PsiFile twigFile;
-    private PsiElement psiElement = null;
+    private final VirtualFile virtualFile;
+    private final VirtualFile projectBaseDir;
+
+    private final String templateName;
+
 
     @Nullable
     private InsertHandler<LookupElement> insertHandler = null;
 
     @Deprecated
-    public TemplateLookupElement(String templateName, TwigFile twigFile) {
+    public TemplateLookupElement(@NotNull String templateName, TwigFile twigFile) {
         this(templateName, (PsiFile) twigFile);
     }
 
-    public TemplateLookupElement(String templateName, PsiFile psiFile) {
+    public TemplateLookupElement(@NotNull String templateName, @NotNull PsiFile psiFile) {
         this.templateName = templateName;
-        this.twigFile = psiFile;
+        this.virtualFile = psiFile.getVirtualFile();
+        this.projectBaseDir = psiFile.getProject().getBaseDir();
     }
 
-    public TemplateLookupElement(String templateName, PsiFile twigFile, PsiElement psiElement, InsertHandler<LookupElement> insertHandler) {
+    public TemplateLookupElement(@NotNull String templateName, @NotNull VirtualFile virtualFile, @NotNull VirtualFile projectBaseDir) {
         this.templateName = templateName;
-        this.twigFile = twigFile;
-        this.insertHandler = insertHandler;
-        this.psiElement = psiElement;
+        this.virtualFile = virtualFile;
+        this.projectBaseDir = projectBaseDir;
     }
 
     @NotNull
     @Override
     public String getLookupString() {
         return templateName;
-    }
-
-    @NotNull
-    public Object getObject() {
-        return this.psiElement != null ? this.psiElement : super.getObject();
     }
 
     public void handleInsert(InsertionContext context) {
@@ -60,8 +58,8 @@ public class TemplateLookupElement extends LookupElement {
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
-        presentation.setIcon(this.twigFile.getIcon(Iconable.ICON_FLAG_VISIBILITY));
-        presentation.setTypeText(VfsUtil.getRelativePath(twigFile.getContainingDirectory().getVirtualFile(), twigFile.getProject().getBaseDir(), '/'));
+        presentation.setIcon(this.virtualFile.getFileType().getIcon());
+        presentation.setTypeText(VfsUtil.getRelativePath(this.virtualFile, this.projectBaseDir, '/'));
         presentation.setTypeGrayed(true);
     }
 
