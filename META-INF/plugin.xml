@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.68</version>
+    <version>0.10.69</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -103,6 +103,18 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.69 / 0.11.69</h2>
+<ul>
+    <li>Reworked twig template name resolving, for massive performance improvements <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/321">#321</a></li>
+    <li>Fix possible npe in TagReference inside php <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/331">#331</a></li>
+    <li>Hide first parameter in tail completion of twig extensions if its a Twig_Environment type hint <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/314">#314</a></li>
+    <li>Support twig file bundle overwrite in app folder <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/275">#275</a></li>
+    <li>Add reference provider for twig "block" function <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/266">#266</a></li>
+    <li>Provide "form" fallback on unknown from type and support nested strings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/325">#325</a></li>
+    <li>Whitelist ".mongodb.yml" for controller related files</li>
+    <li>0.11: Use NavigationUtil for popups to fix eap api changes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/329">#329</a></li>
+</ul>
 
 <h2>0.10.68 / 0.11.68</h2>
 <ul>
