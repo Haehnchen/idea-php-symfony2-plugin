@@ -771,6 +771,28 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getTwigTagUseNamePattern() {
+
+        // {% use '<foo>' %}
+
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(PlatformPatterns.psiElement(
+                TwigElementTypes.TAG
+            ))
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("use")
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getTwigMacroNameKnownPattern(String macroName) {
 
         // {% macro <foo>(user) %}

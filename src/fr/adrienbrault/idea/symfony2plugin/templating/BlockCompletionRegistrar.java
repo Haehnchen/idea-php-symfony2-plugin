@@ -53,7 +53,7 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             return Arrays.asList(
-                TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(element.getContainingFile(), blockName)
+                TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(element.getContainingFile(), blockName, true)
             );
 
         }
@@ -64,7 +64,7 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
             Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
             Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(getElement().getProject());
-            List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(getElement().getContainingFile());
+            List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).withSelfBlocks(true).walk(getElement().getContainingFile());
             List<String> uniqueList = new ArrayList<String>();
             for (TwigBlock block : blocks) {
                 if(!uniqueList.contains(block.getName())) {
