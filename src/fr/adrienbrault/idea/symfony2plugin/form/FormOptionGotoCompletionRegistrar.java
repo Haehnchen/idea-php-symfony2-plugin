@@ -5,11 +5,13 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
@@ -28,7 +30,7 @@ import java.util.*;
 public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
     public void register(GotoCompletionRegistrarParameter registrar) {
-        registrar.register(PlatformPatterns.psiElement(), new FormOptionBuilderCompletionContributor());
+        registrar.register(PlatformPatterns.psiElement().withLanguage(PhpLanguage.INSTANCE), new FormOptionBuilderCompletionContributor());
     }
 
     private static class FormOptionBuilderCompletionContributor implements GotoCompletionContributor {
@@ -63,8 +65,8 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         @Nullable
         private GotoCompletionProvider getMatchingOption(ParameterList parameterList, @NotNull PsiElement psiElement) {
 
-            // form name can be a string alias
-            String formTypeName = PsiElementUtils.getMethodParameterAt(parameterList, 1);
+            // form name can be a string alias; also resolve on constants, properties, ...
+            String formTypeName = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1));
 
             // formtype is not a string, so try to find php class types
             if(formTypeName == null) {
@@ -72,6 +74,11 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                 if(psiElement1 instanceof PhpTypedElementImpl) {
                     formTypeName = ((PhpTypedElementImpl) psiElement1).getType().toString();
                 }
+            }
+
+            // fallback to form
+            if(formTypeName == null) {
+                formTypeName = "form";
             }
 
             return new FormReferenceCompletionProvider(psiElement, formTypeName);
@@ -90,9 +97,14 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         }
 
         @NotNull
-        public Collection<PsiElement> getPsiTargets(StringLiteralExpression element) {
+        public Collection<PsiElement> getPsiTargets(PsiElement psiElement) {
 
-            String value = element.getContents();
+            PsiElement element = psiElement.getParent();
+            if(!(element instanceof StringLiteralExpression)) {
+                return Collections.emptyList();
+            }
+
+            String value = ((StringLiteralExpression) element).getContents();
             if(StringUtils.isBlank(value)) {
                 return Collections.emptyList();
             }

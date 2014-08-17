@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfony2plugin.templating.BlockCompletionRegistrar;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -13,8 +14,9 @@ import java.util.Collection;
 
 public class GotoCompletionUtil {
 
-    private static GotoCompletionRegistrar[] CONTRIBUTORS = new FormOptionGotoCompletionRegistrar[] {
-        new FormOptionGotoCompletionRegistrar()
+    private static GotoCompletionRegistrar[] CONTRIBUTORS = new GotoCompletionRegistrar[] {
+        new FormOptionGotoCompletionRegistrar(),
+        new BlockCompletionRegistrar(),
     };
 
     public static Collection<GotoCompletionContributor> getContributors(final PsiElement psiElement) {

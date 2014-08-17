@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -153,9 +154,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     public static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName) {
-        Map<String, TwigFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
-        ArrayList<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(psiFile);
-        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+        return getBlockNameGoTo(psiFile, blockName, false);
+    }
+
+    public static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
+        Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
+        List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).withSelfBlocks(withSelfBlocks).walk(psiFile);
+        List<PsiElement> psiElements = new ArrayList<PsiElement>();
         for (TwigBlock block : blocks) {
             if(block.getName().equals(blockName)) {
                 Collections.addAll(psiElements, block.getBlock());

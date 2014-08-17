@@ -6,6 +6,24 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.69 / 0.11.69
+* Reworked twig template name resolving, for massive performance improvements #321
+* Fix possible npe in TagReference inside php #331
+* Hide first parameter in tail completion of twig extensions if its a Twig_Environment type hint #314
+* Support twig file bundle overwrite in app folder #275
+* Add reference provider for twig "block" function #266
+* Provide "form" fallback on unknown from type and support nested strings #325
+* Whitelist ".mongodb.yml" for controller related files
+* 0.11: Use NavigationUtil for popups to fix eap api changes #329
+
+### 0.10.68 / 0.11.68
+* Provide weak form extension option completion #317
+* Speedup form option completion #318
+* Add new custom abstract reference replacements for deprecated getVariants #313
+* Add weak doctrine namespaces on bundle names #316
+* Add twig macro statement scope resolve for variables #315
+* Add some missing retina icons #312
+
 ### 0.10.67 / 0.11.67
 * Add array completion for constraints constructor #304
 * Add support for twig.extension and form.type_extension in service generator #308

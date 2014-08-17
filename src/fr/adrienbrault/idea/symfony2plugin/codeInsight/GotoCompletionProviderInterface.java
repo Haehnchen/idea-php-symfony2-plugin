@@ -13,6 +13,6 @@ public interface GotoCompletionProviderInterface {
     public Collection<LookupElement> getLookupElements();
 
     @NotNull
-    public Collection<PsiElement> getPsiTargets(StringLiteralExpression element);
+    public Collection<PsiElement> getPsiTargets(PsiElement element);
 
 }

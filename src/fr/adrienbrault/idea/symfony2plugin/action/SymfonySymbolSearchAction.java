@@ -12,8 +12,10 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FindSymbolParameters;
@@ -71,7 +73,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         final private Project project;
         private ContainerCollectionResolver.ServiceCollector serviceCollector;
-        private Map<String, PsiFile> templateMap;
+        private Map<String, VirtualFile> templateMap;
         private Map<String, Route> routes;
         private Set<String> twigMacroSet;
         private Map<String, LookupElement> lookupElements;
@@ -91,7 +93,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             return this.serviceCollector;
         }
 
-        private Map<String, PsiFile> getTemplateMap() {
+        private Map<String, VirtualFile> getTemplateMap() {
 
             if(this.templateMap == null) {
                 this.templateMap = TwigHelper.getTemplateFilesByName(this.project, true, true);
@@ -142,7 +144,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 processor.process(name);
             }
 
-            for(Map.Entry<String, PsiFile> entry: getTemplateMap().entrySet()) {
+            for(Map.Entry<String, VirtualFile> entry: getTemplateMap().entrySet()) {
                 processor.process(entry.getKey());
             }
 
@@ -178,8 +180,11 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             }
 
             if(getTemplateMap().containsKey(name)) {
-                PsiFile psiFile = getTemplateMap().get(name);
-                processor.process(new NavigationItemEx(psiFile, name, psiFile.getFileType().getIcon(), "Template"));
+                VirtualFile virtualFile = getTemplateMap().get(name);
+                PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
+                if(psiFile != null) {
+                    processor.process(new NavigationItemEx(psiFile, name, psiFile.getFileType().getIcon(), "Template"));
+                }
             }
 
             if(getRoutes().containsKey(name)) {

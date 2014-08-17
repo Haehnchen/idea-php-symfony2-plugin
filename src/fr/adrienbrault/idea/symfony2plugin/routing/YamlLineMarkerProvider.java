@@ -53,7 +53,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             }
 
             String fileName = containingFile.getName();
-            if(fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml")) {
+            if(fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml")) {
                 String keyText = ((YAMLKeyValue) psiElement).getKeyText();
                 if(StringUtils.isNotBlank(keyText)) {
                     PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), keyText);

@@ -36,7 +36,7 @@ import java.util.*;
 public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
 
-    private Map<String, PsiFile> templateMapCache = null;
+    private Map<String, VirtualFile> templateMapCache = null;
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
@@ -100,7 +100,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
 
         final Collection<PsiFile> targets = new ArrayList<PsiFile>();
-        for(Map.Entry<String, PsiFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
+        for(Map.Entry<String, VirtualFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
 
             final Project project = twigFile.getProject();
             FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<String>(Arrays.asList(entry.getKey())), new Processor<VirtualFile>() {
@@ -122,7 +122,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = getTemplateFilesByName(twigFile.getProject());
+        Map<String, VirtualFile> files = getTemplateFilesByName(twigFile.getProject());
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
         for(PsiElement blockTag: targets) {
@@ -133,15 +133,15 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private Map<String, PsiFile> getTemplateFilesByName(Project project) {
-        return this.templateMapCache == null ? TwigHelper.getTemplateFilesByName(project, true, false) : this.templateMapCache;
+    private Map<String, VirtualFile> getTemplateFilesByName(Project project) {
+        return this.templateMapCache == null ? this.templateMapCache = TwigHelper.getTemplateFilesByName(project, true, false) : this.templateMapCache;
     }
 
     @Nullable
     private LineMarkerInfo attachFromIncludes(TwigFile twigFile) {
 
         final Collection<PsiFile> targets = new ArrayList<PsiFile>();
-        for(Map.Entry<String, PsiFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
+        for(Map.Entry<String, VirtualFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
 
             final Project project = twigFile.getProject();
             FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<String>(Arrays.asList(entry.getKey())), new Processor<VirtualFile>() {
@@ -163,7 +163,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = getTemplateFilesByName(twigFile.getProject());
+        Map<String, VirtualFile> files = getTemplateFilesByName(twigFile.getProject());
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
         for(PsiElement blockTag: targets) {
@@ -195,7 +195,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = getTemplateFilesByName(psiElement.getProject());
+        Map<String, VirtualFile> files = getTemplateFilesByName(psiElement.getProject());
 
         List<PsiFile> twigChild = new ArrayList<PsiFile>();
         getTwigChildList(files, psiFile, twigChild, 8);
@@ -239,7 +239,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        Map<String, PsiFile> files = getTemplateFilesByName(psiElement.getProject());
+        Map<String, VirtualFile> files = getTemplateFilesByName(psiElement.getProject());
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
         for(PsiElement blockTag: blocks) {
@@ -264,7 +264,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         return null;
     }
 
-    private static void getTwigChildList(Map<String, PsiFile> files, final PsiFile psiFile, final List<PsiFile> twigChild, int depth) {
+    private static void getTwigChildList(Map<String, VirtualFile> files, final PsiFile psiFile, final List<PsiFile> twigChild, int depth) {
 
         if(depth <= 0) {
             return;
@@ -273,10 +273,10 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         // use set here, we have multiple shortcut on one file, but only one is required
         final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<VirtualFile>();
 
-        for(Map.Entry<String, PsiFile> entry: files.entrySet()) {
+        for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
 
             // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
-            if(entry.getValue().equals(psiFile)) {
+            if(entry.getValue().equals(psiFile.getVirtualFile())) {
                 String key = entry.getKey();
                 FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
                     @Override

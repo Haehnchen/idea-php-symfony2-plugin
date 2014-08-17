@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.FileIndexUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -8,12 +10,21 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.include.FileIncludeIndex;
+import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.PhpPresentationUtil;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.ClassReference;
+import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
@@ -25,6 +36,7 @@ import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -41,6 +53,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigHelper {
 
@@ -49,10 +62,11 @@ public class TwigHelper {
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
-    synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
-        Map<String, PsiFile> results = new HashMap<String, PsiFile>();
+    public static Map<String, VirtualFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
 
-        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        Map<String, VirtualFile> results = new HashMap<String, VirtualFile>();
+
+        List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         twigPaths.addAll(getTwigNamespaces(project));
 
         if(twigPaths.size() == 0) {
@@ -82,25 +96,18 @@ public class TwigHelper {
         return results;
     }
 
-    synchronized public static Map<String, TwigFile> getTwigFilesByName(Project project) {
-        Map<String, TwigFile> results = new HashMap<String, TwigFile>();
-        for(Map.Entry<String, PsiFile> entry: getTemplateFilesByName(project, true, true).entrySet()) {
-            if(entry.getValue() instanceof TwigFile) {
-                results.put(entry.getKey(), (TwigFile) entry.getValue());
-            }
-        }
-
-        return results;
+    public static Map<String, VirtualFile> getTwigFilesByName(Project project) {
+        return getTemplateFilesByName(project, true, false);
     }
 
-    synchronized public static Map<String, PsiFile> getTemplateFilesByName(Project project) {
+    public static Map<String, VirtualFile> getTemplateFilesByName(Project project) {
         return getTemplateFilesByName(project, true, true);
     }
 
     @Nullable
     public static TwigNamespaceSetting findManagedTwigNamespace(Project project, TwigPath twigPath) {
 
-        ArrayList<TwigNamespaceSetting> twigNamespaces = (ArrayList<TwigNamespaceSetting>) Settings.getInstance(project).twigNamespaces;
+        List<TwigNamespaceSetting> twigNamespaces = Settings.getInstance(project).twigNamespaces;
         if(twigNamespaces == null) {
             return null;
         }
@@ -114,29 +121,12 @@ public class TwigHelper {
         return null;
     }
 
-    /**
-     * todo: migrate getTemplatePsiElements to this method. think of support twig and php templates
-     */
-    public static PsiFile[] getTemplateFilesByName(Project project, String templateName) {
-
-        ArrayList<PsiFile> psiFiles = new ArrayList<PsiFile>();
-
-        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(project, templateName)) {
-            if(templateTarget instanceof PsiFile) {
-                psiFiles.add((TwigFile) templateTarget);
-            }
-        }
-
-        return psiFiles.toArray(new PsiFile[psiFiles.size()]);
-    }
-
     @Nullable
     public static PsiFile getTemplateFileByName(Project project, String templateName) {
 
-        for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(project, templateName)) {
-            if(templateTarget instanceof PsiFile) {
-                return (PsiFile) templateTarget;
-            }
+        PsiFile[] templatePsiElements = TwigHelper.getTemplatePsiElements(project, templateName);
+        if(templatePsiElements.length > 0) {
+            return templatePsiElements[0];
         }
 
         return null;
@@ -171,24 +161,98 @@ public class TwigHelper {
 
     }
 
-    public static PsiElement[] getTemplatePsiElements(Project project, String templateName) {
+    /**
+     * Find file in a twig path collection
+     *
+     * @param project current project
+     * @param templateName path known, should not be normalized
+     * @return target files
+     */
+    public static PsiFile[] getTemplatePsiElements(Project project, String templateName) {
+
 
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
-        Map<String, PsiFile> twigFiles = TwigHelper.getTemplateFilesByName(project);
-        if(!twigFiles.containsKey(normalizedTemplateName)) {
-            return new PsiElement[0];
+        Collection<PsiFile> psiFiles = new HashSet<PsiFile>();
+
+        for (TwigPath twigPath : getTwigNamespaces(project)) {
+
+            if(!twigPath.isEnabled()) {
+                continue;
+            }
+
+            if(normalizedTemplateName.startsWith("@")) {
+                // @Namespace/base.html.twig
+                // @Namespace/folder/base.html.twig
+                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() != TwigPathIndex.NamespaceType.BUNDLE) {
+                    int i = normalizedTemplateName.indexOf("/");
+                    if(i > 0) {
+                        String templateNs = normalizedTemplateName.substring(1, i);
+                        if(twigPath.getNamespace().equals(templateNs)) {
+                            addFileInsideTwigPath(project, normalizedTemplateName.substring(i + 1), psiFiles, twigPath);
+                        }
+                    }
+                }
+            } else if(normalizedTemplateName.startsWith(":")) {
+                // ::base.html.twig
+                // :Foo:base.html.twig
+                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
+                    String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
+                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                }
+            } else {
+                // FooBundle::base.html.twig
+                // FooBundle:Bar:base.html.twig
+                if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+                    int i = normalizedTemplateName.indexOf(":");
+                    if(i > 0) {
+                        String templateNs = normalizedTemplateName.substring(0, i);
+                        if(twigPath.getNamespace().equals(templateNs)) {
+                            String templatePath = StringUtils.strip(normalizedTemplateName.substring(i + 1).replace(":", "/").replace("//", "/"), "/");
+                            addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                        }
+
+                    }
+                }
+
+                // form_div_layout.html.twig
+                if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
+                    String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
+                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                }
+
+                // Bundle overwrite:
+                // FooBundle:index.html -> app/views/FooBundle:index.html
+                if(twigPath.isGlobalNamespace() && !normalizedTemplateName.startsWith(":") && !normalizedTemplateName.startsWith("@")) {
+                    String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/").replace("//", "/"), "/");
+                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                }
+
+            }
+
         }
 
-        return new PsiElement[] {twigFiles.get(normalizedTemplateName)};
+        return psiFiles.toArray(new PsiFile[psiFiles.size()]);
+
     }
 
-    synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project) {
+    private static void addFileInsideTwigPath(Project project, String templatePath, Collection<PsiFile> psiFiles, TwigPath twigPath) {
+        String[] split = templatePath.split("/");
+        VirtualFile virtualFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), split);
+        if(virtualFile != null) {
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile != null) {
+                psiFiles.add(psiFile);
+            }
+        }
+    }
+
+    public static List<TwigPath> getTwigNamespaces(@NotNull Project project) {
        return getTwigNamespaces(project, true);
     }
 
-    synchronized public static ArrayList<TwigPath> getTwigNamespaces(Project project, boolean includeSettings) {
-        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
+    public static List<TwigPath> getTwigNamespaces(@NotNull Project project, boolean includeSettings) {
+        List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         PhpIndex phpIndex = PhpIndex.getInstance(project);
 
         TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
@@ -219,7 +283,7 @@ public class TwigHelper {
             return twigPaths;
         }
 
-        ArrayList<TwigNamespaceSetting> twigNamespaceSettings = (ArrayList<TwigNamespaceSetting>) Settings.getInstance(project).twigNamespaces;
+        List<TwigNamespaceSetting> twigNamespaceSettings = Settings.getInstance(project).twigNamespaces;
         if(twigNamespaceSettings != null) {
             for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
                 if(twigNamespaceSetting.isCustom()) {
@@ -257,6 +321,7 @@ public class TwigHelper {
      * @param functionName twig function name
      */
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern(String... functionName) {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
@@ -283,6 +348,7 @@ public class TwigHelper {
      * NOT: {{ foo.bar }}, {{ 'foo.bar' }}
      */
     public static ElementPattern<PsiElement> getCompletablePattern() {
+        //noinspection unchecked
         return  PlatformPatterns.psiElement()
             .andNot(
                 PlatformPatterns.or(
@@ -303,6 +369,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getBlockTagPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(
@@ -322,7 +389,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTransDefaultDomain() {
-
+        //noinspection unchecked
         return PlatformPatterns.or(
             PlatformPatterns
                 .psiElement(TwigTokenTypes.IDENTIFIER)
@@ -360,6 +427,7 @@ public class TwigHelper {
      * match 'dddd') on ending
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .beforeLeafSkipping(
@@ -377,6 +445,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getPathAfterLeafPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -434,6 +503,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getRoutePattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")
             .beforeLeafSkipping(
@@ -446,6 +516,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -465,6 +536,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableAssetPattern() {
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -481,6 +553,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTranslationPattern(String... type) {
+        //noinspection unchecked
         return
             PlatformPatterns
                 .psiElement(TwigTokenTypes.STRING_TEXT)
@@ -515,13 +588,13 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableAssetTag(String tagName) {
-
         // @TODO: withChild is not working so we are filtering on text
 
         // pattern to match '..foo.css' but not match eg ='...'
         //
         // {% stylesheets filter='cssrewrite'
         //  'assets/css/foo.css'
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
                 .afterLeafSkipping(
@@ -543,6 +616,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern(String... tagNames) {
 
         // {% include '<xxx>' with {'foo' : bar, 'bar' : 'foo'} %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -559,9 +634,12 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getTemplateImportFileReferenceTagPattern() {
+
         // first: {% from '<xxx>' import foo, <|>  %}
         // second: {% from '<xxx>' import <|>  %}
         // and not: {% from '<xxx>' import foo as <|>  %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG))
@@ -589,6 +667,8 @@ public class TwigHelper {
 
     public static ElementPattern<PsiElement> getForTagVariablePattern() {
         // {% for "user"  %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .beforeLeafSkipping(
@@ -606,6 +686,8 @@ public class TwigHelper {
         // {% for key, user in "users" %}
         // {% for user in "users" %}
         // {% for user in "users"|slice(0, 10) %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -621,6 +703,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getIfVariablePattern() {
 
         // {% if "var" %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -643,6 +727,8 @@ public class TwigHelper {
         // {% if var < "var1" %}
         // {% if var == "var1" %}
         // and so on
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -668,6 +754,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getTwigMacroNamePattern() {
 
         // {% macro <foo>(user) %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(PlatformPatterns.psiElement(
@@ -683,9 +771,33 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getTwigTagUseNamePattern() {
+
+        // {% use '<foo>' %}
+
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(PlatformPatterns.psiElement(
+                TwigElementTypes.TAG
+            ))
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("use")
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getTwigMacroNameKnownPattern(String macroName) {
 
         // {% macro <foo>(user) %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText(macroName)
             .withParent(PlatformPatterns.psiElement(
@@ -704,6 +816,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getSetVariablePattern() {
 
         // {% set count1 = "var" %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
@@ -725,6 +839,8 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getIncludeOnlyPattern() {
 
         // {% set count1 = "var" %}
+
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("only")
             .beforeLeafSkipping(
@@ -738,6 +854,7 @@ public class TwigHelper {
     }
 
     public static ElementPattern<PsiElement> getVariableTypePattern() {
+        //noinspection unchecked
         return PlatformPatterns.or(
             TwigHelper.getForTagInVariablePattern(),
             TwigHelper.getIfVariablePattern(),
@@ -833,6 +950,65 @@ public class TwigHelper {
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
 
         return targets;
+    }
+
+    public static Collection<LookupElement> getTwigLookupElements(Project project) {
+        VirtualFile baseDir = project.getBaseDir();
+
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigFilesByName(project).entrySet()) {
+            lookupElements.add(
+                new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
+            );
+        }
+
+        return lookupElements;
+    }
+
+    public static Collection<LookupElement> getAllTemplateLookupElements(Project project) {
+        VirtualFile baseDir = project.getBaseDir();
+
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTemplateFilesByName(project).entrySet()) {
+            lookupElements.add(
+                new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
+            );
+        }
+
+        return lookupElements;
+    }
+
+    /**
+     * Paramater formatter for twig extension to remove Twig_Environment parameter from completion display
+     * ported from com.jetbrains.php.PhpPresentationUtil#formatParameters
+     *
+     */
+    public static StringBuilder formatParameters(@Nullable StringBuilder b, @NotNull Parameter[] parameters) {
+        if (b == null) b = new StringBuilder();
+        b.append('(');
+        for (int i = 0; i < parameters.length; i++) {
+
+            if(i == 0) {
+                PhpPsiElement classReference =  parameters[i].getFirstPsiChild();
+                if(classReference instanceof ClassReference) {
+                    String className = ((ClassReference) classReference).getFQN();
+                    if(new Symfony2InterfacesUtil().isInstanceOf(parameters[i].getProject(), className, "Twig_Environment")) {
+                        continue;
+                    }
+                }
+            }
+
+            b.append(PhpPresentationUtil.getParameterPresentation(parameters[i]));
+            if (parameters.length - i > 1) {
+                b.append(", ");
+            }
+
+        }
+
+        b.append(')');
+        return b;
     }
 
 }

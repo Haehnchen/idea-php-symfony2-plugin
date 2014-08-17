@@ -55,7 +55,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                         if(includeTag != null) {
                             String templateName = includeTag.getText();
                             if(StringUtils.isNotBlank(templateName)) {
-                                for(PsiFile templateFile: TwigHelper.getTemplateFilesByName(element.getProject(), templateName)) {
+                                for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
                                     if(templateFile.equals(psiFile)) {
                                         collectIncludeContextVars((TwigTagWithFileReference) element, includeTag, variables);
                                     }
@@ -137,7 +137,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
         final Collection<PsiFile> targets = new ArrayList<PsiFile>();
 
-        for(Map.Entry<String, PsiFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
+        for(Map.Entry<String, VirtualFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
 
             final Project project = twigFile.getProject();
             FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<String>(Arrays.asList(entry.getKey())), new Processor<VirtualFile>() {
