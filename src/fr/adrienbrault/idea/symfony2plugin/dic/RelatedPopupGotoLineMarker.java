@@ -2,7 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 
 
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
-import com.intellij.ide.actions.GotoRelatedSymbolAction;
+import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.awt.RelativePoint;
@@ -28,7 +28,7 @@ public class RelatedPopupGotoLineMarker {
             if (items.size() == 1) {
                 items.get(0).navigate();
             } else {
-                GotoRelatedSymbolAction.createPopup(items, "Go to Related Files").show(new RelativePoint(e));
+                NavigationUtil.getRelatedItemsPopup(items, "Go to Related Files").show(new RelativePoint(e));
             }
 
         }
