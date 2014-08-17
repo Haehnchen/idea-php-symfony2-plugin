@@ -65,8 +65,8 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         @Nullable
         private GotoCompletionProvider getMatchingOption(ParameterList parameterList, @NotNull PsiElement psiElement) {
 
-            // form name can be a string alias
-            String formTypeName = PsiElementUtils.getMethodParameterAt(parameterList, 1);
+            // form name can be a string alias; also resolve on constants, properties, ...
+            String formTypeName = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1));
 
             // formtype is not a string, so try to find php class types
             if(formTypeName == null) {
@@ -74,6 +74,11 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                 if(psiElement1 instanceof PhpTypedElementImpl) {
                     formTypeName = ((PhpTypedElementImpl) psiElement1).getType().toString();
                 }
+            }
+
+            // fallback to form
+            if(formTypeName == null) {
+                formTypeName = "form";
             }
 
             return new FormReferenceCompletionProvider(psiElement, formTypeName);
