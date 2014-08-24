@@ -38,6 +38,9 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         // $qb->expr()->in('')
         attachExprGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
 
+        // $qb->from('', '', '<foo>');
+        attachFromIndexGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
+
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
@@ -131,6 +134,31 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
                 targets.addAll(entry.getValue().getPsiTargets());
             }
         }
+    }
+
+    private void attachFromIndexGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {
+
+        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 2)
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
+            .match();
+
+        if(methodMatchParameter == null) {
+            return;
+        }
+
+        QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
+        if(qb == null) {
+            return;
+        }
+
+        QueryBuilderScopeContext collect = qb.collect();
+        String propertyContent = psiElement.getContents();
+        for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+            if(entry.getKey().equals(propertyContent)) {
+                targets.addAll(entry.getValue().getPsiTargets());
+            }
+        }
+
     }
 
     @Nullable

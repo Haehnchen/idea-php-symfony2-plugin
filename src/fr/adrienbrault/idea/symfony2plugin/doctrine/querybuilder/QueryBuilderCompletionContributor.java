@@ -284,6 +284,35 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         });
 
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 2)
+                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                if(qb == null) {
+                    return;
+                }
+
+                QueryBuilderScopeContext collect = qb.collect();
+                buildLookupElements(completionResultSet, collect);
+
+            }
+
+        });
+
     }
 
     private void buildLookupElements(CompletionResultSet completionResultSet, QueryBuilderScopeContext collect) {
