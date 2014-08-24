@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -37,6 +38,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         for(PsiElement psiElement : psiElements) {
             attachRouteActions(lineMarkerInfos, psiElement);
             attachEntityClass(lineMarkerInfos, psiElement);
+            attachRelationClass(lineMarkerInfos, psiElement);
         }
 
     }
@@ -117,6 +119,55 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
+    }
+
+    /**
+     * Set linemarker for targetEntity in possible yaml entity files
+     *
+     * foo:
+     *   targetEntity: Class
+     */
+    private void attachRelationClass(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
+
+        if(!(psiElement instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        String keyText = ((YAMLKeyValue) psiElement).getKeyText().toLowerCase();
+        if(!keyText.equals("targetentity")) {
+            return;
+        }
+
+        String valueText = ((YAMLKeyValue) psiElement).getValueText();
+        if(StringUtils.isBlank(valueText)) {
+            return;
+        }
+
+        PsiFile containingFile = psiElement.getContainingFile();
+        String fileName = containingFile.getName();
+        if(!(fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml"))) {
+            return;
+        }
+
+        PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), EntityHelper.getYamlOrmClass(containingFile, valueText));
+        if(phpClass != null) {
+            PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
+            if(psiFile != null) {
+
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
+                    setTargets(psiFile).
+                    setTooltipText("Navigate to file");
+
+                // get relation key
+                PsiElement parent = psiElement.getParent();
+                if(parent != null) {
+                    PsiElement parent1 = parent.getParent();
+                    if(parent1 != null) {
+                        lineMarkerInfos.add(builder.createLineMarkerInfo(parent1));
+                    }
+                }
+            }
+        }
     }
 
 }
