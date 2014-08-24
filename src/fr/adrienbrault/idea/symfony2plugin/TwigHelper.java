@@ -196,7 +196,7 @@ public class TwigHelper {
             } else if(normalizedTemplateName.startsWith(":")) {
                 // ::base.html.twig
                 // :Foo:base.html.twig
-                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
+                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
                     addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
                 }
