@@ -4,6 +4,7 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -33,6 +34,12 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
 
         attachPropertyGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
         attachJoinGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
+
+        // $qb->expr()->in('')
+        attachExprGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
+
+        // $qb->from('', '', '<foo>');
+        attachFromIndexGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
@@ -94,6 +101,63 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
             }
         }
 
+
+    }
+
+    private void attachExprGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {
+
+
+        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
+            .withSignature(QueryBuilderCompletionContributor.EXPR)
+            .match();
+
+        if(methodMatchParameter == null) {
+            return;
+        }
+
+        // simple resolve query inline instance usage
+        // $qb->expr()->in('')
+        MethodReference methodReference = methodMatchParameter.getMethodReference();
+        PsiElement methodReferenceChild = methodReference.getFirstChild();
+        if(!(methodReferenceChild instanceof MethodReference)) {
+            return;
+        }
+        QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser((MethodReference) methodReferenceChild);
+        if(qb == null) {
+            return;
+        }
+
+        String propertyContent = psiElement.getContents();
+        QueryBuilderScopeContext collect = qb.collect();
+        for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+            if(entry.getKey().equals(propertyContent)) {
+                targets.addAll(entry.getValue().getPsiTargets());
+            }
+        }
+    }
+
+    private void attachFromIndexGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {
+
+        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 2)
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
+            .match();
+
+        if(methodMatchParameter == null) {
+            return;
+        }
+
+        QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
+        if(qb == null) {
+            return;
+        }
+
+        QueryBuilderScopeContext collect = qb.collect();
+        String propertyContent = psiElement.getContents();
+        for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+            if(entry.getKey().equals(propertyContent)) {
+                targets.addAll(entry.getValue().getPsiTargets());
+            }
+        }
 
     }
 

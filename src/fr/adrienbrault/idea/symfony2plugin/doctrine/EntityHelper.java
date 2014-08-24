@@ -188,7 +188,7 @@ public class EntityHelper {
 
     }
 
-    private static String getYamlOrmClass(PsiFile yamlFile, String className) {
+    public static String getYamlOrmClass(PsiFile yamlFile, String className) {
 
         // force global namespace not need to search for class
         if(className.startsWith("\\")) {

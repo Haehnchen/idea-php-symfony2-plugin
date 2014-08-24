@@ -40,6 +40,31 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "orWhere"),
     };
 
+    // mmh... really that good; not added all because of performance? :)
+    public static MethodMatcher.CallToSignature[] EXPR = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "andX"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "orX"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "eq"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "neq"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "lt"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "lte"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "gt"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "gte"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "avg"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "max"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "min"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "count"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "diff"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "sum"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "quot"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "in"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "notIn"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "like"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "notLike"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "concat"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "between"),
+    };
+
     public QueryBuilderCompletionContributor() {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
@@ -219,6 +244,151 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             }
 
         });
+
+        // $qb->expr()->in('')
+        // $qb->expr()->eg('')
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if(psiElement == null) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
+                    .withSignature(EXPR)
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                // simple resolve query inline instance usage
+                // $qb->expr()->in('')
+                MethodReference methodReference = methodMatchParameter.getMethodReference();
+                PsiElement methodReferenceChild = methodReference.getFirstChild();
+                if(!(methodReferenceChild instanceof MethodReference)) {
+                    return;
+                }
+
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser((MethodReference) methodReferenceChild);
+                if(qb == null) {
+                    return;
+                }
+
+                QueryBuilderScopeContext collect = qb.collect();
+                buildLookupElements(completionResultSet, collect);
+
+            }
+
+        });
+
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 2)
+                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                if(qb == null) {
+                    return;
+                }
+
+                QueryBuilderScopeContext collect = qb.collect();
+                buildLookupElements(completionResultSet, collect);
+
+            }
+
+        });
+
+
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
+                    .withSignature("\\Doctrine\\ORM\\EntityRepository", "createQueryBuilder")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                for(String type: methodMatchParameter.getMethodReference().getType().getTypes()) {
+
+                    // strip last method call
+                    if(type.endsWith(".createQueryBuilder"))  {
+                        attachClassNames(completionResultSet, type.substring(0, type.length() - ".createQueryBuilder".length()));
+                    }
+
+                }
+            }
+        });
+
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 1)
+                    .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                MethodReference methodReference = methodMatchParameter.getMethodReference();
+                String repoName = PhpElementsUtil.getStringValue(methodReference.getParameters()[0]);
+                if(repoName != null) {
+                    attachClassNames(completionResultSet, repoName);
+                }
+
+            }
+        });
+
+    }
+
+    private void attachClassNames(CompletionResultSet completionResultSet, String repoName) {
+
+        int endIndex = repoName.lastIndexOf(":");
+        if(endIndex == -1) {
+            endIndex = repoName.lastIndexOf("\\");
+        }
+
+        if(endIndex > 0) {
+
+            // unique list for equal underscore or camelize
+            Set<String> strings = new HashSet<String>();
+
+            strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length())));
+            strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(strings.iterator().next(), true));
+
+            for(String lookup: strings) {
+                completionResultSet.addElement(LookupElementBuilder.create(lookup));
+            }
+        }
 
     }
 
