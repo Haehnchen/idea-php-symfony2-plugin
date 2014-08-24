@@ -40,6 +40,31 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "orWhere"),
     };
 
+    // mmh... really that good; not added all because of performance? :)
+    public static MethodMatcher.CallToSignature[] EXPR = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "andX"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "orX"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "eq"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "neq"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "lt"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "lte"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "gt"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "gte"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "avg"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "max"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "min"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "count"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "diff"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "sum"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "quot"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "in"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "notIn"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "like"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "notLike"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "concat"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "between"),
+    };
+
     public QueryBuilderCompletionContributor() {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
@@ -215,6 +240,45 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                         }
                     }
                 }
+
+            }
+
+        });
+
+        // $qb->expr()->in('')
+        // $qb->expr()->eg('')
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+                PsiElement psiElement = completionParameters.getOriginalPosition();
+                if(psiElement == null) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
+                    .withSignature(EXPR)
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
+
+                // simple resolve query inline instance usage
+                // $qb->expr()->in('')
+                MethodReference methodReference = methodMatchParameter.getMethodReference();
+                PsiElement methodReferenceChild = methodReference.getFirstChild();
+                if(!(methodReferenceChild instanceof MethodReference)) {
+                    return;
+                }
+
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser((MethodReference) methodReferenceChild);
+                if(qb == null) {
+                    return;
+                }
+
+                QueryBuilderScopeContext collect = qb.collect();
+                buildLookupElements(completionResultSet, collect);
 
             }
 
