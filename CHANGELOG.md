@@ -6,6 +6,14 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+
+### 0.10.70 / 0.11.70
+* Add linemarker for doctrine targetEntity relations
+* Add doctrine query expr parameter completion
+* Add support for querybuilder "from" index parameter #322
+* Add completion for doctrine querybuilder alias in "createQueryBuilder" and "from" parameter
+* Fix template file resolving for twig "app" resources
+
 ### 0.10.69 / 0.11.69
 * Reworked twig template name resolving, for massive performance improvements #321
 * Fix possible npe in TagReference inside php #331
