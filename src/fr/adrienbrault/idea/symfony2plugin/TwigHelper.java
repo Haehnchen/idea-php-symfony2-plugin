@@ -508,7 +508,8 @@ public class TwigHelper {
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")
             .beforeLeafSkipping(
                 PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class)
                 ),
                 PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
             )
@@ -523,6 +524,7 @@ public class TwigHelper {
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
@@ -543,6 +545,7 @@ public class TwigHelper {
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
