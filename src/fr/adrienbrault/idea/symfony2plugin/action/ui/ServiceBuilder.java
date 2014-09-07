@@ -193,7 +193,7 @@ public class ServiceBuilder {
             @Override
             public void onFormTypeAlias(String alias) {
                 // <tag name="form.type" alias="gender" />
-                Element tag = doc.createElement("tags");
+                Element tag = doc.createElement("tag");
 
                 tag.setAttribute("alias", alias);
                 tag.setAttribute("name", "form.type");
@@ -204,7 +204,7 @@ public class ServiceBuilder {
             @Override
             public void onTag(String tagName) {
                 // <tag name="form.type" />
-                Element tag = doc.createElement("tags");
+                Element tag = doc.createElement("tag");
                 tag.setAttribute("name", tagName);
                 rootElement.appendChild(tag);
             }
