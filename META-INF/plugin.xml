@@ -489,6 +489,7 @@
         <extensionPoint name="extension.MethodSignatureTypeProviderExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension"/>
         <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
         <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
+        <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
@@ -497,6 +498,9 @@
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.RouteControllerRelatedGotoCollector"/>
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.ModelsControllerRelatedGotoCollector"/>
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
+
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockCompletionRegistrar"/>
 
     </extensions>
 
