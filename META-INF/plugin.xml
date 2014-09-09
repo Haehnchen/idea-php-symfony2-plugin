@@ -104,6 +104,15 @@
 
 <br>
 
+<h2>0.10.71 / 0.11.71</h2>
+<ul>
+    <li>Fix whitespace pattern in twig function pattern <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/340">#340</a></li>
+    <li>Fixed typo in service generator "tags" should be "tag" on xml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/338">#338</a></li>
+    <li>Add extension point for controller actions related files</li>
+    <li>Add extension point for GotoCompletionRegistrar</li>
+    <li>Replace PsiReference for form type with GotoCompletionRegistrar <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/313">#313</a></li>
+</ul>
+
 <h2>0.10.70 / 0.11.70</h2>
 <ul>
     <li>Add linemarker for doctrine targetEntity relations</li>
@@ -488,10 +497,21 @@
         <extensionPoint name="extension.DoctrineModelProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider"/>
         <extensionPoint name="extension.MethodSignatureTypeProviderExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension"/>
         <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
+        <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
+        <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
         <ServiceContainerLoader implementation="fr.adrienbrault.idea.symfony2plugin.ServiceContainerSettingsLoader"/>
+
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.RouteControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.ModelsControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
+
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar"/>
+
     </extensions>
 
     <depends>com.jetbrains.twig</depends>

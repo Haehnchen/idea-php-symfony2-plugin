@@ -13,6 +13,8 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderInt
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+
 public class CompletionContributor extends com.intellij.codeInsight.completion.CompletionContributor {
 
     public CompletionContributor() {
@@ -25,7 +27,8 @@ public class CompletionContributor extends com.intellij.codeInsight.completion.C
                     return;
                 }
 
-                for(GotoCompletionContributor contributor: GotoCompletionUtil.getContributors(psiElement)) {
+                Collection<GotoCompletionContributor> contributors = GotoCompletionUtil.getContributors(psiElement);
+                for(GotoCompletionContributor contributor: contributors) {
                     GotoCompletionProviderInterface formReferenceCompletionContributor = contributor.getProvider(psiElement);
                     if(formReferenceCompletionContributor != null) {
                         completionResultSet.addAllElements(

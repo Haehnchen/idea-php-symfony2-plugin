@@ -1,12 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.codeInsight.utils;
 
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.templating.BlockCompletionRegistrar;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -14,10 +13,7 @@ import java.util.Collection;
 
 public class GotoCompletionUtil {
 
-    private static GotoCompletionRegistrar[] CONTRIBUTORS = new GotoCompletionRegistrar[] {
-        new FormOptionGotoCompletionRegistrar(),
-        new BlockCompletionRegistrar(),
-    };
+    private static final ExtensionPointName<GotoCompletionRegistrar> EXTENSIONS = new ExtensionPointName<GotoCompletionRegistrar>("fr.adrienbrault.idea.symfony2plugin.extension.GotoCompletionRegistrar");
 
     public static Collection<GotoCompletionContributor> getContributors(final PsiElement psiElement) {
 
@@ -32,7 +28,7 @@ public class GotoCompletionUtil {
             }
         };
 
-        for(GotoCompletionRegistrar register: CONTRIBUTORS) {
+        for(GotoCompletionRegistrar register: EXTENSIONS.getExtensions()) {
             register.register(registrar);
         }
 

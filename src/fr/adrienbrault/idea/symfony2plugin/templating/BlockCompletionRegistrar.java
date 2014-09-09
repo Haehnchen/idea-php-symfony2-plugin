@@ -27,9 +27,9 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
         registrar.register(TwigHelper.getPrintBlockFunctionPattern("block"), new GotoCompletionContributor() {
             @Nullable
             @Override
-            public GotoCompletionProvider getProvider(@Nullable PsiElement psiElement) {
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
 
-                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return null;
                 }
 
