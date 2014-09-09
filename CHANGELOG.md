@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.71 / 0.11.71
+* Fix whitespace pattern in twig function pattern #340
+* Fixed typo in service generator "tags" should be "tag" on xml files #338
+* Add extension point for controller actions related files
+* Add extension point for GotoCompletionRegistrar
+* Replace PsiReference for form type with GotoCompletionRegistrar #313
 
 ### 0.10.70 / 0.11.70
 * Add linemarker for doctrine targetEntity relations

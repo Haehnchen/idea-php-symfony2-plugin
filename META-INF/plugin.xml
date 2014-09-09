@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.70</version>
+    <version>0.10.71</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -103,6 +103,15 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.71 / 0.11.71</h2>
+<ul>
+    <li>Fix whitespace pattern in twig function pattern <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/340">#340</a></li>
+    <li>Fixed typo in service generator "tags" should be "tag" on xml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/338">#338</a></li>
+    <li>Add extension point for controller actions related files</li>
+    <li>Add extension point for GotoCompletionRegistrar</li>
+    <li>Replace PsiReference for form type with GotoCompletionRegistrar <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/313">#313</a></li>
+</ul>
 
 <h2>0.10.70 / 0.11.70</h2>
 <ul>
