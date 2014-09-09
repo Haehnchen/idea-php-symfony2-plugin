@@ -37,29 +37,7 @@ public class FormTypeReference extends PsiReferenceBase<PsiElement> implements P
     @NotNull
     @Override
     public Object[] getVariants() {
-
-        final List<LookupElement> lookupElements = new ArrayList<LookupElement>();
-
-        FormUtil.FormTypeCollector collector = new FormUtil.FormTypeCollector(getElement().getProject()).collect();
-
-        for(Map.Entry<String, FormTypeClass> entry: collector.getFormTypesMap().entrySet()) {
-            String name = entry.getValue().getName();
-            String typeText = entry.getValue().getPhpClassName();
-
-            PhpClass phpClass = entry.getValue().getPhpClass();
-            if(phpClass != null) {
-                typeText = phpClass.getName();
-            }
-
-            FormTypeLookup formTypeLookup = new FormTypeLookup(typeText, name);
-            if(entry.getValue().getSource() == EnumFormTypeSource.INDEX) {
-                formTypeLookup.withWeak(true);
-            }
-
-            lookupElements.add(formTypeLookup);
-        }
-
-        return lookupElements.toArray();
+        return FormUtil.getFormTypeLookupElements(getElement().getProject()).toArray();
     }
 
 }

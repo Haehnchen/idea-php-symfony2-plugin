@@ -36,9 +36,9 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
     private static class FormOptionBuilderCompletionContributor implements GotoCompletionContributor {
         @Nullable
         @Override
-        public GotoCompletionProvider getProvider(@Nullable PsiElement psiElement) {
+        public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
 
-            if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }
 

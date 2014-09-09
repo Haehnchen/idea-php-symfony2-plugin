@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.form.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -43,6 +44,32 @@ public class FormUtil {
     @Nullable
     public static PhpClass getFormTypeToClass(Project project, @Nullable String formType) {
         return new FormTypeCollector(project).collect().getFormTypeToClass(formType);
+    }
+
+    public static Collection<LookupElement> getFormTypeLookupElements(Project project) {
+
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        FormUtil.FormTypeCollector collector = new FormUtil.FormTypeCollector(project).collect();
+
+        for(Map.Entry<String, FormTypeClass> entry: collector.getFormTypesMap().entrySet()) {
+            String name = entry.getValue().getName();
+            String typeText = entry.getValue().getPhpClassName();
+
+            PhpClass phpClass = entry.getValue().getPhpClass();
+            if(phpClass != null) {
+                typeText = phpClass.getName();
+            }
+
+            FormTypeLookup formTypeLookup = new FormTypeLookup(typeText, name);
+            if(entry.getValue().getSource() == EnumFormTypeSource.INDEX) {
+                formTypeLookup.withWeak(true);
+            }
+
+            lookupElements.add(formTypeLookup);
+        }
+
+        return lookupElements;
     }
 
     public static MethodReference[] getFormBuilderTypes(Method method) {
