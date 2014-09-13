@@ -7,7 +7,6 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
@@ -291,34 +290,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return getFormPsiReferences((StringLiteralExpression) psiElement, methodMatchParameter.getParameters()[0]);
-
-                }
-
-            }
-
-        );
-
-        /**
-         * $options lookup
-         * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
-         */
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 3)
-                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
-                        .match();
-
-                    if(methodMatchParameter == null) {
-                        return new PsiReference[0];
-                    }
-
-                    return getFormPsiReferences((StringLiteralExpression) psiElement, methodMatchParameter.getParameters()[1]);
 
                 }
 
