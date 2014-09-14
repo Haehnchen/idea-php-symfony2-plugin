@@ -331,12 +331,13 @@ public class FormOptionsUtil {
             .withIcon(formOption.getFormClass().isWeak() ? Symfony2Icons.FORM_EXTENSION_WEAK : Symfony2Icons.FORM_EXTENSION);
     }
 
+    @NotNull
     public static Collection<PsiElement> getFormExtensionsKeysTargets(StringLiteralExpression psiElement, String... formTypes) {
         Map<String, FormOption> test = FormOptionsUtil.getFormExtensionKeys(psiElement.getProject(), formTypes);
         String value = psiElement.getContents();
 
         if(!test.containsKey(value)) {
-            return null;
+            return Collections.emptyList();
         }
 
         // @TODO: use core method find method
@@ -344,7 +345,7 @@ public class FormOptionsUtil {
 
         PsiElement[] psiElements = PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), "#M#C\\" + className + ".setDefaultOptions");
         if(psiElements.length == 0) {
-            return null;
+            return Collections.emptyList();
         }
 
         PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);

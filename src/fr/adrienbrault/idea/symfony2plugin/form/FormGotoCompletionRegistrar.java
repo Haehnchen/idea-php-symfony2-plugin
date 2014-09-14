@@ -78,6 +78,37 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         });
 
+
+        /**
+         * $this->createForm(new FormType(), $entity, array('<foo_key>' => ''));
+         * $this->createForm('foo', $entity, array('<foo_key>'));
+         */
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+            @Nullable
+            @Override
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+
+                PsiElement parent = psiElement.getParent();
+                if(!(parent instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 2)
+                    .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
+                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
+                    .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return null;
+                }
+
+                return getFormProvider((StringLiteralExpression) parent, methodMatchParameter.getParameters()[0]);
+
+            }
+
+        });
+
     }
 
     private static class FormOptionsGotoCompletionProvider extends GotoCompletionProvider {
@@ -85,7 +116,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         private final String formType;
         private final Collection<FormOption> options;
 
-        public FormOptionsGotoCompletionProvider(PsiElement element, String formType, FormOption... options) {
+        public FormOptionsGotoCompletionProvider(@NotNull PsiElement element, @NotNull String formType, FormOption... options) {
             super(element);
             this.formType = formType;
             this.options = Arrays.asList(options);
@@ -173,6 +204,11 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             return new FormOptionsGotoCompletionProvider(psiElement, "form", FormOption.EXTENSION);
         }
 
-        return new FormOptionsGotoCompletionProvider(psiElement, phpClass.getPresentableFQN(), FormOption.EXTENSION, FormOption.DEFAULT_OPTIONS);
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN == null) {
+            presentableFQN = "form";
+        }
+
+        return new FormOptionsGotoCompletionProvider(psiElement, presentableFQN, FormOption.EXTENSION, FormOption.DEFAULT_OPTIONS);
     }
 }

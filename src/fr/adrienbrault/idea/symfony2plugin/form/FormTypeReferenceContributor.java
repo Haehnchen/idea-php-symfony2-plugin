@@ -269,35 +269,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
         );
 
         /**
-         * $this->createForm(new FormType(), $entity, array('<foo_key>' => ''));
-         * $this->createForm('foo', $entity, array('<foo_key>'));
-         */
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 2)
-                        .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
-                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
-                        .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
-                        .match();
-
-                    if(methodMatchParameter == null) {
-                        return new PsiReference[0];
-                    }
-
-                    return getFormPsiReferences((StringLiteralExpression) psiElement, methodMatchParameter.getParameters()[0]);
-
-                }
-
-            }
-
-        );
-
-        /**
          * $type lookup
          * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
          */
@@ -401,20 +372,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
         );
 
 
-    }
-
-    private PsiReference[] getFormPsiReferences(StringLiteralExpression psiElement, PsiElement formType) {
-        PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
-        if (phpClass == null) {
-            return new PsiReference[]{
-                new FormExtensionKeyReference(psiElement, "form")
-            };
-        }
-
-        return new PsiReference[]{
-            new FormExtensionKeyReference(psiElement, phpClass.getPresentableFQN()),
-            new FormDefaultOptionsKeyReference(psiElement, phpClass.getPresentableFQN())
-        };
     }
 
 }
