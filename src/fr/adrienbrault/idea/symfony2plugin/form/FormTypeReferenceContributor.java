@@ -239,34 +239,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
         );
 
         /**
-         * $type lookup
-         * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
-         */
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
-                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                        .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
-                        .match();
-
-                    if(methodMatchParameter == null) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement) };
-
-                }
-
-            }
-
-        );
-
-        /**
          * $options
          * public function buildForm(FormBuilderInterface $builder, array $options) {
          *   $options['foo']

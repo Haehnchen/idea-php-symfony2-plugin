@@ -140,6 +140,36 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         });
 
+
+        /**
+         * $type lookup
+         * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
+         */
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+            @Nullable
+            @Override
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+
+                PsiElement parent = psiElement.getParent();
+                if(!(parent instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
+                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
+                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return null;
+                }
+
+                return new FormBuilderAddGotoCompletionProvider(parent);
+
+            }
+
+        });
+
     }
 
     /**
