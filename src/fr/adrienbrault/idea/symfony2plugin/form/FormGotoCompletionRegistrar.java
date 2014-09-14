@@ -3,7 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.form;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -14,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarPa
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -109,8 +112,39 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         });
 
+        /**
+         * FormTypeInterface::getParent
+         */
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+            @Nullable
+            @Override
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+
+                PsiElement parent = psiElement.getParent();
+                if(!(parent instanceof StringLiteralExpression)  || !PhpElementsUtil.getMethodReturnPattern().accepts(parent)) {
+                    return null;
+                }
+
+                Method method = PsiTreeUtil.getParentOfType(psiElement, Method.class);
+                if(method == null) {
+                    return null;
+                }
+
+                if(!new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
+                    return null;
+                }
+
+                return new FormBuilderAddGotoCompletionProvider(parent);
+
+            }
+
+        });
+
     }
 
+    /**
+     * Form options on extension or form type default options
+     */
     private static class FormOptionsGotoCompletionProvider extends GotoCompletionProvider {
 
         private final String formType;
@@ -163,6 +197,9 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         }
     }
 
+    /**
+     * All registered form type with their getName() return alias name
+     */
     private static class FormBuilderAddGotoCompletionProvider extends GotoCompletionProvider {
 
         public FormBuilderAddGotoCompletionProvider(PsiElement element) {

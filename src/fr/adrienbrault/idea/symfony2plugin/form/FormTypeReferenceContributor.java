@@ -155,36 +155,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
-        // FormTypeInterface::getParent
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext context) {
-
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
-                        return new PsiReference[0];
-                    }
-
-                    if(!(psiElement instanceof StringLiteralExpression) || !PhpElementsUtil.getMethodReturnPattern().accepts(psiElement)) {
-                        return new PsiReference[0];
-                    }
-
-                    Method method = PsiTreeUtil.getParentOfType(psiElement, Method.class);
-                    if(method == null) {
-                        return new PsiReference[0];
-                    }
-
-                    if(!new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{ new FormTypeReference((StringLiteralExpression) psiElement) };
-                }
-            }
-        );
-
         // FormBuilderInterface::add('underscore_method')
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class),
