@@ -147,12 +147,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             containerFiles.add(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
         }
 
-        ArrayList<File> validFiles = new ArrayList<File>();
+        List<File> validFiles = new ArrayList<File>();
         for(ContainerFile containerFile : containerFiles) {
             if(containerFile.exists(this.project)) {
                 validFiles.add(containerFile.getFile(this.project));
-            } else {
-                Symfony2ProjectComponent.getLogger().warn("container file not exists skipping: " + containerFile.getPath());
             }
         }
 
