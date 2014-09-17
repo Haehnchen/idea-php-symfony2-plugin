@@ -111,6 +111,41 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
+        /**
+         * support form type alias references;
+         * we dont use completion here, form type resolving depends on container, which is slow stuff
+         */
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    // match add('foo', 'type name')
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
+                        .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
+                        .match();
+
+                    if(methodMatchParameter == null) {
+                        methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
+                            .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
+                            .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                            .match();
+                    }
+
+                    if(methodMatchParameter == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new FormTypeReferenceRef((StringLiteralExpression) psiElement) };
+
+                }
+
+            }
+
+        );
+
         // FormBuilderInterface::add('underscore_method')
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class),
@@ -135,15 +170,15 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     // only use second parameter
                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-                    if(currentIndex == null || currentIndex.getIndex() != 0) {
+                    if (currentIndex == null || currentIndex.getIndex() != 0) {
                         return new PsiReference[0];
                     }
 
-                    String className = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, "setDefaultOptions",  "setDefaults", "data_class");
-                    if(className != null) {
+                    String className = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, "setDefaultOptions", "setDefaults", "data_class");
+                    if (className != null) {
                         PhpClass dataClass = PhpElementsUtil.getClass(PhpIndex.getInstance(psiElement.getProject()), className);
-                        if(dataClass != null) {
-                            return new PsiReference[]{ new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, dataClass) };
+                        if (dataClass != null) {
+                            return new PsiReference[]{new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, dataClass)};
                         }
                     }
 
@@ -316,4 +351,17 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
     }
 
+    private static class FormTypeReferenceRef extends FormTypeReference {
+
+        public FormTypeReferenceRef(@NotNull StringLiteralExpression element) {
+            super(element);
+        }
+
+        @NotNull
+        @Override
+        public Object[] getVariants() {
+            return new Object[0];
+        }
+
+    }
 }
