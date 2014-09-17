@@ -184,14 +184,14 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         // container file need to be xml file, eg xsd filetypes are not valid
         String extension = inputData.getFile().getExtension();
-        if(extension == null || !extension.equalsIgnoreCase("xml")) {
+        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml"))) {
             return false;
         }
 
-        // is test file on path
-        // to supprt also libary paths, only filter them on project files
+        // possible fixture or test file
+        // to support also library paths, only filter them on project files
         String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-        if(relativePath != null && relativePath.contains("/Test/")) {
+        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }
 
