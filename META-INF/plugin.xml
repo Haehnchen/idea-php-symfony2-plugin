@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.70</version>
+    <version>0.11.72</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -15,14 +15,13 @@
 <ul>
     <li>Active plugin per project in Settings -> Plugins and reopen project</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
+    <li><font color="red">Upgrade to PhpStorm8 soon :)</font></li>
 </ul>
 
-<h2>Upcoming PhpStorm 8</h2>
+<h2>Open Api Issues</h2>
 <ul>
-    <li><font color="red">Again compatible with PhpStorm 8 >= 138.1289. 0.11.x will follow to replace deprecated method calls</font></li>
-    <li>Twig filter ("|") completion without hack</li>
-    <li>Twig block name completion "{% block foo %}" on "extends" templates</li>
-    <li>(hopefully) Major bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-2372">WI-23727</a>; our issues <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
+    <li>Twig block name completion "{% block foo %}" <a href="https://youtrack.jetbrains.com/issue/WI-24362">WI-24362</a></li>
+    <li>Bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-23727">WI-23727</a>; our issue <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
 </ul>
 
 <h2>Features:</h2>
@@ -89,7 +88,7 @@
     <li><a href="http://plugins.jetbrains.com/plugin/7487">Drupal Symfony2 Bridge</a></li>
 </ul>
 
-<h2><a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
+<h2><a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
 <ul>
     <li><a href="https://github.com/Haehnchen">Daniel Espendiller</a></li>
     <li><a href="https://github.com/adrienbrault">Adrien Brault</a></li>
@@ -103,6 +102,13 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.72 / 0.11.72</h2>
+<ul>
+    <li>Replace Form array options references with goto provider for performance improvements</li>
+    <li>Support service container in library paths <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/347">#347</a></li>
+    <li>Use indexer for service parameter references to support weak file</li>
+</ul>
 
 <h2>0.10.71 / 0.11.71</h2>
 <ul>

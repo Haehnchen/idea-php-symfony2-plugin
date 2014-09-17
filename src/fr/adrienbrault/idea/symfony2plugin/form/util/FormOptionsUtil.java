@@ -331,4 +331,89 @@ public class FormOptionsUtil {
             .withIcon(formOption.getFormClass().isWeak() ? Symfony2Icons.FORM_EXTENSION_WEAK : Symfony2Icons.FORM_EXTENSION);
     }
 
+    @NotNull
+    public static Collection<PsiElement> getFormExtensionsKeysTargets(StringLiteralExpression psiElement, String... formTypes) {
+        Map<String, FormOption> test = FormOptionsUtil.getFormExtensionKeys(psiElement.getProject(), formTypes);
+        String value = psiElement.getContents();
+
+        if(!test.containsKey(value)) {
+            return Collections.emptyList();
+        }
+
+        // @TODO: use core method find method
+        String className = test.get(value).getFormClass().getPhpClass().getPresentableFQN();
+
+        PsiElement[] psiElements = PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), "#M#C\\" + className + ".setDefaultOptions");
+        if(psiElements.length == 0) {
+            return Collections.emptyList();
+        }
+
+        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);
+        if(keyValue != null) {
+            return Arrays.asList(keyValue);
+        }
+
+        return Collections.emptyList();
+    }
+
+    public static Collection<LookupElement> getFormExtensionKeysLookupElements(Project project, String... formTypes) {
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        for(FormOption formOption: FormOptionsUtil.getFormExtensionKeys(project, formTypes).values()) {
+            lookupElements.add(FormOptionsUtil.getOptionLookupElement(formOption));
+        }
+
+        return lookupElements;
+    }
+
+
+
+    public static Collection<PsiElement> getDefaultOptionTargets(StringLiteralExpression element, String formType) {
+
+        Map<String, String> defaultOptions = FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType);
+        String value = element.getContents();
+
+        if(!defaultOptions.containsKey(value)) {
+            return null;
+        }
+
+        String className = defaultOptions.get(value);
+
+        // @TODO: use class core
+        PsiElement[] psiElements = PhpElementsUtil.getPsiElementsBySignature(element.getProject(), "#M#C\\" + className + ".setDefaultOptions");
+        if(psiElements.length == 0) {
+            return null;
+        }
+
+        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);
+        if(keyValue != null) {
+            return Arrays.asList(psiElements);
+        }
+
+        return Collections.emptySet();
+    }
+
+    public static Collection<LookupElement> getDefaultOptionLookupElements(Project project, String formType) {
+
+        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        for(Map.Entry<String, String> extension: FormOptionsUtil.getFormDefaultKeys(project, formType).entrySet()) {
+            String typeText = extension.getValue();
+            if(typeText.lastIndexOf("\\") != -1) {
+                typeText = typeText.substring(typeText.lastIndexOf("\\") + 1);
+            }
+
+            if(typeText.endsWith("Type")) {
+                typeText = typeText.substring(0, typeText.length() - 4);
+            }
+
+            lookupElements.add(LookupElementBuilder.create(extension.getKey())
+                .withTypeText(typeText)
+                .withIcon(Symfony2Icons.FORM_OPTION)
+            );
+        }
+
+        return lookupElements;
+    }
+
 }

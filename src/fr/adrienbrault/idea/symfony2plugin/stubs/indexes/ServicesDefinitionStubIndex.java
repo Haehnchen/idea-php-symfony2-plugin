@@ -30,6 +30,8 @@ import java.util.Map;
 
 public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, String[]> {
 
+    private static int MAX_FILE_BYTE_SIZE = 5242880;
+
     public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
@@ -180,9 +182,16 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             return false;
         }
 
-        // is test file on path
+        // container file need to be xml file, eg xsd filetypes are not valid
+        String extension = inputData.getFile().getExtension();
+        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml"))) {
+            return false;
+        }
+
+        // possible fixture or test file
+        // to support also library paths, only filter them on project files
         String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-        if(relativePath == null || relativePath.contains("Test")) {
+        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }
 
@@ -192,6 +201,11 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             if(VfsUtil.isAncestor(VfsUtil.virtualToIoFile(inputData.getFile()), file, false)) {
                 return false;
             }
+        }
+
+        // dont index files larger then files; use 5 MB here
+        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
+            return false;
         }
 
         return true;

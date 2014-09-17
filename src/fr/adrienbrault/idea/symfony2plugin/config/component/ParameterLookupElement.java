@@ -20,20 +20,11 @@ public class ParameterLookupElement extends LookupElement {
     private InsertHandler<LookupElement> insertHandler = null;
     private ContainerParameter containerParameter;
 
-    public ParameterLookupElement(ContainerParameter containerParameter, InsertHandler<LookupElement> insertHandler, Object psiElement) {
-        this(containerParameter.getName(), containerParameter.getValue(), insertHandler, psiElement);
+    public ParameterLookupElement(ContainerParameter containerParameter) {
         this.containerParameter = containerParameter;
     }
 
-    @Deprecated
-    public ParameterLookupElement(String parameterKey, String parameterValue) {
-        this.parameterKey = parameterKey;
-        this.parameterValue = parameterValue;
-    }
-
-    @Deprecated
-    public ParameterLookupElement(String name, String value, InsertHandler<LookupElement> insertHandler, Object psiElement) {
-        this(name, value);
+    public ParameterLookupElement(ContainerParameter containerParameter, InsertHandler<LookupElement> insertHandler, Object psiElement) {
         this.insertHandler = insertHandler;
         this.psiElement = psiElement;
     }
