@@ -7,6 +7,8 @@ import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -22,45 +24,15 @@ public class ParameterReference  extends PsiPolyVariantReferenceBase<PsiElement>
 
     private String parameterName;
 
-    private boolean wrapPercent = false;
-
-    public ParameterReference(@NotNull PsiElement element, String ParameterName) {
-        super(element);
-        parameterName = ParameterName;
-    }
-
     public ParameterReference(@NotNull StringLiteralExpression element) {
         super(element);
-
-        parameterName = element.getText().substring(
-            element.getValueRange().getStartOffset(),
-            element.getValueRange().getEndOffset()
-        ); // Remove quotes
-    }
-
-    public ParameterReference wrapVariantsWithPercent(boolean WrapPercent) {
-        this.wrapPercent = WrapPercent;
-        return this;
+        parameterName = element.getContents();
     }
 
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-
-        String parameterName = ServiceXmlParserFactory.getInstance(getElement().getProject(), ParameterServiceParser.class).getParameterMap().get(this.parameterName);
-        if (null == parameterName) {
-            return new ResolveResult[]{};
-        }
-
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
-        results.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), parameterName));
-
-        // self add; so variable is not marked as invalid eg in xml
-        if(results.size() == 0) {
-            results.add(new PsiElementResolveResult(getElement()));
-        }
-
-        return results.toArray(new ResolveResult[results.size()]);
+        return new ResolveResult[0];
     }
 
     @NotNull
@@ -68,17 +40,9 @@ public class ParameterReference  extends PsiPolyVariantReferenceBase<PsiElement>
     public Object[] getVariants() {
 
         List<LookupElement> results = new ArrayList<LookupElement>();
-        Map<String, String> it = ServiceXmlParserFactory.getInstance(getElement().getProject(), ParameterServiceParser.class).getParameterMap();
 
-        for(Map.Entry<String, String> Entry: it.entrySet()) {
-            String parameterKey = Entry.getKey();
-
-            // wrap parameter for reuse this class in xml, php and yaml
-            if(this.wrapPercent) {
-                parameterKey = "%" + parameterKey + "%";
-            }
-
-            results.add(new ParameterLookupElement(parameterKey, Entry.getValue()));
+        for(Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getElement().getProject()).entrySet()) {
+            results.add(new ParameterLookupElement(entry.getValue()));
         }
 
         return results.toArray();
