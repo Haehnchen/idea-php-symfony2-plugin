@@ -366,15 +366,14 @@ public class FormOptionsUtil {
         return lookupElements;
     }
 
-
-
+    @NotNull
     public static Collection<PsiElement> getDefaultOptionTargets(StringLiteralExpression element, String formType) {
 
         Map<String, String> defaultOptions = FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType);
         String value = element.getContents();
 
         if(!defaultOptions.containsKey(value)) {
-            return null;
+            return Collections.emptySet();
         }
 
         String className = defaultOptions.get(value);
@@ -382,7 +381,7 @@ public class FormOptionsUtil {
         // @TODO: use class core
         PsiElement[] psiElements = PhpElementsUtil.getPsiElementsBySignature(element.getProject(), "#M#C\\" + className + ".setDefaultOptions");
         if(psiElements.length == 0) {
-            return null;
+            return Collections.emptySet();
         }
 
         PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);
