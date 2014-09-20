@@ -14,8 +14,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ParameterLookupElement extends LookupElement {
 
-    private String parameterKey;
-    private String parameterValue;
     private Object psiElement;
     private InsertHandler<LookupElement> insertHandler = null;
     private ContainerParameter containerParameter;
@@ -27,6 +25,7 @@ public class ParameterLookupElement extends LookupElement {
     public ParameterLookupElement(ContainerParameter containerParameter, InsertHandler<LookupElement> insertHandler, Object psiElement) {
         this.insertHandler = insertHandler;
         this.psiElement = psiElement;
+        this.containerParameter = containerParameter;
     }
 
     @NotNull
@@ -44,14 +43,15 @@ public class ParameterLookupElement extends LookupElement {
     @NotNull
     @Override
     public String getLookupString() {
-        return parameterKey;
+        return containerParameter.getName();
     }
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
 
-        if(parameterValue != null && !StringUtils.isBlank(parameterValue)) {
-            presentation.setTypeText(parameterValue);
+        String value = containerParameter.getValue();
+        if(value != null && StringUtils.isNotBlank(value)) {
+            presentation.setTypeText(value);
         }
 
         presentation.setTypeGrayed(true);
