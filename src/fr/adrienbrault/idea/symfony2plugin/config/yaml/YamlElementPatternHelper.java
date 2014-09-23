@@ -118,6 +118,66 @@ public class YamlElementPatternHelper {
     /**
      * provides auto complete on
      *
+     * keyName:
+     *   refer|
+     *   refer|: xxx
+     *   refer|
+     *
+     * @param keyName key name
+     */
+    public static ElementPattern<PsiElement> getParentKeyName(String keyName) {
+        return PlatformPatterns.or(
+            // match
+            //
+            // keyName:
+            //   refer|: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_KEY)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withName(
+                                PlatformPatterns.string().equalTo(keyName)
+                            )
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // keyName:
+            //   xxx: xxx
+            //   refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withName(
+                            PlatformPatterns.string().equalTo(keyName)
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // keyName:
+            //   refer|
+            //   xxx: xxx
+            getKeyPattern(keyName)
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
+    }
+
+    /**
+     * provides auto complete on
+     *
      * xxx:
      *   refer|
      *   refer|: xxx
