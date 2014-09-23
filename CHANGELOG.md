@@ -6,6 +6,15 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.73 / 0.11.73
+* Fix npe in container parameter completion #351
+* Add route requirements and options completion for yaml files
+
+### 0.10.72 / 0.11.72
+* Replace Form array options references with goto provider for performance improvements
+* Support service container in library paths #347
+* Use indexer for service parameter references to support weak file
+
 ### 0.10.71 / 0.11.71
 * Fix whitespace pattern in twig function pattern #340
 * Fixed typo in service generator "tags" should be "tag" on xml files #338
