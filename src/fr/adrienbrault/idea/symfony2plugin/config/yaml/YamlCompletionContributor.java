@@ -40,6 +40,9 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -115,6 +118,8 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config", "Controller"));
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSuperParentArrayKey("services"), new YamlCompletionProvider(new String[] {"class", "public", "tags", "calls", "arguments", "scope"}));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getWithFirstRootKey(), new RouteKeyNameYamlCompletionProvider(new String[] {"pattern", "defaults", "path", "requirements", "methods", "condition", "resource", "prefix"}));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getParentKeyName("requirements"), new RouteRequirementsCompletion());
 
         extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
@@ -389,5 +394,49 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
+    private static class RouteKeyNameYamlCompletionProvider extends YamlCompletionProvider {
+
+        public RouteKeyNameYamlCompletionProvider(String[] lookups) {
+            super(lookups);
+        }
+
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            if(!YamlHelper.isRoutingFile(parameters.getOriginalFile())) {
+                return;
+            }
+
+            super.addCompletions(parameters, context, resultSet);
+        }
+    }
+
+    /**
+     * "requirements" on "path/pattern: /hello/{name}"
+     */
+    private class RouteRequirementsCompletion extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(completionParameters.getOriginalPosition(), YAMLKeyValue.class);
+            if(yamlKeyValue != null) {
+                PsiElement compoundValue = yamlKeyValue.getParent();
+                if(compoundValue instanceof YAMLCompoundValue) {
+
+                    // path and pattern are valid
+                    String pattern = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) compoundValue, "path", false);
+                    if(pattern == null) {
+                        pattern = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) compoundValue, "pattern", false);
+                    }
+
+                    if(pattern != null) {
+                        Matcher matcher = Pattern.compile("\\{(\\w+)}").matcher(pattern);
+                        while(matcher.find()){
+                            completionResultSet.addElement(LookupElementBuilder.create(matcher.group(1)));
+                        }
+                    }
+
+                }
+            }
+        }
+    }
 }
 

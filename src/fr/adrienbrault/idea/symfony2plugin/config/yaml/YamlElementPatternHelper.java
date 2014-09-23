@@ -1,9 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.patterns.StandardPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.yaml.YAMLElementTypes;
@@ -121,6 +118,66 @@ public class YamlElementPatternHelper {
     /**
      * provides auto complete on
      *
+     * keyName:
+     *   refer|
+     *   refer|: xxx
+     *   refer|
+     *
+     * @param keyName key name
+     */
+    public static ElementPattern<PsiElement> getParentKeyName(String keyName) {
+        return PlatformPatterns.or(
+            // match
+            //
+            // keyName:
+            //   refer|: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_KEY)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withName(
+                                PlatformPatterns.string().equalTo(keyName)
+                            )
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // keyName:
+            //   xxx: xxx
+            //   refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withName(
+                            PlatformPatterns.string().equalTo(keyName)
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // keyName:
+            //   refer|
+            //   xxx: xxx
+            getKeyPattern(keyName)
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
+    }
+
+    /**
+     * provides auto complete on
+     *
      * xxx:
      *   refer|
      *   refer|: xxx
@@ -183,6 +240,64 @@ public class YamlElementPatternHelper {
                     )
                 )
                 .inFile(getOrmFilePattern())
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
+    }
+
+    public static ElementPattern<PsiElement> getWithFirstRootKey() {
+        return PlatformPatterns.or(
+
+            // match
+            //
+            // xxx:
+            //   refer|: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_KEY)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLKeyValue.class)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLDocument.class)
+                            )
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // xxx:
+            //   xxx: xxx
+            //   refer|
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLKeyValue.class)
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLDocument.class)
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // match
+            //
+            // xxx:
+            //   refer|
+            //   xxx: xxx
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns
+                        .psiElement(YAMLDocument.class)
+                    )
+                )
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
@@ -422,7 +537,6 @@ public class YamlElementPatternHelper {
     private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
         return PlatformPatterns.psiFile().withName(PlatformPatterns.string().endsWith("orm.yml"));
     }
-
 
     private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String keyName) {
         return PlatformPatterns

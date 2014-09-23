@@ -103,6 +103,12 @@
 
 <br>
 
+<h2>0.10.73 / 0.11.73</h2>
+<ul>
+    <li>Fix npe in container parameter completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/351">#351</a></li>
+    <li>Add route requirements and options completion for yaml files</li>
+</ul>
+
 <h2>0.10.72 / 0.11.72</h2>
 <ul>
     <li>Replace Form array options references with goto provider for performance improvements</li>
