@@ -115,6 +115,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config", "Controller"));
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSuperParentArrayKey("services"), new YamlCompletionProvider(new String[] {"class", "public", "tags", "calls", "arguments", "scope"}));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getWithFirstRootKey(), new RouteKeyNameYamlCompletionProvider(new String[] {"pattern", "defaults", "path", "requirements", "methods", "condition", "resource", "prefix"}));
 
         extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
@@ -389,5 +390,20 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
+    private static class RouteKeyNameYamlCompletionProvider extends YamlCompletionProvider {
+
+        public RouteKeyNameYamlCompletionProvider(String[] lookups) {
+            super(lookups);
+        }
+
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            if(!YamlHelper.isRoutingFile(parameters.getOriginalFile())) {
+                return;
+            }
+
+            super.addCompletions(parameters, context, resultSet);
+        }
+    }
 }
 

@@ -25,7 +25,7 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
         // routing.yml
         // comment.routing.yml
         // routing/foo.yml
-        if(psiFile.getName().contains("routing") || psiFile.getVirtualFile().getPath().contains("/routing")) {
+        if(YamlHelper.isRoutingFile(psiFile)) {
             YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
             if(document != null) {
                 YamlHelper.attachDuplicateKeyInspection(document, holder);

@@ -539,4 +539,8 @@ public class YamlHelper {
 
     }
 
+    public static boolean isRoutingFile(PsiFile psiFile) {
+        return psiFile.getName().contains("routing") || psiFile.getVirtualFile().getPath().contains("/routing");
+    }
+
 }
