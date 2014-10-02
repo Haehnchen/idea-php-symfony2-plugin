@@ -120,14 +120,16 @@ public class QueryBuilderMethodReferenceParser {
         }
 
         // $qb->select('foo')
-        PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
-        String literalValue = PhpElementsUtil.getStringValue(psiElement);
-        if(literalValue != null) {
-            qb.addSelect(literalValue);
-            return;
+        // $qb->select('foo', 'foo1')
+        for(PsiElement parameter: methodReference.getParameters()) {
+            String literalValue = PhpElementsUtil.getStringValue(parameter);
+            if(literalValue != null) {
+                qb.addSelect(literalValue);
+            }
         }
 
         // $qb->select(array('foo', 'bar', 'accessoryDetail'))
+        PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
         if(psiElement instanceof ArrayCreationExpression) {
             for(PsiElement arrayValue: PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE))) {
                 if(arrayValue.getChildren().length == 1) {
