@@ -84,23 +84,24 @@ public class TwigUtil {
         return shortcutName + ".html.twig";
     }
 
+    @NotNull
     public static Map<String, PsiElement> getTemplateAnnotationFiles(PhpDocTag phpDocTag) {
 
         // @TODO: @Template(template="templatename")
         // Also replace "Matcher" with annotation psi elements; now possible
         // Wait for "annotation plugin" update; to not implement whole stuff here again?
 
+        Map<String, PsiElement> templateFiles = new HashMap<String, PsiElement>();
+
         // find template name on annotation parameter
         // @Template("templatename")
         PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
         if(phpDocAttrList == null) {
-            return null;
+            return templateFiles;
         }
 
         String tagValue = phpDocAttrList.getText();
         Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
-
-        Map<String, PsiElement> templateFiles = new HashMap<String, PsiElement>();
 
         if (matcher.find()) {
             // @TODO: only one should possible; refactor getTemplatePsiElements
