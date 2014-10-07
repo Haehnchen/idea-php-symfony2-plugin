@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
@@ -318,7 +319,13 @@ public class ContainerCollectionResolver {
 
             if(this.sources.contains(Source.COMPILER)) {
                 for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
-                    this.containerParameterMap.put(Entry.getKey(), new ContainerParameter(Entry.getKey(), Entry.getValue()));
+
+                    // user input here; secure nullable values
+                    String key = Entry.getKey();
+                    if(key != null) {
+                        this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
+                    }
+
                 }
             }
 
@@ -327,6 +334,11 @@ public class ContainerCollectionResolver {
                 FileBasedIndexImpl.getInstance().processAllKeys(ContainerParameterStubIndex.KEY, projectUniqueKeysStrong, project);
 
                 for(String parameterName: projectUniqueKeysStrong.getResult()) {
+
+                    // just for secure
+                    if(parameterName == null) {
+                        continue;
+                    }
 
                     // indexes is weak stuff, dont overwrite compiled ones
                     if(!this.containerParameterMap.containsKey(parameterName)) {
