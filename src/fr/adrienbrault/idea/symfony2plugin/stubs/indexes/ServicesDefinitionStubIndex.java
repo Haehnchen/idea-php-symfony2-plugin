@@ -47,7 +47,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
                 Map<String, String[]> map = new THashMap<String, String[]>();
 
                 PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
                     return map;
                 }
                 if (!isValidForIndex(inputData, psiFile)) {

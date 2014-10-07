@@ -194,6 +194,28 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return Settings.getInstance(project).pluginEnabled;
     }
 
+    /**
+     * If plugin is not enabled on first project start/indexing we will never get a filled
+     * index until a forced cache rebuild, we check also for vendor path
+     */
+    public static boolean isEnabledForIndex(Project project) {
+
+        if(Settings.getInstance(project).pluginEnabled) {
+            return true;
+        }
+
+        if(VfsUtil.findRelativeFile(project.getBaseDir(), "vendor", "symfony") != null) {
+            return true;
+        }
+
+        // drupal8; this should not really here
+        if(VfsUtil.findRelativeFile(project.getBaseDir(), "core", "vendor", "symfony") != null) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static boolean isEnabled(@Nullable PsiElement psiElement) {
         return psiElement != null && isEnabled(psiElement.getProject());
     }
