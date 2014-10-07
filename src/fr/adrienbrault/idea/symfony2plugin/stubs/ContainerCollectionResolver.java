@@ -137,7 +137,7 @@ public class ContainerCollectionResolver {
                 return this.services;
             }
 
-           this.services = new HashMap<String, ContainerService>();
+            this.services = new HashMap<String, ContainerService>();
 
             if(this.sources.contains(Source.COMPILER)) {
                 for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
@@ -159,7 +159,7 @@ public class ContainerCollectionResolver {
                         if(serviceDefinitions.size() == 0) {
                             this.services.put(serviceName, new ContainerService(serviceName, null, true));
                         } else {
-                            convertIndexToService(serviceName, serviceDefinitions);
+                            this.services.putAll(convertIndexToService(serviceName, serviceDefinitions));
                         }
 
 
@@ -172,14 +172,17 @@ public class ContainerCollectionResolver {
             return this.services;
         }
 
-        private void convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
+        private Map<String, ContainerService> convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
+
+            Map<String, ContainerService> serviceMap = new HashMap<String, ContainerService>();
+
             for(String[] serviceDefinitionArray: serviceDefinitions) {
 
                 // 0: class name
                 // 1: private: (String) "true" if presented
                 if(serviceDefinitionArray.length == 0) {
                     // just a fallback should not happen, but provide at least a service name
-                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                    serviceMap.put(serviceName, new ContainerService(serviceName, null, true));
                 } else {
 
                     // resolve class value, it can be null or a parameter
@@ -189,16 +192,18 @@ public class ContainerCollectionResolver {
                     }
 
                     if(serviceDefinitionArray.length == 1) {
-                        this.services.put(serviceName, new ContainerService(serviceName, classValue, true));
+                        serviceMap.put(serviceName, new ContainerService(serviceName, classValue, true));
                     }
 
                     if(serviceDefinitionArray.length == 2) {
-                        this.services.put(serviceName, new ContainerService(serviceName, classValue, true, "true".equals(serviceDefinitionArray[1])));
+                        serviceMap.put(serviceName, new ContainerService(serviceName, classValue, true, "true".equals(serviceDefinitionArray[1])));
                     }
 
                 }
 
             }
+
+            return serviceMap;
         }
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
