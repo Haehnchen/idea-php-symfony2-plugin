@@ -143,7 +143,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         if(containerFiles.size() == 0) {
-            Symfony2ProjectComponent.getLogger().info("no custom container files add default");
             containerFiles.add(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
         }
 
