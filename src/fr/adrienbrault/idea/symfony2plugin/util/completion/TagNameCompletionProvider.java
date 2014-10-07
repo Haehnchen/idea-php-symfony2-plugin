@@ -11,7 +11,6 @@ import com.intellij.util.ProcessingContext;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ContainerTagLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
