@@ -40,13 +40,6 @@ public class Symfony2InterfacesUtil {
         });
     }
 
-    public boolean isContainerParameterCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter"),
-        });
-    }
-
     public boolean isTemplatingRenderCall(PsiElement e) {
         return isCallTo(e, new Method[] {
             getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Templating\\EngineInterface", "render"),
@@ -58,24 +51,10 @@ public class Symfony2InterfacesUtil {
         });
     }
 
-    public boolean isUrlGeneratorGenerateCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface", "generate"),
-            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "generateUrl"),
-        });
-    }
-
     public boolean isTranslatorCall(PsiElement e) {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
                 getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
-        });
-    }
-
-    public boolean isGetRepositoryCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
         });
     }
 
@@ -92,15 +71,6 @@ public class Symfony2InterfacesUtil {
             getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
             getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
             getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
-        });
-    }
-
-    public boolean isObjectRepositoryCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
         });
     }
 
