@@ -22,6 +22,7 @@ import java.util.List;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class Symfony2InterfacesUtil {
 
@@ -119,11 +120,19 @@ public class Symfony2InterfacesUtil {
     protected boolean isCallTo(Method e, Method[] expectedMethods) {
 
         PhpClass methodClass = e.getContainingClass();
+        if(methodClass == null) {
+            return false;
+        }
 
-        for (Method expectedMethod : Arrays.asList(expectedMethods)) {
-            if (null != expectedMethod
-                && expectedMethod.getName().equals(e.getName())
-                && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+        for (Method expectedMethod : expectedMethods) {
+
+            // @TODO: its stuff from beginning times :)
+            if(expectedMethod == null) {
+                continue;
+            }
+
+            PhpClass containingClass = expectedMethod.getContainingClass();
+            if (containingClass != null && expectedMethod.getName().equals(e.getName()) && isInstanceOf(methodClass, containingClass)) {
                 return true;
             }
         }
@@ -212,15 +221,14 @@ public class Symfony2InterfacesUtil {
         return false;
     }
 
+    @Deprecated
     @Nullable
     public static String getFirstArgumentStringValue(MethodReference e) {
         String stringValue = null;
 
         PsiElement[] parameters = e.getParameters();
         if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
-            StringLiteralExpression stringLiteralExpression = (StringLiteralExpression)parameters[0];
-            stringValue = stringLiteralExpression.getText(); // quoted string
-            stringValue = stringValue.substring(stringLiteralExpression.getValueRange().getStartOffset(), stringLiteralExpression.getValueRange().getEndOffset());
+            stringValue = ((StringLiteralExpression) parameters[0]).getContents();
         }
 
         return stringValue;
