@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -148,23 +150,56 @@ public class Symfony2InterfacesUtil {
             return false;
         }
 
-        PsiElement resolvedReference = psiReference.resolve();
-        if (!(resolvedReference instanceof Method)) {
+        Method method = getMultiResolvedMethod(psiReference);
+        if (method == null) {
             return false;
         }
 
-        Method method = (Method) resolvedReference;
         PhpClass methodClass = method.getContainingClass();
+        if(methodClass == null) {
+            return false;
+        }
 
-        for (Method expectedMethod : Arrays.asList(expectedMethods)) {
-            if (null != expectedMethod
-                    && expectedMethod.getName().equals(method.getName())
-                    && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+        for (Method expectedMethod : expectedMethods) {
+
+            // @TODO: its stuff from beginning times :)
+            if(expectedMethod == null) {
+                continue;
+            }
+
+            PhpClass containingClass = expectedMethod.getContainingClass();
+            if (null != containingClass && expectedMethod.getName().equals(method.getName()) && isInstanceOf(methodClass, containingClass)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Single resolve doesnt work if we have non unique class names in project context,
+     * so try a multiResolve and use first matched method
+     */
+    @Nullable
+    protected static Method getMultiResolvedMethod(PsiReference psiReference) {
+
+        // class be unique in normal case, so try this first
+        PsiElement resolvedReference = psiReference.resolve();
+        if (resolvedReference instanceof Method) {
+            return (Method) resolvedReference;
+        }
+
+        // try multiResolve if class exists twice in project
+        if(psiReference instanceof PsiPolyVariantReference) {
+            for(ResolveResult resolveResult : ((PsiPolyVariantReference) psiReference).multiResolve(false)) {
+                PsiElement element = resolveResult.getElement();
+                if(element instanceof Method) {
+                    return (Method) element;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected boolean isMatchingMethodName(MethodReference methodRef, Method[] expectedMethods) {
