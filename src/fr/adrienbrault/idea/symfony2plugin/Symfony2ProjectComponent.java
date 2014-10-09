@@ -189,8 +189,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     }
 
-    public static boolean isEnabled(Project project) {
-        return Settings.getInstance(project).pluginEnabled;
+    public static boolean isEnabled(@Nullable Project project) {
+        return project != null && Settings.getInstance(project).pluginEnabled;
     }
 
     /**
