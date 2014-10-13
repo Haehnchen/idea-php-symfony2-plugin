@@ -16,6 +16,8 @@ import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
+import fr.adrienbrault.idea.symfony2plugin.remote.RemoteStorage;
+import fr.adrienbrault.idea.symfony2plugin.remote.provider.RouterProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
@@ -105,6 +107,14 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public Map<String, Route> getRoutes() {
         Map<String, Route> routes = new HashMap<String, Route>();
+
+        if(Symfony2ApplicationSettings.getInstance().serverEnabled && RemoteStorage.getInstance(project).has(RouterProvider.class)) {
+            RouterProvider routerProvider = RemoteStorage.getInstance(project).get(RouterProvider.class);
+            if(routerProvider != null) {
+                routes.putAll(routerProvider.getRoutes());
+                return routes;
+            }
+        }
 
         String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
         File urlGeneratorFile = new File(urlGeneratorPath);

@@ -374,6 +374,12 @@
                              id="Symfony2.MethodSignatureTypeSettingsForm"
                 />
 
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.ServerStorageForm"
+                             displayName="Server Storage"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony2.ServerStorage"
+                />
+
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
@@ -493,6 +499,7 @@
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     />
 
+        <applicationService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ApplicationSettings"/>
 
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"
@@ -541,6 +548,12 @@
         <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
         <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationGotoHandler"/>
     </extensions>
+
+    <application-components>
+        <component>
+            <implementation-class>fr.adrienbrault.idea.symfony2plugin.remote.RemoteListenerComponent</implementation-class>
+        </component>
+    </application-components>
 
     <project-components>
         <component>

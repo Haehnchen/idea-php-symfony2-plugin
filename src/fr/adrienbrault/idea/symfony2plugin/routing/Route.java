@@ -31,7 +31,7 @@ public class Route {
         }
     }
 
-    public Route(String name, String controller) {
+    public Route(String name, @Nullable String controller) {
         this.name = name;
         this.controller = controller;
     }
