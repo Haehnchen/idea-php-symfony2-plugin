@@ -42,7 +42,7 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
                 Map<String, Void> map = new THashMap<String, Void>();
 
                 PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
                     return map;
                 }
 

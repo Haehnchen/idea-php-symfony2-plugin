@@ -6,6 +6,20 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+
+### 0.10.74 / 0.11.74
+* Add button in Settings to clean up plugin related indexes
+* Add new isEnabledForIndex check, to not force a manually re-indexing for new projects after enabling plugin
+* Add references for array methods inside EventSubscriberInterface returns
+* Add completion for parameter in doctrine querybuilder "where" context
+* Add support for variadic functions on doctrine querybuilder selects #357
+* Our heart method "isCallTo" now supports classes and methods instance checks which are not unique in project
+* Cleanup quote wrapping in routes key names of yaml files
+* Fix npe in annotation template collector #358
+* Fix npe in yaml parameter completion #359
+* Fix npe in symbole search for non project context #268
+* Fix out of range case in getParameterDefinition #368
+
 ### 0.10.73 / 0.11.73
 * Fix npe in container parameter completion #351
 * Add route requirements and options completion for yaml files

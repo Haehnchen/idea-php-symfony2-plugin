@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
@@ -137,7 +138,7 @@ public class ContainerCollectionResolver {
                 return this.services;
             }
 
-           this.services = new HashMap<String, ContainerService>();
+            this.services = new HashMap<String, ContainerService>();
 
             if(this.sources.contains(Source.COMPILER)) {
                 for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
@@ -159,7 +160,7 @@ public class ContainerCollectionResolver {
                         if(serviceDefinitions.size() == 0) {
                             this.services.put(serviceName, new ContainerService(serviceName, null, true));
                         } else {
-                            convertIndexToService(serviceName, serviceDefinitions);
+                            this.services.putAll(convertIndexToService(serviceName, serviceDefinitions));
                         }
 
 
@@ -172,14 +173,17 @@ public class ContainerCollectionResolver {
             return this.services;
         }
 
-        private void convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
+        private Map<String, ContainerService> convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
+
+            Map<String, ContainerService> serviceMap = new HashMap<String, ContainerService>();
+
             for(String[] serviceDefinitionArray: serviceDefinitions) {
 
                 // 0: class name
                 // 1: private: (String) "true" if presented
                 if(serviceDefinitionArray.length == 0) {
                     // just a fallback should not happen, but provide at least a service name
-                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                    serviceMap.put(serviceName, new ContainerService(serviceName, null, true));
                 } else {
 
                     // resolve class value, it can be null or a parameter
@@ -189,16 +193,18 @@ public class ContainerCollectionResolver {
                     }
 
                     if(serviceDefinitionArray.length == 1) {
-                        this.services.put(serviceName, new ContainerService(serviceName, classValue, true));
+                        serviceMap.put(serviceName, new ContainerService(serviceName, classValue, true));
                     }
 
                     if(serviceDefinitionArray.length == 2) {
-                        this.services.put(serviceName, new ContainerService(serviceName, classValue, true, "true".equals(serviceDefinitionArray[1])));
+                        serviceMap.put(serviceName, new ContainerService(serviceName, classValue, true, "true".equals(serviceDefinitionArray[1])));
                     }
 
                 }
 
             }
+
+            return serviceMap;
         }
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
@@ -313,7 +319,13 @@ public class ContainerCollectionResolver {
 
             if(this.sources.contains(Source.COMPILER)) {
                 for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
-                    this.containerParameterMap.put(Entry.getKey(), new ContainerParameter(Entry.getKey(), Entry.getValue()));
+
+                    // user input here; secure nullable values
+                    String key = Entry.getKey();
+                    if(key != null) {
+                        this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
+                    }
+
                 }
             }
 
@@ -322,6 +334,11 @@ public class ContainerCollectionResolver {
                 FileBasedIndexImpl.getInstance().processAllKeys(ContainerParameterStubIndex.KEY, projectUniqueKeysStrong, project);
 
                 for(String parameterName: projectUniqueKeysStrong.getResult()) {
+
+                    // just for secure
+                    if(parameterName == null) {
+                        continue;
+                    }
 
                     // indexes is weak stuff, dont overwrite compiled ones
                     if(!this.containerParameterMap.containsKey(parameterName)) {

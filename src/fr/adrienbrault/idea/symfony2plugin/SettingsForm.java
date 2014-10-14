@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -66,6 +67,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox codeFoldingPhpTemplate;
     private JCheckBox codeFoldingTwigTemplate;
     private JCheckBox phpAnnotateWeakService;
+    private JButton buttonReindex;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -103,6 +105,15 @@ public class SettingsForm implements Configurable {
 
         directoryToWeb.getButton().addMouseListener(createPathButtonMouseListener(directoryToWeb.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
         directoryToWebReset.addMouseListener(createResetPathButtonMouseListener(directoryToWeb.getTextField(), Settings.DEFAULT_WEB_DIRECTORY));
+
+
+        buttonReindex.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                IndexUtil.forceReindex();
+                super.mouseClicked(e);
+            }
+        });
 
         return (JComponent) panel1;
     }

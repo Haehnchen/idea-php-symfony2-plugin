@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -13,20 +14,21 @@ public class ContainerParameter {
     final private Collection<String> values;
 
     @Deprecated
-    public ContainerParameter(String name, @Nullable String value) {
+    public ContainerParameter(@NotNull String name, @Nullable String value) {
         this(name, value, false);
     }
 
-    public ContainerParameter(String name, @Nullable String value, boolean isWeak) {
+    public ContainerParameter(@NotNull String name, @Nullable String value, boolean isWeak) {
         this(name, Arrays.asList(value), isWeak);
     }
 
-    public ContainerParameter(String name, Collection<String> values, boolean isWeak) {
+    public ContainerParameter(@NotNull String name, Collection<String> values, boolean isWeak) {
         this.name = name;
         this.values = values;
         this.isWeak = isWeak;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }

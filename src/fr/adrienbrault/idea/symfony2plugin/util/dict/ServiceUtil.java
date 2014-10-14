@@ -60,7 +60,7 @@ public class ServiceUtil {
      */
     public static Collection<PsiElement> getParameterDefinition(Project project, String parameterName) {
 
-        if(parameterName.startsWith("%") && parameterName.endsWith("%")) {
+        if(parameterName.length() > 2 && parameterName.startsWith("%") && parameterName.endsWith("%")) {
             parameterName = parameterName.substring(1, parameterName.length() - 1);
         }
 

@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -20,6 +22,7 @@ import java.util.List;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class Symfony2InterfacesUtil {
 
@@ -37,13 +40,6 @@ public class Symfony2InterfacesUtil {
         });
     }
 
-    public boolean isContainerParameterCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter"),
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter"),
-        });
-    }
-
     public boolean isTemplatingRenderCall(PsiElement e) {
         return isCallTo(e, new Method[] {
             getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Templating\\EngineInterface", "render"),
@@ -55,24 +51,10 @@ public class Symfony2InterfacesUtil {
         });
     }
 
-    public boolean isUrlGeneratorGenerateCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface", "generate"),
-            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "generateUrl"),
-        });
-    }
-
     public boolean isTranslatorCall(PsiElement e) {
         return isCallTo(e, new Method[] {
                 getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
                 getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
-        });
-    }
-
-    public boolean isGetRepositoryCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
         });
     }
 
@@ -92,15 +74,6 @@ public class Symfony2InterfacesUtil {
         });
     }
 
-    public boolean isObjectRepositoryCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
-                getInterfaceMethod(e.getProject(), "\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
-        });
-    }
-
     public boolean isFormBuilderFormTypeCall(PsiElement e) {
         List<Method> methods = getCallToSignatureInterfaceMethods(e, getFormBuilderInterface());
         return isCallTo(e, methods.toArray( new Method[methods.size()]));
@@ -117,11 +90,19 @@ public class Symfony2InterfacesUtil {
     protected boolean isCallTo(Method e, Method[] expectedMethods) {
 
         PhpClass methodClass = e.getContainingClass();
+        if(methodClass == null) {
+            return false;
+        }
 
-        for (Method expectedMethod : Arrays.asList(expectedMethods)) {
-            if (null != expectedMethod
-                && expectedMethod.getName().equals(e.getName())
-                && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+        for (Method expectedMethod : expectedMethods) {
+
+            // @TODO: its stuff from beginning times :)
+            if(expectedMethod == null) {
+                continue;
+            }
+
+            PhpClass containingClass = expectedMethod.getContainingClass();
+            if (containingClass != null && expectedMethod.getName().equals(e.getName()) && isInstanceOf(methodClass, containingClass)) {
                 return true;
             }
         }
@@ -148,23 +129,56 @@ public class Symfony2InterfacesUtil {
             return false;
         }
 
-        PsiElement resolvedReference = psiReference.resolve();
-        if (!(resolvedReference instanceof Method)) {
+        Method method = getMultiResolvedMethod(psiReference);
+        if (method == null) {
             return false;
         }
 
-        Method method = (Method) resolvedReference;
         PhpClass methodClass = method.getContainingClass();
+        if(methodClass == null) {
+            return false;
+        }
 
-        for (Method expectedMethod : Arrays.asList(expectedMethods)) {
-            if (null != expectedMethod
-                    && expectedMethod.getName().equals(method.getName())
-                    && isInstanceOf(methodClass, expectedMethod.getContainingClass())) {
+        for (Method expectedMethod : expectedMethods) {
+
+            // @TODO: its stuff from beginning times :)
+            if(expectedMethod == null) {
+                continue;
+            }
+
+            PhpClass containingClass = expectedMethod.getContainingClass();
+            if (null != containingClass && expectedMethod.getName().equals(method.getName()) && isInstanceOf(methodClass, containingClass)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Single resolve doesnt work if we have non unique class names in project context,
+     * so try a multiResolve and use first matched method
+     */
+    @Nullable
+    protected static Method getMultiResolvedMethod(PsiReference psiReference) {
+
+        // class be unique in normal case, so try this first
+        PsiElement resolvedReference = psiReference.resolve();
+        if (resolvedReference instanceof Method) {
+            return (Method) resolvedReference;
+        }
+
+        // try multiResolve if class exists twice in project
+        if(psiReference instanceof PsiPolyVariantReference) {
+            for(ResolveResult resolveResult : ((PsiPolyVariantReference) psiReference).multiResolve(false)) {
+                PsiElement element = resolveResult.getElement();
+                if(element instanceof Method) {
+                    return (Method) element;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected boolean isMatchingMethodName(MethodReference methodRef, Method[] expectedMethods) {
@@ -177,15 +191,14 @@ public class Symfony2InterfacesUtil {
         return false;
     }
 
+    @Deprecated
     @Nullable
     public static String getFirstArgumentStringValue(MethodReference e) {
         String stringValue = null;
 
         PsiElement[] parameters = e.getParameters();
         if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
-            StringLiteralExpression stringLiteralExpression = (StringLiteralExpression)parameters[0];
-            stringValue = stringLiteralExpression.getText(); // quoted string
-            stringValue = stringValue.substring(stringLiteralExpression.getValueRange().getStartOffset(), stringLiteralExpression.getValueRange().getEndOffset());
+            stringValue = ((StringLiteralExpression) parameters[0]).getContents();
         }
 
         return stringValue;

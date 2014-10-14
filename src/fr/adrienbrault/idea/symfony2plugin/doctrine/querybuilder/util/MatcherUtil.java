@@ -10,11 +10,14 @@ public class MatcherUtil {
     private static MethodMatcher.CallToSignature[] SELECT_FIELDS = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "orderBy"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "addOrderBy"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "set"),
+    };
+
+    private static MethodMatcher.CallToSignature[] SELECT_FIELDS_VARIADIC = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "select"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "addSelect"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "groupBy"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "addGroupBy"),
-        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "set"),
     };
 
     @Nullable
@@ -24,9 +27,15 @@ public class MatcherUtil {
             return null;
         }
 
-        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
+        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterAnyMatcher(psiElement)
             .withSignature(SELECT_FIELDS)
             .match();
+
+        if(methodMatchParameter == null) {
+            methodMatchParameter = new MethodMatcher.StringParameterAnyMatcher(psiElement)
+                .withSignature(SELECT_FIELDS_VARIADIC)
+                .match();
+        }
 
         if(methodMatchParameter == null) {
             methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 0)

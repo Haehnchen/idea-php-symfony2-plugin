@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.72</version>
+    <version>0.11.74</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -84,8 +84,9 @@
 <h2>Related Plugins</h2>
 <ul>
     <li><a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
-    <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
     <li><a href="http://plugins.jetbrains.com/plugin/7487">Drupal Symfony2 Bridge</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7532">Laravel Plugin</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
 </ul>
 
 <h2><a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
@@ -97,11 +98,26 @@
 
     <change-notes><![CDATA[
 
-0.11.x: PhpStorm 8 (upcoming)<br>
-0.10.x: PhpStorm 7 (support until PhpStorm8 release)<br>
+0.11.x: PhpStorm 8<br>
+0.10.x: PhpStorm 7 (almost no support)<br>
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.74 / 0.11.74</h2>
+<ul>
+    <li>Add button in Settings to clean up plugin related indexes</li>
+    <li>Add new isEnabledForIndex check, to not force a manually re-indexing for new projects after enabling plugin</li>
+    <li>Add references for array methods inside EventSubscriberInterface returns</li>
+    <li>Add completion for parameter in doctrine querybuilder "where" context</li>
+    <li>Add support for variadic functions on doctrine querybuilder selects <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/357">#357</a></li>
+    <li>Our heart method "isCallTo" now supports classes and methods instance checks which are not unique in project</li>
+    <li>Cleanup quote wrapping in routes key names of yaml files</li>
+    <li>Fix npe in annotation template collector <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/358">#358</a></li>
+    <li>Fix npe in yaml parameter completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/359">#359</a></li>
+    <li>Fix npe in symbole search for non project context <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/268">#268</a></li>
+    <li>Fix out of range case in getParameterDefinition <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/368">#368</a></li>
+</ul>
 
 <h2>0.10.73 / 0.11.73</h2>
 <ul>
@@ -523,6 +539,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpEventDispatcherGotoCompletionRegistrar"/>
 
     </extensions>
 

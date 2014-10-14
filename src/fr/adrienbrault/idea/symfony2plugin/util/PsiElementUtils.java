@@ -303,4 +303,11 @@ public class PsiElementUtils {
         return elements;
     }
 
+    @Nullable
+    public static String getStringBeforeCursor(StringLiteralExpression literal, int cursorOffset) {
+        int cursorOffsetClean = cursorOffset - 1;
+        String content = literal.getContents();
+        return content.length() >= cursorOffsetClean ? content.substring(0, cursorOffsetClean) : null;
+    }
+
 }

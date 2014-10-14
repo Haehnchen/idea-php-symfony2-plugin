@@ -123,6 +123,35 @@ public class MethodMatcher {
 
     }
 
+    public static class StringParameterAnyMatcher extends AbstractMethodParameterMatcher {
+
+        public StringParameterAnyMatcher(PsiElement psiElement) {
+            super(psiElement, -1);
+        }
+
+        @Nullable
+        public MethodMatchParameter match() {
+
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return null;
+            }
+
+
+            MethodReferenceBag bag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
+            if(bag == null) {
+                return null;
+            }
+
+            CallToSignature matchedMethodSignature = this.isCallTo(bag.getMethodReference());
+            if(matchedMethodSignature == null) {
+                return null;
+            }
+
+            return new MethodMatchParameter(matchedMethodSignature, bag.getParameterBag(), bag.getParameterList().getParameters(), bag.getMethodReference());
+        }
+
+    }
+
     public static class StringParameterRecursiveMatcher extends AbstractMethodParameterMatcher {
 
         public StringParameterRecursiveMatcher(PsiElement psiElement, int parameterIndex) {
