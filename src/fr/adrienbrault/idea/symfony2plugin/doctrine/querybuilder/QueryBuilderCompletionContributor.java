@@ -24,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryBuilderCompletionContributor extends CompletionContributor {
 
@@ -171,6 +173,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
+                // $qb->andWhere('foo.id = ":foo_id"')
+                addParameterNameCompletion(completionParameters, completionResultSet, psiElement);
+
                 // querybuilder parser is too slow longer values, and that dont make sense here at all
                 // user can fire a manual completion event, when needed...
                 if(completionParameters.isAutoPopup()) {
@@ -197,6 +202,35 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
 
+            }
+
+            private void addParameterNameCompletion(CompletionParameters completionParameters, CompletionResultSet completionResultSet, PsiElement psiElement) {
+
+                PsiElement literalExpr = psiElement.getParent();
+                if(!(literalExpr instanceof StringLiteralExpression)) {
+                    return;
+                }
+
+                String content = PsiElementUtils.getStringBeforeCursor((StringLiteralExpression) literalExpr, completionParameters.getOffset() - literalExpr.getTextOffset());
+                if(content == null) {
+                    return;
+                }
+
+                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[=><]+[\\s+]$").matcher(content);
+                if (matcher.find()) {
+                    final String complete = matcher.group(1) + "_" + matcher.group(2);
+
+                    // fill underscore and underscore completion
+                    Set<String> strings = new HashSet<String>() {{
+                        add(complete);
+                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(complete, true));
+                    }};
+
+                    for(String string: strings) {
+                        completionResultSet.addElement(LookupElementBuilder.create(":" + string).withIcon(Symfony2Icons.DOCTRINE));
+                    }
+
+                }
             }
 
         });
