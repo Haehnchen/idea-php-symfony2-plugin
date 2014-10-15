@@ -211,12 +211,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                String content = PsiElementUtils.getStringBeforeCursor((StringLiteralExpression) literalExpr, completionParameters.getOffset() - literalExpr.getTextOffset());
+                String content = PsiElementUtils.getStringBeforeCursor((StringLiteralExpression) literalExpr, completionParameters.getOffset());
                 if(content == null) {
                     return;
                 }
 
-                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[=><]+[\\s+]$").matcher(content);
+                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[=><]+[\\s+]*$").matcher(content);
                 if (matcher.find()) {
                     final String complete = matcher.group(1) + "_" + matcher.group(2);
 

@@ -305,7 +305,13 @@ public class PsiElementUtils {
 
     @Nullable
     public static String getStringBeforeCursor(StringLiteralExpression literal, int cursorOffset) {
-        int cursorOffsetClean = cursorOffset - 1;
+        int cursorOffsetClean = cursorOffset - literal.getTextOffset() - 1;
+
+        // stop here; we dont have a string before current position
+        if(cursorOffsetClean < 1) {
+            return null;
+        }
+
         String content = literal.getContents();
         return content.length() >= cursorOffsetClean ? content.substring(0, cursorOffsetClean) : null;
     }
