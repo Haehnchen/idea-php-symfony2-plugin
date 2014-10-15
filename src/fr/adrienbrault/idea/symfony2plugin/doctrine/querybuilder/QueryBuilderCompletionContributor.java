@@ -173,8 +173,13 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                // $qb->andWhere('foo.id = ":foo_id"')
-                addParameterNameCompletion(completionParameters, completionResultSet, psiElement);
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
+                    .withSignature(WHERES)
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return;
+                }
 
                 // querybuilder parser is too slow longer values, and that dont make sense here at all
                 // user can fire a manual completion event, when needed...
@@ -186,13 +191,8 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
-                    .withSignature(WHERES)
-                    .match();
-
-                if(methodMatchParameter == null) {
-                    return;
-                }
+                // $qb->andWhere('foo.id = ":foo_id"')
+                addParameterNameCompletion(completionParameters, completionResultSet, psiElement);
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 if(qb == null) {
