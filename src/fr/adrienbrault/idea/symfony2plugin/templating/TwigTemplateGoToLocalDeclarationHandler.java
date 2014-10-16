@@ -7,6 +7,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -111,10 +112,17 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         Collection<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
 
         String contents = psiElement.getText();
-        if(StringUtils.isBlank(contents) || !contents.contains(":")) {
+        if(StringUtils.isBlank(contents)) {
             return targetPsiElements;
         }
 
+        // global constant
+        if(!contents.contains(":")) {
+            targetPsiElements.addAll(PhpIndex.getInstance(psiElement.getProject()).getConstantsByName(contents));
+            return targetPsiElements;
+        }
+
+        // resolve class constants
         String[] parts = contents.split("::");
         if(parts.length != 2) {
             return targetPsiElements;
