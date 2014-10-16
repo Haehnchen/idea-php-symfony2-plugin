@@ -7,7 +7,9 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
@@ -26,6 +28,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.Control
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -95,7 +98,39 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getParentGoto(psiElement)));
         }
 
+        // constant('Post::PUBLISHED')
+        if(TwigHelper.getPrintBlockFunctionPattern("constant").accepts(psiElement)) {
+            psiElements.addAll(this.getConstantGoto(psiElement));
+        }
+
         return psiElements.toArray(new PsiElement[psiElements.size()]);
+    }
+
+    private Collection<PsiElement> getConstantGoto(PsiElement psiElement) {
+
+        Collection<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
+
+        String contents = psiElement.getText();
+        if(StringUtils.isBlank(contents) || !contents.contains(":")) {
+            return targetPsiElements;
+        }
+
+        String[] parts = contents.split("::");
+        if(parts.length != 2) {
+            return targetPsiElements;
+        }
+
+        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), parts[0]);
+        if(phpClass == null) {
+            return targetPsiElements;
+        }
+
+        Field field = phpClass.findFieldByName(parts[1], true);
+        if(field != null) {
+            targetPsiElements.add(field);
+        }
+
+        return targetPsiElements;
     }
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {
