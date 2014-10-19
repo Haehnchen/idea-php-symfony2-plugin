@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.74</version>
+    <version>0.11.75</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -103,6 +103,18 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.75 / 0.11.75</h2>
+<ul>
+    <li>Add twig constants navigation, completion and folding <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/327">#327</a></li>
+    <li>Add references for array methods inside EventSubscriberInterface returns</li>
+    <li>Add detection for "kernel.event_subscriber" tag on service builder <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/352">#352</a></li>
+    <li>Add indexer and references for xliff translations</li>
+    <li>Quickfix for missing template will generate "block" and "extends" on directory context</li>
+    <li>Better completion for class names in yaml and xml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/337">#337</a></li>
+    <li>Fix twig missing translation domain pattern on nested filters <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/255">#255</a></li>
+    <li>Fix out of range exception in querybuilder parameter completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/371">#371</a></li>
+</ul>
 
 <h2>0.10.74 / 0.11.74</h2>
 <ul>

@@ -6,6 +6,15 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.75 / 0.11.75
+* Add twig constants navigation, completion and folding #327
+* Add references for array methods inside EventSubscriberInterface returns
+* Add detection for "kernel.event_subscriber" tag on service builder #352
+* Add indexer and references for xliff translations
+* Quickfix for missing template will generate "block" and "extends" on directory context
+* Better completion for class names in yaml and xml #337
+* Fix twig missing translation domain pattern on nested filters #255
+* Fix out of range exception in querybuilder parameter completion #371
 
 ### 0.10.74 / 0.11.74
 * Add button in Settings to clean up plugin related indexes

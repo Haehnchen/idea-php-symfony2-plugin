@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -167,6 +168,16 @@ public class PsiElementUtils {
         return null;
     }
 
+    public static void getPrevSiblingOnCallback(@Nullable PsiElement sibling, Processor<PsiElement> processor) {
+        if (sibling == null) return;
+
+        for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
+            if (!processor.process(child)) {
+                return;
+            }
+        }
+    }
+
     @Nullable
     public static <T extends PsiElement> T getChildrenOfType(@Nullable PsiElement element, ElementPattern<T> pattern) {
         if (element == null) return null;
@@ -305,7 +316,13 @@ public class PsiElementUtils {
 
     @Nullable
     public static String getStringBeforeCursor(StringLiteralExpression literal, int cursorOffset) {
-        int cursorOffsetClean = cursorOffset - 1;
+        int cursorOffsetClean = cursorOffset - literal.getTextOffset() - 1;
+
+        // stop here; we dont have a string before current position
+        if(cursorOffsetClean < 1) {
+            return null;
+        }
+
         String content = literal.getContents();
         return content.length() >= cursorOffsetClean ? content.substring(0, cursorOffsetClean) : null;
     }

@@ -6,6 +6,7 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -15,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -118,7 +120,13 @@ public class PhpTemplateAnnotator implements Annotator {
                         return;
                     }
 
-                    ApplicationManager.getApplication().runWriteAction(IdeHelper.getRunnableCreateAndOpenFile(project, virtualFile, fileName));
+                    String content = TwigUtil.buildStringFromTwigCreateContainer(project, VfsUtil.findRelativeFile(virtualFile, ("Resources/views/" + matcher.group(2)).split("/")));
+                    IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, virtualFile, fileName);
+                    if(content != null) {
+                        runnableCreateAndOpenFile.setContent(content);
+                    }
+
+                    ApplicationManager.getApplication().runWriteAction(runnableCreateAndOpenFile);
 
                 }
             });

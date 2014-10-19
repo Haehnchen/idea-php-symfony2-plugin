@@ -33,4 +33,23 @@ public class StringUtils {
         return chaine.substring(0, 1).toUpperCase() + chaine.substring(1);
     }
 
+    /**
+     * Simple string compare if class name is in same namespace
+     * Starting backslash doesnt break equal check
+     *
+     * @param class1 \Foo\Class
+     * @param class2 \Foo or Foo
+     */
+    public static boolean startWithEqualClassname(String class1, String class2) {
+        if(class1.startsWith("\\")) {
+            class1 = class1.substring(1);
+        }
+
+        if(class2.startsWith("\\")) {
+            class2 = class2.substring(1);
+        }
+
+        return class1.startsWith(class2);
+    }
+
 }
