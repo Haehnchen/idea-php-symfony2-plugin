@@ -48,4 +48,14 @@ public class PhpIndexUtil {
         return phpClasses;
     }
 
+    public static boolean hasNamespace(Project project, String namespaceName) {
+
+        if(!namespaceName.startsWith("\\")) {
+            namespaceName = "\\" + namespaceName;
+        }
+
+        return PhpIndex.getInstance(project).getChildNamespacesByParentName(namespaceName + "\\").size() > 0;
+
+    }
+
 }
