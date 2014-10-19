@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -165,6 +166,16 @@ public class PsiElementUtils {
             }
         }
         return null;
+    }
+
+    public static void getPrevSiblingOnCallback(@Nullable PsiElement sibling, Processor<PsiElement> processor) {
+        if (sibling == null) return;
+
+        for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
+            if (!processor.process(child)) {
+                return;
+            }
+        }
     }
 
     @Nullable

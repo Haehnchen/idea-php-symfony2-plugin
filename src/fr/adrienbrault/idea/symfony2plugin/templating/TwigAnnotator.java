@@ -4,8 +4,10 @@ import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.Processor;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -89,8 +91,27 @@ public class TwigAnnotator implements Annotator {
             return;
         }
 
-        PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
-        if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+        // @TODO: move to pattern, dont allow nested filters: eg "'form.tab.profile'|trans|desc('Interchange')"
+        final PsiElement[] psiElementTrans = new PsiElement[1];
+        PsiElementUtils.getPrevSiblingOnCallback(psiElement, new Processor<PsiElement>() {
+            @Override
+            public boolean process(PsiElement psiElement) {
+
+                if(psiElement.getNode().getElementType() == TwigTokenTypes.FILTER) {
+                    return false;
+                } else {
+                    if(PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")).accepts(psiElement)) {
+                        psiElementTrans[0] = psiElement;
+                    }
+                }
+
+                return true;
+            }
+        });
+
+        //PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+
+        if(psiElementTrans[0] != null && TwigHelper.getTwigMethodString(psiElementTrans[0]) != null) {
             String text = psiElement.getText();
             if(StringUtils.isNotBlank(text) && !TranslationUtil.hasDomain(psiElement.getProject(), text)) {
                 holder.createWarningAnnotation(psiElement, "Missing Translation Domain");
