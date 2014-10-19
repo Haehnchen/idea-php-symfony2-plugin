@@ -24,11 +24,23 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class TranslationUtil {
@@ -107,11 +119,22 @@ public class TranslationUtil {
                 PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
                 if(psiFile instanceof YAMLFile) {
                     YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
+                } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
+                    // xlf are plain text because not supported by jetbrains
+                    // for now we can only set file target
+                    // @TODO: performance check?
+                    try {
+                        if(TranslationUtil.getXliffTranslations(virtualFile.getInputStream()).contains(translationKey)) {
+                            psiFoundElements.add(psiFile);
+                        }
+                    } catch (IOException e) {
+                        return true;
+                    }
                 }
 
                 return true;
             }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
+        }, GlobalSearchScope.allScope(project));
 
 
         return psiFoundElements.toArray(new PsiElement[psiFoundElements.size()]);
@@ -122,7 +145,7 @@ public class TranslationUtil {
             FileBasedIndexImpl.getInstance().getValues(
                 YamlTranslationStubIndex.KEY,
                 domainName,
-                GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML)
+                GlobalSearchScope.allScope(project)
             ).size() > 0;
     }
 
@@ -137,7 +160,7 @@ public class TranslationUtil {
             return true;
         }
 
-        for(String keys[]: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML))){
+        for(String keys[]: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
             if(Arrays.asList(keys).contains(keyName)) {
                 return true;
             }
@@ -150,7 +173,7 @@ public class TranslationUtil {
     public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
 
         Set<String> keySet = new HashSet<String>();
-        List<String[]> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
+        List<String[]> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
         for(String keys[]: test ){
             keySet.addAll(Arrays.asList(keys));
         }
@@ -239,6 +262,54 @@ public class TranslationUtil {
         }, PhpIndex.getInstance(project).getSearchScope());
 
         return results;
+    }
+
+    @NotNull
+    public static Set<String> getXliffTranslations(InputStream content) {
+
+        Set<String> set = new HashSet<String>();
+
+        Document document;
+
+        try {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            document = documentBuilder.parse(content);
+        } catch (ParserConfigurationException e) {
+            return set;
+        } catch (SAXException e) {
+            return set;
+        } catch (IOException e) {
+            return set;
+        }
+
+        if(document == null) {
+            return set;
+        }
+
+        Object result;
+        try {
+            // @TODO: xpath should not use "file/body"
+            XPathExpression xPathExpr = XPathFactory.newInstance().newXPath().compile("//xliff/file/body/trans-unit/source");
+            result = xPathExpr.evaluate(document, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+            return set;
+        }
+
+        if(!(result instanceof NodeList)) {
+            return set;
+        }
+
+        NodeList nodeList = (NodeList) result;
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Element node = (Element) nodeList.item(i);
+            String textContent = node.getTextContent();
+            if(org.apache.commons.lang.StringUtils.isNotBlank(textContent)) {
+                set.add(textContent);
+            }
+        }
+
+        return set;
     }
 
 }
