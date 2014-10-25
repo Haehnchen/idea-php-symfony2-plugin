@@ -48,6 +48,15 @@ public class YamlElementPatternHelper {
                         PlatformPatterns.string().oneOf(keyName)
                     )
                 )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withName(
+                        PlatformPatterns.string().oneOf(keyName)
+                    )
+                )
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
