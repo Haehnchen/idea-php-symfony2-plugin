@@ -180,30 +180,30 @@ public class TwigUtil {
         // search in twig project for regex
         // check for better solution; think of nesting
 
-        String domainName = null;
-
         PsiElement parentPsiElement = psiElement.getParent();
         if(parentPsiElement == null) {
-            return domainName;
+            return null;
         }
 
         String str = parentPsiElement.getText();
 
-        String regex = "\\|\\s?trans\\s?\\(\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        // @TODO: in another life dont use regular expression to find twig parameter :)
+
+        String regex = "\\|\\s*trans\\s*\\(\\s*\\{.*?\\}\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {
             return matcher.group(1);
         }
 
-        regex = "\\|\\s?transchoice\\s?\\(\\d+\\s?,\\s?\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        regex = "\\|\\s*transchoice\\s*\\(\\s*\\d+\\s*,\\s*\\{.*?\\}\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {
             return matcher.group(1);
         }
 
-        return domainName;
+        return null;
     }
 
     public static ArrayList<TwigMacro> getImportedMacros(PsiFile psiFile) {
