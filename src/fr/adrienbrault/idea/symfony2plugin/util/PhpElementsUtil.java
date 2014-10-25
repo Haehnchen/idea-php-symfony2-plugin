@@ -150,12 +150,7 @@ public class PhpElementsUtil {
 
     @Nullable
     static public Method getClassMethod(PhpClass phpClass, String methodName) {
-        for(Method method: phpClass.getMethods()) {
-            if(method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        return null;
+        return phpClass.findMethodByName(methodName);
     }
 
     @Nullable
