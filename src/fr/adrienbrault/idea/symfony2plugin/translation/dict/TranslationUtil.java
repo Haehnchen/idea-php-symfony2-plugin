@@ -24,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -45,35 +46,38 @@ import java.util.*;
 
 public class TranslationUtil {
 
-    static public PsiElement[] getDomainFilePsiElements(Project project, String domainName) {
+    static public VirtualFile[] getDomainFilePsiElements(Project project, String domainName) {
 
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
 
         for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
             if(domain.getDomain().equals(domainName)) {
-                PsiFile psiFile = domain.getPsiFile(project);
-                if(psiFile != null) {
-                    psiElements.add(psiFile);
+                VirtualFile virtualFile = domain.getFile();
+                if(virtualFile != null) {
+                    virtualFiles.add(virtualFile);
                 }
             }
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
     }
 
     public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, final String domain) {
 
-        // search for available domain files
-        PsiElement[] psiTranslationFiles = getDomainFilePsiElements(project, domain);
 
         final List<PsiElement> psiFoundElements = new ArrayList<PsiElement>();
         final List<VirtualFile> virtualFilesFound = new ArrayList<VirtualFile>();
 
-        // @TODO: this is completely can remove, after stable index
-        for(PsiElement psiTranslationFile : psiTranslationFiles) {
-            VirtualFile virtualFile = psiTranslationFile.getContainingFile().getVirtualFile();
-            PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, virtualFile);
+        // @TODO: completely remove this? support translation paths from service compiler
+        // search for available domain files
+        for(VirtualFile translationVirtualFile : getDomainFilePsiElements(project, domain)) {
+
+            if(translationVirtualFile.getFileType() != YAMLFileType.YML) {
+                continue;
+            }
+
+            PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, translationVirtualFile);
             if(psiFile instanceof YAMLFile) {
                 PsiElement yamlDocu = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
                 if(yamlDocu != null) {
@@ -82,7 +86,7 @@ public class TranslationUtil {
                         // multiline are line values are not resolve properly on psiElements use key as fallback target
                         PsiElement valuePsiElement = goToPsi.getValue();
                         psiFoundElements.add(valuePsiElement != null ? valuePsiElement : goToPsi);
-                        virtualFilesFound.add(virtualFile);
+                        virtualFilesFound.add(translationVirtualFile);
                     }
                 }
 
@@ -96,7 +100,7 @@ public class TranslationUtil {
             public boolean collect(@NotNull String keyName, YAMLKeyValue yamlKeyValue) {
                 if (keyName.equals(translationKey)) {
 
-                    // multiline are line values are not resolve properly on psiElements use key as fallback target
+                    // multiline "line values" are not resolve properly on psiElements use key as fallback target
                     PsiElement valuePsiElement = yamlKeyValue.getValue();
                     psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
 
@@ -232,25 +236,28 @@ public class TranslationUtil {
     public static List<PsiFile> getDomainPsiFiles(final Project project, String domainName) {
 
         final List<PsiFile> results = new ArrayList<PsiFile>();
+        final List<VirtualFile> uniqueFileList = new ArrayList<VirtualFile>();
 
-        PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(project, domainName);
-
-        final List<PsiFile> uniqueFileList = new ArrayList<PsiFile>();
-
-        /* for (PsiElement psiElement : psiElements) {
-            if(psiElement instanceof PsiFile) {
-                uniqueFileList.add((PsiFile) psiElement);
-                results.add((PsiFile) psiElement);
+        // get translation files from compiler
+        for(VirtualFile virtualFile : TranslationUtil.getDomainFilePsiElements(project, domainName)) {
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile != null) {
+                uniqueFileList.add(virtualFile);
+                results.add(psiFile);
             }
-        } */
+        }
 
         FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<String>(Arrays.asList(domainName)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
 
+                if(uniqueFileList.contains(virtualFile)) {
+                    return true;
+                }
+
                 PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile != null && !uniqueFileList.contains(psiFile)) {
-                    uniqueFileList.add(psiFile);
+                if(psiFile != null) {
+                    uniqueFileList.add(virtualFile);
                     results.add(psiFile);
                 }
 
