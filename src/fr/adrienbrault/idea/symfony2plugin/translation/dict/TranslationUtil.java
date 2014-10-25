@@ -62,7 +62,7 @@ public class TranslationUtil {
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
-    public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, String domain) {
+    public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, final String domain) {
 
         // search for available domain files
         PsiElement[] psiTranslationFiles = getDomainFilePsiElements(project, domain);
@@ -122,13 +122,10 @@ public class TranslationUtil {
                 } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
                     // xlf are plain text because not supported by jetbrains
                     // for now we can only set file target
-                    // @TODO: performance check?
-                    try {
-                        if(TranslationUtil.getXliffTranslations(virtualFile.getInputStream()).contains(translationKey)) {
+                    for(String[] string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
+                        if(Arrays.asList(string).contains(translationKey)) {
                             psiFoundElements.add(psiFile);
                         }
-                    } catch (IOException e) {
-                        return true;
                     }
                 }
 
