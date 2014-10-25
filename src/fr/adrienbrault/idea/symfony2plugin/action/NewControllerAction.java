@@ -104,11 +104,10 @@ public class NewControllerAction extends AbstractProjectDumbAwareAction {
 
         if(symfonyBundle != null) {
             bundleName = StringUtils.strip(symfonyBundle.getNamespaceName(), "\\");
-        }
-
-        String path = symfonyBundle.getRelative(initialBaseDir.getVirtualFile());
-        if(path != null) {
-            bundleName = bundleName.concat("\\" + path);
+            String path = symfonyBundle.getRelative(initialBaseDir.getVirtualFile());
+            if(path != null) {
+                bundleName = bundleName.concat("\\" + path);
+            }
         }
 
         content = content.replace("{{ Namespace }}", bundleName).replace("{{ ControllerName }}", fileName);
