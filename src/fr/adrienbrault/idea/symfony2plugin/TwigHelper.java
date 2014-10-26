@@ -493,10 +493,11 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static PsiElementPattern.Capture<PsiComment> getTwigTypeDocBlock() {
-        return PlatformPatterns
-            .psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN))
-            .withLanguage(TwigLanguage.INSTANCE);
+    public static ElementPattern<PsiComment> getTwigTypeDocBlock() {
+        return PlatformPatterns.or(
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN)).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN_2)).withLanguage(TwigLanguage.INSTANCE)
+        );
     }
 
     public static PsiElementPattern.Capture<PsiComment> getTwigDocBlockMatchPattern(String pattern) {

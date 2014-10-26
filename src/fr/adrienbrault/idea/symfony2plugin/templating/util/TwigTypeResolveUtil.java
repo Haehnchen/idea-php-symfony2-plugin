@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 public class TwigTypeResolveUtil {
 
     public static final String DOC_PATTERN  = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+    public static final String DOC_PATTERN_2  = "\\{#[\\s]+@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
     private static String[] propertyShortcuts = new String[] {"get", "is"};
 
     private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
@@ -146,9 +147,15 @@ public class TwigTypeResolveUtil {
 
         // wtf in completion { | } root we have no comments in child context !?
         Pattern pattern = Pattern.compile(DOC_PATTERN);
+        Pattern pattern2 = Pattern.compile(DOC_PATTERN_2);
+
         for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
             if(psiComment instanceof PsiComment) {
                 Matcher matcher = pattern.matcher(psiComment.getText());
+                if (matcher.find()) {
+                    variables.put(matcher.group(1), matcher.group(2));
+                }
+                matcher = pattern2.matcher(psiComment.getText());
                 if (matcher.find()) {
                     variables.put(matcher.group(1), matcher.group(2));
                 }
@@ -164,12 +171,17 @@ public class TwigTypeResolveUtil {
     public static HashMap<String, String> findFileVariableDocBlock(TwigFile twigFile) {
 
         Pattern pattern = Pattern.compile(DOC_PATTERN);
+        Pattern pattern2 = Pattern.compile(DOC_PATTERN_2);
 
         // wtf in completion { | } root we have no comments in child context !?
         HashMap<String, String> variables = new HashMap<String, String>();
         for(PsiElement psiComment: YamlHelper.getChildrenFix(twigFile)) {
             if(psiComment instanceof PsiComment) {
                 Matcher matcher = pattern.matcher(psiComment.getText());
+                if (matcher.find()) {
+                    variables.put(matcher.group(1), matcher.group(2));
+                }
+                matcher = pattern2.matcher(psiComment.getText());
                 if (matcher.find()) {
                     variables.put(matcher.group(1), matcher.group(2));
                 }
