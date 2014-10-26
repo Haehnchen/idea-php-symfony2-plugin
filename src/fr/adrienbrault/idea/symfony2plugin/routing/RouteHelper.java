@@ -28,8 +28,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
@@ -39,10 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -72,6 +70,13 @@ public class RouteHelper {
         Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
 
         if(!symfony2ProjectComponent.getRoutes().containsKey(routeName)) {
+
+            // @TODO: provide multiple ones
+            Collection<VirtualFile> foo = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
+            for(String[] str: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, foo))) {
+                return new Route(routeName, str);
+            }
+
             return null;
         }
 
@@ -110,24 +115,46 @@ public class RouteHelper {
 
     }
 
+    /**
+     * convert to controller name to method:
+     *
+     * FooBundle\Controller\BarController::fooBarAction
+     * foo_service_bar:fooBar
+     * AcmeDemoBundle:Demo:hello
+     *
+     * @param project current project
+     * @param controllerName controller service, raw or compiled
+     * @return targets
+     */
+    @NotNull
     public static PsiElement[] getMethodsOnControllerShortcut(Project project, String controllerName) {
 
         if(controllerName == null)  {
             return new PsiElement[0];
         }
 
-        // convert to class: FooBundle\Controller\BarController::fooBarAction
-        // convert to class: foo_service_bar:fooBar
         if(controllerName.contains("::")) {
+
+            // FooBundle\Controller\BarController::fooBarAction
             String className = controllerName.substring(0, controllerName.lastIndexOf("::"));
             String methodName = controllerName.substring(controllerName.lastIndexOf("::") + 2);
 
-            return PhpElementsUtil.getPsiElementsBySignature(project, "#M#C\\" + className + "." + methodName);
+            Method method = PhpElementsUtil.getClassMethod(project, className, methodName);
+            return method != null ? new PsiElement[] {method} : new PsiElement[0];
 
         } else if(controllerName.contains(":")) {
-            ControllerIndex controllerIndex = new ControllerIndex(project);
 
-            ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(controllerName);
+            // AcmeDemoBundle:Demo:hello
+            String[] split = controllerName.split(":");
+            if(split.length == 3) {
+                Method method = ControllerIndex.getControllerMethod(project, controllerName);
+                if(method != null) {
+                    return new PsiElement[] {method};
+                }
+            }
+
+            // foo_service_bar:fooBar
+            ControllerAction controllerServiceAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
             if(controllerServiceAction != null) {
                 return new PsiElement[] {controllerServiceAction.getMethod()};
             }
@@ -301,7 +328,7 @@ public class RouteHelper {
 
         final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlRoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
                 virtualFiles.add(virtualFile);
@@ -321,15 +348,15 @@ public class RouteHelper {
 
     }
 
-    @Nullable
-    public static Set<String> getYamlRouteNames(YAMLDocument yamlDocument) {
+    @NotNull
+    public static Collection<StubIndexedRoute> getYamlRouteDefinitions(YAMLDocument yamlDocument) {
 
-        Set<String> set = new HashSet<String>();
+        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
 
         // get services or parameter key
         YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
         if(yamlKeys == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         for(YAMLKeyValue yamlKeyValue : yamlKeys) {
@@ -337,28 +364,45 @@ public class RouteHelper {
             PsiElement element = yamlKeyValue.getValue();
             if(element instanceof YAMLCompoundValue) {
                 Set<String> keySet = YamlHelper.getYamlCompoundValueKeyNames((YAMLCompoundValue) element);
+
                 if((keySet.contains("path") || keySet.contains("pattern")) && keySet.contains("defaults")) {
                     // cleanup: 'foo', "foo"
                     String keyText = StringUtils.strip(StringUtils.strip(yamlKeyValue.getKeyText(), "'"), "\"");
                     if(StringUtils.isNotBlank(keyText)) {
-                        set.add(keyText);
+                        StubIndexedRoute route = new StubIndexedRoute(keyText);
+
+                        String routePath = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "path", false);
+                        if(routePath == null) {
+                            routePath = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "pattern", false);
+                        }
+
+                        if(routePath != null && StringUtils.isNotBlank(routePath)) {
+                            route.setPath(routePath);
+                        }
+
+                        String controller = getYamlController(yamlKeyValue);
+                        if(controller != null) {
+                            route.setController(controller);
+                        }
+
+                        indexedRoutes.add(route);
                     }
                 }
             }
         }
 
-        return set;
+        return indexedRoutes;
 
     }
 
-    public static Set<String> getXmlRouteNames(XmlFile psiFile) {
-
-        Set<String> set = new HashSet<String>();
+    public static Collection<StubIndexedRoute> getXmlRouteDefinitions(XmlFile psiFile) {
 
         XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);
         if(document == null) {
-            return set;
+            return Collections.emptyList();
         }
+
+        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
 
         /**
          * <routes>
@@ -375,7 +419,34 @@ public class RouteHelper {
                         if(xmlAttribute != null) {
                             String attrValue = xmlAttribute.getValue();
                             if(StringUtils.isNotBlank(attrValue)) {
-                                set.add(attrValue);
+
+                                StubIndexedRoute e = new StubIndexedRoute(attrValue);
+                                XmlAttribute pathAttribute = servicesTag.getAttribute("path");
+                                if(pathAttribute == null) {
+                                    pathAttribute = servicesTag.getAttribute("pattern");
+                                }
+
+                                if(pathAttribute != null) {
+                                    String pathValue = pathAttribute.getValue();
+                                    if(pathValue != null && StringUtils.isNotBlank(pathValue)) {
+                                        e.setPath(pathValue);
+                                    }
+                                }
+
+                                for(XmlTag subTag :servicesTag.getSubTags()) {
+                                    if("default".equalsIgnoreCase(subTag.getName())) {
+                                        XmlAttribute xmlAttr = subTag.getAttribute("key");
+                                        if(xmlAttr != null && "_controller".equals(xmlAttr.getValue())) {
+                                            String actionName = subTag.getValue().getTrimmedText();
+                                            if(StringUtils.isNotBlank(actionName)) {
+                                                e.setController(actionName);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                indexedRoutes.add(e);
+
                             }
                         }
                     }
@@ -383,7 +454,45 @@ public class RouteHelper {
             }
         }
 
-        return set;
+        return indexedRoutes;
+    }
+
+    @Nullable
+    private static String getYamlController(YAMLKeyValue psiElement) {
+        /*
+         * foo:
+         *   defaults: { _controller: "Bundle:Foo:Bar" }
+         *   defaults:
+         *      _controller: "Bundle:Foo:Bar"
+         */
+
+        YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(psiElement, "defaults");
+        if(yamlKeyValue != null) {
+            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(yamlKeyValue, YAMLCompoundValue.class);
+            if(yamlCompoundValue != null) {
+
+                // if we have a child of YAMLKeyValue, we need to go back to parent
+                // else on YAMLHash we can directly visit array keys
+                PsiElement yamlHashElement = PsiTreeUtil.getChildOfAnyType(yamlCompoundValue, YAMLHash.class, YAMLKeyValue.class);
+                if(yamlHashElement instanceof YAMLKeyValue) {
+                    yamlHashElement = yamlCompoundValue;
+                }
+
+                if(yamlHashElement != null) {
+                    YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(yamlHashElement, "_controller", true);
+                    if(yamlKeyValueController != null) {
+                        String valueText = yamlKeyValueController.getValueText();
+                        if(StringUtils.isNotBlank(valueText)) {
+                            return valueText;
+                        }
+                    }
+
+                }
+            }
+
+        }
+
+        return null;
     }
 
     @Nullable
@@ -482,12 +591,16 @@ public class RouteHelper {
     }
 
     @Nullable
-    public static String getRouteUrl(List<Collection<String>> routeTokens) {
+    public static String getRouteUrl(Route route) {
+
+        if(route.getPath() != null) {
+            return route.getPath();
+        }
 
         String url = "";
 
         // copy list;
-        List<Collection<String>> tokens = new ArrayList<Collection<String>>(routeTokens);
+        List<Collection<String>> tokens = new ArrayList<Collection<String>>(route.getTokens());
         Collections.reverse(tokens);
 
         for(Collection<String> token: tokens) {
@@ -521,17 +634,19 @@ public class RouteHelper {
             uniqueSet.add(route.getName());
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlRoutesStubIndex.KEY, uniqueSet);
-        FileBasedIndex.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, ymlProjectProcessor, project);
-        for(String s: ymlProjectProcessor.getResult()) {
-            lookupElements.add(new RouteLookupElement(new Route(s, null), true));
-            uniqueSet.add(s);
+        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueSet);
+        FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
+        for(String routeName: ymlProjectProcessor.getResult()) {
+            for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                lookupElements.add(new RouteLookupElement(new Route(routeName, splits), true));
+                uniqueSet.add(routeName);
+            }
         }
 
         SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueSet);
         FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
         for(String s: annotationProjectProcessor.getResult()) {
-            lookupElements.add(new RouteLookupElement(new Route(s, null), true));
+            lookupElements.add(new RouteLookupElement(new Route(s), true));
             uniqueSet.add(s);
         }
 
@@ -550,6 +665,43 @@ public class RouteHelper {
         }
 
         return targets;
+    }
+
+    public static Map<String, Route> getAllRoutes(Project project) {
+
+        Map<String, Route> routes = new HashMap<String, Route>();
+
+        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
+        routes.putAll(symfony2ProjectComponent.getRoutes());
+
+        Set<String> uniqueKeySet = new HashSet<String>(routes.keySet());
+
+        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueKeySet);
+        FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
+        for(String routeName: ymlProjectProcessor.getResult()) {
+
+            if(uniqueKeySet.contains(routeName)) {
+                continue;
+            }
+
+            for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                uniqueKeySet.add(routeName);
+                routes.put(routeName, new Route(routeName, splits));
+            }
+        }
+
+        SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueKeySet);
+        FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
+        for(String routeName: annotationProjectProcessor.getResult()) {
+
+            if(uniqueKeySet.contains(routeName)) {
+                continue;
+            }
+
+            routes.put(routeName, new Route(routeName));
+        }
+
+        return routes;
     }
 
 }

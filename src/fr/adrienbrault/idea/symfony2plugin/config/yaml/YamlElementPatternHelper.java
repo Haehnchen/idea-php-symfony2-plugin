@@ -48,6 +48,15 @@ public class YamlElementPatternHelper {
                         PlatformPatterns.string().oneOf(keyName)
                     )
                 )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .withParent(PlatformPatterns
+                    .psiElement(YAMLKeyValue.class)
+                    .withName(
+                        PlatformPatterns.string().oneOf(keyName)
+                    )
+                )
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
@@ -492,6 +501,19 @@ public class YamlElementPatternHelper {
                 )
                 .withLanguage(YAMLLanguage.INSTANCE)
             ,
+            // @TODO: cleanup on PhpStorm8 support only
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .withText(
+                    StandardPatterns.string().startsWith("'@")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .withText(
+                    StandardPatterns.string().startsWith("\"@")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
                 .withText(
@@ -519,6 +541,19 @@ public class YamlElementPatternHelper {
                 )
                 .withLanguage(YAMLLanguage.INSTANCE)
             ,
+            // @TODO: cleanup on PhpStorm8 support only
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .withText(
+                    StandardPatterns.string().startsWith("'%")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .withText(
+                    StandardPatterns.string().startsWith("\"%")
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
                 .withText(

@@ -136,6 +136,7 @@ public class PhpElementsUtil {
         return psiElements[0];
     }
 
+    @Deprecated
     static public PsiElement[] getClassInterfacePsiElements(Project project, String FQNClassOrInterfaceName) {
 
         // convert ResolveResult to PsiElement
@@ -149,12 +150,7 @@ public class PhpElementsUtil {
 
     @Nullable
     static public Method getClassMethod(PhpClass phpClass, String methodName) {
-        for(Method method: phpClass.getMethods()) {
-            if(method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        return null;
+        return phpClass.findMethodByName(methodName);
     }
 
     @Nullable
@@ -309,6 +305,16 @@ public class PhpElementsUtil {
 
         Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAnyByFQN(className);
         return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
+    }
+
+    static public Collection<PhpClass> getClassesInterface(Project project, @NotNull String className) {
+
+        // api workaround for at least interfaces
+        if(!className.startsWith("\\")) {
+            className = "\\" + className;
+        }
+
+        return PhpIndex.getInstance(project).getAnyByFQN(className);
     }
 
     static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {

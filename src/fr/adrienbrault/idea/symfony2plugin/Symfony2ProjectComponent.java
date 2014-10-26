@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.widget.SymfonyProfilerWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -87,7 +88,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectClosed() {
-        // System.out.println("projectClosed");
+        ServiceXmlParserFactory.cleanInstance(project);
     }
 
     public static Logger getLogger() {
@@ -103,6 +104,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return Settings.getInstance(project).pluginEnabled;
     }
 
+    /**
+     * Dont use is method anymore, RouteHelper provides several util methods in replacement
+     */
+    @Deprecated
     public Map<String, Route> getRoutes() {
         Map<String, Route> routes = new HashMap<String, Route>();
 

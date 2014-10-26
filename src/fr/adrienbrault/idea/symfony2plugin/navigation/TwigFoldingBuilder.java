@@ -104,15 +104,14 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
             // cache routes if we need them
             if(routes == null) {
-                Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-                routes = symfony2ProjectComponent.getRoutes();
+                routes = RouteHelper.getAllRoutes(psiElement.getProject());
             }
 
             String contents = PsiElementUtils.trimQuote(psiElement1.getText());
             if(contents.length() > 0 && routes.containsKey(contents)) {
                 final Route route = routes.get(contents);
 
-                final String url = RouteHelper.getRouteUrl(route.getTokens());
+                final String url = RouteHelper.getRouteUrl(route);
                 if(url != null) {
                     descriptors.add(new FoldingDescriptor(psiElement1.getNode(),
                         new TextRange(psiElement1.getTextRange().getStartOffset(), psiElement1.getTextRange().getEndOffset()), group) {

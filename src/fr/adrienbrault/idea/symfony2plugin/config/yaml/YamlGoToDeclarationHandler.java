@@ -6,6 +6,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -18,10 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -61,7 +60,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         if(psiText.contains("\\")) {
-            psiElements.addAll(Arrays.asList(classGoToDeclaration(psiElement, psiText))) ;
+            psiElements.addAll(classGoToDeclaration(psiElement, psiText)) ;
         }
 
         if(psiText.endsWith(".twig") || psiText.endsWith(".php")) {
@@ -71,8 +70,30 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
-    protected PsiElement[] classGoToDeclaration(PsiElement psiElement, String className) {
-        return PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), className);
+    protected Collection<PsiElement> classGoToDeclaration(PsiElement psiElement, String className) {
+
+        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+
+        // Class::method
+        // Class::FooAction
+        // Class:Foo
+        if(className.contains(":")) {
+            String[] split = className.replaceAll("(:)\\1", "$1").split(":");
+            if(split.length == 2) {
+                for(String append: new String[] {"", "Action"}) {
+                    Method classMethod = PhpElementsUtil.getClassMethod(psiElement.getProject(), split[0], split[1] + append);
+                    if(classMethod != null) {
+                        psiElements.add(classMethod);
+                    }
+                }
+            }
+
+            return psiElements;
+        }
+
+        // ClassName
+        psiElements.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), className));
+        return psiElements;
     }
 
     protected PsiElement[] serviceGoToDeclaration(PsiElement psiElement, String serviceId) {

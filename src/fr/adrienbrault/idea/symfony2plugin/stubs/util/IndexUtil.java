@@ -17,7 +17,7 @@ public class IndexUtil {
             TwigIncludeStubIndex.KEY,
             TwigMacroFromStubIndex.KEY,
             TwigMacroFunctionStubIndex.KEY,
-            YamlRoutesStubIndex.KEY,
+            RoutesStubIndex.KEY,
             YamlTranslationStubIndex.KEY
         };
 

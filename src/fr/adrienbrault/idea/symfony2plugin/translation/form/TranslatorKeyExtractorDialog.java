@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -125,7 +126,16 @@ public class TranslatorKeyExtractorDialog extends JDialog {
             this.listTableModel.removeRow(0);
         }
 
-        this.listTableModel.addRows(this.getFormattedFileModelList(TranslationUtil.getDomainPsiFiles(this.project, domainName)));
+        // we only support yaml files right now
+        // filter on PsiFile instance
+        Collection<PsiFile> domainPsiFilesYaml = new ArrayList<PsiFile>();
+        for(PsiFile domainPsiFiles: TranslationUtil.getDomainPsiFiles(this.project, domainName)) {
+            if(domainPsiFiles instanceof YAMLFile) {
+                domainPsiFilesYaml.add(domainPsiFiles);
+            }
+        }
+
+        this.listTableModel.addRows(this.getFormattedFileModelList(domainPsiFilesYaml));
 
         // only one domain; fine preselect it
         if(this.listTableModel.getRowCount() == 1) {
@@ -261,7 +271,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
     }
 
-    private List<TranslationFileModel> getFormattedFileModelList(List<PsiFile> psiFiles) {
+    private List<TranslationFileModel> getFormattedFileModelList(Collection<PsiFile> psiFiles) {
 
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(this.project);
         final SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(fileContext);

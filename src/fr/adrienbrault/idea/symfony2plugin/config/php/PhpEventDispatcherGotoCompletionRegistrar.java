@@ -51,11 +51,13 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
                     PhpReturn phpReturn = PsiTreeUtil.getParentOfType(arrayValue, PhpReturn.class);
                     if(phpReturn != null) {
                         Method method = PsiTreeUtil.getParentOfType(arrayValue, Method.class);
-                        String name = method.getName();
-                        if(method != null && "getSubscribedEvents".equals(name)) {
-                            PhpClass containingClass = method.getContainingClass();
-                            if(containingClass != null && new Symfony2InterfacesUtil().isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
-                                return new PhpClassPublicMethodProvider(containingClass);
+                        if(method != null) {
+                            String name = method.getName();
+                            if("getSubscribedEvents".equals(name)) {
+                                PhpClass containingClass = method.getContainingClass();
+                                if(containingClass != null && new Symfony2InterfacesUtil().isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+                                    return new PhpClassPublicMethodProvider(containingClass);
+                                }
                             }
                         }
                     }
