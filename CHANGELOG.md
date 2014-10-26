@@ -6,6 +6,18 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.76 / 0.11.76
+* Implement docblock "@var" for twig variables, shortcut without tag is deprecated
+* Optimize xlf navigation and references; better getDomainFilePsiElements translation performance
+* Provide a global class::method[Action] yaml navigation, usable inside Drupal
+* Translation extractor supports text selection
+* Provide shortcut completion with function insertHandler for twig tags: href, src (css/js)
+* Improve overall support for routes; better xml parser, more data and nicer completion #369
+* Fix possible npe in PhpEventDispatcherGotoCompletionRegistrar
+* Fix service completion in single quote yaml string values to reflect PhpStorm lexer changes; eg Drupal code convention
+* Fix regular expression for trans and transchoice to support more cases #377; also fix some whitespace issues
+* Fix npe in NewControllerAction on non bundle context #378
+
 ### 0.10.75 / 0.11.75
 * Add twig constants navigation, completion and folding #327
 * Add references for array methods inside EventSubscriberInterface returns
