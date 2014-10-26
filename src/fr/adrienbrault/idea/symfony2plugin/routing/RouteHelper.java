@@ -30,7 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
@@ -72,8 +72,8 @@ public class RouteHelper {
         if(!symfony2ProjectComponent.getRoutes().containsKey(routeName)) {
 
             // @TODO: provide multiple ones
-            Collection<VirtualFile> foo = FileBasedIndex.getInstance().getContainingFiles(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
-            for(String[] str: FileBasedIndex.getInstance().getValues(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, foo))) {
+            Collection<VirtualFile> foo = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
+            for(String[] str: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, foo))) {
                 return new Route(routeName, str);
             }
 
@@ -328,7 +328,7 @@ public class RouteHelper {
 
         final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlRoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
                 virtualFiles.add(virtualFile);
@@ -634,10 +634,10 @@ public class RouteHelper {
             uniqueSet.add(route.getName());
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlRoutesStubIndex.KEY, uniqueSet);
-        FileBasedIndex.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, ymlProjectProcessor, project);
+        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueSet);
+        FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
         for(String routeName: ymlProjectProcessor.getResult()) {
-            for(String[] splits: FileBasedIndex.getInstance().getValues(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+            for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 lookupElements.add(new RouteLookupElement(new Route(routeName, splits), true));
                 uniqueSet.add(routeName);
             }
@@ -676,15 +676,15 @@ public class RouteHelper {
 
         Set<String> uniqueKeySet = new HashSet<String>(routes.keySet());
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlRoutesStubIndex.KEY, uniqueKeySet);
-        FileBasedIndex.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, ymlProjectProcessor, project);
+        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueKeySet);
+        FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
         for(String routeName: ymlProjectProcessor.getResult()) {
 
             if(uniqueKeySet.contains(routeName)) {
                 continue;
             }
 
-            for(String[] splits: FileBasedIndex.getInstance().getValues(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+            for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 uniqueKeySet.add(routeName);
                 routes.put(routeName, new Route(routeName, splits));
             }

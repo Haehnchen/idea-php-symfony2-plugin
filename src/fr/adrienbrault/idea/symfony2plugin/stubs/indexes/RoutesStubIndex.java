@@ -21,9 +21,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
 
-public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
+public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
-    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.yaml_routes2");
+    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
@@ -104,7 +104,7 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, String[
 
     @Override
     public int getVersion() {
-        return 4;
+        return 1;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

@@ -454,7 +454,7 @@
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
         <annotator language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator"/>
 
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex"/>
