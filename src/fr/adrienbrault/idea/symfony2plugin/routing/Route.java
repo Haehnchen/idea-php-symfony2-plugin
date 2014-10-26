@@ -12,6 +12,7 @@ public class Route {
 
     private String name;
     private String controller;
+    private String path;
 
     private HashSet<String> variables = new HashSet<String>();
     private HashMap<String, String> defaults = new HashMap<String, String>();
@@ -44,6 +45,11 @@ public class Route {
         if(indexed.length >= 1 && indexed[0].length() > 0) {
             this.controller = indexed[0];
         }
+
+        if(indexed.length >= 2 && indexed[1].length() > 0) {
+            this.path = indexed[1];
+        }
+
     }
 
     public String getName() {
@@ -70,6 +76,11 @@ public class Route {
 
     public List<Collection<String>> getTokens() {
         return tokens;
+    }
+
+    @Nullable
+    public String getPath() {
+        return path;
     }
 
 }

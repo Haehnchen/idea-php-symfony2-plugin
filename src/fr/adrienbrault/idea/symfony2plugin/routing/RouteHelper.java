@@ -591,12 +591,16 @@ public class RouteHelper {
     }
 
     @Nullable
-    public static String getRouteUrl(List<Collection<String>> routeTokens) {
+    public static String getRouteUrl(Route route) {
+
+        if(route.getPath() != null) {
+            return route.getPath();
+        }
 
         String url = "";
 
         // copy list;
-        List<Collection<String>> tokens = new ArrayList<Collection<String>>(routeTokens);
+        List<Collection<String>> tokens = new ArrayList<Collection<String>>(route.getTokens());
         Collections.reverse(tokens);
 
         for(Collection<String> token: tokens) {
@@ -659,6 +663,24 @@ public class RouteHelper {
         }
 
         return targets;
+    }
+
+    public static Map<String, Route> getAllRoutes(Project project) {
+
+        Map<String, Route> routes = new HashMap<String, Route>();
+
+        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
+        routes.putAll(symfony2ProjectComponent.getRoutes());
+
+        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlRoutesStubIndex.KEY, routes.keySet());
+        FileBasedIndex.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, ymlProjectProcessor, project);
+        for(String routeName: ymlProjectProcessor.getResult()) {
+            for(String[] splits: FileBasedIndex.getInstance().getValues(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                routes.put(routeName, new Route(routeName, splits));
+            }
+        }
+
+        return routes;
     }
 
 }
