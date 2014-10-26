@@ -28,6 +28,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -39,10 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -321,15 +319,15 @@ public class RouteHelper {
 
     }
 
-    @Nullable
-    public static Set<String> getYamlRouteNames(YAMLDocument yamlDocument) {
+    @NotNull
+    public static Collection<StubIndexedRoute> getYamlRouteDefinitions(YAMLDocument yamlDocument) {
 
-        Set<String> set = new HashSet<String>();
+        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
 
         // get services or parameter key
         YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
         if(yamlKeys == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         for(YAMLKeyValue yamlKeyValue : yamlKeys) {
@@ -337,28 +335,45 @@ public class RouteHelper {
             PsiElement element = yamlKeyValue.getValue();
             if(element instanceof YAMLCompoundValue) {
                 Set<String> keySet = YamlHelper.getYamlCompoundValueKeyNames((YAMLCompoundValue) element);
+
                 if((keySet.contains("path") || keySet.contains("pattern")) && keySet.contains("defaults")) {
                     // cleanup: 'foo', "foo"
                     String keyText = StringUtils.strip(StringUtils.strip(yamlKeyValue.getKeyText(), "'"), "\"");
                     if(StringUtils.isNotBlank(keyText)) {
-                        set.add(keyText);
+                        StubIndexedRoute route = new StubIndexedRoute(keyText);
+
+                        String routePath = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "path", false);
+                        if(routePath == null) {
+                            routePath = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "pattern", false);
+                        }
+
+                        if(routePath != null && StringUtils.isNotBlank(routePath)) {
+                            route.setPath(routePath);
+                        }
+
+                        String controller = getYamlController(yamlKeyValue);
+                        if(controller != null) {
+                            route.setController(controller);
+                        }
+
+                        indexedRoutes.add(route);
                     }
                 }
             }
         }
 
-        return set;
+        return indexedRoutes;
 
     }
 
-    public static Set<String> getXmlRouteNames(XmlFile psiFile) {
-
-        Set<String> set = new HashSet<String>();
+    public static Collection<StubIndexedRoute> getXmlRouteDefinitions(XmlFile psiFile) {
 
         XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);
         if(document == null) {
-            return set;
+            return Collections.emptyList();
         }
+
+        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
 
         /**
          * <routes>
@@ -375,7 +390,34 @@ public class RouteHelper {
                         if(xmlAttribute != null) {
                             String attrValue = xmlAttribute.getValue();
                             if(StringUtils.isNotBlank(attrValue)) {
-                                set.add(attrValue);
+
+                                StubIndexedRoute e = new StubIndexedRoute(attrValue);
+                                XmlAttribute pathAttribute = servicesTag.getAttribute("path");
+                                if(pathAttribute == null) {
+                                    pathAttribute = servicesTag.getAttribute("pattern");
+                                }
+
+                                if(pathAttribute != null) {
+                                    String pathValue = pathAttribute.getValue();
+                                    if(pathValue != null && StringUtils.isNotBlank(pathValue)) {
+                                        e.setPath(pathValue);
+                                    }
+                                }
+
+                                for(XmlTag subTag :servicesTag.getSubTags()) {
+                                    if("default".equalsIgnoreCase(subTag.getName())) {
+                                        XmlAttribute xmlAttr = subTag.getAttribute("key");
+                                        if(xmlAttr != null && "_controller".equals(xmlAttr.getValue())) {
+                                            String actionName = subTag.getValue().getTrimmedText();
+                                            if(StringUtils.isNotBlank(actionName)) {
+                                                e.setController(actionName);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                indexedRoutes.add(e);
+
                             }
                         }
                     }
@@ -383,7 +425,45 @@ public class RouteHelper {
             }
         }
 
-        return set;
+        return indexedRoutes;
+    }
+
+    @Nullable
+    private static String getYamlController(YAMLKeyValue psiElement) {
+        /*
+         * foo:
+         *   defaults: { _controller: "Bundle:Foo:Bar" }
+         *   defaults:
+         *      _controller: "Bundle:Foo:Bar"
+         */
+
+        YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(psiElement, "defaults");
+        if(yamlKeyValue != null) {
+            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(yamlKeyValue, YAMLCompoundValue.class);
+            if(yamlCompoundValue != null) {
+
+                // if we have a child of YAMLKeyValue, we need to go back to parent
+                // else on YAMLHash we can directly visit array keys
+                PsiElement yamlHashElement = PsiTreeUtil.getChildOfAnyType(yamlCompoundValue, YAMLHash.class, YAMLKeyValue.class);
+                if(yamlHashElement instanceof YAMLKeyValue) {
+                    yamlHashElement = yamlCompoundValue;
+                }
+
+                if(yamlHashElement != null) {
+                    YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(yamlHashElement, "_controller", true);
+                    if(yamlKeyValueController != null) {
+                        String valueText = yamlKeyValueController.getValueText();
+                        if(StringUtils.isNotBlank(valueText)) {
+                            return valueText;
+                        }
+                    }
+
+                }
+            }
+
+        }
+
+        return null;
     }
 
     @Nullable

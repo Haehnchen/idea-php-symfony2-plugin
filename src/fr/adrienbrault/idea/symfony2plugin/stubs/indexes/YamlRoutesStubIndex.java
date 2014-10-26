@@ -12,6 +12,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -19,27 +20,26 @@ import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
-import java.util.Set;
 
-public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
+public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
-    public static final ID<String, Void> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.yaml_routes");
+    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.yaml_routes2");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
     @Override
-    public ID<String, Void> getName() {
+    public ID<String, String[]> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, Void, FileContent> getIndexer() {
-        return new DataIndexer<String, Void, FileContent>() {
+    public DataIndexer<String, String[], FileContent> getIndexer() {
+        return new DataIndexer<String, String[], FileContent>() {
             @NotNull
             @Override
-            public Map<String, Void> map(FileContent inputData) {
-                Map<String, Void> map = new THashMap<String, Void>();
+            public Map<String, String[]> map(FileContent inputData) {
+                Map<String, String[]> map = new THashMap<String, String[]>();
 
                 PsiFile psiFile = inputData.getPsiFile();
                 if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
@@ -57,21 +57,16 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
                         return map;
                     }
 
-                    Set<String> localServiceMap = RouteHelper.getYamlRouteNames(yamlDocument);
-                    if(localServiceMap == null || localServiceMap.size() == 0) {
-                        return map;
-                    }
-
-                    for(String keyName: localServiceMap) {
-                        map.put(keyName, null);
+                    for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
+                        map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
                     }
 
                     return map;
                 }
 
                 if(psiFile instanceof XmlFile) {
-                    for(String keyName: RouteHelper.getXmlRouteNames((XmlFile) psiFile)) {
-                        map.put(keyName, null);
+                    for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
+                        map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
                     }
                 }
 
@@ -88,8 +83,8 @@ public class YamlRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
     }
 
     @Override
-    public DataExternalizer<Void> getValueExternalizer() {
-        return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
+    public DataExternalizer<String[]> getValueExternalizer() {
+        return new ServicesDefinitionStubIndex.MySetDataExternalizer();
     }
 
     @Override
