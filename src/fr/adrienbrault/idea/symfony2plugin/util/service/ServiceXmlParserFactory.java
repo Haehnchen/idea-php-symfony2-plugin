@@ -99,4 +99,11 @@ public class ServiceXmlParserFactory {
 
     }
 
+    synchronized public static void cleanInstance(Project project){
+        if(instance.containsKey(project)) {
+            Symfony2ProjectComponent.getLogger().info("clean ServiceXmlParserFactory for " + project.getName());
+            instance.remove(project);
+        }
+    }
+
 }
