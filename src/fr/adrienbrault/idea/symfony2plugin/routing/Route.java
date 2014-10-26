@@ -30,10 +30,20 @@ public class Route {
             this.controller = defaults.get("_controller").replace("\\\\", "\\");
         }
     }
+    public Route(String name) {
+        this.name = name;
+    }
 
     public Route(String name, String controller) {
         this.name = name;
         this.controller = controller;
+    }
+
+    public Route(String name, String[] indexed) {
+        this.name = name;
+        if(indexed.length >= 1 && indexed[0].length() > 0) {
+            this.controller = indexed[0];
+        }
     }
 
     public String getName() {

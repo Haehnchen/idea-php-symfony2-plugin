@@ -70,6 +70,13 @@ public class RouteHelper {
         Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
 
         if(!symfony2ProjectComponent.getRoutes().containsKey(routeName)) {
+
+            // @TODO: provide multiple ones
+            Collection<VirtualFile> foo = FileBasedIndex.getInstance().getContainingFiles(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
+            for(String[] str: FileBasedIndex.getInstance().getValues(YamlRoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, foo))) {
+                return new Route(routeName, str);
+            }
+
             return null;
         }
 
@@ -108,24 +115,46 @@ public class RouteHelper {
 
     }
 
+    /**
+     * convert to controller name to method:
+     *
+     * FooBundle\Controller\BarController::fooBarAction
+     * foo_service_bar:fooBar
+     * AcmeDemoBundle:Demo:hello
+     *
+     * @param project current project
+     * @param controllerName controller service, raw or compiled
+     * @return targets
+     */
+    @NotNull
     public static PsiElement[] getMethodsOnControllerShortcut(Project project, String controllerName) {
 
         if(controllerName == null)  {
             return new PsiElement[0];
         }
 
-        // convert to class: FooBundle\Controller\BarController::fooBarAction
-        // convert to class: foo_service_bar:fooBar
         if(controllerName.contains("::")) {
+
+            // FooBundle\Controller\BarController::fooBarAction
             String className = controllerName.substring(0, controllerName.lastIndexOf("::"));
             String methodName = controllerName.substring(controllerName.lastIndexOf("::") + 2);
 
-            return PhpElementsUtil.getPsiElementsBySignature(project, "#M#C\\" + className + "." + methodName);
+            Method method = PhpElementsUtil.getClassMethod(project, className, methodName);
+            return method != null ? new PsiElement[] {method} : new PsiElement[0];
 
         } else if(controllerName.contains(":")) {
-            ControllerIndex controllerIndex = new ControllerIndex(project);
 
-            ControllerAction controllerServiceAction = controllerIndex.getControllerActionOnService(controllerName);
+            // AcmeDemoBundle:Demo:hello
+            String[] split = controllerName.split(":");
+            if(split.length == 3) {
+                Method method = ControllerIndex.getControllerMethod(project, controllerName);
+                if(method != null) {
+                    return new PsiElement[] {method};
+                }
+            }
+
+            // foo_service_bar:fooBar
+            ControllerAction controllerServiceAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
             if(controllerServiceAction != null) {
                 return new PsiElement[] {controllerServiceAction.getMethod()};
             }
@@ -604,14 +633,14 @@ public class RouteHelper {
         SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlRoutesStubIndex.KEY, uniqueSet);
         FileBasedIndex.getInstance().processAllKeys(YamlRoutesStubIndex.KEY, ymlProjectProcessor, project);
         for(String s: ymlProjectProcessor.getResult()) {
-            lookupElements.add(new RouteLookupElement(new Route(s, null), true));
+            lookupElements.add(new RouteLookupElement(new Route(s), true));
             uniqueSet.add(s);
         }
 
         SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueSet);
         FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
         for(String s: annotationProjectProcessor.getResult()) {
-            lookupElements.add(new RouteLookupElement(new Route(s, null), true));
+            lookupElements.add(new RouteLookupElement(new Route(s), true));
             uniqueSet.add(s);
         }
 
