@@ -1,9 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -62,15 +65,28 @@ public class Route {
     }
 
     @NotNull
-    public HashSet<String> getVariables() {
-        return variables;
+    public Set<String> getVariables() {
+
+        if(this.path == null) {
+            return variables;
+        }
+
+        // possible fallback
+        // /hello/{foo}/{foo1}/bar
+        Set<String> hashSet = new HashSet<String>();
+        Matcher matcher = Pattern.compile("\\{(\\w+)}").matcher(this.path);
+        while(matcher.find()){
+            hashSet.add(matcher.group(1));
+        }
+
+        return hashSet;
     }
 
-    public HashMap<String, String> getDefaults() {
+    public Map<String, String> getDefaults() {
         return defaults;
     }
 
-    public HashMap<String, String> getRequirements() {
+    public Map<String, String> getRequirements() {
         return requirements;
     }
 
