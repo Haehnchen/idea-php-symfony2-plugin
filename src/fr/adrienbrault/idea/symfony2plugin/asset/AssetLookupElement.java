@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.asset;
 
+import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
@@ -16,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 public class AssetLookupElement extends LookupElement {
     protected AssetFile assetFile;
     protected Project project;
+    protected InsertHandler<AssetLookupElement> insertHandler;
 
     public AssetLookupElement(AssetFile assetfile, Project project) {
         this.assetFile = assetfile;
@@ -35,9 +37,17 @@ public class AssetLookupElement extends LookupElement {
 
     @Override
     public void handleInsert(InsertionContext context) {
+
+        if(insertHandler != null) {
+            insertHandler.handleInsert(context, this);
+            super.handleInsert(context);
+            return;
+        }
+
         if(assetFile.getAssetPosition().equals(AssetEnum.Position.Bundle)) {
             ResourceFileInsertHandler.getInstance().handleInsert(context, this);
         }
+
         super.handleInsert(context);
     }
 
@@ -54,4 +64,10 @@ public class AssetLookupElement extends LookupElement {
         presentation.setIcon(IconUtil.getIcon(assetFile.getFile(), 0, project));
 
     }
+
+    public AssetLookupElement withInsertHandler(InsertHandler<AssetLookupElement> insertHandler) {
+        this.insertHandler = insertHandler;
+        return this;
+    }
+
 }
