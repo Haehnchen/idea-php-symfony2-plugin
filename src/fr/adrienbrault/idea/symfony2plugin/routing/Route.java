@@ -16,6 +16,7 @@ public class Route {
     private String name;
     private String controller;
     private String path;
+    private Set<String> pathCache;
 
     private HashSet<String> variables = new HashSet<String>();
     private HashMap<String, String> defaults = new HashMap<String, String>();
@@ -71,6 +72,10 @@ public class Route {
             return variables;
         }
 
+        if(this.pathCache != null) {
+            return this.pathCache;
+        }
+
         // possible fallback
         // /hello/{foo}/{foo1}/bar
         Set<String> hashSet = new HashSet<String>();
@@ -79,7 +84,7 @@ public class Route {
             hashSet.add(matcher.group(1));
         }
 
-        return hashSet;
+        return this.pathCache = hashSet;
     }
 
     public Map<String, String> getDefaults() {
