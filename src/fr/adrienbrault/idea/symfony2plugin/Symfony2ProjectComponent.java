@@ -103,6 +103,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return Settings.getInstance(project).pluginEnabled;
     }
 
+    /**
+     * Dont use is method anymore, RouteHelper provides several util methods in replacement
+     */
+    @Deprecated
     public Map<String, Route> getRoutes() {
         Map<String, Route> routes = new HashMap<String, Route>();
 
