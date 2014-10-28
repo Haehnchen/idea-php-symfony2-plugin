@@ -28,40 +28,56 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class TranslationUtil {
 
-    static public PsiElement[] getDomainFilePsiElements(Project project, String domainName) {
+    static public VirtualFile[] getDomainFilePsiElements(Project project, String domainName) {
 
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
 
         for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
             if(domain.getDomain().equals(domainName)) {
-                PsiFile psiFile = domain.getPsiFile(project);
-                if(psiFile != null) {
-                    psiElements.add(psiFile);
+                VirtualFile virtualFile = domain.getFile();
+                if(virtualFile != null) {
+                    virtualFiles.add(virtualFile);
                 }
             }
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
     }
 
-    public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, String domain) {
+    public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, final String domain) {
 
-        // search for available domain files
-        PsiElement[] psiTranslationFiles = getDomainFilePsiElements(project, domain);
 
         final List<PsiElement> psiFoundElements = new ArrayList<PsiElement>();
         final List<VirtualFile> virtualFilesFound = new ArrayList<VirtualFile>();
 
-        // @TODO: this is completely can remove, after stable index
-        for(PsiElement psiTranslationFile : psiTranslationFiles) {
-            VirtualFile virtualFile = psiTranslationFile.getContainingFile().getVirtualFile();
-            PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, virtualFile);
+        // @TODO: completely remove this? support translation paths from service compiler
+        // search for available domain files
+        for(VirtualFile translationVirtualFile : getDomainFilePsiElements(project, domain)) {
+
+            if(translationVirtualFile.getFileType() != YAMLFileType.YML) {
+                continue;
+            }
+
+            PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, translationVirtualFile);
             if(psiFile instanceof YAMLFile) {
                 PsiElement yamlDocu = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
                 if(yamlDocu != null) {
@@ -70,7 +86,7 @@ public class TranslationUtil {
                         // multiline are line values are not resolve properly on psiElements use key as fallback target
                         PsiElement valuePsiElement = goToPsi.getValue();
                         psiFoundElements.add(valuePsiElement != null ? valuePsiElement : goToPsi);
-                        virtualFilesFound.add(virtualFile);
+                        virtualFilesFound.add(translationVirtualFile);
                     }
                 }
 
@@ -84,7 +100,7 @@ public class TranslationUtil {
             public boolean collect(@NotNull String keyName, YAMLKeyValue yamlKeyValue) {
                 if (keyName.equals(translationKey)) {
 
-                    // multiline are line values are not resolve properly on psiElements use key as fallback target
+                    // multiline "line values" are not resolve properly on psiElements use key as fallback target
                     PsiElement valuePsiElement = yamlKeyValue.getValue();
                     psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
 
@@ -107,11 +123,19 @@ public class TranslationUtil {
                 PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
                 if(psiFile instanceof YAMLFile) {
                     YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
+                } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
+                    // xlf are plain text because not supported by jetbrains
+                    // for now we can only set file target
+                    for(String[] string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
+                        if(Arrays.asList(string).contains(translationKey)) {
+                            psiFoundElements.add(psiFile);
+                        }
+                    }
                 }
 
                 return true;
             }
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
+        }, GlobalSearchScope.allScope(project));
 
 
         return psiFoundElements.toArray(new PsiElement[psiFoundElements.size()]);
@@ -122,7 +146,7 @@ public class TranslationUtil {
             FileBasedIndexImpl.getInstance().getValues(
                 YamlTranslationStubIndex.KEY,
                 domainName,
-                GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML)
+                GlobalSearchScope.allScope(project)
             ).size() > 0;
     }
 
@@ -137,7 +161,7 @@ public class TranslationUtil {
             return true;
         }
 
-        for(String keys[]: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML))){
+        for(String keys[]: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
             if(Arrays.asList(keys).contains(keyName)) {
                 return true;
             }
@@ -150,7 +174,7 @@ public class TranslationUtil {
     public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
 
         Set<String> keySet = new HashSet<String>();
-        List<String[]> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
+        List<String[]> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
         for(String keys[]: test ){
             keySet.addAll(Arrays.asList(keys));
         }
@@ -212,25 +236,28 @@ public class TranslationUtil {
     public static List<PsiFile> getDomainPsiFiles(final Project project, String domainName) {
 
         final List<PsiFile> results = new ArrayList<PsiFile>();
+        final List<VirtualFile> uniqueFileList = new ArrayList<VirtualFile>();
 
-        PsiElement[] psiElements = TranslationUtil.getDomainFilePsiElements(project, domainName);
-
-        final List<PsiFile> uniqueFileList = new ArrayList<PsiFile>();
-
-        /* for (PsiElement psiElement : psiElements) {
-            if(psiElement instanceof PsiFile) {
-                uniqueFileList.add((PsiFile) psiElement);
-                results.add((PsiFile) psiElement);
+        // get translation files from compiler
+        for(VirtualFile virtualFile : TranslationUtil.getDomainFilePsiElements(project, domainName)) {
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile != null) {
+                uniqueFileList.add(virtualFile);
+                results.add(psiFile);
             }
-        } */
+        }
 
         FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<String>(Arrays.asList(domainName)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
 
+                if(uniqueFileList.contains(virtualFile)) {
+                    return true;
+                }
+
                 PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile != null && !uniqueFileList.contains(psiFile)) {
-                    uniqueFileList.add(psiFile);
+                if(psiFile != null) {
+                    uniqueFileList.add(virtualFile);
                     results.add(psiFile);
                 }
 
@@ -239,6 +266,54 @@ public class TranslationUtil {
         }, PhpIndex.getInstance(project).getSearchScope());
 
         return results;
+    }
+
+    @NotNull
+    public static Set<String> getXliffTranslations(InputStream content) {
+
+        Set<String> set = new HashSet<String>();
+
+        Document document;
+
+        try {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            document = documentBuilder.parse(content);
+        } catch (ParserConfigurationException e) {
+            return set;
+        } catch (SAXException e) {
+            return set;
+        } catch (IOException e) {
+            return set;
+        }
+
+        if(document == null) {
+            return set;
+        }
+
+        Object result;
+        try {
+            // @TODO: xpath should not use "file/body"
+            XPathExpression xPathExpr = XPathFactory.newInstance().newXPath().compile("//xliff/file/body/trans-unit/source");
+            result = xPathExpr.evaluate(document, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+            return set;
+        }
+
+        if(!(result instanceof NodeList)) {
+            return set;
+        }
+
+        NodeList nodeList = (NodeList) result;
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Element node = (Element) nodeList.item(i);
+            String textContent = node.getTextContent();
+            if(org.apache.commons.lang.StringUtils.isNotBlank(textContent)) {
+                set.add(textContent);
+            }
+        }
+
+        return set;
     }
 
 }

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.73</version>
+    <version>0.10.76</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -84,8 +84,9 @@
 <h2>Related Plugins</h2>
 <ul>
     <li><a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
-    <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
     <li><a href="http://plugins.jetbrains.com/plugin/7487">Drupal Symfony2 Bridge</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7532">Laravel Plugin</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
 </ul>
 
 <h2><a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
@@ -97,11 +98,52 @@
 
     <change-notes><![CDATA[
 
-0.11.x: PhpStorm 8 (upcoming)<br>
-0.10.x: PhpStorm 7 (support until PhpStorm8 release)<br>
+0.11.x: PhpStorm 8<br>
+0.10.x: PhpStorm 7 (almost no support)<br>
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.76 / 0.11.76</h2>
+<ul>
+    <li>Implement docblock "@var" for twig variables, shortcut without tag is deprecated <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">Doc</a></li>
+    <li>Optimize xlf navigation and references; better getDomainFilePsiElements translation performance</li>
+    <li>Provide a global class::method[Action] yaml navigation, usable inside Drupal</li>
+    <li>Translation extractor supports text selection</li>
+    <li>Provide shortcut completion with function insertHandler for twig tags: href, src (css/js)</li>
+    <li>Improve overall support for routes; better xml parser, more data and nicer completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/369">#369</a></li>
+    <li>Fix possible npe in PhpEventDispatcherGotoCompletionRegistrar</li>
+    <li>Fix service completion in single quote yaml string values to reflect PhpStorm lexer changes; eg Drupal code convention</li>
+    <li>Fix regular expression for trans and transchoice to support more cases <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/377">#377</a>; also fix some whitespace issues</li>
+    <li>Fix npe in NewControllerAction on non bundle context <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/378">#378</a></li>
+</ul>
+
+<h2>0.10.75 / 0.11.75</h2>
+<ul>
+    <li>Add twig constants navigation, completion and folding <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/327">#327</a></li>
+    <li>Add references for array methods inside EventSubscriberInterface returns</li>
+    <li>Add detection for "kernel.event_subscriber" tag on service builder <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/352">#352</a></li>
+    <li>Add indexer and references for xliff translations</li>
+    <li>Quickfix for missing template will generate "block" and "extends" on directory context</li>
+    <li>Better completion for class names in yaml and xml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/337">#337</a></li>
+    <li>Fix twig missing translation domain pattern on nested filters <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/255">#255</a></li>
+    <li>Fix out of range exception in querybuilder parameter completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/371">#371</a></li>
+</ul>
+
+<h2>0.10.74 / 0.11.74</h2>
+<ul>
+    <li>Add button in Settings to clean up plugin related indexes</li>
+    <li>Add new isEnabledForIndex check, to not force a manually re-indexing for new projects after enabling plugin</li>
+    <li>Add references for array methods inside EventSubscriberInterface returns</li>
+    <li>Add completion for parameter in doctrine querybuilder "where" context</li>
+    <li>Add support for variadic functions on doctrine querybuilder selects <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/357">#357</a></li>
+    <li>Our heart method "isCallTo" now supports classes and methods instance checks which are not unique in project</li>
+    <li>Cleanup quote wrapping in routes key names of yaml files</li>
+    <li>Fix npe in annotation template collector <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/358">#358</a></li>
+    <li>Fix npe in yaml parameter completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/359">#359</a></li>
+    <li>Fix npe in symbole search for non project context <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/268">#268</a></li>
+    <li>Fix out of range case in getParameterDefinition <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/368">#368</a></li>
+</ul>
 
 <h2>0.10.73 / 0.11.73</h2>
 <ul>
@@ -242,99 +284,6 @@
     <li>Fix npe in config completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/284">#284</a></li>
 </ul>
 
-<h2>0.10.57</h2>
-<ul>
-    <li>Add yaml key completion for <a href="http://symfony2-plugin.espend.de/languages/yaml/index.html#config">config / security</a> files on "config:dump-reference"</li>
-    <li>Add completion for QueryBuilder:set</li>
-    <li>Make Twig translation key extractor compatible with PhpStorm8 and allow undo <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/213">#213</a></li>
-</ul>
-
-<h2>0.10.56</h2>
-<ul>
-    <li>Add twig <a href="http://symfony2-plugin.espend.de/actions/index.html#translation-extractor">translation extraction action</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/213">#213</a></li>
-    <li>Fix data_class in form types should autocomplete any class <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/280">#280</a></li>
-    <li>Add completion for QueryBuilder:(*)where</li>
-</ul>
-
-<h2>0.10.55</h2>
-<ul>
-    <li>Finally(?) fix NullPointerException on index values <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/277">#277</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
-    <li>Optimize Doctrine QueryBuilder chaining method collector to resolve methods and also fix some errors <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/278">#278</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/274">#274</a></li>
-    <li>Reimplementation of Twig @Template goto on PHP Annotations extension <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/276">#276</a></li>
-    <li>Migrate Route annotator to inspections <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/273">#273</a></li>
-    <li>Typo fix to support Doctrine OneToOne relations</li>
-</ul>
-
-<h2>0.10.54</h2>
-<ul>
-    <li>Initial doctrine querybuilder support, see what is in <a href="http://symfony2-plugin.espend.de/extension/doctrine_querybuilder.html">doc</a></li>
-    <li>Improvements in doctrine field property parser</li>
-    <li>Activate twig filter and block name completion for upcoming PhpStorm8 (eap); resolved issues WI-19022, WI-20266</li>
-    <li>Support entity in sub namespace, use indexer and improve performance</li>
-    <li>Add repository references for QueryBuilder::update/delete/from <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/272">#272</a></li>
-    <li>Fix goto for class names without namespace in yaml scalar key <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/271">#271</a></li>
-    <li>Fix field name array completion for ObjectRepository::findBy</li>
-    <li>Fix macro name set collector</li>
-    <li>Form field completion should respect property names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/259">#259</a></li>
-    <li>Integrate PHP-Annotations plugins as optional dependency</li>
-    <li>PHP Annotations: Allow alias for all @Template extension <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/236">#236</a></li>
-    <li>PHP Annotations: Remove static list fully inside external plugin</li>
-    <li>PHP Annotations: Route::service and some other references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/245">#245</a></li>
-</ul>
-
-<h2>0.10.53</h2>
-<ul>
-    <li>Fix slow index on large files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/261">#261</a></li>
-    <li>Fix weak route annotation goto</li>
-</ul>
-
-<h2>0.10.52</h2>
-<ul>
-    <li>Globally use weak service and route index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/261">#261</a></li>
-    <li>Add new weak annotator for routes and services</li>
-    <li>Add route name indexer for annotation </li>
-    <li>Add custom index keys processor for filter them in project context</li>
-    <li>Add extension point to load custom doctrine model classes</li>
-    <li>Fix annotate blank string values</li>
-    <li>Remove duplicate from type completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/260">#260</a></li>
-</ul>
-
-<h2>0.10.51</h2>
-<ul>
-    <li>Add twig macro name indexer</li>
-    <li>Add macro include/from indexer and add implements linemarker</li>
-    <li>Add custom "Symfony2 Symbol" search (Navigate > Symfony2 Symbol) in replacement for toolwindow <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/229">#229</a> (pls report possible keyboard shortcuts :) )</li>
-    <li>Add twig macro and service index to symbol search</li>
-    <li>Allow null keys in all index related stuff to temporary fix <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
-    <li>Strip quoted values inside yaml container indexer</li>
-</ul>
-
-<h2>0.10.50</h2>
-<ul>
-    <li>Add twig include indexer</li>
-    <li>Add twig linemarker for includes</li>
-</ul>
-
-<h2>0.10.49</h2>
-<ul>
-    <li>Add translation key and domain indexer</li>
-    <li>Rewrite and refactoring of all translation related stuff</li>
-    <li>Make translations available without a compiled file on indexer as weak references</li>
-    <li>Improvements in multiline values and quote key files for translation keys</li>
-    <li>Rename parameter indexer key name to force a refresh, pls report npe directly to <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a> with your environment data if still occur</li>
-</ul>
-
-<h2>0.10.48</h2>
-<ul>
-    <li>Improvements in repositoryClass detection of doctrine annotations eg namespaces</li>
-    <li>Add typename for repository "find*" lookup elements</li>
-    <li>Add support for annotations based models inside "find*" repository calls</li>
-    <li>Add extension point for container file loading</li>
-    <li>Add "Interface" and "ClassInterface" to type provider <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/254">#254</a></li>
-    <li>Activate $option key references inside FormTypeInterface, because of working api now <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/162">#162</a></li>
-    <li>Refactoring of container related linemarkers to fix some npe (api break?) <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/238">#238</a></li>
-</ul>
-
 <br/>
 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
 <br/>
@@ -421,6 +370,7 @@
 
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
+        <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
 
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
@@ -431,7 +381,7 @@
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
         <annotator language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator"/>
 
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlRoutesStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex"/>

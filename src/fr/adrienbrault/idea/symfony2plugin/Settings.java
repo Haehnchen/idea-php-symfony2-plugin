@@ -64,6 +64,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingPhpTemplate = true;
     public boolean codeFoldingTwigRoute = true;
     public boolean codeFoldingTwigTemplate = true;
+    public boolean codeFoldingTwigConstant = true;
 
     public boolean dismissEnableNotification = false;
 

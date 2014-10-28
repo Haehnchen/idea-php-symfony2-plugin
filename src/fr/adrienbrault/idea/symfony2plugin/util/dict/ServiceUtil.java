@@ -26,6 +26,45 @@ import java.util.*;
 
 public class ServiceUtil {
 
+
+    static final Map<String , String> TAG_INTERFACES = new HashMap<String , String>() {{
+        //put("assetic.asse", null);
+        put("assetic.factory_worker", "Assetic\\Factory\\Worker\\WorkerInterface");
+        put("assetic.filter", "Assetic\\Filter\\FilterInterface");
+        put("assetic.formula_loader", "Assetic\\Factory\\Loader\\FormulaLoaderInterface");
+        put("assetic.formula_resource", null);
+        put("assetic.templating.php", null);
+        put("assetic.templating.twig", null);
+        put("console.command", "\\Symfony\\Component\\Console\\Command\\Command");
+        put("data_collector", "\\Symfony\\Component\\HttpKernel\\DataCollector\\DataCollectorInterface");
+        put("doctrine.event_listener", null);
+        put("doctrine.event_subscriber", null);
+        put("form.type", "\\Symfony\\Component\\Form\\FormTypeInterface");
+        put("form.type_extension", "\\Symfony\\Component\\Form\\FormExtensionInterface");
+        put("form.type_guesser", "\\Symfony\\Component\\Form\\FormTypeGuesserInterface");
+        put("kernel.cache_clearer", null);
+        put("kernel.cache_warmer", "\\Symfony\\Component\\HttpKernel\\CacheWarmer\\CacheWarmerInterface");
+        put("kernel.fragment_renderer", null);
+        put("monolog.logger", null);
+        put("monolog.processor", null);
+        put("routing.loader", "Symfony\\Component\\Config\\Loader\\LoaderInterface");
+        //put("security.remember_me_aware", null);
+        put("security.voter", "Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface");
+        put("serializer.encoder", "Symfony\\Component\\Serializer\\Encoder\\EncoderInterface");
+        put("serializer.normalizer", "Symfony\\Component\\Serializer\\Normalizer\\NormalizerInterface");
+        // Symfony\Component\Serializer\Normalizer\DenormalizerInterface
+        put("swiftmailer.default.plugin", "Swift_Events_EventListener");
+        put("templating.helper", "\\Symfony\\Component\\Templating\\Helper\\HelperInterface");
+        put("translation.loader", "\\Symfony\\Component\\Translation\\Loader\\LoaderInterface");
+        put("translation.extractor", "\\Symfony\\Component\\Translation\\Extractor\\ExtractorInterface");
+        put("translation.dumper", "\\Symfony\\Component\\Translation\\Dumper\\DumperInterface");
+        put("twig.extension", "\\Twig_Extension");
+        put("twig.loader", "Twig_LoaderInterface");
+        put("validator.constraint_validator", "Symfony\\Component\\Validator\\ConstraintValidator");
+        put("validator.initializer", "Symfony\\Component\\Validator\\ObjectInitializerInterface");
+
+    }};
+
     /**
      * %test%, service, \Class\Name to PhpClass
      */
@@ -60,7 +99,7 @@ public class ServiceUtil {
      */
     public static Collection<PsiElement> getParameterDefinition(Project project, String parameterName) {
 
-        if(parameterName.startsWith("%") && parameterName.endsWith("%")) {
+        if(parameterName.length() > 2 && parameterName.startsWith("%") && parameterName.endsWith("%")) {
             parameterName = parameterName.substring(1, parameterName.length() - 1);
         }
 

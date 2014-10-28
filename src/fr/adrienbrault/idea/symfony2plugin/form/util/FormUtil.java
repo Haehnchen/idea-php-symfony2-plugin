@@ -333,7 +333,7 @@ public class FormUtil {
                                             XmlAttribute attribute = serviceSubTag.getAttribute("name");
                                             if(attribute != null) {
                                                 String tagName = attribute.getValue();
-                                                if(tagName != null) {
+                                                if(tagName != null && StringUtils.isNotBlank(tagName)) {
 
                                                     if(!map.containsKey(serviceNameId)) {
                                                         map.put(serviceNameId, new HashSet<String>());

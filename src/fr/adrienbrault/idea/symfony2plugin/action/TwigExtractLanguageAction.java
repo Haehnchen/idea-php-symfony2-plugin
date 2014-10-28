@@ -65,7 +65,14 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             return;
         }
 
-        PsiElement psiElement = ((TwigFile) psiFile).findElementAt(editor.getCaretModel().getOffset());
+        // find valid PsiElement context, because only html text is a valid extractor action
+        PsiElement psiElement;
+        if(editor.getSelectionModel().hasSelection()) {
+            psiElement = ((PsiFile) psiFile).findElementAt(editor.getSelectionModel().getSelectionStart());
+        } else {
+            psiElement = ((PsiFile) psiFile).findElementAt(editor.getCaretModel().getOffset());
+        }
+
         if(psiElement == null) {
             this.setStatus(event, false);
             return;
@@ -98,29 +105,40 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             return;
         }
 
-        final PsiElement psiElement = ((TwigFile) psiFile).findElementAt(editor.getCaretModel().getOffset());
-        if(psiElement == null) {
-            return;
-        }
+        final Project project = ((TwigFile) psiFile).getProject();
+        String translationText = editor.getSelectionModel().getSelectedText();
 
-        IElementType elementType = psiElement.getNode().getElementType();
-        if(!(elementType == XmlTokenType.XML_DATA_CHARACTERS || elementType == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)) {
-            return;
-        }
+        int startOffset;
+        int endOffset;
+        if(translationText != null) {
+            startOffset = editor.getSelectionModel().getSelectionStart();
+            endOffset = editor.getSelectionModel().getSelectionEnd();
+        } else {
 
-        final String translationText = psiElement.getText();
-        if(StringUtils.isBlank(translationText)) {
-            return;
+            // use dont selected text, so find common PsiElement
+            PsiElement psiElement = ((TwigFile) psiFile).findElementAt(editor.getCaretModel().getOffset());
+            if(psiElement == null) {
+                return;
+            }
+
+            IElementType elementType = psiElement.getNode().getElementType();
+            if(!(elementType == XmlTokenType.XML_DATA_CHARACTERS || elementType == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)) {
+                return;
+            }
+
+            startOffset = psiElement.getTextRange().getStartOffset();
+            endOffset = psiElement.getTextRange().getEndOffset();
+            translationText = psiElement.getText();
         }
 
         final Set<String> domainNames = new TreeSet<String>();
-        for(LookupElement lookupElement: TranslationUtil.getTranslationDomainLookupElements(psiElement.getProject())) {
+        for(LookupElement lookupElement: TranslationUtil.getTranslationDomainLookupElements(project)) {
             domainNames.add(lookupElement.getLookupString());
         }
 
         // get default domain on twig tag
         // also pipe it to insert handler; to append it as parameter
-        String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain(psiElement.getContainingFile());
+        String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain((TwigFile) psiFile);
         if(defaultDomain == null) {
             defaultDomain = "messages";
         }
@@ -139,43 +157,10 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         }
 
         final String finalDefaultDomain = defaultDomain;
-        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(psiElement.getProject(), (PsiFile) psiFile, domainNames, defaultKey, reselectedDomain, new TranslatorKeyExtractorDialog.OnOkCallback() {
-            @Override
-            public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
-
-                PsiDocumentManager.getInstance(psiElement.getProject()).doPostponedOperationsAndUnblockDocument(editor.getDocument());
-                final TextRange range = psiElement.getTextRange();
-
-                new WriteCommandAction(psiElement.getProject()) {
-                    @Override
-                    protected void run(Result result) throws Throwable {
-                        String insertString;
-
-                        // check for file context domain
-                        if(finalDefaultDomain.equals(domain)) {
-                            insertString = String.format("{{ '%s'|trans }}", keyName);
-                        } else {
-                            insertString = String.format("{{ '%s'|trans({}, '%s') }}", keyName, domain);
-                        }
-
-                        editor.getDocument().replaceString(range.getStartOffset(), range.getEndOffset(), insertString);
-                        editor.getCaretModel().moveToOffset(range.getStartOffset());
-                    }
-
-                    @Override
-                    public String getGroupID() {
-                        return "Translation Extraction";
-                    }
-                }.execute();
-
-                // so finally insert it; first file can be a navigation target
-                for(TranslationFileModel transPsiFile: files) {
-                    TranslationInsertUtil.invokeTranslation(keyName, translationText, transPsiFile.getPsiFile(), navigateTo);
-                    navigateTo = false;
-                }
-
-            }
-        });
+        final int finalStartOffset = startOffset;
+        final int finalEndOffset = endOffset;
+        final String finalTranslationText = translationText;
+        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(project, (PsiFile) psiFile, domainNames, defaultKey, reselectedDomain, new MyOnOkCallback(project, editor, finalDefaultDomain, finalStartOffset, finalEndOffset, finalTranslationText));
 
         extractorDialog.setTitle("Symfony2: Extract Translation Key");
         extractorDialog.setMinimumSize(new Dimension(600, 200));
@@ -220,6 +205,58 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         return sortedMap;
     }
 
+    private static class MyOnOkCallback implements TranslatorKeyExtractorDialog.OnOkCallback {
+        private final Project project;
+        private final Editor editor;
+        private final String finalDefaultDomain;
+        private final int finalStartOffset;
+        private final int finalEndOffset;
+        private final String finalTranslationText;
+
+        public MyOnOkCallback(Project project, Editor editor, String finalDefaultDomain, int finalStartOffset, int finalEndOffset, String finalTranslationText) {
+            this.project = project;
+            this.editor = editor;
+            this.finalDefaultDomain = finalDefaultDomain;
+            this.finalStartOffset = finalStartOffset;
+            this.finalEndOffset = finalEndOffset;
+            this.finalTranslationText = finalTranslationText;
+        }
+
+        @Override
+        public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
+
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument());
+
+            new WriteCommandAction(project) {
+                @Override
+                protected void run(Result result) throws Throwable {
+                    String insertString;
+
+                    // check for file context domain
+                    if(finalDefaultDomain.equals(domain)) {
+                        insertString = String.format("{{ '%s'|trans }}", keyName);
+                    } else {
+                        insertString = String.format("{{ '%s'|trans({}, '%s') }}", keyName, domain);
+                    }
+
+                    editor.getDocument().replaceString(finalStartOffset, finalEndOffset, insertString);
+                    editor.getCaretModel().moveToOffset(finalEndOffset);
+                }
+
+                @Override
+                public String getGroupID() {
+                    return "Translation Extraction";
+                }
+            }.execute();
+
+            // so finally insert it; first file can be a navigation target
+            for(TranslationFileModel transPsiFile: files) {
+                TranslationInsertUtil.invokeTranslation(keyName, finalTranslationText, transPsiFile.getPsiFile(), navigateTo);
+                navigateTo = false;
+            }
+
+        }
+    }
 }
 
 

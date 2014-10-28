@@ -55,7 +55,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
                     return map;
                 }
 
-                if(!YamlRoutesStubIndex.isValidForIndex(inputData, psiFile)) {
+                if(!RoutesStubIndex.isValidForIndex(inputData, psiFile)) {
                     return map;
                 }
 

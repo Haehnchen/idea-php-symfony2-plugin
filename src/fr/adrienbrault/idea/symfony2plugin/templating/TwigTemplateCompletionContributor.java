@@ -18,7 +18,6 @@ import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassIndex;
-import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -40,6 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
@@ -354,11 +354,51 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new ControllerCompletionProvider()
         );
 
-        // {# @Container Foo:Bar #}
+        // {% form_theme * %}
         extend(
             CompletionType.BASIC,
             TwigHelper.getFormThemeFileTag(),
             new FormThemeCompletionProvider()
+        );
+
+        // {% constant('FOO') %}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getPrintBlockFunctionPattern("constant"),
+            new CompletionProvider<CompletionParameters>() {
+                public void addCompletions(@NotNull CompletionParameters parameters,
+                                           ProcessingContext context,
+                                           @NotNull CompletionResultSet resultSet) {
+
+                    PsiElement position = parameters.getPosition();
+                    if(!Symfony2ProjectComponent.isEnabled(position)) {
+                        return;
+                    }
+
+                    PhpIndex instance = PhpIndex.getInstance(position.getProject());
+                    for(String constant : instance.getAllConstantNames(PrefixMatcher.ALWAYS_TRUE)) {
+                        resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
+                    }
+
+
+                    int foo = parameters.getOffset() - position.getTextRange().getStartOffset();
+                    String before = position.getText().substring(0, foo);
+                    String[] parts = before.split("::");
+
+                    if(parts.length >= 1) {
+                        PhpClass phpClass = PhpElementsUtil.getClassInterface(position.getProject(), parts[0]);
+                        if(phpClass != null && phpClass.getPresentableFQN() != null) {
+                            for(Field field: phpClass.getFields()) {
+                                if(field.isConstant()) {
+                                    resultSet.addElement(LookupElementBuilder.create(phpClass.getPresentableFQN() + "::" + field.getName()).withIcon(PhpIcons.CONSTANT));
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
         );
 
 
@@ -523,3 +563,4 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     }
 
 }
+

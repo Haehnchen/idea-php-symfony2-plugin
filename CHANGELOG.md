@@ -6,6 +6,41 @@ Changelog
 0.10.x: PhpStorm 7 (support until PhpStorm8 release)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.10.76 / 0.11.76
+* Implement docblock "@var" for twig variables, shortcut without tag is deprecated
+* Optimize xlf navigation and references; better getDomainFilePsiElements translation performance
+* Provide a global class::method[Action] yaml navigation, usable inside Drupal
+* Translation extractor supports text selection
+* Provide shortcut completion with function insertHandler for twig tags: href, src (css/js)
+* Improve overall support for routes; better xml parser, more data and nicer completion #369
+* Fix possible npe in PhpEventDispatcherGotoCompletionRegistrar
+* Fix service completion in single quote yaml string values to reflect PhpStorm lexer changes; eg Drupal code convention
+* Fix regular expression for trans and transchoice to support more cases #377; also fix some whitespace issues
+* Fix npe in NewControllerAction on non bundle context #378
+
+### 0.10.75 / 0.11.75
+* Add twig constants navigation, completion and folding #327
+* Add references for array methods inside EventSubscriberInterface returns
+* Add detection for "kernel.event_subscriber" tag on service builder #352
+* Add indexer and references for xliff translations
+* Quickfix for missing template will generate "block" and "extends" on directory context
+* Better completion for class names in yaml and xml #337
+* Fix twig missing translation domain pattern on nested filters #255
+* Fix out of range exception in querybuilder parameter completion #371
+
+### 0.10.74 / 0.11.74
+* Add button in Settings to clean up plugin related indexes
+* Add new isEnabledForIndex check, to not force a manually re-indexing for new projects after enabling plugin
+* Add references for array methods inside EventSubscriberInterface returns
+* Add completion for parameter in doctrine querybuilder "where" context
+* Add support for variadic functions on doctrine querybuilder selects #357
+* Our heart method "isCallTo" now supports classes and methods instance checks which are not unique in project
+* Cleanup quote wrapping in routes key names of yaml files
+* Fix npe in annotation template collector #358
+* Fix npe in yaml parameter completion #359
+* Fix npe in symbole search for non project context #268
+* Fix out of range case in getParameterDefinition #368
+
 ### 0.10.73 / 0.11.73
 * Fix npe in container parameter completion #351
 * Add route requirements and options completion for yaml files

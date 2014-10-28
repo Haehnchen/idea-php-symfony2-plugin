@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -8,6 +9,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
@@ -15,15 +17,17 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMarcoParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -176,30 +180,30 @@ public class TwigUtil {
         // search in twig project for regex
         // check for better solution; think of nesting
 
-        String domainName = null;
-
         PsiElement parentPsiElement = psiElement.getParent();
         if(parentPsiElement == null) {
-            return domainName;
+            return null;
         }
 
         String str = parentPsiElement.getText();
 
-        String regex = "\\|\\s?trans\\s?\\(\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        // @TODO: in another life dont use regular expression to find twig parameter :)
+
+        String regex = "\\|\\s*trans\\s*\\(\\s*\\{.*?\\}\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {
             return matcher.group(1);
         }
 
-        regex = "\\|\\s?transchoice\\s?\\(\\d+\\s?,\\s?\\{.*?\\},\\s?['\"](\\w+)['\"]\\s?\\)";
+        regex = "\\|\\s*transchoice\\s*\\(\\s*\\d+\\s*,\\s*\\{.*?\\}\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {
             return matcher.group(1);
         }
 
-        return domainName;
+        return null;
     }
 
     public static ArrayList<TwigMacro> getImportedMacros(PsiFile psiFile) {
@@ -438,4 +442,84 @@ public class TwigUtil {
             return 1;
         }
     }
+
+    /**
+     * Collections "extends" and "blocks" an path and and sort them on appearance
+     */
+    public static TwigCreateContainer getOnCreateTemplateElements(@NotNull final Project project, @NotNull VirtualFile startDirectory) {
+
+        final TwigCreateContainer containerElement = new TwigCreateContainer();
+
+        VfsUtil.processFilesRecursively(startDirectory, new Processor<VirtualFile>() {
+            @Override
+            public boolean process(VirtualFile virtualFile) {
+
+                if(virtualFile.getFileType() != TwigFileType.INSTANCE) {
+                    return true;
+                }
+
+                PsiFile twigFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(twigFile instanceof TwigFile) {
+                    collect((TwigFile) twigFile);
+                }
+
+                return true;
+            }
+
+            private void collect(TwigFile twigFile) {
+                for(PsiElement psiElement: twigFile.getChildren()) {
+                    if(psiElement instanceof TwigExtendsTag) {
+                        Matcher matcher = Pattern.compile(TwigBlockParser.EXTENDS_TEMPLATE_NAME_PATTERN).matcher(psiElement.getText());
+                        if(matcher.find()){
+                            String group = matcher.group(1);
+                            if(StringUtils.isNotBlank(group)) {
+                                containerElement.addExtend(group);
+                            }
+                        }
+                    } else if(psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
+                        PsiElement blockTag = psiElement.getFirstChild();
+                        if(blockTag instanceof TwigBlockTag) {
+                            String name = ((TwigBlockTag) blockTag).getName();
+                            if(StringUtils.isNotBlank(name)) {
+                                containerElement.addBlock(name);
+                            }
+                        }
+
+                    }
+
+                }
+            }
+
+        });
+
+        return containerElement;
+
+    }
+
+    /**
+     *  Build twig template file content on path with help of TwigCreateContainer
+     */
+    @Nullable
+    public static String buildStringFromTwigCreateContainer(@NotNull Project project, @Nullable VirtualFile virtualTargetDir) {
+
+        if(virtualTargetDir == null) {
+            return null;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        TwigCreateContainer container = TwigUtil.getOnCreateTemplateElements(project, virtualTargetDir);
+        String extend = container.getExtend();
+        if(extend != null) {
+            stringBuilder.append("{% extends '").append(extend).append("' %}").append("\n\n");
+        }
+
+        for(String blockName: container.getBlockNames(2)) {
+            stringBuilder.append("{% block ").append(blockName).append(" %}\n\n").append("{% endblock %}").append("\n\n");
+        }
+
+        String s = stringBuilder.toString();
+        return StringUtils.isNotBlank(s) ? s : null;
+
+    }
+
 }

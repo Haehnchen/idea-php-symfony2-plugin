@@ -424,7 +424,7 @@ public class TwigHelper {
     }
 
     /**
-     * match 'dddd') on ending
+     * match ", 'dddd')" on ending
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
         //noinspection unchecked
@@ -432,11 +432,21 @@ public class TwigHelper {
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .beforeLeafSkipping(
                 PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
                 PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
             )
             .withParent(PlatformPatterns
                 .psiElement(TwigElementTypes.PRINT_BLOCK)
@@ -483,10 +493,11 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static PsiElementPattern.Capture<PsiComment> getTwigTypeDocBlock() {
-        return PlatformPatterns
-            .psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN))
-            .withLanguage(TwigLanguage.INSTANCE);
+    public static ElementPattern<PsiComment> getTwigTypeDocBlock() {
+        return PlatformPatterns.or(
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN)).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN_2)).withLanguage(TwigLanguage.INSTANCE)
+        );
     }
 
     public static PsiElementPattern.Capture<PsiComment> getTwigDocBlockMatchPattern(String pattern) {

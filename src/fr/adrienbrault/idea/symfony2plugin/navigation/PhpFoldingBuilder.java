@@ -83,15 +83,14 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
                 // cache routes if we need them
                 if(routes == null) {
-                    Symfony2ProjectComponent symfony2ProjectComponent = stringLiteralExpression.getProject().getComponent(Symfony2ProjectComponent.class);
-                    routes = symfony2ProjectComponent.getRoutes();
+                    routes = RouteHelper.getAllRoutes(stringLiteralExpression.getProject());
                 }
 
                 String contents = stringLiteralExpression.getContents();
                 if(contents.length() > 0 && routes.containsKey(contents)) {
                     final Route route = routes.get(contents);
 
-                    final String url = RouteHelper.getRouteUrl(route.getTokens());
+                    final String url = RouteHelper.getRouteUrl(route);
                     if(url != null) {
                         descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
                             new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1), group) {

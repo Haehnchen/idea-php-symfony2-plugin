@@ -28,6 +28,7 @@ import java.util.*;
 public class ServiceBuilder {
 
     final private static String TWIG_EXTENSION = "\\Twig_Extension";
+    final private static String EVENT_SUBSCRIBER_INTERFACE = "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface";
 
     public enum OutputType {
         Yaml, XML,
@@ -301,6 +302,10 @@ public class ServiceBuilder {
 
             if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.FORM_EXTENSION_INTERFACE)) {
                 callback.onTag("form.type_extension");
+            }
+
+            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, EVENT_SUBSCRIBER_INTERFACE)) {
+                callback.onTag("kernel.event_subscriber");
             }
 
         }

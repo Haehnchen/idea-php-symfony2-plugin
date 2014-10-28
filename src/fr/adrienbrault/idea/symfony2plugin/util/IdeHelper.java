@@ -37,10 +37,13 @@ public class IdeHelper {
             }
         }
     }
-
+    @Nullable
+    public static VirtualFile createFile(@Nullable VirtualFile root, @NotNull String fileNameWithPath) {
+        return createFile(root, fileNameWithPath, null);
+    }
 
     @Nullable
-    public static VirtualFile createFile(@Nullable VirtualFile root, String fileNameWithPath) {
+    public static VirtualFile createFile(@Nullable VirtualFile root, @NotNull String fileNameWithPath, @Nullable String content) {
 
         if(root == null) {
             return null;
@@ -75,28 +78,42 @@ public class IdeHelper {
             return null;
         }
 
+        if(content != null) {
+            try {
+                virtualFile.setBinaryContent(content.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         return virtualFile;
     }
 
-    public static RunnableCreateAndOpenFile getRunnableCreateAndOpenFile(Project project, VirtualFile rootVirtualFile, String fileName) {
+    public static RunnableCreateAndOpenFile getRunnableCreateAndOpenFile(@NotNull Project project, @NotNull VirtualFile rootVirtualFile, @NotNull String fileName) {
         return new RunnableCreateAndOpenFile(project, rootVirtualFile, fileName);
     }
 
     public static class RunnableCreateAndOpenFile implements Runnable {
 
-        VirtualFile rootVirtualFile;
-        String fileName;
-        Project project;
+        private final VirtualFile rootVirtualFile;
+        private final String fileName;
+        private final Project project;
+        private String content;
 
-        RunnableCreateAndOpenFile(Project project, VirtualFile rootVirtualFile, String fileName) {
+        public RunnableCreateAndOpenFile(Project project, VirtualFile rootVirtualFile, String fileName) {
             this.project = project;
             this.rootVirtualFile = rootVirtualFile;
             this.fileName = fileName;
         }
 
+        public RunnableCreateAndOpenFile setContent(@Nullable String content) {
+            this.content = content;
+            return this;
+        }
+
         @Override
         public void run() {
-            VirtualFile virtualFile = createFile(rootVirtualFile, fileName);
+            VirtualFile virtualFile = createFile(rootVirtualFile, fileName, this.content);
             if(virtualFile != null) {
                 new OpenFileDescriptor(project, virtualFile, 0).navigate(true);
             }

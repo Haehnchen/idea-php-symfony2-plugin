@@ -10,12 +10,16 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +27,7 @@ import java.util.Set;
 
 public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, String[]> {
 
-    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.yaml_translations");
+    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.translations");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
@@ -37,11 +41,15 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
                 Map<String, String[]> map = new THashMap<String, String[]>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
+                if(!Symfony2ProjectComponent.isEnabledForIndex(inputData.getProject())) {
                     return map;
                 }
 
+                if("xlf".equalsIgnoreCase(inputData.getFile().getExtension())) {
+                    return getXlfStringMap(inputData, map);
+                }
+
+                PsiFile psiFile = inputData.getPsiFile();
                 if(!(psiFile instanceof YAMLFile)) {
                     return map;
                 }
@@ -52,13 +60,10 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
                     return map;
                 }
 
-                String fileName = inputData.getFile().getName();
-                int domainSplit = fileName.indexOf(".");
-                if(domainSplit < 0) {
+                String domainName = this.getDomainName(inputData.getFileName());
+                if(domainName == null) {
                     return map;
                 }
-
-                String domainName = fileName.substring(0, domainSplit);
 
                 final Set<String> translationKeySet = new HashSet<String>();
                 YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, new YamlTranslationCollector() {
@@ -77,6 +82,44 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
                 return map;
 
+            }
+
+            private Map<String, String[]> getXlfStringMap(FileContent inputData, Map<String, String[]> map) {
+
+                // testing files are not that nice
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), inputData.getProject().getBaseDir(), '/');
+                if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
+                    return map;
+                }
+
+                String domainName = this.getDomainName(inputData.getFileName());
+                if(domainName == null) {
+                    return map;
+                }
+
+                InputStream inputStream;
+                try {
+                    inputStream = inputData.getFile().getInputStream();
+                } catch (IOException e) {
+                    return map;
+                }
+
+                Set<String> set = TranslationUtil.getXliffTranslations(inputStream);
+                if(set.size() > 0) {
+                    map.put(domainName, set.toArray(new String[set.size()]));
+                }
+
+                return map;
+            }
+
+            @Nullable
+            private String getDomainName(String fileName) {
+                int domainSplit = fileName.indexOf(".");
+                if(domainSplit < 0) {
+                    return null;
+                }
+
+                return fileName.substring(0, domainSplit);
             }
 
         };
@@ -103,7 +146,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
         return new FileBasedIndex.InputFilter() {
             @Override
             public boolean acceptInput(VirtualFile file) {
-                return file.getFileType() == YAMLFileType.YML;
+                return file.getFileType() == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension());
             }
         };
     }
@@ -115,7 +158,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
 }

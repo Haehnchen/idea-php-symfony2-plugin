@@ -66,6 +66,8 @@ public class SettingsForm implements Configurable {
     private JCheckBox codeFoldingTwigRoute;
     private JCheckBox codeFoldingPhpTemplate;
     private JCheckBox codeFoldingTwigTemplate;
+    private JCheckBox codeFoldingTwigConstant;
+    
     private JCheckBox phpAnnotateWeakService;
     private JButton buttonReindex;
 
@@ -148,6 +150,7 @@ public class SettingsForm implements Configurable {
             || !codeFoldingPhpTemplate.isSelected() == getSettings().codeFoldingPhpTemplate
             || !codeFoldingTwigRoute.isSelected() == getSettings().codeFoldingTwigRoute
             || !codeFoldingTwigTemplate.isSelected() == getSettings().codeFoldingTwigTemplate
+            || !codeFoldingTwigConstant.isSelected() == getSettings().codeFoldingTwigConstant
 
             || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
 
@@ -188,6 +191,7 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingPhpTemplate = codeFoldingPhpTemplate.isSelected();
         getSettings().codeFoldingTwigRoute = codeFoldingTwigRoute.isSelected();
         getSettings().codeFoldingTwigTemplate = codeFoldingTwigTemplate.isSelected();
+        getSettings().codeFoldingTwigConstant = codeFoldingTwigConstant.isSelected();
 
         getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
 
@@ -239,6 +243,7 @@ public class SettingsForm implements Configurable {
         codeFoldingPhpTemplate.setSelected(getSettings().codeFoldingPhpTemplate);
         codeFoldingTwigRoute.setSelected(getSettings().codeFoldingTwigRoute);
         codeFoldingTwigTemplate.setSelected(getSettings().codeFoldingTwigTemplate);
+        codeFoldingTwigConstant.setSelected(getSettings().codeFoldingTwigConstant);
 
         yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
 

@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +44,10 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
         if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigTemplate) {
             attachTemplateFoldingDescriptors(psiElement, descriptors);
+        }
+
+        if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigConstant) {
+            attachConstantFoldingDescriptors(psiElement, descriptors);
         }
 
         return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
@@ -99,15 +104,14 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
             // cache routes if we need them
             if(routes == null) {
-                Symfony2ProjectComponent symfony2ProjectComponent = psiElement.getProject().getComponent(Symfony2ProjectComponent.class);
-                routes = symfony2ProjectComponent.getRoutes();
+                routes = RouteHelper.getAllRoutes(psiElement.getProject());
             }
 
             String contents = PsiElementUtils.trimQuote(psiElement1.getText());
             if(contents.length() > 0 && routes.containsKey(contents)) {
                 final Route route = routes.get(contents);
 
-                final String url = RouteHelper.getRouteUrl(route.getTokens());
+                final String url = RouteHelper.getRouteUrl(route);
                 if(url != null) {
                     descriptors.add(new FoldingDescriptor(psiElement1.getNode(),
                         new TextRange(psiElement1.getTextRange().getStartOffset(), psiElement1.getTextRange().getEndOffset()), group) {
@@ -118,6 +122,42 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
                         }
                     });
                 }
+            }
+
+        }
+
+    }
+
+    private void attachConstantFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
+        // find path calls in file
+        PsiElement[] constantReferences = PsiTreeUtil.collectElements(psiElement, new PsiElementFilter() {
+            @Override
+            public boolean isAccepted(PsiElement psiElement) {
+                return TwigHelper.getPrintBlockFunctionPattern("constant").accepts(psiElement);
+            }
+        });
+
+        if(constantReferences.length == 0) {
+            return;
+        }
+
+        FoldingGroup group = FoldingGroup.newGroup("constant");
+
+        for(PsiElement fileReference: constantReferences) {
+            String contents = fileReference.getText();
+            if(StringUtils.isNotBlank(contents) && contents.contains(":")) {
+                final String[] parts = contents.split("::");
+                if(parts.length == 2) {
+                    descriptors.add(new FoldingDescriptor(fileReference.getNode(),
+                        new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset()), group) {
+                        @Nullable
+                        @Override
+                        public String getPlaceholderText() {
+                            return parts[1];
+                        }
+                    });
+                }
+
             }
 
         }
