@@ -815,4 +815,30 @@ public class PhpElementsUtil {
         public void visit(PhpClass phpClass, String presentableFQN, String prefix);
     }
 
+    public static Collection<PsiElement> getClassMethodGoTo(Project project, String className) {
+
+        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+
+        // Class::method
+        // Class::FooAction
+        // Class:Foo
+        if(className.contains(":")) {
+            String[] split = className.replaceAll("(:)\\1", "$1").split(":");
+            if(split.length == 2) {
+                for(String append: new String[] {"", "Action"}) {
+                    Method classMethod = PhpElementsUtil.getClassMethod(project, split[0], split[1] + append);
+                    if(classMethod != null) {
+                        psiElements.add(classMethod);
+                    }
+                }
+            }
+
+            return psiElements;
+        }
+
+        // ClassName
+        psiElements.addAll(PhpElementsUtil.getClassesInterface(project, className));
+        return psiElements;
+    }
+
 }

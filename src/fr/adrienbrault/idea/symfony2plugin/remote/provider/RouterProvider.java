@@ -28,7 +28,7 @@ public class RouterProvider implements ProviderInterface {
             if(jsonObject.has("controller")) {
                 this.routes.put(name, new Route(name, jsonObject.get("controller").getAsString()));
             } else {
-                this.routes.put(name, new Route(name, null));
+                this.routes.put(name, new Route(name));
             }
 
         }

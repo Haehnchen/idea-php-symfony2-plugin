@@ -40,9 +40,12 @@ public class ProjectPostActionHandler {
         JsonParser p = new JsonParser();
 
         JsonObject result = p.parse(content).getAsJsonObject();
+        RemoteStorage instance = RemoteStorage.getInstance(project);
+        instance.setJson(result);
+
         for(Map.Entry<String, JsonElement> providerKey : result.entrySet()) {
             for(Class provider: RemoteUtil.getProviderClasses()) {
-                ProviderInterface providerInstance = RemoteStorage.getInstance(project).get(provider);
+                ProviderInterface providerInstance = instance.get(provider);
                 if(providerInstance != null) {
                     if(providerInstance.getAlias().equals(providerKey.getKey())) {
                         providerInstance.collect(providerKey.getValue());

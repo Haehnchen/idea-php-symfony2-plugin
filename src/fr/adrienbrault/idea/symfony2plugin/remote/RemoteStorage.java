@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.remote;
 
+import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.remote.provider.DoctrineProvider;
 import fr.adrienbrault.idea.symfony2plugin.remote.provider.ProviderInterface;
@@ -17,8 +18,19 @@ public class RemoteStorage {
     protected Project project;
     protected Map<Class, ProviderInterface> instances = new HashMap<Class, ProviderInterface>();
 
+    private JsonObject jsonObject;
+
     public boolean has(Class clazz) {
         return instances.containsKey(clazz);
+    }
+
+    @Nullable
+    public JsonObject json() {
+        return this.jsonObject;
+    }
+
+    public void setJson(JsonObject jsonObject) {
+        this.jsonObject = jsonObject;
     }
 
     @Nullable

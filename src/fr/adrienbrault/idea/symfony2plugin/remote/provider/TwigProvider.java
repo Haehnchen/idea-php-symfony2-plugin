@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.remote.provider;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 
