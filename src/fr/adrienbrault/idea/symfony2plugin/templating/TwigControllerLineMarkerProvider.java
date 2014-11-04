@@ -296,7 +296,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
             if(resolvedPsiFile != null) {
                 twigChild.add(resolvedPsiFile);
-                getTwigChildList(files, resolvedPsiFile, twigChild, depth--);
+                getTwigChildList(files, resolvedPsiFile, twigChild, --depth);
             }
 
         }
