@@ -531,9 +531,7 @@ public class RouteHelper {
         }
 
         List<Route> routes = new ArrayList<Route>();
-
-        Symfony2ProjectComponent symfony2ProjectComponent = method.getProject().getComponent(Symfony2ProjectComponent.class);
-        for(Map.Entry<String, Route> routeEntry: symfony2ProjectComponent.getRoutes().entrySet()) {
+        for(Map.Entry<String, Route> routeEntry: getAllRoutes(method.getProject()).entrySet()) {
             if(routeEntry.getValue().getController() != null && routeEntry.getValue().getController().equals(methodRouteActionName)) {
                 routes.add(routeEntry.getValue());
             }
