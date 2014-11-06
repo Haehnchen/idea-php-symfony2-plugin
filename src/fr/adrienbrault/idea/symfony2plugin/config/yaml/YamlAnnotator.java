@@ -124,7 +124,7 @@ public class YamlAnnotator implements Annotator {
     private void annotateConstructorSequenceArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
 
         IElementType elementType = psiElement.getNode().getElementType();
-        if(elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING) {
+        if(elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING || elementType == YAMLTokenTypes.SCALAR_STRING) {
 
             PsiElement yamlSequence = psiElement.getContext();
             if(yamlSequence instanceof YAMLSequence) {
@@ -166,7 +166,8 @@ public class YamlAnnotator implements Annotator {
 
 
         if(!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement))
+            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)
+            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement))
         {
             return;
         }
