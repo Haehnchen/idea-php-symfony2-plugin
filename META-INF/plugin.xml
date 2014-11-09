@@ -13,7 +13,6 @@
 <h2>Install</h2>
 
 <ul>
-    <li><big><font color="red">Upgrade to PhpStorm8! 0.10.x / PhpStorm7 no longer supported</font></big></li>
     <li>Active plugin per project in Settings -> Plugins and reopen project</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
 </ul>
