@@ -7,21 +7,24 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -347,12 +350,73 @@ public class TwigUtil {
         }
 
         Method method = findTwigFileController((TwigFile) psiFile);
-        if(method == null) {
-            return vars;
+        if(method != null) {
+            return PhpMethodVariableResolveUtil.collectMethodVariables(method);
         }
 
-        return PhpMethodVariableResolveUtil.collectMethodVariables(method);
+        final Set<Method> methods = getTwigFileMethodUsageOnIndex((TwigFile) psiFile);
 
+        HashMap<String, PsiVariable> stringPsiVariableHashMap = new HashMap<String, PsiVariable>();
+        for(Method methodIndex : methods) {
+            stringPsiVariableHashMap.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
+        }
+
+        return stringPsiVariableHashMap;
+
+    }
+
+    @NotNull
+    public static Set<Method> getTwigFileMethodUsageOnIndex(@NotNull TwigFile psiFile) {
+
+        Map<String, VirtualFile> templateName = TwigUtil.getTemplateName(psiFile);
+        if(templateName.size() == 0) {
+            return Collections.emptySet();
+        }
+
+        final Set<String> keys = templateName.keySet();
+        final Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
+
+        // find virtual files
+        for(String key: keys) {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+                @Override
+                public boolean process(VirtualFile virtualFile) {
+                    virtualFiles.add(virtualFile);
+                    return true;
+                }
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), PhpFileType.INSTANCE));
+        }
+
+        final Set<Method> methods = new HashSet<Method>();
+
+        for(VirtualFile virtualFile : virtualFiles) {
+
+            PsiFile psiTemplate = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
+            if(psiTemplate == null) {
+                continue;
+            }
+
+            psiTemplate.accept(new PsiRecursiveElementWalkingVisitor() {
+                @Override
+                public void visitElement(PsiElement element) {
+                    if(element instanceof StringLiteralExpression && element.getParent() instanceof ParameterList && element.getParent().getParent() instanceof MethodReference && keys.contains(((StringLiteralExpression) element).getContents())) {
+
+                        PsiElement methodReference = element.getParent().getParent();
+                        if(methodReference instanceof MethodReference && PhpTwigTemplateUsageStubIndex.RENDER_METHODS.contains(((MethodReference) methodReference).getName())) {
+                            Method method = PsiTreeUtil.getParentOfType(element, Method.class);
+                            if(method != null) {
+                                methods.add(method);
+                            }
+                        }
+                    }
+
+                    super.visitElement(element);
+                }
+            });
+
+        }
+
+        return methods;
     }
 
     @Nullable

@@ -17,12 +17,21 @@ import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<String, Void> {
 
     public static final ID<String, Void> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_php_usage");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
+    private static int MAX_FILE_BYTE_SIZE = 2097152;
+
+    public static Set<String> RENDER_METHODS = new HashSet<String>() {{
+        add("render");
+        add("renderView");
+        add("renderResponse");
+    }};
 
     @NotNull
     @Override
@@ -44,7 +53,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                     return map;
                 }
 
-                if(!(inputData.getPsiFile() instanceof PhpFile)) {
+                if(!(inputData.getPsiFile() instanceof PhpFile) && isValidForIndex(inputData)) {
                     return map;
                 }
 
@@ -59,7 +68,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
                     public void visitMethodReference(MethodReference methodReference) {
                         String methodName = methodReference.getName();
-                        if(!"render".equals(methodName) && !"renderView".equals(methodName) && !"renderResponse".equals(methodName)) {
+                        if(!RENDER_METHODS.contains(methodName)) {
                             return;
                         }
 
@@ -108,6 +117,10 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
     @Override
     public int getVersion() {
         return 1;
+    }
+
+    public static boolean isValidForIndex(FileContent inputData) {
+        return inputData.getFile().getLength() < MAX_FILE_BYTE_SIZE;
     }
 
 }

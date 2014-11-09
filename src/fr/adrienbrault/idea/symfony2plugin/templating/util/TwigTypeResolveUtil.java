@@ -215,7 +215,6 @@ public class TwigTypeResolveUtil {
         HashMap<String, PsiVariable> controllerVars = new HashMap<String, PsiVariable>();
 
         VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
-        System.out.println(virtualFile.toString());
         if(visitedFiles.contains(virtualFile)) {
             return controllerVars;
         }
