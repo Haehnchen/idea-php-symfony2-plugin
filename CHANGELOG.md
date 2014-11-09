@@ -2,9 +2,17 @@ Changelog
 =========
 
 ### Version names
-0.11.x: PhpStorm 8 (upcoming)
-0.10.x: PhpStorm 7 (support until PhpStorm8 release)
+0.11.x: PhpStorm 8
+0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
+
+### 0.10.77 / 0.11.77
+* Add weak routes in controller action related popover
+* Add index for twig file php usage in render* methods and add variable collector
+* Fix for new yaml SCALAR_STRING / SCALAR_DSTRING lexer changes in service instance annotator
+* Fix max depth check in getTwigChildList #360
+* Fix possible recursive calls in twig variable includes #360
+* Note: last version for PhpStorm7!
 
 ### 0.10.76 / 0.11.76
 * Implement docblock "@var" for twig variables, shortcut without tag is deprecated
