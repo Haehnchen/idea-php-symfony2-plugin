@@ -176,11 +176,6 @@ public class RouteHelper {
 
         Map<String, Route> routes = new HashMap<String, Route>();
 
-        try {
-            routes.putAll(getRoutes(VfsUtil.loadText(virtualFile)));
-        } catch (IOException ignored) {
-        }
-
         PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, virtualFile);
         if(!(psiFile instanceof PhpFile)) {
             return routes;
@@ -278,31 +273,6 @@ public class RouteHelper {
 
         return routeName;
     }
-
-    public static Map<String, Route> getRoutes(String routing) {
-        Map<String, Route> routes = new HashMap<String, Route>();
-
-        Matcher matcher = Pattern.compile("'((?:[^'\\\\]|\\\\.)*)' => [^\\n]+'_controller' => '((?:[^'\\\\]|\\\\.)*)'[^\\n]+\n").matcher(routing);
-
-        while (matcher.find()) {
-            String routeName = matcher.group(1);
-
-            // dont add _assetic_04d92f8, _assetic_04d92f8_0
-            if(!isProductionRouteName(routeName)) {
-               continue;
-            }
-
-            routeName = convertLanguageRouteName(routeName);
-
-            String controller = matcher.group(2).replace("\\\\", "\\");
-            Route route = new Route(routeName, controller);
-            routes.put(route.getName(), route);
-
-        }
-
-        return routes;
-    }
-
 
     /**
      * Foo\Bar::methodAction
@@ -531,9 +501,7 @@ public class RouteHelper {
         }
 
         List<Route> routes = new ArrayList<Route>();
-
-        Symfony2ProjectComponent symfony2ProjectComponent = method.getProject().getComponent(Symfony2ProjectComponent.class);
-        for(Map.Entry<String, Route> routeEntry: symfony2ProjectComponent.getRoutes().entrySet()) {
+        for(Map.Entry<String, Route> routeEntry: getAllRoutes(method.getProject()).entrySet()) {
             if(routeEntry.getValue().getController() != null && routeEntry.getValue().getController().equals(methodRouteActionName)) {
                 routes.add(routeEntry.getValue());
             }

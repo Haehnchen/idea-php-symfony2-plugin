@@ -33,19 +33,24 @@ import java.util.regex.Pattern;
 public class IncludeVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
 
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, final HashMap<String, PsiVariable> variables) {
+    public void collectVars(final TwigFileVariableCollectorParameter parameter, final HashMap<String, PsiVariable> variables) {
 
         final PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile) || PsiTreeUtil.getChildOfType(psiFile, TwigExtendsTag.class) != null) {
             return;
         }
 
-        Collection<PsiFile> files = getImplements((TwigFile) psiFile);
+        Collection<VirtualFile> files = getImplements((TwigFile) psiFile);
         if(files.size() == 0) {
             return;
         }
 
-        for(PsiFile twigFile: files) {
+        for(VirtualFile virtualFile: files) {
+
+            PsiFile twigFile = PsiManager.getInstance(parameter.getProject()).findFile(virtualFile);
+            if(!(twigFile instanceof TwigFile)) {
+                continue;
+            }
 
             twigFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                 @Override
@@ -57,7 +62,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                             if(StringUtils.isNotBlank(templateName)) {
                                 for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
                                     if(templateFile.equals(psiFile)) {
-                                        collectIncludeContextVars((TwigTagWithFileReference) element, includeTag, variables);
+                                        collectIncludeContextVars((TwigTagWithFileReference) element, includeTag, variables, parameter.getVisitedFiles());
                                     }
                                 }
 
@@ -72,7 +77,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     }
 
-    private void collectIncludeContextVars(TwigTagWithFileReference tag, PsiElement templatePsiName, HashMap<String, PsiVariable> variables) {
+    private void collectIncludeContextVars(TwigTagWithFileReference tag, PsiElement templatePsiName, HashMap<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
 
         PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
         Map<String, String> varAliasMap = getIncludeWithVarNames(tag.getText());
@@ -82,7 +87,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
             return;
         }
 
-        HashMap<String, PsiVariable> stringPsiVariableHashMap = TwigTypeResolveUtil.collectScopeVariables(templatePsiName);
+        HashMap<String, PsiVariable> stringPsiVariableHashMap = TwigTypeResolveUtil.collectScopeVariables(templatePsiName, visitedFiles);
 
         // add context vars
         if(onlyElement == null) {
@@ -133,9 +138,9 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     }
 
-    private Collection<PsiFile> getImplements(TwigFile twigFile) {
+    private Collection<VirtualFile> getImplements(TwigFile twigFile) {
 
-        final Collection<PsiFile> targets = new ArrayList<PsiFile>();
+        final Set<VirtualFile> targets = new HashSet<VirtualFile>();
 
         for(Map.Entry<String, VirtualFile> entry: TwigUtil.getTemplateName(twigFile).entrySet()) {
 
@@ -143,12 +148,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
             FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<String>(Arrays.asList(entry.getKey())), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
-                    PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-
-                    if(psiFile != null) {
-                        targets.add(psiFile);
-                    }
-
+                    targets.add(virtualFile);
                     return true;
                 }
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));

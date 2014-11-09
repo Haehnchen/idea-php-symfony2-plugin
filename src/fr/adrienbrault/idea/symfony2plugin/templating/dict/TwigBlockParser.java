@@ -9,13 +9,17 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,11 +66,13 @@ public class TwigBlockParser {
         // @TODO: migrate to psi elements
         // {% extends 'foo' %}
         // find extend in self
-        Matcher matcher = Pattern.compile(EXTENDS_TEMPLATE_NAME_PATTERN).matcher(file.getText());
-        while(matcher.find()){
-            String templateName = TwigHelper.normalizeTemplateName(matcher.group(1));
-            if(twigFilesByName.containsKey(templateName)) {
-                virtualFiles.put(twigFilesByName.get(templateName), templateName);
+        for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(file, TwigExtendsTag.class)) {
+            Matcher matcher = Pattern.compile(EXTENDS_TEMPLATE_NAME_PATTERN).matcher(extendsTag.getText());
+            while(matcher.find()){
+                String templateName = TwigHelper.normalizeTemplateName(matcher.group(1));
+                if(twigFilesByName.containsKey(templateName)) {
+                    virtualFiles.put(twigFilesByName.get(templateName), templateName);
+                }
             }
         }
 

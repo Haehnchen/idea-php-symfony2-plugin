@@ -84,13 +84,20 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     private void attachController(TwigFile psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
 
+        Set<Method> methods = new HashSet<Method>();
         Method method = TwigUtil.findTwigFileController(psiElement);
-        if(method == null) {
+        if(method != null) {
+            methods.add(method);
+        }
+
+        methods.addAll(TwigUtil.getTwigFileMethodUsageOnIndex(psiElement));
+
+        if(methods.size() == 0) {
             return;
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-            setTargets(method).
+            setTargets(methods).
             setTooltipText("Navigate to controller");
 
         result.add(builder.createLineMarkerInfo(psiElement));
@@ -296,7 +303,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
             if(resolvedPsiFile != null) {
                 twigChild.add(resolvedPsiFile);
-                getTwigChildList(files, resolvedPsiFile, twigChild, depth--);
+                getTwigChildList(files, resolvedPsiFile, twigChild, --depth);
             }
 
         }

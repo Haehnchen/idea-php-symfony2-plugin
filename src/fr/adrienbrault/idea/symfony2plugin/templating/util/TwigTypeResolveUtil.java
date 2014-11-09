@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
@@ -31,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -201,12 +203,25 @@ public class TwigTypeResolveUtil {
         return globalVars;
     }
 
-    public static HashMap<String, PsiVariable> collectScopeVariables(PsiElement psiElement) {
+    @NotNull
+    public static HashMap<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement) {
+        return collectScopeVariables(psiElement, new HashSet<VirtualFile>());
+    }
+
+    @NotNull
+    public static HashMap<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement, @NotNull Set<VirtualFile> visitedFiles) {
 
         HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
         HashMap<String, PsiVariable> controllerVars = new HashMap<String, PsiVariable>();
 
-        TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement);
+        VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
+        if(visitedFiles.contains(virtualFile)) {
+            return controllerVars;
+        }
+
+        visitedFiles.add(virtualFile);
+
+        TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, visitedFiles);
         for(TwigFileVariableCollector collector: twigFileVariableCollectors) {
             collector.collect(collectorParameter, globalVars);
 
