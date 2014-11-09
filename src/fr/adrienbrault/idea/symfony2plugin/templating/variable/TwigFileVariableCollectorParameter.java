@@ -1,14 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+
+import java.util.Set;
 
 public class TwigFileVariableCollectorParameter {
 
-    private PsiElement psiElement;
+    private final PsiElement psiElement;
+    private final Set<VirtualFile> visitedFiles;
 
-    public TwigFileVariableCollectorParameter(PsiElement psiElement) {
+    public TwigFileVariableCollectorParameter(PsiElement psiElement, Set<VirtualFile> visitedFiles) {
         this.psiElement = psiElement;
+        this.visitedFiles = visitedFiles;
     }
 
     public PsiElement getElement() {
@@ -17,6 +22,10 @@ public class TwigFileVariableCollectorParameter {
 
     public Project getProject() {
         return psiElement.getProject();
+    }
+
+    public Set<VirtualFile> getVisitedFiles() {
+        return visitedFiles;
     }
 
 }
