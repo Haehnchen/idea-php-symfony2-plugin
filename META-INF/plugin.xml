@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.10.76</version>
+    <version>0.10.77</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -13,9 +13,9 @@
 <h2>Install</h2>
 
 <ul>
+    <li><big><font color="red">Upgrade to PhpStorm8! 0.10.x / PhpStorm7 no longer supported</font></big></li>
     <li>Active plugin per project in Settings -> Plugins and reopen project</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
-    <li><font color="red">Upgrade to PhpStorm8 soon :)</font></li>
 </ul>
 
 <h2>Open Api Issues</h2>
@@ -99,10 +99,20 @@
     <change-notes><![CDATA[
 
 0.11.x: PhpStorm 8<br>
-0.10.x: PhpStorm 7 (almost no support)<br>
+0.10.x: PhpStorm 7 (no support)<br>
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.10.77 / 0.11.77</h2>
+<ul>
+    <li>Add weak routes in controller action related popover</li>
+    <li>Add index for twig file php usage in render* methods and add variable collector</li>
+    <li>Fix for new yaml SCALAR_STRING / SCALAR_DSTRING lexer changes in service instance annotator</li>
+    <li>Fix max depth check in getTwigChildList <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/360">#360</a></li>
+    <li>Fix possible recursive calls in twig variable includes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/360">#360</a></li>
+    <li>Note: last version for PhpStorm7!</li>
+</ul>
 
 <h2>0.10.76 / 0.11.76</h2>
 <ul>
