@@ -25,6 +25,8 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -161,31 +163,40 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
             // {% include 'template.html' %}
             if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
                 PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getTemplateFileReferenceTagPattern("include"));
-                collectContextVars(element, includeTag);
-
+                if(includeTag != null) {
+                    collectContextVars(element, includeTag);
+                }
             }
 
-            // {{ include('template.html') }}
             if(element instanceof TwigCompositeElement) {
+                // {{ include('template.html') }}
                 PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getPrintBlockFunctionPattern("include"));
-                collectContextVars(element, includeTag);
+                if(includeTag != null) {
+                    collectContextVars(element, includeTag);
+                }
+
+                // {% embed "foo.html.twig"
+                PsiElement embedTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getEmbedPattern());
+                if(embedTag != null) {
+                    collectContextVars(element, embedTag);
+                }
             }
 
             super.visitElement(element);
         }
 
-        private void collectContextVars(PsiElement element, PsiElement includeTag) {
-            if(includeTag != null) {
-                String templateName = includeTag.getText();
-                if(StringUtils.isNotBlank(templateName)) {
-                    for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
-                        if(templateFile.equals(psiFile)) {
-                            collectIncludeContextVars(element, includeTag, variables, parameter.getVisitedFiles());
-                        }
-                    }
+        private void collectContextVars(@NotNull PsiElement element, @NotNull PsiElement includeTag) {
 
+            String templateName = includeTag.getText();
+            if(StringUtils.isNotBlank(templateName)) {
+                for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
+                    if(templateFile.equals(psiFile)) {
+                        collectIncludeContextVars(element, includeTag, variables, parameter.getVisitedFiles());
+                    }
                 }
+
             }
+
         }
     }
 }
