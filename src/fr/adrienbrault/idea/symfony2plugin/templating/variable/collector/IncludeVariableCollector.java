@@ -7,11 +7,13 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
@@ -60,12 +62,12 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     }
 
-    private void collectIncludeContextVars(PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
+    private void collectIncludeContextVars(IElementType iElementType, PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
 
         // {% include 'template.html' with {'foo': 'bar'} only %}
         PsiElement onlyElement = null;
         Map<String, String> varAliasMap = new HashMap<String, String>();
-        if(tag instanceof TwigTagWithFileReference) {
+        if(iElementType == TwigElementTypes.INCLUDE_TAG || iElementType == TwigElementTypes.EMBED_TAG) {
             onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
             varAliasMap = getIncludeWithVarNames(tag.getText());
 
@@ -164,7 +166,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
             if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
                 PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getTemplateFileReferenceTagPattern("include"));
                 if(includeTag != null) {
-                    collectContextVars(element, includeTag);
+                    collectContextVars(TwigElementTypes.INCLUDE_TAG, element, includeTag);
                 }
             }
 
@@ -172,26 +174,26 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                 // {{ include('template.html') }}
                 PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getPrintBlockFunctionPattern("include"));
                 if(includeTag != null) {
-                    collectContextVars(element, includeTag);
+                    collectContextVars(TwigTokenTypes.IDENTIFIER, element, includeTag);
                 }
 
                 // {% embed "foo.html.twig"
                 PsiElement embedTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getEmbedPattern());
                 if(embedTag != null) {
-                    collectContextVars(element, embedTag);
+                    collectContextVars(TwigElementTypes.EMBED_TAG, element, embedTag);
                 }
             }
 
             super.visitElement(element);
         }
 
-        private void collectContextVars(@NotNull PsiElement element, @NotNull PsiElement includeTag) {
+        private void collectContextVars(IElementType iElementType, @NotNull PsiElement element, @NotNull PsiElement includeTag) {
 
             String templateName = includeTag.getText();
             if(StringUtils.isNotBlank(templateName)) {
                 for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
                     if(templateFile.equals(psiFile)) {
-                        collectIncludeContextVars(element, includeTag, variables, parameter.getVisitedFiles());
+                        collectIncludeContextVars(iElementType, element, includeTag, variables, parameter.getVisitedFiles());
                     }
                 }
 
