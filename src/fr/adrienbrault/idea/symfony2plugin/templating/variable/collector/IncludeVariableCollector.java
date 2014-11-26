@@ -12,6 +12,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
@@ -52,39 +53,24 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                 continue;
             }
 
-            twigFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                @Override
-                public void visitElement(PsiElement element) {
-                    if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
-                        PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getTemplateFileReferenceTagPattern("include"));
-                        if(includeTag != null) {
-                            String templateName = includeTag.getText();
-                            if(StringUtils.isNotBlank(templateName)) {
-                                for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
-                                    if(templateFile.equals(psiFile)) {
-                                        collectIncludeContextVars((TwigTagWithFileReference) element, includeTag, variables, parameter.getVisitedFiles());
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-
-                    super.visitElement(element);
-                }
-            });
+            twigFile.acceptChildren(new MyPsiRecursiveElementWalkingVisitor(psiFile, variables, parameter));
         }
 
     }
 
-    private void collectIncludeContextVars(TwigTagWithFileReference tag, PsiElement templatePsiName, HashMap<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
+    private void collectIncludeContextVars(PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
 
-        PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
-        Map<String, String> varAliasMap = getIncludeWithVarNames(tag.getText());
+        // {% include 'template.html' with {'foo': 'bar'} only %}
+        PsiElement onlyElement = null;
+        Map<String, String> varAliasMap = new HashMap<String, String>();
+        if(tag instanceof TwigTagWithFileReference) {
+            onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
+            varAliasMap = getIncludeWithVarNames(tag.getText());
 
-        // "onyl" and no alias, dont provide context
-        if(onlyElement != null && varAliasMap.size() == 0) {
-            return;
+            // "only" and no alias, dont provide context
+            if(onlyElement != null && varAliasMap.size() == 0) {
+                return;
+            }
         }
 
         HashMap<String, PsiVariable> stringPsiVariableHashMap = TwigTypeResolveUtil.collectScopeVariables(templatePsiName, visitedFiles);
@@ -158,4 +144,48 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         return targets;
     }
 
+    private class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
+        private final PsiFile psiFile;
+        private final Map<String, PsiVariable> variables;
+        private final TwigFileVariableCollectorParameter parameter;
+
+        public MyPsiRecursiveElementWalkingVisitor(PsiFile psiFile, Map<String, PsiVariable> variables, TwigFileVariableCollectorParameter parameter) {
+            this.psiFile = psiFile;
+            this.variables = variables;
+            this.parameter = parameter;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+
+            // {% include 'template.html' %}
+            if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getTemplateFileReferenceTagPattern("include"));
+                collectContextVars(element, includeTag);
+
+            }
+
+            // {{ include('template.html') }}
+            if(element instanceof TwigCompositeElement) {
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getPrintBlockFunctionPattern("include"));
+                collectContextVars(element, includeTag);
+            }
+
+            super.visitElement(element);
+        }
+
+        private void collectContextVars(PsiElement element, PsiElement includeTag) {
+            if(includeTag != null) {
+                String templateName = includeTag.getText();
+                if(StringUtils.isNotBlank(templateName)) {
+                    for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
+                        if(templateFile.equals(psiFile)) {
+                            collectIncludeContextVars(element, includeTag, variables, parameter.getVisitedFiles());
+                        }
+                    }
+
+                }
+            }
+        }
+    }
 }
