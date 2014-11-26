@@ -61,21 +61,32 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
                             PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("include"));
                             if(includeTag != null) {
                                 String templateName = includeTag.getText();
-                                if(!StringUtils.isBlank(templateName)) {
+                                if(StringUtils.isNotBlank(templateName)) {
                                     map.put(templateName, null);
                                 }
                             }
                         }
 
-                        // {{ include }}
                         if(psiElement instanceof TwigCompositeElement) {
+
+                            // {{ include() }}
                             PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getPrintBlockFunctionPattern("include", "source"));
                             if(includeTag != null) {
                                 String templateName = includeTag.getText();
-                                if(!StringUtils.isBlank(templateName)) {
+                                if(StringUtils.isNotBlank(templateName)) {
                                     map.put(templateName, null);
                                 }
                             }
+
+                            // {% embed "foo.html.twig"
+                            PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getEmbedPattern());
+                            if(embedTag != null) {
+                                String templateName = embedTag.getText();
+                                if(StringUtils.isNotBlank(templateName)) {
+                                    map.put(templateName, null);
+                                }
+                            }
+
                         }
 
                         return false;
@@ -89,16 +100,19 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
 
     }
 
+    @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
     }
 
+    @NotNull
     @Override
     public DataExternalizer<Void> getValueExternalizer() {
         return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
     }
 
+    @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return new FileBasedIndex.InputFilter() {
