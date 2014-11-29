@@ -371,6 +371,8 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
 
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpPostfixCompletionContributor"/>
+
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
