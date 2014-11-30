@@ -4,7 +4,6 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingBuilderEx;
 import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.FoldingGroup;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiElementFilter;
@@ -66,13 +65,11 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             return;
         }
 
-        FoldingGroup group = FoldingGroup.newGroup("template");
-
         for(PsiElement fileReference: fileReferences) {
             final String templateShortcutName = TwigUtil.getFoldingTemplateName(fileReference.getText());
             if(templateShortcutName != null) {
                 descriptors.add(new FoldingDescriptor(fileReference.getNode(),
-                    new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset()), group) {
+                    new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset())) {
                     @Nullable
                     @Override
                     public String getPlaceholderText() {
@@ -98,7 +95,6 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             return;
         }
 
-        FoldingGroup group = FoldingGroup.newGroup("route");
         Map<String,Route> routes = null;
         for(PsiElement psiElement1: psiElements) {
 
@@ -114,7 +110,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
                 final String url = RouteHelper.getRouteUrl(route);
                 if(url != null) {
                     descriptors.add(new FoldingDescriptor(psiElement1.getNode(),
-                        new TextRange(psiElement1.getTextRange().getStartOffset(), psiElement1.getTextRange().getEndOffset()), group) {
+                        new TextRange(psiElement1.getTextRange().getStartOffset(), psiElement1.getTextRange().getEndOffset())) {
                         @Nullable
                         @Override
                         public String getPlaceholderText() {
@@ -141,15 +137,13 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             return;
         }
 
-        FoldingGroup group = FoldingGroup.newGroup("constant");
-
         for(PsiElement fileReference: constantReferences) {
             String contents = fileReference.getText();
             if(StringUtils.isNotBlank(contents) && contents.contains(":")) {
                 final String[] parts = contents.split("::");
                 if(parts.length == 2) {
                     descriptors.add(new FoldingDescriptor(fileReference.getNode(),
-                        new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset()), group) {
+                        new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset())) {
                         @Nullable
                         @Override
                         public String getPlaceholderText() {

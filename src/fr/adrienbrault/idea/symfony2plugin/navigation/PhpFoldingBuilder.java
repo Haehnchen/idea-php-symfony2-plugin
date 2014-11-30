@@ -4,7 +4,6 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingBuilderEx;
 import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.FoldingGroup;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -47,18 +46,16 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
         }
 
         List<FoldingDescriptor> descriptors = new ArrayList<FoldingDescriptor>();
-        FoldingGroup model = FoldingGroup.newGroup("model");
-        FoldingGroup template = FoldingGroup.newGroup("template");
 
         Collection<StringLiteralExpression> stringLiteralExpressiones = PsiTreeUtil.findChildrenOfType(psiElement, StringLiteralExpression.class);
         for(StringLiteralExpression stringLiteralExpression: stringLiteralExpressiones) {
 
             if(codeFoldingPhpRoute) {
-                attachModelShortcuts(descriptors, model, stringLiteralExpression);
+                attachModelShortcuts(descriptors, stringLiteralExpression);
             }
 
             if(codeFoldingPhpTemplate) {
-                attachTemplateShortcuts(descriptors, template, stringLiteralExpression);
+                attachTemplateShortcuts(descriptors, stringLiteralExpression);
             }
 
         }
@@ -75,7 +72,6 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
     private void attachRouteShortcuts(List<FoldingDescriptor> descriptors, Collection<StringLiteralExpression> stringLiteralExpressions) {
 
         Map<String,Route> routes = null;
-        FoldingGroup group = FoldingGroup.newGroup("route");
 
         for(StringLiteralExpression stringLiteralExpression: stringLiteralExpressions) {
 
@@ -93,7 +89,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
                     final String url = RouteHelper.getRouteUrl(route);
                     if(url != null) {
                         descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
-                            new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1), group) {
+                            new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1)) {
                             @Nullable
                             @Override
                             public String getPlaceholderText() {
@@ -108,7 +104,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
     }
 
-    private void attachModelShortcuts(List<FoldingDescriptor> descriptors, final FoldingGroup group, final StringLiteralExpression stringLiteralExpression) {
+    private void attachModelShortcuts(List<FoldingDescriptor> descriptors, final StringLiteralExpression stringLiteralExpression) {
 
         if (MethodMatcher.getMatchedSignatureWithDepth(stringLiteralExpression, SymfonyPhpReferenceContributor.REPOSITORY_SIGNATURES) == null) {
             return;
@@ -121,7 +117,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
                 final String replace = content.substring(content.lastIndexOf(lastChar) + 1);
                 if(replace.length() > 0) {
                     descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
-                        new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1), group) {
+                        new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1)) {
                         @Nullable
                         @Override
                         public String getPlaceholderText() {
@@ -136,7 +132,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
     }
 
-    private void attachTemplateShortcuts(List<FoldingDescriptor> descriptors, final FoldingGroup group, final StringLiteralExpression stringLiteralExpression) {
+    private void attachTemplateShortcuts(List<FoldingDescriptor> descriptors, final StringLiteralExpression stringLiteralExpression) {
 
         if (MethodMatcher.getMatchedSignatureWithDepth(stringLiteralExpression, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES) == null) {
             return;
@@ -151,7 +147,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
         final String finalTemplateShortcutName = templateShortcutName;
         descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
-            new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1), group) {
+            new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1)) {
             @Nullable
             @Override
             public String getPlaceholderText() {
