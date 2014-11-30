@@ -64,23 +64,65 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     private void collectIncludeContextVars(IElementType iElementType, PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
 
-        // {% include 'template.html' with {'foo': 'bar'} only %}
-        PsiElement onlyElement = null;
+        boolean addContextVar = true;
         Map<String, String> varAliasMap = new HashMap<String, String>();
+
         if(iElementType == TwigElementTypes.INCLUDE_TAG || iElementType == TwigElementTypes.EMBED_TAG) {
-            onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
+
+            // {% include 'template.html' with {'foo': 'bar'} only %}
+            // {% embed "template.html.twig" with {'foo': 'bar'} only %}
+
+            PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
+            if(onlyElement != null) {
+                addContextVar = false;
+            }
+
             varAliasMap = getIncludeWithVarNames(tag.getText());
 
-            // "only" and no alias, dont provide context
-            if(onlyElement != null && varAliasMap.size() == 0) {
-                return;
+        } else if(iElementType == TwigTokenTypes.IDENTIFIER) {
+
+            // {{ include('template.html.twig', {'foo2': foo}, with_context = false) }}
+            // not nice but its working :)
+
+            // strip all whitespace psi elements
+            String text = tag.getText();
+            text = text.replaceAll("\\r|\\n|\\s+", "");
+
+            String regex = "include\\((['|\"].*['|\"],(.*))\\)";
+            Matcher matcher = Pattern.compile(regex).matcher(text);
+
+            if (matcher.find()) {
+                String[] group = matcher.group(1).split(",");
+
+                if(group.length > 1) {
+
+                    // json alias map: {'foo2': foo}
+                    if(group[1].startsWith("{")) {
+                        varAliasMap = getVariableAliasMap(group[1]);
+                    }
+
+                    // try to find context in one of the parameter:
+                    // include('template.html', with_context = false)
+                    // include('template.html', {foo: 'bar'}, with_context = false)
+                    for (int i = 1; i < group.length; i++) {
+                        if(group[i].equals("with_context=false")) {
+                            addContextVar = false;
+                        }
+                    }
+                }
             }
+
         }
 
-        HashMap<String, PsiVariable> stringPsiVariableHashMap = TwigTypeResolveUtil.collectScopeVariables(templatePsiName, visitedFiles);
+        // we dont need to collect foreign file variables
+        if(!addContextVar && varAliasMap.size() == 0) {
+           return;
+        }
+
+        Map<String, PsiVariable> stringPsiVariableHashMap = TwigTypeResolveUtil.collectScopeVariables(templatePsiName, visitedFiles);
 
         // add context vars
-        if(onlyElement == null) {
+        if(addContextVar) {
             for(Map.Entry<String, PsiVariable> entry: stringPsiVariableHashMap.entrySet()) {
                 variables.put(entry.getKey(), entry.getValue());
             }
