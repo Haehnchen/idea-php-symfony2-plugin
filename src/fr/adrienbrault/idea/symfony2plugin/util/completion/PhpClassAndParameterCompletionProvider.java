@@ -30,18 +30,7 @@ public class PhpClassAndParameterCompletionProvider extends CompletionProvider<C
             return;
         }
 
-        // Foo\|Bar
-        // Foo|\Bar
-        PhpElementsUtil.visitNamespaceClassForCompletion(psiElement, parameters.getOffset(), new PhpElementsUtil.ClassForCompletionVisitor() {
-            @Override
-            public void visit(PhpClass phpClass, String presentableFQN, String prefix) {
-                resultSet.addElement(LookupElementBuilder.create(prefix + presentableFQN).withIcon(phpClass.getIcon()));
-            }
-        });
-
-        for (String className : PhpIndex.getInstance(psiElement.getProject()).getAllClassNames(resultSet.getPrefixMatcher())) {
-            resultSet.addElement(new PhpLookupElement(className, PhpClassIndex.KEY, parameters.getOriginalFile().getProject(), PhpClassReferenceInsertHandler.getInstance()));
-        }
+        PhpClassCompletionProvider.addClassCompletion(parameters, resultSet, psiElement, false);
 
         for( Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(psiElement.getProject()).entrySet()) {
             resultSet.addElement(

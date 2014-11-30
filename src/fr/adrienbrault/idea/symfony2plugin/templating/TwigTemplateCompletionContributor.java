@@ -13,10 +13,12 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
+import com.jetbrains.php.completion.PhpVariantsUtil;
 import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassIndex;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -42,15 +44,13 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -340,11 +340,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new TypeCompletionProvider()
         );
 
+        // {# @var variable \Foo\ClassName #}
         // {# variable \Foo\ClassName #}
         extend(
             CompletionType.BASIC,
             TwigHelper.getTwigTypeDocBlock(),
-            new TwigDocBlockTypeClassCompletionProvider()
+            new PhpClassCompletionProvider(true)
         );
 
         // {# @Container Foo:Bar #}
@@ -440,28 +441,6 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             resultSet.addAllElements(TwigHelper.getTwigLookupElements(parameters.getPosition().getProject()));
-
-        }
-    }
-
-    /**
-     * think of PhpClassCompletionProvider
-     */
-    private class TwigDocBlockTypeClassCompletionProvider extends CompletionProvider<CompletionParameters> {
-
-        @Override
-        protected void addCompletions(@NotNull CompletionParameters paramV, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet resultSet) {
-
-            PsiElement psiElement = paramV.getOriginalPosition();
-
-            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
-                return;
-            }
-
-            PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
-            for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {
-                resultSet.addElement(new PhpLookupElement(className, PhpClassIndex.KEY, psiElement.getProject(), PhpReferenceInsertHandler.getInstance()));
-            }
 
         }
     }
