@@ -18,9 +18,9 @@ public class PhpMethodVariableResolveUtil {
     /**
      * search for twig template variable on common use cases
      */
-    public static HashMap<String, PsiVariable> collectMethodVariables(Method method) {
+    public static Map<String, PsiVariable> collectMethodVariables(Method method) {
 
-        HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         List<PsiElement> psiElements = collectPossibleTemplateArrays(method);
         for(PsiElement templateVariablePsi: psiElements) {
@@ -87,9 +87,9 @@ public class PhpMethodVariableResolveUtil {
      * @param searchScope should be method scope
      * @param variable the variable declaration psi $var = array();
      */
-    private static HashMap<String, PsiVariable> collectOnVariableReferences(SearchScope searchScope, Variable variable) {
+    private static Map<String, PsiVariable> collectOnVariableReferences(SearchScope searchScope, Variable variable) {
 
-        final HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        final Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         PhpPsiUtil.hasReferencesInSearchScope(searchScope, variable, new CommonProcessors.FindProcessor<PsiReference>() {
             @Override
@@ -122,7 +122,7 @@ public class PhpMethodVariableResolveUtil {
      */
     private static Map<String, PsiVariable> getTypesOnArrayIndex(ArrayAccessExpression arrayAccessExpression) {
 
-        HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         ArrayIndex arrayIndex = arrayAccessExpression.getIndex();
         if(arrayIndex != null && arrayIndex.getValue() instanceof StringLiteralExpression) {
@@ -154,7 +154,7 @@ public class PhpMethodVariableResolveUtil {
      */
     public static Map<String, PsiVariable> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
 
-        HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             if(arrayHashElement.getKey() instanceof StringLiteralExpression) {

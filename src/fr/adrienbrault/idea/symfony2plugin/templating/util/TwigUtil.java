@@ -340,9 +340,9 @@ public class TwigUtil {
         return getTemplateName(twigFile, TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false));
     }
 
-    public static HashMap<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
+    public static Map<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
 
-        HashMap<String, PsiVariable> vars = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> vars = new HashMap<String, PsiVariable>();
 
         PsiFile psiFile = psiElement.getContainingFile();
         if(!(psiFile instanceof TwigFile)) {
@@ -356,7 +356,7 @@ public class TwigUtil {
 
         final Set<Method> methods = getTwigFileMethodUsageOnIndex((TwigFile) psiFile);
 
-        HashMap<String, PsiVariable> stringPsiVariableHashMap = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> stringPsiVariableHashMap = new HashMap<String, PsiVariable>();
         for(Method methodIndex : methods) {
             stringPsiVariableHashMap.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
         }
