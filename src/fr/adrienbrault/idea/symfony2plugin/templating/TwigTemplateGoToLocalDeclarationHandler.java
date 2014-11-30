@@ -32,10 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -104,6 +101,11 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(this.getConstantGoto(psiElement));
         }
 
+        // {# @var user \Foo #}
+        if(TwigHelper.getTwigTypeDocBlock().accepts(psiElement)) {
+            psiElements.addAll(this.getVarClassGoto(psiElement));
+        }
+
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
@@ -139,6 +141,26 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         }
 
         return targetPsiElements;
+    }
+
+    private Collection<PhpClass> getVarClassGoto(PsiElement psiElement) {
+
+        String comment = psiElement.getText();
+        if(StringUtils.isBlank(comment)) {
+            return Collections.emptyList();
+        }
+
+        for(String pattern: new String[] {TwigTypeResolveUtil.DOC_PATTERN, TwigTypeResolveUtil.DOC_PATTERN_2}) {
+            Matcher matcher = Pattern.compile(pattern).matcher(comment);
+            if (matcher.find()) {
+                String className = matcher.group(2);
+                if(StringUtils.isNotBlank(className)) {
+                    return PhpElementsUtil.getClassesInterface(psiElement.getProject(), className);
+                }
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {
