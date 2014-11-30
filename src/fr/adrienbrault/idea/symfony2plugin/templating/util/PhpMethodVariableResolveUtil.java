@@ -22,7 +22,7 @@ public class PhpMethodVariableResolveUtil {
 
         HashMap<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
 
-        ArrayList<PsiElement> psiElements = collectPossibleTemplateArrays(method);
+        List<PsiElement> psiElements = collectPossibleTemplateArrays(method);
         for(PsiElement templateVariablePsi: psiElements) {
 
             // "return array(...)" we dont need any parsing
@@ -48,13 +48,13 @@ public class PhpMethodVariableResolveUtil {
     /**
      *  search for possible variables which are possible accessible inside rendered twig template
      */
-    private static ArrayList<PsiElement> collectPossibleTemplateArrays(Method method) {
+    private static List<PsiElement> collectPossibleTemplateArrays(Method method) {
 
-        ArrayList<PsiElement> collectedTemplateVariables = new ArrayList<PsiElement>();
+        List<PsiElement> collectedTemplateVariables = new ArrayList<PsiElement>();
 
-        Collection<PhpReturn> phpReturns = PsiTreeUtil.findChildrenOfType(method, PhpReturn.class);
-
-        for(PhpReturn phpReturn : phpReturns) {
+        // Annotation controller
+        // @TODO: check for phpdoc tag
+        for(PhpReturn phpReturn : PsiTreeUtil.findChildrenOfType(method, PhpReturn.class)) {
             PhpPsiElement returnPsiElement = phpReturn.getFirstPsiChild();
 
             // @TODO: think of support all types here
@@ -64,18 +64,17 @@ public class PhpMethodVariableResolveUtil {
                 collectedTemplateVariables.add(returnPsiElement);
             }
 
-            // return render('foo.html.twig', $template|array())
-            if(returnPsiElement instanceof MethodReference) {
-                if(new Symfony2InterfacesUtil().isTemplatingRenderCall(returnPsiElement)) {
-                    PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt(((MethodReference) returnPsiElement).getParameterList(), 1);
-                    if(templateParameter != null) {
-                        collectedTemplateVariables.add(templateParameter);
-                    }
+        }
 
+        // twig render calls:
+        // $twig->render('foo', $vars);
+        for(MethodReference methodReference : PsiTreeUtil.findChildrenOfType(method, MethodReference.class)) {
+            if(new Symfony2InterfacesUtil().isTemplatingRenderCall(methodReference)) {
+                PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt((methodReference).getParameterList(), 1);
+                if(templateParameter != null) {
+                    collectedTemplateVariables.add(templateParameter);
                 }
-
             }
-
         }
 
         return collectedTemplateVariables;
