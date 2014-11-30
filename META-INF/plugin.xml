@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.77</version>
+    <version>0.11.78</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,17 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.78</h2>
+<ul>
+    <li>Add twig embed tag indexer</li>
+    <li>Support "include()" function and "embed" tag in twig variable collector</li>
+    <li>Experimental: Add postfix completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/389">#389</a></li>
+    <li>Add more possible twig variables syntax from php files</li>
+    <li>Add navigation for twig var doc</li>
+    <li>Fix error on non unique class name completion in xml, yaml and twig <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/387">#387</a></li>
+    <li>Remove grouping for code folding, to make strings independent from each other</li>
+</ul>
 
 <h2>0.10.77 / 0.11.77</h2>
 <ul>

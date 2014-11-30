@@ -6,6 +6,15 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.78
+* Add twig embed tag indexer
+* Support "include()" function and "embed" tag in twig variable collector
+* Experimental: Add postfix completion #389
+* Add more possible twig variables syntax from php files
+* Add navigation for twig var doc
+* Fix error on non unique class name completion in xml, yaml and twig #387
+* Remove grouping for code folding, to make strings independent from each other
+
 ### 0.10.77 / 0.11.77
 * Add weak routes in controller action related popover
 * Add index for twig file php usage in render* methods and add variable collector
