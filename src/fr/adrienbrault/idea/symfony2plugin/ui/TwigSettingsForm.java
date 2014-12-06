@@ -41,8 +41,42 @@ public class TwigSettingsForm implements Configurable {
     private ListTableModel<TwigPath> modelList;
 
     public TwigSettingsForm(@NotNull Project project) {
-
         this.project = project;
+    }
+
+    private void attachItems(boolean includeSettings) {
+
+        // @TODO: remove this check, moved init stuff out of constructor
+        // dont load on project less context
+        if(this.project == null) {
+            return;
+        }
+
+        List<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
+        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, includeSettings));
+        Collections.sort(sortableLookupItems);
+
+        for (TwigPath twigPath : sortableLookupItems) {
+            // dont use managed class here
+            this.modelList.addRow(twigPath.clone());
+        }
+    }
+
+    @Nls
+    @Override
+    public String getDisplayName() {
+        return "Twig";
+    }
+
+    @Nullable
+    @Override
+    public String getHelpTopic() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public JComponent createComponent() {
 
         this.tableView = new TableView<TwigPath>();
         this.modelList = new ListTableModel<TwigPath>(
@@ -81,40 +115,7 @@ public class TwigSettingsForm implements Configurable {
                 }
             }
         });
-    }
 
-    private void attachItems(boolean includeSettings) {
-
-        // dont load on project less context
-        if(this.project == null) {
-            return;
-        }
-        
-        List<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
-        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, includeSettings));
-        Collections.sort(sortableLookupItems);
-
-        for (TwigPath twigPath : sortableLookupItems) {
-            // dont use managed class here
-            this.modelList.addRow(twigPath.clone());
-        }
-    }
-
-    @Nls
-    @Override
-    public String getDisplayName() {
-        return "Twig";
-    }
-
-    @Nullable
-    @Override
-    public String getHelpTopic() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public JComponent createComponent() {
         ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<TwigPath>() {
             @Override
             public TwigPath createElement() {
