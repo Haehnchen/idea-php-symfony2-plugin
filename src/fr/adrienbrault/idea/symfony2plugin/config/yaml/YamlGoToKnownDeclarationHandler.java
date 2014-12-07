@@ -11,9 +11,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -27,6 +29,7 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -143,9 +146,8 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
     private void getControllerGoto(PsiElement psiElement, List<PsiElement> results) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
-        Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), text);
-        if(method != null) {
-            results.add(method);
+        if(StringUtils.isNotBlank(text)) {
+            results.addAll(Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), text)));
         }
     }
 

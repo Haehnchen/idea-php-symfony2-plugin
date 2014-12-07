@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -17,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,10 +51,10 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                 if(xmlAttr != null && "_controller".equals(xmlAttr.getValue())) {
                     String actionName = subTag.getValue().getTrimmedText();
                     if(StringUtils.isNotBlank(actionName)) {
-                        Method method = ControllerIndex.getControllerMethod(xmlTag.getProject(), actionName);
-                        if(method != null) {
+                        PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(xmlTag.getProject(), actionName);
+                        if(methods.length > 0) {
                             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                                setTargets(method).
+                                setTargets(methods).
                                 setTooltipText("Navigate to action");
 
                             lineMarkerInfos.add(builder.createLineMarkerInfo(xmlTag));

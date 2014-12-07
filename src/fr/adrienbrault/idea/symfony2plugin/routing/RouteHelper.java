@@ -36,8 +36,10 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubInd
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -152,6 +154,18 @@ public class RouteHelper {
             // AcmeDemoBundle:Demo:hello
             String[] split = controllerName.split(":");
             if(split.length == 3) {
+
+                // try to resolve on bundle path
+                SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getBundle(split[0]);
+                if(symfonyBundle != null) {
+                    // AcmeDemoBundle\Controller\DemoController:helloAction
+                    Method method = PhpElementsUtil.getClassMethod(project, symfonyBundle.getNamespaceName() + "Controller\\" + split[1] + "Controller", split[2] + "Action");
+                    if(method != null) {
+                        return new PsiElement[] {method};
+                    }
+                }
+
+                // fallback to controller class instances, if relative path doesnt follow default file structure
                 Method method = ControllerIndex.getControllerMethod(project, controllerName);
                 if(method != null) {
                     return new PsiElement[] {method};
@@ -201,7 +215,7 @@ public class RouteHelper {
 
                 // clean file cache
                 if(COMPILED_CACHE.containsKey(project) && COMPILED_CACHE.get(project).containsKey(file)) {
-                    COMPILED_CACHE.get(project).get(file);
+                    COMPILED_CACHE.get(project).remove(file);
                 }
 
             } else {
@@ -225,8 +239,10 @@ public class RouteHelper {
         }
 
         Map<String, Route> routes = new HashMap<String, Route>();
-        for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
-            routes.putAll(container.getRoutes());
+        if(COMPILED_CACHE.containsKey(project)) {
+            for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
+                routes.putAll(container.getRoutes());
+            }
         }
 
         return routes;

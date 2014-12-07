@@ -4,10 +4,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceBase;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ControllerReference  extends PsiReferenceBase<PsiElement> implements PsiReference {
+public class ControllerReference extends PsiReferenceBase<PsiElement> implements PsiReference {
 
     private StringLiteralExpression element;
 
@@ -19,7 +21,20 @@ public class ControllerReference  extends PsiReferenceBase<PsiElement> implement
     @Nullable
     @Override
     public PsiElement resolve() {
-        return ControllerIndex.getControllerMethod(this.element.getProject(), element.getContents());
+
+        // @TODO: multiresolve
+
+        String contents = element.getContents();
+        if(StringUtils.isBlank(contents)) {
+            return null;
+        }
+
+        PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(this.element.getProject(), contents);
+        if(methods.length > 0) {
+            return methods[0];
+        }
+
+        return null;
     }
 
     @NotNull

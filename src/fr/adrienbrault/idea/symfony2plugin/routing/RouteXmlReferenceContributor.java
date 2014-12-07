@@ -12,6 +12,8 @@ import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+
 public class RouteXmlReferenceContributor extends PsiReferenceContributor {
 
     @Override
@@ -47,16 +49,8 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public ResolveResult[] multiResolve(boolean b) {
-
-            Method method = ControllerIndex.getControllerMethod(getElement().getProject(), getElement().getText());
-
-            if(method != null) {
-                return new ResolveResult[] {
-                    new PhpResolveResult(method)
-                };
-            }
-
-            return new ResolveResult[0];
+            PsiElement[] methodsOnControllerShortcut = RouteHelper.getMethodsOnControllerShortcut(getElement().getProject(), getElement().getText());
+            return PhpResolveResult.create(Arrays.asList(methodsOnControllerShortcut));
         }
 
         @NotNull
