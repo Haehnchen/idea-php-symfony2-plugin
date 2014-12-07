@@ -355,7 +355,7 @@ public class RouteHelper {
      * Foo\Bar::methodAction
      */
     @Nullable
-    public static String convertMethodToRouteControllerName(Method method) {
+    public static String convertMethodToRouteControllerName(@NotNull Method method) {
 
         PhpClass phpClass = method.getContainingClass();
         if(phpClass == null) {
@@ -369,6 +369,50 @@ public class RouteHelper {
 
         return (className.startsWith("\\") ? className.substring(1) : className) + "::" + method.getName();
 
+    }
+
+    /**
+     * FooBundle:Bar::method
+     */
+    @Nullable
+    public static String convertMethodToRouteShortcutControllerName(@NotNull Method method) {
+
+        PhpClass phpClass = method.getContainingClass();
+        if(phpClass == null) {
+            return null;
+        }
+
+        String className = phpClass.getPresentableFQN();
+        if(className == null) {
+            return null;
+        }
+
+        int bundlePos = className.lastIndexOf("Bundle\\");
+        if(bundlePos == -1) {
+            return null;
+        }
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(method.getProject()).getContainingBundle(phpClass);
+        if(symfonyBundle == null) {
+            return null;
+        }
+        String name = method.getName();
+        String methodName = name.substring(0, name.length() - "Action".length());
+
+        String relative = symfonyBundle.getRelative(phpClass.getContainingFile().getVirtualFile(), true);
+        if(relative == null) {
+            return null;
+        }
+
+        if(relative.startsWith("Controller/")) {
+            relative = relative.substring("Controller/".length());
+        }
+
+        if(relative.endsWith("Controller")) {
+            relative = relative.substring(0, relative.length() - "Controller".length());
+        }
+
+        return String.format("%s:%s:%s", symfonyBundle.getName(), relative, methodName);
     }
 
     public static VirtualFile[] getRouteDefinitionInsideFile(Project project, String... routeNames) {
@@ -570,16 +614,28 @@ public class RouteHelper {
     }
 
     @Nullable
-    public static List<Route> getRoutesOnControllerAction(Method method) {
+    public static List<Route> getRoutesOnControllerAction(@NotNull Method method) {
+
+        Set<String> routeNames = new HashSet<String>();
 
         String methodRouteActionName = RouteHelper.convertMethodToRouteControllerName(method);
-        if(methodRouteActionName == null) {
+        if(methodRouteActionName != null) {
+            routeNames.add(methodRouteActionName);
+        }
+
+        String shortcutName = RouteHelper.convertMethodToRouteShortcutControllerName(method);
+        if(shortcutName != null) {
+            routeNames.add(shortcutName);
+        }
+
+        if(routeNames.size() == 0) {
             return null;
         }
 
         List<Route> routes = new ArrayList<Route>();
         for(Map.Entry<String, Route> routeEntry: getAllRoutes(method.getProject()).entrySet()) {
-            if(routeEntry.getValue().getController() != null && routeEntry.getValue().getController().equals(methodRouteActionName)) {
+            String controller = routeEntry.getValue().getController();
+            if(controller != null && routeNames.contains(controller)) {
                 routes.add(routeEntry.getValue());
             }
         }
