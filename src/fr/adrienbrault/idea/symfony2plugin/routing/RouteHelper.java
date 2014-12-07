@@ -411,7 +411,7 @@ public class RouteHelper {
             relative = relative.substring(0, relative.length() - "Controller".length());
         }
 
-        return String.format("%s:%s:%s", symfonyBundle.getName(), relative, methodName);
+        return String.format("%s:%s:%s", symfonyBundle.getName(), relative.replace("/", "\\"), methodName);
     }
 
     public static VirtualFile[] getRouteDefinitionInsideFile(Project project, String... routeNames) {
