@@ -9,7 +9,6 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
@@ -26,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +87,11 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public void projectClosed() {
         ServiceXmlParserFactory.cleanInstance(project);
+
+        // clean routing
+        if(RouteHelper.COMPILED_CACHE.containsKey(project)) {
+            RouteHelper.COMPILED_CACHE.remove(project);
+        }
     }
 
     public static Logger getLogger() {
@@ -109,29 +112,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
      */
     @Deprecated
     public Map<String, Route> getRoutes() {
-        Map<String, Route> routes = new HashMap<String, Route>();
-
-        String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
-        File urlGeneratorFile = new File(urlGeneratorPath);
-        VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
-
-        if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
-            return routes;
-        }
-
-        Long routesLastModified = urlGeneratorFile.lastModified();
-        if (routesLastModified.equals(this.routesLastModified)) {
-            return this.routes;
-        }
-
-        Symfony2ProjectComponent.getLogger().info("update routing: " + urlGeneratorFile.toString());
-
-        routes = RouteHelper.getRoutes(project, virtualUrlGeneratorFile);
-
-        this.routes = routes;
-        this.routesLastModified = routesLastModified;
-
-        return routes;
+        return RouteHelper.getCompiledRoutes(project);
     }
 
     public List<File> getContainerFiles() {

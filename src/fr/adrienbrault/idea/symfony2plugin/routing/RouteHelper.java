@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -24,9 +25,11 @@ import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
@@ -42,12 +45,14 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.*;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RouteHelper {
+
+    public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<Project, Map<String, RoutesContainer>>();
 
     public static LookupElement[] getRouteParameterLookupElements(Project project, String routeName) {
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
@@ -172,7 +177,63 @@ public class RouteHelper {
         return list;
     }
 
-    public static Map<String, Route> getRoutes(Project project, VirtualFile virtualFile) {
+    private static String getPath(Project project, String path) {
+        if (!FileUtil.isAbsolute(path)) { // Project relative path
+            path = project.getBasePath() + "/" + path;
+        }
+
+        return path;
+    }
+
+    public static Map<String, Route> getCompiledRoutes(Project project) {
+
+        String pathToUrlGenerator = Settings.getInstance(project).pathToUrlGenerator;
+        Set<String> files = new HashSet<String>();
+        if(pathToUrlGenerator != null) {
+            files.add(pathToUrlGenerator);
+        }
+
+        for(String file: files) {
+
+            File urlGeneratorFile = new File(getPath(project, file));
+            VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
+            if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
+
+                // clean file cache
+                if(COMPILED_CACHE.containsKey(project) && COMPILED_CACHE.get(project).containsKey(file)) {
+                    COMPILED_CACHE.get(project).get(file);
+                }
+
+            } else {
+
+                if(!COMPILED_CACHE.containsKey(project)) {
+                    COMPILED_CACHE.put(project, new HashMap<String, RoutesContainer>());
+                }
+
+                Long routesLastModified = urlGeneratorFile.lastModified();
+                if(!COMPILED_CACHE.get(project).containsKey(file) || !COMPILED_CACHE.get(project).get(file).getLastMod().equals(routesLastModified)) {
+
+                    COMPILED_CACHE.get(project).put(file, new RoutesContainer(
+                        routesLastModified,
+                        RouteHelper.getRoutesInsideUrlGeneratorFile(project, virtualUrlGeneratorFile)
+                    ));
+
+                    Symfony2ProjectComponent.getLogger().info("update routing: " + urlGeneratorFile.toString());
+                }
+            }
+
+        }
+
+        Map<String, Route> routes = new HashMap<String, Route>();
+        for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
+            routes.putAll(container.getRoutes());
+        }
+
+        return routes;
+    }
+
+    @NotNull
+    public static Map<String, Route> getRoutesInsideUrlGeneratorFile(Project project, VirtualFile virtualFile) {
 
         Map<String, Route> routes = new HashMap<String, Route>();
 
