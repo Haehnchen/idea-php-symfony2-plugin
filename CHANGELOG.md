@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.79
+* Refactoring routing handling and prepare multiple route files #138
+* Smarter route name resolve on indexed names #392, #376, #365
+* Add doctrine 2.5 cache methods for class / repository completion #203
+* Fixing IndexNotReadyException and "Read access is allowed" for eap changes #370, #383
+
 ### 0.11.78
 * Add twig embed tag indexer
 * Support "include()" function and "embed" tag in twig variable collector
