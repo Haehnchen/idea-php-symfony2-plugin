@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import org.jetbrains.annotations.NotNull;
@@ -19,9 +18,7 @@ public class PhpRoutingAnnotator {
 
     public static void annotateRouteName(PsiElement target, @NotNull AnnotationHolder holder, final String routeName) {
 
-        Symfony2ProjectComponent symfony2ProjectComponent = target.getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String, Route> routes = symfony2ProjectComponent.getRoutes();
-
+        Map<String, Route> routes = RouteHelper.getCompiledRoutes(target.getProject());
         if(routes.containsKey(routeName))  {
             return;
         }

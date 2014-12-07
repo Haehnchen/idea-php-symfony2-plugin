@@ -15,7 +15,6 @@ import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.ui.FilterComponent;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.components.JBList;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
@@ -142,8 +141,7 @@ public class Symfony2SearchForm {
         }
 
         if(this.toggleRoute.isSelected()) {
-            Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
-            Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
+            Map<String,Route> routes = RouteHelper.getCompiledRoutes(project);
             for (Route route : routes.values()) {
                 if(route.getName().toLowerCase().contains(filter)) {
                     items.add(new RouteLookupElement(route));

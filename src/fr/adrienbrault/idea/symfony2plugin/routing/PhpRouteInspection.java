@@ -69,9 +69,7 @@ public class PhpRouteInspection extends LocalInspectionTool {
 
     public static void annotateRouteName(PsiElement target, @NotNull ProblemsHolder holder, final String routeName) {
 
-        Symfony2ProjectComponent symfony2ProjectComponent = target.getProject().getComponent(Symfony2ProjectComponent.class);
-        Map<String, Route> routes = symfony2ProjectComponent.getRoutes();
-
+        Map<String, Route> routes = RouteHelper.getCompiledRoutes(target.getProject());
         if(routes.containsKey(routeName))  {
             return;
         }

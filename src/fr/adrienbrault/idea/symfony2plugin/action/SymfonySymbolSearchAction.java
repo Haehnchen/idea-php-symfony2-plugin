@@ -105,7 +105,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         private Map<String, Route> getRoutes() {
 
             if(this.routes == null) {
-                this.routes = project.getComponent(Symfony2ProjectComponent.class).getRoutes();
+                this.routes = RouteHelper.getCompiledRoutes(project);
             }
 
             return this.routes;

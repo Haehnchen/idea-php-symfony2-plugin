@@ -74,9 +74,8 @@ public class RouteHelper {
     @Nullable
     public static Route getRoute(Project project, String routeName) {
 
-        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-
-        if(!symfony2ProjectComponent.getRoutes().containsKey(routeName)) {
+        Map<String, Route> compiledRoutes = RouteHelper.getCompiledRoutes(project);
+        if(!compiledRoutes.containsKey(routeName)) {
 
             // @TODO: provide multiple ones
             Collection<VirtualFile> foo = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
@@ -87,7 +86,7 @@ public class RouteHelper {
             return null;
         }
 
-        return symfony2ProjectComponent.getRoutes().get(routeName);
+        return compiledRoutes.get(routeName);
     }
     public static PsiElement[] getRouteParameterPsiElements(Project project, String routeName, String parameterName) {
 
@@ -724,8 +723,7 @@ public class RouteHelper {
 
     public static List<LookupElement> getRoutesLookupElements(final @NotNull Project project) {
 
-        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        Map<String, Route> routes = symfony2ProjectComponent.getRoutes();
+        Map<String, Route> routes = RouteHelper.getCompiledRoutes(project);
 
         final List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
@@ -771,9 +769,7 @@ public class RouteHelper {
     public static Map<String, Route> getAllRoutes(Project project) {
 
         Map<String, Route> routes = new HashMap<String, Route>();
-
-        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        routes.putAll(symfony2ProjectComponent.getRoutes());
+        routes.putAll(RouteHelper.getCompiledRoutes(project));
 
         Set<String> uniqueKeySet = new HashSet<String>(routes.keySet());
 

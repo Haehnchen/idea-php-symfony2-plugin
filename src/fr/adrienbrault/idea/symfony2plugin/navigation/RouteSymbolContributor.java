@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import org.jetbrains.annotations.NotNull;
@@ -21,8 +20,7 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
 
         Set<String> routeNames = new HashSet<String>();
 
-        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        Map<String,Route> routes = symfony2ProjectComponent.getRoutes();
+        Map<String, Route> routes = RouteHelper.getCompiledRoutes(project);
 
         for (Route route : routes.values()) {
             routeNames.add(route.getName());
