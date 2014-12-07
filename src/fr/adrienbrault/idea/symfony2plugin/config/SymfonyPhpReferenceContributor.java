@@ -39,6 +39,15 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "update"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "delete"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "from"),
+
+        // doctrine 2.5 methods
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "getEntityCacheRegion"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "containsEntity"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "evictEntity"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "evictEntityRegion"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "containsCollection"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "evictCollection"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "evictCollectionRegion"),
     };
 
     public static MethodMatcher.CallToSignature[] TEMPLATE_SIGNATURES = new MethodMatcher.CallToSignature[] {
