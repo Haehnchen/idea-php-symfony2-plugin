@@ -102,7 +102,14 @@ public class TwigBlockParser {
         }
 
         for(Map.Entry<VirtualFile, String> entry : virtualFiles.entrySet()) {
-            PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(entry.getKey());
+
+            // can be null if deleted during iteration
+            VirtualFile key = entry.getKey();
+            if(key == null) {
+                continue;
+            }
+
+            PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(key);
             if(psiFile instanceof TwigFile) {
                 this.walk(psiFile, TwigUtil.getFoldingTemplateNameOrCurrent(entry.getValue()), current, depth);
             }
