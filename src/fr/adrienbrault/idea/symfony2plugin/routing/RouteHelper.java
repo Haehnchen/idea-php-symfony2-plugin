@@ -182,6 +182,47 @@ public class RouteHelper {
         return new PsiElement[0];
     }
 
+    /**
+     * convert to controller class:
+     *
+     * FooBundle\Controller\BarController::fooBarAction
+     * foo_service_bar:fooBar
+     * AcmeDemoBundle:Demo:hello
+     *
+     * @param project current project
+     * @param controllerName controller service, raw or compiled
+     * @return targets
+     */
+    @Nullable
+    public static PhpClass getControllerClassOnShortcut(@NotNull Project project,@NotNull  String controllerName) {
+
+        if(controllerName.contains("::")) {
+            // FooBundle\Controller\BarController::fooBarAction
+            return PhpElementsUtil.getClass(project, controllerName.substring(0, controllerName.lastIndexOf("::")));
+        }
+
+        // AcmeDemoBundle:Demo:hello
+        String[] split = controllerName.split(":");
+        if(split.length == 3) {
+            // try to resolve on bundle path
+            SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getBundle(split[0]);
+            if(symfonyBundle != null) {
+                return PhpElementsUtil.getClass(project, symfonyBundle.getNamespaceName() + "Controller\\" + split[1] + "Controller");
+            }
+        }
+
+        // @TODO: implement controller as service
+        // foo_service_bar:fooBar
+        /*
+            ControllerAction controllerServiceAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
+            if(controllerServiceAction != null) {
+                return new PsiElement[] {controllerServiceAction.getMethod()};
+            }
+        */
+
+        return null;
+    }
+
     private static <E> ArrayList<E> makeCollection(Iterable<E> iter) {
         ArrayList<E> list = new ArrayList<E>();
         for (E item : iter) {

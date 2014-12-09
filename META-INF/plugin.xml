@@ -469,6 +469,14 @@
                          language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateParameterKeyInspection"/>
 
+
+        <localInspection groupPath="Symfony2" shortName="YamlControllerMethod" displayName="Missing Controller Action"
+                         groupName="Route"
+                         enabledByDefault="true" level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.YamlControllerMethodInspection"/>
+
+
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
