@@ -9,7 +9,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
-import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -55,12 +54,12 @@ public class PhpClassCompletionProvider extends CompletionProvider<CompletionPar
         for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {
 
             for(PhpClass phpClass: phpIndex.getClassesByName(className)) {
-                resultSet.addElement(new MyPhpLookupElement(phpClass).withInsertHandler(PhpReferenceInsertHandler.getInstance()));
+                resultSet.addElement(new MyPhpLookupElement(phpClass).withInsertHandler(PhpReferenceTrimBackslashInsertHandler.getInstance()));
             }
 
             if(withInterface) {
                 for(PhpClass phpClass: phpIndex.getInterfacesByName(className)) {
-                    resultSet.addElement(new MyPhpLookupElement(phpClass).withInsertHandler(PhpReferenceInsertHandler.getInstance()));
+                    resultSet.addElement(new MyPhpLookupElement(phpClass).withInsertHandler(PhpReferenceTrimBackslashInsertHandler.getInstance()));
                 }
             }
 
