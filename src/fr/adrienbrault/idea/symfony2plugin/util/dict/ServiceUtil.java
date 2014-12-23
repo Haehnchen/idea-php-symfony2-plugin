@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 
@@ -69,7 +70,7 @@ public class ServiceUtil {
      * %test%, service, \Class\Name to PhpClass
      */
     @Nullable
-    public static PhpClass getResolvedClassDefinition(Project project, String serviceClassParameterName) {
+    public static PhpClass getResolvedClassDefinition(@NotNull Project project, @NotNull String serviceClassParameterName) {
 
         // match parameter
         if(serviceClassParameterName.startsWith("%") && serviceClassParameterName.endsWith("%")) {
@@ -117,11 +118,11 @@ public class ServiceUtil {
 
     }
 
-    public static Collection<PsiElement> getServiceClassTargets(Project project, String value) {
+    public static Collection<PsiElement> getServiceClassTargets(@NotNull Project project, @Nullable String value) {
 
         List<PsiElement> resolveResults = new ArrayList<PsiElement>();
 
-        if(StringUtils.isBlank(value)) {
+        if(value == null || StringUtils.isBlank(value)) {
             return resolveResults;
         }
 

@@ -476,6 +476,10 @@
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.YamlControllerMethodInspection"/>
 
+        <localInspection groupPath="Symfony2" shortName="YamlDeprecatedClasses" displayName="Deprecated Class"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
