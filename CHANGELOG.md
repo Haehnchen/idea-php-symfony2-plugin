@@ -6,6 +6,14 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.80
+* Add missing route inspection with method creation quickfix
+* Add deprecated inspection warning for service classes #375
+* Support static string methods in twig filter and respect needs_context, needs_environment options in completion #401 #314
+* Allow more valid chars in annotation route index process #400
+* Removes newly added leading backslash on phpstorm8 in class inserts #402
+* Fix npe case in twig block goto #397
+
 ### 0.11.79
 * Refactoring routing handling and prepare multiple route files #138
 * Smarter route name resolve on indexed names #392, #376, #365

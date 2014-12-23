@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.79</version>
+    <version>0.11.80</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,16 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.80</h2>
+<ul>
+    <li>Add missing route inspection with method creation quickfix</li>
+    <li>Add deprecated inspection warning for service classes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/375">#375</a></li>
+    <li>Support static string methods in twig filter and respect needs_context, needs_environment options in completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/401">#401</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/314">#314</a></li>
+    <li>Allow more valid chars in annotation route index process <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/400">#400</a></li>
+    <li>Removes newly added leading backslash on phpstorm8 in class inserts <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/402">#402</a></li>
+    <li>Fix npe case in twig block goto <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/397">#397</a></li>
+</ul>
 
 <h2>0.11.79</h2>
 <ul>
@@ -216,101 +226,6 @@
     <li>0.11: Use NavigationUtil for popups to fix eap api changes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/329">#329</a></li>
 </ul>
 
-<h2>0.10.68 / 0.11.68</h2>
-<ul>
-    <li>Provide weak form extension option completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/317">#317</a></li>
-    <li>Speedup form option completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/318">#318</a></li>
-    <li>Add new custom abstract reference replacements for deprecated getVariants <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/313">#313</a></li>
-    <li>Add weak doctrine namespaces on bundle names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/316">#316</a></li>
-    <li>Add twig macro statement scope resolve for variables <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/315">#315</a></li>
-    <li>Add some missing retina icons <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/312">#312</a></li>
-</ul>
-
-<h2>0.10.67 / 0.11.67</h2>
-<ul>
-    <li>Add array completion for constraints constructor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/304">#304</a></li>
-    <li>Add support for twig.extension and form.type_extension in service generator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/308">#308</a></li>
-    <li>Add bundle controller path to resource completion whitelist <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/307">#307</a></li>
-    <li>Map entity class with orm.yml file as linemarker <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/309">#309</a></li>
-    <li>Add current namespace resolving for yaml targetEntity <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/305">#305</a></li>
-    <li>Add class linemarker for yaml entities</li>
-    <li>Add doctrine entity column names as lookup tail text in querybuilder completion</li>
-</ul>
-
-<h2>0.10.66 / 0.11.66</h2>
-<ul>
-    <li>Add weak tag references for xml and yaml container files</li>
-    <li>0.11.x: build against eap to resolve StringPattern#oneOf issues <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/299">#299</a></li>
-    <li>0.11.x: reflect renaming of GotoRelatedFileAction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/297">#297</a></li>
-</ul>
-
-<h2>0.10.65</h2>
-<ul>
-    <li>Allow window path style in twig template names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/296">#296</a></li>
-    <li>Add service indexer for tags in xml and yaml container files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/282">#282</a></li>
-    <li>Add weak form types on new service tag indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/282">#282</a></li>
-</ul>
-
-<h2>0.10.64</h2>
-<ul>
-    <li>Add completion for repositoryClass in yaml</li>
-    <li>Add completion for mappedBy and inversedBy in yaml</li>
-    <li>Add referencedColumnName references for yaml and annotations</li>
-    <li>Completely remove static doctrine yaml mapping list and use annotations fields</li>
-    <li>Fix annotation targetEntity condition</li>
-    <li>Prettify form field completion</li>
-    <li>(Pls be careful on next PhpStorm 8 eap update!)</li>
-</ul>
-
-<h2>0.10.63</h2>
-<ul>
-    <li>Add completion for form alias tag in xml and yaml container files</li>
-    <li>Support for yaml sequences in arguments instance annotator</li>
-    <li>Service creator adds form alias as tag where possible <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/281">#281</a></li>
-    <li>Fix typo inside querybuilder resolver for oneToOne relations</li>
-</ul>
-
-<h2>0.10.62</h2>
-<ul>
-    <li>Add support for routes in xml files</li>
-    <li>Provide twig context variables for <a href="http://symfony2-plugin.espend.de/languages/twig/index.html#phptypes">include statements</a></li>
-    <li>Fix some whitespace documents issue in yaml files</li>
-</ul>
-
-<h2>0.10.61</h2>
-<ul>
-    <li>Add support for doctrine id orm mapping of yaml files</li>
-    <li>Add support for yaml CompoundValues inside routes action linemarker <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/289">#289</a></li>
-    <li>Fix that yaml files starting with whitespace not indexed for routes and services files</li>
-    <li>Fix cast error on php array variables of twig types provider <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/290">#290</a></li>
-</ul>
-
-<h2>0.10.60</h2>
-<ul>
-    <li>Fix translation annotator to not highlight compiled elements <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/262">#262</a></li>
-    <li>Fix non reload of translations which are outside PhpStorm index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/262">#262</a></li>
-    <li>Add per translation file change indicator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/262">#262</a></li>
-    <li>Cache twig file linemaker per file change request</li>
-    <li>Add linemaker for routes in yaml</li>
-    <li>Add duplicate key inspection for container files of yaml and xml</li>
-    <li>Add duplicate route name inspection for yaml file</li>
-</ul>
-
-<h2>0.10.59</h2>
-<ul>
-    <li>Add extensions for type and reference provider</li>
-    <li>Add instance check annotator for service classes of xml arguments</li>
-    <li>Add goto for parameter definition inside yaml and xml</li>
-    <li>Refactoring of xml service container references to provide many improvements in completion and navigation</li>
-    <li>Remove regular expressions from Twig_Extensions parser and use internal lexer to support more use cases</li>
-    <li>Add tail text for all Twig extensions and improve navigation</li>
-</ul>
-
-<h2>0.10.58</h2>
-<ul>
-    <li>Add completion for yaml config root keys</li>
-    <li>Fix npe in config completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/284">#284</a></li>
-</ul>
 
 <br/>
 <a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
