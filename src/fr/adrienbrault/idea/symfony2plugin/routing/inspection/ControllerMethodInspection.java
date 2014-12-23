@@ -46,7 +46,7 @@ public class ControllerMethodInspection extends LocalInspectionTool {
                 if(YamlElementPatternHelper.getSingleLineScalarKey("_controller").accepts(element)) {
                     String text = PsiElementUtils.trimQuote(element.getText());
                     if(StringUtils.isNotBlank(text)) {
-                        InspectionUtil.inspectController(element, text, holder);
+                        InspectionUtil.inspectController(element, text, holder, null);
                     }
                 }
 
@@ -62,7 +62,7 @@ public class ControllerMethodInspection extends LocalInspectionTool {
                 if(XmlHelper.getRouteConfigControllerPattern().accepts(element)) {
                     String text = PsiElementUtils.trimQuote(element.getText());
                     if(StringUtils.isNotBlank(text)) {
-                        InspectionUtil.inspectController(element, text, holder);
+                        InspectionUtil.inspectController(element, text, holder, null);
                     }
                 }
 
