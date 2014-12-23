@@ -42,7 +42,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
         return new DataIndexer<String, String[], FileContent>() {
             @NotNull
             @Override
-            public Map<String, String[]> map(FileContent inputData) {
+            public Map<String, String[]> map(@NotNull FileContent inputData) {
 
                 Map<String, String[]> map = new THashMap<String, String[]>();
 
@@ -117,20 +117,23 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     }
 
 
+    @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
     }
 
+    @NotNull
     public DataExternalizer<String[]> getValueExternalizer() {
         return new MySetDataExternalizer();
     }
 
+    @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return new FileBasedIndex.InputFilter() {
             @Override
-            public boolean acceptInput(VirtualFile file) {
+            public boolean acceptInput(@NotNull VirtualFile file) {
                 return file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML;
             }
         };
@@ -153,7 +156,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
 
-        public synchronized void save(DataOutput out, String[] values) throws IOException {
+        public synchronized void save(@NotNull DataOutput out, String[] values) throws IOException {
 
             out.writeInt(values.length);
             for(String value: values) {
@@ -162,7 +165,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         }
 
-        public synchronized String[] read(DataInput in) throws IOException {
+        public synchronized String[] read(@NotNull DataInput in) throws IOException {
             List<String> list = new ArrayList<String>();
             int r = in.readInt();
             while (r > 0) {

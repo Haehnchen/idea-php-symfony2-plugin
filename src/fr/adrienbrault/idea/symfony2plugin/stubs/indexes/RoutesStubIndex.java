@@ -38,7 +38,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
         return new DataIndexer<String, String[], FileContent>() {
             @NotNull
             @Override
-            public Map<String, String[]> map(FileContent inputData) {
+            public Map<String, String[]> map(@NotNull FileContent inputData) {
                 Map<String, String[]> map = new THashMap<String, String[]>();
 
                 PsiFile psiFile = inputData.getPsiFile();
@@ -77,21 +77,24 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
     }
 
+    @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
     }
 
+    @NotNull
     @Override
     public DataExternalizer<String[]> getValueExternalizer() {
         return new ServicesDefinitionStubIndex.MySetDataExternalizer();
     }
 
+    @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return new FileBasedIndex.InputFilter() {
             @Override
-            public boolean acceptInput(VirtualFile file) {
+            public boolean acceptInput(@NotNull VirtualFile file) {
                 return file.getFileType() == YAMLFileType.YML || file.getFileType() == XmlFileType.INSTANCE;
             }
         };

@@ -41,7 +41,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
         return new DataIndexer<String, Void, FileContent>() {
             @NotNull
             @Override
-            public Map<String, Void> map(FileContent inputData) {
+            public Map<String, Void> map(@NotNull FileContent inputData) {
                 final Map<String, Void> map = new THashMap<String, Void>();
 
                 PsiFile psiFile = inputData.getPsiFile();
@@ -64,16 +64,19 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
         };
     }
 
+    @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
     }
 
+    @NotNull
     @Override
     public DataExternalizer<Void> getValueExternalizer() {
         return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
     }
 
+    @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return PhpConstantNameIndex.PHP_INPUT_FILTER;

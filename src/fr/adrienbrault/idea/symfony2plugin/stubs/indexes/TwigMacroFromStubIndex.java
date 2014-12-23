@@ -38,7 +38,7 @@ public class TwigMacroFromStubIndex extends FileBasedIndexExtension<String, Void
         return new DataIndexer<String, Void, FileContent>() {
             @NotNull
             @Override
-            public Map<String, Void> map(FileContent inputData) {
+            public Map<String, Void> map(@NotNull FileContent inputData) {
 
                 final Map<String, Void> map = new THashMap<String, Void>();
 
@@ -77,21 +77,24 @@ public class TwigMacroFromStubIndex extends FileBasedIndexExtension<String, Void
 
     }
 
+    @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
     }
 
+    @NotNull
     @Override
     public DataExternalizer<Void> getValueExternalizer() {
         return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
     }
 
+    @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return new FileBasedIndex.InputFilter() {
             @Override
-            public boolean acceptInput(VirtualFile file) {
+            public boolean acceptInput(@NotNull VirtualFile file) {
                 return file.getFileType() == TwigFileType.INSTANCE;
             }
         };

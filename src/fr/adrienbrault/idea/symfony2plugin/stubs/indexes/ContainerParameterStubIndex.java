@@ -38,7 +38,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
         return new DataIndexer<String, String, FileContent>() {
             @NotNull
             @Override
-            public Map<String, String> map(FileContent inputData) {
+            public Map<String, String> map(@NotNull FileContent inputData) {
                 Map<String, String> map = new HashMap<String, String>();
 
                 PsiFile psiFile = inputData.getPsiFile();
@@ -85,16 +85,19 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
         }
     }
 
+    @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
     }
 
+    @NotNull
     @Override
     public DataExternalizer<String> getValueExternalizer() {
         return StringDataExternalizer.STRING_DATA_EXTERNALIZER;
     }
 
+    @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return new FileBasedIndex.InputFilter() {
@@ -121,7 +124,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
         private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
 
         @Override
-        public void save(DataOutput out, String value) throws IOException {
+        public void save(@NotNull DataOutput out, String value) throws IOException {
 
             if(value == null) {
                 value = "";
@@ -131,7 +134,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
         }
 
         @Override
-        public String read(DataInput in) throws IOException {
+        public String read(@NotNull DataInput in) throws IOException {
 
             String value = this.myStringEnumerator.read(in);
 

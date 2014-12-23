@@ -39,7 +39,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
         return new DataIndexer<String, Void, FileContent>() {
             @NotNull
             @Override
-            public Map<String, Void> map(FileContent inputData) {
+            public Map<String, Void> map(@NotNull FileContent inputData) {
 
                 final Map<String, Void> map = new THashMap<String, Void>();
 
@@ -117,7 +117,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
     public FileBasedIndex.InputFilter getInputFilter() {
         return new FileBasedIndex.InputFilter() {
             @Override
-            public boolean acceptInput(VirtualFile file) {
+            public boolean acceptInput(@NotNull VirtualFile file) {
                 return file.getFileType() == TwigFileType.INSTANCE;
             }
         };
