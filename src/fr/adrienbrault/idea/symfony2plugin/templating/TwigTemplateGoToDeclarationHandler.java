@@ -129,7 +129,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     private PsiElement[] getFilterGoTo(PsiElement psiElement) {
-        HashMap<String, TwigExtension> filters = new TwigExtensionParser(psiElement.getProject()).getFilters();
+        Map<String, TwigExtension> filters = new TwigExtensionParser(psiElement.getProject()).getFilters();
         if(!filters.containsKey(psiElement.getText())) {
             return new PsiElement[0];
         }

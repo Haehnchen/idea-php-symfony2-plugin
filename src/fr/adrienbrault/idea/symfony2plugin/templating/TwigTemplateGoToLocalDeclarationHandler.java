@@ -192,7 +192,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
     }
 
     private PsiElement[] getFunctions(PsiElement psiElement) {
-        HashMap<String, TwigExtension> functions = new TwigExtensionParser(psiElement.getProject()).getFunctions();
+        Map<String, TwigExtension> functions = new TwigExtensionParser(psiElement.getProject()).getFunctions();
 
         String funcName = psiElement.getText();
         if(!functions.containsKey(funcName)) {

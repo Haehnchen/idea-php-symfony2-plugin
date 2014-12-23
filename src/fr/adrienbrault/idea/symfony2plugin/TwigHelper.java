@@ -1017,35 +1017,4 @@ public class TwigHelper {
         return lookupElements;
     }
 
-    /**
-     * Paramater formatter for twig extension to remove Twig_Environment parameter from completion display
-     * ported from com.jetbrains.php.PhpPresentationUtil#formatParameters
-     *
-     */
-    public static StringBuilder formatParameters(@Nullable StringBuilder b, @NotNull Parameter[] parameters) {
-        if (b == null) b = new StringBuilder();
-        b.append('(');
-        for (int i = 0; i < parameters.length; i++) {
-
-            if(i == 0) {
-                PhpPsiElement classReference =  parameters[i].getFirstPsiChild();
-                if(classReference instanceof ClassReference) {
-                    String className = ((ClassReference) classReference).getFQN();
-                    if(new Symfony2InterfacesUtil().isInstanceOf(parameters[i].getProject(), className, "Twig_Environment")) {
-                        continue;
-                    }
-                }
-            }
-
-            b.append(PhpPresentationUtil.getParameterPresentation(parameters[i]));
-            if (parameters.length - i > 1) {
-                b.append(", ");
-            }
-
-        }
-
-        b.append(')');
-        return b;
-    }
-
 }
