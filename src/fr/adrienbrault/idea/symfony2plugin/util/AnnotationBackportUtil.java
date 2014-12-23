@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Some method from Php Annotations plugin to not fully set a "depends" entry on it
@@ -152,6 +154,21 @@ public class AnnotationBackportUtil {
         }
 
         return false;
+    }
+
+    @Nullable
+    public static String getAnnotationRouteName(@Nullable String rawDocText) {
+
+        if(rawDocText == null) {
+            return null;
+        }
+
+        Matcher matcher = Pattern.compile("name\\s*=\\s*\"([\\w\\.-]+)\"").matcher(rawDocText);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
     }
 
 }

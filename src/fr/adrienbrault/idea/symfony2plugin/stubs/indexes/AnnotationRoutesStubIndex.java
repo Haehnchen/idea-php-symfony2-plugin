@@ -23,8 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
 
@@ -199,9 +197,9 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
                 PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
                 if(phpDocAttributeList != null) {
                     // @TODO: use pattern
-                    Matcher matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(phpDocAttributeList.getText());
-                    if (matcher.find()) {
-                        map.put(matcher.group(1), null);
+                    String routeName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
+                    if(routeName != null) {
+                        map.put(routeName, null);
                     }
                 }
             }
