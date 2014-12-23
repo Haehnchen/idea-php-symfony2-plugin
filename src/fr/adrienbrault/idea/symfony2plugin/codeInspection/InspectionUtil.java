@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class InspectionUtil {
 
-    public static void inspectController(@NotNull PsiElement psiElement, @NotNull String controllerName, @NotNull ProblemsHolder holder, final @Nullable String routeName) {
+    public static void inspectController(@NotNull PsiElement psiElement, @NotNull String controllerName, @NotNull ProblemsHolder holder, final @NotNull LazyControllerNameResolve lazyControllerNameResolve) {
 
         int lastPos = controllerName.lastIndexOf(":") + 1;
         final String actionName = controllerName.substring(lastPos) + "Action";
@@ -40,13 +40,16 @@ public class InspectionUtil {
             @Override
             public StringBuilder getStringBuilder() {
 
+                // attach route parameter inside method
                 String parameters = "";
+                String routeName = lazyControllerNameResolve.getRouteName();
                 if(routeName != null) {
                     Route route = RouteHelper.getRoute(project, routeName);
-
                     if(route != null) {
                         Set<String> vars = route.getVariables();
                         if(vars.size() > 0) {
+
+                            // add dollar char for vars
                             List<String> varsDollar = new ArrayList<String>();
                             for(String var: vars) {
                                 varsDollar.add("$" + var);
@@ -66,6 +69,11 @@ public class InspectionUtil {
             }
         }));
 
+    }
+
+    public interface LazyControllerNameResolve {
+        @Nullable
+        public String getRouteName();
     }
 
 }
