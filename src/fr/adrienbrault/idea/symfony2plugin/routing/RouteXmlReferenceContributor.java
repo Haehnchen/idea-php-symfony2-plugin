@@ -1,11 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
-import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -20,7 +16,7 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(PsiReferenceRegistrar registrar) {
 
         registrar.registerReferenceProvider(
-            Pattern.getArgumentServiceIdPattern(),
+            XmlHelper.getRouteConfigControllerPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -57,33 +53,6 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
         @Override
         public Object[] getVariants() {
             return ControllerIndex.getControllerLookupElements(getElement().getProject()).toArray();
-        }
-    }
-
-    private static class Pattern {
-
-        /**
-         * <route id="foo" path="/blog/{slug}">
-         *  <default key="_controller">Foo:Demo:hello</default>
-         * </route>
-         */
-        public static PsiElementPattern.Capture<PsiElement> getArgumentServiceIdPattern() {
-            return XmlPatterns
-                .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
-                .withParent(XmlPatterns
-                    .xmlText()
-                    .withParent(XmlPatterns
-                        .xmlTag()
-                        .withName("default")
-                        .withChild(
-                            XmlPatterns.xmlAttribute().withName("key").withValue(
-                                XmlPatterns.string().oneOfIgnoreCase("_controller")
-                            )
-                        )
-                    )
-                ).inside(
-                    XmlHelper.getInsideTagPattern("route")
-                ).inFile(XmlHelper.getXmlFilePattern());
         }
     }
 

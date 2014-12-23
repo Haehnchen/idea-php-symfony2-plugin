@@ -163,6 +163,30 @@ public class XmlHelper {
         return XmlPatterns.psiElement(XmlTag.class).withName(XmlPatterns.string().oneOf(insideTagName));
     }
 
+    /**
+     * <route id="foo" path="/blog/{slug}">
+     *  <default key="_controller">Foo:Demo:hello</default>
+     * </route>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getRouteConfigControllerPattern() {
+        return XmlPatterns
+            .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
+            .withParent(XmlPatterns
+                    .xmlText()
+                    .withParent(XmlPatterns
+                            .xmlTag()
+                            .withName("default")
+                            .withChild(
+                                XmlPatterns.xmlAttribute().withName("key").withValue(
+                                    XmlPatterns.string().oneOfIgnoreCase("_controller")
+                                )
+                            )
+                    )
+            ).inside(
+                XmlHelper.getInsideTagPattern("route")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
     @Nullable
     public static PsiElement getLocalServiceName(PsiFile psiFile, String serviceName) {
 

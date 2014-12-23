@@ -473,8 +473,7 @@
         <localInspection groupPath="Symfony2" shortName="YamlControllerMethod" displayName="Missing Controller Action"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
-                         language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.YamlControllerMethodInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection"/>
 
         <localInspection groupPath="Symfony2" shortName="YamlDeprecatedClasses" displayName="Deprecated Class"
                          groupName="Service"
