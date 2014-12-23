@@ -136,7 +136,16 @@ public class TwigExtensionParser  {
         } else {
             String funcTargetName = PhpElementsUtil.getStringValue(psiElement);
             if(funcTargetName != null) {
-                return "#F" + funcTargetName;
+
+                if(funcTargetName.contains("::")) {
+                    // 'SqlFormatter::format'
+                    String[] splits = funcTargetName.split("::");
+                    if(splits.length >= 2) {
+                        return String.format("#M#C\\%s.%s", splits[0], splits[1]);
+                    }
+                } else {
+                    return "#F" + funcTargetName;
+                }
             }
         }
 
@@ -238,10 +247,7 @@ public class TwigExtensionParser  {
                             PsiElement[] parameters = element.getParameters();
                             String signature = null;
                             if(parameters.length > 0) {
-                                String funcTargetName = PhpElementsUtil.getStringValue(parameters[0]);
-                                if(funcTargetName != null) {
-                                    signature = "#F" + funcTargetName;
-                                }
+                                signature = getCallableSignature(parameters[0], method);
                             }
 
                             filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature));
