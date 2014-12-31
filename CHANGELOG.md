@@ -6,6 +6,9 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.81
+* Fix multiresolve issues eg in AbstractManagerRegistry::getRepository #403
+
 ### 0.11.80
 * Add missing route inspection with method creation quickfix
 * Add deprecated inspection warning for service classes #375

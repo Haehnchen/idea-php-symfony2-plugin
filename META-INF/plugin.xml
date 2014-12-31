@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.80</version>
+    <version>0.11.81</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,11 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.81</h2>
+<ul>
+    <li>Fix multiresolve issues eg in AbstractManagerRegistry::getRepository <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/403">#403</a></li>
+</ul>
 
 <h2>0.11.80</h2>
 <ul>
