@@ -160,7 +160,7 @@ public class Symfony2InterfacesUtil {
      * so try a multiResolve and use first matched method
      */
     @Nullable
-    protected static Method getMultiResolvedMethod(PsiReference psiReference) {
+    public static Method getMultiResolvedMethod(PsiReference psiReference) {
 
         // class be unique in normal case, so try this first
         PsiElement resolvedReference = psiReference.resolve();

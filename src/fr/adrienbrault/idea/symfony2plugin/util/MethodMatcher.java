@@ -181,12 +181,12 @@ public class MethodMatcher {
 
             // walk down next method
             MethodReference methodReference = bag.getMethodReference();
-            PsiElement method = methodReference.resolve();
-            if(!(method instanceof Method)) {
+            Method method = Symfony2InterfacesUtil.getMultiResolvedMethod(methodReference);
+            if(method == null) {
                 return null;
             }
 
-            PsiElement[] parameterReferences = PhpElementsUtil.getMethodParameterReferences((Method) method, bag.getParameterBag().getIndex());
+            PsiElement[] parameterReferences = PhpElementsUtil.getMethodParameterReferences(method, bag.getParameterBag().getIndex());
             if(parameterReferences == null || parameterReferences.length == 0) {
                 return null;
             }
