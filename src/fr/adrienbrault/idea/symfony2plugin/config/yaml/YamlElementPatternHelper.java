@@ -623,11 +623,11 @@ public class YamlElementPatternHelper {
 
     }
 
-    static PsiElementPattern.Capture<PsiElement> getInsideServiceKeyPattern() {
+    public static PsiElementPattern.Capture<PsiElement> getInsideServiceKeyPattern() {
         return getInsideKeyValue("services", "parameters");
     }
 
-    static PsiElementPattern.Capture<PsiElement> getInsideKeyValue(String... keys) {
+    public static PsiElementPattern.Capture<PsiElement> getInsideKeyValue(String... keys) {
         return PlatformPatterns
             .psiElement()
             .inside(

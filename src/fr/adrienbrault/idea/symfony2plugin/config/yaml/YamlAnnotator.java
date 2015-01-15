@@ -25,7 +25,6 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class YamlAnnotator implements Annotator {
@@ -49,7 +48,6 @@ public class YamlAnnotator implements Annotator {
         this.annotateConstructorSequenceArguments(psiElement, holder);
         this.annotateConstructorArguments(psiElement, holder);
         this.annotateCallsArguments(psiElement, holder);
-        this.annotateCallMethod(psiElement, holder);
     }
 
     private void annotateParameter(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
@@ -311,43 +309,6 @@ public class YamlAnnotator implements Annotator {
         }
 
         attachInstanceAnnotation(psiElement, holder, parameterIndex, constructor);
-    }
-
-    private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-
-        if((!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)))
-        {
-            return;
-        }
-
-        if(!YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)){
-            return;
-        }
-
-        if(psiElement.getParent() == null || !(psiElement.getParent().getContext() instanceof YAMLSequence)) {
-            return;
-        }
-
-        YAMLKeyValue callYamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
-        if(callYamlKeyValue == null) {
-            return;
-        }
-
-        YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(callYamlKeyValue.getContext(), "class");
-        if(classKeyValue == null) {
-            return;
-        }
-
-        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(classKeyValue.getValue()));
-        if(serviceParameterClass == null) {
-            return;
-        }
-
-        if(PhpElementsUtil.getClassMethod(serviceParameterClass, PsiElementUtils.trimQuote(psiElement.getText())) == null) {
-            holder.createWeakWarningAnnotation(psiElement, "Unknown method");
-        }
-
     }
 
     private String getServiceName(PsiElement psiElement) {
