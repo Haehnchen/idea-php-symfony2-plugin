@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
@@ -20,10 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 public class ServiceActionUtil {
 
@@ -59,7 +57,7 @@ public class ServiceActionUtil {
 
         String content;
         try {
-            content = inputStreamToString(ServiceActionUtil.class.getResourceAsStream(templatePath));
+            content = StreamUtil.readText(ServiceActionUtil.class.getResourceAsStream(templatePath), "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -100,16 +98,4 @@ public class ServiceActionUtil {
 
     }
 
-    public static String inputStreamToString(InputStream in) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
-        StringBuilder stringBuilder = new StringBuilder();
-        String line = null;
-
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line).append("\n");
-        }
-
-        bufferedReader.close();
-        return stringBuilder.toString();
-    }
 }

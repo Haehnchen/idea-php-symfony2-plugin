@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
@@ -89,7 +90,7 @@ public class NewControllerAction extends AbstractProjectDumbAwareAction {
 
         String content;
         try {
-            content = ServiceActionUtil.inputStreamToString(ServiceActionUtil.class.getResourceAsStream(templatePath));
+            content = StreamUtil.readText(ServiceActionUtil.class.getResourceAsStream(templatePath), "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
             return;
