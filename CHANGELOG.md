@@ -6,6 +6,10 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.82
+* Add method create quickfix for yaml files #415
+* Remove weak service warning #399
+
 ### 0.11.81
 * Fix multiresolve issues eg in AbstractManagerRegistry::getRepository #403
 
