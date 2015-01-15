@@ -23,7 +23,7 @@ public class PhpServiceAnnotator implements Annotator {
         }
 
         // nothing todo; no annotator enabled
-        if(!Settings.getInstance(element.getProject()).phpAnnotateService && !Settings.getInstance(element.getProject()).phpAnnotateWeakService) {
+        if(!Settings.getInstance(element.getProject()).phpAnnotateService) {
             return;
         }
 
@@ -39,15 +39,10 @@ public class PhpServiceAnnotator implements Annotator {
 
         ContainerService containerService = ContainerCollectionResolver.getService(element.getProject(), serviceName);
         if(containerService != null) {
-            if(Settings.getInstance(element.getProject()).phpAnnotateWeakService && containerService.isWeak()) {
-                holder.createWeakWarningAnnotation(element, "Weak Service");
-            }
             return;
         }
 
-        if(Settings.getInstance(element.getProject()).phpAnnotateService) {
-            holder.createWarningAnnotation(element, "Missing Service");
-        }
+        holder.createWarningAnnotation(element, "Missing Service");
 
     }
 }

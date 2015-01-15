@@ -67,8 +67,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox codeFoldingPhpTemplate;
     private JCheckBox codeFoldingTwigTemplate;
     private JCheckBox codeFoldingTwigConstant;
-    
-    private JCheckBox phpAnnotateWeakService;
+
     private JButton buttonReindex;
 
     public SettingsForm(@NotNull final Project project) {
@@ -139,7 +138,6 @@ public class SettingsForm implements Configurable {
 
             || !phpAnnotateTemplate.isSelected() == getSettings().phpAnnotateTemplate
             || !phpAnnotateService.isSelected() == getSettings().phpAnnotateService
-            || !phpAnnotateWeakService.isSelected() == getSettings().phpAnnotateWeakService
             || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
             || !phpAnnotateTranslation.isSelected() == getSettings().phpAnnotateTranslation
@@ -180,7 +178,6 @@ public class SettingsForm implements Configurable {
 
         getSettings().phpAnnotateTemplate = phpAnnotateTemplate.isSelected();
         getSettings().phpAnnotateService = phpAnnotateService.isSelected();
-        getSettings().phpAnnotateWeakService = phpAnnotateWeakService.isSelected();
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
         getSettings().phpAnnotateTranslation = phpAnnotateTranslation.isSelected();
@@ -232,7 +229,6 @@ public class SettingsForm implements Configurable {
 
         phpAnnotateTemplate.setSelected(getSettings().phpAnnotateTemplate);
         phpAnnotateService.setSelected(getSettings().phpAnnotateService);
-        phpAnnotateWeakService.setSelected(getSettings().phpAnnotateWeakService);
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
         phpAnnotateTranslation.setSelected(getSettings().phpAnnotateTranslation);
