@@ -50,7 +50,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
         Collection<StringLiteralExpression> stringLiteralExpressiones = PsiTreeUtil.findChildrenOfType(psiElement, StringLiteralExpression.class);
         for(StringLiteralExpression stringLiteralExpression: stringLiteralExpressiones) {
 
-            if(codeFoldingPhpRoute) {
+            if(codeFoldingPhpModel) {
                 attachModelShortcuts(descriptors, stringLiteralExpression);
             }
 
@@ -61,7 +61,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
         }
 
         // strip ".[php|html].twig"
-        if(codeFoldingPhpModel) {
+        if(codeFoldingPhpRoute) {
             attachRouteShortcuts(descriptors, stringLiteralExpressiones);
         }
 
