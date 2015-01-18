@@ -406,6 +406,11 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection"/>
 
+        <localInspection groupPath="Symfony2" shortName="TaggedExtendsInterfaceClass" displayName="Missing Tag extends/interface statement"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
+
         <localInspection groupPath="Symfony2" shortName="YamlMethodCall" displayName="Create Method"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"

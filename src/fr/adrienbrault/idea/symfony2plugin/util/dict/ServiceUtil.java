@@ -28,7 +28,7 @@ import java.util.*;
 public class ServiceUtil {
 
 
-    static final Map<String , String> TAG_INTERFACES = new HashMap<String , String>() {{
+    public static final Map<String , String> TAG_INTERFACES = new HashMap<String , String>() {{
         //put("assetic.asse", null);
         put("assetic.factory_worker", "Assetic\\Factory\\Worker\\WorkerInterface");
         put("assetic.filter", "Assetic\\Filter\\FilterInterface");
