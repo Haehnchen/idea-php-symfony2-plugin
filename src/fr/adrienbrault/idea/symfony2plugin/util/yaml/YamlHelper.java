@@ -543,4 +543,35 @@ public class YamlHelper {
         return psiFile.getName().contains("routing") || psiFile.getVirtualFile().getPath().contains("/routing");
     }
 
+    /**
+     * foo.service.method:
+     *   class: "ClassName\Foo"
+     *   arguments:
+     *     - "@twig"
+     *     - '@twig'
+     *   tags:
+     *     -  { name: routing.loader, method: "crossHint<cursor>" }
+     *
+     */
+    @Nullable
+    public static String getServiceDefinitionClass(PsiElement psiElement) {
+
+        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
+        if(yamlCompoundValue == null) {
+            return null;
+        }
+
+        yamlCompoundValue = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
+        if(yamlCompoundValue == null) {
+            return null;
+        }
+
+        YAMLKeyValue aClass = YamlHelper.getYamlKeyValue(yamlCompoundValue, "class");
+        if(aClass == null) {
+            return null;
+        }
+
+        return aClass.getValueText();
+    }
+
 }

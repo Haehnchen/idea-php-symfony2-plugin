@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -80,6 +81,14 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getMethodGoto(psiElement, results);
         }
 
+        if(StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("method")
+        ).accepts(psiElement)) {
+            this.getTagMethodGoto(psiElement, results);
+        }
+
+
         return results.toArray(new PsiElement[results.size()]);
     }
 
@@ -116,6 +125,31 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
                     results.add(method);
                 }
             }
+        }
+
+    }
+
+    private void getTagMethodGoto(PsiElement psiElement, List<PsiElement> results) {
+
+        String methodName = PsiElementUtils.trimQuote(psiElement.getText());
+        if(StringUtils.isBlank(methodName)) {
+            return;
+        }
+
+        String classValue = YamlHelper.getServiceDefinitionClass(psiElement);
+        if(classValue == null) {
+            return;
+        }
+
+
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classValue);
+        if(phpClass == null) {
+            return;
+        }
+
+        Method method = phpClass.findMethodByName(methodName);
+        if(method != null) {
+            results.add(method);
         }
 
     }
