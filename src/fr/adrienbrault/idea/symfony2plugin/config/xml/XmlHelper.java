@@ -373,4 +373,34 @@ public class XmlHelper {
         return services;
     }
 
+
+    /**
+     * Get class attribute from service on every inside element
+     *
+     * @param psiInsideService every PsiElement inside service
+     * @return raw class attribute value
+     */
+    @Nullable
+    public static String getServiceDefinitionClass(PsiElement psiInsideService) {
+
+        // search for parent service definition
+        XmlTag callXmlTag = PsiTreeUtil.getParentOfType(psiInsideService, XmlTag.class);
+        XmlTag xmlTag = PsiTreeUtil.getParentOfType(callXmlTag, XmlTag.class);
+        if(xmlTag == null || !xmlTag.getName().equals("service")) {
+            return null;
+        }
+
+        XmlAttribute classAttribute = xmlTag.getAttribute("class");
+        if(classAttribute == null) {
+            return null;
+        }
+
+        String value = classAttribute.getValue();
+        if(StringUtils.isNotBlank(value)) {
+            return value;
+        }
+
+        return null;
+    }
+
 }

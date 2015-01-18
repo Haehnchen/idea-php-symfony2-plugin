@@ -9,20 +9,20 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.*;
 
 public class YamlMethodCallInspection extends LocalInspectionTool {
 
@@ -31,14 +31,20 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
 
         PsiFile psiFile = holder.getFile();
-        if(Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
-            visitRoot(psiFile, "services", holder);
+        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
+        }
+
+        if(psiFile instanceof XmlFile) {
+            visitXmlFile(psiFile, holder);
+        } else if(psiFile instanceof YAMLFile) {
+            visitYamlFile(psiFile, holder);
         }
 
         return super.buildVisitor(holder, isOnTheFly);
     }
 
-    protected void visitRoot(PsiFile psiFile, String rootName, @NotNull final ProblemsHolder holder) {
+    private void visitYamlFile(PsiFile psiFile, final ProblemsHolder holder) {
 
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
@@ -51,7 +57,7 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
         YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
         if(document != null) {
-            YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(document, rootName);
+            YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(document, "services");
             if(yamlKeyValue != null) {
                 YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
                 if(yaml != null) {
@@ -60,6 +66,36 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
             }
         }
+    }
+
+    private void visitXmlFile(@NotNull PsiFile psiFile, @NotNull final ProblemsHolder holder) {
+
+        psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+
+                if(XmlHelper.getTagAttributePattern("tag", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(element) ||
+                   XmlHelper.getTagAttributePattern("call", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(element)
+                  )
+                {
+
+                    // attach to text child only
+                    PsiElement[] psiElements = element.getChildren();
+                    if(psiElements.length < 2) {
+                        return;
+                    }
+
+                    String serviceClassValue = XmlHelper.getServiceDefinitionClass(element);
+                    if(serviceClassValue != null && StringUtils.isNotBlank(serviceClassValue)) {
+                        registerMethodProblem(psiElements[1], holder, serviceClassValue);
+                    }
+
+                }
+
+                super.visitElement(element);
+            }
+        });
+
     }
 
     private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
@@ -88,7 +124,13 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(classKeyValue.getValue()));
+        registerMethodProblem(psiElement, holder, getServiceName(classKeyValue.getValue()));
+
+    }
+
+    private void registerMethodProblem(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
+
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue);
         if(phpClass == null) {
             return;
         }
@@ -111,7 +153,6 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
                     .append(")\n {\n}\n\n");
             }
         }));
-
     }
 
     private String getServiceName(PsiElement psiElement) {

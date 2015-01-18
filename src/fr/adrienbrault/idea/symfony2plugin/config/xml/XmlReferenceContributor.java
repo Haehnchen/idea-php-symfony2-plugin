@@ -14,7 +14,9 @@ import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -201,19 +203,12 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 return new PsiReference[0];
             }
 
-            // search for parent service definition
-            XmlTag callXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
-            XmlTag xmlTag = PsiTreeUtil.getParentOfType(callXmlTag, XmlTag.class);
-            if(xmlTag == null || !xmlTag.getName().equals("service")) {
+            String serviceDefinitionClass = XmlHelper.getServiceDefinitionClass(psiElement);
+            if(serviceDefinitionClass == null) {
                 return new PsiReference[0];
             }
 
-            XmlAttribute classAttribute = xmlTag.getAttribute("class");
-            if(classAttribute == null) {
-                return new PsiReference[0];
-            }
-
-            return new PsiReference[] { new ClassPublicMethodReference(psiElement, classAttribute.getValue())};
+            return new PsiReference[] { new ClassPublicMethodReference(psiElement, serviceDefinitionClass)};
         }
     }
 
