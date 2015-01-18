@@ -4,6 +4,7 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
@@ -98,14 +99,39 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
     }
 
-    private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
+    private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
 
-        if((!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)))
-        {
+        String methodName = PsiElementUtils.trimQuote(psiElement.getText());
+        if(StringUtils.isBlank(methodName)) {
             return;
         }
 
+        String classValue = YamlHelper.getServiceDefinitionClass(psiElement);
+        if(classValue == null) {
+            return;
+        }
+
+        registerMethodProblem(psiElement, holder, classValue);
+    }
+
+    private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
+
+        if(StandardPatterns.and(
+            YamlElementPatternHelper.getInsideKeyValue("tags"),
+            YamlElementPatternHelper.getSingleLineScalarKey("method")
+        ).accepts(psiElement)) {
+            visitYamlMethodTagKey(psiElement, holder);
+        }
+
+        if((PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
+            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)))
+        {
+            visitYamlMethod(psiElement, holder);
+        }
+
+    }
+
+    private void visitYamlMethod(PsiElement psiElement, ProblemsHolder holder) {
         if(!YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)){
             return;
         }
