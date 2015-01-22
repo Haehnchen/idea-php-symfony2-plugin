@@ -6,6 +6,13 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+
+### 0.11.83
+* Add inspection for tagged services to validate corresponding interfaces or extends instances
+* Add "Method Create" quickfix for xml files
+* Add navigation, quickfix and inspections for methods inside tag statements #422
+* Fix non unix eol error in template files #421
+
 ### 0.11.82
 * Add method create quickfix for yaml files #415
 * Remove weak service warning #399
