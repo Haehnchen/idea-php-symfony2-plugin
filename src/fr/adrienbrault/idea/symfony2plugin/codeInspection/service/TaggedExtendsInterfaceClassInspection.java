@@ -128,6 +128,11 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                 continue;
             }
 
+            String expectedClass = ServiceUtil.TAG_INTERFACES.get(tag);
+            if(expectedClass == null) {
+                continue;
+            }
+
             // load PhpClass only if we need it, on error exit
             if(phpClass == null) {
                 phpClass = ServiceUtil.getResolvedClassDefinition(source.getProject(), serviceClass);
@@ -137,7 +142,6 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
             }
 
             // check interfaces
-            String expectedClass = ServiceUtil.TAG_INTERFACES.get(tag);
             if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, expectedClass)) {
                 holder.registerProblem(source, String.format("Class needs to implement '%s' for tag '%s'", expectedClass, tag), ProblemHighlightType.WEAK_WARNING);
             }
