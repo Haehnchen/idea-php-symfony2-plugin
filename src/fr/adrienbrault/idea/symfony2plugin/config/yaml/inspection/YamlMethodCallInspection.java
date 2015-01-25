@@ -6,15 +6,15 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -28,6 +28,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
+
+import java.util.List;
 
 public class YamlMethodCallInspection extends LocalInspectionTool {
 
@@ -44,9 +46,15 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
             visitXmlFile(psiFile, holder);
         } else if(psiFile instanceof YAMLFile) {
             visitYamlFile(psiFile, holder);
+        } else if(psiFile instanceof PhpFile) {
+            visitPhpFile((PhpFile) psiFile, holder);
         }
 
         return super.buildVisitor(holder, isOnTheFly);
+    }
+
+    private void visitPhpFile(PhpFile psiFile, final ProblemsHolder holder) {
+        psiFile.acceptChildren(new PhpSubscriberRecursiveElementWalkingVisitor(holder));
     }
 
     private void visitYamlFile(PsiFile psiFile, final ProblemsHolder holder) {
@@ -59,18 +67,6 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
             }
         });
 
-
-        YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
-        if(document != null) {
-            YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(document, "services");
-            if(yamlKeyValue != null) {
-                YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
-                if(yaml != null) {
-                    YamlHelper.attachDuplicateKeyInspection(yaml, holder);
-                }
-
-            }
-        }
     }
 
     private void visitXmlFile(@NotNull PsiFile psiFile, @NotNull final ProblemsHolder holder) {
@@ -139,6 +135,19 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
                         if(StringUtils.isNotBlank(text)) {
                             return text;
                         }
+                    }
+                }
+            }
+
+        } else if(psiElement.getContainingFile() instanceof PhpFile) {
+
+            ArrayHashElement arrayHashElement = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
+            if(arrayHashElement != null) {
+                PhpPsiElement key = arrayHashElement.getKey();
+                if (key != null) {
+                    String stringValue = PhpElementsUtil.getStringValue(key);
+                    if(StringUtils.isNotBlank(stringValue)) {
+                        return stringValue;
                     }
                 }
             }
@@ -226,10 +235,12 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
         return null;
     }
-
     private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
+        registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue));
+    }
 
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue);
+    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable PhpClass phpClass) {
+
         if(phpClass == null) {
             return;
         }
@@ -267,6 +278,53 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
     private String getServiceName(PsiElement psiElement) {
         return YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(psiElement));
+    }
+
+    /**
+     * getSubscribedEvents method quick fix check
+     *
+     * return array(
+     *   ConsoleEvents::COMMAND => array('onCommanda', 255),
+     *   ConsoleEvents::TERMINATE => array('onTerminate', -255),
+     * );
+     *
+     */
+    private class PhpSubscriberRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
+        private final ProblemsHolder holder;
+
+        public PhpSubscriberRecursiveElementWalkingVisitor(ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            super.visitElement(element);
+
+            if(!(element instanceof StringLiteralExpression)) {
+                return;
+            }
+
+            PsiElement arrayValue = element.getParent();
+            if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+                PhpReturn phpReturn = PsiTreeUtil.getParentOfType(arrayValue, PhpReturn.class);
+                if(phpReturn != null) {
+                    Method method = PsiTreeUtil.getParentOfType(arrayValue, Method.class);
+                    if(method != null) {
+                        String name = method.getName();
+                        if("getSubscribedEvents".equals(name)) {
+                            PhpClass containingClass = method.getContainingClass();
+                            if(containingClass != null && new Symfony2InterfacesUtil().isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+                                String contents = ((StringLiteralExpression) element).getContents();
+                                if(StringUtils.isNotBlank(contents) && containingClass.findMethodByName(contents) == null) {
+                                    registerMethodProblem(element, holder, containingClass);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
 }
