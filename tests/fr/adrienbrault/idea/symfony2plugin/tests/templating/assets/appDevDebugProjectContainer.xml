@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+  <services>
+      <service id="assetic.asset_manager" class="Assetic\Factory\LazyAssetManager">
+          <argument type="service" id="assetic.asset_factory"/>
+          <argument type="collection">
+              <argument key="config" type="service">
+                  <service class="Symfony\Bundle\AsseticBundle\Factory\Loader\ConfigurationLoader" public="false">
+                      <tag name="assetic.formula_loader" alias="config"/>
+                  </service>
+              </argument>
+              <argument key="twig" type="service">
+                  <service class="Assetic\Factory\Loader\CachedFormulaLoader" public="false">
+                      <tag name="assetic.formula_loader" alias="twig"/>
+                      <tag name="assetic.templating.twig"/>
+                      <argument type="service">
+                          <service class="Assetic\Extension\Twig\TwigFormulaLoader" public="false">
+                              <tag name="assetic.templating.twig"/>
+                              <tag name="monolog.logger" channel="assetic"/>
+                              <argument type="service" id="twig"/>
+                              <argument type="service" id="monolog.logger.assetic" on-invalid="ignore"/>
+                          </service>
+                      </argument>
+                      <argument type="service">
+                          <service class="Assetic\Cache\ConfigCache" public="false">
+                              <argument>../app/cache/dev/assetic/config</argument>
+                          </service>
+                      </argument>
+                      <argument>true</argument>
+                  </service>
+              </argument>
+          </argument>
+          <call method="addResource">
+              <argument type="service">
+                  <service class="Symfony\Bundle\AsseticBundle\Factory\Resource\ConfigurationResource" public="false">
+                      <tag name="assetic.formula_resource" loader="config"/>
+                      <argument type="collection">
+                          <argument key="jquery_js" type="collection">
+                              <argument type="collection">
+                                  <argument>../app/Resources/bower/jquery/dist/jquery1.js</argument>
+                                  <argument>../app/Resources/bower/jquery/dist/jquery2.js</argument>
+                              </argument>
+                              <argument type="collection"/>
+                              <argument type="collection"/>
+                          </argument>
+                          <argument key="jquery_js2" type="collection">
+                              <argument type="collection">
+                                  <argument>../app/Resources/bower/jquery/dist/jquery3.js</argument>
+                                  <argument>../app/Resources/bower/jquery/dist/jquery4.js</argument>
+                              </argument>
+                              <argument type="collection"/>
+                              <argument type="collection"/>
+                          </argument>
+                      </argument>
+                  </service>
+              </argument>
+              <argument>config</argument>
+          </call>
+          <call method="addResource">
+              <argument type="service">
+                  <service class="Symfony\Bundle\AsseticBundle\Factory\Resource\DirectoryResource" public="false">
+                      <tag name="assetic.templating.twig"/>
+                      <tag name="assetic.formula_resource" loader="twig"/>
+                      <argument type="service" id="templating.loader"/>
+                      <argument></argument>
+                      <argument>../app/Resources/views</argument>
+                      <argument>/\.[^.]+\.twig$/</argument>
+                  </service>
+              </argument>
+              <argument>twig</argument>
+          </call>
+      </service>
+  </services>
+</container>

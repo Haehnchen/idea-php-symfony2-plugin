@@ -15,15 +15,18 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator;
+import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAction;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.List;
+import java.util.Set;
 
 
 public class TwigAnnotator implements Annotator {
@@ -199,6 +202,16 @@ public class TwigAnnotator implements Annotator {
     }
 
     private boolean isKnownAssetFileOrFolder(PsiElement element, String templateName, String... fileTypes) {
+
+        // custom assets
+        if(templateName.startsWith("@") && templateName.length() > 1) {
+            TwigNamedAssetsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(element.getProject(), TwigNamedAssetsServiceParser.class);
+            Set<String> strings = twigPathServiceParser.getNamedAssets().keySet();
+            if(strings.contains(templateName.substring(1))) {
+                return true;
+            }
+        }
+
         return TwigHelper.resolveAssetsFiles(element.getProject(), templateName, fileTypes).size() > 0;
     }
 
