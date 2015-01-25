@@ -37,6 +37,7 @@ import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -47,6 +48,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -900,10 +902,22 @@ public class TwigHelper {
         );
     }
 
-    public static ArrayList<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
+    public static List<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
 
 
-        ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+        List<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+
+        // {% javascripts [...] @jquery_js2'%}
+        if(templateName.startsWith("@") && templateName.length() > 1) {
+            TwigNamedAssetsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigNamedAssetsServiceParser.class);
+            for (String s : twigPathServiceParser.getNamedAssets().get(templateName.substring(1))) {
+                VirtualFile fileByURL = VfsUtil.findFileByIoFile(new File(s), false);
+                if(fileByURL != null) {
+                    virtualFiles.add(fileByURL);
+                }
+            }
+
+        }
 
         // {% javascripts '@SampleBundle/Resources/public/js/*' %}
         // {% javascripts 'assets/js/*' %}

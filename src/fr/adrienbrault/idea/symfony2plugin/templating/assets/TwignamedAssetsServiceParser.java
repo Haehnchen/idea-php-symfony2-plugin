@@ -3,11 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.templating.assets;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
 
@@ -29,7 +32,25 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
             Element node = (Element) nodeList.item(i);
             String key = node.getAttribute("key");
             if(key != null && StringUtils.isNotBlank(key)) {
-                namedAssets.put(key, new String[0]);
+
+
+                Set<String> files = new HashSet<String>();
+                NodeList argument1 = node.getElementsByTagName("argument");
+                if(argument1.getLength() > 1) {
+
+                    Element argument = (Element) argument1.item(0);
+
+                    NodeList firstChild = argument.getElementsByTagName("argument");
+                    for (int x = 0; x < firstChild.getLength(); x++) {
+                        String textContent = firstChild.item(x).getTextContent();
+                        if(StringUtils.isNotBlank(textContent)) {
+                            files.add(textContent);
+                        }
+                    }
+                }
+
+                namedAssets.put(key, files.toArray(new String[files.size()]));
+
             }
         }
     }

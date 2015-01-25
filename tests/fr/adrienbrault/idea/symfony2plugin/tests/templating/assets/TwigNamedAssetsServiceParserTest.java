@@ -23,6 +23,9 @@ public class TwigNamedAssetsServiceParserTest extends Assert {
         Map<String, String[]> namedAssets = parser.getNamedAssets();
         assertNotNull(namedAssets.get("jquery_js"));
         assertNotNull(namedAssets.get("jquery_js2"));
+
+        assertEquals("../app/Resources/bower/jquery/dist/jquery4.js", namedAssets.get("jquery_js2")[0]);
+        assertEquals("../app/Resources/bower/jquery/dist/jquery3.js", namedAssets.get("jquery_js2")[1]);
     }
 
 }
