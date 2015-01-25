@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+0.11.84
+* Fixing npe in tagged class inspections #425
+* Add function parameter generator for "kernel.event_listener" on method create quickfix #424
+* Add support for getSubscribedEvents inside method create quickfix #424
+* Add support for custom assets #353
+* Add static event parameter hint list for method create quickfix
 
 ### 0.11.83
 * Add inspection for tagged services to validate corresponding interfaces or extends instances
