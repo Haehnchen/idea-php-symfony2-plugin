@@ -67,6 +67,29 @@ public class ServiceUtil {
     }};
 
     /**
+     * static event parameter list
+     *
+     * TODO: replace with live fetch
+     */
+    public static final Map<String , String> TAGS = new HashMap<String , String>() {{
+        put("kernel.request", "\\Symfony\\Component\\HttpKernel\\Event\\GetResponseEvent");
+        put("kernel.view", "\\Symfony\\Component\\HttpKernel\\Event\\GetResponseForControllerResultEvent");
+        put("kernel.controller", "\\Symfony\\Component\\HttpKernel\\Event\\FilterControllerEvent");
+        put("kernel.response", "\\Symfony\\Component\\HttpKernel\\Event\\FilterResponseEvent");
+        put("kernel.finish_request", "\\Symfony\\Component\\HttpKernel\\Event\\FinishRequestEvent");
+        put("kernel.terminate", "\\Symfony\\Component\\HttpKernel\\Event\\PostResponseEvent");
+        put("kernel.exception", "\\Symfony\\Component\\HttpKernel\\Event\\GetResponseForExceptionEvent");
+        put("console.command", "\\Symfony\\Component\\Console\\Event\\ConsoleCommandEvent");
+        put("console.terminate", "\\Symfony\\Component\\Console\\Event\\ConsoleTerminateEvent");
+        put("console.exception", "\\Symfony\\Component\\Console\\Event\\ConsoleExceptionEvent");
+        put("form.pre_bind", "\\Symfony\\Component\\Form\\FormEvent");
+        put("form.bind", "\\Symfony\\Component\\Form\\FormEvent");
+        put("form.post_bind", "\\Symfony\\Component\\Form\\FormEvent");
+        put("form.pre_set_data", "\\Symfony\\Component\\Form\\FormEvent");
+        put("form.post_set_data", "\\Symfony\\Component\\Form\\FormEvent");
+    }};
+
+    /**
      * %test%, service, \Class\Name to PhpClass
      */
     @Nullable

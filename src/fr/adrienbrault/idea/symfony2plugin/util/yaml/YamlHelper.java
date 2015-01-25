@@ -13,10 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLArray;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 import org.jetbrains.yaml.psi.impl.YAMLPsiElementImpl;
 
 import java.util.*;
@@ -429,6 +426,13 @@ public class YamlHelper {
 
         return keySet;
     }
+
+    @Nullable
+    public static YAMLKeyValue getYamlKeyValue(@NotNull YAMLHash yamlHash, String keyName) {
+        return getYamlKeyValue(yamlHash, keyName, false);
+    }
+
+
     @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName) {
         return getYamlKeyValue(yamlKeyValue, keyName, false);

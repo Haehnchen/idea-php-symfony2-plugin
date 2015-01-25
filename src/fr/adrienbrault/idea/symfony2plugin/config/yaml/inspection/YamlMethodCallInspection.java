@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
@@ -10,7 +11,9 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
@@ -22,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
 
@@ -99,6 +103,51 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
     }
 
+    @Nullable
+    private String getEventName(PsiElement psiElement) {
+
+        // xml service
+        if(psiElement.getContainingFile() instanceof XmlFile) {
+
+            XmlTag xmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+            if(xmlTag == null) {
+                return null;
+            }
+
+            XmlAttribute event = xmlTag.getAttribute("event");
+            if(event == null) {
+                return null;
+            }
+
+            String value = event.getValue();
+            if(StringUtils.isBlank(value)) {
+                return null;
+            }
+
+            return value;
+
+        } else if(psiElement.getContainingFile() instanceof YAMLFile) {
+
+            // yaml services
+            YAMLHash yamlHash = PsiTreeUtil.getParentOfType(psiElement, YAMLHash.class);
+            if(yamlHash != null) {
+                YAMLKeyValue event = YamlHelper.getYamlKeyValue(yamlHash, "event");
+                if(event != null) {
+                    PsiElement value = event.getValue();
+                    if(value != null ) {
+                        String text = value.getText();
+                        if(StringUtils.isNotBlank(text)) {
+                            return text;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return null;
+    }
+
     private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
 
         String methodName = PsiElementUtils.trimQuote(psiElement.getText());
@@ -154,7 +203,31 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
 
     }
 
-    private void registerMethodProblem(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
+    @Nullable
+    private static String getTaggedEventMethodParameter(Project project, String eventName) {
+
+        if(ServiceUtil.TAGS.containsKey(eventName)) {
+            return ServiceUtil.TAGS.get(eventName);
+        }
+
+        /*
+        @TODO: add live service event tags
+        ContainerCollectionResolver.ServiceCollector containerCollectionResolver = new ContainerCollectionResolver.ServiceCollector(project);
+        for (String service : ServiceUtil.getTaggedServices(project, "kernel.event_listener")) {
+            for (VirtualFile virtualFile : FileBasedIndexImpl.getInstance().getContainingFiles(ServicesTagStubIndex.KEY, service, GlobalSearchScope.allScope(project))) {
+
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(psiFile != null) {
+
+                }
+            }
+        }
+        */
+
+        return null;
+    }
+
+    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
 
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue);
         if(phpClass == null) {
@@ -171,11 +244,22 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
             @Override
             public StringBuilder getStringBuilder() {
 
+                String taggedEventMethodParameter = null;
+                String eventName = getEventName(psiElement);
+                if(eventName != null) {
+                    taggedEventMethodParameter = getTaggedEventMethodParameter(psiElement.getProject(), eventName);
+                }
+
+                String parameter = "";
+                if(taggedEventMethodParameter != null) {
+                    parameter = taggedEventMethodParameter + " $event";
+                }
+
                 return new StringBuilder()
                     .append("public function ")
                     .append(methodName)
                     .append("(")
-                    // .append(parameters) @TODO: use class or service name
+                    .append(parameter)
                     .append(")\n {\n}\n\n");
             }
         }));
