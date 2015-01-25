@@ -334,10 +334,10 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="YamlMethodCall" displayName="Create Method"
+        <localInspection groupPath="Symfony2" shortName="EventMethodCall" displayName="Create Method"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlMethodCallInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"

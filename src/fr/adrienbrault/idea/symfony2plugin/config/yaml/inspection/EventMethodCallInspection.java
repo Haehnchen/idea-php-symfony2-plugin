@@ -31,7 +31,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.util.List;
 
-public class YamlMethodCallInspection extends LocalInspectionTool {
+public class EventMethodCallInspection extends LocalInspectionTool {
 
     @NotNull
     @Override
@@ -250,7 +250,7 @@ public class YamlMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.WEAK_WARNING, new CreateMethodQuickFix(phpClass, methodName, new CreateMethodQuickFix.InsertStringInterface() {
+        holder.registerProblem(psiElement, "Missing Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(phpClass, methodName, new CreateMethodQuickFix.InsertStringInterface() {
             @NotNull
             @Override
             public StringBuilder getStringBuilder() {

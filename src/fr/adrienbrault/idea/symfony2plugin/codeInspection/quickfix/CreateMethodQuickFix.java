@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
@@ -77,13 +78,14 @@ public class CreateMethodQuickFix implements LocalQuickFix {
                 Method insertedMethod = phpClass.findMethodByName(functionName);
                 if(insertedMethod != null) {
                     editor.getCaretModel().moveToOffset(insertedMethod.getTextRange().getStartOffset());
+                    editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
                 }
 
             }
 
             @Override
             public String getGroupID() {
-                return "Create Route Method";
+                return "Create Method";
             }
 
         }.execute();
