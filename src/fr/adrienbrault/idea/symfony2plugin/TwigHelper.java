@@ -910,10 +910,13 @@ public class TwigHelper {
         // {% javascripts [...] @jquery_js2'%}
         if(templateName.startsWith("@") && templateName.length() > 1) {
             TwigNamedAssetsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigNamedAssetsServiceParser.class);
-            for (String s : twigPathServiceParser.getNamedAssets().get(templateName.substring(1))) {
-                VirtualFile fileByURL = VfsUtil.findFileByIoFile(new File(s), false);
-                if(fileByURL != null) {
-                    virtualFiles.add(fileByURL);
+            String assetName = templateName.substring(1);
+            if(twigPathServiceParser.getNamedAssets().containsKey(assetName)) {
+                for (String s : twigPathServiceParser.getNamedAssets().get(assetName)) {
+                    VirtualFile fileByURL = VfsUtil.findFileByIoFile(new File(s), false);
+                    if(fileByURL != null) {
+                        virtualFiles.add(fileByURL);
+                    }
                 }
             }
 
