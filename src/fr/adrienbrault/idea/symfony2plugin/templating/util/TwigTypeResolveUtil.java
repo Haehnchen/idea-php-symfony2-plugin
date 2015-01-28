@@ -153,14 +153,17 @@ public class TwigTypeResolveUtil {
 
         for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
             if(psiComment instanceof PsiComment) {
-                Matcher matcher = pattern.matcher(psiComment.getText());
-                if (matcher.find()) {
-                    variables.put(matcher.group(1), matcher.group(2));
+
+                Matcher matchVar = pattern2.matcher(psiComment.getText());
+                if (matchVar.find()) {
+                    variables.put(matchVar.group(1), matchVar.group(2));
+                } else {
+                    Matcher matchInline = pattern.matcher(psiComment.getText());
+                    if (matchInline.find()) {
+                        variables.put(matchInline.group(1), matchInline.group(2));
+                    }
                 }
-                matcher = pattern2.matcher(psiComment.getText());
-                if (matcher.find()) {
-                    variables.put(matcher.group(1), matcher.group(2));
-                }
+
             }
         }
 
