@@ -345,7 +345,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigHelper.getTwigTypeDocBlock(),
-            new PhpClassCompletionProvider(true)
+            new PhpClassCompletionProvider(true).withTrimLeadBackslash(true)
         );
 
         // {# @Container Foo:Bar #}
