@@ -42,7 +42,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
-        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
             return null;
@@ -165,7 +165,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {
 
-        ArrayList<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
+        List<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
 
         // class, class.method, class.method.method
         // click on first item is our class name
@@ -220,7 +220,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         String funcName = psiElement.getText();
         String funcNameSearch = funcName;
 
-        ArrayList<TwigMacro> twigMacros;
+        List<TwigMacro> twigMacros;
 
         // check for complete file as namespace import {% import "file" as foo %}
         if(psiElement.getPrevSibling() != null && PlatformPatterns.psiElement(TwigTokenTypes.DOT).accepts(psiElement.getPrevSibling())) {
