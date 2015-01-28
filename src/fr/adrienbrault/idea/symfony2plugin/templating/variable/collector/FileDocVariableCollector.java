@@ -10,14 +10,14 @@ import java.util.*;
 public class FileDocVariableCollector implements TwigFileVariableCollector {
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
         if(!(parameter.getElement().getContainingFile() instanceof TwigFile)) {
             return;
         }
         variables.putAll(convertHashMapToTypeSet(TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) parameter.getElement().getContainingFile())));
     }
 
-    private static HashMap<String, Set<String>> convertHashMapToTypeSet(HashMap<String, String> hashMap) {
+    private static Map<String, Set<String>> convertHashMapToTypeSet(Map<String, String> hashMap) {
         HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
 
         for(final Map.Entry<String, String> entry: hashMap.entrySet()) {

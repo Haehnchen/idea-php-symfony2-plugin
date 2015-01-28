@@ -12,7 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +23,7 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
     public static String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@[C|c]ontroller[\\s]+.*#}";
 
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, HashMap<String, PsiVariable> variables) {
+    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
 
         PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile)) {
@@ -63,7 +63,7 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
     }
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
 
     }
 }

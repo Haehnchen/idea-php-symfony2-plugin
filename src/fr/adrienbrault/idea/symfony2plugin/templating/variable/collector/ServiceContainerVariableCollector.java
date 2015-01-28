@@ -13,7 +13,7 @@ import java.util.*;
 public class ServiceContainerVariableCollector implements TwigFileVariableCollector {
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
 
         TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(parameter.getProject(), TwigGlobalsServiceParser.class);
         for(Map.Entry<String, TwigGlobalVariable> globalVariableEntry: twigPathServiceParser.getTwigGlobals().entrySet()) {

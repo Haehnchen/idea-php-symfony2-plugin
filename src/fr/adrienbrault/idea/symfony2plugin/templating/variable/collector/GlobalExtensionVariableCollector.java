@@ -11,14 +11,14 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class GlobalExtensionVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
 
 
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, HashMap<String, PsiVariable> variables) {
+    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
 
         PhpIndex phpIndex = PhpIndex.getInstance(parameter.getProject());
 
@@ -41,7 +41,7 @@ public class GlobalExtensionVariableCollector implements TwigFileVariableCollect
     }
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
 
     }
 

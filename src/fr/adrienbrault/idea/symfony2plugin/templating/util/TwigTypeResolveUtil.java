@@ -128,7 +128,7 @@ public class TwigTypeResolveUtil {
     /**
      * duplicate use a collector interface
      */
-    private static HashMap<String, String> findInlineStatementVariableDocBlock(PsiElement psiInsideBlock, final IElementType parentStatement) {
+    private static Map<String, String> findInlineStatementVariableDocBlock(PsiElement psiInsideBlock, final IElementType parentStatement) {
 
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, new Condition<PsiElement>() {
             @Override
@@ -142,7 +142,7 @@ public class TwigTypeResolveUtil {
             }
         });
 
-        HashMap<String, String> variables = new HashMap<String, String>();
+        Map<String, String> variables = new HashMap<String, String>();
         if(twigCompositeElement == null) {
             return variables;
         }
@@ -170,13 +170,13 @@ public class TwigTypeResolveUtil {
     /**
      * duplicate use a collector interface
      */
-    public static HashMap<String, String> findFileVariableDocBlock(TwigFile twigFile) {
+    public static Map<String, String> findFileVariableDocBlock(TwigFile twigFile) {
 
         Pattern pattern = Pattern.compile(DOC_PATTERN);
         Pattern pattern2 = Pattern.compile(DOC_PATTERN_2);
 
         // wtf in completion { | } root we have no comments in child context !?
-        HashMap<String, String> variables = new HashMap<String, String>();
+        Map<String, String> variables = new HashMap<String, String>();
         for(PsiElement psiComment: YamlHelper.getChildrenFix(twigFile)) {
             if(psiComment instanceof PsiComment) {
                 Matcher matcher = pattern.matcher(psiComment.getText());
@@ -193,8 +193,8 @@ public class TwigTypeResolveUtil {
         return variables;
     }
 
-    private static HashMap<String, Set<String>> convertHashMapToTypeSet(HashMap<String, String> hashMap) {
-        HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
+    private static Map<String, Set<String>> convertHashMapToTypeSet(Map<String, String> hashMap) {
+        Map<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
 
         for(final Map.Entry<String, String> entry: hashMap.entrySet()) {
             globalVars.put(entry.getKey(), new HashSet<String>(Arrays.asList(entry.getValue())));
@@ -204,15 +204,15 @@ public class TwigTypeResolveUtil {
     }
 
     @NotNull
-    public static HashMap<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement) {
+    public static Map<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement) {
         return collectScopeVariables(psiElement, new HashSet<VirtualFile>());
     }
 
     @NotNull
-    public static HashMap<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement, @NotNull Set<VirtualFile> visitedFiles) {
+    public static Map<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement, @NotNull Set<VirtualFile> visitedFiles) {
 
-        HashMap<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
-        HashMap<String, PsiVariable> controllerVars = new HashMap<String, PsiVariable>();
+        Map<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
+        Map<String, PsiVariable> controllerVars = new HashMap<String, PsiVariable>();
 
         VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
         if(visitedFiles.contains(virtualFile)) {
@@ -246,7 +246,7 @@ public class TwigTypeResolveUtil {
         return controllerVars;
     }
 
-    private static void collectForArrayScopeVariables(PsiElement psiElement, HashMap<String, PsiVariable> globalVars) {
+    private static void collectForArrayScopeVariables(PsiElement psiElement, Map<String, PsiVariable> globalVars) {
 
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, new Condition<PsiElement>() {
             @Override
@@ -352,7 +352,7 @@ public class TwigTypeResolveUtil {
      */
     public static Collection<? extends PhpNamedElement> getTwigPhpNameTargets(PhpNamedElement phpNamedElement, String variableName) {
 
-        ArrayList<PhpNamedElement> targets = new ArrayList<PhpNamedElement>();
+        Collection<PhpNamedElement> targets = new ArrayList<PhpNamedElement>();
         if(phpNamedElement instanceof PhpClass) {
 
             for(Method method: ((PhpClass) phpNamedElement).getMethods()) {

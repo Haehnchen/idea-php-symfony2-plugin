@@ -572,7 +572,7 @@ public class PhpElementsUtil {
         PhpType phpType = new PhpType();
         phpType.add(types);
 
-        ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        List<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
         for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>()).getTypes()) {
             if(typeName.startsWith("\\")) {

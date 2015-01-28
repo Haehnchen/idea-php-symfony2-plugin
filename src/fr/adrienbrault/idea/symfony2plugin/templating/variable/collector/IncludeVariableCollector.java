@@ -28,7 +28,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -38,7 +37,7 @@ import java.util.regex.Pattern;
 public class IncludeVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
 
     @Override
-    public void collectVars(final TwigFileVariableCollectorParameter parameter, final HashMap<String, PsiVariable> variables) {
+    public void collectVars(final TwigFileVariableCollectorParameter parameter, final Map<String, PsiVariable> variables) {
 
         final PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile) || PsiTreeUtil.getChildOfType(psiFile, TwigExtendsTag.class) != null) {
@@ -166,7 +165,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, HashMap<String, Set<String>> variables) {
+    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
 
     }
 
