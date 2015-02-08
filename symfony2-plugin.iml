@@ -13,6 +13,9 @@
     <orderEntry type="library" scope="PROVIDED" name="php-openapi" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="php" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.9" level="project" />
+    <orderEntry type="library" scope="TEST" name="css-openapi" level="project" />
+    <orderEntry type="library" scope="TEST" name="css" level="project" />
+    <orderEntry type="library" scope="TEST" name="java-i18n" level="project" />
+    <orderEntry type="library" scope="TEST" name="properties" level="project" />
   </component>
 </module>
-
