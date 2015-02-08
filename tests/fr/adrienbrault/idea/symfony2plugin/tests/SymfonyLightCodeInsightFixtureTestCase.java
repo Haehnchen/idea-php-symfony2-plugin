@@ -118,4 +118,9 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             myFixture.checkResult(result);
     }
 
+    public void assertCheckHighlighting(String filename, String result) {
+        myFixture.configureByText(filename, result);
+        myFixture.checkHighlighting();
+    }
+
 }
