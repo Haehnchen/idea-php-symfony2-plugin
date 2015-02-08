@@ -105,4 +105,27 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
 
     }
 
+    public void testClassCompletionResult() {
+
+        assertCompletionResultEquals("service.yml",
+            "services:\n" +
+                "    espend_container_service.yaml:\n" +
+                "        class: FooClass<caret>\n",
+            "services:\n" +
+                "    espend_container_service.yaml:\n" +
+                "        class: Foo\\Name\\FooClass\n"
+        );
+
+        assertCompletionResultEquals("service.yml",
+            "services:\n" +
+                "    espend_container_service.yaml:\n" +
+                "        class: Foo\\Name\\<caret>\n",
+            "services:\n" +
+                "    espend_container_service.yaml:\n" +
+                "        class: Foo\\Name\\FooClass\n"
+        );
+
+    }
+
+
 }

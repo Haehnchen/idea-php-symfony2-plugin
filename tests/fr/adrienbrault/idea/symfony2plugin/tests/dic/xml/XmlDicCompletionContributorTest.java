@@ -78,4 +78,38 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
 
     }
 
+    public void testClassCompletionResult() {
+
+        assertCompletionResultEquals("service.xml",
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "    <service factory-class=\"FooClass<caret>\"/>" +
+                "  </services>\n" +
+                "</container>",
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "    <service factory-class=\"Foo\\Name\\FooClass\"/>" +
+                "  </services>\n" +
+                "</container>"
+        );
+
+        assertCompletionResultEquals("service.xml",
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "    <service factory-class=\"Foo\\Name\\<caret>\"/>" +
+                "  </services>\n" +
+                "</container>",
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "    <service factory-class=\"Foo\\Name\\FooClass\"/>" +
+                "  </services>\n" +
+                "</container>"
+        );
+
+    }
+
 }

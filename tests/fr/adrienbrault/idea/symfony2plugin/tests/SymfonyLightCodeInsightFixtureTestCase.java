@@ -112,4 +112,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         fail(String.format("failed to check '%s' because it's unknown", lookupString));
     }
 
+    public void assertCompletionResultEquals(String filename, String complete, String result) {
+            myFixture.configureByText(filename, complete);
+            myFixture.completeBasic();
+            myFixture.checkResult(result);
+    }
+
 }
