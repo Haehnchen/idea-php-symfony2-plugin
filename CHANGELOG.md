@@ -6,7 +6,10 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
-0.11.84
+### 0.11.85
+* Fix npe in custom assets resolving #427
+
+### 0.11.84
 * Fixing npe in tagged class inspections #425
 * Add function parameter generator for "kernel.event_listener" on method create quickfix #424
 * Add support for getSubscribedEvents inside method create quickfix #424
