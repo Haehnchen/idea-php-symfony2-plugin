@@ -54,9 +54,8 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
                     return map;
                 }
 
-                // dont index all yaml files; "Resources/translations" should be good for now
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-                if(relativePath == null || !relativePath.contains("Resources/translations")) {
+                // check physical file position
+                if (!isValidTranslationFile(inputData, psiFile)) {
                     return map;
                 }
 
@@ -82,6 +81,24 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
                 return map;
 
+            }
+
+            private boolean isValidTranslationFile(FileContent inputData, PsiFile psiFile) {
+
+                // dont index all yaml files; "Resources/translations" should be good for now
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+                if(relativePath != null) {
+                    return relativePath.contains("Resources/translations");
+                }
+
+                // Resources/translations/messages.de.yml
+                // @TODO: Resources/translations/de/messages.yml
+                String path = inputData.getFile().getPath();
+                if(path.endsWith("Resources/translations/" + inputData.getFileName())) {
+                    return true;
+                }
+
+                return false;
             }
 
             private Map<String, String[]> getXlfStringMap(FileContent inputData, Map<String, String[]> map) {
