@@ -9,7 +9,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 
 import java.util.Arrays;
@@ -91,7 +90,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
     }
 
-    public void assertCompletionLookupTailIsEqual(LanguageFileType languageFileType, String configureByText, String lookupString, String tailText) {
+    public void assertCompletionLookupTailEquals(LanguageFileType languageFileType, String configureByText, String lookupString, String tailText) {
 
         myFixture.configureByText(languageFileType, configureByText);
         myFixture.completeBasic();

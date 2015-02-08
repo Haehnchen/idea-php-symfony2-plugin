@@ -1,14 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.yaml;
 
-import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.indexing.FileBasedIndexImpl;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -91,7 +86,7 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
             , "FooClass"
         );
 
-        assertCompletionLookupTailIsEqual(YAMLFileType.YML, "services:\n" +
+        assertCompletionLookupTailEquals(YAMLFileType.YML, "services:\n" +
                 "    espend_container_service.yaml:\n" +
                 "        class: <caret>\n"
             , "FooClass", " (Foo\\Name)"

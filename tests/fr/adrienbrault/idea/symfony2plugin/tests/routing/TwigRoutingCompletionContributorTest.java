@@ -13,6 +13,7 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("routing.yml");
+        myFixture.copyFileToProject("routing.xml");
     }
 
     protected String getTestDataPath() {
@@ -20,13 +21,26 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
     }
 
     public void testTwigPathCompletion() {
-        assertCompletionContains(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "route_foo", "route_bar");
-        assertCompletionContains(TwigFileType.INSTANCE, "{{ path(\"<caret>\") }}", "route_foo", "route_bar");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "route_foo", "route_bar", "xml_route");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ path(\"<caret>\") }}", "route_foo", "route_bar", "xml_route");
 
-        assertCompletionContains(TwigFileType.INSTANCE, "<a href=\"<caret>\">foo</a>", "route_foo", "route_bar");
+        assertCompletionContains(TwigFileType.INSTANCE, "<a href=\"<caret>\">foo</a>", "route_foo", "route_bar", "xml_route");
 
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_foo<caret>\">foo</a>", "<a href=\"{{ path('route_foo', {'var3': 'x', 'var1': 'x', 'var2': 'x'}) }}\">foo</a>");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_bar<caret>\">foo</a>", "<a href=\"{{ path('route_bar') }}\">foo</a>");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"xml_route<caret>\">foo</a>", "<a href=\"{{ path('xml_route', {'slug': 'x'}) }}\">foo</a>");
     }
+
+    public void testTwigPathParameterTailCompletion() {
+        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "route_foo", "(var3, var1, var2)");
+        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "xml_route", "(slug)");
+    }
+
+    /*
+    @TODO: not working: pattern changes
+    public void testTwigPathParameterCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ path('route_foo', {'<caret>'}) }}", "var1", "var3", "var2");
+    }
+    */
 
 }
