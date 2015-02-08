@@ -119,7 +119,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
         // is Test file in path name
         String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
-        if(relativePath == null || relativePath.contains("Test") || relativePath.contains("Fixtures")) {
+        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }
 

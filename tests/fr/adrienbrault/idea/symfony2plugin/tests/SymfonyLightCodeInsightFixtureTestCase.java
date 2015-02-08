@@ -32,6 +32,14 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         assertTrue(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
     }
 
+    public void assertCompletionNotContains(LanguageFileType languageFileType, String configureByText, String... lookupStrings) {
+
+        myFixture.configureByText(languageFileType, configureByText);
+        myFixture.completeBasic();
+
+        assertFalse(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
+    }
+
     public void assertCompletionContains(String filename, String configureByText, String... lookupStrings) {
 
         myFixture.configureByText(filename, configureByText);
@@ -116,6 +124,12 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             myFixture.configureByText(filename, complete);
             myFixture.completeBasic();
             myFixture.checkResult(result);
+    }
+
+    public void assertCompletionResultEquals(LanguageFileType languageFileType, String complete, String result) {
+        myFixture.configureByText(languageFileType, complete);
+        myFixture.completeBasic();
+        myFixture.checkResult(result);
     }
 
     public void assertCheckHighlighting(String filename, String result) {
