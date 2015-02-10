@@ -239,12 +239,12 @@ public class TwigTypeResolveUtil {
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.MACRO_STATEMENT)));
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
 
-        // check if we are in "for" scope and resolve types ending with []
-        collectForArrayScopeVariables(psiElement, controllerVars);
-
         for(Map.Entry<String, Set<String>> entry: globalVars.entrySet()) {
             controllerVars.put(entry.getKey(), new PsiVariable(entry.getValue(), null));
         }
+
+        // check if we are in "for" scope and resolve types ending with []
+        collectForArrayScopeVariables(psiElement, controllerVars);
 
         return controllerVars;
     }

@@ -42,17 +42,24 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar \\Bar\\FooClass #} {{ <caret> }}", "bar");
     }
 
-    /*
-    @TODO: pattern changes?
     public void testVarArrayIteration() {
+
         assertCompletionContains(TwigFileType.INSTANCE, "" +
             "{# @var bars \\Bar\\FooClass[] #}\n" +
             "{% for bar in bars %}\n" +
-            "{{ <caret> }}\n" +
+            "  {{ <caret> }}\n" +
             "{% endfor %}\n"
             , "bar"
         );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+            "{# @var bars \\Bar\\FooClass[] #}\n" +
+            "{% for bar in bars %}\n" +
+            "  {{ bar.<caret> }}\n" +
+            "{% endfor %}\n"
+            , "fooBar"
+        );
+
     }
-    */
 
 }
