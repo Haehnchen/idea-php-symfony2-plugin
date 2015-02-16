@@ -133,7 +133,6 @@ public class YamlAnnotator implements Annotator {
                         String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
                         if("arguments".equals(keyText)) {
                             List<YAMLSequence> test = PsiElementUtils.getPrevSiblingsOfType(yamlSequence, PlatformPatterns.psiElement(YAMLSequence.class));
-                            //System.out.println(test.size());
 
                             PsiElement yamlCompoundValueService = yamlKeyValue.getParent();
                             if(yamlCompoundValueService instanceof YAMLCompoundValue) {
@@ -157,7 +156,6 @@ public class YamlAnnotator implements Annotator {
 
         }
 
-        return;
     }
 
     private void annotateConstructorArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {

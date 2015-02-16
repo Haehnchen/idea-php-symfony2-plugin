@@ -59,7 +59,7 @@ public class YamlHelper {
 
     /**
      *  Try to find psi value which match should be a array value and filter out comma, whitespace...
-     *  [@service, "@service2", [""]];
+     *  [@service, "@service2", [""], ['']];
      */
     static public List<PsiElement> getYamlArrayValues(YAMLArray yamlArray) {
 
@@ -83,7 +83,7 @@ public class YamlHelper {
         for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
             PsiElement parameterPsiElement = null;
             for(PsiElement psiElement: psiEntry.getValue()) {
-                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)) {
+                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement)) {
                     parameterPsiElement = psiElement;
                 } else if(psiElement instanceof YAMLPsiElementImpl) {
                     parameterPsiElement = psiElement;
