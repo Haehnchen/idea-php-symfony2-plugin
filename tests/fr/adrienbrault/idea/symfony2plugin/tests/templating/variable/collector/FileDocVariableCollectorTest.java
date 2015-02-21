@@ -23,6 +23,8 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
             "  public function Hot() {}\n" +
             "  protected function protectedBar() {}\n" +
             "  private function privateBar() {}\n" +
+            "  /** @return FooClass[] */\n" +
+            "  public function getNested() {}\n" +
             "}"
         );
 
@@ -57,6 +59,21 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
             "{% for bar in bars %}\n" +
             "  {{ bar.<caret> }}\n" +
             "{% endfor %}\n"
+            , "fooBar"
+        );
+
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
+     */
+    public void testVarChainArrayIteration() {
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClass #}\n" +
+                "{% for bar in bars.nested %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
             , "fooBar"
         );
 

@@ -249,6 +249,26 @@ public class TwigTypeResolveUtil {
         return controllerVars;
     }
 
+
+    private static Collection<String> collectForArrayScopeVariablesFoo(Project project, String[] typeName, PsiVariable psiVariable) {
+
+        Collection<String> previousElements = psiVariable.getTypes();
+
+        for (int i = 1; i <= typeName.length - 1; i++ ) {
+
+            previousElements = resolveTwigMethodName(project, previousElements, typeName[i]);
+
+            // we can stop on empty list
+            if(previousElements.size() == 0) {
+                return Collections.emptyList();
+            }
+
+        }
+
+        return previousElements;
+
+    }
+
     private static void collectForArrayScopeVariables(PsiElement psiElement, Map<String, PsiVariable> globalVars) {
 
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, new Condition<PsiElement>() {
@@ -285,14 +305,38 @@ public class TwigTypeResolveUtil {
             return;
         }
 
+        PhpType phpType = new PhpType();
+
+        // {% for coolBar in coolBars.foos %}
+        Pattern pattern = Pattern.compile("[\\s]+([\\w\\.]+)[\\s]+");
+        Matcher matcher = pattern.matcher(forTag.getText());
+        if (matcher.find()) {
+
+            PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(inVariable, PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ));
+
+            // nested resolve
+            if(nextSiblingOfType != null) {
+                String[] typeName = TwigTypeResolveUtil.formatPsiTypeName(nextSiblingOfType);
+                if(typeName.length > 1 && globalVars.containsKey(typeName[0])) {
+                    PsiVariable psiVariable = globalVars.get(typeName[0]);
+                    for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), typeName, psiVariable)) {
+                        phpType.add(arrayType);
+                    }
+                }
+            }
+
+        } else {
+            // add single "for" var
+            phpType.add(globalVars.get(variableName).getTypes());
+        }
+
         String scopeVariable = forScopeVariable.getText();
 
         // find array types; since they are phptypes they ends with []
         Set<String> types = new HashSet<String>();
-
-        PhpType phpType = new PhpType();
-        phpType.add(globalVars.get(variableName).getTypes());
-
         for(String arrayType: PhpIndex.getInstance(psiElement.getProject()).completeType(psiElement.getProject(), phpType, new HashSet<String>()).getTypes()) {
             if(arrayType.endsWith("[]")) {
                 types.add(arrayType.substring(0, arrayType.length() -2));
@@ -343,6 +387,21 @@ public class TwigTypeResolveUtil {
         }
 
         return phpNamedElements;
+    }
+
+    private static Set<String> resolveTwigMethodName(Project project, Collection<String> previousElement, String typeName) {
+
+        Set<String> types = new HashSet<String>();
+
+        for(String prevClass: previousElement) {
+            for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, prevClass)) {
+                for(PhpNamedElement target : getTwigPhpNameTargets(phpClass, typeName)) {
+                    types.addAll(target.getType().getTypes());
+                }
+            }
+        }
+
+        return types;
     }
 
     /**
