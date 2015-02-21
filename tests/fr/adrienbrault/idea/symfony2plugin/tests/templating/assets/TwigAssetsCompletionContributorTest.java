@@ -38,10 +38,6 @@ public class TwigAssetsCompletionContributorTest extends SymfonyLightCodeInsight
         }
     }
 
-    protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
-    }
-
     public void testTwigAssetFunctionCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ asset('<caret>') }}", "assets/foo.css", "assets/foo.js", "assets/foo.less", "assets/foo.coffee");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<script src=\"assets/foo.coffee<caret>\"></script>", "<script src=\"{{ asset('assets/foo.coffee') }}\"></script>");
@@ -53,6 +49,10 @@ public class TwigAssetsCompletionContributorTest extends SymfonyLightCodeInsight
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% javascripts '<caret>' %}{% endjavascripts %}", "assets/foo.js", "assets/foo.dart", "assets/foo.coffee");
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% javascripts '<caret>' %}{% endjavascripts %}", "assets/foo.css", "assets/foo.less", "assets/foo.sass", "assets/foo.scss");
+    }
+
+    public void testTwigAssetImageFunctionCompletion() {
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "<img src=\"assets/foo.pn<caret>\">", "<img src=\"{{ asset('assets/foo.png') }}\">");
     }
 
 }

@@ -68,4 +68,24 @@ public class TwigHtmlCompletionUtil {
 
     }
 
+    // html inside twig: <img src="">
+    public static PsiElementPattern.Capture<PsiElement> getAssetImageAttributePattern() {
+
+        return PlatformPatterns.psiElement()
+            .withParent(
+                XmlPatterns.xmlAttributeValue()
+                    .withParent(XmlPatterns
+                            .xmlAttribute("src")
+                            .withParent(XmlPatterns
+                                    .xmlTag().withName("img")
+                            )
+                    )
+            ).inFile(XmlPatterns.psiFile()
+                    .withName(XmlPatterns
+                            .string().endsWith(".twig")
+                    )
+            );
+
+    }
+
 }

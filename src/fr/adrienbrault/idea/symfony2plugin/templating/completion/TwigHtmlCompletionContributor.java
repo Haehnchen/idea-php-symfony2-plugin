@@ -74,6 +74,22 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
 
         });
 
+        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetImageAttributePattern(), new CompletionProvider<CompletionParameters>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+
+                if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    return;
+                }
+
+                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.IMG_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                    resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
+                }
+
+            }
+
+        });
+
     }
 
 }
