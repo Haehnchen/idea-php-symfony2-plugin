@@ -40,6 +40,9 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +50,25 @@ import java.util.regex.Pattern;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlCompletionContributor extends CompletionContributor {
+
+    private static final Map<String, String> SERVICE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
+        put("class", null);
+        put("public", null);
+        put("tags", null);
+        put("calls", null);
+        put("arguments", null);
+        put("synchronized", null);
+        put("synthetic", null);
+        put("lazy", null);
+        put("abstract", null);
+        put("parent", null);
+        put("scope", "request, prototype");
+        put("factory", ">= 2.6");
+        put("factory_class", "<= 2.5");
+        put("factory_service", "<= 2.5");
+        put("factory_method", "<= 2.5");
+    }});
+
     public YamlCompletionContributor() {
 
         extend(
@@ -117,7 +139,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config", "Controller"));
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSuperParentArrayKey("services"), new YamlCompletionProvider(new String[] {"class", "public", "tags", "calls", "arguments", "scope"}));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSuperParentArrayKey("services"), new YamlCompletionProvider(SERVICE_KEYS));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getWithFirstRootKey(), new RouteKeyNameYamlCompletionProvider(new String[] {"pattern", "defaults", "path", "requirements", "methods", "condition", "resource", "prefix"}));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParentKeyName("requirements"), new RouteRequirementsCompletion());
 

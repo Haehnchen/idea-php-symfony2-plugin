@@ -6,29 +6,34 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.util.ProcessingContext;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
-    YamlCompletionProvider(List<LookupElement> lookups) {
-        lookupElements = lookups;
+    private List<LookupElement> lookupList;
+    private Map<String, String> lookupMap;
+    private String[] lookupArray;
+
+    public YamlCompletionProvider(List<LookupElement> lookups) {
+        this.lookupList = lookups;
     }
 
-    YamlCompletionProvider(String[] lookups) {
+    public YamlCompletionProvider(Map<String, String> lookups) {
+        this.lookupMap = lookups;
+    }
 
-        for (String lookup : lookups) {
-            lookupElements.add(LookupElementBuilder.create(lookup));
-        }
-
+    public YamlCompletionProvider(String[] lookups) {
+        this.lookupArray = lookups;
     }
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
@@ -37,6 +42,18 @@ public class YamlCompletionProvider extends CompletionProvider<CompletionParamet
             return;
         }
 
-        resultSet.addAllElements(lookupElements);
+        if(this.lookupList != null) {
+            resultSet.addAllElements(this.lookupList);
+        } else if(lookupMap != null) {
+            for (Map.Entry<String, String> lookup : lookupMap.entrySet()) {
+                resultSet.addElement(LookupElementBuilder.create(lookup.getKey()).withTypeText(lookup.getValue(), true).withIcon(Symfony2Icons.SYMFONY));
+            }
+        } else if(lookupArray != null) {
+            for (String lookup : lookupArray) {
+                resultSet.addElement(LookupElementBuilder.create(lookup).withIcon(Symfony2Icons.SYMFONY));
+            }
+        }
+
+
     }
 }
