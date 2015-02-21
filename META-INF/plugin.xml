@@ -424,6 +424,10 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
 
+        <action id="Symfony2.ServiceGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction" text="Generate Service">
+            <add-to-group group-id="GenerateGroup" anchor="last" />
+        </action>
+
         <group id="Symfony2Group" text="Symfony2" popup="true" icon="SymfonyIcons.Symfony">
             <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
             <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
