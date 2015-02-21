@@ -358,6 +358,12 @@
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     />
 
+        <intentionAction>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
+            <category>PHP</category>
+            <descriptionDirectoryName>Symfony2ConstructorCreateServer</descriptionDirectoryName>
+        </intentionAction>
+
 
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"

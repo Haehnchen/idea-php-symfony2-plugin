@@ -49,6 +49,12 @@ public class ServiceGenerateAction extends BaseGenerateAction {
             return;
         }
 
+        invokeServiceGenerator(project, file, phpClass);
+
+    }
+
+    public static void invokeServiceGenerator(Project project, PsiFile file, PhpClass phpClass) {
+
         SymfonyCreateService symfonyCreateService = new SymfonyCreateService(project, file);
         String presentableFQN = phpClass.getPresentableFQN();
         if(presentableFQN != null) {
@@ -61,7 +67,6 @@ public class ServiceGenerateAction extends BaseGenerateAction {
         symfonyCreateService.pack();
         symfonyCreateService.setLocationRelativeTo(null);
         symfonyCreateService.setVisible(true);
-
     }
 
     @Override
