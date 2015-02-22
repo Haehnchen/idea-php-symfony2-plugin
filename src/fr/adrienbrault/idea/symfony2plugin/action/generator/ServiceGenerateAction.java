@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.action.generator;
 
-import com.intellij.codeInsight.generation.actions.BaseGenerateAction;
+import com.intellij.codeInsight.CodeInsightActionHandler;
+import com.intellij.codeInsight.actions.CodeInsightAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -15,42 +16,12 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import org.jetbrains.annotations.NotNull;
 
-public class ServiceGenerateAction extends BaseGenerateAction {
-
-    public ServiceGenerateAction() {
-        super(null);
-    }
+public class ServiceGenerateAction extends CodeInsightAction {
 
     @Override
     public void update(AnActionEvent event) {
         super.update(event);
         event.getPresentation().setIcon(Symfony2Icons.SYMFONY);
-    }
-
-    @Override
-    public void actionPerformedImpl(@NotNull final Project project, final Editor editor) {
-
-        PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
-        if(file == null) {
-            return;
-        }
-        int offset = editor.getCaretModel().getOffset();
-        if(offset <= 0) {
-            return;
-        }
-
-        PsiElement psiElement = file.findElementAt(offset);
-        if(psiElement == null) {
-            return;
-        }
-
-        PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
-        if(phpClass == null) {
-            return;
-        }
-
-        invokeServiceGenerator(project, file, phpClass);
-
     }
 
     public static void invokeServiceGenerator(Project project, PsiFile file, PhpClass phpClass) {
@@ -91,6 +62,43 @@ public class ServiceGenerateAction extends BaseGenerateAction {
         }
 
         return true;
+    }
+
+    @NotNull
+    @Override
+    protected CodeInsightActionHandler getHandler() {
+        return new CodeInsightActionHandler() {
+            @Override
+            public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
+
+                PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
+                if(file == null) {
+                    return;
+                }
+                int offset = editor.getCaretModel().getOffset();
+                if(offset <= 0) {
+                    return;
+                }
+
+                PsiElement psiElement = file.findElementAt(offset);
+                if(psiElement == null) {
+                    return;
+                }
+
+                PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
+                if(phpClass == null) {
+                    return;
+                }
+
+                invokeServiceGenerator(project, file, phpClass);
+
+            }
+
+            @Override
+            public boolean startInWriteAction() {
+                return false;
+            }
+        };
     }
 
 }
