@@ -6,6 +6,17 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.86
+* Support new setFactory syntax in yaml and xml #436
+* Add service generator in class context of "Generator Popover" and intention in arguments
+* Add twig assets completion for img src tags #438
+* Add some more yaml service key completion
+* Add method support for twig "for" statements #208
+* Fix instance annotator in yaml psi pattern arguments on single quote string, after pattern api changes
+* Fix completion for twig inline array doc block pattern
+* Fix insertHandler for trailing backslash in twig doc var completion
+* Note: implemented testing infrastructure #405
+
 ### 0.11.85
 * Fix npe in custom assets resolving #427
 

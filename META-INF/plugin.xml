@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.85</version>
+    <version>0.11.86</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,19 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.86</h2>
+<ul>
+    <li>Support new setFactory syntax in yaml and xml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/436">#436</a></li>
+    <li>Add service generator in class context of "Generator Popover" and intention in arguments</li>
+    <li>Add twig assets completion for img src tags <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/438">#438</a></li>
+    <li>Add some more yaml service key completion</li>
+    <li>Add method support for twig "for" statements <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/208">#208</a></li>
+    <li>Fix instance annotator in yaml psi pattern arguments on single quote string, after pattern api changes</li>
+    <li>Fix completion for twig inline array doc block pattern</li>
+    <li>Fix insertHandler for trailing backslash in twig doc var completion</li>
+    <li>Note: implemented testing infrastructure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/405">#405</a></li>
+</ul>
 
 <h2>0.11.85</h2>
 <ul>
