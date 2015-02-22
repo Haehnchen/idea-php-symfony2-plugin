@@ -10,6 +10,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
@@ -18,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubI
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -237,6 +239,32 @@ public class ServiceUtil {
         }
 
         return taggedClasses;
+    }
+
+
+    /**
+     * Resolve "@service" to its class
+     */
+    @Nullable
+    public static PhpClass getServiceClass(@NotNull Project project, @NotNull String serviceName) {
+
+        serviceName = YamlHelper.trimSpecialSyntaxServiceName(serviceName);
+
+        if(serviceName.length() == 0) {
+            return null;
+        }
+
+        ContainerService containerService = ContainerCollectionResolver.getService(project, serviceName);
+        if(containerService == null) {
+            return null;
+        }
+
+        String serviceClass = containerService.getClassName();
+        if(serviceClass == null) {
+            return null;
+        }
+
+        return PhpElementsUtil.getClassInterface(project, serviceClass);
     }
 
 

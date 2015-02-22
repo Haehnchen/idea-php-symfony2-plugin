@@ -93,6 +93,22 @@ public class XmlHelper {
     }
 
     /**
+     * <factory service="factory_service" method="createFooMethod" />
+     */
+    public static XmlAttributeValuePattern getFactoryServiceCompletionPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                 .xmlAttribute("service")
+                 .withParent(XmlPatterns
+                      .xmlTag().withName("factory")
+                 )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
      */
     public static PsiElementPattern.Capture<PsiElement> getParameterClassValuePattern() {

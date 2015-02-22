@@ -34,6 +34,12 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             new ServiceReferenceProvider()
         );
 
+        // <factory service="factory_service" />
+        registrar.registerReferenceProvider(
+            XmlHelper.getFactoryServiceCompletionPattern(),
+            new ServiceReferenceProvider()
+        );
+
         // <service class="%foo.class%">
         // <service class="Class\Name">
         registrar.registerReferenceProvider(
@@ -140,6 +146,13 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         );
 
         registrar.registerReferenceProvider(
+            XmlHelper.getTagAttributePattern("factory", "method")
+                .inside(XmlHelper.getInsideTagPattern("services"))
+                .inFile(XmlHelper.getXmlFilePattern()),
+            new FactoryClassMethodReferenceProvider()
+        );
+
+        registrar.registerReferenceProvider(
 
             XmlHelper.getParameterWithClassEndingPattern()
                 .inside(XmlHelper.getInsideTagPattern("parameters"))
@@ -187,6 +200,34 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             }
         );
 
+    }
+
+    private class FactoryClassMethodReferenceProvider extends PsiReferenceProvider {
+        @NotNull
+        @Override
+        public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext context) {
+
+            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return new PsiReference[0];
+            }
+
+            XmlTag callXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+            if(callXmlTag == null) {
+                return new PsiReference[0];
+            }
+
+            XmlAttribute aClass = callXmlTag.getAttribute("service");
+            if(aClass == null) {
+                return new PsiReference[0];
+            }
+
+            String value = aClass.getValue();
+            if(StringUtils.isBlank(value)) {
+                return new PsiReference[0];
+            }
+
+            return new PsiReference[] { new ClassPublicMethodReference(psiElement, value)};
+        }
     }
 
     private class ClassMethodReferenceProvider extends PsiReferenceProvider {

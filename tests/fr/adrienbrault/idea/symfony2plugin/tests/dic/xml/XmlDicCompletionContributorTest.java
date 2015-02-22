@@ -15,8 +15,10 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
 
         myFixture.configureByText("classes.php", "<?php\n" +
-                "namespace Foo\\Name;\n" +
-                "class FooClass {}"
+            "namespace Foo\\Name;\n" +
+            "class FooClass {" +
+            " public function foo() " +
+            "}"
         );
 
     }
@@ -108,6 +110,31 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
                 "    <service factory-class=\"Foo\\Name\\FooClass\"/>" +
                 "  </services>\n" +
                 "</container>"
+        );
+
+    }
+
+    public void testFactoryClassMethodCompletionResult() {
+
+        assertCompletionContains("service.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "    <factory service=\"<caret>\"/>" +
+                "  </services>\n" +
+                "</container>"
+            , "data_collector.router"
+        );
+
+        assertCompletionContains("service.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "  <service id=\"foo.factory\" class=\"Foo\\Name\\FooClass\"/>\n" +
+                "  <service id=\"foo.manager\">\n" +
+                "    <factory service=\"foo.factory\" method=\"<caret>\"/>" +
+                "  <service>\n" +
+                "  </services>\n" +
+                "</container>"
+            , "foo"
         );
 
     }

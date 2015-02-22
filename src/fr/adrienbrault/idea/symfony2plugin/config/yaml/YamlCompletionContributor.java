@@ -6,9 +6,12 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.completion.PhpLookupElement;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -16,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupEleme
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineYamlAnnotationLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
@@ -34,6 +38,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProv
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -79,6 +84,11 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC, YamlElementPatternHelper.getConfigKeyPattern(),
             new ConfigCompletionProvider()
+        );
+
+        extend(
+            CompletionType.BASIC, YamlElementPatternHelper.getAfterCommaPattern(),
+            new FactoryMethodCompletionProvider()
         );
 
         extend(
@@ -169,6 +179,39 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_method"), new ServiceClassMethodInsideScalarKeyCompletion("factory_service"));
 
+    }
+
+    private static class FactoryMethodCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            PsiElement prevSiblingOfType = PsiElementUtils.getPrevSiblingOfType(position, YamlElementPatternHelper.getPreviousCommaSibling());
+            if(prevSiblingOfType == null) {
+                return;
+            }
+
+            String service = PsiElementUtils.trimQuote(prevSiblingOfType.getText());
+            if(StringUtils.isBlank(service)) {
+                return;
+            }
+
+            PhpClass phpClass = ServiceUtil.getServiceClass(prevSiblingOfType.getProject(), service);
+            if(phpClass == null) {
+                return;
+            }
+
+            for (Method method : phpClass.getMethods()) {
+                if(method.getAccess().isPublic() && !(method.getName().startsWith("__"))) {
+                    completionResultSet.addElement(new PhpLookupElement(method));
+                }
+            }
+
+        }
     }
 
 

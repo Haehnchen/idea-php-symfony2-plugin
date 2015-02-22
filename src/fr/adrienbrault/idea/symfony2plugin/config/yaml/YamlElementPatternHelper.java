@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiWhiteSpace;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -597,6 +599,70 @@ public class YamlElementPatternHelper {
             // not should fire this in all yaml files
             PlatformPatterns.psiFile().withName(PlatformPatterns.string().matches("[security|config].*\\.yml"))
         );
+    }
+
+    /**
+     * Get service before comma
+     *
+     * ["@service', createNewsletterManager|]
+     * [@service, createNewsletterManager|]
+     * ['@service', createNewsletterManager|]
+     */
+    public static ElementPattern<PsiElement> getAfterCommaPattern() {
+
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withText(",")
+                ),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withText(",")
+                ),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withText(",")
+                )
+        );
+
+    }
+
+    /**
+     * Get service before comma
+     *
+     * ["@service', createNewsletterManager|]
+     * [@service, createNewsletterManager|]
+     * ['@service', createNewsletterManager|]
+     */
+    public static ElementPattern<PsiElement> getPreviousCommaSibling() {
+
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .beforeLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withText(",")
+                ),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_STRING)
+                .beforeLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withText(",")
+                ),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .beforeLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withText(",")
+                )
+        );
+
     }
 
     /**

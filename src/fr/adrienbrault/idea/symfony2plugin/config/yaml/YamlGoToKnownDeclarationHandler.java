@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
@@ -88,8 +89,41 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getTagMethodGoto(psiElement, results);
         }
 
+        // ["@service", method]
+        if(YamlElementPatternHelper.getAfterCommaPattern().accepts(psiElement)) {
+            this.getArrayMethodGoto(psiElement, results);
+        }
 
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    private void getArrayMethodGoto(PsiElement psiElement, List<PsiElement> results) {
+
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        if(StringUtils.isBlank(text)) {
+            return;
+        }
+
+        PsiElement prevSiblingOfType = PsiElementUtils.getPrevSiblingOfType(psiElement, YamlElementPatternHelper.getPreviousCommaSibling());
+        if(prevSiblingOfType == null) {
+            return;
+        }
+
+        String service = PsiElementUtils.trimQuote(prevSiblingOfType.getText());
+        if(StringUtils.isBlank(service)) {
+            return;
+        }
+
+        PhpClass phpClass = ServiceUtil.getServiceClass(prevSiblingOfType.getProject(), service);
+        if(phpClass == null) {
+            return;
+        }
+
+        for (Method method : phpClass.getMethods()) {
+            if(text.equals(method.getName())) {
+                results.add(method);
+            }
+        }
     }
 
     private void getClassGoto(PsiElement psiElement, List<PsiElement> results) {

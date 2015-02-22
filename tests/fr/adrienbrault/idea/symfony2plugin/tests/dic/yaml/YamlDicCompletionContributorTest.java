@@ -17,7 +17,9 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
 
         myFixture.configureByText("classes.php", "<?php\n" +
             "namespace Foo\\Name;\n" +
-            "class FooClass {}"
+            "class FooClass {" +
+            " public function foo() " +
+            "}"
         );
 
     }
@@ -122,5 +124,32 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
 
     }
 
+    public void testFactoryClassMethodCompletionResult() {
+
+        assertCompletionContains(YAMLFileType.YML, "services:\n" +
+                "    foo.factory:\n" +
+                "        class: Foo\\Name\\FooClass\n" +
+                "    foo.manager:\n" +
+                "        factory: [\"@foo.factory\", <caret>]\n"
+            , "foo"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "services:\n" +
+                "    foo.factory:\n" +
+                "        class: Foo\\Name\\FooClass\n" +
+                "    foo.manager:\n" +
+                "        factory: [@foo.factory, <caret>]\n"
+            , "foo"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "services:\n" +
+                "    foo.factory:\n" +
+                "        class: Foo\\Name\\FooClass\n" +
+                "    foo.manager:\n" +
+                "        factory: ['@foo.factory', <caret>]\n"
+            , "foo"
+        );
+
+    }
 
 }
