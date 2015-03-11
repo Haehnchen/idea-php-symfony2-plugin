@@ -8,6 +8,13 @@ namespace{
     class SqlFormatter {
         public function format() {}
     }
+
+    interface Twig_TokenParserInterface {}
+
+    class FooTokenParser implements Twig_TokenParserInterface
+    {
+        public function getTag() { return 'foo_tag'; }
+    }
 }
 
 namespace Doctrine\Bundle\DoctrineBundle\Twig;

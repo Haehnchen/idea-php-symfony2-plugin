@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
@@ -28,7 +29,12 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         myFixture.configureByText(languageFileType, configureByText);
         myFixture.completeBasic();
 
-        assertTrue(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        for (String s : Arrays.asList(lookupStrings)) {
+            if(!lookupElements.contains(s)) {
+                fail(String.format("failed that completion contains %s in %s", s, lookupElements.toString()));
+            }
+        }
     }
 
     public void assertCompletionNotContains(LanguageFileType languageFileType, String configureByText, String... lookupStrings) {

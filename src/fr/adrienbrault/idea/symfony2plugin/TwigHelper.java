@@ -344,6 +344,36 @@ public class TwigHelper {
     }
 
     /**
+     * Twig tag pattern with some hack
+     * because we have invalid psi elements after STATEMENT_BLOCK_START
+     *
+     * {% <carpet> %}
+     */
+    public static ElementPattern<PsiElement> getTagTokenParserPattern() {
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement()
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_START),
+                    PlatformPatterns.psiElement(PsiErrorElement.class)
+                )
+            )
+            .beforeLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
      * {% embed "vertical_boxes_skeleton.twig" %}
      */
     public static ElementPattern<PsiElement> getEmbedPattern() {

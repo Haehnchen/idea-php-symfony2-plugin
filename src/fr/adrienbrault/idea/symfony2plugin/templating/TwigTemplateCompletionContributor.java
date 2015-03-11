@@ -9,19 +9,14 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.completion.PhpLookupElement;
-import com.jetbrains.php.completion.PhpVariantsUtil;
-import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassIndex;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
@@ -48,6 +43,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionPro
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import icons.TwigIcons;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -362,6 +358,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new FormThemeCompletionProvider()
         );
 
+        // {% <carpet> %}
+        extend(CompletionType.BASIC,
+            TwigHelper.getTagTokenParserPattern(),
+            new TagTokenParserCompletionProvider()
+        );
+
         // {% constant('FOO') %}
         extend(
             CompletionType.BASIC,
@@ -427,6 +429,47 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         }
 
+    }
+
+    /**
+     * Parse all classes that implements Twig_TokenParserInterface::getTag
+     * and provide completion on string
+     */
+    private static class TagTokenParserCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
+            Collection<PhpClass> allSubclasses = PhpIndex.getInstance(parameters.getPosition().getProject()).getAllSubclasses("\\Twig_TokenParserInterface");
+            for (PhpClass allSubclass : allSubclasses) {
+
+                // we dont want to see test extension like "§"
+                if(allSubclass.getName().endsWith("Test") || allSubclass.getContainingFile().getVirtualFile().getNameWithoutExtension().endsWith("Test")) {
+                    continue;
+                }
+
+                Method getTag = allSubclass.findMethodByName("getTag");
+                if(getTag == null) {
+                    continue;
+                }
+
+                // get string return value
+                PhpReturn childrenOfType = PsiTreeUtil.findChildOfType(getTag, PhpReturn.class);
+                if(childrenOfType != null) {
+                    PhpPsiElement returnValue = childrenOfType.getFirstPsiChild();
+                    if(returnValue instanceof StringLiteralExpression) {
+                        String contents = ((StringLiteralExpression) returnValue).getContents();
+                        if(StringUtils.isNotBlank(contents)) {
+                            resultSet.addElement(LookupElementBuilder.create(contents).withIcon(Symfony2Icons.SYMFONY));
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     private class FormThemeCompletionProvider extends CompletionProvider<CompletionParameters> {
