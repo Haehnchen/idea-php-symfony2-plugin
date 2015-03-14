@@ -76,6 +76,7 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
      */
     public void testTwigTransDefaultDomainDomainCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain '<caret>' %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain \"<caret>\" %}", "interchange");
         assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain <caret> %}", "interchange");
     }
 
