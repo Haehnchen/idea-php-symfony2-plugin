@@ -6,6 +6,7 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -94,6 +95,35 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             fail(String.format("failed that PsiElement (%s) navigate to %s", psiElement.toString(), targetShortcut));
         }
 
+    }
+
+    public void assertNavigationContainsFile(LanguageFileType languageFileType, String configureByText, String targetShortcut) {
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        Set<String> targets = new HashSet<String>();
+
+        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+            PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
+            if (gotoDeclarationTargets != null && gotoDeclarationTargets.length > 0) {
+                for (PsiElement gotoDeclarationTarget : gotoDeclarationTargets) {
+                    if(gotoDeclarationTarget instanceof PsiFile) {
+                        targets.add(((PsiFile) gotoDeclarationTarget).getVirtualFile().getUrl());
+                    }
+                }
+            }
+        }
+
+        // its possible to have memory fields,
+        // so simple check for ending conditions
+        // temp:///src/interchange.en.xlf
+        for (String target : targets) {
+            if(target.endsWith(targetShortcut)) {
+                return;
+            }
+        }
+
+        fail(String.format("failed that PsiElement (%s) navigate to file %s", psiElement.toString(), targetShortcut));
     }
 
     public void assertCompletionLookupTailEquals(LanguageFileType languageFileType, String configureByText, String lookupString, String tailText) {
