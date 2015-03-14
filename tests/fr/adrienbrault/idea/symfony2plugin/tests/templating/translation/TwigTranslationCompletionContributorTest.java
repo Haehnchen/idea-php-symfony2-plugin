@@ -9,18 +9,7 @@ import java.io.File;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
  */
-public class TwigTranslationCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
-
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.copyFileToProject("messages.de.yml", "Resources/translations/messages.de.yml");
-        myFixture.copyFileToProject("foo.de.yml", "Resources/translations/foo.de.yml");
-        myFixture.copyFileToProject("interchange.en.xlf", "interchange.en.xlf");
-    }
-
-    protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
-    }
+public class TwigTranslationCompletionContributorTest extends TwigTranslationFixturesTest {
 
     public void testTwigTransCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'foo'|trans({}, '<caret>') }}", "messages");
@@ -79,6 +68,15 @@ public class TwigTranslationCompletionContributorTest extends SymfonyLightCodeIn
     public void testTwigWeakIndexSubIndexesCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'foo'|trans({}, '<caret>') }}", "interchange");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans({}, 'interchange') }}", "xlf_weak.symfony.great");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTransDefaultDomainPattern
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     */
+    public void testTwigTransDefaultDomainDomainCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain '<caret>' %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain <caret> %}", "interchange");
     }
 
 }

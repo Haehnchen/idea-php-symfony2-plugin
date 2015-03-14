@@ -33,7 +33,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -263,27 +262,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         // {% trans_default_domain <> %}
         // {% trans_default_domain '<>' %}
-        extend(
-            CompletionType.BASIC,
-            TwigHelper.getTransDefaultDomain(),
-            new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
-                        return;
-                    }
-
-                    TranslationStringMap map = TranslationIndex.getInstance(parameters.getPosition().getProject()).getTranslationMap();
-                    for(String domainKey : map.getDomainList()) {
-                        resultSet.addElement(new TranslatorLookupElement(domainKey, domainKey));
-                    }
-
-                }
-            }
-
-        );
+        extend(CompletionType.BASIC, TwigHelper.getTransDefaultDomainPattern(), new TranslationDomainCompletionProvider());
 
         extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("controller"),  new ControllerCompletionProvider());
 
@@ -469,6 +448,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }
 
+        }
+    }
+
+    private static class TranslationDomainCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                return;
+            }
+
+            resultSet.addAllElements(TranslationUtil.getTranslationDomainLookupElements(parameters.getPosition().getProject()));
         }
     }
 

@@ -7,7 +7,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -88,7 +87,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             }
         }
 
-        if(TwigHelper.getTransDefaultDomain().accepts(psiElement)) {
+        if(TwigHelper.getTransDefaultDomainPattern().accepts(psiElement)) {
             List<PsiFile> domainPsiFiles = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText());
             return domainPsiFiles.toArray(new PsiElement[domainPsiFiles.size()]);
         }

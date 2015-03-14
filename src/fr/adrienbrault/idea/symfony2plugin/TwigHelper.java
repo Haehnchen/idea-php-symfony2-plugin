@@ -444,13 +444,17 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static ElementPattern<PsiElement> getTransDefaultDomain() {
+    /**
+     * {% trans_default_domain '<carpet>' %}
+     * {% trans_default_domain <carpet> %}
+     */
+    public static ElementPattern<PsiElement> getTransDefaultDomainPattern() {
         //noinspection unchecked
         return PlatformPatterns.or(
             PlatformPatterns
                 .psiElement(TwigTokenTypes.IDENTIFIER)
                 .withParent(
-                    PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
                 )
                 .afterLeafSkipping(
                     PlatformPatterns.or(
@@ -464,7 +468,7 @@ public class TwigHelper {
                 ).withLanguage(TwigLanguage.INSTANCE),
             PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
                 .withParent(
-                    PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
                 )
                 .afterLeafSkipping(
                     PlatformPatterns.or(

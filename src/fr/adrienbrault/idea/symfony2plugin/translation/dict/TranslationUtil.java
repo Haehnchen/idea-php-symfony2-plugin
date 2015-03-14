@@ -209,6 +209,7 @@ public class TranslationUtil {
         return lookupElements;
     }
 
+    @NotNull
     public static List<LookupElement> getTranslationDomainLookupElements(Project project) {
 
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
