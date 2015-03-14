@@ -264,6 +264,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {% trans_default_domain '<>' %}
         extend(CompletionType.BASIC, TwigHelper.getTransDefaultDomainPattern(), new TranslationDomainCompletionProvider());
 
+        // {% trans from "<carpet>" %}
+        // {% transchoice from "<carpet>" %}
+        extend(CompletionType.BASIC, TwigHelper.getTranslationTokenTagFromPattern(), new TranslationDomainCompletionProvider());
+
         extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("controller"),  new ControllerCompletionProvider());
 
 

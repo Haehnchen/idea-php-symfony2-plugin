@@ -484,6 +484,49 @@ public class TwigHelper {
     }
 
     /**
+     * {% trans with {'%name%': 'Fabien'} from "app" %}
+     * {% transchoice count with {'%name%': 'Fabien'} from "app" %}
+     */
+    public static ElementPattern<PsiElement> getTranslationTokenTagFromPattern() {
+        //noinspection unchecked
+
+        // we need to use withText check, because twig tags dont have children to search for tag name
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG).withText(
+                        PlatformPatterns.string().matches("\\{%\\s+(trans|transchoice).*")
+                    )
+                )
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("from")
+                ).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG).withText(
+                        PlatformPatterns.string().matches("\\{%\\s+(trans|transchoice).*")
+                    )
+                )
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("from")
+                ).withLanguage(TwigLanguage.INSTANCE)
+        );
+    }
+
+    /**
      * match ", 'dddd')" on ending
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {

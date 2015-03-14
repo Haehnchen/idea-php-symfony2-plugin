@@ -64,9 +64,14 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
             PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
             if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-                List<PsiFile> domainPsiFiles = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText());
-                return domainPsiFiles.toArray(new PsiElement[domainPsiFiles.size()]);
+                return getTranslationDomainGoto(psiElement);
             }
+        }
+
+        // {% trans from "app" %}
+        // {% transchoice from "app" %}
+        if (TwigHelper.getTranslationTokenTagFromPattern().accepts(psiElement)) {
+            return getTranslationDomainGoto(psiElement);
         }
 
         if (TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
@@ -189,6 +194,17 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     private PsiElement[] getTranslationKeyGoTo(PsiElement psiElement) {
         String translationKey = psiElement.getText();
         return TranslationUtil.getTranslationPsiElements(psiElement.getProject(), translationKey, TwigUtil.getPsiElementTranslationDomain(psiElement));
+    }
+
+    private PsiElement[] getTranslationDomainGoto(PsiElement psiElement) {
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        
+        if(StringUtils.isNotBlank(text)) {
+            List<PsiFile> domainPsiFiles = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), text);
+            return domainPsiFiles.toArray(new PsiElement[domainPsiFiles.size()]);
+        }
+
+        return new PsiElement[0];
     }
 
     @Nullable

@@ -80,4 +80,17 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
         assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain <caret> %}", "interchange");
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTranslationTokenTagFromPattern
+     */
+    public void testTranslationTokenTagFromCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans from \"<caret>\" %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{%    trans from \"<caret>\" %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% \t   trans from \"<caret>\" %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% transchoice from \"<caret>\" %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans with {'%name%': 'Fabien'} from \"<caret>\" %}", "interchange");
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% foo from \"<caret>\" %}", "interchange");
+    }
+
 }
