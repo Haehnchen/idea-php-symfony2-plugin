@@ -33,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -304,31 +305,21 @@ public class TwigTypeResolveUtil {
         if(forScopeVariable == null) {
             return;
         }
-
         PhpType phpType = new PhpType();
 
+        String[] forTagInIdentifierString = getForTagIdentifierAsString(forTag);
         // {% for coolBar in coolBars.foos %}
-        Pattern pattern = Pattern.compile("[\\s]+([\\w\\.]+)[\\s]+");
-        Matcher matcher = pattern.matcher(forTag.getText());
-        if (matcher.find()) {
-
-            PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(inVariable, PlatformPatterns.or(
-                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-            ));
+        if (forTagInIdentifierString != null && forTagInIdentifierString.length > 1) {
 
             // nested resolve
-            if(nextSiblingOfType != null) {
-                String[] typeName = TwigTypeResolveUtil.formatPsiTypeName(nextSiblingOfType);
-                if(typeName.length > 1 && globalVars.containsKey(typeName[0])) {
-                    PsiVariable psiVariable = globalVars.get(typeName[0]);
-                    for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), typeName, psiVariable)) {
-                        phpType.add(arrayType);
-                    }
+            if(globalVars.containsKey(forTagInIdentifierString[0])) {
+                PsiVariable psiVariable = globalVars.get(forTagInIdentifierString[0]);
+                for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), forTagInIdentifierString, psiVariable)) {
+                    phpType.add(arrayType);
                 }
             }
 
-        } else {
+         } else {
             // add single "for" var
             phpType.add(globalVars.get(variableName).getTypes());
         }
@@ -500,6 +491,51 @@ public class TwigTypeResolveUtil {
         }
 
         return methodName;
+    }
+
+    /**
+     * Get the "for IN" variable identifier as separated string
+     *
+     *  {% for car in "cars" %}
+     *  {% for car in "cars"|length %}
+     *  {% for car in "cars.test" %}
+     */
+    @Nullable
+    private static String[] getForTagIdentifierAsString(PsiElement forTag) {
+
+        if(forTag.getNode().getElementType() != TwigElementTypes.FOR_TAG) {
+            return null;
+        }
+
+        // getChildren hack
+        PsiElement firstChild = forTag.getFirstChild();
+        if(firstChild == null) {
+            return null;
+        }
+
+        // find IN token
+        PsiElement psiIn = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.IN));
+        if(psiIn == null) {
+            return null;
+        }
+
+        // find next IDENTIFIER, eg skip whitespaces
+        PsiElement psiIdentifier = PsiElementUtils.getNextSiblingOfType(psiIn, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
+        if(psiIdentifier == null) {
+            return null;
+        }
+
+        // find non common token type. we only allow: "test.test"
+        PsiElement afterInVarPsiElement = PsiElementUtils.getNextSiblingOfType(psiIdentifier, PlatformPatterns.psiElement().andNot(PlatformPatterns.or(
+            PlatformPatterns.psiElement((TwigTokenTypes.IDENTIFIER)),
+            PlatformPatterns.psiElement((TwigTokenTypes.DOT))
+        )));
+
+        if(afterInVarPsiElement == null) {
+            return null;
+        }
+
+        return TwigTypeResolveUtil.formatPsiTypeName(afterInVarPsiElement);
     }
 
 }

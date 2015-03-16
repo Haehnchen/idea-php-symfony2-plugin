@@ -44,6 +44,10 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar \\Bar\\FooClass #} {{ <caret> }}", "bar");
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#getForTagIdentifierAsString
+     */
     public void testVarArrayIteration() {
 
         assertCompletionContains(TwigFileType.INSTANCE, "" +
@@ -62,6 +66,22 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
             , "fooBar"
         );
 
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClass[] #}\n" +
+                "{% for bar in bars|foo %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClass[] #}\n" +
+                "{% for bar in bars | foo %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
     }
 
     /**
@@ -72,6 +92,14 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
         assertCompletionContains(TwigFileType.INSTANCE, "" +
                 "{# @var bars \\Bar\\FooClass #}\n" +
                 "{% for bar in bars.nested %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClass #}\n" +
+                "{% for bar in bars.nested | foo %}\n" +
                 "  {{ bar.<caret> }}\n" +
                 "{% endfor %}\n"
             , "fooBar"
