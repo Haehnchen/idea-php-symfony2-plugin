@@ -79,4 +79,20 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
 
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
+     */
+    public void testThatDuplicateScopeVariablesAreMerged() {
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClass #}\n" +
+                "{% for bar in bars.fooBar %}\n" +
+                "  {# @var bar \\Bar\\FooClass #}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
+    }
+
 }

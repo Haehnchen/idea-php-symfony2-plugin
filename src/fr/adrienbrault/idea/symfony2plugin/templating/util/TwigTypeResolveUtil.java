@@ -343,7 +343,12 @@ public class TwigTypeResolveUtil {
             }
         }
 
-        globalVars.put(scopeVariable, new PsiVariable(types));
+        // we already have same variable in scope, so merge types
+        if(globalVars.containsKey(scopeVariable)) {
+            globalVars.get(scopeVariable).getTypes().addAll(types);
+        } else {
+            globalVars.put(scopeVariable, new PsiVariable(types));
+        }
 
     }
 
