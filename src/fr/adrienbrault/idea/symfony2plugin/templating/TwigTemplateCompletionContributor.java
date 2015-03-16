@@ -71,11 +71,6 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    TranslationStringMap map = TranslationIndex.getInstance(parameters.getPosition().getProject()).getTranslationMap();
-                    if(map == null) {
-                        return;
-                    }
-
                     PsiElement psiElement = parameters.getPosition();
                     String domainName =  TwigUtil.getPsiElementTranslationDomain(psiElement);
 
