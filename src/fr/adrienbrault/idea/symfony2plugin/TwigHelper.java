@@ -361,6 +361,51 @@ public class TwigHelper {
     }
 
     /**
+     * {% if foo <carpet> %}
+     * {% if foo.bar <carpet> %}
+     * {% if "foo.bar" <carpet> %}
+     * {% if 'foo.bar' <carpet> %}
+     */
+    public static ElementPattern<PsiElement> getAfterOperatorPattern() {
+        // @TODO: make it some nicer. can wrap it with whitespace
+
+        //noinspection unchecked
+        ElementPattern<PsiElement> or = PlatformPatterns.or(
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER),
+            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOT),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+            PlatformPatterns.psiElement(TwigTokenTypes.RBRACE),
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ),
+            PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ),
+            PlatformPatterns.psiElement(TwigTokenTypes.NUMBER),
+            PlatformPatterns.psiElement(TwigTokenTypes.FILTER)
+        );
+
+        //noinspection unchecked
+        ElementPattern<PsiElement> anIf = PlatformPatterns.or(
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("if"),
+            PlatformPatterns.psiElement(TwigTokenTypes.AND),
+            PlatformPatterns.psiElement(TwigTokenTypes.OR)
+        );
+
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeaf(PlatformPatterns.not(
+                PlatformPatterns.psiElement(TwigTokenTypes.DOT)
+            ))
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
+            )
+            .afterLeafSkipping(or, anIf)
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
      * Twig tag pattern with some hack
      * because we have invalid psi elements after STATEMENT_BLOCK_START
      *

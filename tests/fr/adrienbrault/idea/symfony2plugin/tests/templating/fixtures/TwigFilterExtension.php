@@ -41,6 +41,24 @@ class DoctrineExtension extends \Twig_Extension
         );
     }
 
+    public function getOperators()
+    {
+        return array(
+            array(
+                'not' => array(),
+                '-' => array(),
+            ),
+            array(
+                'or' => array(),
+                'b-or' => array(),
+                'b-xor' => array(),
+                'starts with' => array(),
+                'ends with' => array(),
+                '**' => array(),
+            ),
+        );
+    }
+
     public function minifyQuery($query) {}
     public function contextAndEnvironment(\Twig_Environment $env, $context, $string) {}
     public function contextWithoutEnvironment($context, $string) {}

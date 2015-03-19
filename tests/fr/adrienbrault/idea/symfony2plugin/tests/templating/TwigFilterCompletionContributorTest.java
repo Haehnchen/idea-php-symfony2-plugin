@@ -58,4 +58,36 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionContains(TwigFileType.INSTANCE, "{% bar is <caret> %}", "bar_even");
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getAfterOperatorPattern
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
+     */
+    public void testOperatorExtension() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo <caret> %}", "**", "-", "b-or", "b-xor", "ends with", "not", "or", "starts with");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red and blue <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red or blue <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red or 'blue' <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red or \"blue\" <caret> %}", "ends with");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo() <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo.0.1.1 <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo(111) <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo(\"11\") <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11') <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo['11'] <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo[11] <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11')|test <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11') | test <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11') | \t test <caret> %}", "ends with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo[0] | \t test <caret> %}", "ends with");
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% ifa and foo <caret> %}", "ends with");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and foo.<caret> %}", "ends with");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and foo$<caret> %}", "ends with");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and f$oo<caret> %}", "ends with");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and f/oo<caret> %}", "ends with");
+    }
+
 }

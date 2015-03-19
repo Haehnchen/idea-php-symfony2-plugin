@@ -348,6 +348,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new TwigSimpleTestParametersCompletionProvider()
         );
 
+        // {% if foo.bar <carpet> %}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getAfterOperatorPattern(),
+            new TwigOperatorCompletionProvider()
+        );
+
         // {% constant('FOO') %}
         extend(
             CompletionType.BASIC,
@@ -480,6 +487,23 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             for (Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(project).getSimpleTest().entrySet()) {
                 resultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
             }
+        }
+    }
+
+    private static class TwigOperatorCompletionProvider extends CompletionProvider<CompletionParameters> {
+
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            Project project = position.getProject();
+            for (Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(project).getOperators().entrySet()) {
+                resultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
+            }
+
         }
     }
 

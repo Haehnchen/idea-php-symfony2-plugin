@@ -1,12 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.NewExpressionImpl;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
@@ -27,6 +30,7 @@ public class TwigExtensionParser  {
     private Map<String, TwigExtension> functions;
     private Map<String, TwigExtension> simpleTest;
     private Map<String, TwigExtension> filters;
+    private Map<String, TwigExtension> operators;
 
     public TwigExtensionParser(Project project) {
         this.project = project;
@@ -53,12 +57,19 @@ public class TwigExtensionParser  {
         return simpleTest;
     }
 
+    public Map<String, TwigExtension> getOperators() {
+        if(operators == null) {
+            this.parseElementType(TwigElementType.OPERATOR);
+        }
+        return operators;
+    }
+
     public enum TwigElementType {
-        FILTER, METHOD, SIMPLE_TEST
+        FILTER, METHOD, SIMPLE_TEST, OPERATOR
     }
 
     public enum TwigExtensionType {
-        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST
+        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST, OPERATOR
     }
 
     private void parseElementType(TwigElementType type) {
@@ -89,6 +100,10 @@ public class TwigExtensionParser  {
             this.parseTests(classNames);
         }
 
+        if(type.equals(TwigElementType.OPERATOR)) {
+            this.parseOperators(classNames);
+        }
+
     }
 
     private void parseFilters(Collection<String> classNames) {
@@ -117,6 +132,16 @@ public class TwigExtensionParser  {
             Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getTests");
             if(method != null) {
                 parseSimpleTest(method, this.simpleTest);
+            }
+        }
+    }
+
+    private void parseOperators(Collection<String> classNames) {
+        this.operators = new HashMap<String, TwigExtension>();
+        for(String phpClassName : classNames) {
+            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getOperators");
+            if(method != null) {
+                parseOperators(method, this.operators);
             }
         }
     }
@@ -188,6 +213,61 @@ public class TwigExtensionParser  {
         return filters;
 
     }
+    protected Map<String, TwigExtension> parseOperators(Method method, Map<String, TwigExtension> filters) {
+
+        final PhpClass containingClass = method.getContainingClass();
+        if(containingClass == null) {
+            return new HashMap<String, TwigExtension>();
+        }
+
+        /*
+        return array(
+            array(
+                'not' => array(),
+            ),
+            array(
+                'or' => array(),
+            ),
+        );
+         */
+
+        // getOperator return values, should one one by default
+        for (PhpReturn phpReturn : PsiTreeUtil.findChildrenOfType(method, PhpReturn.class)) {
+
+            // return element needs to be an array
+            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+            if(firstPsiChild instanceof ArrayCreationExpression) {
+
+                // twig core returns nested array with 2 items array creation elements
+                List<PsiElement> arrayValues = PhpPsiUtil.getChildren(firstPsiChild, new PsiElementTypCondition());
+                if(arrayValues != null && arrayValues.size() > 0) {
+                    for (PsiElement psiElement : arrayValues) {
+
+                        // double check for non crazy syntax
+                        if(!(psiElement instanceof PhpPsiElement)) {
+                            continue;
+                        }
+
+                        // finally get all array keys with operator string
+                        PhpPsiElement arrayValue = ((PhpPsiElement) psiElement).getFirstPsiChild();
+                        if(arrayValue instanceof ArrayCreationExpression) {
+                            for (ArrayHashElement arrayHashElement : PsiTreeUtil.findChildrenOfType(arrayValue, ArrayHashElement.class)) {
+                                PhpPsiElement key = arrayHashElement.getKey();
+                                String stringValue = PhpElementsUtil.getStringValue(key);
+                                if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
+                                    filters.put(stringValue, new TwigExtension(TwigExtensionType.OPERATOR));
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        return filters;
+
+    }
 
     protected Map<String, TwigExtension> parseSimpleTest(Method method, Map<String, TwigExtension> filters) {
 
@@ -223,6 +303,10 @@ public class TwigExtensionParser  {
 
         if(twigExtensionType == TwigExtensionType.SIMPLE_TEST) {
             return PhpIcons.CONSTANT;
+        }
+
+        if(twigExtensionType == TwigExtensionType.OPERATOR) {
+            return PhpIcons.VARIABLE;
         }
 
         return PhpIcons.WEB_ICON;
@@ -520,4 +604,53 @@ public class TwigExtensionParser  {
         }
     }
 
+    private static class TwigOperatorVisitor extends PsiRecursiveElementWalkingVisitor {
+        private final Method method;
+        private final Map<String, TwigExtension> filters;
+        private final PhpClass containingClass;
+
+        public TwigOperatorVisitor(Method method, Map<String, TwigExtension> filters, PhpClass containingClass) {
+            this.method = method;
+            this.filters = filters;
+            this.containingClass = containingClass;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            if(element instanceof NewExpressionImpl) {
+                this.visitNewExpression((NewExpressionImpl) element);
+            }
+            super.visitElement(element);
+        }
+
+        private void visitNewExpression(NewExpressionImpl element) {
+
+            ClassReference classReference = element.getClassReference();
+            if(classReference == null) {
+                return;
+            }
+
+            String expressionName = classReference.getName();
+
+            // new Twig_SimpleTest('even', null, array('node_class' => 'Twig_Node_Expression_Test_Even')),
+            if("Twig_SimpleTest".equals(expressionName)) {
+                PsiElement[] psiElement = element.getParameters();
+                if(psiElement.length > 0) {
+                    String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
+                    if(funcName != null && !funcName.contains("*")) {
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.OPERATOR, null));
+                    }
+
+                }
+            }
+
+        }
+    }
+
+    private static class PsiElementTypCondition implements Condition<PsiElement> {
+        @Override
+        public boolean value(PsiElement psiElement) {
+            return psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE;
+        }
+    }
 }
