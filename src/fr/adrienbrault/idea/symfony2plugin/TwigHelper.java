@@ -344,6 +344,23 @@ public class TwigHelper {
     }
 
     /**
+     * Check for {% if foo is "foo" %}
+     */
+    public static ElementPattern<PsiElement> getAfterIsTokenPattern() {
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement()
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IS)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
      * Twig tag pattern with some hack
      * because we have invalid psi elements after STATEMENT_BLOCK_START
      *

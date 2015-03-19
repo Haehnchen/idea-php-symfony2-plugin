@@ -49,4 +49,13 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionContains(TwigFileType.INSTANCE, "{% <caret> %}", "foo_tag");
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getAfterIsTokenPattern
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
+     */
+    public void testSimpleTestExtension() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is <caret> %}", "bar_even");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% bar is <caret> %}", "bar_even");
+    }
+
 }

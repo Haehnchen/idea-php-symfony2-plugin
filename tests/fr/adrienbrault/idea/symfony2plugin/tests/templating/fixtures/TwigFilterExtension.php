@@ -5,6 +5,7 @@ namespace{
     interface Twig_Environment {}
     abstract class Twig_Extension implements Twig_ExtensionInterface {}
     class Twig_SimpleFilter {}
+    class Twig_SimpleTest {}
     class SqlFormatter {
         public function format() {}
     }
@@ -30,6 +31,13 @@ class DoctrineExtension extends \Twig_Extension
             new \Twig_SimpleFilter('contextAndEnvironment', array($this, 'minifyQuery'), array('needs_context' => true, 'needs_environment' => true)),
             new \Twig_SimpleFilter('contextWithoutEnvironment', array($this, 'minifyQuery'), array('needs_environment' => true)),
             new \Twig_SimpleFilter('json_decode', 'json_decode'),
+        );
+    }
+
+    public function getTests()
+    {
+        return array(
+            new \Twig_SimpleTest('bar_even', 'twig_test_even'),
         );
     }
 

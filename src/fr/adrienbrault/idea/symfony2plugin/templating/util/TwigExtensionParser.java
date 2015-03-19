@@ -25,6 +25,7 @@ public class TwigExtensionParser  {
     private Project project;
 
     private Map<String, TwigExtension> functions;
+    private Map<String, TwigExtension> simpleTest;
     private Map<String, TwigExtension> filters;
 
     public TwigExtensionParser(Project project) {
@@ -45,12 +46,19 @@ public class TwigExtensionParser  {
         return filters;
     }
 
+    public Map<String, TwigExtension> getSimpleTest() {
+        if(simpleTest == null) {
+            this.parseElementType(TwigElementType.SIMPLE_TEST);
+        }
+        return simpleTest;
+    }
+
     public enum TwigElementType {
-        FILTER, METHOD
+        FILTER, METHOD, SIMPLE_TEST
     }
 
     public enum TwigExtensionType {
-        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER
+        FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST
     }
 
     private void parseElementType(TwigElementType type) {
@@ -77,6 +85,10 @@ public class TwigExtensionParser  {
             this.parseFunctions(classNames);
         }
 
+        if(type.equals(TwigElementType.SIMPLE_TEST)) {
+            this.parseTests(classNames);
+        }
+
     }
 
     private void parseFilters(Collection<String> classNames) {
@@ -95,6 +107,16 @@ public class TwigExtensionParser  {
             Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getFunctions");
             if(method != null) {
                 parseFunctions(method, this.functions);
+            }
+        }
+    }
+
+    private void parseTests(Collection<String> classNames) {
+        this.simpleTest = new HashMap<String, TwigExtension>();
+        for(String phpClassName : classNames) {
+            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getTests");
+            if(method != null) {
+                parseSimpleTest(method, this.simpleTest);
             }
         }
     }
@@ -167,6 +189,20 @@ public class TwigExtensionParser  {
 
     }
 
+    protected Map<String, TwigExtension> parseSimpleTest(Method method, Map<String, TwigExtension> filters) {
+
+
+        final PhpClass containingClass = method.getContainingClass();
+        if(containingClass == null) {
+            return new HashMap<String, TwigExtension>();
+        }
+
+        method.acceptChildren(new TwigSimpleTestVisitor(method, filters, containingClass));
+
+        return filters;
+
+    }
+
     public static Icon getIcon(TwigExtensionType twigExtensionType) {
 
         if(twigExtensionType == TwigExtensionType.FUNCTION_NODE) {
@@ -183,6 +219,10 @@ public class TwigExtensionParser  {
 
         if(twigExtensionType == TwigExtensionType.FILTER) {
             return PhpIcons.STATIC_FIELD;
+        }
+
+        if(twigExtensionType == TwigExtensionType.SIMPLE_TEST) {
+            return PhpIcons.CONSTANT;
         }
 
         return PhpIcons.WEB_ICON;
@@ -436,4 +476,48 @@ public class TwigExtensionParser  {
 
         }
     }
+
+    private static class TwigSimpleTestVisitor extends PsiRecursiveElementWalkingVisitor {
+        private final Method method;
+        private final Map<String, TwigExtension> filters;
+        private final PhpClass containingClass;
+
+        public TwigSimpleTestVisitor(Method method, Map<String, TwigExtension> filters, PhpClass containingClass) {
+            this.method = method;
+            this.filters = filters;
+            this.containingClass = containingClass;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            if(element instanceof NewExpressionImpl) {
+                this.visitNewExpression((NewExpressionImpl) element);
+            }
+            super.visitElement(element);
+        }
+
+        private void visitNewExpression(NewExpressionImpl element) {
+
+            ClassReference classReference = element.getClassReference();
+            if(classReference == null) {
+                return;
+            }
+
+            String expressionName = classReference.getName();
+
+            // new Twig_SimpleTest('even', null, array('node_class' => 'Twig_Node_Expression_Test_Even')),
+            if("Twig_SimpleTest".equals(expressionName)) {
+                PsiElement[] psiElement = element.getParameters();
+                if(psiElement.length > 0) {
+                    String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
+                    if(funcName != null && !funcName.contains("*")) {
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_TEST, null));
+                    }
+
+                }
+            }
+
+        }
+    }
+
 }

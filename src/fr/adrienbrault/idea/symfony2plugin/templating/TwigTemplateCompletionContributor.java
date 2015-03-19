@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -32,9 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
@@ -342,6 +341,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new TagTokenParserCompletionProvider()
         );
 
+        // {% if foo is defined %}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getAfterIsTokenPattern(),
+            new TwigSimpleTestParametersCompletionProvider()
+        );
+
         // {% constant('FOO') %}
         extend(
             CompletionType.BASIC,
@@ -458,6 +464,22 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             resultSet.addAllElements(TranslationUtil.getTranslationDomainLookupElements(parameters.getPosition().getProject()));
+        }
+    }
+
+    private static class TwigSimpleTestParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
+
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            Project project = position.getProject();
+            for (Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(project).getSimpleTest().entrySet()) {
+                resultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
+            }
         }
     }
 
