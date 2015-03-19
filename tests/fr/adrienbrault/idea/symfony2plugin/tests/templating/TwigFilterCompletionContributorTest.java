@@ -56,6 +56,9 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     public void testSimpleTestExtension() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is <caret> %}", "bar_even");
         assertCompletionContains(TwigFileType.INSTANCE, "{% bar is <caret> %}", "bar_even");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% bar is not <caret> %}", "bar_even");
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% bar is<caret> %}", "bar_even");
     }
 
     /**

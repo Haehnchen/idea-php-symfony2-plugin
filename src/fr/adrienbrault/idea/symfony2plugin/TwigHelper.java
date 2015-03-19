@@ -355,7 +355,10 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IS)
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.IS),
+                    PlatformPatterns.psiElement(TwigTokenTypes.NOT)
+                )
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
