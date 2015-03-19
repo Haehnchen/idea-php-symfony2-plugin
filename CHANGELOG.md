@@ -6,6 +6,14 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.87
+* Add completion for twig tags of Twig_TokenParserInterface::getTag implementations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/457">#457</a></li>
+* Add trans / transchoice twig tag 'from' support <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459">#459</a></li>
+* Add completion for Twig_SimpleTest extension in twig files after IS token</li>
+* Add twig operator completion in IF tags</li>
+* Fix pattern of twig trans_default_domain tag and use translation index for domain completion</li>
+* Fix several issues in twig array completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/463">#463</a></li>
+
 ### 0.11.86
 * Support new setFactory syntax in yaml and xml #436
 * Add service generator in class context of "Generator Popover" and intention in arguments

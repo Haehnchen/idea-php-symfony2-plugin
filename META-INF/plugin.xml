@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.86</version>
+    <version>0.11.87</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -103,6 +103,16 @@
 
 <br>
 
+<h2>0.11.87</h2>
+<ul>
+    <li>Add completion for twig tags of Twig_TokenParserInterface::getTag implementations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/457">#457</a></li>
+    <li>Add trans / transchoice twig tag 'from' support <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459">#459</a></li>
+    <li>Add completion for Twig_SimpleTest extension in twig files after IS token</li>
+    <li>Add twig operator completion in IF tags</li>
+    <li>Fix pattern of twig trans_default_domain tag and use translation index for domain completion</li>
+    <li>Fix several issues in twig array completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/463">#463</a></li>
+</ul>
+
 <h2>0.11.86</h2>
 <ul>
     <li>Support new setFactory syntax in yaml and xml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/436">#436</a></li>
@@ -142,50 +152,6 @@
 <ul>
     <li>add method create quickfix for yaml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/415">#415</a></li>
     <li>Remove weak service warning <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/399">#399</a></li>
-</ul>
-
-<h2>0.11.81</h2>
-<ul>
-    <li>Fix multiresolve issues eg in AbstractManagerRegistry::getRepository <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/403">#403</a></li>
-</ul>
-
-<h2>0.11.80</h2>
-<ul>
-    <li>Add missing route inspection with method creation quickfix</li>
-    <li>Add deprecated inspection warning for service classes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/375">#375</a></li>
-    <li>Support static string methods in twig filter and respect needs_context, needs_environment options in completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/401">#401</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/314">#314</a></li>
-    <li>Allow more valid chars in annotation route index process <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/400">#400</a></li>
-    <li>Removes newly added leading backslash on phpstorm8 in class inserts <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/402">#402</a></li>
-    <li>Fix npe case in twig block goto <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/397">#397</a></li>
-</ul>
-
-<h2>0.11.79</h2>
-<ul>
-    <li>Refactoring routing handling and prepare multiple route files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/138">#138</a></li>
-    <li>Smarter route name resolve on indexed names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/392">#392</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/376">#376</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/365">#365</a></li>
-    <li>Add doctrine 2.5 cache methods for class / repository completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/203">#203</a></li>
-    <li>Fixing IndexNotReadyException and "Read access is allowed" for eap changes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/370">#370</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/383">#383</a></li>
-</ul>
-
-<h2>0.11.78</h2>
-<ul>
-    <li>Add twig embed tag indexer</li>
-    <li>Support "include()" function and "embed" tag in twig variable collector</li>
-    <li>Experimental: Add postfix completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/389">#389</a></li>
-    <li>Add more possible twig variables syntax from php files</li>
-    <li>Add navigation for twig var doc</li>
-    <li>Fix error on non unique class name completion in xml, yaml and twig <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/387">#387</a></li>
-    <li>Remove grouping for code folding, to make strings independent from each other</li>
-</ul>
-
-<h2>0.10.77 / 0.11.77</h2>
-<ul>
-    <li>Add weak routes in controller action related popover</li>
-    <li>Add index for twig file php usage in render* methods and add variable collector</li>
-    <li>Fix for new yaml SCALAR_STRING / SCALAR_DSTRING lexer changes in service instance annotator</li>
-    <li>Fix max depth check in getTwigChildList <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/360">#360</a></li>
-    <li>Fix possible recursive calls in twig variable includes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/360">#360</a></li>
-    <li>Note: last version for PhpStorm7!</li>
 </ul>
 
 <br/>
