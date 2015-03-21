@@ -12,6 +12,7 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -170,6 +171,15 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     public void assertCheckHighlighting(String filename, String result) {
         myFixture.configureByText(filename, result);
         myFixture.checkHighlighting();
+    }
+
+    protected void createDummyFiles(String... files) throws Exception {
+        for (String file : files) {
+            String path = myFixture.getProject().getBaseDir().getPath() + "/" + file;
+            File f = new File(path);
+            assert f.getParentFile().mkdirs();
+            f.createNewFile();
+        }
     }
 
 }

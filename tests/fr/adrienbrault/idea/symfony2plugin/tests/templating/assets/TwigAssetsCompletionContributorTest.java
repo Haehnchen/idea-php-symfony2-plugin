@@ -29,15 +29,6 @@ public class TwigAssetsCompletionContributorTest extends SymfonyLightCodeInsight
 
     }
 
-    private void createDummyFiles(String... files) throws Exception {
-        for (String file : files) {
-            String path = myFixture.getProject().getBaseDir().getPath() + "/" + file;
-            File f = new File(path);
-            f.getParentFile().mkdirs();
-            f.createNewFile();
-        }
-    }
-
     public void testTwigAssetFunctionCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ asset('<caret>') }}", "assets/foo.css", "assets/foo.js", "assets/foo.less", "assets/foo.coffee");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<script src=\"assets/foo.coffee<caret>\"></script>", "<script src=\"{{ asset('assets/foo.coffee') }}\"></script>");
