@@ -31,12 +31,26 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         myFixture.configureByText(languageFileType, configureByText);
         myFixture.completeBasic();
 
+        checkContainsCompletion(lookupStrings);
+    }
+
+    private void checkContainsCompletion(String[] lookupStrings) {
         List<String> lookupElements = myFixture.getLookupElementStrings();
         for (String s : Arrays.asList(lookupStrings)) {
             if(!lookupElements.contains(s)) {
                 fail(String.format("failed that completion contains %s in %s", s, lookupElements.toString()));
             }
         }
+    }
+
+    public void assertAtTextCompletionContains(String findByText, String... lookupStrings) {
+
+        final PsiElement element = myFixture.findElementByText(findByText, PsiElement.class);
+        assert element != null : "No element found by text: " + findByText;
+        myFixture.getEditor().getCaretModel().moveToOffset(element.getTextOffset() + 1);
+        myFixture.completeBasic();
+
+        checkContainsCompletion(lookupStrings);
     }
 
     public void assertCompletionNotContains(LanguageFileType languageFileType, String configureByText, String... lookupStrings) {
