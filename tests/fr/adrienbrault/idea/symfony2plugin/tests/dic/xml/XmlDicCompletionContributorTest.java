@@ -139,4 +139,20 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
 
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor.ArgumentParameterCompletionProvider
+     */
+    public void testArgumentParameterCompletion() {
+
+        assertCompletionContains("service.xml", "<services><service><argument>%<caret></argument></service></services>", "%foo.class%", "%foo_bar%");
+        assertCompletionContains("service.xml", "<services><service><argument><caret></argument></service></services>", "%foo.class%", "%foo_bar%");
+        assertCompletionContains("service.xml", "<services><service><argument>%<caret>%</argument></service></services>", "%foo.class%", "%foo_bar%");
+
+        assertCompletionResultEquals("service.xml",
+            "<services><service><argument>%foo_bar<caret></argument></service></services>",
+            "<services><service><argument>%foo_bar%</argument></service></services>"
+        );
+
+    }
+
 }

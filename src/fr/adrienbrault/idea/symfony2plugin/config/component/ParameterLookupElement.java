@@ -8,21 +8,22 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ParameterLookupElement extends LookupElement {
 
-    private Object psiElement;
-    private InsertHandler<LookupElement> insertHandler = null;
-    private ContainerParameter containerParameter;
+    protected Object psiElement;
+    protected InsertHandler<LookupElement> insertHandler = null;
+    protected ContainerParameter containerParameter;
 
-    public ParameterLookupElement(ContainerParameter containerParameter) {
+    public ParameterLookupElement(@NotNull ContainerParameter containerParameter) {
         this.containerParameter = containerParameter;
     }
 
-    public ParameterLookupElement(ContainerParameter containerParameter, InsertHandler<LookupElement> insertHandler, Object psiElement) {
+    public ParameterLookupElement(@NotNull ContainerParameter containerParameter, @Nullable InsertHandler<LookupElement> insertHandler, @Nullable Object psiElement) {
         this.insertHandler = insertHandler;
         this.psiElement = psiElement;
         this.containerParameter = containerParameter;
@@ -47,7 +48,7 @@ public class ParameterLookupElement extends LookupElement {
     }
 
     public void renderElement(LookupElementPresentation presentation) {
-        presentation.setItemText(getLookupString());
+        presentation.setItemText(containerParameter.getName());
 
         String value = containerParameter.getValue();
         if(value != null && StringUtils.isNotBlank(value)) {
@@ -57,7 +58,7 @@ public class ParameterLookupElement extends LookupElement {
         presentation.setTypeGrayed(true);
         presentation.setIcon(Symfony2Icons.PARAMETER);
 
-        if(this.containerParameter != null && this.containerParameter.isWeak()) {
+        if(this.containerParameter.isWeak()) {
             presentation.setIcon(Symfony2Icons.PARAMETER_OPACITY);
         }
 

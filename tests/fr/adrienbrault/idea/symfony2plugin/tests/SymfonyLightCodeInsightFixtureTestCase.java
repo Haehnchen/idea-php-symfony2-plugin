@@ -34,15 +34,6 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         checkContainsCompletion(lookupStrings);
     }
 
-    private void checkContainsCompletion(String[] lookupStrings) {
-        List<String> lookupElements = myFixture.getLookupElementStrings();
-        for (String s : Arrays.asList(lookupStrings)) {
-            if(!lookupElements.contains(s)) {
-                fail(String.format("failed that completion contains %s in %s", s, lookupElements.toString()));
-            }
-        }
-    }
-
     public void assertAtTextCompletionContains(String findByText, String... lookupStrings) {
 
         final PsiElement element = myFixture.findElementByText(findByText, PsiElement.class);
@@ -66,7 +57,16 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         myFixture.configureByText(filename, configureByText);
         myFixture.completeBasic();
 
-        assertTrue(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
+        completionContainsAssert(lookupStrings);
+    }
+
+    private void completionContainsAssert(String[] lookupStrings) {
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        for (String s : Arrays.asList(lookupStrings)) {
+            if(!lookupElements.contains(s)) {
+                fail(String.format("failed that completion contains %s in %s", s, lookupElements.toString()));
+            }
+        }
     }
 
     public void assertNavigationContains(LanguageFileType languageFileType, String configureByText, String targetShortcut) {
@@ -194,6 +194,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             assert f.getParentFile().mkdirs();
             f.createNewFile();
         }
+    }
+
+    private void checkContainsCompletion(String[] lookupStrings) {
+        completionContainsAssert(lookupStrings);
     }
 
 }
