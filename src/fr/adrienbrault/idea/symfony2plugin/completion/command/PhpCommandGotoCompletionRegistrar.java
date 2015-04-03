@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -158,13 +159,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyMap();
             }
 
-            PsiElement[] psiElements = PsiTreeUtil.collectElements(configure, new PsiElementFilter() {
-                @Override
-                public boolean isAccepted(PsiElement psiElement) {
-                    return psiElement instanceof MethodReference && methodName.equals(((MethodReference) psiElement).getName());
-                }
-            });
-
+            PsiElement[] psiElements = PsiTreeUtil.collectElements(configure, new CommandDefPsiElementFilter(methodName));
             if(psiElements.length == 0) {
                 return Collections.emptyMap();
             }
@@ -177,19 +172,54 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                     continue;
                 }
 
-                PsiElement[] parameters = ((MethodReference) element).getParameters();
-                if(parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
-                    String contents = ((StringLiteralExpression) parameters[0]).getContents();
-                    if(StringUtils.isNotBlank(contents)) {
+                /*
+                  ->setDefinition(new InputArgument())
+                  ->setDefinition(array(
+                     new InputArgument(),
+                     new InputOption(),
+                  ));
+                */
+                if("setDefinition".equals(((MethodReference) element).getName())) {
 
-                        if(methodName.equals("addOption")) {
-                            targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 3), getParameterStringValue(parameters, 4)));
-                        } else if(methodName.equals("addArgument")) {
-                            targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
-                        } else {
-                            targets.put(contents, new CommandArg(parameters[0], contents));
+                    Collection<NewExpression> newExpressions = PsiTreeUtil.collectElementsOfType(element, NewExpression.class);
+                    for (NewExpression newExpression : newExpressions) {
+                        if(methodName.equals("addOption") && PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputOption") != null) {
+
+                            // new InputOption()
+                            PsiElement[] parameters = newExpression.getParameters();
+                            String contents = getParameterStringValue(parameters, 0);
+                            if(contents != null && StringUtils.isNotBlank(contents)) {
+                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
+                            }
+
+                        } else if(methodName.equals("addArgument") && PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputArgument") != null) {
+
+                            // new InputArgument()
+                            PsiElement[] parameters = newExpression.getParameters();
+                            String contents = getParameterStringValue(parameters, 0);
+                            if(contents != null && StringUtils.isNotBlank(contents)) {
+                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
+                            }
                         }
 
+                    }
+
+                } else {
+
+                    /*
+                        ->addArgument('arg3', null, 'desc')
+                        ->addOption('opt1', null, null, 'desc', 'default')
+                    */
+                    PsiElement[] parameters = ((MethodReference) element).getParameters();
+                    if(parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
+                        String contents = ((StringLiteralExpression) parameters[0]).getContents();
+                        if(StringUtils.isNotBlank(contents)) {
+                            if(methodName.equals("addOption")) {
+                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 3), getParameterStringValue(parameters, 4)));
+                            } else if(methodName.equals("addArgument")) {
+                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
+                            }
+                        }
                     }
                 }
 
@@ -198,6 +228,23 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
             return targets;
         }
 
+        private static class CommandDefPsiElementFilter implements PsiElementFilter {
+            private final String methodName;
+
+            public CommandDefPsiElementFilter(String methodName) {
+                this.methodName = methodName;
+            }
+
+            @Override
+            public boolean isAccepted(PsiElement psiElement) {
+                if(!(psiElement instanceof MethodReference)) {
+                    return false;
+                }
+
+                String name = ((MethodReference) psiElement).getName();
+                return methodName.equals(name) || "setDefinition".equals(name);
+            }
+        }
     }
 
     private static class CommandArg {

@@ -20,6 +20,7 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -807,6 +808,35 @@ public class PhpElementsUtil {
 
     public static interface ClassForCompletionVisitor {
         public void visit(PhpClass phpClass, String presentableFQN, String prefix);
+    }
+
+    /**
+     * new FooClass()
+     */
+    @Nullable
+    private static PhpClass getNewExpressionPhpClass(@NotNull NewExpression newExpression) {
+        ClassReference classReference = newExpression.getClassReference();
+        if(classReference != null) {
+            String fqn = classReference.getFQN();
+            if(fqn != null) {
+                return PhpElementsUtil.getClass(newExpression.getProject(), fqn);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get PhpClass from "new FooClass()" only if match instance condition
+     */
+    public static PhpClass getNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String instance) {
+
+        PhpClass phpClass = getNewExpressionPhpClass(newExpression);
+        if(phpClass != null && new Symfony2InterfacesUtil().isInstanceOf(phpClass, instance)) {
+            return phpClass;
+        }
+
+        return null;
     }
 
 }

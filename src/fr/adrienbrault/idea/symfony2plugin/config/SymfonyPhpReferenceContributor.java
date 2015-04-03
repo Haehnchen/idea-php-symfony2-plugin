@@ -222,6 +222,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                                 if (newExpression instanceof NewExpression) {
                                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
                                     if (currentIndex != null && currentIndex.getIndex() == parameterIndex) {
+                                        // @TODO: getNewExpressionPhpClassWithInstance
                                         ClassReference classReference = ((NewExpression) newExpression).getClassReference();
                                         if(classReference != null) {
                                             String fqn = classReference.getFQN();

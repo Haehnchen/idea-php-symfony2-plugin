@@ -19,15 +19,16 @@ public class PhpCommandGotoCompletionRegistrar extends SymfonyLightCodeInsightFi
         return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
-    public void testTwigExtensionFilterCompletion() {
-
-        String[] strings = {"arg1", "arg2", "arg3" /*,"argDef", "optDef", "optSingleDef" */};
-
-        assertAtTextCompletionContains("<getArgument>", strings);
-        assertAtTextCompletionContains("<hasArgument>", strings);
-        assertAtTextCompletionContains("<getOption>", strings);
-        assertAtTextCompletionContains("<hasOption>", strings);
+    public void testCommandArguments() {
+        String[] argsLookup = {"arg1", "arg2", "arg3" ,"argDef"};
+        assertAtTextCompletionContains("<getArgument>", argsLookup);
+        assertAtTextCompletionContains("<hasArgument>", argsLookup);
     }
 
+    public void testCommandOptions() {
+        String[] optsLookup = {"opt1", "opt2", "opt3" ,"optDef", "optSingleDef"};
+        assertAtTextCompletionContains("<getOption>", optsLookup);
+        assertAtTextCompletionContains("<hasOption>", optsLookup);
+    }
 
 }
