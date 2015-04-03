@@ -11,7 +11,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.elements.impl.NewExpressionImpl;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -277,7 +276,7 @@ public class TwigExtensionParser  {
             return new HashMap<String, TwigExtension>();
         }
 
-        method.acceptChildren(new TwigSimpleTestVisitor(method, filters, containingClass));
+        method.acceptChildren(new TwigSimpleTestVisitor(filters));
 
         return filters;
 
@@ -324,23 +323,16 @@ public class TwigExtensionParser  {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(element instanceof NewExpressionImpl) {
-                this.visitNewExpression((NewExpressionImpl) element);
+            if(element instanceof NewExpression) {
+                this.visitNewExpression((NewExpression) element);
             }
             super.visitElement(element);
         }
 
-        private void visitNewExpression(NewExpressionImpl element) {
-
-            ClassReference classReference = element.getClassReference();
-            if(classReference == null) {
-                return;
-            }
-
-            String expressionName = classReference.getName();
+        private void visitNewExpression(NewExpression element) {
 
             // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
-            if("Twig_SimpleFilter".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFilter")) {
                 PsiElement[] psiElement = element.getParameters();
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
@@ -366,7 +358,7 @@ public class TwigExtensionParser  {
             }
 
             // array('shuffle' => new Twig_Filter_Function('twig_shuffle_filter'),)
-            if("Twig_Filter_Function".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_Filter_Function")) {
                 PsiElement arrayValue = element.getParent();
                 if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
                     PsiElement arrayHash = arrayValue.getParent();
@@ -390,7 +382,7 @@ public class TwigExtensionParser  {
             }
 
             // return array('serialize'  => new \Twig_Filter_Method($this, 'serialize'), );
-            if("Twig_Filter_Method".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_Filter_Method")) {
                 PsiElement arrayValue = element.getParent();
                 if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
                     PsiElement arrayHash = arrayValue.getParent();
@@ -452,23 +444,16 @@ public class TwigExtensionParser  {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(element instanceof NewExpressionImpl) {
-                this.visitNewExpression((NewExpressionImpl) element);
+            if(element instanceof NewExpression) {
+                this.visitNewExpression((NewExpression) element);
             }
             super.visitElement(element);
         }
 
-        private void visitNewExpression(NewExpressionImpl element) {
-
-            ClassReference classReference = element.getClassReference();
-            if(classReference == null) {
-                return;
-            }
-
-            String expressionName = classReference.getName();
+        private void visitNewExpression(NewExpression element) {
 
             // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
-            if("Twig_SimpleFunction".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFunction")) {
                 PsiElement[] psiElement = element.getParameters();
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
@@ -494,7 +479,7 @@ public class TwigExtensionParser  {
             }
 
             //array('form_javascript' => new \Twig_Function_Method($this, 'renderJavascript', array('is_safe' => array('html'))),);
-            if("Twig_Function_Method".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_Function_Method")) {
                 PsiElement arrayValue = element.getParent();
                 if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
                     PsiElement arrayHash = arrayValue.getParent();
@@ -527,7 +512,7 @@ public class TwigExtensionParser  {
             }
 
             // array('form_help' => new \Twig_Function_Node('Symfony\Bridge\Twig\Node\SearchAndRenderBlockNode', array('is_safe' => array('html'))),)
-            if("Twig_Function_Node".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_Function_Node")) {
                 PsiElement arrayValue = element.getParent();
                 if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
                     PsiElement arrayHash = arrayValue.getParent();
@@ -562,83 +547,29 @@ public class TwigExtensionParser  {
     }
 
     private static class TwigSimpleTestVisitor extends PsiRecursiveElementWalkingVisitor {
-        private final Method method;
         private final Map<String, TwigExtension> filters;
-        private final PhpClass containingClass;
 
-        public TwigSimpleTestVisitor(Method method, Map<String, TwigExtension> filters, PhpClass containingClass) {
-            this.method = method;
+        public TwigSimpleTestVisitor(Map<String, TwigExtension> filters) {
             this.filters = filters;
-            this.containingClass = containingClass;
         }
 
         @Override
         public void visitElement(PsiElement element) {
-            if(element instanceof NewExpressionImpl) {
-                this.visitNewExpression((NewExpressionImpl) element);
+            if(element instanceof NewExpression) {
+                this.visitNewExpression((NewExpression) element);
             }
             super.visitElement(element);
         }
 
-        private void visitNewExpression(NewExpressionImpl element) {
-
-            ClassReference classReference = element.getClassReference();
-            if(classReference == null) {
-                return;
-            }
-
-            String expressionName = classReference.getName();
+        private void visitNewExpression(NewExpression element) {
 
             // new Twig_SimpleTest('even', null, array('node_class' => 'Twig_Node_Expression_Test_Even')),
-            if("Twig_SimpleTest".equals(expressionName)) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleTest")) {
                 PsiElement[] psiElement = element.getParameters();
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
                     if(funcName != null && !funcName.contains("*")) {
                         filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_TEST, null));
-                    }
-
-                }
-            }
-
-        }
-    }
-
-    private static class TwigOperatorVisitor extends PsiRecursiveElementWalkingVisitor {
-        private final Method method;
-        private final Map<String, TwigExtension> filters;
-        private final PhpClass containingClass;
-
-        public TwigOperatorVisitor(Method method, Map<String, TwigExtension> filters, PhpClass containingClass) {
-            this.method = method;
-            this.filters = filters;
-            this.containingClass = containingClass;
-        }
-
-        @Override
-        public void visitElement(PsiElement element) {
-            if(element instanceof NewExpressionImpl) {
-                this.visitNewExpression((NewExpressionImpl) element);
-            }
-            super.visitElement(element);
-        }
-
-        private void visitNewExpression(NewExpressionImpl element) {
-
-            ClassReference classReference = element.getClassReference();
-            if(classReference == null) {
-                return;
-            }
-
-            String expressionName = classReference.getName();
-
-            // new Twig_SimpleTest('even', null, array('node_class' => 'Twig_Node_Expression_Test_Even')),
-            if("Twig_SimpleTest".equals(expressionName)) {
-                PsiElement[] psiElement = element.getParameters();
-                if(psiElement.length > 0) {
-                    String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
-                    if(funcName != null && !funcName.contains("*")) {
-                        filters.put(funcName, new TwigExtension(TwigExtensionType.OPERATOR, null));
                     }
 
                 }

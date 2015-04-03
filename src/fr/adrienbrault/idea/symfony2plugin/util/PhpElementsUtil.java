@@ -839,4 +839,8 @@ public class PhpElementsUtil {
         return null;
     }
 
+    public static boolean isNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String instance) {
+        return getNewExpressionPhpClassWithInstance(newExpression, instance) != null;
+    }
+
 }

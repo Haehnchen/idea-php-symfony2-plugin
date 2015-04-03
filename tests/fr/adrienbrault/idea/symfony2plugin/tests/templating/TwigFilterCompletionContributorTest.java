@@ -93,4 +93,15 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and f/oo<caret> %}", "ends with");
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     */
+    public void testFunctionExtension() {
+        assertNavigationContains(TwigFileType.INSTANCE, "{{ foo<caret>bar() }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::foobar");
+        assertNavigationContains(TwigFileType.INSTANCE, "{{ json_<caret>bar() }}", "json_decode");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ <caret> }}", "foobar");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ fooba<caret> }}", "{{ foobar }}");
+    }
+
 }

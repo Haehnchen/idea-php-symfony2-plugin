@@ -5,6 +5,7 @@ namespace{
     interface Twig_Environment {}
     abstract class Twig_Extension implements Twig_ExtensionInterface {}
     class Twig_SimpleFilter {}
+    class Twig_SimpleFunction {}
     class Twig_SimpleTest {}
     class SqlFormatter {
         public function format() {}
@@ -34,6 +35,14 @@ class DoctrineExtension extends \Twig_Extension
         );
     }
 
+    public function getFunctions()
+    {
+        return array(
+            new \Twig_SimpleFunction('foobar', array($this, 'foobar')),
+            new \Twig_SimpleFunction('json_bar', 'json_decode'),
+        );
+    }
+
     public function getTests()
     {
         return array(
@@ -60,6 +69,7 @@ class DoctrineExtension extends \Twig_Extension
     }
 
     public function minifyQuery($query) {}
+    public function foobar() {}
     public function contextAndEnvironment(\Twig_Environment $env, $context, $string) {}
     public function contextWithoutEnvironment($context, $string) {}
 
