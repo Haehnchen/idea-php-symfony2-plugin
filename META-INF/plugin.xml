@@ -332,6 +332,11 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"/>
 
+        <localInspection groupPath="Symfony2" shortName="XmlServiceArgumentInspection" displayName="Add Arguments"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection"/>
+
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
                     conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
