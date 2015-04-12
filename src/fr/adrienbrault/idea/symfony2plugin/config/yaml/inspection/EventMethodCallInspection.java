@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -32,6 +33,8 @@ import org.jetbrains.yaml.psi.*;
 import java.util.List;
 
 public class EventMethodCallInspection extends LocalInspectionTool {
+
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     @NotNull
     @Override
@@ -49,6 +52,8 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         } else if(psiFile instanceof PhpFile) {
             visitPhpFile((PhpFile) psiFile, holder);
         }
+
+        this.lazyServiceCollector = null;
 
         return super.buildVisitor(holder, isOnTheFly);
     }
@@ -236,7 +241,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         return null;
     }
     private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
-        registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue));
+        registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, this.getLazyServiceCollector(psiElement.getProject())));
     }
 
     private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable PhpClass phpClass) {
@@ -325,6 +330,10 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             }
         }
 
+    }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
+        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
     }
 
 }

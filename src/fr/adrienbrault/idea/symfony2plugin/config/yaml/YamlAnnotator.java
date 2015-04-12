@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
@@ -29,6 +30,8 @@ import java.util.List;
 
 public class YamlAnnotator implements Annotator {
 
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+
     @Override
     public void annotate(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
 
@@ -48,6 +51,8 @@ public class YamlAnnotator implements Annotator {
         this.annotateConstructorSequenceArguments(psiElement, holder);
         this.annotateConstructorArguments(psiElement, holder);
         this.annotateCallsArguments(psiElement, holder);
+
+        this.lazyServiceCollector = null;
     }
 
     private void annotateParameter(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
@@ -138,7 +143,7 @@ public class YamlAnnotator implements Annotator {
                             if(yamlCompoundValueService instanceof YAMLCompoundValue) {
                                 String className = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) yamlCompoundValueService, "class", false);
                                 if(className != null) {
-                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), className);
+                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), className, this.getLazyServiceCollector(psiElement.getProject()));
                                     if(serviceClass != null) {
                                         Method constructor = serviceClass.getConstructor();
                                         if(constructor != null) {
@@ -194,7 +199,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText());
+        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText(), this.getLazyServiceCollector(psiElement.getProject()));
         if(serviceClass == null) {
             return;
         }
@@ -255,7 +260,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText());
+        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText(), this.getLazyServiceCollector(psiElement.getProject()));
         if(serviceClass == null) {
             return;
         }
@@ -275,7 +280,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(psiElement));
+        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(psiElement), this.getLazyServiceCollector(psiElement.getProject()));
         if(serviceParameterClass == null) {
             return;
         }
@@ -312,4 +317,9 @@ public class YamlAnnotator implements Annotator {
     private String getServiceName(PsiElement psiElement) {
         return YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(psiElement));
     }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
+        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
+    }
+
 }
