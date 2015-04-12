@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.88
+* Add console "getArgument" and "getOption" references #454
+* "%" char in xml arguments now is a valid completion event #461
+* Initial "Missing Argument" xml service inspection and quickfix #470
+* Some performance improvements in xml and yaml service resolving
+
 ### 0.11.87
 * Add completion for twig tags of Twig_TokenParserInterface::getTag implementations #457
 * Add trans / transchoice twig tag 'from' support #459
