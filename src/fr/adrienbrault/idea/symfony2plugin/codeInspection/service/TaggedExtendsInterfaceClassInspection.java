@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.codeInspection.service;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
@@ -16,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +30,8 @@ import java.util.Set;
 
 
 public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
+
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     @NotNull
     @Override
@@ -45,6 +49,8 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
         if(psiFile instanceof XmlFile) {
             psiFile.acceptChildren(new XmlClassElementWalkingVisitor(holder));
         }
+
+        this.lazyServiceCollector = null;
 
         return super.buildVisitor(holder, isOnTheFly);
     }
@@ -148,6 +154,10 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
         }
 
+    }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
+        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
     }
 
 }

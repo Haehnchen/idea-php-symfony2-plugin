@@ -96,6 +96,14 @@ public class ServiceUtil {
      */
     @Nullable
     public static PhpClass getResolvedClassDefinition(@NotNull Project project, @NotNull String serviceClassParameterName) {
+        return getResolvedClassDefinition(project, serviceClassParameterName, new ContainerCollectionResolver.LazyServiceCollector(project));
+    }
+
+    /**
+     * %test%, service, \Class\Name to PhpClass
+     */
+    @Nullable
+    public static PhpClass getResolvedClassDefinition(@NotNull Project project, @NotNull String serviceClassParameterName, ContainerCollectionResolver.LazyServiceCollector collector) {
 
         // match parameter
         if(serviceClassParameterName.startsWith("%") && serviceClassParameterName.endsWith("%")) {
@@ -110,8 +118,8 @@ public class ServiceUtil {
 
         // service names dont have namespaces
         if(!serviceClassParameterName.contains("\\")) {
-            String serviceClass = ContainerCollectionResolver.resolveService(project, serviceClassParameterName);
-            if(serviceClass != null) {
+            String serviceClass = collector.getCollector().resolve(serviceClassParameterName);
+            if (serviceClass != null) {
                 return PhpElementsUtil.getClassInterface(project, serviceClass);
             }
         }
@@ -119,6 +127,7 @@ public class ServiceUtil {
         // fallback to class name with and without namespaces
         return PhpElementsUtil.getClassInterface(project, serviceClassParameterName);
     }
+
 
     /**
      * Get parameter def inside xml or yaml file

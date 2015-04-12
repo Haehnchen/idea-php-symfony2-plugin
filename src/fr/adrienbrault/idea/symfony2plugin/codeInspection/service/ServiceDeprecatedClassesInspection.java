@@ -3,11 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.codeInspection.service;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -17,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +29,8 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 
 public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
+
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     @NotNull
     @Override
@@ -49,12 +54,14 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
             psiFile.acceptChildren(new PhpClassWalkingVisitor(holder));
         }
 
+        this.lazyServiceCollector = null;
+
         return super.buildVisitor(holder, isOnTheFly);
     }
 
     private void attachDeprecatedProblem(PsiElement element, String text, ProblemsHolder holder) {
 
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), text);
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), text, getLazyServiceCollector(element.getProject()));
         if(phpClass == null) {
             return;
         }
@@ -151,4 +158,9 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
             super.visitElement(element);
         }
     }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
+        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
+    }
+
 }

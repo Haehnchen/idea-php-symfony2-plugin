@@ -62,6 +62,28 @@ public class ContainerCollectionResolver {
         return GlobalSearchScope.allScope(project);
     }
 
+    public static class LazyServiceCollector {
+
+        private final Project project;
+        private ServiceCollector collector;
+        private Source[] sources  = {Source.COMPILER, Source.INDEX};
+
+        public LazyServiceCollector(Project project) {
+            this.project = project;
+        }
+
+        @NotNull
+        public ServiceCollector getCollector() {
+
+            if(this.collector == null) {
+                this.collector = new ServiceCollector(project, sources);
+            }
+
+            return this.collector;
+        }
+
+    }
+
     /**
      *
      * Resolve service class name which can be a class name or parameter, unknown parameter returns null

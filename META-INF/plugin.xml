@@ -348,6 +348,12 @@
             <descriptionDirectoryName>Symfony2ConstructorCreateServer</descriptionDirectoryName>
         </intentionAction>
 
+        <intentionAction>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention</className>
+            <category>XML</category>
+            <descriptionDirectoryName>XmlServiceArgumentIntention</descriptionDirectoryName>
+        </intentionAction>
+
 
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"

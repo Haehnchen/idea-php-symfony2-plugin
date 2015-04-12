@@ -59,6 +59,9 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             }
         });
 
+        generateButton.requestFocusInWindow();
+        this.getRootPane().setDefaultButton(generateButton);
+
         this.closeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -148,7 +151,20 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         @Nullable
         @Override
         public String valueOf(ServiceParameter modelParameter) {
-            return modelParameter.getClassFqn();
+
+            String classFqn = modelParameter.getClassFqn();
+            if(classFqn.startsWith("\\")) {
+                classFqn = classFqn.substring(1);
+            }
+
+            int i = classFqn.lastIndexOf("\\");
+            if(i > 0) {
+                String ns = classFqn.substring(0, i);
+                String clazz = classFqn.substring(i + 1, classFqn.length());
+                classFqn = String.format("%s [%s]", clazz, ns);
+            }
+
+            return classFqn;
         }
     }
 
@@ -196,7 +212,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         @Override
         public Icon valueOf(ServiceParameter modelParameter) {
             PhpClass classInterface = PhpElementsUtil.getClassInterface(project, modelParameter.getClassFqn());
-            return classInterface != null ? classInterface.getIcon(0) : null;
+            return classInterface != null ? classInterface.getIcon() : null;
         }
 
         public java.lang.Class getColumnClass() {
@@ -217,10 +233,11 @@ public class ServiceArgumentSelectionDialog extends JDialog {
     public static ServiceArgumentSelectionDialog createDialog(Project project, Map<String, Set<String>> arguments, Callback callback) {
 
         ServiceArgumentSelectionDialog dialog = new ServiceArgumentSelectionDialog(project, arguments, callback);
+        dialog.pack();
         dialog.init();
 
+        dialog.setMinimumSize(new Dimension(620, 300));
         dialog.setTitle("Add Argument");
-        dialog.pack();
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
 

@@ -15,6 +15,7 @@ import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
@@ -24,8 +25,10 @@ import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceArgumentSelectionDialog;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -174,7 +177,7 @@ public class ServiceActionUtil {
     }
 
     @Nullable
-    public static List<String> getXmlMissingArgumentTypes(XmlTag xmlTag) {
+    public static List<String> getXmlMissingArgumentTypes(XmlTag xmlTag, ContainerCollectionResolver.LazyServiceCollector collector) {
 
         XmlAttribute classAttribute = xmlTag.getAttribute("class");
         if(classAttribute == null) {
@@ -187,7 +190,7 @@ public class ServiceActionUtil {
         }
 
         // @TODO: cache defs
-        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(xmlTag.getProject(), value);
+        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(xmlTag.getProject(), value, collector);
         if(resolvedClassDefinition == null) {
             return null;
         }
@@ -219,6 +222,80 @@ public class ServiceActionUtil {
         }
 
         return args;
+    }
+
+    public static boolean isValidXmlParameterInspectionService(@NotNull XmlTag xmlTag) {
+
+        // we dont supp
+        for(String s : new String[] {"parent", "factory-class", "factory-service"}) {
+            if(xmlTag.getAttribute(s) != null) {
+                return false;
+            }
+        }
+
+        // symfony2 >= 2.6
+        for (XmlTag tag : xmlTag.getSubTags()) {
+            if("factory".equals(tag.getName())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static void fixServiceArgument(@NotNull List<String> args, final @NotNull XmlTag xmlTag) {
+
+        Project project = xmlTag.getProject();
+
+        Map<String, ContainerService> services = ContainerCollectionResolver.getServices(project);
+
+        Map<String, Set<String>> resolved = new LinkedHashMap<String, Set<String>>();
+        for (String arg : args) {
+            resolved.put(arg, ServiceActionUtil.getPossibleServices(project, arg, services));
+        }
+
+        // we got an unique service list, not need to provide ui
+        if(isUniqueServiceMap(resolved)) {
+            List<String> items = new ArrayList<String>();
+            for (Map.Entry<String, Set<String>> stringSetEntry : resolved.entrySet()) {
+                Set<String> value = stringSetEntry.getValue();
+                if(value.size() > 0) {
+                    items.add(value.iterator().next());
+                } else {
+                    items.add("?");
+                }
+            }
+
+            addServices(items, xmlTag);
+
+            return;
+        }
+
+        ServiceArgumentSelectionDialog.createDialog(project, resolved, new ServiceArgumentSelectionDialog.Callback() {
+            @Override
+            public void onOk(List<String> items) {
+                addServices(items, xmlTag);
+            }
+        });
+    }
+
+    public static boolean isUniqueServiceMap(Map<String, Set<String>> resolvedServices) {
+
+        for (Map.Entry<String, Set<String>> stringSetEntry : resolvedServices.entrySet()) {
+            if(stringSetEntry.getValue().size() > 1) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    public static void addServices(List<String> items, XmlTag xmlTag) {
+        for (String item : items) {
+            XmlTag tag = XmlElementFactory.getInstance(xmlTag.getProject()).createTagFromText(String.format("<argument type=\"service\" id=\"%s\"/>", item), xmlTag.getLanguage());
+            xmlTag.addSubTag(tag, false);
+        }
     }
 
 }

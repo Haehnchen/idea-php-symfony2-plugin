@@ -13,6 +13,7 @@ import com.intellij.psi.xml.XmlTokenType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.quickfix.AddServiceXmlArgumentLocalQuickFix;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,6 +23,8 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class XmlServiceArgumentInspection extends LocalInspectionTool {
+
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     @NotNull
     @Override
@@ -36,12 +39,18 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
             visitService(xmlTag, holder);
         }
 
+        this.lazyServiceCollector = null;
+
         return super.buildVisitor(holder, isOnTheFly);
     }
 
     protected void visitService(XmlTag xmlTag, @NotNull ProblemsHolder holder) {
 
-        final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag);
+        if(!ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag)) {
+            return;
+        }
+
+        final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, getLazyServiceCollector(xmlTag));
         if (args == null) {
             return;
         }
@@ -52,6 +61,15 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
         }
 
         holder.registerProblem(childrenOfType, "Missing Argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new AddServiceXmlArgumentLocalQuickFix(args));
+    }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(XmlTag xmlTag) {
+
+        if(this.lazyServiceCollector != null) {
+            return this.lazyServiceCollector;
+        }
+
+        return this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(xmlTag.getProject());
     }
 
 }
