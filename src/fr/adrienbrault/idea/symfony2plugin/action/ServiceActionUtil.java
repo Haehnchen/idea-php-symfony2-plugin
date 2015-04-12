@@ -293,6 +293,11 @@ public class ServiceActionUtil {
 
     public static void addServices(List<String> items, XmlTag xmlTag) {
         for (String item : items) {
+
+            if(StringUtils.isBlank(item)) {
+                item = "?";
+            }
+
             XmlTag tag = XmlElementFactory.getInstance(xmlTag.getProject()).createTagFromText(String.format("<argument type=\"service\" id=\"%s\"/>", item), xmlTag.getLanguage());
             xmlTag.addSubTag(tag, false);
         }

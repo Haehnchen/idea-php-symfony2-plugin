@@ -153,6 +153,10 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         public String valueOf(ServiceParameter modelParameter) {
 
             String classFqn = modelParameter.getClassFqn();
+            if(StringUtils.isBlank(classFqn)) {
+                return "unknown";
+            }
+
             if(classFqn.startsWith("\\")) {
                 classFqn = classFqn.substring(1);
             }
@@ -237,7 +241,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         dialog.init();
 
         dialog.setMinimumSize(new Dimension(620, 300));
-        dialog.setTitle("Add Argument");
+        dialog.setTitle("Symfony2: Add Argument");
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
 

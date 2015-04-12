@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -53,7 +54,8 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
         return ServiceActionUtil.getXmlMissingArgumentTypes(serviceTagValid, new ContainerCollectionResolver.LazyServiceCollector(project)) != null;
     }
 
-    private XmlTag getServiceTagValid(@NotNull PsiElement psiElement) {
+    @Nullable
+    public static XmlTag getServiceTagValid(@NotNull PsiElement psiElement) {
 
         XmlTag xmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
         if(xmlTag == null) {
@@ -75,13 +77,13 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony2";
+        return "Symfony";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony2: Add Arguments";
+        return "Symfony: Add Arguments";
     }
 
 }

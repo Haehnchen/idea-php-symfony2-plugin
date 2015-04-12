@@ -421,7 +421,11 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
 
-        <action id="Symfony2.ServiceGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction" text="Generate Service">
+        <action id="Symfony2.ServiceGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction" text="Generate Service" icon="SymfonyIcons.Symfony">
+            <add-to-group group-id="GenerateGroup" anchor="last" />
+        </action>
+
+        <action id="Symfony2.ServiceArgumentGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceArgumentGenerateAction" text="Generate Arguments" icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 

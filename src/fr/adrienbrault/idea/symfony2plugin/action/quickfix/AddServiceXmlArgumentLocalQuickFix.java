@@ -24,13 +24,13 @@ public class AddServiceXmlArgumentLocalQuickFix implements LocalQuickFix {
     @NotNull
     @Override
     public String getName() {
-        return "Missing Argument";
+        return "Symfony: Missing Argument";
     }
 
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Missing Argument";
+        return "Symfony";
     }
 
     @Override
