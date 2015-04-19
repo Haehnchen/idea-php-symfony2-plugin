@@ -43,7 +43,7 @@ public class ServiceUtil {
         put("doctrine.event_listener", null);
         put("doctrine.event_subscriber", null);
         put("form.type", "\\Symfony\\Component\\Form\\FormTypeInterface");
-        put("form.type_extension", "\\Symfony\\Component\\Form\\FormExtensionInterface");
+        put("form.type_extension", "\\Symfony\\Component\\Form\\FormTypeExtensionInterface");
         put("form.type_guesser", "\\Symfony\\Component\\Form\\FormTypeGuesserInterface");
         put("kernel.cache_clearer", null);
         put("kernel.cache_warmer", "\\Symfony\\Component\\HttpKernel\\CacheWarmer\\CacheWarmerInterface");
