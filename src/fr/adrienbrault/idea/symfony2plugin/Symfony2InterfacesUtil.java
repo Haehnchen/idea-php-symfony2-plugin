@@ -15,10 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -129,27 +126,31 @@ public class Symfony2InterfacesUtil {
             return false;
         }
 
-        Method method = getMultiResolvedMethod(psiReference);
-        if (method == null) {
+        Method[] multiResolvedMethod = getMultiResolvedMethod(psiReference);
+        if(multiResolvedMethod == null) {
             return false;
         }
 
-        PhpClass methodClass = method.getContainingClass();
-        if(methodClass == null) {
-            return false;
-        }
+        for (Method method : multiResolvedMethod) {
 
-        for (Method expectedMethod : expectedMethods) {
-
-            // @TODO: its stuff from beginning times :)
-            if(expectedMethod == null) {
+            PhpClass methodClass = method.getContainingClass();
+            if(methodClass == null) {
                 continue;
             }
 
-            PhpClass containingClass = expectedMethod.getContainingClass();
-            if (null != containingClass && expectedMethod.getName().equals(method.getName()) && isInstanceOf(methodClass, containingClass)) {
-                return true;
+            for (Method expectedMethod : expectedMethods) {
+
+                // @TODO: its stuff from beginning times :)
+                if(expectedMethod == null) {
+                    continue;
+                }
+
+                PhpClass containingClass = expectedMethod.getContainingClass();
+                if (null != containingClass && expectedMethod.getName().equals(method.getName()) && isInstanceOf(methodClass, containingClass)) {
+                    return true;
+                }
             }
+
         }
 
         return false;
@@ -157,25 +158,31 @@ public class Symfony2InterfacesUtil {
 
     /**
      * Single resolve doesnt work if we have non unique class names in project context,
-     * so try a multiResolve and use first matched method
+     * so try a multiResolve
      */
     @Nullable
-    public static Method getMultiResolvedMethod(PsiReference psiReference) {
+    public static Method[] getMultiResolvedMethod(PsiReference psiReference) {
 
         // class be unique in normal case, so try this first
         PsiElement resolvedReference = psiReference.resolve();
         if (resolvedReference instanceof Method) {
-            return (Method) resolvedReference;
+            return new Method[] { (Method) resolvedReference };
         }
 
         // try multiResolve if class exists twice in project
         if(psiReference instanceof PsiPolyVariantReference) {
+            Collection<Method> methods = new HashSet<Method>();
             for(ResolveResult resolveResult : ((PsiPolyVariantReference) psiReference).multiResolve(false)) {
                 PsiElement element = resolveResult.getElement();
                 if(element instanceof Method) {
-                    return (Method) element;
+                    methods.add((Method) element);
                 }
             }
+
+            if(methods.size() > 0) {
+                return methods.toArray(new Method[methods.size()]);
+            }
+
         }
 
         return null;

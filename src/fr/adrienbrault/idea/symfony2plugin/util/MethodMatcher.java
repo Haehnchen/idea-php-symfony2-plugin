@@ -181,30 +181,33 @@ public class MethodMatcher {
 
             // walk down next method
             MethodReference methodReference = bag.getMethodReference();
-            Method method = Symfony2InterfacesUtil.getMultiResolvedMethod(methodReference);
-            if(method == null) {
+            Method[] methods = Symfony2InterfacesUtil.getMultiResolvedMethod(methodReference);
+            if(methods == null) {
                 return null;
             }
 
-            PsiElement[] parameterReferences = PhpElementsUtil.getMethodParameterReferences(method, bag.getParameterBag().getIndex());
-            if(parameterReferences == null || parameterReferences.length == 0) {
-                return null;
-            }
+            for (Method method : methods) {
 
-            for(PsiElement var: parameterReferences) {
+                PsiElement[] parameterReferences = PhpElementsUtil.getMethodParameterReferences(method, bag.getParameterBag().getIndex());
+                if(parameterReferences == null || parameterReferences.length == 0) {
+                    continue;
+                }
 
-                MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, parameterIndex)
-                    .withSignature(this.signatures)
-                    .match();
+                for(PsiElement var: parameterReferences) {
 
-                if(methodMatchParameterRef != null) {
-                    return methodMatchParameterRef;
+                    MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, parameterIndex)
+                        .withSignature(this.signatures)
+                        .match();
+
+                    if(methodMatchParameterRef != null) {
+                        return methodMatchParameterRef;
+                    }
+
                 }
 
             }
 
             return null;
-
         }
 
     }
