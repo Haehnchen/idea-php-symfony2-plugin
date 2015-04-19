@@ -9,6 +9,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.CommonProcessors;
+import com.intellij.util.Processor;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
@@ -841,6 +842,37 @@ public class PhpElementsUtil {
 
     public static boolean isNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String instance) {
         return getNewExpressionPhpClassWithInstance(newExpression, instance) != null;
+    }
+
+
+    @NotNull
+    public static Collection<PsiElement> collectMethodElementsWithParents(final @NotNull Method method, @NotNull final Processor<PsiElement> processor) {
+        Collection<PsiElement> elements = new HashSet<PsiElement>();
+        collectMethodElementsWithParents(method, 3, elements, processor);
+        return elements;
+    }
+
+    private static void collectMethodElementsWithParents(final @NotNull Method method, final int depth, @NotNull final Collection<PsiElement> elements, @NotNull final Processor<PsiElement> processor) {
+
+        method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(PsiElement psiElement) {
+
+                if(processor.process(psiElement)) {
+                    elements.add(psiElement);
+                }
+
+                if(psiElement instanceof MethodReference && ((MethodReference) psiElement).getReferenceType() == PhpModifier.State.PARENT && method.getName().equals(((MethodReference) psiElement).getName())) {
+                    PsiElement resolve = ((MethodReference) psiElement).resolve();
+                    if(depth > 0 && resolve instanceof Method) {
+                        collectMethodElementsWithParents((Method) resolve, depth - 1, elements, processor);
+                    }
+                }
+
+                super.visitElement(psiElement);
+            }
+        });
+
     }
 
 }

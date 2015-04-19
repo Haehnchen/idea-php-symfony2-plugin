@@ -4,8 +4,8 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -159,8 +159,8 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyMap();
             }
 
-            PsiElement[] psiElements = PsiTreeUtil.collectElements(configure, new CommandDefPsiElementFilter(methodName));
-            if(psiElements.length == 0) {
+            Collection<PsiElement> psiElements = PhpElementsUtil.collectMethodElementsWithParents(configure, new CommandDefPsiElementFilter(methodName));
+            if(psiElements.size() == 0) {
                 return Collections.emptyMap();
             }
 
@@ -189,7 +189,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                             PsiElement[] parameters = newExpression.getParameters();
                             String contents = getParameterStringValue(parameters, 0);
                             if(contents != null && StringUtils.isNotBlank(contents)) {
-                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
+                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 3), getParameterStringValue(parameters, 4)));
                             }
 
                         } else if(methodName.equals("addArgument") && PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputArgument") != null) {
@@ -228,7 +228,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
             return targets;
         }
 
-        private static class CommandDefPsiElementFilter implements PsiElementFilter {
+        private static class CommandDefPsiElementFilter implements Processor<PsiElement> {
             private final String methodName;
 
             public CommandDefPsiElementFilter(String methodName) {
@@ -236,7 +236,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             @Override
-            public boolean isAccepted(PsiElement psiElement) {
+            public boolean process(PsiElement psiElement) {
                 if(!(psiElement instanceof MethodReference)) {
                     return false;
                 }
