@@ -10,9 +10,11 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.Nullable;
@@ -21,8 +23,10 @@ import java.util.*;
 
 public class ControllerIndex {
 
-    Project project;
-    PhpIndex phpIndex;
+    private Project project;
+    private PhpIndex phpIndex;
+
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     public ControllerIndex(Project project) {
        this.project = project;
@@ -52,20 +56,17 @@ public class ControllerIndex {
         String serviceId = shortcutName.substring(0, shortcutName.lastIndexOf(":"));
         String methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
 
-        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(this.project, XmlServiceParser.class).getServiceMap();
-
-        if(serviceMap.getMap().containsKey(serviceId))  {
-            Collection<? extends PhpNamedElement> methodCalls = this.phpIndex.getBySignature("#M#C" + serviceMap.getMap().get(serviceId) + "." + methodName, null, 0);
-
-            for(PhpNamedElement phpNamedElement : methodCalls) {
-                if(phpNamedElement instanceof Method) {
-                    return new ControllerAction(serviceId, (Method) phpNamedElement);
-                }
-            }
-
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(this.project, serviceId, getLazyServiceCollector(this.project));
+        if(phpClass == null) {
+            return null;
         }
 
-        return null;
+        Method method = phpClass.findMethodByName(methodName);
+        if(method == null) {
+            return null;
+        }
+
+        return new ControllerAction(serviceId, method);
     }
 
     @Nullable
@@ -188,6 +189,10 @@ public class ControllerIndex {
         }
 
         return null;
+    }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
+        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
     }
 
     static public List<LookupElement> getControllerLookupElements(Project project) {

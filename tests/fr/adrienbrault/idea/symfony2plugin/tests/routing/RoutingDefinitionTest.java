@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 import com.intellij.ide.highlighter.XmlFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
+import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -12,6 +13,8 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
 
     public void setUp() throws Exception {
         super.setUp();
+
+        myFixture.copyFileToProject("services.yml", "services.yml");
 
         myFixture.configureByText("classes.php", "<?php\n" +
                 "namespace AppBundle;\n" +
@@ -29,6 +32,10 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
                 "    public function indexAction() {}\n" +
                 "}"
         );
+    }
+
+    protected String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     public void testYamlCompletion() {
@@ -59,7 +66,6 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
 
     }
 
-
     public void testYamlNavigation() {
 
         assertNavigationContains(YAMLFileType.YML, "foo:\n" +
@@ -83,6 +89,16 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
                 "    <default key=\"_controller\"><caret></default>\n" +
                 "</route>"
             , "AppBundle:Default:index", "AppBundle:Foo/Default:index"
+        );
+
+    }
+
+    public void testControllerAsServiceNavigation() {
+
+        assertNavigationContains(YAMLFileType.YML, "foo:\n" +
+                "    pattern: /\n" +
+                "    defaults: { _controller: app.hello_controller<caret>:indexAction }\n"
+            , "AppBundle\\Controller\\DefaultController::indexAction"
         );
 
     }
