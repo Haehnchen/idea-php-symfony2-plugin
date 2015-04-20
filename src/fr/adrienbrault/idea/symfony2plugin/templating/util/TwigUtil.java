@@ -21,6 +21,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigBlockTag;
+import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -28,8 +29,10 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStu
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -140,17 +143,41 @@ public class TwigUtil {
         return targets;
     }
 
+    /**
+     *  Finds a trans_default_domain definition in twig file
+     *
+     * "{% trans_default_domain "validators" %}"
+     *
+     * @param psiFile twig file
+     * @return file translation domain
+     */
     @Nullable
-    public static String getTwigFileTransDefaultDomain(PsiFile psiFile) {
+    public static String getTwigFileTransDefaultDomain(@NotNull PsiFile psiFile) {
 
-        String str = psiFile.getText();
+        for (PsiElement psiElement : psiFile.getChildren()) {
 
-        // {% trans_default_domain "app" %}
-        String regex = "\\{%\\s?trans_default_domain\\s?['\"](\\w+)['\"]\\s?%}";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+            // filter parent trans_default_domain, it should be in file context
+            if(psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
 
-        if (matcher.find()) {
-            return matcher.group(1);
+                final String[] fileTransDomain = {null};
+                psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+                    @Override
+                    public void visitElement(PsiElement element) {
+                        if(TwigHelper.getTransDefaultDomainPattern().accepts(element)) {
+                            String text = PsiElementUtils.trimQuote(element.getText());
+                            if(StringUtils.isNotBlank(text)) {
+                                fileTransDomain[0] = text;
+                            }
+                        }
+                        super.visitElement(element);
+                    }
+                });
+
+                if(fileTransDomain[0] != null) {
+                    return fileTransDomain[0];
+                }
+
+            }
         }
 
         return null;
