@@ -49,7 +49,7 @@ public class ControllerIndex {
     public ControllerAction getControllerActionOnService(String shortcutName) {
 
         // only foo_bar:Method is valid
-        if(shortcutName.contains("::") || !shortcutName.contains(":") || shortcutName.contains("\\")) {
+        if(!RouteHelper.isServiceController(shortcutName)) {
             return null;
         }
 

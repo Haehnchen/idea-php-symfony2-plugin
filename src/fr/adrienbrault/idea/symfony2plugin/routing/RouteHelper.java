@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
@@ -653,6 +654,10 @@ public class RouteHelper {
         return null;
     }
 
+    public static boolean isServiceController(@NotNull String shortcutName) {
+        return !shortcutName.contains("::") && shortcutName.contains(":") && !shortcutName.contains("\\") && shortcutName.split(":").length == 2;
+    }
+
     @Nullable
     public static List<Route> getRoutesOnControllerAction(@NotNull Method method) {
 
@@ -668,16 +673,23 @@ public class RouteHelper {
             routeNames.add(shortcutName);
         }
 
-        if(routeNames.size() == 0) {
-            return null;
+        Map<String, Route> allRoutes = getAllRoutes(method.getProject());
+        List<Route> routes = new ArrayList<Route>();
+
+        // resolve indexed routes
+        if(routeNames.size() > 0) {
+            for(Map.Entry<String, Route> routeEntry: allRoutes.entrySet()) {
+                String controller = routeEntry.getValue().getController();
+                if(controller != null && routeNames.contains(controller)) {
+                    routes.add(routeEntry.getValue());
+                }
+            }
         }
 
-        List<Route> routes = new ArrayList<Route>();
-        for(Map.Entry<String, Route> routeEntry: getAllRoutes(method.getProject()).entrySet()) {
-            String controller = routeEntry.getValue().getController();
-            if(controller != null && routeNames.contains(controller)) {
-                routes.add(routeEntry.getValue());
-            }
+        // search for services
+        Collection<Route> methodMatch = ServiceRouteContainer.build(allRoutes).getMethodMatches(method);
+        if(methodMatch.size() > 0) {
+            routes.addAll(methodMatch);
         }
 
         return routes;
@@ -807,7 +819,8 @@ public class RouteHelper {
         return targets;
     }
 
-    public static Map<String, Route> getAllRoutes(Project project) {
+    @NotNull
+    public static Map<String, Route> getAllRoutes(@NotNull Project project) {
 
         Map<String, Route> routes = new HashMap<String, Route>();
         routes.putAll(RouteHelper.getCompiledRoutes(project));

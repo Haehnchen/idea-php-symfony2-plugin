@@ -37,7 +37,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        if(!(psiElement instanceof Method)) {
+        if(!(psiElement instanceof Method) || !((Method) psiElement).getAccess().isPublic()) {
             return null;
         }
 
