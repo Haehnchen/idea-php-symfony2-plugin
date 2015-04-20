@@ -15,6 +15,7 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
         super.setUp();
 
         myFixture.copyFileToProject("services.yml", "services.yml");
+        myFixture.copyFileToProject("routing.xml", "routing.xml");
 
         myFixture.configureByText("classes.php", "<?php\n" +
                 "namespace AppBundle;\n" +
@@ -99,6 +100,16 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
                 "    pattern: /\n" +
                 "    defaults: { _controller: app.hello_controller<caret>:indexAction }\n"
             , "AppBundle\\Controller\\DefaultController::indexAction"
+        );
+
+    }
+
+    public void testControllerAsServiceCompletion() {
+
+        assertCompletionContains(YAMLFileType.YML, "foo:\n" +
+                "    pattern: /\n" +
+                "    defaults: { _controller: app.hello_controller:<caret> }\n"
+            , "app.hello_controller:indexAction"
         );
 
     }

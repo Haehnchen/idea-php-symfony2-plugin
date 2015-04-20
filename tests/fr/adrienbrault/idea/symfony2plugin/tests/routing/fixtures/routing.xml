@@ -8,4 +8,8 @@
         <default key="_controller">AcmeDemoBundle:Demo:hello</default>
     </route>
 
+    <route id="xml_route" path="/blog/{slug}">
+        <default key="_controller">app.hello_controller:indexAction</default>
+    </route>
+
 </routes>
