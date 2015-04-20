@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
@@ -17,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -131,45 +133,33 @@ public class ControllerIndex {
         return actions;
     }
 
-    public ArrayList<ControllerAction> getServiceActionMethods(Project project) {
+    @NotNull
+    public List<ControllerAction> getServiceActionMethods(@NotNull Project project) {
 
-        ArrayList<ControllerAction> actions = new ArrayList<ControllerAction>();
-
-        Map<String,Route> routes = RouteHelper.getCompiledRoutes(project);
+        Map<String,Route> routes = RouteHelper.getAllRoutes(project);
         if(routes.size() == 0) {
-            return actions;
+            return Collections.emptyList();
         }
-
-        ServiceMap serviceMap = ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap();
-        if(serviceMap.getMap().size() == 0) {
-            return actions;
-        }
-
-        HashMap<String, String> controllerClassNames = new HashMap<String, String>();
 
         // there is now way to find service controllers directly,
         // so we search for predefined service controller and use the public methods
-        for (Map.Entry<String,Route> entrySet: routes.entrySet()) {
-            String controllerName = entrySet.getValue().getController();
-            if(controllerName != null && !controllerName.contains("::") && controllerName.contains(":")) {
-                String serviceId = controllerName.substring(0, controllerName.lastIndexOf(":"));
-                if(serviceMap.getMap().containsKey(serviceId)) {
-                    String className =  serviceMap.getMap().get(serviceId);
-                    controllerClassNames.put(serviceId, className);
-                }
-            }
-        }
+        ContainerCollectionResolver.LazyServiceCollector collector = new ContainerCollectionResolver.LazyServiceCollector(project);
 
-        // find public method of the service class which are possible Actions
-        for(Map.Entry<String, String> classDefinition: controllerClassNames.entrySet()) {
-            PhpClass phpClass = PhpElementsUtil.getClass(this.phpIndex, classDefinition.getValue());
-            if(phpClass != null) {
-                for(Method method : phpClass.getMethods()) {
-                    if(method.getAccess().isPublic() && !method.getName().startsWith("__") && !method.getName().startsWith("set")) {
-                        actions.add(new ControllerAction(classDefinition.getKey() + ":" + method.getName(), method));
-                    }
+        List<ControllerAction> actions = new ArrayList<ControllerAction>();
+        for (String serviceName : ServiceRouteContainer.build(routes).getServiceNames()) {
+
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceName, collector);
+            if(phpClass == null) {
+                continue;
+            }
+
+            // find public method of the service class which are possible Actions
+            for(Method method : phpClass.getMethods()) {
+                if(method.getAccess().isPublic() && !method.getName().startsWith("__") && !method.getName().startsWith("set")) {
+                    actions.add(new ControllerAction(serviceName + ":" + method.getName(), method));
                 }
             }
+
         }
 
         return actions;
