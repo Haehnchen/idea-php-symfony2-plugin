@@ -8,6 +8,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,21 +22,25 @@ public class InspectionUtil {
 
     public static void inspectController(@NotNull PsiElement psiElement, @NotNull String controllerName, @NotNull ProblemsHolder holder, final @NotNull LazyControllerNameResolve lazyControllerNameResolve) {
 
-        int lastPos = controllerName.lastIndexOf(":") + 1;
-        final String actionName = controllerName.substring(lastPos) + "Action";
-
         List<PsiElement> psiElements = Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), controllerName));
         if(psiElements.size() > 0) {
             return;
         }
 
-        PhpClass phpClass = RouteHelper.getControllerClassOnShortcut(psiElement.getProject(), controllerName);
-        if(phpClass == null) {
+        ControllerClassOnShortcutReturn shortcutReturn = RouteHelper.getControllerClassOnShortcut(psiElement.getProject(), controllerName);
+        if(shortcutReturn == null) {
             return;
         }
 
-        final Project project = phpClass.getProject();
-        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(phpClass, actionName, new CreateMethodQuickFix.InsertStringInterface() {
+        int lastPos = controllerName.lastIndexOf(":") + 1;
+        String actionName = controllerName.substring(lastPos);
+        if(!shortcutReturn.isService()) {
+            actionName += "Action";
+        }
+
+        final Project project = shortcutReturn.getPhpClass().getProject();
+        final String finalActionName = actionName;
+        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(shortcutReturn.getPhpClass(), actionName, new CreateMethodQuickFix.InsertStringInterface() {
             @NotNull
             @Override
             public StringBuilder getStringBuilder() {
@@ -62,7 +67,7 @@ public class InspectionUtil {
 
                 return new StringBuilder()
                     .append("public function ")
-                    .append(actionName)
+                    .append(finalActionName)
                     .append("(")
                     .append(parameters)
                     .append(")\n {\n}\n\n");

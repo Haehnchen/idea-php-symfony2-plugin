@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -40,6 +41,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -195,11 +197,17 @@ public class RouteHelper {
      * @return targets
      */
     @Nullable
-    public static PhpClass getControllerClassOnShortcut(@NotNull Project project,@NotNull  String controllerName) {
+    public static ControllerClassOnShortcutReturn getControllerClassOnShortcut(@NotNull Project project,@NotNull  String controllerName) {
 
         if(controllerName.contains("::")) {
             // FooBundle\Controller\BarController::fooBarAction
-            return PhpElementsUtil.getClass(project, controllerName.substring(0, controllerName.lastIndexOf("::")));
+
+            PhpClass aClass = PhpElementsUtil.getClass(project, controllerName.substring(0, controllerName.lastIndexOf("::")));
+            if(aClass != null) {
+                return new ControllerClassOnShortcutReturn(aClass);
+            }
+
+            return null;
         }
 
         // AcmeDemoBundle:Demo:hello
@@ -208,18 +216,19 @@ public class RouteHelper {
             // try to resolve on bundle path
             SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getBundle(split[0]);
             if(symfonyBundle != null) {
-                return PhpElementsUtil.getClass(project, symfonyBundle.getNamespaceName() + "Controller\\" + split[1] + "Controller");
+                PhpClass aClass = PhpElementsUtil.getClass(project, symfonyBundle.getNamespaceName() + "Controller\\" + split[1] + "Controller");
+                if(aClass != null) {
+                    return new ControllerClassOnShortcutReturn(aClass);
+                }
+            }
+        } else if(split.length == 2) {
+            // controller as service:
+            // foo_service_bar:fooBar
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, split[0]);
+            if(phpClass != null) {
+                return new ControllerClassOnShortcutReturn(phpClass, true);
             }
         }
-
-        // @TODO: implement controller as service
-        // foo_service_bar:fooBar
-        /*
-            ControllerAction controllerServiceAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
-            if(controllerServiceAction != null) {
-                return new PsiElement[] {controllerServiceAction.getMethod()};
-            }
-        */
 
         return null;
     }
