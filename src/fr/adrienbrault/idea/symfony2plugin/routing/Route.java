@@ -35,23 +35,28 @@ public class Route {
             this.controller = defaults.get("_controller").replace("\\\\", "\\");
         }
     }
-    public Route(String name) {
+    public Route(@NotNull String name) {
         this.name = name;
     }
 
-    public Route(String name, String controller) {
+    public Route(@NotNull String name, @NotNull String controller) {
         this.name = name;
         this.controller = controller;
     }
 
-    public Route(String name, String[] indexed) {
+    public Route(@NotNull String name, @Nullable String[] indexed) {
         this.name = name;
-        if(indexed.length >= 1 && indexed[0].length() > 0) {
-            this.controller = indexed[0];
-        }
 
-        if(indexed.length >= 2 && indexed[1].length() > 0) {
-            this.path = indexed[1];
+        // its not valid to provide nullable value,
+        // but index based allows this
+        if(indexed != null) {
+            if(indexed.length >= 1 && indexed[0].length() > 0) {
+                this.controller = indexed[0];
+            }
+
+            if(indexed.length >= 2 && indexed[1].length() > 0) {
+                this.path = indexed[1];
+            }
         }
 
     }
