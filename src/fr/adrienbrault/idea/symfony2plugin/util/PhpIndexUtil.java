@@ -8,6 +8,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpNamespaceIndex;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,11 +22,13 @@ public class PhpIndexUtil {
      * @param namespaceName namespace name should start with \ and not end with "\"
      * @return classes inside namespace and sub-namespace
      */
-    public static Collection<PhpClass> getPhpClassInsideNamespace(Project project, String namespaceName) {
+    @NotNull
+    public static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull String namespaceName) {
         return getPhpClassInsideNamespace(project, PhpIndex.getInstance(project), namespaceName, 10);
     }
 
-    private static Collection<PhpClass> getPhpClassInsideNamespace(Project project, PhpIndex phpIndex, String namespaceName, int maxDeep) {
+    @NotNull
+    private static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull PhpIndex phpIndex, @NotNull String namespaceName, int maxDeep) {
 
         final Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
@@ -48,7 +51,7 @@ public class PhpIndexUtil {
         return phpClasses;
     }
 
-    public static boolean hasNamespace(Project project, String namespaceName) {
+    public static boolean hasNamespace(@NotNull Project project, @NotNull String namespaceName) {
 
         if(!namespaceName.startsWith("\\")) {
             namespaceName = "\\" + namespaceName;

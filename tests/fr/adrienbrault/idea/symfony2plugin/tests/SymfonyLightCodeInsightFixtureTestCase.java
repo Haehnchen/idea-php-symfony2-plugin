@@ -107,7 +107,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
 
         if(!classTargets.contains(targetShortcut)) {
-            fail(String.format("failed that PsiElement (%s) navigate to %s", psiElement.toString(), targetShortcut));
+            fail(String.format("failed that PsiElement (%s) navigate to %s on %s", psiElement.toString(), targetShortcut, classTargets.toString()));
         }
 
     }

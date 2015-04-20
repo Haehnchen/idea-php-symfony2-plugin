@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -28,18 +29,16 @@ public class ControllerIndex {
        this.phpIndex = PhpIndex.getInstance(project);
     }
 
-    public ArrayList<ControllerAction> getAction() {
+    public List<ControllerAction> getActions() {
 
-        ArrayList<ControllerAction> actions = new ArrayList<ControllerAction>();
+        List<ControllerAction> actions = new ArrayList<ControllerAction>();
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
 
-        Collection<PhpClass> controllerClasses = phpIndex.getAllSubclasses("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller");
-        for(PhpClass controllerClass : controllerClasses) {
-            actions.addAll(this.getActionMethods(symfonyBundleUtil, controllerClass));
+        for (SymfonyBundle symfonyBundle : symfonyBundleUtil.getBundles()) {
+            actions.addAll(this.getActionMethods(symfonyBundle));
         }
 
         return actions;
-
     }
 
     @Nullable
@@ -71,7 +70,7 @@ public class ControllerIndex {
 
     @Nullable
     public ControllerAction getControllerAction(String shortcutName) {
-        for(ControllerAction controllerAction: this.getAction()) {
+        for(ControllerAction controllerAction: this.getActions()) {
             if(controllerAction.getShortcutName().equals(shortcutName)) {
                 return controllerAction;
             }
@@ -80,27 +79,50 @@ public class ControllerIndex {
         return null;
     }
 
-    private ArrayList<ControllerAction> getActionMethods(SymfonyBundleUtil symfonyBundleUtil, PhpClass controllerClass) {
+    private List<ControllerAction> getActionMethods(SymfonyBundle symfonyBundle) {
 
-        ArrayList<ControllerAction> actions = new ArrayList<ControllerAction>();
-
-        Collection<Method> methods = controllerClass.getMethods();
-        SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(controllerClass);
-
-        if(symfonyBundle == null) {
-            return actions;
+        String namespaceName = symfonyBundle.getNamespaceName();
+        if(!namespaceName.startsWith("\\")) {
+            namespaceName = "\\" + namespaceName;
         }
 
-        String path = symfonyBundle.getRelative(controllerClass.getContainingFile().getVirtualFile(), true);
-        if(path == null || !path.startsWith("Controller/") || !path.endsWith("Controller")) {
-            return actions;
+        if(!namespaceName.endsWith("\\")) {
+            namespaceName += "\\";
         }
 
-        for(Method method : methods) {
-            String methodName = method.getName();
-            if(methodName.endsWith("Action") && method.getAccess().isPublic()) {
-                String shortcutName = symfonyBundle.getName() + ":" + path.substring("Controller/".length(), path.length() - 10) + ':' + methodName.substring(0, methodName.length() - 6);
-                actions.add(new ControllerAction(shortcutName, method));
+        namespaceName += "Controller";
+
+        List<ControllerAction> actions = new ArrayList<ControllerAction>();
+
+        for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(this.project, namespaceName)) {
+
+            if(!phpClass.getName().endsWith("Controller")) {
+                continue;
+            }
+
+            String presentableFQN = phpClass.getPresentableFQN();
+            if(presentableFQN == null) {
+                continue;
+            }
+
+            if(!presentableFQN.startsWith("\\")) {
+                presentableFQN = "\\" + presentableFQN;
+            }
+
+            presentableFQN = presentableFQN.substring(0, presentableFQN.length() - "Controller".length());
+            if(presentableFQN.length() == 0) {
+                continue;
+            }
+
+            String ns = presentableFQN.substring(namespaceName.length() + 1);
+
+            for(Method method : phpClass.getMethods()) {
+                String methodName = method.getName();
+                if(methodName.endsWith("Action") && method.getAccess().isPublic()) {
+                    String shortcutName = symfonyBundle.getName() + ":" + ns.replace("\\", "/") + ':' + methodName.substring(0, methodName.length() - 6);
+                    actions.add(new ControllerAction(shortcutName, method));
+                }
+
             }
 
         }
@@ -169,10 +191,10 @@ public class ControllerIndex {
     }
 
     static public List<LookupElement> getControllerLookupElements(Project project) {
-        ArrayList<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
         ControllerIndex controllerIndex = new ControllerIndex(project);
-        for(ControllerAction controllerAction: controllerIndex.getAction()) {
+        for(ControllerAction controllerAction: controllerIndex.getActions()) {
             lookupElements.add(new ControllerActionLookupElement(controllerAction));
         }
 
