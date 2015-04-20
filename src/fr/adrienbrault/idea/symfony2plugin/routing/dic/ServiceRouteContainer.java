@@ -68,18 +68,24 @@ public class ServiceRouteContainer  {
                 continue;
             }
 
+            // if controller matches:
+            // service_id:methodName
             String[] split = serviceRoute.split(":");
-            if(split.length != 2) {
+            if(split.length != 2 || !split[1].equals(method.getName())) {
                 continue;
             }
 
+            // cache PhpClass resolve
             if(!serviceCache.containsKey(split[0])) {
                 serviceCache.put(split[0], ServiceUtil.getResolvedClassDefinition(method.getProject(), split[0], getLazyServiceCollector(method.getProject())));
             }
 
             PhpClass phpClass = serviceCache.get(split[0]);
             if(phpClass != null && classFqn.equals(phpClass.getPresentableFQN())) {
-                routes.add(route);
+                Method targetMethod = phpClass.findMethodByName(split[1]);
+                if(targetMethod != null) {
+                    routes.add(route);
+                }
             }
         }
 
