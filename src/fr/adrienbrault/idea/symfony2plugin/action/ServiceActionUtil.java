@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
 
-import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.ide.IdeView;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -177,7 +176,7 @@ public class ServiceActionUtil {
     }
 
     @Nullable
-    public static List<String> getXmlMissingArgumentTypes(XmlTag xmlTag, ContainerCollectionResolver.LazyServiceCollector collector) {
+    public static List<String> getXmlMissingArgumentTypes(@NotNull XmlTag xmlTag, boolean collectOptionalParameter, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
 
         XmlAttribute classAttribute = xmlTag.getAttribute("class");
         if(classAttribute == null) {
@@ -208,7 +207,7 @@ public class ServiceActionUtil {
             }
         }
 
-        Parameter[] parameters = constructor.getParameters();
+        Parameter[] parameters = collectOptionalParameter ? constructor.getParameters() : PhpElementsUtil.getFunctionRequiredParameter(constructor);
         if(parameters.length <= serviceArguments) {
             return null;
         }

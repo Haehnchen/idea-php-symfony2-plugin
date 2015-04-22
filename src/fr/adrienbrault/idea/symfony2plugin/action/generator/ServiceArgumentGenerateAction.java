@@ -78,7 +78,7 @@ public class ServiceArgumentGenerateAction extends CodeInsightAction {
                     return;
                 }
 
-                List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(serviceTag, new ContainerCollectionResolver.LazyServiceCollector(project));
+                List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(serviceTag, true, new ContainerCollectionResolver.LazyServiceCollector(project));
                 if (args == null) {
                     return;
                 }

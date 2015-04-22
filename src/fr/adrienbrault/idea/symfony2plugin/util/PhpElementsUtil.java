@@ -875,4 +875,36 @@ public class PhpElementsUtil {
 
     }
 
+    /**
+     * Gets parameter which are non optional and at the end of a function signature
+     *
+     * foo($container, $bar = null, $foo = null);
+     *
+     */
+    @NotNull
+    public static Parameter[] getFunctionRequiredParameter(@NotNull Function function) {
+
+        // nothing we need to do
+        Parameter[] parameters = function.getParameters();
+        if(parameters.length == 0) {
+            return new Parameter[0];
+        }
+
+        // find last optional parameter
+        int last = -1;
+        for (int i = parameters.length - 1; i >= 0; i--) {
+            if(!parameters[i].isOptional()) {
+                last = i;
+                break;
+            }
+        }
+
+        // no required argument found
+        if(last == -1) {
+            return new Parameter[0];
+        }
+
+        return Arrays.copyOfRange(parameters, 0, last + 1);
+    }
+
 }
