@@ -11,10 +11,7 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.io.StreamUtil;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.XmlElementFactory;
+import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
@@ -29,13 +26,16 @@ import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -175,6 +175,98 @@ public class ServiceActionUtil {
         return xmlTags;
     }
 
+    public static class ServiceYamlContainer {
+
+        @NotNull
+        private final YAMLKeyValue serviceKey;
+        @Nullable
+        private final YAMLKeyValue argument;
+
+        @NotNull
+        private final String className;
+
+        public ServiceYamlContainer(@NotNull YAMLKeyValue serviceKey, @Nullable YAMLKeyValue argument, @NotNull String className) {
+            this.serviceKey = serviceKey;
+            this.argument = argument;
+            this.className = className;
+        };
+
+        @Nullable
+        public YAMLKeyValue getArgument() {
+            return argument;
+        }
+
+        @NotNull
+        public String getClassName() {
+            return className;
+        }
+
+        @NotNull
+        public YAMLKeyValue getServiceKey() {
+            return serviceKey;
+        }
+
+        @Nullable
+        public static ServiceYamlContainer create(YAMLKeyValue yamlServiceKeyValue) {
+            String serviceClass;
+            YAMLKeyValue[] yamlServiceKeys = PsiTreeUtil.getChildrenOfType(yamlServiceKeyValue.getValue(),YAMLKeyValue.class);
+            if(yamlServiceKeys != null) {
+
+                // @TODO: filter out parent services
+                String serviceClassName = YamlHelper.getYamlKeyValueAsString(yamlServiceKeyValue, "class");
+                if(serviceClassName != null) {
+                    serviceClass = PsiElementUtils.trimQuote(serviceClassName);
+
+                    // after trim check empty string again
+                    if(StringUtils.isNotBlank(serviceClass)) {
+                        return new ServiceYamlContainer(yamlServiceKeyValue, YamlHelper.getYamlKeyValue(yamlServiceKeyValue, "arguments"), serviceClassName);
+                    }
+
+                }
+
+            }
+
+            return null;
+        }
+
+    }
+
+    @NotNull
+    public static Collection<ServiceYamlContainer> getYamlContainerServiceArguments(PsiFile psiFile) {
+
+
+        Collection<ServiceYamlContainer> services = new ArrayList<ServiceYamlContainer>();
+
+        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+        if(yamlDocument == null) {
+            return Collections.emptyList();
+        }
+
+        // get services or parameter key
+        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
+        if(yamlKeys == null) {
+            return Collections.emptyList();
+        }
+
+        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
+            String yamlConfigKey = yamlKeyValue.getName();
+            if(yamlConfigKey != null && yamlConfigKey.equals("services")) {
+
+                YAMLKeyValue yamlServices[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
+                if(yamlServices != null) {
+                    for(YAMLKeyValue yamlServiceKeyValue : yamlServices) {
+                        ServiceYamlContainer serviceYamlContainer = ServiceYamlContainer.create(yamlServiceKeyValue);
+                        if(serviceYamlContainer != null) {
+                            services.add(serviceYamlContainer);
+                        }
+                     }
+                }
+            }
+        }
+
+        return services;
+    }
+
     @Nullable
     public static List<String> getXmlMissingArgumentTypes(@NotNull XmlTag xmlTag, boolean collectOptionalParameter, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
 
@@ -223,6 +315,55 @@ public class ServiceActionUtil {
         return args;
     }
 
+    @Nullable
+    public static List<String> getYamlMissingArgumentTypes(Project project, ServiceActionUtil.ServiceYamlContainer container, boolean collectOptionalParameter, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
+
+        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(project, container.getClassName(), collector);
+        if(resolvedClassDefinition == null) {
+            return null;
+        }
+
+        Method constructor = resolvedClassDefinition.getConstructor();
+        if(constructor == null) {
+            return null;
+        }
+
+
+        int serviceArguments = -1;
+        if(container.getArgument() != null) {
+
+            PsiElement yamlCompoundValue = container.getArgument().getValue();
+            if(yamlCompoundValue instanceof YAMLCompoundValue) {
+                List<PsiElement> yamlArrayOnSequenceOrArrayElements = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
+                if(yamlArrayOnSequenceOrArrayElements != null) {
+                    serviceArguments = yamlArrayOnSequenceOrArrayElements.size();
+                }
+            }
+
+        } else {
+            serviceArguments = 0;
+        }
+
+        if(serviceArguments == -1) {
+            return null;
+        }
+
+        Parameter[] parameters = collectOptionalParameter ? constructor.getParameters() : PhpElementsUtil.getFunctionRequiredParameter(constructor);
+        if(parameters.length <= serviceArguments) {
+            return null;
+        }
+
+        final List<String> args = new ArrayList<String>();
+
+        for (int i = serviceArguments; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            String s = parameter.getDeclaredType().toString();
+            args.add(s);
+        }
+
+        return args;
+    }
+
     public static boolean isValidXmlParameterInspectionService(@NotNull XmlTag xmlTag) {
 
         // we dont supp
@@ -243,8 +384,10 @@ public class ServiceActionUtil {
     }
 
     public static void fixServiceArgument(@NotNull List<String> args, final @NotNull XmlTag xmlTag) {
+        fixServiceArgument(xmlTag.getProject(), args, new XmlInsertServicesCallback(xmlTag));
+    }
 
-        Project project = xmlTag.getProject();
+    public static void fixServiceArgument(@NotNull Project project, @NotNull List<String> args, final @NotNull InsertServicesCallback callback) {
 
         Map<String, ContainerService> services = ContainerCollectionResolver.getServices(project);
 
@@ -258,14 +401,14 @@ public class ServiceActionUtil {
             List<String> items = new ArrayList<String>();
             for (Map.Entry<String, Set<String>> stringSetEntry : resolved.entrySet()) {
                 Set<String> value = stringSetEntry.getValue();
-                if(value.size() > 0) {
+                if(value.size() > 0 ) {
                     items.add(value.iterator().next());
                 } else {
                     items.add("?");
                 }
             }
 
-            addServices(items, xmlTag);
+            callback.insert(items);
 
             return;
         }
@@ -273,7 +416,7 @@ public class ServiceActionUtil {
         ServiceArgumentSelectionDialog.createDialog(project, resolved, new ServiceArgumentSelectionDialog.Callback() {
             @Override
             public void onOk(List<String> items) {
-                addServices(items, xmlTag);
+                callback.insert(items);
             }
         });
     }
@@ -300,6 +443,26 @@ public class ServiceActionUtil {
             XmlTag tag = XmlElementFactory.getInstance(xmlTag.getProject()).createTagFromText(String.format("<argument type=\"service\" id=\"%s\"/>", item), xmlTag.getLanguage());
             xmlTag.addSubTag(tag, false);
         }
+    }
+
+    public static interface InsertServicesCallback {
+        public void insert(List<String> items);
+    }
+
+    public static class XmlInsertServicesCallback implements InsertServicesCallback {
+
+        @NotNull
+        private final XmlTag xmlTag;
+
+        public XmlInsertServicesCallback(final @NotNull XmlTag xmlTag) {
+            this.xmlTag = xmlTag;
+        }
+
+        @Override
+        public void insert(List<String> items) {
+            addServices(items, this.xmlTag);
+        }
+
     }
 
 }

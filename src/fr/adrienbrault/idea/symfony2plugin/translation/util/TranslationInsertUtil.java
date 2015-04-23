@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchForm;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -110,7 +111,8 @@ public class TranslationInsertUtil {
         });
     }
 
-    public static String findIndent(PsiElement psiElement) {
+    @NotNull
+    public static String findIndent(@NotNull PsiElement psiElement) {
 
         YAMLKeyValue parentYamlKey = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
         if(parentYamlKey != null) {
@@ -133,7 +135,8 @@ public class TranslationInsertUtil {
 
     }
 
-    public static String findEol(PsiElement psiElement) {
+    @NotNull
+    public static String findEol(@NotNull PsiElement psiElement) {
 
         for(PsiElement child: YamlHelper.getChildrenFix(psiElement)) {
             if(PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(child)) {

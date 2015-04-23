@@ -340,10 +340,15 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="XmlServiceArgumentInspection" displayName="Add Arguments"
+        <localInspection groupPath="Symfony2" shortName="XmlServiceArgumentInspection" displayName="Symfony: XML Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection"/>
+
+        <localInspection groupPath="Symfony2" shortName="YamlServiceArgumentInspection" displayName="Symfony: Yaml Arguments"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
         <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
                     factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"

@@ -83,7 +83,7 @@ public class YamlHelper {
         for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
             PsiElement parameterPsiElement = null;
             for(PsiElement psiElement: psiEntry.getValue()) {
-                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement)) {
+                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.QUESTION).accepts(psiElement)) {
                     parameterPsiElement = psiElement;
                 } else if(psiElement instanceof YAMLPsiElementImpl) {
                     parameterPsiElement = psiElement;
@@ -438,6 +438,26 @@ public class YamlHelper {
         return getYamlKeyValue(yamlKeyValue, keyName, false);
     }
 
+    /**
+     *  foo:
+     *     class: "name"
+     */
+    @Nullable
+    public static String getYamlKeyValueAsString(@NotNull YAMLKeyValue yamlKeyValue, @NotNull String keyName) {
+        return getYamlKeyValueAsString(yamlKeyValue, keyName, false);
+    }
+
+    @Nullable
+    public static String getYamlKeyValueAsString(@NotNull YAMLKeyValue yamlKeyValue, @NotNull String keyName, boolean ignoreCase) {
+
+        PsiElement yamlCompoundValue = yamlKeyValue.getValue();
+        if(!(yamlCompoundValue instanceof YAMLCompoundValue)) {
+            return null;
+        }
+
+        return getYamlKeyValueAsString((YAMLCompoundValue) yamlCompoundValue, keyName, ignoreCase);
+    }
+
     @Nullable
     public static String getYamlKeyValueAsString(@Nullable YAMLCompoundValue yamlCompoundValue, String keyName, boolean ignoreCase) {
         YAMLKeyValue yamlKeyValue1 = getYamlKeyValue(yamlCompoundValue, keyName, ignoreCase);
@@ -576,6 +596,28 @@ public class YamlHelper {
         }
 
         return aClass.getValueText();
+    }
+
+    /**
+     *  Simplify getting of array psi elements in array or sequence context
+     *
+     * arguments: [@foo]
+     * arguments:
+     *   - @foo
+     *
+     */
+    @Nullable
+    public static List<PsiElement> getYamlArrayOnSequenceOrArrayElements(YAMLCompoundValue yamlCompoundValue) {
+
+        PsiElement firstChild = yamlCompoundValue.getFirstChild();
+
+        if(firstChild instanceof YAMLArray) {
+            return YamlHelper.getYamlArrayValues((YAMLArray) firstChild);
+        } else if(firstChild instanceof YAMLSequence) {
+            return new ArrayList<PsiElement>(PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class));
+        }
+
+        return null;
     }
 
 }
