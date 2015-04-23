@@ -10,8 +10,10 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -276,5 +278,44 @@ public class ServiceUtil {
         return PhpElementsUtil.getClassInterface(project, serviceClass);
     }
 
+    /**
+     *  Gets all tags on extends/implements path of class
+     */
+    @NotNull
+    public static Set<String> getPhpClassServiceTags(@NotNull PhpClass phpClass) {
+
+        Set<String> tags = new HashSet<String>();
+
+        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
+
+        for (Map.Entry<String, String> entry : TAG_INTERFACES.entrySet()) {
+
+            if(entry.getValue() == null) {
+                continue;
+            }
+
+            if(symfony2InterfacesUtil.isInstanceOf(phpClass, entry.getValue())) {
+                tags.add(entry.getKey());
+            }
+
+        }
+
+        return tags;
+    }
+
+    /**
+     * Event based decoration of class
+     */
+    public static void decorateServiceTag(@NotNull ServiceTag service) {
+
+        // @TODO: provide extension
+        // form alias
+        if(service.getTagName().equals("form.type") && new Symfony2InterfacesUtil().isInstanceOf(service.getPhpClass(), FormUtil.ABSTRACT_FORM_INTERFACE)) {
+            Set<String> aliases = FormUtil.getFormAliases(service.getPhpClass());
+            if(aliases.size() > 0) {
+                service.addAttribute("alias", aliases.iterator().next());
+            }
+        }
+    }
 
 }

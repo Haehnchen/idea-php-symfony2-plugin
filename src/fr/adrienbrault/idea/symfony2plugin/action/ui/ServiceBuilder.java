@@ -3,15 +3,17 @@ package fr.adrienbrault.idea.symfony2plugin.action.ui;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,6 +24,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -192,22 +196,24 @@ public class ServiceBuilder {
 
         serviceTagCallback(className, new TagCallbackInterface() {
             @Override
-            public void onFormTypeAlias(String alias) {
-                // <tag name="form.type" alias="gender" />
-                Element tag = doc.createElement("tag");
+            public void onTags(@NotNull List<ServiceTag> serviceTags) {
 
-                tag.setAttribute("alias", alias);
-                tag.setAttribute("name", "form.type");
+                for (ServiceTag serviceTag : serviceTags) {
+                    try {
+                        // convert string to node
+                        Element node = DocumentBuilderFactory
+                            .newInstance()
+                            .newDocumentBuilder()
+                            .parse(new ByteArrayInputStream(serviceTag.toXmlString().getBytes()))
+                            .getDocumentElement();
 
-                rootElement.appendChild(tag);
-            }
+                        rootElement.appendChild(doc.importNode(node, true));
 
-            @Override
-            public void onTag(String tagName) {
-                // <tag name="form.type" />
-                Element tag = doc.createElement("tag");
-                tag.setAttribute("name", tagName);
-                rootElement.appendChild(tag);
+                    } catch (SAXException ignored) {
+                    } catch (IOException ignored) {
+                    } catch (ParserConfigurationException ignored) {
+                    }
+                }
             }
 
         });
@@ -256,7 +262,7 @@ public class ServiceBuilder {
             methods.remove("__construct");
         }
 
-        ArrayList<String> calls = new ArrayList<String>();
+        List<String> calls = new ArrayList<String>();
         for(Map.Entry<String, ArrayList<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
             List<String> parameters = getParameters(entry.getValue());
             if(parameters != null) {
@@ -271,15 +277,11 @@ public class ServiceBuilder {
 
         serviceTagCallback(className, new TagCallbackInterface() {
             @Override
-            public void onFormTypeAlias(String alias) {
+            public void onTags(@NotNull List<ServiceTag> serviceTags) {
                 lines.add(indent + "tags:");
-                lines.add(indent + indent + "- { name: form.type, alias: " + alias + " }");
-            }
-
-            @Override
-            public void onTag(String tagName) {
-                lines.add(indent + "tags:");
-                lines.add(indent + indent + String.format("- { name: %s }", tagName));
+                for (ServiceTag serviceTag : serviceTags) {
+                    lines.add(indent + indent + serviceTag.toYamlString());
+                }
             }
         });
 
@@ -287,28 +289,24 @@ public class ServiceBuilder {
     }
 
     private void serviceTagCallback(String className, TagCallbackInterface callback) {
+
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
-        if(phpClass != null) {
-            if( new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.ABSTRACT_FORM_INTERFACE)) {
-                Set<String> aliases = FormUtil.getFormAliases(phpClass);
-                if(aliases.size() > 0) {
-                    callback.onFormTypeAlias(aliases.iterator().next());
-                }
-            }
-
-            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, TWIG_EXTENSION)) {
-                callback.onTag("twig.extension");
-            }
-
-            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, FormUtil.FORM_EXTENSION_INTERFACE)) {
-                callback.onTag("form.type_extension");
-            }
-
-            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, EVENT_SUBSCRIBER_INTERFACE)) {
-                callback.onTag("kernel.event_subscriber");
-            }
-
+        if(phpClass == null) {
+            return;
         }
+
+        List<ServiceTag> serviceTags = new ArrayList<ServiceTag>();
+        for (String tag : ServiceUtil.getPhpClassServiceTags(phpClass)) {
+            ServiceTag serviceTag = new ServiceTag(phpClass, tag);
+            ServiceUtil.decorateServiceTag(serviceTag);
+            serviceTags.add(serviceTag);
+        }
+
+        if(serviceTags.size() == 0) {
+            return;
+        }
+
+        callback.onTags(serviceTags);
     }
 
     private List<String> formatYamlService(List<String> parameters) {
@@ -323,8 +321,7 @@ public class ServiceBuilder {
     }
 
     public interface TagCallbackInterface {
-        public void onFormTypeAlias(String alias);
-        public void onTag(String tagName);
+        public void onTags(@NotNull List<ServiceTag> tags);
     }
 
 }

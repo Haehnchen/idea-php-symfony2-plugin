@@ -367,6 +367,11 @@
             <descriptionDirectoryName>XmlServiceArgumentIntention</descriptionDirectoryName>
         </intentionAction>
 
+        <intentionAction>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention</className>
+            <category>XML</category>
+            <descriptionDirectoryName>SymfonyXmlServiceTagIntention</descriptionDirectoryName>
+        </intentionAction>
 
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"

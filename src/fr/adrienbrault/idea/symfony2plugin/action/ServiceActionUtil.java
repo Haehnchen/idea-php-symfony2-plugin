@@ -270,19 +270,8 @@ public class ServiceActionUtil {
     @Nullable
     public static List<String> getXmlMissingArgumentTypes(@NotNull XmlTag xmlTag, boolean collectOptionalParameter, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
 
-        XmlAttribute classAttribute = xmlTag.getAttribute("class");
-        if(classAttribute == null) {
-            return null;
-        }
-
-        String value = classAttribute.getValue();
-        if(StringUtils.isBlank(value)) {
-            return null;
-        }
-
-        // @TODO: cache defs
-        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(xmlTag.getProject(), value, collector);
-        if(resolvedClassDefinition == null) {
+        PhpClass resolvedClassDefinition = getPhpClassFromXmlTag(xmlTag, collector);
+        if (resolvedClassDefinition == null) {
             return null;
         }
 
@@ -313,6 +302,28 @@ public class ServiceActionUtil {
         }
 
         return args;
+    }
+
+    @Nullable
+    public static PhpClass getPhpClassFromXmlTag(@NotNull XmlTag xmlTag, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
+
+        XmlAttribute classAttribute = xmlTag.getAttribute("class");
+        if(classAttribute == null) {
+            return null;
+        }
+
+        String value = classAttribute.getValue();
+        if(StringUtils.isBlank(value)) {
+            return null;
+        }
+
+        // @TODO: cache defs
+        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(xmlTag.getProject(), value, collector);
+        if(resolvedClassDefinition == null) {
+            return null;
+        }
+
+        return resolvedClassDefinition;
     }
 
     @Nullable
