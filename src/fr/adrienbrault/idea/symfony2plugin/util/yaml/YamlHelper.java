@@ -432,6 +432,26 @@ public class YamlHelper {
         return getYamlKeyValue(yamlHash, keyName, false);
     }
 
+    @Nullable
+    public static String getYamlKeyValueAsString(@NotNull YAMLHash yamlHash, String keyName) {
+        YAMLKeyValue yamlKeyValue = getYamlKeyValue(yamlHash, keyName, false);
+        if(yamlKeyValue == null) {
+            return null;
+        }
+
+        String valueText = yamlKeyValue.getValueText();
+        if(StringUtils.isBlank(valueText)) {
+            return null;
+        }
+
+        String s = PsiElementUtils.trimQuote(valueText);
+        if(StringUtils.isBlank(s)) {
+            return null;
+        }
+
+        return s;
+    }
+
 
     @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName) {
@@ -607,7 +627,7 @@ public class YamlHelper {
      *
      */
     @Nullable
-    public static List<PsiElement> getYamlArrayOnSequenceOrArrayElements(YAMLCompoundValue yamlCompoundValue) {
+    public static List<PsiElement> getYamlArrayOnSequenceOrArrayElements(@NotNull YAMLCompoundValue yamlCompoundValue) {
 
         PsiElement firstChild = yamlCompoundValue.getFirstChild();
 
@@ -618,6 +638,90 @@ public class YamlHelper {
         }
 
         return null;
+    }
+
+    /**
+     * Finds top most service of any given PsiElement context
+     *
+     * @param psiElement any PsiElement that is inside an service definition
+     */
+    @Nullable
+    public static YAMLKeyValue findServiceInContext(@NotNull PsiElement psiElement) {
+
+        YAMLKeyValue serviceSubKey = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+        if(serviceSubKey == null) {
+            return null;
+        }
+
+        PsiElement serviceSubKeyCompound = serviceSubKey.getParent();
+
+        // we are inside a YAMLHash element, find most parent array key
+        // { name: foo }
+        if(serviceSubKeyCompound instanceof YAMLHash) {
+            YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(serviceSubKeyCompound, YAMLKeyValue.class);
+            if(yamlKeyValue == null) {
+                return null;
+            }
+
+            serviceSubKeyCompound = yamlKeyValue.getParent();
+        }
+
+        // find array key inside service and check if we are inside "services"
+        if(serviceSubKeyCompound instanceof YAMLCompoundValue) {
+            PsiElement serviceKey = serviceSubKeyCompound.getParent();
+            if(serviceKey instanceof YAMLKeyValue) {
+                PsiElement servicesKeyCompound = serviceKey.getParent();
+                if(servicesKeyCompound instanceof YAMLCompoundValue) {
+                    PsiElement servicesKey = servicesKeyCompound.getParent();
+                    if(servicesKey instanceof YAMLKeyValue) {
+                        if("services".equals(((YAMLKeyValue) servicesKey).getName())) {
+                            return (YAMLKeyValue) serviceKey;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Collect defined service tags on a sequence list
+     * - { name: assetic.factory_worker }
+     *
+     * @param yamlKeyValue the service key value to find the "tags" key on
+     * @return tag names
+     */
+    @Nullable
+    public static Set<String> collectServiceTags(@NotNull YAMLKeyValue yamlKeyValue) {
+
+        YAMLKeyValue tagsKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, "tags");
+        if(tagsKeyValue == null) {
+            return null;
+        }
+
+        PsiElement tagsCompound = tagsKeyValue.getValue();
+        if(!(tagsCompound instanceof YAMLCompoundValue)) {
+            return null;
+        }
+
+        Set<String> tags = new HashSet<String>();
+
+        for (YAMLSequence yamlSequence : PsiTreeUtil.getChildrenOfTypeAsList(tagsCompound, YAMLSequence.class)) {
+
+            YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
+            if(yamlHash == null) {
+                continue;
+            }
+
+            String name = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
+            if(name != null) {
+                tags.add(name);
+            }
+
+        }
+
+        return tags;
     }
 
 }
