@@ -6,6 +6,17 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.89
+* Add yaml service arguments and tags intention / quickfixes #470
+* Add xml tag intention and reuse tagged class interface list also for service generator #470
+* Add method psi collector to support parent methods of a command #454
+* Overall "Controllers as Services" optimize like navigation, related files, ... #428
+* Use more stable PsiElements to find twig trans_default_domain domain name instead of regular expressions #476
+* Fix multiResolve issue in method instance checks to resolve issue #477 in multiple project command classes
+* Fix wrong inspection for FormTypeExtensions tags #483
+* Fix npe in index route arguments #482
+* Fix warning for optional xml arguments #485
+
 ### 0.11.88
 * Add console "getArgument" and "getOption" references #454
 * "%" char in xml arguments now is a valid completion event #461

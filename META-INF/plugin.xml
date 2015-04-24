@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.88</version>
+    <version>0.11.89</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,19 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.89</h2>
+<ul>
+    <li>Add yaml service arguments and tags intention / quickfixes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/470">#470</a></li>
+    <li>Add xml tag intention and reuse tagged class interface list also for service generator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/470">#470</a></li>
+    <li>Add method psi collector to support parent methods of a command <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/454">#454</a></li>
+    <li>Overall "Controllers as Services" optimize like navigation, related files, ... <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/428">#428</a></li>
+    <li>Use more stable PsiElements to find twig trans_default_domain domain name instead of regular expressions <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/476">#476</a></li>
+    <li>Fix multiResolve issue in method instance checks to resolve issue <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/477">#477</a> in multiple project command classes</li>
+    <li>Fix wrong inspection for FormTypeExtensions tags <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/483">#483</a></li>
+    <li>Fix npe in index route arguments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/482">#482</a></li>
+    <li>Fix warning for optional xml arguments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/485">#485</a></li>
+</ul>
 
 <h2>0.11.88</h2>
 <ul>
