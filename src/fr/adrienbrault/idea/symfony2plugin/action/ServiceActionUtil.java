@@ -212,7 +212,6 @@ public class ServiceActionUtil {
             YAMLKeyValue[] yamlServiceKeys = PsiTreeUtil.getChildrenOfType(yamlServiceKeyValue.getValue(),YAMLKeyValue.class);
             if(yamlServiceKeys != null) {
 
-                // @TODO: filter out parent services
                 String serviceClassName = YamlHelper.getYamlKeyValueAsString(yamlServiceKeyValue, "class");
                 if(serviceClassName != null) {
                     serviceClass = PsiElementUtils.trimQuote(serviceClassName);
@@ -231,9 +230,11 @@ public class ServiceActionUtil {
 
     }
 
+    /**
+     * Gets all services inside yaml file with "arguments" key context
+     */
     @NotNull
-    public static Collection<ServiceYamlContainer> getYamlContainerServiceArguments(PsiFile psiFile) {
-
+    public static Collection<ServiceYamlContainer> getYamlContainerServiceArguments(@NotNull PsiFile psiFile) {
 
         Collection<ServiceYamlContainer> services = new ArrayList<ServiceYamlContainer>();
 
@@ -378,7 +379,7 @@ public class ServiceActionUtil {
     public static boolean isValidXmlParameterInspectionService(@NotNull XmlTag xmlTag) {
 
         // we dont supp
-        for(String s : new String[] {"parent", "factory-class", "factory-service"}) {
+        for(String s : new String[] {"parent", "factory-class", "factory-service", "abstract"}) {
             if(xmlTag.getAttribute(s) != null) {
                 return false;
             }

@@ -16,11 +16,15 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlServiceArgumentInspection extends LocalInspectionTool {
+
+    public static final String[] INVALID_KEYS = new String[]{"parent", "factory-class", "factory-service", "abstract", "abstract"};
+    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -31,13 +35,37 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
         }
 
         for (ServiceActionUtil.ServiceYamlContainer serviceYamlContainer : ServiceActionUtil.getYamlContainerServiceArguments(psiFile)) {
-            List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(psiFile.getProject(), serviceYamlContainer, false, new ContainerCollectionResolver.LazyServiceCollector(psiFile.getProject()));
+
+            // we dont support parent services for now
+            if(!isValidService(serviceYamlContainer)) {
+                continue;
+            }
+
+            List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(psiFile.getProject(), serviceYamlContainer, false, getLazyServiceCollector(psiFile.getProject()));
             if(yamlMissingArgumentTypes != null && yamlMissingArgumentTypes.size() > 0) {
                 holder.registerProblem(serviceYamlContainer.getServiceKey().getFirstChild(), "Missing Argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new YamlArgumentQuickfix());
             }
         }
 
+        this.lazyServiceCollector = null;
+
         return super.buildVisitor(holder, isOnTheFly);
+    }
+
+    private boolean isValidService(ServiceActionUtil.ServiceYamlContainer serviceYamlContainer) {
+
+        Set<String> keySet = YamlHelper.getKeySet(serviceYamlContainer.getServiceKey());
+        if(keySet == null) {
+            return true;
+        }
+
+        for(String s: INVALID_KEYS) {
+            if(keySet.contains(s)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static class YamlArgumentQuickfix implements LocalQuickFix {
@@ -93,4 +121,9 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
         }
 
     }
+
+    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
+        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
+    }
+
 }
