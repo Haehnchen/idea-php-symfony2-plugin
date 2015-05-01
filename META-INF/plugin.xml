@@ -392,6 +392,12 @@
             <descriptionDirectoryName>SymfonyYamlServiceTagIntention</descriptionDirectoryName>
         </intentionAction>
 
+        <intentionAction>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpBundleCompilerPassIntention</className>
+            <category>PHP</category>
+            <descriptionDirectoryName>PhpBundleCompilerPassIntention</descriptionDirectoryName>
+        </intentionAction>
+
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"
                     icon="/src/fr/adrienbrault/idea/symfony2plugin/icons/symfony_tool_window.png"
@@ -463,6 +469,10 @@
         </action>
 
         <action id="Symfony2.ServiceArgumentGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceArgumentGenerateAction" text="Generate Arguments" icon="SymfonyIcons.Symfony">
+            <add-to-group group-id="GenerateGroup" anchor="last" />
+        </action>
+
+        <action id="Symfony2.PhpCompilerPassGenerateGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.PhpBundleCompilerPassGenerateAction" text="CompilerPass" icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
