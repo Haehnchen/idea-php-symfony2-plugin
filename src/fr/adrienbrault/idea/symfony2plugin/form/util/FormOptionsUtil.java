@@ -26,6 +26,7 @@ import java.util.*;
 public class FormOptionsUtil {
 
     private static final String EXTENDED_TYPE_METHOD = "getExtendedType";
+    public static final String[] FORM_OPTION_METHODS = new String[]{"setDefaultOptions", "configureOptions"};
 
     public static List<FormClass> getExtendedTypeClasses(Project project, String... formTypeNames) {
 
@@ -223,35 +224,40 @@ public class FormOptionsUtil {
      * use getDefaultOptions
      */
     @Deprecated
-    private static void attachOnDefaultOptions(Project project, Map<String, String> defaultValues, PhpClass phpClass) {
+    private static void attachOnDefaultOptions(@NotNull Project project, @NotNull Map<String, String> defaultValues, @NotNull PhpClass phpClass) {
 
-        Method setDefaultOptionsMethod =  PhpElementsUtil.getClassMethod(phpClass, "setDefaultOptions");
-        if(setDefaultOptionsMethod == null) {
-            return;
-        }
+        for(String methodName: FORM_OPTION_METHODS) {
 
-        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(setDefaultOptionsMethod, MethodReference.class);
-        for(MethodReference methodReference: tests) {
-            // instance check
-            // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
-            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
-                PsiElement[] parameters = methodReference.getParameters();
-                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                    for(String key: PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameters[0])) {
-                        defaultValues.put(key, phpClass.getPresentableFQN());
+            Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
+            if(method == null) {
+                continue;
+            }
+
+            for(MethodReference methodReference: PsiTreeUtil.findChildrenOfType(method, MethodReference.class)) {
+
+                // instance check
+                // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
+                if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
+                    PsiElement[] parameters = methodReference.getParameters();
+                    if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
+                        for(String key: PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameters[0])) {
+                            String presentableFQN = phpClass.getPresentableFQN();
+                            if(presentableFQN != null) {
+                                defaultValues.put(key, presentableFQN);
+                            }
+                        }
                     }
                 }
 
-            }
-
-            // support: parent::setDefaultOptions($resolver)
-            // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
-            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaultOptions") && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
-                PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
-                if(parentMethod instanceof Method) {
-                    PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
-                    if(phpClass != null) {
-                        attachOnDefaultOptions(project, defaultValues, phpClassInner);
+                // support: parent::setDefaultOptions($resolver)
+                // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
+                if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName) && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
+                    PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
+                    if(parentMethod instanceof Method) {
+                        PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
+                        if(phpClassInner != null) {
+                            attachOnDefaultOptions(project, defaultValues, phpClassInner);
+                        }
                     }
                 }
             }
@@ -260,40 +266,49 @@ public class FormOptionsUtil {
     }
 
     @NotNull
-    private static Map<String, FormOption> getDefaultOptions(Project project, PhpClass phpClass, FormClass formClass) {
+    private static Map<String, FormOption> getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass) {
 
         Map<String, FormOption> options = new HashMap<String, FormOption>();
 
-        Method setDefaultOptionsMethod =  PhpElementsUtil.getClassMethod(phpClass, "setDefaultOptions");
-        if(setDefaultOptionsMethod == null) {
-            return options;
-        }
+        for(String methodName: new String[] {"setDefaultOptions", "configureOptions"}) {
 
-        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(setDefaultOptionsMethod, MethodReference.class);
-        for(MethodReference methodReference: tests) {
-            // instance check
-            // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
-            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
-                PsiElement[] parameters = methodReference.getParameters();
-                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                    for(String key: PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameters[0])) {
-                        options.put(key, new FormOption(key, formClass));
-                    }
-                }
-
+            Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
+            if(method == null) {
+                continue;
             }
 
-            // support: parent::setDefaultOptions($resolver)
-            // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
-            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaultOptions") && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
-                PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
-                if(parentMethod instanceof Method) {
-                    PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
-                    if(phpClassInner != null) {
-                        // @TODO only use setDefaultOptions, recursive call get setDefaults again
-                        options.putAll(getDefaultOptions(project, phpClassInner, formClass));
+            Method setDefaultOptionsMethod =  PhpElementsUtil.getClassMethod(phpClass, "setDefaultOptions");
+            if(setDefaultOptionsMethod == null) {
+                return options;
+            }
+
+            Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(setDefaultOptionsMethod, MethodReference.class);
+            for(MethodReference methodReference: tests) {
+                // instance check
+                // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
+                if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
+                    PsiElement[] parameters = methodReference.getParameters();
+                    if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
+                        for(String key: PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameters[0])) {
+                            options.put(key, new FormOption(key, formClass));
+                        }
+                    }
+
+                }
+
+                // support: parent::setDefaultOptions($resolver)
+                // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
+                if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName) && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
+                    PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
+                    if(parentMethod instanceof Method) {
+                        PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
+                        if(phpClassInner != null) {
+                            // @TODO only use setDefaultOptions, recursive call get setDefaults again
+                            options.putAll(getDefaultOptions(project, phpClassInner, formClass));
+                        }
                     }
                 }
+
             }
 
         }

@@ -124,11 +124,13 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
             for(String className: classNames) {
-                Method method = PhpElementsUtil.getClassMethod(getProject(), className, "setDefaultOptions");
-                if(method != null) {
-                    PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(method, "setDefaults", value);
-                    if(keyValue != null) {
-                        psiElements.add(keyValue);
+                for (String formOptionMethod : FormOptionsUtil.FORM_OPTION_METHODS) {
+                    Method method = PhpElementsUtil.getClassMethod(getProject(), className, formOptionMethod);
+                    if(method != null) {
+                        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(method, "setDefaults", value);
+                        if(keyValue != null) {
+                            psiElements.add(keyValue);
+                        }
                     }
                 }
             }

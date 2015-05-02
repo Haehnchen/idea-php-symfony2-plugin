@@ -398,6 +398,11 @@ public class PhpElementsUtil {
 
     @Nullable
     static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo, String methodName, String keyName) {
+        return getArrayKeyValueInsideSignature(psiElementInsideClass, new String[] {callTo}, methodName, keyName);
+    }
+
+    @Nullable
+    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo[], String methodName, String keyName) {
         PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElementInsideClass, PhpClass.class);
         if(phpClass == null) {
             return null;
@@ -408,7 +413,15 @@ public class PhpElementsUtil {
             return null;
         }
 
-        return PhpElementsUtil.getArrayKeyValueInsideSignature(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + callTo, methodName, keyName);
+        for (String s : callTo) {
+            // @TODO: replace signature
+            String arrayKeyValueInsideSignature = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + s, methodName, keyName);
+            if(arrayKeyValueInsideSignature != null) {
+                return arrayKeyValueInsideSignature;
+            }
+        }
+
+        return null;
     }
 
     @Nullable
@@ -419,8 +432,7 @@ public class PhpElementsUtil {
             return null;
         }
 
-        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class);
-        for(MethodReference methodReference: tests) {
+        for(MethodReference methodReference: PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class)) {
 
             if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName)) {
                 PsiElement[] parameters = methodReference.getParameters();
