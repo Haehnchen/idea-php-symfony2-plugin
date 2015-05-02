@@ -478,6 +478,7 @@
 
         <group id="Symfony2Group" text="Symfony2" popup="true" icon="SymfonyIcons.Symfony">
             <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
+            <action id="SymfonyBundleCompilerPass" class="fr.adrienbrault.idea.symfony2plugin.action.NewBundleCompilerPass"/>
             <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
             <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
             <add-to-group group-id="NewGroup" anchor="last"/>

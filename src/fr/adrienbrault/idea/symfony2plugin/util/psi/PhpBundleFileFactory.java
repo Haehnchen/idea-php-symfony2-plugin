@@ -32,26 +32,33 @@ import java.io.IOException;
  */
 public class PhpBundleFileFactory {
 
-    public static void invokeCreateCompilerPass(@NotNull PhpClass bundleClass, @NotNull Editor editor) {
+    @Nullable
+    public static PsiElement invokeCreateCompilerPass(@NotNull PhpClass bundleClass, @Nullable Editor editor) {
 
         String s = JOptionPane.showInputDialog("Class name for CompilerPass (no namespace needed): ");
         if(StringUtils.isBlank(s)) {
-            return;
+            return null;
         }
 
         if(!PhpNameUtil.isValidClassName(s)) {
             JOptionPane.showMessageDialog(null, "Invalid class name");
-            return;
+            return null;
         }
 
         try {
-            PhpBundleFileFactory.createCompilerPass(bundleClass, s);
+            return PhpBundleFileFactory.createCompilerPass(bundleClass, s);
         } catch (Exception e) {
-            HintManager.getInstance().showErrorHint(editor, "Error:" + e.getMessage());
+            if(editor != null) {
+                HintManager.getInstance().showErrorHint(editor, "Error:" + e.getMessage());
+            } else {
+                JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
+            }
         }
+
+        return null;
     }
 
-    public static void createCompilerPass(@NotNull PhpClass bundleClass, @NotNull String className) throws Exception {
+    public static PsiElement createCompilerPass(@NotNull PhpClass bundleClass, @NotNull String className) throws Exception {
 
         VirtualFile directory = bundleClass.getContainingFile().getContainingDirectory().getVirtualFile();
         if(fileExists(directory, className)) {
@@ -115,7 +122,8 @@ public class PhpBundleFileFactory {
 
         String replace = fileTemplateContent.replace("{{ ns }}", ns.startsWith("\\") ? ns.substring(1) : ns).replace("{{ class }}", className);
         PsiFile fileFromText = PsiFileFactory.getInstance(project).createFileFromText(className + ".php", PhpFileType.INSTANCE, replace);
-        PsiDirectoryFactory.getInstance(project).createDirectory(compilerDirectory).add(fileFromText);
+
+        return PsiDirectoryFactory.getInstance(project).createDirectory(compilerDirectory).add(fileFromText);
     }
 
     @Nullable
