@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.impl.file.PsiDirectoryFactory;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpFileType;
@@ -26,6 +27,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -58,6 +61,43 @@ public class PhpBundleFileFactory {
         return null;
     }
 
+    @NotNull
+    public static PsiElement createBundleFile(@NotNull PhpClass bundleClass, @NotNull String template, @NotNull String className, Map<String, String> vars) throws Exception {
+
+        VirtualFile directory = bundleClass.getContainingFile().getContainingDirectory().getVirtualFile();
+        if(fileExists(directory, new String[] {className})) {
+            throw new Exception("File already exists");
+        }
+
+        String COMPILER_TEMPLATE = "/resources/fileTemplates/" + template + ".php";
+        String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
+        if(fileTemplateContent == null) {
+            throw new Exception("Template content error");
+        }
+
+        String[] split = className.split("\\\\");
+
+        String ns = bundleClass.getNamespaceName();
+        String join = StringUtils.join(Arrays.copyOf(split, split.length - 1), "/");
+
+        vars.put("ns", (ns.startsWith("\\") ? ns.substring(1) : ns) + join.replace("/", "\\"));
+        vars.put("class", split[split.length - 1]);
+        for (Map.Entry<String, String> entry : vars.entrySet()) {
+            fileTemplateContent = fileTemplateContent.replace("{{ " + entry.getKey() + " }}", entry.getValue());
+        }
+
+        VirtualFile compilerDirectory = getAndCreateDirectory(directory, join);
+        if(compilerDirectory == null) {
+            throw new Exception("Directory creation failed");
+        }
+
+        Project project = bundleClass.getProject();
+        PsiFile fileFromText = PsiFileFactory.getInstance(project).createFileFromText(split[split.length - 1] + ".php", PhpFileType.INSTANCE, fileTemplateContent);
+        CodeStyleManager.getInstance(project).reformat(fileFromText);
+        return PsiDirectoryFactory.getInstance(project).createDirectory(compilerDirectory).add(fileFromText);
+    }
+
+    @NotNull
     public static PsiElement createCompilerPass(@NotNull PhpClass bundleClass, @NotNull String className) throws Exception {
 
         VirtualFile directory = bundleClass.getContainingFile().getContainingDirectory().getVirtualFile();
@@ -122,6 +162,7 @@ public class PhpBundleFileFactory {
 
         String replace = fileTemplateContent.replace("{{ ns }}", ns.startsWith("\\") ? ns.substring(1) : ns).replace("{{ class }}", className);
         PsiFile fileFromText = PsiFileFactory.getInstance(project).createFileFromText(className + ".php", PhpFileType.INSTANCE, replace);
+        CodeStyleManager.getInstance(project).reformat(fileFromText);
 
         return PsiDirectoryFactory.getInstance(project).createDirectory(compilerDirectory).add(fileFromText);
     }
@@ -160,6 +201,30 @@ public class PhpBundleFileFactory {
         return
             VfsUtil.findRelativeFile(bundleDir, "DependencyInjection", "Compiler", className + ".php") != null ||
             VfsUtil.findRelativeFile(bundleDir, "DependencyInjection", "CompilerPass", className + ".php") != null;
+    }
+
+    private static boolean fileExists(@NotNull VirtualFile bundleDir, @NotNull String... fqnClassName) {
+
+        for (String s : fqnClassName) {
+            String[] split = s.split("/");
+            split[split.length - 1] += ".php";
+
+            if(VfsUtil.findRelativeFile(bundleDir, split) != null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    @Nullable
+    private static VirtualFile getAndCreateDirectory(@NotNull VirtualFile directory, @NotNull String relativePath) {
+
+        try {
+            return VfsUtil.createDirectoryIfMissing(directory, relativePath);
+        } catch (IOException ignored) {
+        }
+
+        return null;
     }
 
     @Nullable
