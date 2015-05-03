@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.90
+* Add CompilerPass intention and generator action for Bundle context #484
+* Add support for new configureOptions in replacement for deprecated setDefaultOptions #491, #486, #490
+* Add more bundle related file templates in NewGroup
+* Fix "Missing argument" in services.yml doesn't keep track of factory methods #492
+
 ### 0.11.89
 * Add yaml service arguments and tags intention / quickfixes #470
 * Add xml tag intention and reuse tagged class interface list also for service generator #470

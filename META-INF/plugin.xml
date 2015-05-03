@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.89</version>
+    <version>0.11.90</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,14 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.90</h2>
+<ul>
+    <li>Add CompilerPass intention and generator action for Bundle context <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/484">#484</a></li>
+    <li>Add support for new configureOptions in replacement for deprecated setDefaultOptions <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/491">#491</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/486">#486</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/490">#490</a></li>
+    <li>Add more bundle related file templates in NewGroup</li>
+    <li>Fix "Missing argument" in services.yml doesn't keep track of factory methods <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/492">#492</a></li>
+</ul>
 
 <h2>0.11.89</h2>
 <ul>
