@@ -642,6 +642,10 @@ public class PhpElementsUtil {
         return false;
     }
 
+    public static boolean isEqualClassName(@NotNull PhpClass phpClass, @NotNull PhpClass compareClassName) {
+        return isEqualClassName(phpClass, compareClassName.getPresentableFQN());
+    }
+
     public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String compareClassName) {
 
         if(phpClass == null || compareClassName == null) {

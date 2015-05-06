@@ -275,7 +275,9 @@ public class Symfony2InterfacesUtil {
     }
 
     public boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
-        if (subjectClass == expectedClass) {
+
+        // we have equal class instance, on non multiple classes with same name fallback to namespace and classname
+        if (subjectClass == expectedClass || PhpElementsUtil.isEqualClassName(subjectClass, expectedClass)) {
             return true;
         }
 
