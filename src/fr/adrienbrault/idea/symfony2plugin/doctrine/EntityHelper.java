@@ -27,7 +27,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
-import org.apache.commons.lang.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLDocument;
@@ -185,39 +184,58 @@ public class EntityHelper {
                 doctrineModelField.setRelationType(keyName);
                 String value = targetEntity.getValueText();
                 if(value != null) {
-                    doctrineModelField.setRelation(getYamlOrmClass(yamlKeyValue.getContainingFile(), value));
+                    doctrineModelField.setRelation(getOrmClass(yamlKeyValue.getContainingFile(), value));
                 }
             }
         }
 
     }
 
-    public static String getYamlOrmClass(PsiFile yamlFile, String className) {
+    @NotNull
+    public static String getOrmClass(@NotNull PsiFile psiFile, @NotNull String className) {
 
         // force global namespace not need to search for class
         if(className.startsWith("\\")) {
             return className;
         }
 
+        String entityName = null;
+
         // espend\Doctrine\ModelBundle\Entity\Bike:
         // ...
         // targetEntity: Foo
-        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(yamlFile, YAMLDocument.class);
-        if(yamlDocument != null) {
-            YAMLKeyValue entityKeyValue = PsiTreeUtil.getChildOfType(yamlDocument, YAMLKeyValue.class);
-            if(entityKeyValue != null) {
-                String entityName = entityKeyValue.getKeyText();
-                if(entityName != null) {
+        if(psiFile instanceof YAMLFile) {
+            YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+            if(yamlDocument != null) {
+                YAMLKeyValue entityKeyValue = PsiTreeUtil.getChildOfType(yamlDocument, YAMLKeyValue.class);
+                if(entityKeyValue != null) {
+                    entityName = entityKeyValue.getKeyText();
+                }
+            }
+        } else if(psiFile instanceof XmlFile) {
 
-                    // trim class name
-                    int lastBackSlash = entityName.lastIndexOf("\\");
-                    if(lastBackSlash > 0) {
-                        String fqnClass = entityName.substring(0, lastBackSlash + 1) + className;
-                        if(PhpElementsUtil.getClass(yamlFile.getProject(), fqnClass) != null) {
-                            return fqnClass;
-                        }
+            XmlTag rootTag = ((XmlFile) psiFile).getRootTag();
+            if(rootTag != null) {
+                XmlTag entity = rootTag.findFirstSubTag("entity");
+                if(entity != null) {
+                    String name = entity.getAttributeValue("name");
+                    if(org.apache.commons.lang.StringUtils.isBlank(name)) {
+                        entityName = name;
                     }
                 }
+            }
+        }
+
+        if(entityName == null) {
+            return className;
+        }
+
+        // trim class name
+        int lastBackSlash = entityName.lastIndexOf("\\");
+        if(lastBackSlash > 0) {
+            String fqnClass = entityName.substring(0, lastBackSlash + 1) + className;
+            if(PhpElementsUtil.getClass(psiFile.getProject(), fqnClass) != null) {
+                return fqnClass;
             }
         }
 
@@ -238,13 +256,15 @@ public class EntityHelper {
         return keyValueCollection;
     }
 
-    public static PsiElement[] getModelFieldTargets(PhpClass phpClass, String fieldName) {
+    @NotNull
+    public static PsiElement[] getModelFieldTargets(@NotNull PhpClass phpClass,@NotNull String fieldName) {
 
         Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
 
         if(psiFile instanceof YAMLFile) {
+            // @TODO: migrate to getEntityFields()
             PsiElement yamlDocument = psiFile.getFirstChild();
             if(yamlDocument instanceof YAMLDocument) {
                 PsiElement arrayKeyValue = yamlDocument.getFirstChild();
@@ -255,6 +275,14 @@ public class EntityHelper {
                             psiElements.add(target);
                         }
                     }
+                }
+            }
+        }
+
+        if(psiFile instanceof XmlFile) {
+            for (DoctrineModelField field : getEntityFields((XmlFile) psiFile)) {
+                if(field.getName().equals(fieldName)) {
+                    psiElements.addAll(field.getTargets());
                 }
             }
         }
@@ -320,7 +348,6 @@ public class EntityHelper {
 
                 PsiFile entityMetadataFile = getEntityMetadataFile(phpClass.getProject(), symfonyBundle, className, modelShortcut);
                 if(entityMetadataFile != null) {
-                    System.out.println(entityMetadataFile.getVirtualFile());
                     return entityMetadataFile;
                 }
 
@@ -436,9 +463,10 @@ public class EntityHelper {
                 }
 
                 DoctrineModelField entityField = new DoctrineModelField(field);
+                entityField.addTarget(xmlTag);
 
-                // @TODO: implement xml for getYamlOrmClass()
-                entityField.setRelation(targetEntity);
+                // find namespace
+                entityField.setRelation(getOrmClass(psiFile, targetEntity));
 
                 entityField.setRelationType(StringUtils.camelize(s.replace("-", "_")));
                 modelFields.add(entityField);

@@ -7,13 +7,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -148,7 +146,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), EntityHelper.getYamlOrmClass(containingFile, valueText));
+        PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), EntityHelper.getOrmClass(containingFile, valueText));
         if(phpClass != null) {
             PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
             if(psiFile != null) {
