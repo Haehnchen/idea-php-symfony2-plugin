@@ -53,15 +53,16 @@ public class QueryBuilderChainProcessor {
      *
      * @param methodReference current method
      */
-    public List<MethodReference> getMethodReferencesAfter(MethodReference methodReference) {
+    @NotNull
+    public List<MethodReference> getMethodReferencesAfter(@NotNull MethodReference methodReference) {
 
         List<MethodReference> methodReferences = new ArrayList<MethodReference>();
 
         PsiElement parent = methodReference;
         while (parent instanceof MethodReference) {
 
-            PsiElement psiElement1 = ((MethodReference) parent).resolve();
-            if(isQueryBuilderInstance((Method) psiElement1) == InstanceType.DIRECT) {
+            PsiElement method = ((MethodReference) parent).resolve();
+            if(method instanceof Method && isQueryBuilderInstance((Method) method) == InstanceType.DIRECT) {
                 methodReferences.add((MethodReference) parent);
             }
 
@@ -169,7 +170,8 @@ public class QueryBuilderChainProcessor {
 
     }
 
-    private static InstanceType isQueryBuilderInstance(Method method) {
+    @NotNull
+    private static InstanceType isQueryBuilderInstance(@NotNull Method method) {
 
         if(new Symfony2InterfacesUtil().isInstanceOf(method.getContainingClass(), DOCTRINE_ORM_QUERY_BUILDER)) {
             return InstanceType.DIRECT;
