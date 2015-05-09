@@ -7,6 +7,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -19,11 +21,13 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
+import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
+import org.apache.commons.lang.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLDocument;
@@ -279,7 +283,26 @@ public class EntityHelper {
     }
 
     @Nullable
-    public static PsiFile getModelConfigFile(PhpClass phpClass) {
+    private static PsiFile getEntityMetadataFile(@NotNull Project project, @NotNull SymfonyBundle symfonyBundleUtil, @NotNull String className, @NotNull String modelShortcut) {
+
+        for(String s: new String[] {"yml", "xml"}) {
+
+            String entityFile = "Resources/config/doctrine/" + className + String.format(".%s.%s", modelShortcut, s);
+            VirtualFile virtualFile = symfonyBundleUtil.getRelative(entityFile);
+            if(virtualFile != null) {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(psiFile != null) {
+                    return psiFile;
+                }
+            }
+
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static PsiFile getModelConfigFile(@NotNull PhpClass phpClass) {
 
         SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
         if(symfonyBundle != null) {
@@ -295,27 +318,29 @@ public class EntityHelper {
                     }
                 }
 
-                String entityFile = "Resources/config/doctrine/" + className + String.format(".%s.yml", modelShortcut);
-                VirtualFile virtualFile = symfonyBundle.getRelative(entityFile);
-                if(virtualFile != null) {
-                    PsiFile psiFile = PsiManager.getInstance(phpClass.getProject()).findFile(virtualFile);
-                    if(psiFile != null) {
-                        return psiFile;
-                    }
+                PsiFile entityMetadataFile = getEntityMetadataFile(phpClass.getProject(), symfonyBundle, className, modelShortcut);
+                if(entityMetadataFile != null) {
+                    System.out.println(entityMetadataFile.getVirtualFile());
+                    return entityMetadataFile;
                 }
+
             }
         }
 
         return null;
     }
 
-    public static List<DoctrineModelField> getModelFields(PhpClass phpClass) {
-
-        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+    @NotNull
+    public static List<DoctrineModelField> getModelFields(@NotNull PhpClass phpClass) {
 
         PsiFile psiFile = getModelConfigFile(phpClass);
+        if(psiFile == null) {
+            Collections.emptyList();
+        }
 
         if(psiFile instanceof YAMLFile) {
+            List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+
             PsiElement yamlDocument = psiFile.getFirstChild();
             if(yamlDocument instanceof YAMLDocument) {
                 PsiElement arrayKeyValue = yamlDocument.getFirstChild();
@@ -333,7 +358,13 @@ public class EntityHelper {
             return modelFields;
         }
 
+        if(psiFile instanceof XmlFile) {
+            return getEntityFields((XmlFile) psiFile);
+        }
+
         // provide fallback on annotations
+        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+
         PhpDocComment docComment = phpClass.getDocComment();
         if(docComment != null) {
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
@@ -346,6 +377,71 @@ public class EntityHelper {
                         }
                     }
                 }
+            }
+        }
+
+        return modelFields;
+    }
+
+    @NotNull
+    private static List<DoctrineModelField> getEntityFields(@NotNull XmlFile psiFile) {
+
+        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+
+        XmlTag rootTag = psiFile.getRootTag();
+        if(rootTag == null) {
+            return Collections.emptyList();
+        }
+
+        XmlTag entity = rootTag.findFirstSubTag("entity");
+        if(entity == null) {
+            return Collections.emptyList();
+        }
+
+        for (XmlTag xmlTag : entity.findSubTags("field")) {
+
+            String name = xmlTag.getAttributeValue("name");
+            if(org.apache.commons.lang.StringUtils.isBlank(name)) {
+                continue;
+            }
+
+            DoctrineModelField field = new DoctrineModelField(name);
+
+            field.addTarget(xmlTag);
+
+            String column = xmlTag.getAttributeValue("column");
+            if(org.apache.commons.lang.StringUtils.isBlank(name)) {
+                field.setColumn(column);
+            }
+
+            String type = xmlTag.getAttributeValue("type");
+            if(org.apache.commons.lang.StringUtils.isBlank(type)) {
+                field.setTypeName(type);
+            }
+
+            modelFields.add(field);
+        }
+
+        for(String s: new String[] {"one-to-one", "one-to-many", "many-to-many", "many-to-one"}) {
+            for (XmlTag xmlTag : entity.findSubTags(s)) {
+
+                String targetEntity = xmlTag.getAttributeValue("target-entity");
+                if(targetEntity == null) {
+                    continue;
+                }
+
+                String field = xmlTag.getAttributeValue("field");
+                if(field == null) {
+                    continue;
+                }
+
+                DoctrineModelField entityField = new DoctrineModelField(field);
+
+                // @TODO: implement xml for getYamlOrmClass()
+                entityField.setRelation(targetEntity);
+
+                entityField.setRelationType(StringUtils.camelize(s.replace("-", "_")));
+                modelFields.add(entityField);
             }
         }
 
