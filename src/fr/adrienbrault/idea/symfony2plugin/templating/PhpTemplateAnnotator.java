@@ -12,6 +12,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -121,7 +122,7 @@ public class PhpTemplateAnnotator implements Annotator {
                     }
 
                     String content = TwigUtil.buildStringFromTwigCreateContainer(project, VfsUtil.findRelativeFile(virtualFile, ("Resources/views/" + matcher.group(2)).split("/")));
-                    IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, virtualFile, fileName);
+                    IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, TwigFileType.INSTANCE, virtualFile, fileName);
                     if(content != null) {
                         runnableCreateAndOpenFile.setContent(content);
                     }

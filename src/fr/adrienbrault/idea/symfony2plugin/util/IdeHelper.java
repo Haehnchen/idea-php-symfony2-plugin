@@ -5,20 +5,24 @@ import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.psi.*;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.SettingsForm;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.event.HyperlinkEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 
 public class IdeHelper {
 
@@ -38,70 +42,64 @@ public class IdeHelper {
         }
     }
     @Nullable
-    public static VirtualFile createFile(@Nullable VirtualFile root, @NotNull String fileNameWithPath) {
-        return createFile(root, fileNameWithPath, null);
+    public static VirtualFile createFile(@NotNull Project project, @NotNull FileType fileType, @Nullable VirtualFile root, @NotNull String fileNameWithPath) {
+        return createFile(project, fileType, root, fileNameWithPath, null);
     }
 
     @Nullable
-    public static VirtualFile createFile(@Nullable VirtualFile root, @NotNull String fileNameWithPath, @Nullable String content) {
+    public static VirtualFile createFile(@NotNull Project project, @NotNull FileType fileType, @Nullable VirtualFile root, @NotNull String fileNameWithPath, @Nullable String content) {
 
         if(root == null) {
             return null;
         }
 
-        String path = fileNameWithPath.substring(0, fileNameWithPath.lastIndexOf("/"));
+        String[] filenameSplit = fileNameWithPath.split("/");
+        String pathString = StringUtils.join(Arrays.copyOf(filenameSplit, filenameSplit.length - 1), "/");
 
+        VirtualFile twigDirectory = VfsUtil.findRelativeFile(root, filenameSplit);
+        if(twigDirectory != null) {
+            return null;
+        }
+
+        VirtualFile targetDir;
         try {
-            VfsUtil.createDirectoryIfMissing(root, path);
-        } catch (IOException e) {
+            targetDir = VfsUtil.createDirectoryIfMissing(root, pathString);
+        } catch (IOException ignored) {
             return null;
         }
 
-        VirtualFile twigDirectory = VfsUtil.findRelativeFile(root, path.split("/"));
-        if(twigDirectory == null || !twigDirectory.exists()) {
+        PsiFileFactory factory = PsiFileFactory.getInstance(project);
+        final PsiFile file = factory.createFileFromText(filenameSplit[filenameSplit.length - 1], fileType, content != null ? content : "");
+        CodeStyleManager.getInstance(project).reformat(file);
+        PsiDirectory directory = PsiManager.getInstance(project).findDirectory(targetDir);
+        if(directory == null) {
             return null;
         }
 
-        File f = new File(twigDirectory.getCanonicalPath() + "/" + fileNameWithPath.substring(fileNameWithPath.lastIndexOf("/") + 1));
-        if(!f.exists()){
-            try {
-                if(!f.createNewFile()) {
-                    return null;
-                }
-            } catch (IOException e) {
-                return null;
-            }
+        PsiElement add = directory.add(file);
+        if(add instanceof PsiFile) {
+            return ((PsiFile) add).getVirtualFile();
         }
 
-        VirtualFile virtualFile = VfsUtil.findFileByIoFile(f, true);
-        if(virtualFile == null) {
-            return null;
-        }
-
-        if(content != null) {
-            try {
-                virtualFile.setBinaryContent(content.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return virtualFile;
+        return null;
     }
 
-    public static RunnableCreateAndOpenFile getRunnableCreateAndOpenFile(@NotNull Project project, @NotNull VirtualFile rootVirtualFile, @NotNull String fileName) {
-        return new RunnableCreateAndOpenFile(project, rootVirtualFile, fileName);
+    public static RunnableCreateAndOpenFile getRunnableCreateAndOpenFile(@NotNull Project project, @NotNull FileType fileType, @NotNull VirtualFile rootVirtualFile, @NotNull String fileName) {
+        return new RunnableCreateAndOpenFile(project, fileType, rootVirtualFile, fileName);
     }
 
     public static class RunnableCreateAndOpenFile implements Runnable {
 
+        @NotNull
+        private final FileType fileType;
         private final VirtualFile rootVirtualFile;
         private final String fileName;
         private final Project project;
         private String content;
 
-        public RunnableCreateAndOpenFile(Project project, VirtualFile rootVirtualFile, String fileName) {
+        public RunnableCreateAndOpenFile(@NotNull Project project, @NotNull FileType fileType, @NotNull VirtualFile rootVirtualFile, @NotNull String fileName) {
             this.project = project;
+            this.fileType = fileType;
             this.rootVirtualFile = rootVirtualFile;
             this.fileName = fileName;
         }
@@ -113,7 +111,7 @@ public class IdeHelper {
 
         @Override
         public void run() {
-            VirtualFile virtualFile = createFile(rootVirtualFile, fileName, this.content);
+            VirtualFile virtualFile = createFile(project, fileType, rootVirtualFile, fileName, this.content);
             if(virtualFile != null) {
                 new OpenFileDescriptor(project, virtualFile, 0).navigate(true);
             }
