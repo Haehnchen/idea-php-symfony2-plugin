@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -22,7 +23,14 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
         // add completion for href and provide twig insert handler
         // <a href="#">#</a>
         // <a href="{{ path('', {'foo' : 'bar'}) }}">#</a>
-        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getHrefAttributePattern(), new CompletionProvider<CompletionParameters>() {
+        // <form action="<caret>"
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.or(
+                TwigHtmlCompletionUtil.getHrefAttributePattern(),
+                TwigHtmlCompletionUtil.getFormActionAttributePattern()
+            ),
+            new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
 

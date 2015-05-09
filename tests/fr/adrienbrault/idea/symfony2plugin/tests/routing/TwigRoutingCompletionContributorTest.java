@@ -29,6 +29,9 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_foo<caret>\">foo</a>", "<a href=\"{{ path('route_foo', {'var3': 'x', 'var1': 'x', 'var2': 'x'}) }}\">foo</a>");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_bar<caret>\">foo</a>", "<a href=\"{{ path('route_bar') }}\">foo</a>");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"xml_route<caret>\">foo</a>", "<a href=\"{{ path('xml_route', {'slug': 'x'}) }}\">foo</a>");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "<form action=\"<caret>\"/>", "route_foo", "route_bar", "xml_route");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "<form action=\"xml_route<caret>\"/>", "<form action=\"{{ path('xml_route', {'slug': 'x'}) }}\"/>");
     }
 
     public void testTwigPathParameterTailCompletion() {

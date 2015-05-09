@@ -22,6 +22,23 @@ public class TwigHtmlCompletionUtil {
             );
     }
 
+    public static PsiElementPattern.Capture<PsiElement> getFormActionAttributePattern() {
+        return PlatformPatterns.psiElement()
+            .withParent(
+                XmlPatterns.xmlAttributeValue()
+                    .withParent(
+                        XmlPatterns.xmlAttribute("action").withParent(
+                            XmlPatterns.xmlTag().withName("form")
+                        )
+                    )
+            ).inFile(XmlPatterns.psiFile()
+                    .withName(XmlPatterns
+                            .string().endsWith(".twig")
+                    )
+            );
+    }
+
+
     // html inside twig: <link href="#" rel="stylesheet" />
     public static PsiElementPattern.Capture<PsiElement> getAssetCssAttributePattern() {
 
