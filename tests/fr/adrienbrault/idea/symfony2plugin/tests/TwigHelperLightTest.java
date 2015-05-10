@@ -81,7 +81,7 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("foo", buildBlocks("{%- block \"foo\" -%}").iterator().next().getName());
         assertEquals("foo", buildBlocks("{%- block 'foo' -%}").iterator().next().getName());
 
-        assertNotNull("foo", buildBlocks("{%- block 'foo' -%}").iterator().next().getPsiFile());
+        assertNotNull(buildBlocks("{%- block 'foo' -%}").iterator().next().getPsiFile());
         assertSize(1, buildBlocks("{%- block 'foo' -%}").iterator().next().getBlock());
     }
 
