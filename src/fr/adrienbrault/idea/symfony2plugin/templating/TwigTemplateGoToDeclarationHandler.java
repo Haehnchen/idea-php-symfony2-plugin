@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -146,7 +147,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), signature);
     }
 
-    public static PsiElement[] getBlockGoTo(PsiElement psiElement) {
+    @NotNull
+    public static PsiElement[] getBlockGoTo(@NotNull PsiElement psiElement) {
 
         PsiFile containingFile = psiElement.getContainingFile();
         if(containingFile == null) {
@@ -157,7 +159,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return getBlockNameGoTo(containingFile, blockName);
     }
 
-    public static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName) {
+    @NotNull
+    public static PsiElement[] getBlockNameGoTo(@NotNull PsiFile psiFile, @NotNull String blockName) {
         return getBlockNameGoTo(psiFile, blockName, false);
     }
 

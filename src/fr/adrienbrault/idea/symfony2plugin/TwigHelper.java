@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.FileIndexUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -10,28 +9,18 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.include.FileIncludeIndex;
-import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
-import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.PhpPresentationUtil;
-import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.psi.elements.ClassReference;
-import com.jetbrains.php.lang.psi.elements.Parameter;
-import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
-import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigTagWithFileReference;
+import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -41,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServ
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -1175,6 +1165,102 @@ public class TwigHelper {
         }
 
         return lookupElements;
+    }
+
+    /**
+     * Find "extends" template in twig TwigExtendsTag
+     *
+     * {% extends '::base.html.twig' %}
+     * {% extends request.ajax ? "base_ajax.html" : "base.html" %}
+     *
+     * @param twigExtendsTag Extends tag
+     * @return valid template names
+     */
+    @NotNull
+    public static Collection<String> getTwigExtendsTemplates(@NotNull TwigExtendsTag twigExtendsTag) {
+
+        Collection<String> strings = new HashSet<String>();
+        PsiElement firstChild = twigExtendsTag.getFirstChild();
+        if(firstChild == null) {
+            return strings;
+        }
+
+        // single {% extends '::base.html.twig'
+        PsiElement psiSingleString = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+                )
+        );
+
+        // single match dont need to go deeper in conditional check, so stop here
+        if(psiSingleString != null) {
+            String text = psiSingleString.getText();
+            if(StringUtils.isNotBlank(text)) {
+                strings.add(text);
+            }
+            return strings;
+        }
+
+        PsiElement psiQuestion = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.QUESTION));
+        if(psiQuestion != null) {
+
+            // match ? "foo" :
+            PsiElement questString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                    .afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.QUESTION)
+                    ).beforeLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.COLON)
+                    )
+            );
+
+            if(questString != null) {
+                String text = questString.getText();
+                if(StringUtils.isNotBlank(text)) {
+                    strings.add(text);
+                }
+            }
+
+            // : "foo"
+            PsiElement colonString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                    .afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.COLON)
+                    )
+            );
+
+            if(colonString != null) {
+                String text = colonString.getText();
+                if(StringUtils.isNotBlank(text)) {
+                    strings.add(text);
+                }
+            }
+
+        }
+
+        return strings;
     }
 
 }

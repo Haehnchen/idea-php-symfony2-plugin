@@ -560,12 +560,8 @@ public class TwigUtil {
             private void collect(TwigFile twigFile) {
                 for(PsiElement psiElement: twigFile.getChildren()) {
                     if(psiElement instanceof TwigExtendsTag) {
-                        Matcher matcher = Pattern.compile(TwigBlockParser.EXTENDS_TEMPLATE_NAME_PATTERN).matcher(psiElement.getText());
-                        if(matcher.find()){
-                            String group = matcher.group(1);
-                            if(StringUtils.isNotBlank(group)) {
-                                containerElement.addExtend(group);
-                            }
+                        for (String s : TwigHelper.getTwigExtendsTemplates((TwigExtendsTag) psiElement)) {
+                            containerElement.addExtend(s);
                         }
                     } else if(psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
                         PsiElement blockTag = psiElement.getFirstChild();

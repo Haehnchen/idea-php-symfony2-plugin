@@ -13,6 +13,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
@@ -61,10 +62,9 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
                     return map;
                 }
 
-                for(PsiElement twigExtendTags: twigExtendsTags) {
-                    Matcher matcher = Pattern.compile(TwigBlockParser.EXTENDS_TEMPLATE_NAME_PATTERN).matcher(twigExtendTags.getText());
-                    while(matcher.find()){
-                        map.put(matcher.group(1), null);
+                for(PsiElement twigExtendsTag: twigExtendsTags) {
+                    for (String s : TwigHelper.getTwigExtendsTemplates((TwigExtendsTag) twigExtendsTag)) {
+                        map.put(s, null);
                     }
                 }
 

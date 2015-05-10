@@ -25,8 +25,6 @@ import java.util.regex.Pattern;
 
 public class TwigBlockParser {
 
-    public static String EXTENDS_TEMPLATE_NAME_PATTERN = "^[\\s+]*\\{%\\s+extends[\\s+]*['|\"](.*?)['|\"]";
-
     private boolean withSelfBlock = false;
 
     private Map<String, VirtualFile> twigFilesByName;
@@ -63,13 +61,11 @@ public class TwigBlockParser {
 
         final Map<VirtualFile, String> virtualFiles = new HashMap<VirtualFile, String>();
 
-        // @TODO: migrate to psi elements
         // {% extends 'foo' %}
         // find extend in self
         for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(file, TwigExtendsTag.class)) {
-            Matcher matcher = Pattern.compile(EXTENDS_TEMPLATE_NAME_PATTERN).matcher(extendsTag.getText());
-            while(matcher.find()){
-                String templateName = TwigHelper.normalizeTemplateName(matcher.group(1));
+            for (String s : TwigHelper.getTwigExtendsTemplates(extendsTag)) {
+                String templateName = TwigHelper.normalizeTemplateName(s);
                 if(twigFilesByName.containsKey(templateName)) {
                     virtualFiles.put(twigFilesByName.get(templateName), templateName);
                 }

@@ -87,15 +87,15 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void attachController(TwigFile psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
         Set<Method> methods = new HashSet<Method>();
-        Method method = TwigUtil.findTwigFileController(psiElement);
+        Method method = TwigUtil.findTwigFileController(twigFile);
         if(method != null) {
             methods.add(method);
         }
 
-        methods.addAll(TwigUtil.getTwigFileMethodUsageOnIndex(psiElement));
+        methods.addAll(TwigUtil.getTwigFileMethodUsageOnIndex(twigFile));
 
         if(methods.size() == 0) {
             return;
@@ -105,7 +105,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             setTargets(methods).
             setTooltipText("Navigate to controller");
 
-        result.add(builder.createLineMarkerInfo(psiElement));
+        result.add(builder.createLineMarkerInfo(twigFile));
     }
 
     private LineMarkerInfo attachIncludes(TwigFile twigFile) {
@@ -276,7 +276,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         return null;
     }
 
-    private static void getTwigChildList(Map<String, VirtualFile> files, final PsiFile psiFile, final List<PsiFile> twigChild, int depth) {
+    private static void getTwigChildList(@NotNull Map<String, VirtualFile> files, @NotNull final PsiFile psiFile, @NotNull final List<PsiFile> twigChild, int depth) {
 
         if(depth <= 0) {
             return;
