@@ -1,15 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import com.intellij.psi.PsiFileFactory;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTwigExtendsTemplates
+ *
+ * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTwigExtendsTagTemplates
+ * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getBlocksInFile
  */
 public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -66,7 +72,24 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertFalse(twigExtendsValues.contains("base.html"));
     }
 
+    public void testBlocksInFileCollector() {
+        assertEquals("foo", buildBlocks("{% block foo %}").iterator().next().getName());
+        assertEquals("foo", buildBlocks("{% block \"foo\" %}").iterator().next().getName());
+        assertEquals("foo", buildBlocks("{% block 'foo' %}").iterator().next().getName());
+
+        assertEquals("foo", buildBlocks("{%- block foo -%}").iterator().next().getName());
+        assertEquals("foo", buildBlocks("{%- block \"foo\" -%}").iterator().next().getName());
+        assertEquals("foo", buildBlocks("{%- block 'foo' -%}").iterator().next().getName());
+
+        assertNotNull("foo", buildBlocks("{%- block 'foo' -%}").iterator().next().getPsiFile());
+        assertSize(1, buildBlocks("{%- block 'foo' -%}").iterator().next().getBlock());
+    }
+
     private Collection<String> buildExtendsTagList(String string) {
-        return TwigHelper.getTwigExtendsTemplates((TwigExtendsTag) TwigElementFactory.createPsiElement(getProject(), string, TwigElementTypes.EXTENDS_TAG));
+        return TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) TwigElementFactory.createPsiElement(getProject(), string, TwigElementTypes.EXTENDS_TAG));
+    }
+
+    private Collection<TwigBlock> buildBlocks(String content) {
+        return TwigHelper.getBlocksInFile((TwigFile) PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + TwigFileType.INSTANCE.getDefaultExtension(), TwigFileType.INSTANCE, content, System.currentTimeMillis(), false));
     }
 }

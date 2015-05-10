@@ -16,10 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,14 +40,15 @@ public class TwigBlockParser {
             return current;
         }
 
-        // @TODO: we dont use psielements here, check if Pattern faster or not
-
         // dont match on self file !?
         if(depth > 0 || (withSelfBlock && depth == 0)) {
-            // @TODO: migrate to psi elements
-            Matcher matcherBlocks = Pattern.compile("\\{%[\\s+]*block[\\s+]*(.*?)[\\s+]*%}").matcher(file.getText());
-            while(matcherBlocks.find()){
-                current.add(new TwigBlock(matcherBlocks.group(1), shortcutName, file));
+            if(file instanceof TwigFile) {
+                Collection<TwigBlock> blocksInFile = TwigHelper.getBlocksInFile((TwigFile) file);
+                // @TODO: remove this here just presentation
+                for (TwigBlock twigBlock : blocksInFile) {
+                    twigBlock.setShortcutName(shortcutName);;
+                }
+                current.addAll(blocksInFile);
             }
         }
 
@@ -64,7 +62,7 @@ public class TwigBlockParser {
         // {% extends 'foo' %}
         // find extend in self
         for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(file, TwigExtendsTag.class)) {
-            for (String s : TwigHelper.getTwigExtendsTemplates(extendsTag)) {
+            for (String s : TwigHelper.getTwigExtendsTagTemplates(extendsTag)) {
                 String templateName = TwigHelper.normalizeTemplateName(s);
                 if(twigFilesByName.containsKey(templateName)) {
                     virtualFiles.put(twigFilesByName.get(templateName), templateName);

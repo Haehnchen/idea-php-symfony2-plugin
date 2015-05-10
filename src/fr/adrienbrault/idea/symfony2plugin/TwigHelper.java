@@ -15,9 +15,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
@@ -27,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -1177,7 +1180,7 @@ public class TwigHelper {
      * @return valid template names
      */
     @NotNull
-    public static Collection<String> getTwigExtendsTemplates(@NotNull TwigExtendsTag twigExtendsTag) {
+    public static Collection<String> getTwigExtendsTagTemplates(@NotNull TwigExtendsTag twigExtendsTag) {
 
         Collection<String> strings = new HashSet<String>();
         PsiElement firstChild = twigExtendsTag.getFirstChild();
@@ -1261,6 +1264,59 @@ public class TwigHelper {
         }
 
         return strings;
+    }
+
+    /**
+     * Collect all block names in file
+     *
+     * {% block sds %}, {% block 'sds' %}, {% block "sds" %}
+     * {%- block sds -%}
+     */
+    @NotNull
+    public static Collection<TwigBlock> getBlocksInFile(@NotNull TwigFile twigFile) {
+
+        Collection<TwigBlock> block = new ArrayList<TwigBlock>();
+
+        PsiElementPattern.Capture<PsiElement> pattern = null;
+
+        for (TwigBlockTag twigBlockTag : PsiTreeUtil.collectElementsOfType(twigFile, TwigBlockTag.class)) {
+
+            String name = twigBlockTag.getName();
+            if(name != null && StringUtils.isNotBlank(name)) {
+                block.add(new TwigBlock(name, twigBlockTag));
+            }
+
+            PsiElement firstChild = twigBlockTag.getFirstChild();
+            if(firstChild == null) {
+                continue;
+            }
+
+            // provide support for quote wrapping
+            // {% block 'sds' %}
+            if(pattern == null) {
+                pattern = PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                    .afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+                    );
+            }
+
+            PsiElement psiString = PsiElementUtils.getNextSiblingOfType(firstChild, pattern);
+            if(psiString != null) {
+                String text = psiString.getText();
+                if(StringUtils.isNotBlank(text)) {
+                    block.add(new TwigBlock(text, twigBlockTag));
+                }
+            }
+
+        }
+
+        return block;
     }
 
 }

@@ -14,13 +14,10 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> {
 
@@ -63,7 +60,7 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
                 }
 
                 for(PsiElement twigExtendsTag: twigExtendsTags) {
-                    for (String s : TwigHelper.getTwigExtendsTemplates((TwigExtendsTag) twigExtendsTag)) {
+                    for (String s : TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) twigExtendsTag)) {
                         map.put(s, null);
                     }
                 }

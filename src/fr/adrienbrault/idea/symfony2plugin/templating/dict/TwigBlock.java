@@ -1,51 +1,49 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiElementFilter;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.twig.elements.TwigElementTypes;
-
-import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TwigBlock {
 
+    @NotNull
     private String name;
-    private String shortcutName;
-    private PsiFile psiFile;
 
-    public TwigBlock(String name, String shortCutName, PsiFile psiFile) {
+    @NotNull
+    private final PsiElement target;
+
+    @Nullable
+    private String shortcutName;
+
+    public TwigBlock(@NotNull String name, @NotNull PsiElement target) {
         this.name = name;
-        this.shortcutName = shortCutName;
-        this.psiFile = psiFile;
+        this.target = target;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @Nullable
     public String getShortcutName() {
         return shortcutName;
     }
 
+    @NotNull
     public PsiFile getPsiFile() {
-        return psiFile;
+        return target.getContainingFile();
     }
 
+    @NotNull
     public PsiElement[] getBlock() {
+        return new PsiElement[] {target};
+    }
 
-        final String name = this.getName();
-        return PsiTreeUtil.collectElements(this.psiFile, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
-
-                // @TODO: move this to PlatformPatterns; withName?
-                return PlatformPatterns.psiElement(TwigElementTypes.BLOCK_TAG).accepts(psiElement)
-                    && Pattern.matches("\\{%[\\s+]block[\\s+]*" + Pattern.quote(name) + "[\\s+]*%}", psiElement.getText());
-
-            }
-        });
+    public void setShortcutName(@Nullable String shortcutName) {
+        // @TODO: remove this
+        this.shortcutName = shortcutName;
     }
 
 }

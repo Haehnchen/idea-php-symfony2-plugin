@@ -32,7 +32,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -560,7 +559,7 @@ public class TwigUtil {
             private void collect(TwigFile twigFile) {
                 for(PsiElement psiElement: twigFile.getChildren()) {
                     if(psiElement instanceof TwigExtendsTag) {
-                        for (String s : TwigHelper.getTwigExtendsTemplates((TwigExtendsTag) psiElement)) {
+                        for (String s : TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) psiElement)) {
                             containerElement.addExtend(s);
                         }
                     } else if(psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
