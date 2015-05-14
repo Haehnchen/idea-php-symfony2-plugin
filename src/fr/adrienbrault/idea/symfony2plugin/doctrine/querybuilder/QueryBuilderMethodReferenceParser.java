@@ -13,6 +13,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.FormQueryBuilderRepositoryDetector;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetector;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
@@ -33,6 +36,10 @@ public class QueryBuilderMethodReferenceParser {
 
     final private Project project;
     final private Collection<MethodReference> methodReferences;
+    
+    private static QueryBuilderRepositoryDetector[] repositoryDetectors = new QueryBuilderRepositoryDetector[] {
+        new FormQueryBuilderRepositoryDetector(),
+    };
 
     public QueryBuilderMethodReferenceParser(Project project, Collection<MethodReference> methodReferences) {
         this.methodReferences = methodReferences;
@@ -274,6 +281,16 @@ public class QueryBuilderMethodReferenceParser {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        if(rootAlias != null && repository == null) {
+            for (QueryBuilderRepositoryDetector detector: repositoryDetectors) {
+                String result = detector.getRepository(new QueryBuilderRepositoryDetectorParameter(project, methodReferences));
+                if(result != null) {
+                    roots.put(result, rootAlias);
+                    return roots;
                 }
             }
         }
