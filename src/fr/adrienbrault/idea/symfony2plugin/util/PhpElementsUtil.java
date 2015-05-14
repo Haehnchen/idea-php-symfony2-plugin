@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -52,6 +53,34 @@ public class PhpElementsUtil {
             PhpPsiElement child = arrayHashElement.getKey();
             if(child instanceof StringLiteralExpression) {
                 keys.add(((StringLiteralExpression) child).getContents());
+            }
+        }
+
+        return keys;
+    }
+
+    /**
+     * ["value", "value2"]
+     */
+    @NotNull
+    static public Set<String> getArrayValuesAsString(@NotNull ArrayCreationExpression arrayCreationExpression) {
+
+        List<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, new Condition<PsiElement>() {
+            @Override
+            public boolean value(PsiElement psiElement) {
+                return psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE;
+            }
+        });
+
+        if(arrayValues == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> keys = new HashSet<String>();
+        for (PsiElement child : arrayValues) {
+            String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
+            if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
+                keys.add(stringValue);
             }
         }
 

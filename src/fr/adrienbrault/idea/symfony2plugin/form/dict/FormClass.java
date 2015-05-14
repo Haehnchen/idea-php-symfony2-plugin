@@ -11,7 +11,7 @@ public class FormClass {
     private final PhpClass phpClass;
     private final boolean isWeak;
 
-    public FormClass(FormClassEnum typeEnum, PhpClass phpClass, boolean isWeak) {
+    public FormClass(@NotNull FormClassEnum typeEnum, @NotNull PhpClass phpClass, boolean isWeak) {
         this.typeEnum = typeEnum;
         this.phpClass = phpClass;
         this.isWeak = isWeak;
@@ -26,6 +26,7 @@ public class FormClass {
         return isWeak;
     }
 
+    @NotNull
     public FormClassEnum getType() {
         return typeEnum;
     }
