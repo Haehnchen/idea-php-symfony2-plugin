@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.90</version>
+    <version>0.11.91</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,17 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.91</h2>
+<ul>
+    <li>Add support for doctrine xml metadata <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
+    <li>Add support for conditional twig extends tags, and replace regular match with pattern style</li>
+    <li>Provide twig completion for html form action attribute <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/497">#497</a></li>
+    <li>Twig template file create quickfix should use PsiManager to support eg vcs <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/498">#498</a></li>
+    <li>Support for query_builder in entity form field type <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/426">#426</a></li>
+    <li>Fix npe in doctrine querybuilder chain processor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/495">#495</a></li>
+    <li>Fix multiple resolve issues in php type provider</li>
+</ul>
 
 <h2>0.11.90</h2>
 <ul>

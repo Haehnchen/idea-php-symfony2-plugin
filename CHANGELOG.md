@@ -6,6 +6,15 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.91
+* Add support for doctrine xml metadata #319
+* Add support for conditional twig extends tags, and replace regular match with pattern style
+* Provide twig completion for html form action attribute #497
+* Twig template file create quickfix should use PsiManager to support eg vcs #498
+* Support for query_builder in entity form field type #426
+* Fix npe in doctrine querybuilder chain processor #495
+* Fix multiple resolve issues in php type provider
+
 ### 0.11.90
 * Add CompilerPass intention and generator action for Bundle context #484
 * Add support for new configureOptions in replacement for deprecated setDefaultOptions #491, #486, #490
