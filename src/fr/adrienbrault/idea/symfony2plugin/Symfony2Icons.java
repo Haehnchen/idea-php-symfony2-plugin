@@ -1,8 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.util.ui.UIUtil;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -51,5 +54,19 @@ public class Symfony2Icons {
     public static final Icon CONFIG_PROTOTYPE = IconLoader.getIcon("icons/config_prototype.png");
     public static final Icon CONFIG_VALUE = IconLoader.getIcon("icons/config_value.png");
     public static final Icon CONFIG_VALUE_SHORTCUT = IconLoader.getIcon("icons/config_value_shortcut.png");
+
+    public static Image getImage(Icon icon) {
+
+        if (icon instanceof ImageIcon) {
+            return ((ImageIcon)icon).getImage();
+        }
+
+        int width = icon.getIconWidth();
+        int height = icon.getIconHeight();
+        BufferedImage image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = (Graphics2D) image.getGraphics();
+        icon.paintIcon(null, g2, 0, 0);
+        return image;
+    }
 }
 

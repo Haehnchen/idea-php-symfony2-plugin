@@ -35,7 +35,8 @@ public class ServiceGenerateAction extends CodeInsightAction {
 
         symfonyCreateService.init();
 
-        symfonyCreateService.setTitle("Create Service");
+        symfonyCreateService.setTitle("Symfony: Service Generator");
+        symfonyCreateService.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
         symfonyCreateService.pack();
         symfonyCreateService.setLocationRelativeTo(null);
         symfonyCreateService.setVisible(true);

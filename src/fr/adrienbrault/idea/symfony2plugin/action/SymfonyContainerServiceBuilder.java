@@ -96,7 +96,8 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         symfonyCreateService.init();
 
         Dimension dim = new Dimension();
-        symfonyCreateService.setTitle("Create Service");
+        symfonyCreateService.setTitle("Symfony: Create Service");
+        symfonyCreateService.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
         symfonyCreateService.pack();
         symfonyCreateService.setLocationRelativeTo(null);
         symfonyCreateService.setVisible(true);

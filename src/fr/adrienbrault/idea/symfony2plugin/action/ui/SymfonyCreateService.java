@@ -47,6 +47,7 @@ public class SymfonyCreateService extends JDialog {
     private JRadioButton radioButtonOutXml;
     private JRadioButton radioButtonOutYaml;
     private JTextField textFieldServiceName;
+    private JButton buttonSettings;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -148,6 +149,13 @@ public class SymfonyCreateService extends JDialog {
                 StringSelection stringSelection = new StringSelection(textAreaOutput.getText());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard ();
                 clipboard.setContents(stringSelection, null);
+            }
+        });
+
+        this.buttonSettings.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SymfonyJavascriptServiceNameForm.create(SymfonyCreateService.this, project, textFieldClassName.getText());
             }
         });
 
