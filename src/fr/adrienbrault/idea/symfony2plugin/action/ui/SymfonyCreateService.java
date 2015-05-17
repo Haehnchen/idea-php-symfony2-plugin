@@ -10,10 +10,15 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyInterface;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -64,6 +69,11 @@ public class SymfonyCreateService extends JDialog {
         this.project = project;
         this.psiFile = psiFile;
     }
+
+    private static ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
+        new JavascriptServiceNameStrategy(),
+        new DefaultServiceNameStrategy(),
+    };
 
     public void init() {
 
@@ -489,12 +499,20 @@ public class SymfonyCreateService extends JDialog {
         }
     }
 
-    private String generateServiceName(String className) {
+    @NotNull
+    private String generateServiceName(@NotNull String className) {
 
-        if(className.contains("Bundle")) {
-            String formattedName = className.substring(0, className.indexOf("Bundle") + 6).toLowerCase().replace("\\", "_");
-            formattedName += className.substring(className.indexOf("Bundle") + 6).toLowerCase().replace("\\", ".");
-            return formattedName;
+        // normalize
+        if(className.startsWith("\\")) {
+            className = className.substring(1);
+        }
+
+        ServiceNameStrategyParameter parameter = new ServiceNameStrategyParameter(project, className);
+        for (ServiceNameStrategyInterface nameStrategy : NAME_STRATEGIES) {
+            String serviceName = nameStrategy.getServiceName(parameter);
+            if(serviceName != null && StringUtils.isNotBlank(serviceName)) {
+                return serviceName;
+            }
         }
 
         return className.toLowerCase().replace("\\", "_");

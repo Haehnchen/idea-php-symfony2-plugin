@@ -32,6 +32,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public String pathToTranslation = DEFAULT_TRANSLATION_PATH;
     public String directoryToWeb = DEFAULT_WEB_DIRECTORY;
     public String directoryToApp = DEFAULT_APP_DIRECTORY;
+    public String serviceJsNameStrategy = null;
 
     public boolean pluginEnabled = false;
 
