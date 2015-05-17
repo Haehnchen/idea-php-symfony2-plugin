@@ -50,6 +50,7 @@ public class JavascriptServiceNameStrategy implements ServiceNameStrategyInterfa
         jsonObject.addProperty("className", className);
         jsonObject.addProperty("projectName", project.getName());
         jsonObject.addProperty("projectBasePath", project.getBasePath());
+        jsonObject.addProperty("defaultNaming", new DefaultServiceNameStrategy().getServiceName(new ServiceNameStrategyParameter(project, className)));
 
         PhpClass aClass = PhpElementsUtil.getClass(project, className);
         if(aClass != null) {

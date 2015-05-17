@@ -91,6 +91,7 @@ public class SymfonyJavascriptServiceNameForm extends JDialog {
                     "var className = args.className;\n" +
                     "var projectName = args.projectName;\n" +
                     "var projectBasePath = args.projectBasePath;\n" +
+                    "var defaultNaming = args.defaultNaming;\n" +
                     "\n" +
                     "// nullable\n" +
                     "var relativePath = args.relativePath;\n" +

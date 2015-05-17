@@ -40,6 +40,11 @@ public class JavascriptServiceNameStrategyTest extends SymfonyLightCodeInsightFi
 
         Settings.getInstance(getProject()).serviceJsNameStrategy = "return null";
         assertNull(defaultNaming.getServiceName(getParameter("MyClass\\Is\\Nice\\Nicer")));
+
+        Settings.getInstance(getProject()).serviceJsNameStrategy = "return args.defaultNaming;";
+        assertEquals("my_class.is_nice.nicer", defaultNaming.getServiceName(getParameter("MyClassBundle\\Is\\Nice\\Nicer")));
+
+        Settings.getInstance(getProject()).serviceJsNameStrategy = null;
     }
 
     private ServiceNameStrategyParameter getParameter(String className) {
