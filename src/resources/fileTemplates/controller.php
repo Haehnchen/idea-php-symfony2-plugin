@@ -4,7 +4,7 @@ namespace {{ ns }};
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-class {{ class }}Controller extends Controller
+class {{ class }} extends Controller
 {
     public function indexAction($name)
     {
