@@ -5,18 +5,17 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.LanguageFileType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
 
@@ -110,6 +109,31 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             fail(String.format("failed that PsiElement (%s) navigate to %s on %s", psiElement.toString(), targetShortcut, classTargets.toString()));
         }
 
+    }
+
+    public void assertNavigationMatch(LanguageFileType languageFileType, String configureByText, ElementPattern<PsiElement> pattern) {
+
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        Set<String> targetStrings = new HashSet<String>();
+
+        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+
+            PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
+            if(gotoDeclarationTargets == null || gotoDeclarationTargets.length == 0) {
+                continue;
+            }
+
+            for (PsiElement gotoDeclarationTarget : gotoDeclarationTargets) {
+                targetStrings.add(gotoDeclarationTarget.toString());
+                if(pattern.accepts(gotoDeclarationTarget)) {
+                    return;
+                }
+            }
+        }
+
+        fail(String.format("failed that PsiElement (%s) navigate matches one of %s", psiElement.toString(), targetStrings.toString()));
     }
 
     public void assertNavigationContainsFile(LanguageFileType languageFileType, String configureByText, String targetShortcut) {

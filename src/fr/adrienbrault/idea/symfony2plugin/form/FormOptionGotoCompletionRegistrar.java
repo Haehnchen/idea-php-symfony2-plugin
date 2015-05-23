@@ -1,23 +1,26 @@
 package fr.adrienbrault.idea.symfony2plugin.form;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.ParameterList;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOption;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
+import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -25,7 +28,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
@@ -88,10 +93,9 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
     private static class FormReferenceCompletionProvider extends GotoCompletionProvider {
 
-        @Nullable
         private final String formType;
 
-        public FormReferenceCompletionProvider(@NotNull PsiElement element, @Nullable String formType) {
+        public FormReferenceCompletionProvider(@NotNull PsiElement element, @NotNull String formType) {
             super(element);
             this.formType = formType;
         }
@@ -104,36 +108,21 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyList();
             }
 
-            String value = ((StringLiteralExpression) element).getContents();
+            final String value = ((StringLiteralExpression) element).getContents();
             if(StringUtils.isBlank(value)) {
                 return Collections.emptyList();
             }
 
-            Set<String> classNames = new HashSet<String>();
+            final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
-            Map<String, String> defaultOptions = FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType);
-            if(defaultOptions.containsKey(value)) {
-                classNames.add(defaultOptions.get(value));
-            }
-
-            Map<String, FormOption> formExtension = FormOptionsUtil.getFormExtensionKeys(getProject(), "form", this.formType);
-            if(formExtension.containsKey(value)) {
-                classNames.add(formExtension.get(value).getFormClass().getPhpClass().getPresentableFQN());
-            }
-
-            Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
-
-            for(String className: classNames) {
-                for (String formOptionMethod : FormOptionsUtil.FORM_OPTION_METHODS) {
-                    Method method = PhpElementsUtil.getClassMethod(getProject(), className, formOptionMethod);
-                    if(method != null) {
-                        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(method, "setDefaults", value);
-                        if(keyValue != null) {
-                            psiElements.add(keyValue);
-                        }
+            FormOptionsUtil.getFormDefaultKeys(getProject(), formType, new FormOptionVisitor() {
+                @Override
+                public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
+                    if(option.equals(value)) {
+                        psiElements.add(psiElement);
                     }
                 }
-            }
+            });
 
             return psiElements;
         }
@@ -141,28 +130,13 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         @NotNull
         public Collection<LookupElement> getLookupElements() {
 
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            final Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
             for(FormOption formOption: FormOptionsUtil.getFormExtensionKeys(getProject(), "form", this.formType).values()) {
                 lookupElements.add(FormOptionsUtil.getOptionLookupElement(formOption));
             }
 
-            for(Map.Entry<String, String> extension: FormOptionsUtil.getFormDefaultKeys(getProject(), this.formType).entrySet()) {
-                String typeText = extension.getValue();
-                if(typeText.lastIndexOf("\\") != -1) {
-                    typeText = typeText.substring(typeText.lastIndexOf("\\") + 1);
-                }
-
-                if(typeText.endsWith("Type")) {
-                    typeText = typeText.substring(0, typeText.length() - 4);
-                }
-
-                lookupElements.add(LookupElementBuilder.create(extension.getKey())
-                    .withTypeText(typeText, true)
-                    .withIcon(Symfony2Icons.FORM_OPTION)
-                );
-
-            }
+            FormOptionsUtil.getFormDefaultKeys(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
 
             return lookupElements;
         }

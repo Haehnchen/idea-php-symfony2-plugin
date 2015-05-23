@@ -91,6 +91,8 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             @Override
             public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
 
+
+                // @TODO: migrate to completion provider, because of performance
                 PsiElement parent = psiElement.getParent();
                 if(!(parent instanceof StringLiteralExpression)) {
                     return null;

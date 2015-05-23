@@ -46,13 +46,29 @@ public class PhpElementsUtil {
         return results;
     }
 
-    static public List<String> getArrayCreationKeys(ArrayCreationExpression arrayCreationExpression) {
-        ArrayList<String> keys = new ArrayList<String>();
+    /**
+     * Gets all array keys as string of an ArrayCreationExpression
+     *
+     * ['foo' => $bar]
+     */
+    @NotNull
+    static public Collection<String> getArrayCreationKeys(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        return getArrayCreationKeyMap(arrayCreationExpression).keySet();
+    }
+
+    /**
+     * Gets array key-value as single PsiElement map
+     *
+     * ['foo' => $bar]
+     */
+    @NotNull
+    static public Map<String, PsiElement> getArrayCreationKeyMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        Map<String, PsiElement> keys = new HashMap<String, PsiElement>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             PhpPsiElement child = arrayHashElement.getKey();
             if(child instanceof StringLiteralExpression) {
-                keys.add(((StringLiteralExpression) child).getContents());
+                keys.put(((StringLiteralExpression) child).getContents(), child);
             }
         }
 
@@ -60,10 +76,22 @@ public class PhpElementsUtil {
     }
 
     /**
+     * Gets string values of array
+     *
      * ["value", "value2"]
      */
     @NotNull
     static public Set<String> getArrayValuesAsString(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        return getArrayValuesAsMap(arrayCreationExpression).keySet();
+    }
+
+    /**
+     * Get array string values mapped with their PsiElements
+     *
+     * ["value", "value2"]
+     */
+    @NotNull
+    static public Map<String, PsiElement> getArrayValuesAsMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
 
         List<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, new Condition<PsiElement>() {
             @Override
@@ -73,14 +101,14 @@ public class PhpElementsUtil {
         });
 
         if(arrayValues == null) {
-            return Collections.emptySet();
+            return Collections.emptyMap();
         }
 
-        Set<String> keys = new HashSet<String>();
+        Map<String, PsiElement> keys = new HashMap<String, PsiElement>();
         for (PsiElement child : arrayValues) {
             String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
             if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
-                keys.add(stringValue);
+                keys.put(stringValue, child);
             }
         }
 
