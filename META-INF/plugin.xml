@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.91</version>
+    <version>0.11.92</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -103,6 +103,15 @@
 
 <br>
 
+<h2>0.11.92</h2>
+<ul>
+    <li>Optimize service name generator and provide custom javascript strategy for it <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362">#362</a></li>
+    <li>Add navigation form options of setRequired, setOptional, setDefined and refactor form options to visitor strategy <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/502">#502</a></li>
+    <li>Remove double Controller in classname <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/507">#507</a></li>
+    <li>Optimize form ui handling of service generator, prepare "insert" button, add generator action <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362">#362</a></li>
+    <li>Use ContainerAwareCommand for command template<li>
+</ul>
+
 <h2>0.11.91</h2>
 <ul>
     <li>Add support for doctrine xml metadata <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
@@ -153,49 +162,8 @@
     <li>Fix several issues in twig array completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/463">#463</a></li>
 </ul>
 
-<h2>0.11.86</h2>
-<ul>
-    <li>Support new setFactory syntax in yaml and xml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/436">#436</a></li>
-    <li>Add service generator in class context of "Generator Popover" and intention in arguments</li>
-    <li>Add twig assets completion for img src tags <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/438">#438</a></li>
-    <li>Add some more yaml service key completion</li>
-    <li>Add method support for twig "for" statements <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/208">#208</a></li>
-    <li>Fix instance annotator in yaml psi pattern arguments on single quote string, after pattern api changes</li>
-    <li>Fix completion for twig inline array doc block pattern</li>
-    <li>Fix insertHandler for trailing backslash in twig doc var completion</li>
-    <li>Note: implemented testing infrastructure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/405">#405</a></li>
-</ul>
-
-<h2>0.11.85</h2>
-<ul>
-    <li>Fix npe in custom assets resolving <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/427">#427</a></li>
-</ul>
-
-<h2>0.11.84</h2>
-<ul>
-    <li>Fixing npe in tagged class inspections <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/425">#425</a></li>
-    <li>Add function parameter generator for "kernel.event_listener" on method create quickfix <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/424">#424</a></li>
-    <li>Add support for getSubscribedEvents inside method create quickfix <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/424">#424</a></li>
-    <li>Add support for custom assets <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/353">#353</a></li>
-    <li>Add static event parameter hint list for method create quickfix</li>
-</ul>
-
-<h2>0.11.83</h2>
-<ul>
-    <li>Add inspection for tagged services to validate corresponding interfaces or extends instances</li>
-    <li>Add "Method Create" quickfix for xml files</li>
-    <li>Add navigation, quickfix and inspections for methods inside tag statements <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/422">#422</a></li>
-    <li>Fix non unix eol error in template files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/421">#421</a></li>
-</ul>
-
-<h2>0.11.82</h2>
-<ul>
-    <li>add method create quickfix for yaml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/415">#415</a></li>
-    <li>Remove weak service warning <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/399">#399</a></li>
-</ul>
-
 <br/>
-<a href="https://github.com/adrienbrault/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
+<a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
 <br/>
 
 ]]>

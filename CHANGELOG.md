@@ -6,6 +6,13 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.92
+* Optimize service name generator and provide custom javascript strategy for it #362
+* Add navigation form options of setRequired, setOptional, setDefined and refactor form options to visitor strategy #502
+* Remove double Controller in classname #507
+* Optimize form ui handling of service generator, prepare "insert" button, add generator action #362
+* Use ContainerAwareCommand for command template
+
 ### 0.11.91
 * Add support for doctrine xml metadata #319
 * Add support for conditional twig extends tags, and replace regular match with pattern style
