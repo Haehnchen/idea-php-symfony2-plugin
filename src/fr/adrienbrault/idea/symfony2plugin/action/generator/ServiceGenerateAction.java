@@ -10,12 +10,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilBase;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ServiceGenerateAction extends CodeInsightAction {
 
@@ -25,25 +28,40 @@ public class ServiceGenerateAction extends CodeInsightAction {
         event.getPresentation().setVisible(Symfony2ProjectComponent.isEnabled(event.getProject()));
     }
 
-    public static void invokeServiceGenerator(Project project, PsiFile file, PhpClass phpClass) {
-
-        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(project, file);
-        String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN != null) {
-            symfonyCreateService.setClassName(presentableFQN);
-        }
-
-        symfonyCreateService.init();
-
-        symfonyCreateService.setTitle("Symfony: Service Generator");
-        symfonyCreateService.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
-        symfonyCreateService.pack();
-        symfonyCreateService.setLocationRelativeTo(null);
-        symfonyCreateService.setVisible(true);
+    public static void invokeServiceGenerator(@NotNull Project project, @NotNull PsiFile file, @NotNull PhpClass phpClass) {
+        SymfonyCreateService.create(project, file, phpClass);
     }
 
     @Override
     protected boolean isValidForFile(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+        return isValidForPhpClass(editor, file) || isValidForXml(editor, file);
+    }
+
+    @NotNull
+    @Override
+    protected CodeInsightActionHandler getHandler() {
+        return new CodeInsightActionHandler() {
+            @Override
+            public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
+
+                if(invokePhpClass(project, editor)) {
+                    return;
+                }
+
+                if(isValidForXml(editor, psiFile) && invokeXmlFile(project, editor)) {
+                    return;
+                }
+
+            }
+
+            @Override
+            public boolean startInWriteAction() {
+                return false;
+            }
+        };
+    }
+
+    private boolean isValidForPhpClass(Editor editor, PsiFile file) {
 
         if(!(file instanceof PhpFile)) {
             return false;
@@ -66,41 +84,57 @@ public class ServiceGenerateAction extends CodeInsightAction {
         return true;
     }
 
-    @NotNull
-    @Override
-    protected CodeInsightActionHandler getHandler() {
-        return new CodeInsightActionHandler() {
-            @Override
-            public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
+    private boolean isValidForXml(Editor editor, PsiFile file) {
 
-                PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
-                if(file == null) {
-                    return;
-                }
-                int offset = editor.getCaretModel().getOffset();
-                if(offset <= 0) {
-                    return;
-                }
+        if(!(file instanceof XmlFile)) {
+            return false;
+        }
 
-                PsiElement psiElement = file.findElementAt(offset);
-                if(psiElement == null) {
-                    return;
-                }
+        XmlTag rootTag = ((XmlFile) file).getRootTag();
+        if(rootTag == null || !"container".equals(rootTag.getName())) {
+            return false;
+        }
 
-                PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
-                if(phpClass == null) {
-                    return;
-                }
+        return true;
+    }
 
-                invokeServiceGenerator(project, file, phpClass);
+    private boolean invokeXmlFile(Project project, Editor editor) {
 
-            }
+        PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
+        if(file == null) {
+            return false;
+        }
 
-            @Override
-            public boolean startInWriteAction() {
-                return false;
-            }
-        };
+        SymfonyCreateService.create(project, file);
+
+        return true;
+    }
+
+    private boolean invokePhpClass(Project project, Editor editor) {
+
+        PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
+        if(file == null) {
+            return false;
+        }
+
+        int offset = editor.getCaretModel().getOffset();
+        if(offset <= 0) {
+            return false;
+        }
+
+        PsiElement psiElement = file.findElementAt(offset);
+        if(psiElement == null) {
+            return false;
+        }
+
+        PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
+        if(phpClass == null) {
+            return false;
+        }
+
+        invokeServiceGenerator(project, file, phpClass);
+
+        return true;
     }
 
 }

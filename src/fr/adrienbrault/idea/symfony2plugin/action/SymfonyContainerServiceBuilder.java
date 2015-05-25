@@ -67,6 +67,11 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
     public void actionPerformed(AnActionEvent event) {
 
+        Project project = event.getProject();
+        if(project == null) {
+            return;
+        }
+
         // only since phpstorm 7.1; PlatformDataKeys.PSI_FILE
         Object psiFile = event.getData(DataKey.create("psi.File"));
 
@@ -74,35 +79,26 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return;
         }
 
-        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(event.getProject(), (PsiFile) psiFile);
-
+        PhpClass phpClass = null;
         if(psiFile instanceof PhpFile) {
 
             if("ProjectViewPopup".equals(event.getPlace())) {
-                PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
-                if(phpClass != null) {
-                    symfonyCreateService.setClassName(phpClass.getPresentableFQN());
-                }
+                phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
             } else {
                 Object psiElement = event.getData(DataKey.create("psi.Element"));
                 if(psiElement instanceof PhpClass) {
-                    symfonyCreateService.setClassName(((PhpClass) psiElement).getPresentableFQN());
+                    phpClass = (PhpClass) psiElement;
                 }
             }
 
-
         }
 
-        symfonyCreateService.init();
+        if(phpClass == null) {
+            SymfonyCreateService.create(project, (PsiFile) psiFile);
+            return;
+        }
 
-        Dimension dim = new Dimension();
-        symfonyCreateService.setTitle("Symfony: Create Service");
-        symfonyCreateService.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
-        symfonyCreateService.pack();
-        symfonyCreateService.setLocationRelativeTo(null);
-        symfonyCreateService.setVisible(true);
-
-
+        SymfonyCreateService.create(project, (PsiFile) psiFile, phpClass);
     }
 
 }

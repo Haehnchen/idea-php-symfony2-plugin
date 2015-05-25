@@ -4,11 +4,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.XmlElementFactory;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
@@ -27,9 +31,12 @@ import javax.swing.event.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -48,6 +55,7 @@ public class SymfonyCreateService extends JDialog {
     private JRadioButton radioButtonOutYaml;
     private JTextField textFieldServiceName;
     private JButton buttonSettings;
+    private JButton buttonInsert;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -162,6 +170,16 @@ public class SymfonyCreateService extends JDialog {
         if(this.className != null) {
             this.textFieldClassName.setText(this.className);
             update();
+        } else {
+            try {
+                String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+                if(data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
+                    this.textFieldClassName.setText(data);
+                    update();
+                }
+            } catch (UnsupportedFlavorException ignored) {
+            } catch (IOException ignored) {
+            }
         }
 
         radioButtonOutXml.addChangeListener(new ChangeListener() {
@@ -195,6 +213,55 @@ public class SymfonyCreateService extends JDialog {
             }
         });
 
+        // @TODO: support yaml
+        if(this.psiFile instanceof XmlFile) {
+            this.buttonInsert.setEnabled(false);
+            this.buttonInsert.setVisible(false);
+
+            /*
+            not working npe: !?
+            this.buttonInsert.requestFocusInWindow();
+            this.getRootPane().setDefaultButton(buttonInsert);
+
+            this.buttonInsert.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(psiFile instanceof XmlFile) {
+                        insertXmlServiceTag();
+                    }
+                }
+            });
+            */
+        } else {
+            this.buttonInsert.setEnabled(false);
+            this.buttonInsert.setVisible(false);
+        }
+
+    }
+
+    private void insertXmlServiceTag() {
+
+        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            @Override
+            public void run() {
+
+                final XmlTag rootTag = ((XmlFile) SymfonyCreateService.this.psiFile).getRootTag();
+                if(rootTag == null) {
+                    return;
+                }
+
+                XmlTag services = rootTag.findFirstSubTag("services");
+                XmlElementFactory instance = XmlElementFactory.getInstance(SymfonyCreateService.this.project);
+                if(services == null) {
+                    services = rootTag.addSubTag(instance.createTagFromText("<services/>", rootTag.getLanguage()), false);
+                }
+
+                XmlTag tag = instance.createTagFromText(textAreaOutput.getText().replace("\r\n", "\n").replace("\n", " "), services.getLanguage());
+                //XmlTag tag = instance.createTagFromText("<service id=\"test\"></service>", services.getLanguage());
+                services.addSubTag(tag, false);
+            }
+
+        });
     }
 
     private void generateServiceDefinition() {
@@ -243,7 +310,7 @@ public class SymfonyCreateService extends JDialog {
             return;
         }
 
-        ArrayList<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<MethodParameter.MethodModelParameter>();
+        List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<MethodParameter.MethodModelParameter>();
 
         for(Method method: phpClass.getMethods()) {
             if(method.getModifier().isPublic()) {
@@ -524,6 +591,35 @@ public class SymfonyCreateService extends JDialog {
         }
 
         return className.toLowerCase().replace("\\", "_");
+    }
+
+    private static SymfonyCreateService prepare(@NotNull SymfonyCreateService service) {
+
+        service.init();
+        service.setTitle("Symfony: Service Generator");
+        service.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
+        service.pack();
+
+        service.setMinimumSize(new Dimension(550, 250));
+        service.setLocationRelativeTo(null);
+        service.setVisible(true);
+
+        return service;
+    }
+
+    public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile) {
+        return prepare(new SymfonyCreateService(project, psiFile));
+    }
+
+    public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass) {
+
+        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(project, psiFile);
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN != null) {
+            symfonyCreateService.setClassName(presentableFQN);
+        }
+
+        return prepare(symfonyCreateService);
     }
 
 }
