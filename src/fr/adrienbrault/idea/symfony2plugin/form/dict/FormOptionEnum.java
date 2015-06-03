@@ -12,9 +12,9 @@ public enum FormOptionEnum {
 
         if("setDefault".equals(s)) {
             return DEFAULT;
-        } else if("setRequired".equals(s) || "setOptional".equals(s)) {
+        } else if("setRequired".equals(s)) {
             return REQUIRED;
-        } else if("setDefined".equals(s)) {
+        } else if("setDefined".equals(s) || "setOptional".equals(s)) {
             return DEFINED;
         }
 
