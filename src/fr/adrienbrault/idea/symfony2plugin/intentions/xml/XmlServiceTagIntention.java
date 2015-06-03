@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.xml;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.editor.Editor;
@@ -55,6 +56,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
 
         Set<String> phpServiceTags = ServiceUtil.getPhpClassServiceTags(phpClassFromXmlTag);
         if(phpServiceTags.size() == 0) {
+            HintManager.getInstance().showErrorHint(editor, "Ops, no possible Tag found");
             return;
         }
 
@@ -77,6 +79,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
         }
 
         if(phpServiceTags.size() == 0) {
+            HintManager.getInstance().showErrorHint(editor, "Ops, no need for additional tag");
             return;
         }
 
