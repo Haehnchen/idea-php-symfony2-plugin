@@ -235,9 +235,9 @@ public class TwigUtil {
         return null;
     }
 
-    public static ArrayList<TwigMacro> getImportedMacros(PsiFile psiFile) {
+    public static List<TwigMacro> getImportedMacros(@NotNull PsiFile psiFile) {
 
-        ArrayList<TwigMacro> macros = new ArrayList<TwigMacro>();
+        List<TwigMacro> macros = new ArrayList<TwigMacro>();
 
         PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
             @Override
@@ -247,7 +247,7 @@ public class TwigUtil {
         });
 
         for(PsiElement psiImportTag: importPsiElements) {
-            String regex = "\\{%\\s?from\\s?['\"](.*?)['\"]\\s?import\\s?(.*?)\\s?%}";
+            String regex = "\\{%\\s?from\\s?(_self|['\"].*['\"])\\s?import\\s?(.*?)\\s?%}";
             Matcher matcher = Pattern.compile(regex).matcher(psiImportTag.getText().replace("\n", " "));
 
             while (matcher.find()) {
@@ -272,32 +272,36 @@ public class TwigUtil {
 
     }
 
-    public static ArrayList<TwigMacro> getImportedMacrosNamespaces(PsiFile psiFile) {
+    public static List<TwigMacro> getImportedMacrosNamespaces(@NotNull PsiFile psiFile) {
 
-        ArrayList<TwigMacro> macros = new ArrayList<TwigMacro>();
+        List<TwigMacro> macros = new ArrayList<TwigMacro>();
 
         String str = psiFile.getText();
 
         // {% import '@foo/bar.html.twig' as macro1 %}
-        String regex = "\\{%\\s?import\\s?['\"](.*?)['\"]\\s?as\\s?(.*?)\\s?%}";
+        // {% import _self as file1 %}
+        String regex = "\\{%\\s?import\\s?(_self|['\"].*['\"])\\s?as\\s?(.*?)\\s?%}";
         Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
 
-        Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
         while (matcher.find()) {
 
             String templateName = matcher.group(1);
             String asName = matcher.group(2);
 
-            if(twigFilesByName.containsKey(templateName)) {
-                VirtualFile virtualFile = twigFilesByName.get(templateName);
-                PsiFile twigFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
-                if(twigFile != null) {
-                    for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(twigFile).entrySet()) {
+            PsiFile[] macroFiles;
+            if("_self".equals(templateName)) {
+                macroFiles = new PsiFile[] { psiFile };
+            } else {
+                macroFiles = TwigHelper.getTemplatePsiElements(psiFile.getProject(), templateName);
+            }
+
+            if(macroFiles != null && macroFiles.length > 0) {
+                for (PsiFile macroFile : macroFiles) {
+                    for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(macroFile).entrySet()) {
                         macros.add(new TwigMacro(asName + '.' + entry.getKey(), templateName));
                     }
                 }
             }
-
         }
 
         return macros;

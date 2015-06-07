@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -104,4 +105,31 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ fooba<caret> }}", "{{ foobar }}");
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     */
+    public void testMacroFromImport() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import <caret> %}", "foo");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo %}{{ <caret> }}", "foo");
+
+        assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import f<caret>oo %}", TwigElementTypes.MACRO_STATEMENT);
+        assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo %}{{ fo<caret>o() }}", TwigElementTypes.MACRO_STATEMENT);
+        assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo %}{{ fo<caret>o }}", TwigElementTypes.MACRO_STATEMENT);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     */
+    public void testMacroFromImportAlias() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo as bar %}{{ <caret> }}", "bar");
+        assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo as bar %}{{ b<caret>ar }}", TwigElementTypes.MACRO_STATEMENT);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     */
+    public void testMacroImport() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ <caret> }}", "bar.foo");
+        assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ bar.f<caret>oo }}", TwigElementTypes.MACRO_STATEMENT);
+    }
 }

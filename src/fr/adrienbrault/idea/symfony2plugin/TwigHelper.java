@@ -1028,6 +1028,40 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {% from _self import foo %}
+     * {% from 'template_name' import foo %}
+     */
+    public static ElementPattern<PsiElement> getFromTemplateElement() {
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
+                )
+                .withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.RESERVED_ID)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
+                )
+                .withLanguage(TwigLanguage.INSTANCE)
+        );
+
+    }
+
     public static ElementPattern<PsiElement> getVariableTypePattern() {
         //noinspection unchecked
         return PlatformPatterns.or(

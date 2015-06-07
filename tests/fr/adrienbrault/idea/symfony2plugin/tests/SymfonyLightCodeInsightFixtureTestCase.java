@@ -6,8 +6,10 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -111,7 +113,11 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
     }
 
-    public void assertNavigationMatch(LanguageFileType languageFileType, String configureByText, ElementPattern<PsiElement> pattern) {
+    public void assertNavigationMatchWithParent(LanguageFileType languageFileType, String configureByText, IElementType iElementType) {
+        assertNavigationMatch(languageFileType, configureByText, PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(iElementType)));
+    }
+
+    public void assertNavigationMatch(LanguageFileType languageFileType, String configureByText, ElementPattern<?> pattern) {
 
         myFixture.configureByText(languageFileType, configureByText);
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());

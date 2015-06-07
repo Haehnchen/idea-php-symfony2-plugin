@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -216,7 +217,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         return new PsiElement[0];
     }
 
-    private PsiElement[] getMacros(PsiElement psiElement) {
+    private PsiElement[] getMacros(@NotNull PsiElement psiElement) {
         String funcName = psiElement.getText();
         String funcNameSearch = funcName;
 
@@ -241,7 +242,12 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
                 // switch to alias mode
                 final String macroName = twigMacro.getOriginalName() == null ? funcName : twigMacro.getOriginalName();
 
-                PsiFile psiFile = TwigHelper.getTemplateFileByName(psiElement.getProject(), twigMacro.getTemplate());
+                PsiFile psiFile;
+                if("_self".equals(twigMacro.getTemplate())) {
+                    psiFile = psiElement.getContainingFile();
+                } else {
+                    psiFile = TwigHelper.getTemplateFileByName(psiElement.getProject(), twigMacro.getTemplate());
+                }
 
                 if(psiFile != null) {
                     return PsiTreeUtil.collectElements(psiFile, new RegexPsiElementFilter(

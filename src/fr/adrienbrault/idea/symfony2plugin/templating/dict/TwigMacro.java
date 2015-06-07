@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class TwigMacro {
@@ -8,12 +9,12 @@ public class TwigMacro {
     private String template;
     private String originalName;
 
-    public TwigMacro(String name, String template) {
+    public TwigMacro(@NotNull String name, @NotNull String template) {
         this.name = name;
         this.template = template;
     }
 
-    public TwigMacro(String name, String template, String originalName) {
+    public TwigMacro(@NotNull String name, @NotNull String template, @NotNull String originalName) {
         this(name, template);
         this.originalName = originalName;
     }

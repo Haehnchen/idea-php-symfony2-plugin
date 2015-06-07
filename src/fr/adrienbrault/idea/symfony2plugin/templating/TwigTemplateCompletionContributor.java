@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
@@ -17,6 +18,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -127,43 +129,38 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     // find {% from "<template.name>"
-                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), getFromTemplateElement());
-
+                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), TwigHelper.getFromTemplateElement());
                     if(psiElement == null) {
                         return;
                     }
 
-                    String templateName = psiElement.getText();
-
-                    Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-                    if(!twigFilesByName.containsKey(templateName)) {
+                    // {% from _self
+                    if(psiElement.getNode().getElementType() == TwigTokenTypes.RESERVED_ID) {
+                        attachLookupElements(resultSet, new PsiFile[]{psiElement.getContainingFile()});
                         return;
                     }
 
-                    VirtualFile virtualFile = twigFilesByName.get(templateName);
-                    PsiFile psiFile = PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile);
-                    if(psiFile != null) {
+                    String templateName = psiElement.getText();
+                    if(StringUtils.isBlank(templateName)) {
+                        return;
+                    }
+
+                    PsiFile[] twigFilesByName = TwigHelper.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
+                    if(twigFilesByName.length == 0) {
+                        return;
+                    }
+
+                    attachLookupElements(resultSet, twigFilesByName);
+                }
+
+                private void attachLookupElements(@NotNull CompletionResultSet resultSet, PsiFile[] psiFiles) {
+                    for (PsiFile psiFile : psiFiles) {
                         for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(psiFile).entrySet()) {
                             resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(TwigIcons.TwigFileIcon));
                         }
                     }
-
                 }
 
-                private PsiElementPattern.Capture<PsiElement> getFromTemplateElement() {
-                    return PlatformPatterns
-                        .psiElement(TwigTokenTypes.STRING_TEXT)
-                        .afterLeafSkipping(
-                            PlatformPatterns.or(
-                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                            ),
-                            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
-                        )
-                        .withLanguage(TwigLanguage.INSTANCE);
-                }
             }
         );
 
