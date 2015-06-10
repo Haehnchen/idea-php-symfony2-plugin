@@ -251,7 +251,8 @@ public class PhpBundleFileFactory {
     @Nullable
     private static String getFileTemplateContent(@NotNull String filename) {
         try {
-            return StreamUtil.readText(PhpBundleFileFactory.class.getResourceAsStream(filename), "UTF-8");
+            // replace on windows, just for secure reasons
+            return StreamUtil.readText(PhpBundleFileFactory.class.getResourceAsStream(filename), "UTF-8").replace("\r\n", "\n");
         } catch (IOException e) {
             return null;
         }
