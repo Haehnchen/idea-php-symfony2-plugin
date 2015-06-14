@@ -1,0 +1,116 @@
+package fr.adrienbrault.idea.symfony2plugin.installer;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.progress.util.ProgressIndicatorBase;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.util.io.HttpRequests;
+import com.jetbrains.php.composer.InterpretersComboWithBrowseButton;
+import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
+import org.jdesktop.swingx.combobox.ListComboBoxModel;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class SymfonyInstallerForm {
+
+    private JComboBox comboVersions;
+    private JButton buttonRefresh;
+    private JPanel mainPanel;
+    private JPanel panelInterpreter;
+    private InterpretersComboWithBrowseButton interpretersComboWithBrowseButton;
+
+    public JComponent build()
+    {
+        fillVersions();
+        return this.mainPanel;
+    }
+
+    @Nullable
+    private List<SymfonyInstallerVersion> getVersions() {
+
+        String userAgent = String.format("%s / %s / Symfony Plugin %s",
+            ApplicationInfo.getInstance().getVersionName(),
+            ApplicationInfo.getInstance().getBuild(),
+            PluginManager.getPlugin(PluginId.getId("fr.adrienbrault.idea.symfony2plugin")).getVersion()
+        );
+
+        String content;
+        try {
+            content = HttpRequests.request("http://symfony.com/versions.json").userAgent(userAgent).readString(new ProgressIndicatorBase());
+        } catch (IOException e) {
+            return null;
+        }
+
+        return SymfonyInstallerUtil.getVersions(content);
+    }
+
+    private void fillVersions()
+    {
+        List<SymfonyInstallerVersion> symfonyInstallerVersions1 = getVersions();
+        if(symfonyInstallerVersions1 != null) {
+            comboVersions.setModel(new ListComboBoxModel<SymfonyInstallerVersion>(symfonyInstallerVersions1));
+            comboVersions.updateUI();
+        }
+    }
+
+    public JComponent getContentPane()
+    {
+        return this.mainPanel;
+    }
+
+    private void createUIComponents() {
+
+        comboVersions = new ComboBox();
+        comboVersions.setRenderer(new ListCellRenderer());
+        comboVersions.setModel(new ListComboBoxModel<SymfonyInstallerVersion>(new ArrayList<SymfonyInstallerVersion>()));
+
+        buttonRefresh = new JButton("Reload");
+
+        buttonRefresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fillVersions();
+            }
+        });
+
+        panelInterpreter = interpretersComboWithBrowseButton = new InterpretersComboWithBrowseButton(ProjectManager.getInstance().getDefaultProject());
+    }
+
+    private static class ListCellRenderer extends ListCellRendererWrapper<SymfonyInstallerVersion> {
+
+        @Override
+        public void customize(JList list, SymfonyInstallerVersion value, int index, boolean selected, boolean hasFocus) {
+            if(value != null) {
+                setText(value.getPresentableName());
+            }
+        }
+    }
+
+    public SymfonyInstallerVersion getVersion() {
+
+        Object selectedItem = this.comboVersions.getSelectedItem();
+        if(selectedItem instanceof SymfonyInstallerVersion) {
+            return ((SymfonyInstallerVersion) selectedItem);
+        }
+
+        return null;
+    }
+
+    public String getInterpreter() {
+        return this.interpretersComboWithBrowseButton.getPhpPath();
+    }
+
+}

@@ -279,6 +279,9 @@
 
         <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>
 
+        <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerProjectGenerator"/>
+        <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerTemplatesFactory"/>
+
         <localInspection groupPath="Symfony2" shortName="Symfony2PhpRouteWeakInspection" displayName="Weak Route"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
