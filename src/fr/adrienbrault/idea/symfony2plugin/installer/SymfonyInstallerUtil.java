@@ -55,11 +55,26 @@ public class SymfonyInstallerUtil {
         return text;
     }
 
-    public static boolean isSuccessfullyInstalled(@NotNull String output)
-    {
+    public static boolean isSuccessfullyInstalled(@NotNull String output) {
         // successfully installed
         // [RuntimeException]
-        return output.toLowerCase().contains("successfully") && !output.toLowerCase().contains("Exception]");
+        return output.toLowerCase().contains("successfully") && !output.toLowerCase().contains("exception]");
+    }
+
+    @Nullable
+    public static String formatExceptionMessage(@Nullable String output) {
+
+        if(output == null) {
+            return null;
+        }
+
+        // [RuntimeException] message
+        Matcher matcher = Pattern.compile("Exception](.*)", Pattern.DOTALL).matcher(output);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+
+        return output;
     }
 
     @NotNull
@@ -88,7 +103,7 @@ public class SymfonyInstallerUtil {
         List<SymfonyInstallerVersion> symfonyInstallerVersions = new ArrayList<SymfonyInstallerVersion>();
 
         // get alias version, in most common order
-        for(String s : new String[] {"latest", "lts", "dev"}) {
+        for(String s : new String[] {"latest", "lts"}) {
             JsonElement asJsonObject = jsonObject.get(s);
             if(asJsonObject == null) {
                 continue;

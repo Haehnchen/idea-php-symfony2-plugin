@@ -27,7 +27,6 @@ public class SymfonyInstallerGeneratorPeer implements WebProjectGenerator.Genera
 
     @Override
     public void buildUI(@NotNull SettingsStep settingsStep) {
-        symfonyInstallerForm.build();
         settingsStep.addSettingsComponent(symfonyInstallerForm.getContentPane());
     }
 
@@ -43,7 +42,7 @@ public class SymfonyInstallerGeneratorPeer implements WebProjectGenerator.Genera
     @Nullable
     @Override
     public ValidationInfo validate() {
-        return null;
+        return symfonyInstallerForm.validate();
     }
 
     @Override

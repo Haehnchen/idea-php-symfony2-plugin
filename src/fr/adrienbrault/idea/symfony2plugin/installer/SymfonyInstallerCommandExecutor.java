@@ -89,13 +89,19 @@ abstract public class SymfonyInstallerCommandExecutor {
                 }
 
                 if(cancelledByUser) {
-                    onError("cancel");
+                    onError("Checkout canceled");
                     return;
                 }
 
                 String output = outputBuilder.toString();
-                if (StringUtils.isBlank(output) && !SymfonyInstallerUtil.isSuccessfullyInstalled(output)) {
-                    onError(output);
+                if (StringUtils.isBlank(output) || !SymfonyInstallerUtil.isSuccessfullyInstalled(output)) {
+
+                    String message = SymfonyInstallerUtil.formatExceptionMessage(output);
+                    if(message == null) {
+                        message = "The unexpected happens...";
+                    }
+
+                    onError(message);
                     return;
                 }
 

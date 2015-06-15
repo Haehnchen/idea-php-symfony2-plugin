@@ -41,6 +41,7 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
         final File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
 
         String composerPath;
+        File symfonyInProject = null;
         if (settings.isDownload()) {
 
             VirtualFile file = SymfonyInstallerUtil.downloadPhar(project, null, tempFile.getPath());
@@ -49,14 +50,16 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
                 Symfony2ProjectComponent.getLogger().warn("Cannot download symfony.phar file");
                 return;
             }
-            composerPath = file.getPath();
 
+            composerPath = file.getPath();
+            symfonyInProject = tempFile;
         } else {
             composerPath = settings.getExistingPath();
         }
 
         String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion().getVersion(), composerPath, baseDir.getPath(), settings.getPhpInterpreter(), null);
 
+        final File finalSymfonyInProject = symfonyInProject;
         SymfonyInstallerCommandExecutor executor = new SymfonyInstallerCommandExecutor(project, baseDir, commands) {
             @Override
             protected void onFinish(@Nullable String message) {
@@ -65,6 +68,12 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
                     // replace empty lines and provide html output
                     showInfoNotification(project, message.replaceAll("(?m)^\\s*$[\n\r]{1,}", "").replaceAll("(\r\n|\n)", "<br />"));
                 }
+
+                // remove temporary symfony installer folder
+                if(finalSymfonyInProject != null) {
+                    FileUtil.delete(finalSymfonyInProject);
+                }
+
             }
 
             @Override

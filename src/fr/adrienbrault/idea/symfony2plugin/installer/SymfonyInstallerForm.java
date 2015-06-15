@@ -1,17 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.installer;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.progress.util.ProgressIndicatorBase;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.util.io.HttpRequests;
 import com.jetbrains.php.composer.InterpretersComboWithBrowseButton;
+import com.jetbrains.php.statistics.PhpInterpreterVersionUsagesCollector;
+import com.jetbrains.php.ui.PhpVersionLabel;
 import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class SymfonyInstallerForm {
@@ -31,12 +31,6 @@ public class SymfonyInstallerForm {
     private JPanel mainPanel;
     private JPanel panelInterpreter;
     private InterpretersComboWithBrowseButton interpretersComboWithBrowseButton;
-
-    public JComponent build()
-    {
-        fillVersions();
-        return this.mainPanel;
-    }
 
     @Nullable
     private List<SymfonyInstallerVersion> getVersions() {
@@ -57,13 +51,17 @@ public class SymfonyInstallerForm {
         return SymfonyInstallerUtil.getVersions(content);
     }
 
-    private void fillVersions()
+    private void appendSymfonyVersions()
     {
-        List<SymfonyInstallerVersion> symfonyInstallerVersions1 = getVersions();
-        if(symfonyInstallerVersions1 != null) {
-            comboVersions.setModel(new ListComboBoxModel<SymfonyInstallerVersion>(symfonyInstallerVersions1));
-            comboVersions.updateUI();
-        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            public void run() {
+                List<SymfonyInstallerVersion> symfonyInstallerVersions1 = getVersions();
+                if(symfonyInstallerVersions1 != null) {
+                    comboVersions.setModel(new ListComboBoxModel<SymfonyInstallerVersion>(symfonyInstallerVersions1));
+                    comboVersions.updateUI();
+                }
+            }
+        });
     }
 
     public JComponent getContentPane()
@@ -82,11 +80,13 @@ public class SymfonyInstallerForm {
         buttonRefresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                fillVersions();
+                appendSymfonyVersions();
             }
         });
 
         panelInterpreter = interpretersComboWithBrowseButton = new InterpretersComboWithBrowseButton(ProjectManager.getInstance().getDefaultProject());
+
+        appendSymfonyVersions();
     }
 
     private static class ListCellRenderer extends ListCellRendererWrapper<SymfonyInstallerVersion> {
@@ -111,6 +111,12 @@ public class SymfonyInstallerForm {
 
     public String getInterpreter() {
         return this.interpretersComboWithBrowseButton.getPhpPath();
+    }
+
+    @Nullable
+    public ValidationInfo validate()
+    {
+        return this.interpretersComboWithBrowseButton.validatePhpPath(ProjectManager.getInstance().getDefaultProject());
     }
 
 }
