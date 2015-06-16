@@ -57,7 +57,7 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
             composerPath = settings.getExistingPath();
         }
 
-        String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion().getVersion(), composerPath, baseDir.getPath(), settings.getPhpInterpreter(), null);
+        String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion(), composerPath, baseDir.getPath(), settings.getPhpInterpreter(), null);
 
         final File finalSymfonyInProject = symfonyInProject;
         SymfonyInstallerCommandExecutor executor = new SymfonyInstallerCommandExecutor(project, baseDir, commands) {
@@ -65,8 +65,12 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
             protected void onFinish(@Nullable String message) {
                 Settings.getInstance(project).pluginEnabled = true;
                 if(message != null) {
-                    // replace empty lines and provide html output
-                    showInfoNotification(project, message.replaceAll("(?m)^\\s*$[\n\r]{1,}", "").replaceAll("(\r\n|\n)", "<br />"));
+                    // replace empty lines, provide html output, and remove our temporary path
+                    showInfoNotification(project, message
+                        .replaceAll("(?m)^\\s*$[\n\r]{1,}", "")
+                        .replaceAll("(\r\n|\n)", "<br />")
+                        .replace("/" + SymfonyInstallerUtil.PROJECT_SUB_FOLDER, "")
+                    );
                 }
 
                 // remove temporary symfony installer folder

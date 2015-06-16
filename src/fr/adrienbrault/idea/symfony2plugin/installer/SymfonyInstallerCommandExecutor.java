@@ -40,10 +40,10 @@ abstract public class SymfonyInstallerCommandExecutor {
                 String[] myCommand = SymfonyInstallerCommandExecutor.this.command;
 
                 StringBuilder sb = new StringBuilder();
-                indicator.setText("Running: ");
+                sb.append("Running: ");
                 for (String aCommandToRun : Arrays.copyOfRange(myCommand, 1, myCommand.length)) {
-                    if (aCommandToRun.length() > 25) {
-                        aCommandToRun = "..." + aCommandToRun.substring(aCommandToRun.length() - 25);
+                    if (aCommandToRun.length() > 35) {
+                        aCommandToRun = "..." + aCommandToRun.substring(aCommandToRun.length() - 35);
                     }
                     sb.append(" ").append(aCommandToRun);
                 }

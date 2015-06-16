@@ -11,8 +11,6 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.util.io.HttpRequests;
 import com.jetbrains.php.composer.InterpretersComboWithBrowseButton;
-import com.jetbrains.php.statistics.PhpInterpreterVersionUsagesCollector;
-import com.jetbrains.php.ui.PhpVersionLabel;
 import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.Nullable;
@@ -20,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,22 @@ public class SymfonyInstallerForm {
     private JButton buttonRefresh;
     private JPanel mainPanel;
     private JPanel panelInterpreter;
+    private JCheckBox checkBoxDemo;
+    private JLabel labelDemoApp;
     private InterpretersComboWithBrowseButton interpretersComboWithBrowseButton;
+
+    public SymfonyInstallerForm() {
+
+        checkBoxDemo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                boolean state = e.getStateChange() != ItemEvent.SELECTED;
+                buttonRefresh.setEnabled(state);
+                comboVersions.setEnabled(state);
+            }
+        });
+
+    }
 
     @Nullable
     private List<SymfonyInstallerVersion> getVersions() {
@@ -100,6 +115,10 @@ public class SymfonyInstallerForm {
     }
 
     public SymfonyInstallerVersion getVersion() {
+
+        if(checkBoxDemo.isSelected()) {
+            return new SymfonyInstallerVersion("demo", "Demo Application");
+        }
 
         Object selectedItem = this.comboVersions.getSelectedItem();
         if(selectedItem instanceof SymfonyInstallerVersion) {

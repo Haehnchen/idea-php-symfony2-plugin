@@ -78,15 +78,22 @@ public class SymfonyInstallerUtil {
     }
 
     @NotNull
-    public static String[] getCreateProjectCommand(@NotNull String version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath, @Nullable String commandLineOptions) {
+    public static String[] getCreateProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath, @Nullable String commandLineOptions) {
 
         List<String> commands = new ArrayList<String>();
 
         commands.add(phpPath);
         commands.add(installerPath);
-        commands.add("new");
-        commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
-        commands.add(version);
+
+        // "php symfony demo"
+        if("demo".equals(version.getVersion())) {
+            commands.add("demo");
+            commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
+        } else {
+            commands.add("new");
+            commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
+            commands.add(version.getVersion());
+        }
 
         if(commandLineOptions != null) {
             commands.add(commandLineOptions);
