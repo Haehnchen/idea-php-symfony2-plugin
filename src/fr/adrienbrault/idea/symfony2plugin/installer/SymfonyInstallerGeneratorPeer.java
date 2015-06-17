@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.installer;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.platform.WebProjectGenerator;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +43,13 @@ public class SymfonyInstallerGeneratorPeer implements WebProjectGenerator.Genera
     @Nullable
     @Override
     public ValidationInfo validate() {
-        return symfonyInstallerForm.validate();
+        /*
+        issue in: PhpStorm 8.0.2 ?
+        if(StringUtils.isBlank(symfonyInstallerForm.getInterpreter())) {
+            return new ValidationInfo("Invalid PHP interpreter");
+        }
+        */
+        return null;
     }
 
     @Override

@@ -16,7 +16,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="ef8f6" class="javax.swing.JComboBox" binding="comboVersions" custom-create="true">
+          <component id="ef8f6" class="javax.swing.JComboBox" binding="comboVersions">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <minimum-size width="200" height="-1"/>
@@ -32,7 +32,7 @@
               <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </hspacer>
-          <component id="b6f81" class="javax.swing.JButton" binding="buttonRefresh" custom-create="true">
+          <component id="b6f81" class="javax.swing.JButton" binding="buttonRefresh">
             <constraints>
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -57,7 +57,7 @@
               <toolTipText value=""/>
             </properties>
           </component>
-          <component id="d0844" class="javax.swing.JLabel" binding="labelDemoApp">
+          <component id="d0844" class="javax.swing.JLabel">
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="1" hsize-policy="1" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>

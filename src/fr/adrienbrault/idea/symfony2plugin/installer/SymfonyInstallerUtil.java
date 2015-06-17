@@ -3,6 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.installer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
@@ -12,6 +15,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -129,6 +137,41 @@ public class SymfonyInstallerUtil {
 
         symfonyInstallerVersions.addAll(installableVersions);
         return symfonyInstallerVersions;
+    }
+
+    @Nullable
+    public static String getDownloadVersions() {
+
+        String userAgent = String.format("%s / %s / Symfony Plugin %s",
+            ApplicationInfo.getInstance().getVersionName(),
+            ApplicationInfo.getInstance().getBuild(),
+            PluginManager.getPlugin(PluginId.getId("fr.adrienbrault.idea.symfony2plugin")).getVersion()
+        );
+
+        try {
+
+            // @TODO: PhpStorm9:
+            // simple replacement for: com.intellij.util.io.HttpRequests
+            URL url = new URL("http://symfony.com/versions.json");
+            URLConnection conn = url.openConnection();
+            conn.setRequestProperty("User-Agent", userAgent);
+            conn.connect();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            String content = "";
+            String line;
+            while ((line = in.readLine()) != null) {
+                content += line;
+            }
+
+            in.close();
+
+            return content;
+        } catch (IOException e) {
+            return null;
+        }
+
     }
 
 }
