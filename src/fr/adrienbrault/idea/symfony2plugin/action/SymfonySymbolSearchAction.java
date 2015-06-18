@@ -34,6 +34,8 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -135,7 +137,6 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             return this.lookupElements;
         }
 
-
         @Override
         public void processNames(@NotNull Processor<String> processor, @NotNull GlobalSearchScope scope, @Nullable IdFilter filter) {
 
@@ -158,6 +159,10 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
             for(String name: getModelLookupElements().keySet()) {
                 processor.process(name);
+            }
+
+            for(SymfonyCommand command: SymfonyCommandUtil.getCommands(project)) {
+                processor.process(command.getName());
             }
 
         }
@@ -208,6 +213,12 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 getModelLookupElements().get(name).getLookupString();
                 for(PsiElement target: psiElements) {
                     processor.process(new NavigationItemEx(target, name, target.getIcon(0), "Entity"));
+                }
+            }
+
+            for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
+                if(symfonyCommand.getName().equals(name)) {
+                    processor.process(new NavigationItemEx(symfonyCommand.getPsiElement(), name, Symfony2Icons.SYMFONY, "Command"));
                 }
             }
 
