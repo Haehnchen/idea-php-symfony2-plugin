@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.93
+* Add "kernel.event_subscriber" to known tags and provide some more user feedback in error case #511
+* Add _self support for twig macros #419
+* Fix newline issue in controller template #509
+* Add project generator for symfony installer and demo application #475
+
 ### 0.11.92
 * Optimize service name generator and provide custom javascript strategy for it #362
 * Add navigation form options of setRequired, setOptional, setDefined and refactor form options to visitor strategy #502

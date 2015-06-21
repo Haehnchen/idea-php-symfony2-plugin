@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.92</version>
+    <version>0.11.93</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,14 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.93</h2>
+<ul>
+    <li>Add "kernel.event_subscriber" to known tags and provide some more user feedback in error case <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/511">#511</a></li>
+    <li>Add _self support for twig macros <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/419">#419</a></li>
+    <li>Fix newline issue in controller template <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/509">#509</a></li>
+    <li>Add project generator for symfony installer and demo application <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/475">#475</a></li>
+</ul>
 
 <h2>0.11.92</h2>
 <ul>
@@ -275,6 +283,8 @@
 
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
+        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.SymfonyCommandSymbolContributor"/>
+
         <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
 
         <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>
