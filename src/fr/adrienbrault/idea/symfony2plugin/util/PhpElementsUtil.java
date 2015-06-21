@@ -22,6 +22,7 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import org.apache.commons.lang.StringUtils;
@@ -978,6 +979,20 @@ public class PhpElementsUtil {
         }
 
         return Arrays.copyOfRange(parameters, 0, last + 1);
+    }
+
+    public static boolean isTestClass(@NotNull PhpClass phpClass) {
+
+        if(PhpUnitUtil.isTestClass(phpClass)) {
+            return true;
+        }
+
+        String fqn = phpClass.getPresentableFQN();
+        if(fqn == null) {
+            return false;
+        }
+
+        return fqn.contains("\\Test\\") || fqn.contains("\\Tests\\");
     }
 
 }

@@ -25,6 +25,10 @@ public class SymfonyCommandUtil {
 
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Command\\Command")) {
 
+            if(PhpElementsUtil.isTestClass(phpClass)) {
+                continue;
+            }
+
             Method method = phpClass.findOwnMethodByName("configure");
             if(method == null) {
                 continue;

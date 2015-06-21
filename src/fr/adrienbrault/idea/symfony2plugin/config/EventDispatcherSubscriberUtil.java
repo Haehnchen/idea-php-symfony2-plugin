@@ -10,30 +10,34 @@ import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedE
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class EventDispatcherSubscriberUtil {
 
-    public static ArrayList<EventDispatcherSubscribedEvent> getSubscribedEvents(Project project) {
+    @NotNull
+    public static List<EventDispatcherSubscribedEvent> getSubscribedEvents(@NotNull Project project) {
 
-        ArrayList<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+        List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
 
         // http://symfony.com/doc/current/components/event_dispatcher/introduction.html
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface");
 
         for(PhpClass phpClass: phpClasses) {
-            if(!PhpUnitUtil.isTestClass(phpClass)) {
-                Method method = PhpElementsUtil.getClassMethod(phpClass, "getSubscribedEvents");
 
-                if(method != null) {
-                    PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
-                    if(phpReturn != null) {
-                        attachSubscriberEventNames(events, phpClass, phpReturn);
-                    }
+            if(PhpElementsUtil.isTestClass(phpClass)) {
+                continue;
+            }
 
+            Method method = PhpElementsUtil.getClassMethod(phpClass, "getSubscribedEvents");
+            if(method != null) {
+                PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
+                if(phpReturn != null) {
+                    attachSubscriberEventNames(events, phpClass, phpReturn);
                 }
             }
         }
@@ -41,7 +45,7 @@ public class EventDispatcherSubscriberUtil {
        return events;
     }
 
-    private static void attachSubscriberEventNames(ArrayList<EventDispatcherSubscribedEvent> events, PhpClass phpClass, PhpReturn phpReturn) {
+    private static void attachSubscriberEventNames(@NotNull List<EventDispatcherSubscribedEvent> events, @NotNull PhpClass phpClass, @NotNull PhpReturn phpReturn) {
 
         PhpPsiElement array = phpReturn.getFirstPsiChild();
         if(!(array instanceof ArrayCreationExpression)) {
@@ -67,9 +71,10 @@ public class EventDispatcherSubscriberUtil {
 
     }
 
-    public static ArrayList<EventDispatcherSubscribedEvent> getSubscribedEvent(Project project, String eventName) {
+    @NotNull
+    public static List<EventDispatcherSubscribedEvent> getSubscribedEvent(@NotNull Project project, @NotNull String eventName) {
 
-        ArrayList<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+        List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
 
         for(EventDispatcherSubscribedEvent event: getSubscribedEvents(project)) {
             if(event.getStringValue().equals(eventName)) {
@@ -80,9 +85,10 @@ public class EventDispatcherSubscriberUtil {
         return events;
     }
 
-    public static ArrayList<PsiElement> getEventPsiElements(Project project, String eventName) {
+    @NotNull
+    public static List<PsiElement> getEventPsiElements(@NotNull Project project, @NotNull String eventName) {
 
-        ArrayList<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(project, XmlEventParser.class);
         for(EventDispatcherSubscribedEvent event : xmlEventParser.getEventSubscribers(eventName)) {
