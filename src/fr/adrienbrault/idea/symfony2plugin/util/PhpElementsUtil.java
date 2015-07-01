@@ -332,6 +332,42 @@ public class PhpElementsUtil {
             .withLanguage(PhpLanguage.INSTANCE);
     }
 
+    /**
+     * Find a string return value of a method context "function() { return 'foo'}"
+     * First match wins
+     */
+    @Nullable
+    static public String getMethodReturnAsString(@NotNull PhpClass phpClass, @NotNull String methodName) {
+
+        Method method = phpClass.findMethodByName(methodName);
+        if(method == null) {
+            return null;
+        }
+
+        final Set<String> values = new HashSet<String>();
+        method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+
+                if(PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
+                    String value = PhpElementsUtil.getStringValue(element);
+                    if(value != null && StringUtils.isNotBlank(value)) {
+                        values.add(value);
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
+
+        if(values.size() == 0) {
+            return null;
+        }
+
+        // we support only first item
+        return values.iterator().next();
+    }
+
     @Nullable
     static public PhpClass getClass(Project project, String className) {
         return getClass(PhpIndex.getInstance(project), className);

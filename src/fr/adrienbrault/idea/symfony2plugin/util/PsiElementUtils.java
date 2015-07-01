@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -325,6 +326,27 @@ public class PsiElementUtils {
 
         String content = literal.getContents();
         return content.length() >= cursorOffsetClean ? content.substring(0, cursorOffsetClean) : null;
+    }
+
+    @NotNull
+    public static Collection<PsiFile> convertVirtualFilesToPsiFiles(@NotNull Project project, @NotNull Collection<VirtualFile> files) {
+
+        Collection<PsiFile> psiFiles = new HashSet<PsiFile>();
+
+        PsiManager psiManager = null;
+        for (VirtualFile file : files) {
+
+            if(psiManager == null) {
+                psiManager = PsiManager.getInstance(project);
+            }
+
+            PsiFile psiFile = psiManager.findFile(file);
+            if(psiFile != null) {
+                psiFiles.add(psiFile);
+            }
+        }
+
+        return psiFiles;
     }
 
 }
