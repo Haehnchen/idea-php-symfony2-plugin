@@ -1,7 +1,10 @@
 IDEA PHP Symfony2 Plugin
 ========================
+[![Version](http://phpstorm.espend.de/badge/7219/version)](https://plugins.jetbrains.com/plugin/7219)
+[![Downloads](http://phpstorm.espend.de/badge/7219/downloads)](https://plugins.jetbrains.com/plugin/7219)
+[![Downloads last month](http://phpstorm.espend.de/badge/7219/last-month)](https://plugins.jetbrains.com/plugin/7219)
 
-Plugin url : http://plugins.jetbrains.com/plugin?pr=&pluginId=7219
+Plugin url : https://plugins.jetbrains.com/plugin/7219
 
 Install
 ---------------------
