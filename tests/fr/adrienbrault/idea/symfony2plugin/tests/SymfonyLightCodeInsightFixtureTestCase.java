@@ -221,7 +221,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         for (String file : files) {
             String path = myFixture.getProject().getBaseDir().getPath() + "/" + file;
             File f = new File(path);
-            assert f.getParentFile().mkdirs();
+            f.getParentFile().mkdirs();
             f.createNewFile();
         }
     }
