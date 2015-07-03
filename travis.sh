@@ -59,3 +59,26 @@ unzip -qo $travisCache/twig-139.58.zip -d ./plugins
 
 download "http://plugins.jetbrains.com/files/7320/19208/php-annotation.jar"
 cp $travisCache/php-annotation.jar ./plugins
+
+
+# Run the tests
+if [ "$1" = "-d" ]; then
+    ant -d -f build-test.xml -DIDEA_HOME=./idea
+else
+    ant -f build-test.xml -DIDEA_HOME=./idea
+fi
+
+# Was our build successful?
+stat=$?
+
+if [ "${TRAVIS}" != true ]; then
+    ant -f build-test.xml -q clean
+
+    if [ "$1" = "-r" ]; then
+        rm -rf idea
+        rm -rf plugins
+    fi
+fi
+
+# Return the build status
+exit ${stat}
