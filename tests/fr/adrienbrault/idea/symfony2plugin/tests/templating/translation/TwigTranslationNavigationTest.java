@@ -5,7 +5,7 @@ import com.jetbrains.twig.TwigFileType;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigTranslationNavigationTest extends TwigTranslationFixturesTest {
+public class TwigTranslationNavigationTest extends TwigTranslationFixturesTestCase {
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTransDefaultDomainPattern

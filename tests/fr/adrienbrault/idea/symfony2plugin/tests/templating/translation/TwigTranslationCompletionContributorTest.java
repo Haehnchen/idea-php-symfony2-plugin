@@ -9,7 +9,7 @@ import java.io.File;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
  */
-public class TwigTranslationCompletionContributorTest extends TwigTranslationFixturesTest {
+public class TwigTranslationCompletionContributorTest extends TwigTranslationFixturesTestCase {
 
     public void testTwigTransCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'foo'|trans({}, '<caret>') }}", "messages");
