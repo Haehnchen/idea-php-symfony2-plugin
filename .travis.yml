@@ -2,5 +2,8 @@ language: java
 jdk:
   - openjdk6
 script: "./travis.sh"
+cache:
+  directories:
+    - .cache
 before_script:
  - chmod +x travis.sh
