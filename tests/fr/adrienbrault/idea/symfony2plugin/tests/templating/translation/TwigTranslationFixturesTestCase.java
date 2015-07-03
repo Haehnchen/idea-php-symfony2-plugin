@@ -7,7 +7,7 @@ import java.io.File;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
  */
-abstract public class TwigTranslationFixturesTest extends SymfonyLightCodeInsightFixtureTestCase {
+abstract public class TwigTranslationFixturesTestCase extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
