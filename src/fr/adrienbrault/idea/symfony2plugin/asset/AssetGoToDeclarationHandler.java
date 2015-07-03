@@ -33,7 +33,7 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        List<VirtualFile> virtualFiles = TwigHelper.resolveAssetsFiles(psiElement.getProject(), psiElement.getText(), null);
+        List<VirtualFile> virtualFiles = TwigHelper.resolveAssetsFiles(psiElement.getProject(), psiElement.getText());
 
         List<PsiElement> psiElements = new ArrayList<PsiElement>();
         for (VirtualFile virtualFile : virtualFiles) {
