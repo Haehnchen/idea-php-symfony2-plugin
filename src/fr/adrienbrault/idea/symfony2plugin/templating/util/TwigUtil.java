@@ -363,6 +363,11 @@ public class TwigUtil {
             }
         }
 
+        String templateNameByOverwrite = getTemplateNameByOverwrite(twigFile.getProject(), twigFile.getVirtualFile());
+        if(templateNameByOverwrite != null) {
+            map.put(templateNameByOverwrite, twigFile.getVirtualFile());
+        }
+
         return map;
     }
 
@@ -611,5 +616,50 @@ public class TwigUtil {
         return StringUtils.isNotBlank(s) ? s : null;
 
     }
+
+    /**
+     * Gets a template name from "app" or bundle getParent overwrite
+     *
+     * app/Resources/AcmeBlogBundle/views/Blog/index.html.twig
+     * src/Acme/UserBundle/Resources/views/index.html.twig
+     */
+    @Nullable
+    public static String getTemplateNameByOverwrite(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+
+        String relativePath = VfsUtil.getRelativePath(virtualFile, project.getBaseDir());
+        if(relativePath == null) {
+            return null;
+        }
+
+        // app/Resources/AcmeBlogBundle/views/Blog/index.html.twig
+        Matcher matcher = Pattern.compile("app/Resources/([^/]*Bundle)/views/(.*)$").matcher(relativePath);
+        if (matcher.find()) {
+            return TwigHelper.normalizeTemplateName(matcher.group(1) + ":" + matcher.group(2));
+        }
+
+        // src/Acme/UserBundle/Resources/views/index.html.twig
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(project);
+        SymfonyBundle containingBundle = symfonyBundleUtil.getContainingBundle(virtualFile);
+        if(containingBundle == null) {
+            return null;
+        }
+
+        String relative = containingBundle.getRelative(virtualFile);
+        if(relative == null) {
+            return null;
+        }
+
+        if(!relative.startsWith("Resources/views/")) {
+            return null;
+        }
+
+        String parentBundleName = containingBundle.getParentBundleName();
+        if(parentBundleName == null) {
+            return null;
+        }
+
+        return TwigHelper.normalizeTemplateName(containingBundle.getName() + ":" + relative.substring("Resources/views/".length(), relative.length()));
+    }
+
 
 }

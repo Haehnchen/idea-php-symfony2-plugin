@@ -7,6 +7,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopes;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class SymfonyBundle {
@@ -169,6 +170,11 @@ public class SymfonyBundle {
 
         // @TODO: filter vendor, src before?
         return directory.getVirtualFile().toString().contains("/Tests/");
+    }
+
+    @Nullable
+    public String getParentBundleName() {
+        return PhpElementsUtil.getMethodReturnAsString(this.getPhpClass(), "getParent");
     }
 
 }

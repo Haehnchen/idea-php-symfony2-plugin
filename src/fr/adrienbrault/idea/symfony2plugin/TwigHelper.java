@@ -273,7 +273,7 @@ public class TwigHelper {
 
         // find parent bundles
         for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundles()) {
-            String parentBundle = PhpElementsUtil.getMethodReturnAsString(symfonyBundle.getPhpClass(), "getParent");
+            String parentBundle = symfonyBundle.getParentBundleName();
             if(parentBundle != null && bundle.equals(parentBundle)) {
                 relativeFile = symfonyBundle.getRelative(String.format("Resources/views/%s", templatePath.substring(i + 7)));
                 if(relativeFile != null) {
