@@ -4,7 +4,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import java.io.File;
 
 public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,10 +15,6 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
             "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig",
             "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig"
         );
-    }
-
-    protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     /**
