@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SymfonyBundleUtil {
 
@@ -40,6 +41,19 @@ public class SymfonyBundleUtil {
 
     public Collection<SymfonyBundle> getBundles() {
         return this.symfonyBundles.values();
+    }
+
+    public Map<String, SymfonyBundle> getParentBundles() {
+
+        Map<String, SymfonyBundle> bundles = new HashMap<String, SymfonyBundle>();
+
+        for (Map.Entry<String, SymfonyBundle> entry : this.symfonyBundles.entrySet()) {
+            if(entry.getValue().getParentBundleName() != null) {
+                bundles.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return bundles;
     }
 
     @Nullable

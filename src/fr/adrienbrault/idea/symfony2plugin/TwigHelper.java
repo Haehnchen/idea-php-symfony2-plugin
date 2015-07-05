@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateFileMap;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -58,16 +59,51 @@ public class TwigHelper {
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
-    public static Map<String, VirtualFile> getTemplateFilesByName(Project project, boolean useTwig, boolean usePhp) {
+    @Deprecated
+    public static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project, boolean useTwig, boolean usePhp) {
+        return getTemplateMap(project, useTwig, usePhp).getTemplates();
+    }
 
-        Map<String, VirtualFile> results = new HashMap<String, VirtualFile>();
+    @NotNull
+    public static TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, boolean usePhp) {
 
         List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         twigPaths.addAll(getTwigNamespaces(project));
 
         if(twigPaths.size() == 0) {
-            return results;
+            return new TemplateFileMap();
         }
+
+        // app/Resources/ParentBundle/Resources/views
+        Map<String, SymfonyBundle> parentBundles = new SymfonyBundleUtil(project).getParentBundles();
+        if(parentBundles.size() > 0) {
+            for (Map.Entry<String, SymfonyBundle> entry : parentBundles.entrySet()) {
+                VirtualFile views = entry.getValue().getRelative("Resources/views");
+                if(views != null) {
+                    twigPaths.add(new TwigPath(views.getPath(), entry.getKey(), TwigPathIndex.NamespaceType.BUNDLE));
+                }
+            }
+        }
+
+        // app/Resources/FooBundle/views
+        VirtualFile relativeFile = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources");
+        if(relativeFile != null) {
+            for (VirtualFile virtualFile : relativeFile.getChildren()) {
+
+                if(!virtualFile.isDirectory() || !virtualFile.getName().endsWith("Bundle")) {
+                    continue;
+                }
+
+                VirtualFile views = virtualFile.findChild("views");
+                if(views == null) {
+                    continue;
+                }
+
+                twigPaths.add(new TwigPath(views.getPath(), virtualFile.getName(), TwigPathIndex.NamespaceType.BUNDLE));
+            }
+        }
+
+        TemplateFileMap container = new TemplateFileMap();
 
         for (TwigPath twigPath : twigPaths) {
             if(twigPath.isEnabled()) {
@@ -83,13 +119,13 @@ public class TwigHelper {
                         }
                     });
 
-                    results.putAll(twigPathContentIterator.getResults());
+                    container.putAll(twigPathContentIterator.getResults());
                 }
             }
 
         }
 
-        return results;
+        return container;
     }
 
     public static Map<String, VirtualFile> getTwigFilesByName(Project project) {

@@ -45,6 +45,7 @@ public class Symfony2Icons {
     public static final Icon TWIG_CONTROLLER_LINE_MARKER = IconLoader.getIcon("icons/twig_controller_line_marker.png");
     public static final Icon SYMFONY_LINE_MARKER = IconLoader.getIcon("icons/symfony_line_marker.png");
     public static final Icon TWIG_LINE_MARKER = IconLoader.getIcon("icons/twig_line_marker.png");
+    public static final Icon TWIG_LINE_OVERWRITE = IconLoader.getIcon("icons/overwrite.png");
 
     public static final Icon PARAMETER_OPACITY = IconLoader.getIcon("icons/parameter_opacity.png");
 

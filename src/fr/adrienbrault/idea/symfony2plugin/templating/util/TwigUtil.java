@@ -353,26 +353,14 @@ public class TwigUtil {
 
     }
 
-    public static Map<String, VirtualFile> getTemplateName(TwigFile twigFile, Map<String, VirtualFile> templateMap) {
-
-        Map<String, VirtualFile> map = new HashMap<String, VirtualFile>();
-
-        for(Map.Entry<String, VirtualFile> entry: templateMap.entrySet()) {
-            if(twigFile.getVirtualFile().equals(entry.getValue())) {
-                map.put(entry.getKey(), twigFile.getVirtualFile());
-            }
-        }
-
-        String templateNameByOverwrite = getTemplateNameByOverwrite(twigFile.getProject(), twigFile.getVirtualFile());
-        if(templateNameByOverwrite != null) {
-            map.put(templateNameByOverwrite, twigFile.getVirtualFile());
-        }
-
-        return map;
+    @NotNull
+    public static Set<String> getTemplateName(@NotNull VirtualFile virtualFile, @NotNull TemplateFileMap map) {
+        return map.getNames(virtualFile);
     }
 
-    public static Map<String, VirtualFile> getTemplateName(TwigFile twigFile) {
-        return getTemplateName(twigFile, TwigHelper.getTemplateFilesByName(twigFile.getProject(), true, false));
+    @NotNull
+    public static Set<String> getTemplateName(@NotNull TwigFile twigFile) {
+        return getTemplateName(twigFile.getVirtualFile(), TwigHelper.getTemplateMap(twigFile.getProject(), true, false));
     }
 
     public static Map<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
@@ -403,12 +391,11 @@ public class TwigUtil {
     @NotNull
     public static Set<Method> getTwigFileMethodUsageOnIndex(@NotNull TwigFile psiFile) {
 
-        Map<String, VirtualFile> templateName = TwigUtil.getTemplateName(psiFile);
-        if(templateName.size() == 0) {
+        final Set<String> keys = TwigUtil.getTemplateName(psiFile);
+        if(keys.size() == 0) {
             return Collections.emptySet();
         }
 
-        final Set<String> keys = templateName.keySet();
         final Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
 
         // find virtual files
