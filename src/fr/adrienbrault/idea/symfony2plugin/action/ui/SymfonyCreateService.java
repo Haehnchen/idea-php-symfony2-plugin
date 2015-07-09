@@ -266,7 +266,17 @@ public class SymfonyCreateService extends JDialog {
 
     private void generateServiceDefinition() {
 
-        if(StringUtils.isBlank(textFieldClassName.getText())) {
+        String className = textFieldClassName.getText();
+        if(StringUtils.isBlank(className)) {
+            return;
+        }
+
+        if(className.startsWith("\\")) {
+            className = className.substring(1);
+        }
+
+        // after cleanup class is empty
+        if(StringUtils.isBlank(className)) {
             return;
         }
 
@@ -277,7 +287,7 @@ public class SymfonyCreateService extends JDialog {
 
         textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems(), this.project).build(
             outputType,
-            textFieldClassName.getText(),
+            className,
             textFieldServiceName.getText()
         ));
     }
