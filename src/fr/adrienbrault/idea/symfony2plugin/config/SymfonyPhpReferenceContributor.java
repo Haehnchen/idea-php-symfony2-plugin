@@ -57,6 +57,12 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "render"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "renderView"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "stream"),
+        new MethodMatcher.CallToSignature("\\Twig_Environment", "render"),
+        new MethodMatcher.CallToSignature("\\Twig_Environment", "loadTemplate"),
+        new MethodMatcher.CallToSignature("\\Twig_Environment", "getTemplateClass"),
+        new MethodMatcher.CallToSignature("\\Twig_Environment", "display"),
+        new MethodMatcher.CallToSignature("\\Twig_Environment", "isTemplateFresh"),
+        new MethodMatcher.CallToSignature("\\Twig_Environment", "resolveTemplate"), // @TODO: also "is_array($names)"
     };
 
     public static MethodMatcher.CallToSignature[] CONSOLE_HELP_SET = new MethodMatcher.CallToSignature[] {
