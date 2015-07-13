@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.94
+* Remove postfix completion because its a PhpStorm9 core feature #389
+* Improvement template name resolving for overwrites: support parent bundle and app resources; overwrite template linemarker #437
+* Add Travis CI infrastructure thx to @Sorien #536, #534
+* Whitelist Twig_Environment parameter completion for template name
+
 ### 0.11.93
 * Add "kernel.event_subscriber" to known tags and provide some more user feedback in error case #511
 * Add _self support for twig macros #419
