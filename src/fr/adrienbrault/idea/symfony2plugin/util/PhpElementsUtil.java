@@ -325,11 +325,15 @@ public class PhpElementsUtil {
     /**
      * return 'value' inside class method
      */
-    static public PsiElementPattern.Capture<StringLiteralExpression> getMethodReturnPattern() {
-        return PlatformPatterns
-            .psiElement(StringLiteralExpression.class)
-            .withParent(PlatformPatterns.psiElement(PhpReturn.class).inside(Method.class))
-            .withLanguage(PhpLanguage.INSTANCE);
+    static public ElementPattern<PhpExpression> getMethodReturnPattern() {
+        return PlatformPatterns.or(
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
+                .withParent(PlatformPatterns.psiElement(PhpReturn.class).inside(Method.class))
+                .withLanguage(PhpLanguage.INSTANCE),
+            PlatformPatterns.psiElement(ClassConstantReference.class)
+                .withParent(PlatformPatterns.psiElement(PhpReturn.class).inside(Method.class))
+                .withLanguage(PhpLanguage.INSTANCE)
+        );
     }
 
     /**
