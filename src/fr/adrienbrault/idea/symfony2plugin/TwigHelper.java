@@ -69,7 +69,7 @@ public class TwigHelper {
     }
 
     @NotNull
-    public static TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, final boolean usePhp) {
+    public static synchronized TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, final boolean usePhp) {
 
         TemplateFileMap templateMapProxy = null;
 
