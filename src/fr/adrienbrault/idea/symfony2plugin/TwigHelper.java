@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -11,7 +12,7 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiElementProcessor;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
@@ -59,13 +60,52 @@ public class TwigHelper {
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
+    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_TWIG = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_TWIG");
+    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_ALL = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_ALL");
+
     @Deprecated
     public static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project, boolean useTwig, boolean usePhp) {
         return getTemplateMap(project, useTwig, usePhp).getTemplates();
     }
 
     @NotNull
-    public static TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, boolean usePhp) {
+    public static TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, final boolean usePhp) {
+
+        TemplateFileMap templateMapProxy = null;
+
+        // cache twig and all files,
+        // only PHP files we dont need to cache
+        if(useTwig && !usePhp) {
+            // cache twig files only, most use case
+            CachedValue<TemplateFileMap> cache = project.getUserData(TEMPLATE_CACHE_TWIG);
+            if (cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(new MyTwigOnlyTemplateFileMapCachedValueProvider(project), false);
+                project.putUserData(TEMPLATE_CACHE_TWIG, cache);
+            }
+
+            templateMapProxy = cache.getValue();
+
+        } else if(useTwig && usePhp) {
+            // cache all files
+            CachedValue<TemplateFileMap> cache = project.getUserData(TEMPLATE_CACHE_ALL);
+            if (cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(new MyAllTemplateFileMapCachedValueProvider(project), false);
+                project.putUserData(TEMPLATE_CACHE_ALL, cache);
+            }
+
+            templateMapProxy = cache.getValue();
+        }
+
+        // cache-less calls
+        if(templateMapProxy == null) {
+            templateMapProxy = getTemplateMapProxy(project, useTwig, usePhp);
+        }
+
+        return templateMapProxy;
+    }
+
+    @NotNull
+    private static TemplateFileMap getTemplateMapProxy(@NotNull Project project, boolean useTwig, boolean usePhp) {
 
         List<TwigPath> twigPaths = new ArrayList<TwigPath>();
         twigPaths.addAll(getTwigNamespaces(project));
@@ -124,7 +164,7 @@ public class TwigHelper {
             }
 
         }
-
+        
         return container;
     }
 
@@ -1442,4 +1482,33 @@ public class TwigHelper {
         return block;
     }
 
+    private static class MyTwigOnlyTemplateFileMapCachedValueProvider implements CachedValueProvider<TemplateFileMap> {
+
+        private final Project project;
+
+        public MyTwigOnlyTemplateFileMapCachedValueProvider(Project project) {
+            this.project = project;
+        }
+
+        @Nullable
+        @Override
+        public Result<TemplateFileMap> compute() {
+            return Result.create(getTemplateMapProxy(project, true, false), PsiModificationTracker.MODIFICATION_COUNT);
+        }
+    }
+
+    private static class MyAllTemplateFileMapCachedValueProvider implements CachedValueProvider<TemplateFileMap> {
+
+        private final Project project;
+
+        public MyAllTemplateFileMapCachedValueProvider(Project project) {
+            this.project = project;
+        }
+
+        @Nullable
+        @Override
+        public Result<TemplateFileMap> compute() {
+            return Result.create(getTemplateMapProxy(project, true, true), PsiModificationTracker.MODIFICATION_COUNT);
+        }
+    }
 }
