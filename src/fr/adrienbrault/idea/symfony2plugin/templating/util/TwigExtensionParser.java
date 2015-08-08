@@ -2,10 +2,11 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Key;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -23,6 +24,11 @@ import javax.swing.*;
 import java.util.*;
 
 public class TwigExtensionParser  {
+
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FUNCTION_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_FUNCTION");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> TEST_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_TEST");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_FILTERS");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_OPERATORS");
 
     private Project project;
 
@@ -73,76 +79,140 @@ public class TwigExtensionParser  {
 
     private void parseElementType(TwigElementType type) {
 
-
-        Set<String> classNames = new HashSet<String>();
-
-        // only the interface gaves use all elements; container dont hold all
-        for(PhpClass phpClass : PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface")) {
-            // dont add unit tests classes
-            if(!PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
-                String className = phpClass.getPresentableFQN();
-                if(className != null) {
-                    classNames.add(className);
-                }
-            }
-        }
-
         if(type.equals(TwigElementType.FILTER)) {
-            this.parseFilters(classNames);
-        }
 
-        if(type.equals(TwigElementType.METHOD)) {
-            this.parseFunctions(classNames);
-        }
+            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FILTERS_CACHE);
+            if(cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
+                    @Nullable
+                    @Override
+                    public Result<Map<String, TwigExtension>> compute() {
+                        return Result.create(parseFilters(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
+                    }
+                }, false);
 
-        if(type.equals(TwigElementType.SIMPLE_TEST)) {
-            this.parseTests(classNames);
-        }
+                project.putUserData(FILTERS_CACHE, cache);
+            }
 
-        if(type.equals(TwigElementType.OPERATOR)) {
-            this.parseOperators(classNames);
-        }
+            this.filters = cache.getValue();
 
+        } else if(type.equals(TwigElementType.METHOD)) {
+
+            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FUNCTION_CACHE);
+            if(cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
+                    @Nullable
+                    @Override
+                    public Result<Map<String, TwigExtension>> compute() {
+                        return Result.create(parseFunctions(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
+                    }
+                }, false);
+
+                project.putUserData(FUNCTION_CACHE, cache);
+            }
+
+            this.functions = cache.getValue();
+
+        } else if(type.equals(TwigElementType.SIMPLE_TEST)) {
+
+            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(TEST_CACHE);
+            if(cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
+                    @Nullable
+                    @Override
+                    public Result<Map<String, TwigExtension>> compute() {
+                        return Result.create(parseTests(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
+                    }
+                }, false);
+
+                project.putUserData(TEST_CACHE, cache);
+            }
+
+            this.simpleTest = cache.getValue();
+
+        } else if(type.equals(TwigElementType.OPERATOR)) {
+
+            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(OPERATORS_CACHE);
+            if(cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
+                    @Nullable
+                    @Override
+                    public Result<Map<String, TwigExtension>> compute() {
+                        return Result.create(parseOperators(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
+                    }
+                }, false);
+
+                project.putUserData(OPERATORS_CACHE, cache);
+            }
+
+            this.operators = cache.getValue();
+        }
     }
 
-    private void parseFilters(Collection<String> classNames) {
-        this.filters = new HashMap<String, TwigExtension>();
-        for(String phpClassName : classNames) {
-            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getFilters");
-            if(method != null) {
-                parseFilter(method, this.filters);
+    private Collection<PhpClass> getTwigExtensionClasses() {
+
+        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
+
+        // only the interface gave use all elements; service container dont hold all
+        for(PhpClass phpClass : PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface")) {
+
+            // dont add unit tests classes
+            if(PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
+                continue;
             }
+
+            phpClasses.add(phpClass);
         }
+
+        return phpClasses;
     }
 
-    private void parseFunctions(Collection<String> classNames) {
-        this.functions = new HashMap<String, TwigExtension>();
-        for(String phpClassName : classNames) {
-            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getFunctions");
+    private Map<String, TwigExtension> parseFilters(Collection<PhpClass> phpClasses) {
+        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        for(PhpClass phpClass : phpClasses) {
+            Method method = phpClass.findMethodByName("getFilters");
             if(method != null) {
-                parseFunctions(method, this.functions);
+                parseFilter(method, extensions);
             }
         }
+
+        return extensions;
     }
 
-    private void parseTests(Collection<String> classNames) {
-        this.simpleTest = new HashMap<String, TwigExtension>();
-        for(String phpClassName : classNames) {
-            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getTests");
+    private Map<String, TwigExtension> parseFunctions(Collection<PhpClass> phpClasses) {
+        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        for(PhpClass phpClass : phpClasses) {
+            Method method = phpClass.findMethodByName("getFunctions");
             if(method != null) {
-                parseSimpleTest(method, this.simpleTest);
+                parseFunctions(method, extensions);
             }
         }
+
+        return extensions;
     }
 
-    private void parseOperators(Collection<String> classNames) {
-        this.operators = new HashMap<String, TwigExtension>();
-        for(String phpClassName : classNames) {
-            Method method = PhpElementsUtil.getClassMethod(this.project, phpClassName, "getOperators");
+    private Map<String, TwigExtension> parseTests(Collection<PhpClass> phpClasses) {
+        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        for(PhpClass phpClass : phpClasses) {
+            Method method = phpClass.findMethodByName("getTests");
             if(method != null) {
-                parseOperators(method, this.operators);
+                parseSimpleTest(method, extensions);
             }
         }
+
+        return extensions;
+    }
+
+    private Map<String, TwigExtension> parseOperators(Collection<PhpClass> phpClasses) {
+        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        for(PhpClass phpClass : phpClasses) {
+            Method method = phpClass.findMethodByName("getOperators");
+            if(method != null) {
+                parseOperators(method, extensions);
+            }
+        }
+
+        return extensions;
     }
 
     protected Map<String, TwigExtension> parseFunctions(final Method method, final Map<String, TwigExtension> filters) {
