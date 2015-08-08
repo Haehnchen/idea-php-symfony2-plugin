@@ -271,10 +271,6 @@ public class ContainerCollectionResolver {
                 serviceNames.addAll(
                     FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
                 );
-
-                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ServicesDefinitionStubIndex.KEY, serviceNames);
-                FileBasedIndexImpl.getInstance().processAllKeys(ServicesDefinitionStubIndex.KEY, projectUniqueKeysStrong, project);
-                serviceNames.addAll(projectUniqueKeysStrong.getResult());
             }
 
             return serviceNames;
