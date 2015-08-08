@@ -1,24 +1,30 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.CachedValue;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.*;
 
 public class ContainerCollectionResolver {
+
+    private static final Key<CachedValue<Map<String, List<String[]>>>> SERVICE_CONTAINER_INDEX = new Key<CachedValue<Map<String, List<String[]>>>>("SYMFONY_SERVICE_CONTAINER_INDEX");
+    private static final Key<CachedValue<Map<String, List<String>>>> SERVICE_PARAMETER_INDEX = new Key<CachedValue<Map<String, List<String>>>>("SERVICE_PARAMETER_INDEX");
+
+    private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
+    private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SERVICE_PARAMETER_INDEX_NAMES");
 
     public static enum Source {
         INDEX, COMPILER
@@ -169,25 +175,17 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ServicesDefinitionStubIndex.KEY, this.services.keySet());
-                FileBasedIndexImpl.getInstance().processAllKeys(ServicesDefinitionStubIndex.KEY, projectUniqueKeysStrong, project);
-
-                for(String serviceName: projectUniqueKeysStrong.getResult()) {
-
-                    // we have higher priority on compiler, which already has safe value
-                    if(!this.services.containsKey(serviceName)) {
-
-                        List<String[]> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
-
-                        if(serviceDefinitions.size() == 0) {
-                            this.services.put(serviceName, new ContainerService(serviceName, null, true));
-                        } else {
-                            this.services.putAll(convertIndexToService(serviceName, serviceDefinitions));
-                        }
-
-
+                for (Map.Entry<String, List<String[]>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+                    String serviceName = entry.getKey();
+                    if(this.services.containsKey(serviceName)) {
+                        continue;
                     }
-
+                    List<String[]> value = entry.getValue();
+                    if(value.size() == 0) {
+                        this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                    } else {
+                        this.services.putAll(convertIndexToService(serviceName, value));
+                    }
                 }
             }
 
@@ -269,6 +267,11 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
+
+                serviceNames.addAll(
+                    FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
+                );
+
                 SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ServicesDefinitionStubIndex.KEY, serviceNames);
                 FileBasedIndexImpl.getInstance().processAllKeys(ServicesDefinitionStubIndex.KEY, projectUniqueKeysStrong, project);
                 serviceNames.addAll(projectUniqueKeysStrong.getResult());
@@ -352,11 +355,8 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ContainerParameterStubIndex.KEY, this.containerParameterMap.keySet());
-                FileBasedIndexImpl.getInstance().processAllKeys(ContainerParameterStubIndex.KEY, projectUniqueKeysStrong, project);
-
-                for(String parameterName: projectUniqueKeysStrong.getResult()) {
-
+                for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, SERVICE_PARAMETER_INDEX, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+                    String parameterName = entry.getKey();
                     // just for secure
                     if(parameterName == null) {
                         continue;
@@ -364,8 +364,7 @@ public class ContainerCollectionResolver {
 
                     // indexes is weak stuff, dont overwrite compiled ones
                     if(!this.containerParameterMap.containsKey(parameterName)) {
-                        List<String> parameterValues = FileBasedIndexImpl.getInstance().getValues(ContainerParameterStubIndex.KEY, parameterName, getSearchScope(project));
-                        this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, parameterValues, true));
+                        this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
                     }
                 }
 
@@ -389,9 +388,9 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, ContainerParameterStubIndex.KEY, parameterNames);
-                FileBasedIndexImpl.getInstance().processAllKeys(ContainerParameterStubIndex.KEY, projectUniqueKeysStrong, project);
-                parameterNames.addAll(projectUniqueKeysStrong.getResult());
+                parameterNames.addAll(
+                    FileIndexCaches.getIndexKeysCache(project, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY)
+                );
             }
 
             return parameterNames;

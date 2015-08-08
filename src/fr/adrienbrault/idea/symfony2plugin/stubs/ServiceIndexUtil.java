@@ -14,6 +14,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -110,6 +111,13 @@ public class ServiceIndexUtil {
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
+    }
+
+    /**
+     * So support only some file types, so we can filter them and xml and yaml for now
+     */
+    public static GlobalSearchScope getRestrictedFileTypesScope(@NotNull Project project) {
+        return GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML);
     }
 
 }
