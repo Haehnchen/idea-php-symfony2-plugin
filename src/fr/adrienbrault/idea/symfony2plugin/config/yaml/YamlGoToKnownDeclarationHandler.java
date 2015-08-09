@@ -9,30 +9,26 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -94,7 +90,21 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getArrayMethodGoto(psiElement, results);
         }
 
+        if(YamlElementPatternHelper.getOrmSingleLineScalarKey("type").accepts(psiElement)) {
+            this.getOrmTypesNavigation(psiElement, results);
+        }
+
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    private void getOrmTypesNavigation(@NotNull PsiElement psiElement, @NotNull List<PsiElement> results) {
+
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        if(StringUtils.isBlank(text)) {
+            return;
+        }
+
+        results.addAll(DoctrineStaticTypeLookupBuilder.getColumnTypesTargets(psiElement.getProject(), text));
     }
 
     private void getArrayMethodGoto(PsiElement psiElement, List<PsiElement> results) {

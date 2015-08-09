@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -10,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationMethodInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationTagInsertHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -22,22 +24,62 @@ public class DoctrineStaticTypeLookupBuilder {
 
     public static Collection<LookupElement> getTypes(@NotNull Project project) {
 
-        Map<String, LookupElement> lookupElements = new HashMap<String, LookupElement>();
+        final Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+
+        visitCustomTypes(project, new ColumnTypeVisitor() {
+            @Override
+            public void visit(@NotNull String name, @Nullable PhpClass phpClass, @Nullable PsiElement psiElement) {
+                LookupElementBuilder lookupElementBuilder = LookupElementBuilder.create(name).withIcon(Symfony2Icons.DOCTRINE);
+
+                if(phpClass != null) {
+                    lookupElementBuilder = lookupElementBuilder.withTypeText(phpClass.getName(), true);
+                }
+
+                lookupElements.add(lookupElementBuilder);
+            }
+        });
+
+        return lookupElements;
+    }
+
+    public static void visitCustomTypes(@NotNull Project project, @NotNull ColumnTypeVisitor visitor) {
+
+        Set<String> found = new HashSet<String>();
 
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("\\Doctrine\\DBAL\\Types\\Type")) {
-            String getName = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
-            if(getName != null) {
-                lookupElements.put(getName, LookupElementBuilder.create(getName).withIcon(Symfony2Icons.DOCTRINE).withTypeText(phpClass.getName(), true));
+            String name = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
+            if(name != null) {
+                found.add(name);
+                visitor.visit(name, phpClass, phpClass.findMethodByName("getName"));
             }
         }
 
         for (String s : Arrays.asList("id", "string", "integer", "smallint", "bigint", "boolean", "decimal", "date", "time", "datetime", "text", "array", "float")) {
-            if(!lookupElements.containsKey(s)) {
-                lookupElements.put(s, LookupElementBuilder.create(s).withIcon(Symfony2Icons.DOCTRINE));
+            if(!found.contains(s)) {
+                visitor.visit(s, null, null);
             }
         }
 
-        return lookupElements.values();
+    }
+
+    private interface ColumnTypeVisitor {
+        void visit(@NotNull String name, @Nullable PhpClass phpClass, @Nullable PsiElement psiElement);
+    }
+
+    public static Collection<PsiElement> getColumnTypesTargets(@NotNull Project project, final @NotNull String contents) {
+
+        final Collection<PsiElement> targets = new ArrayList<PsiElement>();
+
+        visitCustomTypes(project, new ColumnTypeVisitor() {
+            @Override
+            public void visit(@NotNull String name, @Nullable PhpClass phpClass, @Nullable PsiElement psiElement) {
+                if(name.equals(contents) && phpClass != null) {
+                    targets.add(phpClass);
+                }
+            }
+        });
+
+        return targets;
     }
 
     public ArrayList<LookupElement> getNullAble() {
