@@ -25,13 +25,13 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
      * @see EventDispatcherSubscriberUtil#attachSubscriberEventNames
      */
     public void testGetSubscribedEvent() {
-        EventDispatcherSubscribedEvent event1 = EventDispatcherSubscriberUtil.getSubscribedEvent(getProject(), "pre.foo").get(0);
+        EventDispatcherSubscribedEvent event1 = EventDispatcherSubscriberUtil.getSubscribedEvent(getProject(), "pre.foo").iterator().next();
         assertEquals("pre.foo", event1.getStringValue());
         assertEquals("TestEventSubscriber", event1.getFqnClassName());
         assertNull(event1.getSignature());
         assertEquals("preFoo", event1.getMethodName());
 
-        EventDispatcherSubscribedEvent event2 = EventDispatcherSubscriberUtil.getSubscribedEvent(getProject(), "post.foo").get(0);
+        EventDispatcherSubscribedEvent event2 = EventDispatcherSubscriberUtil.getSubscribedEvent(getProject(), "post.foo").iterator().next();
         assertEquals("post.foo", event2.getStringValue());
         assertEquals("TestEventSubscriber", event2.getFqnClassName());
         assertEquals("#K#C\\Foo\\Bar.BAR", event2.getSignature());

@@ -1,16 +1,17 @@
 package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,10 +19,30 @@ import java.util.List;
 
 public class EventDispatcherSubscriberUtil {
 
-    @NotNull
-    public static List<EventDispatcherSubscribedEvent> getSubscribedEvents(@NotNull Project project) {
+    private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> EVENT_SUBSCRIBERS = new Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>>("SYMFONY_EVENT_SUBSCRIBERS");
 
-        List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+    @NotNull
+    public static Collection<EventDispatcherSubscribedEvent> getSubscribedEvents(final @NotNull Project project) {
+
+        CachedValue<Collection<EventDispatcherSubscribedEvent>> cache = project.getUserData(EVENT_SUBSCRIBERS);
+        if (cache == null) {
+            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Collection<EventDispatcherSubscribedEvent>>() {
+                @Nullable
+                @Override
+                public Result<Collection<EventDispatcherSubscribedEvent>> compute() {
+                    return Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.MODIFICATION_COUNT);
+                }
+            }, false);
+            project.putUserData(EVENT_SUBSCRIBERS, cache);
+        }
+
+        return cache.getValue();
+    }
+
+    @NotNull
+    private static Collection<EventDispatcherSubscribedEvent> getSubscribedEventsProxy(@NotNull Project project) {
+
+        Collection<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
 
         // http://symfony.com/doc/current/components/event_dispatcher/introduction.html
         PhpIndex phpIndex = PhpIndex.getInstance(project);
@@ -45,7 +66,7 @@ public class EventDispatcherSubscriberUtil {
        return events;
     }
 
-    private static void attachSubscriberEventNames(@NotNull List<EventDispatcherSubscribedEvent> events, @NotNull PhpClass phpClass, @NotNull PhpReturn phpReturn) {
+    private static void attachSubscriberEventNames(@NotNull Collection<EventDispatcherSubscribedEvent> events, @NotNull PhpClass phpClass, @NotNull PhpReturn phpReturn) {
 
         PhpPsiElement array = phpReturn.getFirstPsiChild();
         if(!(array instanceof ArrayCreationExpression)) {
@@ -91,7 +112,7 @@ public class EventDispatcherSubscriberUtil {
     }
 
     @NotNull
-    public static List<EventDispatcherSubscribedEvent> getSubscribedEvent(@NotNull Project project, @NotNull String eventName) {
+    public static Collection<EventDispatcherSubscribedEvent> getSubscribedEvent(@NotNull Project project, @NotNull String eventName) {
 
         List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
 
