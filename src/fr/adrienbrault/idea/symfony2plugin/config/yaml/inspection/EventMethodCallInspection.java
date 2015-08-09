@@ -6,7 +6,10 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
@@ -20,6 +23,8 @@ import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQ
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -28,9 +33,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.*;
-
-import java.util.List;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLHash;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLSequence;
 
 public class EventMethodCallInspection extends LocalInspectionTool {
 
@@ -217,34 +223,11 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
     }
 
-    @Nullable
-    private static String getTaggedEventMethodParameter(Project project, String eventName) {
-
-        if(ServiceUtil.TAGS.containsKey(eventName)) {
-            return ServiceUtil.TAGS.get(eventName);
-        }
-
-        /*
-        @TODO: add live service event tags
-        ContainerCollectionResolver.ServiceCollector containerCollectionResolver = new ContainerCollectionResolver.ServiceCollector(project);
-        for (String service : ServiceUtil.getTaggedServices(project, "kernel.event_listener")) {
-            for (VirtualFile virtualFile : FileBasedIndexImpl.getInstance().getContainingFiles(ServicesTagStubIndex.KEY, service, GlobalSearchScope.allScope(project))) {
-
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile != null) {
-
-                }
-            }
-        }
-        */
-
-        return null;
-    }
     private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
         registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, this.getLazyServiceCollector(psiElement.getProject())));
     }
 
-    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable PhpClass phpClass) {
+    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable final PhpClass phpClass) {
 
         if(phpClass == null) {
             return;
@@ -263,7 +246,14 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                 String taggedEventMethodParameter = null;
                 String eventName = getEventName(psiElement);
                 if(eventName != null) {
-                    taggedEventMethodParameter = getTaggedEventMethodParameter(psiElement.getProject(), eventName);
+                    taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(psiElement.getProject(), eventName);
+                    if(taggedEventMethodParameter != null) {
+                        String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
+                        if(qualifiedName != null && !qualifiedName.equals(taggedEventMethodParameter.substring(1))) {
+                            taggedEventMethodParameter = qualifiedName;
+                        }
+                    }
+
                 }
 
                 String parameter = "";

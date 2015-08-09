@@ -5,12 +5,13 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
+import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamespace;
-import com.jetbrains.php.lang.psi.elements.PhpUse;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.php.lang.psi.elements.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -171,4 +172,28 @@ public class AnnotationBackportUtil {
         return null;
     }
 
+    /**
+     * Get class path on "use" path statement
+     */
+    @Nullable
+    public static String getQualifiedName(@NotNull PsiElement psiElement, @NotNull String fqn) {
+
+        PhpPsiElement scopeForUseOperator = PhpCodeInsightUtil.findScopeForUseOperator(psiElement);
+        if (scopeForUseOperator == null) {
+            return null;
+        }
+
+        PhpReference reference = PhpPsiUtil.getParentByCondition(psiElement, false, PhpReference.INSTANCEOF);
+        String qualifiedName = PhpCodeInsightUtil.createQualifiedName(scopeForUseOperator, fqn, reference, false);
+        if (!PhpLangUtil.isFqn(qualifiedName)) {
+            return qualifiedName;
+        }
+
+        // @TODO: remove full fqn fallback
+        if(qualifiedName.startsWith("\\")) {
+            qualifiedName = qualifiedName.substring(1);
+        }
+
+        return qualifiedName;
+    }
 }

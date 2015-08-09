@@ -208,6 +208,11 @@ public class PhpElementsUtil {
         return results.toArray(new PsiElement[results.size()]);
     }
 
+    /**
+     * There is no need for this proxy method.
+     * We are api safe now
+     */
+    @Deprecated
     @Nullable
     static public Method getClassMethod(PhpClass phpClass, String methodName) {
         return phpClass.findMethodByName(methodName);
@@ -218,7 +223,7 @@ public class PhpElementsUtil {
 
         // we need here an each; because eg Command is non unique because phar file
         for(PhpClass phpClass: PhpIndex.getInstance(project).getClassesByFQN(phpClassName)) {
-            Method method = getClassMethod(phpClass, methodName);
+            Method method = phpClass.findMethodByName(methodName);
             if(method != null) {
                 return method;
             }
@@ -972,13 +977,13 @@ public class PhpElementsUtil {
             @Override
             public void visitElement(PsiElement psiElement) {
 
-                if(processor.process(psiElement)) {
+                if (processor.process(psiElement)) {
                     elements.add(psiElement);
                 }
 
-                if(psiElement instanceof MethodReference && ((MethodReference) psiElement).getReferenceType() == PhpModifier.State.PARENT && method.getName().equals(((MethodReference) psiElement).getName())) {
+                if (psiElement instanceof MethodReference && ((MethodReference) psiElement).getReferenceType() == PhpModifier.State.PARENT && method.getName().equals(((MethodReference) psiElement).getName())) {
                     PsiElement resolve = ((MethodReference) psiElement).resolve();
-                    if(depth > 0 && resolve instanceof Method) {
+                    if (depth > 0 && resolve instanceof Method) {
                         collectMethodElementsWithParents((Method) resolve, depth - 1, elements, processor);
                     }
                 }
@@ -1033,6 +1038,36 @@ public class PhpElementsUtil {
         }
 
         return fqn.contains("\\Test\\") || fqn.contains("\\Tests\\");
+    }
+
+    /**
+     * Extract type hint from method parameter
+     *
+     * function foo(\FooClass $class)
+     */
+    @Nullable
+    public static String getMethodParameterTypeHint(@NotNull Method method) {
+        ParameterList childOfType = PsiTreeUtil.getChildOfType(method, ParameterList.class);
+        if(childOfType == null) {
+            return null;
+        }
+
+        PsiElement[] parameters = childOfType.getParameters();
+        if(parameters.length == 0) {
+            return null;
+        }
+
+        ClassReference classReference = PsiTreeUtil.getChildOfType(parameters[0], ClassReference.class);
+        if(classReference == null) {
+            return null;
+        }
+
+        String fqn = classReference.getFQN();
+        if(fqn == null) {
+            return null;
+        }
+
+        return fqn;
     }
 
 }
