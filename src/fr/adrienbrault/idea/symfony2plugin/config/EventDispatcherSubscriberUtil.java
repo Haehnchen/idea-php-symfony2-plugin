@@ -33,7 +33,7 @@ public class EventDispatcherSubscriberUtil {
                 continue;
             }
 
-            Method method = PhpElementsUtil.getClassMethod(phpClass, "getSubscribedEvents");
+            Method method = phpClass.findMethodByName("getSubscribedEvents");
             if(method != null) {
                 PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
                 if(phpReturn != null) {
@@ -52,17 +52,36 @@ public class EventDispatcherSubscriberUtil {
             return;
         }
 
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN == null) {
+            return;
+        }
+
         Iterable<ArrayHashElement> arrayHashElements = ((ArrayCreationExpression) array).getHashElements();
         for(ArrayHashElement arrayHashElement: arrayHashElements) {
             PsiElement arrayKey = arrayHashElement.getKey();
 
             // support string and constants
             if(arrayKey instanceof StringLiteralExpression) {
-                events.add(new EventDispatcherSubscribedEvent(((StringLiteralExpression) arrayKey).getContents(), phpClass.getPresentableFQN()));
+
+                // ['doh' => 'method']
+                events.add(new EventDispatcherSubscribedEvent(
+                    ((StringLiteralExpression) arrayKey).getContents(),
+                    presentableFQN,
+                    PhpElementsUtil.getStringValue(arrayHashElement.getValue())
+                ));
+
             } else if(arrayKey instanceof PhpReference) {
                 String resolvedString = PhpElementsUtil.getStringValue(arrayKey);
                 if(resolvedString != null) {
-                    events.add(new EventDispatcherSubscribedEvent(resolvedString, phpClass.getPresentableFQN(), ((PhpReference) arrayKey).getSignature()));
+
+                    // [FOO::BAR => 'method']
+                    events.add(new EventDispatcherSubscribedEvent(
+                        resolvedString,
+                        presentableFQN,
+                        PhpElementsUtil.getStringValue(arrayHashElement.getValue()),
+                        ((PhpReference) arrayKey).getSignature())
+                    );
                 }
 
             }
@@ -90,6 +109,7 @@ public class EventDispatcherSubscriberUtil {
 
         List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
+        // @TODO: remove
         XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(project, XmlEventParser.class);
         for(EventDispatcherSubscribedEvent event : xmlEventParser.getEventSubscribers(eventName)) {
             PhpClass phpClass = PhpElementsUtil.getClass(project, event.getFqnClassName());

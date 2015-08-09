@@ -5,6 +5,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -58,6 +60,21 @@ public class EventSubscriberUtil {
 
             }
 
+        }
+
+        for (EventDispatcherSubscribedEvent event : EventDispatcherSubscriberUtil.getSubscribedEvent(project, eventName)) {
+            String methodName = event.getMethodName();
+            if(methodName == null) {
+                continue;
+            }
+
+            Method method = PhpElementsUtil.getClassMethod(project, event.getFqnClassName(), methodName);
+            if(method != null) {
+                String methodParameterClassHint = PhpElementsUtil.getMethodParameterTypeHint(method);
+                if(methodParameterClassHint != null) {
+                    return methodParameterClassHint;
+                }
+            }
         }
 
         return null;

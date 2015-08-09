@@ -219,7 +219,7 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public Method getClassMethod(Project project, String phpClassName, String methodName) {
+    static public Method getClassMethod(@NotNull Project project, @NotNull String phpClassName, @NotNull String methodName) {
 
         // we need here an each; because eg Command is non unique because phar file
         for(PhpClass phpClass: PhpIndex.getInstance(project).getClassesByFQN(phpClassName)) {

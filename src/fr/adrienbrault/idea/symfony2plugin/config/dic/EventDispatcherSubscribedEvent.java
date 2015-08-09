@@ -1,21 +1,27 @@
 package fr.adrienbrault.idea.symfony2plugin.config.dic;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class EventDispatcherSubscribedEvent {
 
     private String stringValue;
     private String fqnClassName;
+
+    @Nullable
+    private final String methodName;
+
     private String signature = null;
     private String type = "EventSubscriber";
 
-    public EventDispatcherSubscribedEvent(String stringValue, String fqnClassName) {
+    public EventDispatcherSubscribedEvent(@NotNull String stringValue, @NotNull String fqnClassName, @Nullable String methodName) {
         this.stringValue = stringValue;
         this.fqnClassName = fqnClassName;
+        this.methodName = methodName;
     }
 
-    public EventDispatcherSubscribedEvent(String stringValue, String fqnClassName, String signature) {
-        this(stringValue, fqnClassName);
+    public EventDispatcherSubscribedEvent(@NotNull String stringValue, @NotNull String fqnClassName, @Nullable String methodName, @NotNull String signature) {
+        this(stringValue, fqnClassName, methodName);
         this.signature = signature;
     }
 
@@ -42,4 +48,7 @@ public class EventDispatcherSubscribedEvent {
         return this;
     }
 
-}
+    @Nullable
+    public String getMethodName() {
+        return methodName;
+    }}

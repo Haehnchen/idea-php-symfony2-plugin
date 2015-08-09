@@ -32,7 +32,7 @@ public class XmlEventParser extends AbstractServiceParser {
             Element node = (Element) nodeList.item(i);
             this.list.put(node.getAttribute("event"), node.getAttribute("name"));
             if(((Element) node.getParentNode()).hasAttribute("class")) {
-                this.events.add(new EventDispatcherSubscribedEvent(node.getAttribute("event"), ((Element) node.getParentNode()).getAttribute("class")).setType(node.getAttribute("name")));
+                this.events.add(new EventDispatcherSubscribedEvent(node.getAttribute("event"), ((Element) node.getParentNode()).getAttribute("class"), null).setType(node.getAttribute("name")));
             }
 
         }
