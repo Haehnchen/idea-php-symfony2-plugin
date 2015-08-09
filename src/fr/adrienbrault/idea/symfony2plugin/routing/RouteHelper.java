@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -13,7 +14,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -56,6 +57,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RouteHelper {
+
+    private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<CachedValue<Map<String, Route>>>("SYMFONY:ROUTE_CACHE");
 
     public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<Project, Map<String, RoutesContainer>>();
 
@@ -829,7 +832,25 @@ public class RouteHelper {
     }
 
     @NotNull
-    public static Map<String, Route> getAllRoutes(@NotNull Project project) {
+    synchronized public static Map<String, Route> getAllRoutes(final @NotNull Project project) {
+
+        CachedValue<Map<String, Route>> cache = project.getUserData(ROUTE_CACHE);
+        if (cache == null) {
+            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, Route>>() {
+                @Nullable
+                @Override
+                public Result<Map<String, Route>> compute() {
+                    return Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT);
+                }
+            }, false);
+            project.putUserData(ROUTE_CACHE, cache);
+        }
+
+        return cache.getValue();
+    }
+
+    @NotNull
+    private static Map<String, Route> getAllRoutesProxy(@NotNull Project project) {
 
         Map<String, Route> routes = new HashMap<String, Route>();
         routes.putAll(RouteHelper.getCompiledRoutes(project));
