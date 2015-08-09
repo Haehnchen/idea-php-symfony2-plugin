@@ -9,9 +9,13 @@ import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitorArguments;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +36,7 @@ public class EventSubscriberUtil {
 
         EventsCollector[] collectors = new EventsCollector[] {
             new XmlEventsCollector(),
+            new YmlEventsCollector(),
         };
 
         for (String service : ServiceUtil.getTaggedServices(project, "kernel.event_listener")) {
@@ -85,6 +90,45 @@ public class EventSubscriberUtil {
     }
 
     /**
+     * TODO: implement abstract "TagVisitor"
+     *
+     * - { name: kernel.event_listener, event: eventName, method: methodName }
+     */
+    private static class YmlEventsCollector implements EventsCollector {
+
+        public Collection<String> collect(@NotNull PsiElement psiElement, @NotNull String eventName) {
+
+            if(!(psiElement instanceof YAMLKeyValue)) {
+                return Collections.emptySet();
+            }
+
+            final Collection<String> methods = new HashSet<String>();
+
+            YamlHelper.visitTagsOnServiceDefinition((YAMLKeyValue) psiElement, new YamlTagVisitor() {
+                @Override
+                public void visit(@NotNull YamlTagVisitorArguments args) {
+                    if (!"kernel.event_listener".equals(args.getName())) {
+                        return;
+                    }
+
+                    String methodName = args.getAttribute("method");
+                    if (StringUtils.isBlank(methodName)) {
+                        return;
+                    }
+
+                    methods.add(methodName);
+                }
+
+            });
+
+            return methods;
+        }
+
+    }
+
+    /**
+     * TODO: implement abstract "TagVisitor"
+     *
      * <tag name="kernel.event_listener" event="event_bar" method="foo" />
      */
     private static class XmlEventsCollector implements EventsCollector {

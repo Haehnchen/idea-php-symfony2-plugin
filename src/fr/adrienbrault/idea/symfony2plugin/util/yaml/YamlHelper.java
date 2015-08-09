@@ -9,6 +9,8 @@ import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitorArguments;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -722,6 +724,34 @@ public class YamlHelper {
         }
 
         return tags;
+    }
+
+    /**
+     * TODO: use visitor pattern for all tags, we are using them to often
+     */
+    public static void visitTagsOnServiceDefinition(@NotNull YAMLKeyValue yamlServiceKeyValue, @NotNull YamlTagVisitor visitor) {
+
+        YAMLKeyValue tagTag = YamlHelper.getYamlKeyValue(yamlServiceKeyValue, "tags");
+        if(tagTag == null) {
+            return;
+        }
+
+        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(tagTag, YAMLCompoundValue.class);
+        if(yamlCompoundValue == null) {
+            return;
+        }
+
+        Collection<YAMLSequence> yamlSequences = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class);
+        for(YAMLSequence yamlSequence: yamlSequences) {
+            YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
+
+            if(yamlHash != null) {
+                String tagName = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
+                if(tagName != null) {
+                    visitor.visit(new YamlTagVisitorArguments(tagName, yamlHash));
+                }
+            }
+        }
     }
 
 }

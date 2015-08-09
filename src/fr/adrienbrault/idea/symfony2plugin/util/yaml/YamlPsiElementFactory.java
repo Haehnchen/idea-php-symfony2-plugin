@@ -39,7 +39,7 @@ public class YamlPsiElementFactory {
 
         createDummyFile(p, text).accept(new PsiRecursiveElementWalkingVisitor() {
             public void visitElement(PsiElement element) {
-                if(aClass.isInstance(element)) {
+                if(ret[0] == null && aClass.isInstance(element)) {
                     ret[0] = element;
                 }
 
