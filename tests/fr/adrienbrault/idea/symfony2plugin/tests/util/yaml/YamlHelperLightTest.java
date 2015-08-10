@@ -5,7 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitorArguments;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -78,18 +78,18 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
 
-        private List<YamlTagVisitorArguments> items = new ArrayList<YamlTagVisitorArguments>();
+        private List<YamlServiceTag> items = new ArrayList<YamlServiceTag>();
 
         @Override
-        public void visit(@NotNull YamlTagVisitorArguments args) {
+        public void visit(@NotNull YamlServiceTag args) {
             items.add(args);
         }
 
-        public YamlTagVisitorArguments getItem(int pos) {
+        public YamlServiceTag getItem(int pos) {
             return items.get(pos);
         }
 
-        public YamlTagVisitorArguments getItem() {
+        public YamlServiceTag getItem() {
             return items.get(0);
         }
     }

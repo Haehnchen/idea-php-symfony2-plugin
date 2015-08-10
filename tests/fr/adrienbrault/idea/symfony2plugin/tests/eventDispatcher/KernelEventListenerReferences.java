@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.eventDispatcher;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
@@ -15,6 +16,7 @@ public class KernelEventListenerReferences extends SymfonyLightCodeInsightFixtur
 
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("services.xml");
         myFixture.copyFileToProject("services.yml");
     }
@@ -70,6 +72,11 @@ public class KernelEventListenerReferences extends SymfonyLightCodeInsightFixtur
                 "            - { name: kernel.event_listener, event: \"<caret>\" }",
             "xml_event_non"
         );
-    }
 
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php " +
+                "/** @var $dispatcher \\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface */\n" +
+                "$dispatcher->dispatch('<caret>');" +
+                "xml_event"
+        );
+    }
 }
