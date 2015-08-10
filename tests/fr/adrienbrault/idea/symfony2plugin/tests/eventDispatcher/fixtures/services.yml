@@ -1,0 +1,7 @@
+services:
+    foo_service:
+        class: DateTime
+        tags:
+            - { name: kernel.event_listener, event: yaml_event_1, method: onKernelException }
+            - { name: "kernel.event_listener", event: "yaml_event_2", method: onKernelException }
+            - { name: 'kernel.event_listener', event: 'yaml_event_3', method: onKernelException }

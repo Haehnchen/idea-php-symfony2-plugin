@@ -10,7 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitorArguments;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -748,7 +748,7 @@ public class YamlHelper {
             if(yamlHash != null) {
                 String tagName = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
                 if(tagName != null) {
-                    visitor.visit(new YamlTagVisitorArguments(tagName, yamlHash));
+                    visitor.visit(new YamlServiceTag(tagName, yamlHash));
                 }
             }
         }

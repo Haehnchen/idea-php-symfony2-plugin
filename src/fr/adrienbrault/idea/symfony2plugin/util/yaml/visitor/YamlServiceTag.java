@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor;
 
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,16 +12,23 @@ import org.jetbrains.yaml.psi.YAMLHash;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class YamlTagVisitorArguments {
+public class YamlServiceTag implements ServiceTagInterface {
 
     private final String tagName;
     private final YAMLHash yamlHash;
 
-    public YamlTagVisitorArguments(@NotNull String tagName, @NotNull YAMLHash yamlHash) {
+    public YamlServiceTag(@NotNull String tagName, @NotNull YAMLHash yamlHash) {
         this.tagName = tagName;
         this.yamlHash = yamlHash;
     }
 
+    @NotNull
+    @Override
+    public String getServiceId() {
+        return "";
+    }
+
+    @NotNull
     public String getName() {
         return tagName;
     }
@@ -36,4 +44,8 @@ public class YamlTagVisitorArguments {
         return YamlHelper.getYamlKeyValueAsString(yamlHash, attr);
     }
 
+    @NotNull
+    public YAMLHash getYamlHash() {
+        return yamlHash;
+    }
 }

@@ -7,11 +7,14 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagFactory;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagVisitorInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitorArguments;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +28,25 @@ import java.util.HashSet;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class EventSubscriberUtil {
+
+    public static void visitNamedTag(@NotNull Project project, @NotNull String tagName, @NotNull ServiceTagVisitorInterface visitor) {
+
+        for (String service : ServiceUtil.getTaggedServices(project, tagName)) {
+            for (PsiElement psiElement : ServiceIndexUtil.findServiceDefinitions(project, service)) {
+                Collection<ServiceTagInterface> serviceTagVisitorArguments = ServiceTagFactory.create(service, psiElement);
+
+                if(serviceTagVisitorArguments == null) {
+                    continue;
+                }
+
+                for (ServiceTagInterface tagVisitorArgument : serviceTagVisitorArguments) {
+                    if(tagName.equals(tagVisitorArgument.getName())) {
+                        visitor.visit(tagVisitorArgument);
+                    }
+                }
+            }
+        }
+    }
 
     @Nullable
     public static String getTaggedEventMethodParameter(Project project, String eventName) {
@@ -106,7 +128,7 @@ public class EventSubscriberUtil {
 
             YamlHelper.visitTagsOnServiceDefinition((YAMLKeyValue) psiElement, new YamlTagVisitor() {
                 @Override
-                public void visit(@NotNull YamlTagVisitorArguments args) {
+                public void visit(@NotNull YamlServiceTag args) {
                     if (!"kernel.event_listener".equals(args.getName())) {
                         return;
                     }

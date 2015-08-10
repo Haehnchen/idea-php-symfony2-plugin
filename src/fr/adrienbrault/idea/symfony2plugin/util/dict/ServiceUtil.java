@@ -182,6 +182,7 @@ public class ServiceUtil {
 
     public static Set<String> getTaggedServices(Project project, String tagName) {
 
+        // @TODO: cache
         SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
         FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
 

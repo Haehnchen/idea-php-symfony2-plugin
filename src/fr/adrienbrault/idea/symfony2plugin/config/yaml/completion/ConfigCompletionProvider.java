@@ -281,7 +281,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         while (comment instanceof CommentImpl || comment instanceof DeferredTextImpl) {
 
             if(comment instanceof CommentImpl) {
-                if(comment.getTextContent().toLowerCase().matches("^\\s*prototype.*")) {
+                if(comment.getTextContent().toLowerCase().matches("\\s*prototype.*")) {
                     return true;
                 }
             }

@@ -282,6 +282,14 @@ public class ContainerCollectionResolver {
             return (this.parameterCollector != null) ? this.parameterCollector : (this.parameterCollector = new ParameterCollector(this.project, this.sources.toArray(new Source[this.sources.size()])));
         }
 
+        public static ServiceCollector create(@NotNull Project project) {
+            return new ContainerCollectionResolver.ServiceCollector(
+                project,
+                ContainerCollectionResolver.Source.COMPILER,
+                ContainerCollectionResolver.Source.INDEX
+            );
+        }
+
     }
 
     public static class ParameterCollector {
