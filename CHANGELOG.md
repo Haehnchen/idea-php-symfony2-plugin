@@ -6,6 +6,16 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.95
+* Add Doctrine simple_array and json_array for yaml files, on direct interface parsing #555
+* Cache: Implement service definition cache layer, invalidates on global psi change #350
+* Cache: Implement twig template name cache on psi change invalidation
+* Cache: Refactoring TwigExtensionParser and introduce cache
+* Cache: Add metadata cache for routing component
+* Add PhpClass collector for "kernel.event_listener" events that are defined in xml and yaml #531
+* Collect type hints for methods of getSubscribedEvents #531, #529
+* Implement support of "kernel.event_listener" events in completion, navigation and method creation argument type hints
+
 ### 0.11.94
 * Remove postfix completion because its a PhpStorm9 core feature #389
 * Improvement template name resolving for overwrites: support parent bundle and app resources; overwrite template linemarker #437
