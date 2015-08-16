@@ -4,9 +4,11 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.*;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
@@ -16,15 +18,13 @@ import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagVisitorInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class EventDispatcherSubscriberUtil {
 
@@ -91,14 +91,21 @@ public class EventDispatcherSubscriberUtil {
         for(ArrayHashElement arrayHashElement: arrayHashElements) {
             PsiElement arrayKey = arrayHashElement.getKey();
 
-            // support string and constants
+            PsiElement value = null;
+            // get method name
+            // @TODO: support multiple method names, currently we only use method name if type hint, so first item helps for now
+            Collection<PsiElement> subscriberMethods = getSubscriberMethods(arrayHashElement);
+            if(subscriberMethods.size() > 0) {
+                value = subscriberMethods.iterator().next();
+            }
+
             if(arrayKey instanceof StringLiteralExpression) {
 
                 // ['doh' => 'method']
                 events.add(new EventDispatcherSubscribedEvent(
                     ((StringLiteralExpression) arrayKey).getContents(),
                     presentableFQN,
-                    PhpElementsUtil.getStringValue(arrayHashElement.getValue())
+                    PhpElementsUtil.getStringValue(value)
                 ));
 
             } else if(arrayKey instanceof PhpReference) {
@@ -109,7 +116,7 @@ public class EventDispatcherSubscriberUtil {
                     events.add(new EventDispatcherSubscribedEvent(
                         resolvedString,
                         presentableFQN,
-                        PhpElementsUtil.getStringValue(arrayHashElement.getValue()),
+                        PhpElementsUtil.getStringValue(value),
                         ((PhpReference) arrayKey).getSignature())
                     );
                 }
@@ -118,6 +125,55 @@ public class EventDispatcherSubscriberUtil {
 
         }
 
+    }
+
+    /**
+     * Extract method name for subscribe
+     *
+     * 'pre.foo1' => 'foo'
+     * 'pre.foo1' => ['onStoreOrder', 0]
+     * 'pre.foo2' => [['onStoreOrder', 0]]
+     */
+    @NotNull
+    private static Collection<PsiElement> getSubscriberMethods(@NotNull ArrayHashElement arrayHashElement) {
+
+        // support string, constants and array values
+        PhpPsiElement value = arrayHashElement.getValue();
+        if(value == null) {
+            Collections.emptySet();
+        }
+
+        // 'pre.foo' => [...]
+        if(!(value instanceof ArrayCreationExpression)) {
+            return new ArrayList<PsiElement>(Collections.singletonList(value));
+        }
+
+        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+
+        // 'pre.foo' => [<caret>]
+        PsiElement firstChild = value.getFirstPsiChild();
+        if(firstChild != null && firstChild.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+            PhpPsiElement firstPsiChild = ((PhpPsiElement) firstChild).getFirstPsiChild();
+            if(firstPsiChild instanceof StringLiteralExpression) {
+                // 'pre.foo' => ['method']
+                psiElements.add(firstPsiChild);
+            } else if(firstPsiChild instanceof ArrayCreationExpression) {
+
+                // 'pre.foo' => [['method', ...], ['method2', ...]]
+                for (PsiElement psiElement : PsiElementUtils.getChildrenOfTypeAsList(firstPsiChild, PlatformPatterns.psiElement().withElementType(PhpElementTypes.ARRAY_VALUE))) {
+                    if(!(psiElement instanceof PhpPsiElement)) {
+                        continue;
+                    }
+
+                    PhpPsiElement prioValue = ((PhpPsiElement) psiElement).getFirstPsiChild();
+                    if(prioValue instanceof StringLiteralExpression) {
+                        psiElements.add(prioValue);
+                    }
+                }
+            }
+        }
+
+        return psiElements;
     }
 
     @NotNull

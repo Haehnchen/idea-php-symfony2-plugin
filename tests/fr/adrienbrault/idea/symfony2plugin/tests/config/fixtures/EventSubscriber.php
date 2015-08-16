@@ -24,7 +24,14 @@ namespace {
         {
             return array(
                 'pre.foo' => 'preFoo',
-                Bar::BAR => 'postFoo'
+                Bar::BAR => 'postFoo',
+                'pre.foo1' => ['onStoreOrder', 0],
+                'pre.foo2' => [
+                    ['onKernelResponseMid', 10],
+                    ['onKernelResponsePre', 20],
+                ],
+                'pre.foo3' => [],
+                'pre.foo4' => null,
             );
         }
 
