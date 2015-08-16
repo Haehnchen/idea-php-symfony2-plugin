@@ -180,6 +180,54 @@ public class ServiceUtil {
         return resolveResults;
     }
 
+    /**
+     * Find every service tag that's implements or extends a classes/interface of give class
+     */
+    public static Map<String, Set<String>> getTaggedInstances(@NotNull Project project, @NotNull PhpClass phpClass) {
+
+        SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
+        FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
+
+        ContainerCollectionResolver.ServiceCollector collector = null;
+
+        Map<String, Set<String>> matchedTags = new HashMap<String, Set<String>>();
+        for (String serviceName : projectUniqueKeysStrong.getResult()) {
+
+            // get service where we found our tags
+            List<String[]> values = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            if(values.size() == 0) {
+                continue;
+            }
+
+            for(String[] tags: values) {
+                for (String tag : tags) {
+                    if(collector == null) {
+                        collector = ContainerCollectionResolver.ServiceCollector.create(project);
+                    }
+
+                    PhpClass serviceClass = ServiceUtil.getServiceClass(project, serviceName, collector);
+                    if(serviceClass != null && new Symfony2InterfacesUtil().isInstanceOf(phpClass, serviceClass)) {
+                        String presentableFQN = serviceClass.getPresentableFQN();
+                        if(presentableFQN != null) {
+                            if(!presentableFQN.startsWith("\\")) {
+                                presentableFQN = "\\" + presentableFQN;
+                            }
+                        }
+
+                        if (!matchedTags.containsKey(tag)) {
+                            matchedTags.put(tag, new HashSet<String>());
+                        }
+
+                        matchedTags.get(tag).add(presentableFQN);
+                    }
+                }
+            }
+
+        }
+
+        return matchedTags;
+    }
+
     public static Set<String> getTaggedServices(Project project, String tagName) {
 
         // @TODO: cache
@@ -281,6 +329,25 @@ public class ServiceUtil {
         }
 
         return PhpElementsUtil.getClassInterface(project, serviceClass);
+    }
+
+    /**
+     * Resolve "@service" to its class + proxy ServiceCollector for iteration
+     */
+    @Nullable
+    public static PhpClass getServiceClass(@NotNull Project project, @NotNull String serviceName, @NotNull ContainerCollectionResolver.ServiceCollector collector) {
+
+        serviceName = YamlHelper.trimSpecialSyntaxServiceName(serviceName);
+        if(serviceName.length() == 0) {
+            return null;
+        }
+
+        String resolve = collector.resolve(serviceName);
+        if(resolve == null) {
+            return null;
+        }
+
+        return PhpElementsUtil.getClassInterface(project, resolve);
     }
 
     /**
