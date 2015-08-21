@@ -33,6 +33,8 @@ import fr.adrienbrault.idea.symfony2plugin.navigation.NavigationItemEx;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
@@ -40,10 +42,7 @@ import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 public class SymfonySymbolSearchAction extends GotoActionBase {
@@ -165,6 +164,13 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 processor.process(command.getName());
             }
 
+            // Twig Extensions
+            TwigExtensionParser twigExtensionParser = new TwigExtensionParser(project);
+            for (Map<String, TwigExtension> extensionMap : Arrays.asList(twigExtensionParser.getFilters(), twigExtensionParser.getFunctions())) {
+                for(String twigFilter: extensionMap.keySet()) {
+                    processor.process(twigFilter);
+                }
+            }
         }
 
         @Override
@@ -222,6 +228,19 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 }
             }
 
+            // Twig Extensions
+            TwigExtensionParser twigExtensionParser = new TwigExtensionParser(project);
+            for (Map<String, TwigExtension> extensionMap : Arrays.asList(twigExtensionParser.getFilters(), twigExtensionParser.getFunctions())) {
+                for(Map.Entry<String, TwigExtension> twigFunc: extensionMap.entrySet()) {
+                    if(twigFunc.getKey().equals(name)) {
+                        TwigExtension twigExtension = twigFunc.getValue();
+                        PsiElement extensionTarget = TwigExtensionParser.getExtensionTarget(project, twigExtension);
+                        if(extensionTarget != null) {
+                            processor.process(new NavigationItemEx(extensionTarget, name, TwigExtensionParser.getIcon(twigExtension.getTwigExtensionType()), twigExtension.getTwigExtensionType().toString()));
+                        }
+                    }
+                }
+            }
         }
 
         @NotNull

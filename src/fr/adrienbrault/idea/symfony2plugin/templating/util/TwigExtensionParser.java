@@ -37,7 +37,7 @@ public class TwigExtensionParser  {
     private Map<String, TwigExtension> filters;
     private Map<String, TwigExtension> operators;
 
-    public TwigExtensionParser(Project project) {
+    public TwigExtensionParser(@NotNull Project project) {
         this.project = project;
     }
 
@@ -380,6 +380,22 @@ public class TwigExtensionParser  {
 
         return PhpIcons.WEB_ICON;
     }
+
+    @Nullable
+    public static PsiElement getExtensionTarget(@NotNull Project project, @NotNull TwigExtension twigExtension) {
+        String signature = twigExtension.getSignature();
+        if(signature == null) {
+            return null;
+        }
+
+        Collection<? extends PhpNamedElement> elements = PhpIndex.getInstance(project).getBySignature(signature);
+        if(elements.size() == 0) {
+            return null;
+        }
+
+        return elements.iterator().next();
+    }
+
     private static class TwigFilterVisitor extends PsiRecursiveElementWalkingVisitor {
         private final Method method;
         private final Map<String, TwigExtension> filters;
