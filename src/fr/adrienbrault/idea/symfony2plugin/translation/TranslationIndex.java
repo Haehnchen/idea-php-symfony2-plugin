@@ -124,7 +124,6 @@ public class TranslationIndex {
 
         File file = new File(translationPath);
         if(!file.exists() || !file.isDirectory()) {
-            Symfony2ProjectComponent.getLogger().warn("missing translation path: " + file.toString());
             return null;
         }
 
