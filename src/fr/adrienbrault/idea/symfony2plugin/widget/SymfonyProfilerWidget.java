@@ -174,7 +174,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     @Nullable
     @Override
     public String getSelectedValue() {
-        return "Symfony2";
+        return "Symfony";
     }
 
     @NotNull
@@ -198,7 +198,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     @Nullable
     @Override
     public String getTooltipText() {
-        return "Symfony2 Profiler";
+        return "Symfony Profiler";
     }
 
     @Nullable

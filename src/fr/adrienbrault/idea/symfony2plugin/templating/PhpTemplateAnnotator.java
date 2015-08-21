@@ -82,13 +82,13 @@ public class PhpTemplateAnnotator implements Annotator {
         @NotNull
         @Override
         public String getText() {
-            return "Create Template";
+            return "Create template";
         }
 
         @NotNull
         @Override
         public String getFamilyName() {
-            return "Symfony2";
+            return "Symfony";
         }
 
         @Override

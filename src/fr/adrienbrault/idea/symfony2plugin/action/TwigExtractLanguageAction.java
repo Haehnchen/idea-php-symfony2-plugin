@@ -162,11 +162,12 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         final String finalTranslationText = translationText;
         TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(project, (PsiFile) psiFile, domainNames, defaultKey, reselectedDomain, new MyOnOkCallback(project, editor, finalDefaultDomain, finalStartOffset, finalEndOffset, finalTranslationText));
 
-        extractorDialog.setTitle("Symfony2: Extract Translation Key");
+        extractorDialog.setTitle("Symfony: Extract Translation Key");
         extractorDialog.setMinimumSize(new Dimension(600, 200));
         extractorDialog.pack();
         extractorDialog.setLocationRelativeTo(null);
         extractorDialog.setVisible(true);
+        extractorDialog.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
 
     }
 

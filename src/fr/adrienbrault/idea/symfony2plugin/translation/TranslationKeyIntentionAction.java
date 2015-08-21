@@ -51,13 +51,13 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
             }
         }
 
-        return "Create Translation Key: " + filename;
+        return "Create translation key: " + filename;
     }
 
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony2";
+        return "Symfony";
     }
 
     @Override

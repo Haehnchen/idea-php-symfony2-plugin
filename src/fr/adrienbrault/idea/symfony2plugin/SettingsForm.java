@@ -84,7 +84,7 @@ public class SettingsForm implements Configurable {
     @Nls
     @Override
     public String getDisplayName() {
-        return "Symfony2 Plugin";
+        return "Symfony Plugin";
     }
 
     @Nullable

@@ -76,7 +76,7 @@
     <li>Annotator which notice unknown route, template, service, assets, ...</li>
     <li>Several stub indexer to provide some live generation provider in replacement for compiled container</li>
     <li>Linemarker and "Related File" to provide possible goto targets and controller action</li>
-    <li>Search Everywhere support and custom search for only Symfony2 related Symbols "Navigate > Symfony2 Symbol"</li>
+    <li>Search Everywhere support and custom search for only Symfony related Symbols "Navigate > Symfony Symbol"</li>
     <li>Bridge for <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a> to support annotation related stuff</li>
 </ul>
 
@@ -202,7 +202,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" id="Symfony2.SettingsForm" displayName="Symfony2 Plugin"/>
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" id="Symfony2.SettingsForm" displayName="Symfony Plugin"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.TwigSettingsForm"
@@ -310,73 +310,73 @@
         <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerProjectGenerator"/>
         <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerTemplatesFactory"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2PhpRouteWeakInspection" displayName="Weak Route"
+        <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteWeakInspection" displayName="Weak Route"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteWeakInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2PhpRouteMissingInspection" displayName="Route Missing"
+        <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2YamlRouteDuplicateInspection" displayName="Duplicate Route"
+        <localInspection groupPath="Symfony" shortName="Symfony2YamlRouteDuplicateInspection" displayName="Duplicate Route"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2YamlDuplicateServiceKeyInspection" displayName="Duplicate Key"
+        <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateServiceKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2YamlDuplicateParameterKeyInspection" displayName="Duplicate Key"
+        <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateParameterKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateParameterKeyInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
+        <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="Symfony2XmlDuplicateParameterKeyInspection" displayName="Duplicate Key"
+        <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateParameterKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateParameterKeyInspection"/>
 
 
-        <localInspection groupPath="Symfony2" shortName="YamlControllerMethod" displayName="Missing Controller Action"
+        <localInspection groupPath="Symfony" shortName="YamlControllerMethod" displayName="Missing Controller Action"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="YamlDeprecatedClasses" displayName="Deprecated Class"
+        <localInspection groupPath="Symfony" shortName="YamlDeprecatedClasses" displayName="Deprecated Class"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="TaggedExtendsInterfaceClass" displayName="Missing Tag extends/interface statement"
+        <localInspection groupPath="Symfony" shortName="TaggedExtendsInterfaceClass" displayName="Missing Tag extends/interface statement"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="EventMethodCall" displayName="Create Method"
+        <localInspection groupPath="Symfony" shortName="EventMethodCall" displayName="Create Method"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="XmlServiceArgumentInspection" displayName="Symfony: XML Arguments"
+        <localInspection groupPath="Symfony" shortName="XmlServiceArgumentInspection" displayName="Symfony: XML Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection"/>
 
-        <localInspection groupPath="Symfony2" shortName="YamlServiceArgumentInspection" displayName="Symfony: Yaml Arguments"
+        <localInspection groupPath="Symfony" shortName="YamlServiceArgumentInspection" displayName="Symfony: Yaml Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
