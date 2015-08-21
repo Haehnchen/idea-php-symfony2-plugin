@@ -5,15 +5,21 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.LanguageFileType;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.ID;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
@@ -223,6 +229,25 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     public void assertCheckHighlighting(String filename, String result) {
         myFixture.configureByText(filename, result);
         myFixture.checkHighlighting();
+    }
+
+    public void assertIndexContains(@NotNull ID<String, ?> id, @NotNull String... keys) {
+        for (String key : keys) {
+
+            final Collection<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+
+            FileBasedIndexImpl.getInstance().getFilesWithKey(id, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+                @Override
+                public boolean process(VirtualFile virtualFile) {
+                    virtualFiles.add(virtualFile);
+                    return true;
+                }
+            }, GlobalSearchScope.allScope(getProject()));
+
+            if(virtualFiles.size() == 0) {
+                fail(String.format("Fail that ID '%s' contains '%s'", id.toString(), key));
+            }
+        }
     }
 
     protected void createDummyFiles(String... files) throws Exception {
