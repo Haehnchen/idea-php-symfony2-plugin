@@ -12,8 +12,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
-import fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchForm;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -132,9 +132,9 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                     public void run() {
                         YAMLKeyValue psiElement = YamlKeyFinder.find(yamlDocu, keyName);
                         if(psiElement != null) {
-                            Symfony2SearchForm.navigateToPsiElement(psiElement.getValue());
+                            IdeHelper.navigateToPsiElement(psiElement.getValue());
                         } else {
-                            Symfony2SearchForm.navigateToPsiElement(yamlFile);
+                            IdeHelper.navigateToPsiElement(yamlFile);
                         }
                     }
                 });

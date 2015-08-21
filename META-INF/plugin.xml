@@ -381,11 +381,6 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
-        <toolWindow id="Symfony2" anchor="left" secondary="false" icon="SymfonyIcons.SymfonyToolWindow"
-                    factoryClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
-                    conditionClass="fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchToolWindowFactory"
-                    />
-
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
@@ -508,7 +503,7 @@
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
-        <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony2 Symbol..." icon="SymfonyIcons.Symfony">
+        <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony Symbol..." icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GoToTargetEx"/>
         </action>
 

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -11,6 +12,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -156,6 +158,29 @@ public class IdeHelper {
         });
 
         Notifications.Bus.notify(notification, project);
+    }
+
+    public static void navigateToPsiElement(@NotNull PsiElement psiElement) {
+        final Navigatable descriptor = PsiNavigationSupport.getInstance().getDescriptor(psiElement);
+        if (descriptor != null) {
+            descriptor.navigate(true);
+        }
+
+        /*
+        Project project = psiElement.getProject();
+        PsiElement navElement = psiElement.getNavigationElement();
+        navElement = TargetElementUtilBase.getInstance().getGotoDeclarationTarget(psiElement, navElement);
+        if (navElement instanceof Navigatable) {
+            if (((Navigatable)navElement).canNavigate()) {
+                ((Navigatable)navElement).navigate(true);
+            }
+        }  else if (navElement != null) {
+            int navOffset = navElement.getTextOffset();
+            VirtualFile virtualFile = PsiUtilCore.getVirtualFile(navElement);
+            if (virtualFile != null) {
+                new OpenFileDescriptor(project, virtualFile, navOffset).navigate(true);
+            }
+        }*/
     }
 
 }

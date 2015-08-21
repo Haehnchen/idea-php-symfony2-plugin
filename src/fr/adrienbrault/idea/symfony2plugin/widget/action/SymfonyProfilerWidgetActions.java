@@ -11,7 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.toolwindow.Symfony2SearchForm;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +43,7 @@ public class SymfonyProfilerWidgetActions {
 
             // @TODO: multiple targets?
             if(psiFiles.size() > 0) {
-                Symfony2SearchForm.navigateToPsiElement(psiFiles.get(0));
+                IdeHelper.navigateToPsiElement(psiFiles.get(0));
             }
 
         }
@@ -64,7 +64,7 @@ public class SymfonyProfilerWidgetActions {
         public void actionPerformed(AnActionEvent e) {
             PsiElement[] targets = RouteHelper.getMethods(project, this.routeName);
             if(targets.length > 0) {
-                Symfony2SearchForm.navigateToPsiElement(targets[0]);
+                IdeHelper.navigateToPsiElement(targets[0]);
             }
         }
 
@@ -85,7 +85,7 @@ public class SymfonyProfilerWidgetActions {
         public void actionPerformed(AnActionEvent e) {
             PsiElement[] method = RouteHelper.getMethodsOnControllerShortcut(project, this.methodShortcut);
             if(method.length > 0) {
-                Symfony2SearchForm.navigateToPsiElement(method[0]);
+                IdeHelper.navigateToPsiElement(method[0]);
             }
         }
     }
