@@ -300,7 +300,7 @@ public class EntityHelper {
         }
 
         String methodName = "get" + StringUtils.camelize(fieldName.toLowerCase(), false);
-        Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
+        Method method = phpClass.findMethodByName(methodName);
         if(method != null) {
             psiElements.add(method);
         }

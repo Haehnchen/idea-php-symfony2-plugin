@@ -212,7 +212,7 @@ public class Symfony2InterfacesUtil {
     }
 
     @Nullable
-    protected Method getInterfaceMethod(Project project, String interfaceFQN, String methodName) {
+    protected Method getInterfaceMethod(@NotNull Project project, @NotNull String interfaceFQN, @NotNull String methodName) {
 
         Collection<PhpClass> interfaces = PhpIndex.getInstance(project).getInterfacesByFQN(interfaceFQN);
 
@@ -220,17 +220,12 @@ public class Symfony2InterfacesUtil {
             return null;
         }
 
-        return findClassMethodByName(interfaces.iterator().next(), methodName);
+        return interfaces.iterator().next().findMethodByName(methodName);
     }
 
     @Nullable
     protected Method getClassMethod(Project project, String classFQN, String methodName) {
         return PhpElementsUtil.getClassMethod(project, classFQN, methodName);
-    }
-
-    @Nullable
-    protected Method findClassMethodByName(PhpClass phpClass, String methodName) {
-        return PhpElementsUtil.getClassMethod(phpClass, methodName);
     }
 
     protected boolean isImplementationOfInterface(PhpClass phpClass, PhpClass phpInterface) {

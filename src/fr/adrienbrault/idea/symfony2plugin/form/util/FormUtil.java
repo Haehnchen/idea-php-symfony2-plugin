@@ -158,8 +158,8 @@ public class FormUtil {
             return null;
         }
 
-        Method method = PhpElementsUtil.getClassMethod(formPhpClass, "buildForm");
-        if(method == null) {
+        Method method = formPhpClass.findMethodByName("buildForm");
+        if (method == null) {
             return null;
         }
 
@@ -193,7 +193,7 @@ public class FormUtil {
             return aliases;
         }
 
-        Method method = PhpElementsUtil.getClassMethod(phpClass, "getName");
+        Method method = phpClass.findMethodByName("getName");
         if(method != null) {
             method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                 @Override
@@ -374,7 +374,7 @@ public class FormUtil {
         final Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
 
         for(final PhpClass phpClass: phpClasses) {
-            Method method = PhpElementsUtil.getClassMethod(phpClass, "getName");
+            Method method = phpClass.findMethodByName("getName");
             if(method != null) {
                 method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                     @Override

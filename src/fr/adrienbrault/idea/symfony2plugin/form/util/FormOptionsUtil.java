@@ -49,7 +49,7 @@ public class FormOptionsUtil {
             if(!phpClass.isAbstract() && !phpClass.isInterface() && !PhpUnitUtil.isTestClass(phpClass)) {
                 String className = phpClass.getPresentableFQN();
                 if(className != null && !stringSet.contains(className)) {
-                    visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, true, PhpElementsUtil.getClassMethod(phpClass, EXTENDED_TYPE_METHOD));
+                    visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, true, phpClass.findMethodByName(EXTENDED_TYPE_METHOD));
                 }
             }
         }
@@ -139,7 +139,7 @@ public class FormOptionsUtil {
 
         for(PhpClass phpClass: phpClasses) {
             for(String stringMethod: new String[] {"finishView", "buildView"} ) {
-                Method method = PhpElementsUtil.getClassMethod(phpClass, stringMethod);
+                Method method = phpClass.findMethodByName(stringMethod);
                 if(method != null) {
 
                     // self method
@@ -246,8 +246,8 @@ public class FormOptionsUtil {
         getDefaultOptions(project, phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
 
         // recursive search for parent form types
-        PsiElement parentMethod = PhpElementsUtil.getClassMethod(phpClass, "getParent");
-        if(parentMethod != null && depth < 10) {
+        PsiElement parentMethod = phpClass.findMethodByName("getParent");
+        if (parentMethod != null && depth < 10) {
             PhpReturn phpReturn = PsiTreeUtil.findChildOfType(parentMethod, PhpReturn.class);
             if(phpReturn != null) {
                 PhpPsiElement returnValue = phpReturn.getFirstPsiChild();
@@ -284,7 +284,7 @@ public class FormOptionsUtil {
 
         for(String methodName: new String[] {"setDefaultOptions", "configureOptions"}) {
 
-            Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
+            Method method = phpClass.findMethodByName(methodName);
             if(method == null) {
                 continue;
             }

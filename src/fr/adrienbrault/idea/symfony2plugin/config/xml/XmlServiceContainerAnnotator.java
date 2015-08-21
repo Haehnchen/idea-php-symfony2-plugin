@@ -84,7 +84,7 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
                         // finally check method type hint
                         if(phpClass != null) {
-                            Method method = PhpElementsUtil.getClassMethod(phpClass, methodName);
+                            Method method = phpClass.findMethodByName(methodName);
                             if(method != null) {
                                 String serviceName = ((XmlAttributeValue) psiElement).getValue();
                                 attachMethodInstances(psiElement, serviceName, method, getArgumentIndex(currentXmlTag), holder);

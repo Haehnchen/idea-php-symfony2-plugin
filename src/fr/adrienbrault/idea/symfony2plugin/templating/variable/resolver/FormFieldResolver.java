@@ -95,7 +95,7 @@ public class FormFieldResolver implements TwigTypeResolver {
                     return;
                 }
 
-                Method method = PhpElementsUtil.getClassMethod(phpClass, "buildForm");
+                Method method = phpClass.findMethodByName("buildForm");
                 if(method == null) {
                     return;
                 }

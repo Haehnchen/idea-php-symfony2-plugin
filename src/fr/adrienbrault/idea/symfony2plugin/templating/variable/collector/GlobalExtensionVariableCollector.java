@@ -25,7 +25,7 @@ public class GlobalExtensionVariableCollector implements TwigFileVariableCollect
         for(PhpClass phpClass : phpIndex.getAllSubclasses("\\Twig_ExtensionInterface")) {
             if(!PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
                 // @TODO: signature vs getMethod faster?
-                Method method = PhpElementsUtil.getClassMethod(phpClass, "getGlobals");
+                Method method = phpClass.findMethodByName("getGlobals");
                 if(method != null) {
                     Collection<PhpReturn> phpReturns = PsiTreeUtil.findChildrenOfType(method, PhpReturn.class);
                     for(PhpReturn phpReturn: phpReturns) {

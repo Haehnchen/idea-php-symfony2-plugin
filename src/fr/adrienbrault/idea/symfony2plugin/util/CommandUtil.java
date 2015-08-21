@@ -18,7 +18,7 @@ public class CommandUtil {
         Map<String, String> map = new HashMap<String, String>();
         Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Helper\\HelperInterface");
         for(PhpClass phpClass: phpClasses) {
-            Method method = PhpElementsUtil.getClassMethod(phpClass, "getName");
+            Method method = phpClass.findMethodByName("getName");
             for(PhpReturn phpReturn: PsiTreeUtil.findChildrenOfType(method, PhpReturn.class)) {
                 String nameValue = PhpElementsUtil.getStringValue(phpReturn.getArgument());
                 if(nameValue != null) {

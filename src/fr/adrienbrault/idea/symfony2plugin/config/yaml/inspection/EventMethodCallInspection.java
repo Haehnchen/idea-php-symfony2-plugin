@@ -234,7 +234,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         }
 
         final String methodName = PsiElementUtils.trimQuote(psiElement.getText());
-        if(PhpElementsUtil.getClassMethod(phpClass, methodName) != null) {
+        if(phpClass.findMethodByName(methodName) != null) {
             return;
         }
 

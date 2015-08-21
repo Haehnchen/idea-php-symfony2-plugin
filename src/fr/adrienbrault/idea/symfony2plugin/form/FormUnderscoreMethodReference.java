@@ -46,8 +46,8 @@ public class FormUnderscoreMethodReference  extends PsiPolyVariantReferenceBase<
 
         // provide setter fallback for non model class or or unknown methods
         String methodCamel = StringUtils.camelize(element.getContents());
-        Method method = PhpElementsUtil.getClassMethod(phpClass, "set" + methodCamel);
-        if(method != null) {
+        Method method = phpClass.findMethodByName("set" + methodCamel);
+        if (method != null) {
             psiElements.add(method);
         }
 

@@ -43,7 +43,7 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
             return new ResolveResult[0];
         }
 
-        Method targetMethod = PhpElementsUtil.getClassMethod(phpClass, this.method);
+        Method targetMethod = phpClass.findMethodByName(this.method);
         if(targetMethod == null) {
             return new ResolveResult[0];
         }

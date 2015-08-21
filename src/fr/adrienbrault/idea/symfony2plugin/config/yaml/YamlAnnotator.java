@@ -265,8 +265,8 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        Method method = PhpElementsUtil.getClassMethod(serviceClass, methodName);
-        if(method == null) {
+        Method method = serviceClass.findMethodByName(methodName);
+        if (method == null) {
             return;
         }
 
