@@ -232,6 +232,14 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     }
 
     public void assertIndexContains(@NotNull ID<String, ?> id, @NotNull String... keys) {
+        assertIndex(id, false, keys);
+    }
+
+    public void assertIndexNotContains(@NotNull ID<String, ?> id, @NotNull String... keys) {
+        assertIndex(id, true, keys);
+    }
+
+    public void assertIndex(@NotNull ID<String, ?> id, boolean notCondition, @NotNull String... keys) {
         for (String key : keys) {
 
             final Collection<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
@@ -244,7 +252,9 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
                 }
             }, GlobalSearchScope.allScope(getProject()));
 
-            if(virtualFiles.size() == 0) {
+            if(notCondition && virtualFiles.size() > 0) {
+                fail(String.format("Fail that ID '%s' not contains '%s'", id.toString(), key));
+            } else if(!notCondition && virtualFiles.size() == 0) {
                 fail(String.format("Fail that ID '%s' contains '%s'", id.toString(), key));
             }
         }

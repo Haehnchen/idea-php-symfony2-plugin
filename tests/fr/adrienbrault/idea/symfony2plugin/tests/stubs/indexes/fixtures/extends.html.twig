@@ -1,0 +1,3 @@
+{% extends 'extends.html.twig' %}
+{% extends ajax ? 'extends_statement_0.html.twig' : 'extends_statement_1.html.twig' %}
+{% extends request.ajax ? foo ~ "extends_statement_2.html.twig" : "extends_statement_3.html.twig" %}
