@@ -4,7 +4,6 @@ import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;

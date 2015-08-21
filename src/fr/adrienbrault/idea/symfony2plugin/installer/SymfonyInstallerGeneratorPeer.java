@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.installer;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.platform.WebProjectGenerator;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

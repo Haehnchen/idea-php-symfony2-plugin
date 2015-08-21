@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
-import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;

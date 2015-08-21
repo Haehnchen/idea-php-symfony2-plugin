@@ -16,9 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 

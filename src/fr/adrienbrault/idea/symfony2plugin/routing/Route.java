@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

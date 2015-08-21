@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;

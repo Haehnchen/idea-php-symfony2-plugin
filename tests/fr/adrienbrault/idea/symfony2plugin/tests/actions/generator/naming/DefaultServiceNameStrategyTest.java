@@ -3,8 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.actions.generator.naming;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

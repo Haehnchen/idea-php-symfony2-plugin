@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -9,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>

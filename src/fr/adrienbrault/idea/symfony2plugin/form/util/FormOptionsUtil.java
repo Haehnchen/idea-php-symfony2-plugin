@@ -10,7 +10,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;

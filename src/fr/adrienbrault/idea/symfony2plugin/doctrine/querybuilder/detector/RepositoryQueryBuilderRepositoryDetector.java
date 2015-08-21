@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector;
 
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;

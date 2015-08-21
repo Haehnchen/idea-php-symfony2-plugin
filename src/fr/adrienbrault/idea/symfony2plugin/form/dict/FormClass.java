@@ -3,8 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.form.dict;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-
 public class FormClass {
 
     private final FormClassEnum typeEnum;

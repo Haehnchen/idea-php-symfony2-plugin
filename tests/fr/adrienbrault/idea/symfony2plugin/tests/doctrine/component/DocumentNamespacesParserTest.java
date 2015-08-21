@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.component;
 
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import org.junit.Assert;
 import org.junit.Test;
 

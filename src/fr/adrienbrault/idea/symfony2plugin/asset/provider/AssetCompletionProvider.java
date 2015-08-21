@@ -13,7 +13,6 @@ import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 

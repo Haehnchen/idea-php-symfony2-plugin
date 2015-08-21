@@ -6,7 +6,6 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
@@ -19,7 +18,6 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupEleme
 import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineYamlAnnotationLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;

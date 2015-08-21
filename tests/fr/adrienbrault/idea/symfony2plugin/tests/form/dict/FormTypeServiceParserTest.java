@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeMap;
-
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import org.junit.Assert;
 import org.junit.Test;

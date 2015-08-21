@@ -5,8 +5,6 @@ import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetEnum;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ResourceFileInsertHandler;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

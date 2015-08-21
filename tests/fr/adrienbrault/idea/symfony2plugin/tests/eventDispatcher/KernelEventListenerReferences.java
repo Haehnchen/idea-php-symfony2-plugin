@@ -1,9 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.eventDispatcher;
 
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 

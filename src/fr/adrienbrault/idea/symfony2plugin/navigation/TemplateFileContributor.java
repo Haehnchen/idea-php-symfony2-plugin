@@ -5,7 +5,6 @@ import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;

@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.variable;
 
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 

@@ -1,16 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
 
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Map;
 
 public class RouteHelperTest extends Assert {
 

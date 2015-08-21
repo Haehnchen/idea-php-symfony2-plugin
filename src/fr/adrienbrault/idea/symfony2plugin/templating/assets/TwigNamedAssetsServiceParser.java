@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.assets;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;

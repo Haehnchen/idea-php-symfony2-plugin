@@ -8,8 +8,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 

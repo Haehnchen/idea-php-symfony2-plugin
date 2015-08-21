@@ -15,8 +15,6 @@ import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.awt.*;
-
 public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
     public SymfonyContainerServiceBuilder() {

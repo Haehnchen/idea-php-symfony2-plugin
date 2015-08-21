@@ -11,8 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;

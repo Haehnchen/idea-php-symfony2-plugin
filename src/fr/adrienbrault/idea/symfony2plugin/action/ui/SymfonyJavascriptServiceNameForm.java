@@ -1,10 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.util.ui.UIUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +11,6 @@ import javax.script.ScriptException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 
 public class SymfonyJavascriptServiceNameForm extends JDialog {
     @NotNull

@@ -1,13 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.yaml;
 
-import com.intellij.codeInsight.intention.IntentionAction;
-import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
-import com.intellij.testFramework.fixtures.CodeInsightTestUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.yaml.YAMLFileType;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

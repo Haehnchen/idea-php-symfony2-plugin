@@ -4,8 +4,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 

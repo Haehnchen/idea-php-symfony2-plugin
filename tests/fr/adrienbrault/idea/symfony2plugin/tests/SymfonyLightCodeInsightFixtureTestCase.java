@@ -13,7 +13,6 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 
 import java.io.File;
