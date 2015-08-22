@@ -165,7 +165,7 @@ public class ContainerCollectionResolver {
                 return this.services;
             }
 
-            this.services = new HashMap<String, ContainerService>();
+            this.services = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
                 for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
@@ -194,7 +194,7 @@ public class ContainerCollectionResolver {
 
         private Map<String, ContainerService> convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
 
-            Map<String, ContainerService> serviceMap = new HashMap<String, ContainerService>();
+            Map<String, ContainerService> serviceMap = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
 
             for(String[] serviceDefinitionArray: serviceDefinitions) {
 
@@ -259,7 +259,7 @@ public class ContainerCollectionResolver {
 
         private Set<String> getNames() {
 
-            Set<String> serviceNames = new HashSet<String>();
+            Set<String> serviceNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
                 serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
@@ -343,7 +343,7 @@ public class ContainerCollectionResolver {
                 return this.containerParameterMap;
             }
 
-            this.containerParameterMap = new HashMap<String, ContainerParameter>();
+            this.containerParameterMap = new TreeMap<String, ContainerParameter>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
                 for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
@@ -384,7 +384,7 @@ public class ContainerCollectionResolver {
                 return this.containerParameterMap.keySet();
             }
 
-            Set<String> parameterNames = new HashSet<String>();
+            Set<String> parameterNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
                 parameterNames.addAll(ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().keySet());
