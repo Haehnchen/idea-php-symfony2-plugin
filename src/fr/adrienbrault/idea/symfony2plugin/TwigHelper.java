@@ -20,10 +20,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
-import com.jetbrains.twig.elements.TwigBlockTag;
-import com.jetbrains.twig.elements.TwigCompositeElement;
-import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigExtendsTag;
+import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -62,6 +59,16 @@ public class TwigHelper {
 
     private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_TWIG = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_TWIG");
     private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_ALL = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_ALL");
+
+    /**
+     * ([) "FOO", 'FOO' (])
+     */
+    private static final ElementPattern<PsiElement> STRING_WRAP_PATTERN = PlatformPatterns.or(
+        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
+    );
 
     @Deprecated
     public static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project, boolean useTwig, boolean usePhp) {
@@ -909,8 +916,8 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(PsiWhiteSpace.class)
                 )
             .withParent(PlatformPatterns
-                .psiElement(TwigCompositeElement.class)
-                .withText(PlatformPatterns.string().startsWith("{% " + tagName))
+                    .psiElement(TwigCompositeElement.class)
+                    .withText(PlatformPatterns.string().startsWith("{% " + tagName))
             );
     }
     public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern() {
@@ -957,14 +964,14 @@ public class TwigHelper {
                 ),
                 PlatformPatterns.psiElement(TwigTokenTypes.IMPORT_KEYWORD)
             ).andNot(PlatformPatterns
-                .psiElement(TwigTokenTypes.IDENTIFIER)
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
-                )
+                    .psiElement(TwigTokenTypes.IDENTIFIER)
+                    .afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
+                    )
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
@@ -1284,11 +1291,11 @@ public class TwigHelper {
             public boolean process(VirtualFile virtualFile) {
 
                 PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile != null) {
+                if (psiFile != null) {
                     PsiTreeUtil.processElements(psiFile, new PsiElementProcessor() {
                         public boolean execute(@NotNull PsiElement psiElement) {
 
-                            if(getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
+                            if (getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
                                 targets.add(psiElement);
                             }
 
@@ -1334,6 +1341,79 @@ public class TwigHelper {
     }
 
     /**
+     * {% include 'foo.html.twig' %}
+     * {% include ['foo.html.twig', 'foo_1.html.twig'] %}
+     */
+    @NotNull
+    public static Collection<String> getIncludeTagStrings(@NotNull TwigTagWithFileReference twigTagWithFileReference) {
+
+        if(twigTagWithFileReference.getNode().getElementType() != TwigElementTypes.INCLUDE_TAG) {
+            return Collections.emptySet();
+        }
+
+        Collection<String> strings = new LinkedHashSet<String>();
+        PsiElement firstChild = twigTagWithFileReference.getFirstChild();
+        if(firstChild == null) {
+            return strings;
+        }
+
+        // {% include 'foo.html.twig' %}
+        PsiElement psiSingleString = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+                )
+        );
+
+        // single match dont need to go deeper in conditional check, so stop here
+        if(psiSingleString != null) {
+            String text = psiSingleString.getText();
+            if(StringUtils.isNotBlank(text)) {
+                strings.add(text);
+            }
+            return strings;
+        }
+
+        // {% include ['foo.html.twig', 'foo_1.html.twig'] %}
+        PsiElement arrayMatch = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ));
+        if(arrayMatch != null) {
+
+            // match: "([,)''(,])"
+            Collection<PsiElement> questString = PsiElementUtils.getNextSiblingOfTypes(arrayMatch, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                    .afterLeafSkipping(
+                        STRING_WRAP_PATTERN,
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
+                        )
+                    )
+                    .beforeLeafSkipping(
+                        STRING_WRAP_PATTERN,
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                            PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
+                        )
+                    )
+            );
+
+            for (PsiElement psiElement : questString) {
+                String text = psiElement.getText();
+                if(StringUtils.isNotBlank(text)) {
+                    strings.add(text);
+                }
+            }
+        }
+
+        PsiElement psiQuestion = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.QUESTION));
+        if(psiQuestion != null) {
+            strings.addAll(getTernaryStrings(psiQuestion));
+        }
+
+        return strings;
+
+    }
+
+    /**
      * Find "extends" template in twig TwigExtendsTag
      *
      * {% extends '::base.html.twig' %}
@@ -1354,12 +1434,7 @@ public class TwigHelper {
         // single {% extends '::base.html.twig'
         PsiElement psiSingleString = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
                 .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
-                    ),
+                    STRING_WRAP_PATTERN,
                     PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
                 )
         );
@@ -1375,55 +1450,51 @@ public class TwigHelper {
 
         PsiElement psiQuestion = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.QUESTION));
         if(psiQuestion != null) {
+            strings.addAll(getTernaryStrings(psiQuestion));
+        }
 
-            // match ? "foo" :
-            PsiElement questString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-                    .afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.QUESTION)
-                    ).beforeLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.COLON)
-                    )
-            );
+        return strings;
+    }
 
-            if(questString != null) {
-                String text = questString.getText();
-                if(StringUtils.isNotBlank(text)) {
-                    strings.add(text);
-                }
+    /**
+     * "foo ? 'foo' : 'bar'"
+     */
+    private static Collection<String> getTernaryStrings(@NotNull PsiElement psiQuestion) {
+
+        Collection<String> strings = new TreeSet<String>();
+
+        // match ? "foo" :
+        PsiElement questString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.psiElement(TwigTokenTypes.QUESTION)
+                )
+                .beforeLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.psiElement(TwigTokenTypes.COLON)
+                )
+        );
+
+        if(questString != null) {
+            String text = questString.getText();
+            if(StringUtils.isNotBlank(text)) {
+                strings.add(text);
             }
+        }
 
-            // : "foo"
-            PsiElement colonString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-                    .afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.COLON)
-                    )
-            );
+        // : "foo"
+        PsiElement colonString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.psiElement(TwigTokenTypes.COLON)
+                )
+        );
 
-            if(colonString != null) {
-                String text = colonString.getText();
-                if(StringUtils.isNotBlank(text)) {
-                    strings.add(text);
-                }
+        if(colonString != null) {
+            String text = colonString.getText();
+            if(StringUtils.isNotBlank(text)) {
+                strings.add(text);
             }
-
         }
 
         return strings;

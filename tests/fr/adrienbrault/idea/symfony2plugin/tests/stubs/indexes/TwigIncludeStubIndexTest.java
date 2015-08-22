@@ -36,7 +36,8 @@ public class TwigIncludeStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         assertIndexContains(TwigIncludeStubIndex.KEY,
             "include_foo_quote.html.twig", "include_foo_double_quote.html.twig", "include_func_func_quote.html.twig",
             "include_func_func_quote.html.twig", "source_quote.html.twig", "source_double_quote.html.twig",
-            "include_func_space.html.twig"
+            "include_func_space.html.twig", "include_statement_0.html.twig", "include_statement_0.html.twig",
+            "include_array_0.html.twig", "include_array_1.html.twig"
         );
     }
 

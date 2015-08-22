@@ -1,20 +1,25 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.tree.IElementType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
+import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTwigExtendsTagTemplates
+ * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getIncludeTagStrings
  * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getBlocksInFile
  */
 public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase {
@@ -85,11 +90,59 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertSize(1, buildBlocks("{%- block 'foo' -%}").iterator().next().getBlock());
     }
 
+    /**
+     * @see TwigHelper#getIncludeTagStrings
+     */
+    public void testIncludeTagStrings() {
+
+        assertEqual(getIncludeTemplates("{% include 'foo.html.twig' %}"), "foo.html.twig");
+        assertSize(0, getIncludeTemplates("{% include '' %}"));
+        assertEqual(getIncludeTemplates("{% include ['foo.html.twig'] %}"), "foo.html.twig");
+        assertEqual(getIncludeTemplates("{% include ['foo.html.twig',''] %}"), "foo.html.twig");
+
+        assertEqual(getIncludeTemplates(
+                "{% include ['foo.html.twig', 'foo_1.html.twig', , ~ 'foo_2.html.twig', 'foo_3.html.twig' ~, 'foo' ~ 'foo_4.html.twig', 'end.html.twig'] %}"),
+            "foo.html.twig", "foo_1.html.twig", "end.html.twig"
+        );
+    }
+
+    /**
+     * @see TwigHelper#getIncludeTagStrings
+     */
+    public void testIncludeTagStringsTernary() {
+        assertEqual(getIncludeTemplates("{% include ajax ? 'include_statement_0.html.twig' : \"include_statement_1.html.twig\" %}"), "include_statement_0.html.twig", "include_statement_1.html.twig");
+        assertEqual(getIncludeTemplates("{% include ajax ? 'include_statem' ~ 'aa' ~ 'ent_0.html.twig' : 'include_statement_1.html.twig' %}"), "include_statement_1.html.twig");
+        assertEqual(getIncludeTemplates("{% include ajax ? 'include_statement_0.html.twig' : ~ 'include_statement_1.html.twig' %}"), "include_statement_0.html.twig");
+        assertSize(0, getIncludeTemplates("{% include ajax ? 'include_statement_0.html.twig' ~ : ~ 'include_statement_1.html.twig' %}"));
+    }
+
+    /**
+     * @see TwigHelper#getIncludeTagStrings
+     */
+    public void testIncludeTagNonAllowedTags() {
+        assertSize(0, getIncludeTemplates("{% from 'foo.html.twig' %}", TwigElementTypes.IMPORT_TAG));
+        assertSize(0, getIncludeTemplates("{% import 'foo.html.twig' %}", TwigElementTypes.IMPORT_TAG));
+    }
+
+    private void assertEqual(Collection<String> c, String... values) {
+        if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
+            fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));
+        }
+    }
+
     private Collection<String> buildExtendsTagList(String string) {
         return TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) TwigElementFactory.createPsiElement(getProject(), string, TwigElementTypes.EXTENDS_TAG));
     }
 
     private Collection<TwigBlock> buildBlocks(String content) {
         return TwigHelper.getBlocksInFile((TwigFile) PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + TwigFileType.INSTANCE.getDefaultExtension(), TwigFileType.INSTANCE, content, System.currentTimeMillis(), false));
+    }
+
+    private Collection<String> getIncludeTemplates(@NotNull String content) {
+        return getIncludeTemplates(content, TwigElementTypes.INCLUDE_TAG);
+    }
+
+    private Collection<String> getIncludeTemplates(@NotNull String content, @NotNull final IElementType type) {
+        return TwigHelper.getIncludeTagStrings((TwigTagWithFileReference) TwigElementFactory.createPsiElement(getProject(), content, type));
     }
 }

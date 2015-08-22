@@ -12,6 +12,7 @@ import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigCompositeElement;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -57,13 +58,9 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
                     public boolean isAccepted(PsiElement psiElement) {
 
                         // {% include %}
-                        if(psiElement instanceof TwigTagWithFileReference) {
-                            PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("include"));
-                            if(includeTag != null) {
-                                String templateName = includeTag.getText();
-                                if(StringUtils.isNotBlank(templateName)) {
-                                    map.put(templateName, null);
-                                }
+                        if(psiElement instanceof TwigTagWithFileReference && psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
+                            for (String templateName : TwigHelper.getIncludeTagStrings((TwigTagWithFileReference) psiElement)) {
+                                map.put(templateName, null);
                             }
                         }
 
