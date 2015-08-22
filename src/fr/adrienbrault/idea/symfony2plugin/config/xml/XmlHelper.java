@@ -93,6 +93,23 @@ public class XmlHelper {
     }
 
     /**
+     * <service id="service_container" />
+     */
+    public static XmlAttributeValuePattern getServiceIdNamePattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                    .xmlAttribute("id")
+                    .withParent(XmlPatterns
+                            .xmlTag()
+                            .withName("service")
+                    )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * <factory service="factory_service" method="createFooMethod" />
      */
     public static XmlAttributeValuePattern getFactoryServiceCompletionPattern() {
