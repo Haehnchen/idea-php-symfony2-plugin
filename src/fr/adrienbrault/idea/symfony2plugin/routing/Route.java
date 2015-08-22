@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class Route {
 
@@ -49,11 +51,11 @@ public class Route {
         // its not valid to provide nullable value,
         // but index based allows this
         if(indexed != null) {
-            if(indexed.length >= 1 && indexed[0].length() > 0) {
+            if(indexed.length >= 1 && StringUtils.isNotBlank(indexed[0])) {
                 this.controller = indexed[0];
             }
 
-            if(indexed.length >= 2 && indexed[1].length() > 0) {
+            if(indexed.length >= 2 && StringUtils.isNotBlank(indexed[1])) {
                 this.path = indexed[1];
             }
         }
