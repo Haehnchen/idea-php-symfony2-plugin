@@ -4,10 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -20,6 +17,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
@@ -648,5 +646,31 @@ public class TwigUtil {
         return TwigHelper.normalizeTemplateName(containingBundle.getName() + ":" + relative.substring("Resources/views/".length(), relative.length()));
     }
 
+    /**
+     * {% include "foo/#{segment.typeKey}.html.twig" with {'segment': segment} %}
+     * {% include "foo/#{1 + 2}.html.twig" %}
+     * {% include "foo/" ~ segment.typeKey ~ ".html.twig" %}
+     */
+    public static boolean isValidTemplateString(@NotNull PsiElement element) {
+        String templateName = element.getText();
 
+        if(templateName.matches(".*#\\{.*\\}.*")) {
+            return false;
+        }
+
+        if(PlatformPatterns.psiElement()
+            .afterLeafSkipping(
+                TwigHelper.STRING_WRAP_PATTERN,
+                PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
+            ).accepts(element) ||
+            PlatformPatterns.psiElement().beforeLeafSkipping(
+                TwigHelper.STRING_WRAP_PATTERN,
+                PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
+            ).accepts(element)) {
+
+            return false;
+        };
+
+        return true;
+    }
 }

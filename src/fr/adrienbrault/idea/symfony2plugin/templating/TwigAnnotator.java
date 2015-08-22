@@ -138,7 +138,7 @@ public class TwigAnnotator implements Annotator {
 
     private void annotateTemplate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
 
-        if(!(TwigHelper.getTemplateFileReferenceTagPattern().accepts(element) || TwigHelper.getPrintBlockFunctionPattern("include", "source").accepts(element))) {
+        if(!(TwigHelper.getTemplateFileReferenceTagPattern().accepts(element) || TwigHelper.getPrintBlockFunctionPattern("include", "source").accepts(element)) || !TwigUtil.isValidTemplateString(element)) {
             return;
         }
 

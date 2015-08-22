@@ -63,7 +63,7 @@ public class TwigHelper {
     /**
      * ([) "FOO", 'FOO' (])
      */
-    private static final ElementPattern<PsiElement> STRING_WRAP_PATTERN = PlatformPatterns.or(
+    public static final ElementPattern<PsiElement> STRING_WRAP_PATTERN = PlatformPatterns.or(
         PlatformPatterns.psiElement(PsiWhiteSpace.class),
         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
         PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
