@@ -255,8 +255,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {% transchoice from "<carpet>" %}
         extend(CompletionType.BASIC, TwigHelper.getTranslationTokenTagFromPattern(), new TranslationDomainCompletionProvider());
 
-        extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("controller"),  new ControllerCompletionProvider());
+        // {{ controller('<caret>') }}
+        // {% render(controller('<caret>')) %}
+        extend(CompletionType.BASIC, TwigHelper.getPrintBlockOrTagFunctionPattern("controller"), new ControllerCompletionProvider());
 
+        // {% render '<caret>' %}"
+        extend(CompletionType.BASIC, TwigHelper.getStringAfterTagNamePattern("render"), new ControllerCompletionProvider());
 
         // assets completion:
         // stylesheets and javascripts tags

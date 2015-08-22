@@ -473,6 +473,59 @@ public class TwigHelper {
     }
 
     /**
+     * Check for {{ include('|')  }}, {% include('|') %}
+     *
+     * @param functionName twig function name
+     */
+    public static ElementPattern<PsiElement> getPrintBlockOrTagFunctionPattern(String... functionName) {
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
+                )
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {% render "foo"
+     *
+     * @param tagName twig tag name
+     */
+    public static ElementPattern<PsiElement> getStringAfterTagNamePattern(@NotNull String tagName) {
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(tagName)
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.TAG)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
      * Check for {% if foo is "foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenPattern() {
@@ -639,6 +692,8 @@ public class TwigHelper {
     }
 
     /**
+     * use getStringAfterTagNamePattern @TODO
+     *
      * {% trans_default_domain '<carpet>' %}
      * {% trans_default_domain <carpet> %}
      */

@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
+import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -14,6 +16,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
 
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("TwigFilterExtension.php");
     }
 
@@ -131,5 +134,29 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     public void testMacroImport() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ <caret> }}", "bar.foo");
         assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ bar.f<caret>oo }}", TwigElementTypes.MACRO_STATEMENT);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
+     */
+    public void testControllerReferences() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ controller('<caret>') }}", "FooBundle:Foo:bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ controller('FooBundl<caret>e:Foo:bar') }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ controller(\"<caret>\") }}", "FooBundle:Foo:bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ controller(\"FooBundl<caret>e:Foo:bar\") }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ render(controller('<caret>')) }}", "FooBundle:Foo:bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ render(controller('FooBundl<caret>e:Foo:bar')) }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% render(controller('<caret>')) %}", "FooBundle:Foo:bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% render(controller('FooBundl<caret>e:Foo:bar')) %}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% render '<caret>' %}", "FooBundle:Foo:bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% render 'FooBundl<caret>e:Foo:bar' %}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% render \"<caret>\" %}", "FooBundle:Foo:bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% render \"FooBundl<caret>e:Foo:bar\" %}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
     }
 }

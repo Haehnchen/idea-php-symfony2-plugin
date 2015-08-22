@@ -86,7 +86,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return this.getTwigFiles(psiElement);
         }
 
-        if(TwigHelper.getPrintBlockFunctionPattern("controller").accepts(psiElement)) {
+        if(TwigHelper.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigHelper.getStringAfterTagNamePattern("render").accepts(psiElement)) {
             PsiElement controllerMethod = this.getControllerGoTo(psiElement);
             if(controllerMethod != null) {
                 return new PsiElement[] { controllerMethod };
