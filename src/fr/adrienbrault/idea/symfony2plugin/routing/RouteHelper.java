@@ -509,7 +509,7 @@ public class RouteHelper {
             if(element instanceof YAMLCompoundValue) {
                 Set<String> keySet = YamlHelper.getYamlCompoundValueKeyNames((YAMLCompoundValue) element);
 
-                if((keySet.contains("path") || keySet.contains("pattern")) && keySet.contains("defaults")) {
+                if((keySet.contains("path") || keySet.contains("pattern"))) {
                     // cleanup: 'foo', "foo"
                     String keyText = StringUtils.strip(StringUtils.strip(yamlKeyValue.getKeyText(), "'"), "\"");
                     if(StringUtils.isNotBlank(keyText)) {
