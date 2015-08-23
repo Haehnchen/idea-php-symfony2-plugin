@@ -15,6 +15,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -51,8 +52,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     public TwigTemplateCompletionContributor() {
 
-        extend(CompletionType.BASIC, TwigHelper.getTemplateFileReferenceTagPattern(),  new TemplateCompletionProvider());
-        extend(CompletionType.BASIC, TwigHelper.getPrintBlockFunctionPattern("include", "source"),  new TemplateCompletionProvider());
+        extend(CompletionType.BASIC, PlatformPatterns.or(
+            TwigHelper.getTemplateFileReferenceTagPattern(),
+            TwigHelper.getTagTernaryPattern(TwigElementTypes.EXTENDS_TAG)
+        ), new TemplateCompletionProvider());
+
+        // all file template "include" pattern
+        extend(CompletionType.BASIC, PlatformPatterns.or(
+            TwigHelper.getPrintBlockFunctionPattern("include", "source"),
+            TwigHelper.getIncludeTagArrayPattern(),
+            TwigHelper.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
+        ),  new TemplateCompletionProvider());
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')

@@ -12,6 +12,7 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiElementProcessor;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -472,6 +473,60 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {% include ['', ~ '', ''] %}
+     */
+    public static ElementPattern<PsiElement> getIncludeTagArrayPattern() {
+        //noinspection unchecked
+        return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.INCLUDE_TAG)
+            )
+            .afterLeafSkipping(
+                STRING_WRAP_PATTERN,
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
+                )
+            )
+            .beforeLeafSkipping(
+                STRING_WRAP_PATTERN,
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                    PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+
+    }
+
+    /**
+     * {% include foo ? '' : '' %}
+     * {% extends foo ? '' : '' %}
+     */
+    public static ElementPattern<PsiElement> getTagTernaryPattern(@NotNull IElementType type) {
+        //noinspection unchecked
+        return PlatformPatterns.or(
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .withParent(
+                    PlatformPatterns.psiElement(type)
+                )
+                .afterLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.psiElement(TwigTokenTypes.QUESTION)
+                )
+                .withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .withParent(
+                    PlatformPatterns.psiElement(type)
+                )
+                .afterLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.psiElement(TwigTokenTypes.COLON)
+                )
+                .withLanguage(TwigLanguage.INSTANCE)
+        );
+    }
     /**
      * Check for {{ include('|')  }}, {% include('|') %}
      *

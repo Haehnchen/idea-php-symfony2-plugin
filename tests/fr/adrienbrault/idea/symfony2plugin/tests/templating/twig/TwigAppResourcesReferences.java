@@ -19,11 +19,17 @@ public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTe
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToLocalDeclarationHandler
      */
     public void testTwigTemplatesInsideTwigFileCompletion() {
-        assertCompletionContains(TwigFileType.INSTANCE, "{% extends '<caret>') %}", "::base.html.twig", ":Default:layout.html.twig");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% extends \"<caret>\") %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% extends '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% extends \"<caret>\" %}", "::base.html.twig", ":Default:layout.html.twig");
 
-        assertCompletionContains(TwigFileType.INSTANCE, "{% include \"<caret>\") %}", "::base.html.twig", ":Default:layout.html.twig");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% include '<caret>') %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% extends foo ? '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% extends foo ? \"<caret>\" %}", "::base.html.twig", ":Default:layout.html.twig");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% extends foo ? '' : '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% extends foo ? '' : \"<caret>\" %}", "::base.html.twig", ":Default:layout.html.twig");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include \"<caret>\" %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% embed \"<caret>\" %}", "::base.html.twig", ":Default:layout.html.twig");
         assertCompletionContains(TwigFileType.INSTANCE, "{% embed '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
@@ -36,17 +42,33 @@ public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTe
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ include('<caret>') }}", "::base.html.twig", ":Default:layout.html.twig");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ include(\"<caret>\") }}", "::base.html.twig", ":Default:layout.html.twig");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include ['<caret>'] %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include [\"<caret>\"] %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include [, '', ~ , '<caret>'] %}", "::base.html.twig", ":Default:layout.html.twig");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% include [ ~ '<caret>'] %}", "::base.html.twig");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include foo ? '<caret>' %}", "::base.html.twig");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include foo ? \"<caret>\" %}", "::base.html.twig");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% include foo ? ~ '<caret>' %}", "::base.html.twig");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include foo ? 'foo' : '<caret>' %}", "::base.html.twig");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% include foo ? 'foo' : ~ '<caret>' %}", "::base.html.twig");
+
     }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
      */
     public void testTwigTemplatesInsideTwigFileNavigation() {
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>::base.html.twig') %}", "app/Resources/views/base.html.twig");
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends \"<caret>::base.html.twig\") %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends \"<caret>::base.html.twig\" %}", "app/Resources/views/base.html.twig");
 
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include \"<caret>::base.html.twig\") %}", "app/Resources/views/base.html.twig");
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include '<caret>::base.html.twig') %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include \"<caret>::base.html.twig\" %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
+
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include [\"<caret>::base.html.twig\"] %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include ['<caret>::base.html.twig'] %}", "app/Resources/views/base.html.twig");
 
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% embed \"<caret>::base.html.twig\" %}", "app/Resources/views/base.html.twig");
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% embed '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
@@ -59,6 +81,12 @@ public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTe
 
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{{ include('<caret>::base.html.twig') }}", "app/Resources/views/base.html.twig");
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{{ include(\"<caret>::base.html.twig\") }}", "app/Resources/views/base.html.twig");
+
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends foo ? '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends foo ? '' : '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
+
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include foo ? '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
+        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% include foo ? '' : '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
     }
 
 }
