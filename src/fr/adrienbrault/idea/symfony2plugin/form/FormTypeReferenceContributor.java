@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -175,16 +176,17 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    String className = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "data_class");
-                    if (className != null) {
-                        PhpClass dataClass = PhpElementsUtil.getClass(PhpIndex.getInstance(psiElement.getProject()), className);
-                        if (dataClass != null) {
-                            return new PsiReference[]{new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, dataClass)};
-                        }
+                    PsiElement className = PhpElementsUtil.getArrayKeyValueInsideSignaturePsi(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "data_class");
+                    if(className == null) {
+                        return new PsiReference[0];
                     }
 
-                    return new PsiReference[0];
+                    PhpClass phpClass = PhpElementsUtil.resolvePhpClassOnPsiElement(className);
+                    if (phpClass == null) {
+                        return new PsiReference[0];
+                    }
 
+                    return new PsiReference[]{new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, phpClass)};
                 }
 
             }

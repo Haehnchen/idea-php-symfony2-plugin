@@ -504,12 +504,7 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo, String methodName, String keyName) {
-        return getArrayKeyValueInsideSignature(psiElementInsideClass, new String[] {callTo}, methodName, keyName);
-    }
-
-    @Nullable
-    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo[], String methodName, String keyName) {
+    static public PsiElement getArrayKeyValueInsideSignaturePsi(PsiElement psiElementInsideClass, String callTo[], String methodName, String keyName) {
         PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElementInsideClass, PhpClass.class);
         if(phpClass == null) {
             return null;
@@ -522,7 +517,7 @@ public class PhpElementsUtil {
 
         for (String s : callTo) {
             // @TODO: replace signature
-            String arrayKeyValueInsideSignature = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + s, methodName, keyName);
+            PsiElement arrayKeyValueInsideSignature = PhpElementsUtil.getArrayKeyValueInsideSignaturePsi(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + s, methodName, keyName);
             if(arrayKeyValueInsideSignature != null) {
                 return arrayKeyValueInsideSignature;
             }
@@ -532,7 +527,12 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public String getArrayKeyValueInsideSignature(Project project, String signature, String methodName, String keyName) {
+    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo[], String methodName, String keyName) {
+        return getStringValue(getArrayKeyValueInsideSignaturePsi(psiElementInsideClass, callTo, methodName, keyName));
+    }
+
+    @Nullable
+    static public PsiElement getArrayKeyValueInsideSignaturePsi(Project project, String signature, String methodName, String keyName) {
 
         PsiElement psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(project, signature);
         if(psiElement == null) {
@@ -544,7 +544,7 @@ public class PhpElementsUtil {
             if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName)) {
                 PsiElement[] parameters = methodReference.getParameters();
                 if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                    return PhpElementsUtil.getArrayValueString((ArrayCreationExpression) parameters[0], keyName);
+                    return PhpElementsUtil.getArrayValue((ArrayCreationExpression) parameters[0], keyName);
                 }
 
             }
@@ -1074,4 +1074,30 @@ public class PhpElementsUtil {
         return fqn;
     }
 
+    /**
+     * "DateTime", DateTime::class
+     */
+    @Nullable
+    public static PhpClass resolvePhpClassOnPsiElement(@NotNull PsiElement psiElement) {
+
+        String dataClass = null;
+        if(psiElement instanceof ClassConstantReference) {
+            PsiElement lastChild = psiElement.getLastChild();
+            // @TODO: FOO::class find PhpElementTyp: toString provides "class"
+            if("class".equals(lastChild.getText())) {
+                PhpExpression classReference = ((ClassConstantReference) psiElement).getClassReference();
+                if(classReference instanceof PhpReference) {
+                    dataClass = ((PhpReference) classReference).getFQN();
+                }
+            }
+        } else {
+            dataClass = getStringValue(psiElement);
+        }
+
+        if(dataClass == null) {
+            return null;
+        }
+
+        return getClassInterface(psiElement.getProject(), dataClass);
+    }
 }
