@@ -18,6 +18,11 @@
         </service>
 
         <service id="my.tagged_datetime_class" class="MyTaggedClass"/>
+
+        <service id="my.tagged_class_extends" class="MyTaggedClassExtends">
+            <tag name="foo_extends" />
+        </service>
+
     </services>
 
 </container>

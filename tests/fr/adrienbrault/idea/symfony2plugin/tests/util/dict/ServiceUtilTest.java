@@ -5,7 +5,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -24,12 +23,12 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see ServiceUtil#getTaggedInstances
+     * @see ServiceUtil#getPhpClassTags
      */
     public void testInstance() {
-        Map<String, Set<String>> myTaggedClass = ServiceUtil.getTaggedInstances(getProject(), PhpElementsUtil.getClass(getProject(), "MyTaggedClass"));
-        assertTrue(myTaggedClass.get("foo_datetime").contains("\\DateTime"));
-        assertTrue(myTaggedClass.get("foo_iterator").contains("\\Iterator"));
-        assertFalse(myTaggedClass.containsKey("foo_iterator_aggregate"));
+        Set<String> myTaggedClass = ServiceUtil.getPhpClassTags(PhpElementsUtil.getClass(getProject(), "MyTaggedClass"));
+        assertTrue(myTaggedClass.contains("foo_extends"));
+        assertTrue(myTaggedClass.contains("foo_iterator_aggregate"));
+        assertFalse(myTaggedClass.contains("foo_extends"));
     }
 }

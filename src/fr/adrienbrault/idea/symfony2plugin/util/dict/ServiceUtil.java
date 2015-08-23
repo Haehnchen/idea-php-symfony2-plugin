@@ -183,15 +183,20 @@ public class ServiceUtil {
     /**
      * Find every service tag that's implements or extends a classes/interface of give class
      */
-    public static Map<String, Set<String>> getTaggedInstances(@NotNull Project project, @NotNull PhpClass phpClass) {
+    @NotNull
+    public static Set<String> getPhpClassTags(@NotNull PhpClass phpClass) {
+
+        Project project = phpClass.getProject();
 
         SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
         FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
-
         ContainerCollectionResolver.ServiceCollector collector = null;
 
-        Map<String, Set<String>> matchedTags = new HashMap<String, Set<String>>();
-        for (String serviceName : projectUniqueKeysStrong.getResult()) {
+        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
+
+        Set<String> matchedTags = new HashSet<String>();
+        Set<String> result = projectUniqueKeysStrong.getResult();
+        for (String serviceName : result) {
 
             // get service where we found our tags
             List<String[]> values = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
@@ -199,33 +204,56 @@ public class ServiceUtil {
                 continue;
             }
 
-            for(String[] tags: values) {
-                for (String tag : tags) {
-                    if(collector == null) {
-                        collector = ContainerCollectionResolver.ServiceCollector.create(project);
-                    }
+            // create unique tag list
+            Set<String> tags = new HashSet<String>();
+            for(String[] tagValue: values) {
+                Collections.addAll(tags, tagValue);
+            }
 
-                    PhpClass serviceClass = ServiceUtil.getServiceClass(project, serviceName, collector);
-                    if(serviceClass != null && new Symfony2InterfacesUtil().isInstanceOf(phpClass, serviceClass)) {
-                        String presentableFQN = serviceClass.getPresentableFQN();
-                        if(presentableFQN != null) {
-                            if(!presentableFQN.startsWith("\\")) {
-                                presentableFQN = "\\" + presentableFQN;
-                            }
-                        }
+            if(collector == null) {
+                collector = ContainerCollectionResolver.ServiceCollector.create(project);
+            }
 
-                        if (!matchedTags.containsKey(tag)) {
-                            matchedTags.put(tag, new HashSet<String>());
-                        }
+            PhpClass serviceClass = ServiceUtil.getServiceClass(project, serviceName, collector);
+            if(serviceClass == null) {
+                continue;
+            }
 
-                        matchedTags.get(tag).add(presentableFQN);
-                    }
+            boolean matched = false;
+
+            // get classes this service implements or extends
+            for (PhpClass serviceClassImpl: getSuperClasses(serviceClass)) {
+                // find interface or extends class which also implements
+                // @TODO: currently first level only, check recursive
+                if(!PhpElementsUtil.isEqualClassName(phpClass, serviceClassImpl) && symfony2InterfacesUtil.isInstanceOf(phpClass, serviceClassImpl)) {
+                    matched = true;
+                    break;
                 }
             }
 
+            if(matched) {
+                matchedTags.addAll(tags);
+            }
         }
 
         return matchedTags;
+    }
+
+    /**
+     * Get "extends" and implements on class level
+     */
+    @NotNull
+    private static Set<PhpClass> getSuperClasses(@NotNull PhpClass serviceClass) {
+        Set<PhpClass> phpClasses = new HashSet<PhpClass>();
+        PhpClass superClass = serviceClass.getSuperClass();
+
+        if(superClass != null)  {
+            phpClasses.add(superClass);
+        }
+
+        phpClasses.addAll(Arrays.asList(serviceClass.getImplementedInterfaces()));
+
+        return phpClasses;
     }
 
     public static Set<String> getTaggedServices(Project project, String tagName) {
@@ -372,7 +400,13 @@ public class ServiceUtil {
 
         }
 
-        return tags;
+        // strong tags wins
+        if(tags.size() > 0) {
+            return tags;
+        }
+
+        // try to resolve on indexed tags
+        return getPhpClassTags(phpClass);
     }
 
     /**
