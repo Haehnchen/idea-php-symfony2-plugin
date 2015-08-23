@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.95</version>
+    <version>0.11.96</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,24 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.96</h2>
+<ul>
+    <li>Support priority and multiple registering of getSubscribedEvents in indexer</li>
+    <li>Provide service tag list on indexed services for service generator</li>
+    <li>Add twig filter and functions to symfony symbol search</li>
+    <li>Remove deprecated Symfony sidebar, use symbol search instead <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/414">#414</a></li>
+    <li>Rename Symfony2 to Symfony in presentable strings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/393">#393</a></li>
+    <li>Support ternary and array syntax in twig "include" and "extends" tags</li>
+    <li>Route indexer saves nullable string value, catch them in Route constructor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/482">#482</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/508">#508</a></li>
+    <li>Remove "defaults" key detection for a valid yaml route id <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/518">#518</a></li>
+    <li>Dont annotate missing twig template in interpolated or concatenated strings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/488">#488</a></li>
+    <li>Fix global twig name navigation in php files, because of some api changes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/450">#450</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/456">#456</a></li>
+    <li>Use CASE_INSENSITIVE_ORDER for service container <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/537">#537</a></li>
+    <li>Add warning for service name if containing a uppercase char <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/537">#537</a></li>
+    <li>Remove Nullable or empty key in PhpElementsUtil.getArrayKeyValueMap <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/549">#549</a></li>
+    <li>Support "Class::class" in form data_class PHP 5.5 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/523">#523</a></li>
+</ul>
 
 <h2>0.11.95</h2>
 <ul>

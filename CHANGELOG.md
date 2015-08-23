@@ -6,6 +6,22 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.96
+* Support priority and multiple registering of getSubscribedEvents in indexer
+* Provide service tag list on indexed services for service generator
+* Add twig filter and functions to symfony symbol search
+* Remove deprecated Symfony sidebar, use symbol search instead #414
+* Rename Symfony2 to Symfony in presentable strings #393
+* Support ternary and array syntax in twig "include" and "extends" tags</li>
+* Route indexer saves nullable string value, catch them in Route constructor #482, #508
+* Remove "defaults" key detection for a valid yaml route id #518
+* Dont annotate missing twig template in interpolated or concatenated strings #488
+* Fix global twig name navigation in php files, because of some api changes #450, #456
+* Use CASE_INSENSITIVE_ORDER for service container #537
+* Add warning for service name if containing a uppercase char #537
+* Remove Nullable or empty key in PhpElementsUtil.getArrayKeyValueMap #549
+* Support "Class::class" in form data_class PHP 5.5 #523
+
 ### 0.11.95
 * Add Doctrine simple_array and json_array for yaml files, on direct interface parsing #555
 * Cache: Implement service definition cache layer, invalidates on global psi change #350
