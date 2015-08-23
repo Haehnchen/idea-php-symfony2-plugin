@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
@@ -552,6 +553,7 @@ public class YamlHelper {
     }
 
     /**
+     * Migrate to processKeysAfterRoot @TODO
      *
      * @param keyContext Should be Document or YAMLCompoundValueImpl which holds the key value children
      */
@@ -578,11 +580,32 @@ public class YamlHelper {
         if(yamlKeyValues.size() > 0) {
             for(PsiElement psiElement: yamlKeyValues) {
                 if(psiElement instanceof YAMLKeyValue) {
-                    holder.registerProblem(((YAMLKeyValue) psiElement).getKey(), "Duplicate Key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                    holder.registerProblem(((YAMLKeyValue) psiElement).getKey(), "Duplicate key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                 }
             }
         }
 
+    }
+
+    /**
+     * Process yaml key in second level filtered by a root:
+     * File > roots -> "Item"
+     */
+    public static void processKeysAfterRoot(@NotNull PsiFile psiFile, @NotNull Processor<YAMLKeyValue> yamlKeyValueProcessor, @NotNull String... roots) {
+        YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
+        if(document != null) {
+            for (String root : roots) {
+                YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(document, root);
+                if(yamlKeyValue != null) {
+                    YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
+                    if(yaml != null) {
+                        for(YAMLKeyValue yamlKeyValueVisit: PsiTreeUtil.getChildrenOfTypeAsList(yaml, YAMLKeyValue.class)) {
+                            yamlKeyValueProcessor.process(yamlKeyValueVisit);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static boolean isRoutingFile(PsiFile psiFile) {

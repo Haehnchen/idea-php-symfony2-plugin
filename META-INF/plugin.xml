@@ -381,7 +381,7 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="CaseSensitivityServiceInspection" displayName="Symfony: Service sensitivity"
+        <localInspection groupPath="Symfony" shortName="CaseSensitivityServiceInspection" displayName="Symfony: Container sensitivity"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.CaseSensitivityServiceInspection"/>

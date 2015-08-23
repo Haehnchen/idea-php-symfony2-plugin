@@ -9,6 +9,8 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.util.CommonProcessors;
+import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -19,13 +21,14 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class CaseSensitivityServiceInspection extends LocalInspectionTool {
 
-    public static final String SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE = "Symfony: lowercase letters for service";
+    public static final String SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE = "Symfony: lowercase letters for service and parameter";
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -44,7 +47,10 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
 
     private void yamlVisitor(final @NotNull ProblemsHolder holder) {
 
-        holder.getFile().acceptChildren(new PsiRecursiveElementVisitor() {
+        PsiFile file = holder.getFile();
+
+        // usage in service arguments or every other service condition
+        file.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement psiElement) {
 
@@ -60,6 +66,22 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
                 super.visitElement(psiElement);
             }
         });
+
+        // services and parameter
+        YamlHelper.processKeysAfterRoot(file, new Processor<YAMLKeyValue>() {
+            @Override
+            public boolean process(YAMLKeyValue yamlKeyValue) {
+                String keyText = yamlKeyValue.getKeyText();
+                if(StringUtils.isNotBlank(keyText) && !keyText.equals(keyText.toLowerCase())) {
+                    PsiElement firstChild = yamlKeyValue.getFirstChild();
+                    if(firstChild != null) {
+                        holder.registerProblem(firstChild, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);
+                    }
+                }
+
+                return false;
+            }
+        }, "services", "parameters");
     }
 
     private void phpVisitor(final @NotNull ProblemsHolder holder) {
