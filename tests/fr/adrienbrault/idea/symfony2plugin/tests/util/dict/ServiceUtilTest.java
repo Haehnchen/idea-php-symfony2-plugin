@@ -23,12 +23,12 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see ServiceUtil#getPhpClassTags
+     * @see fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil#getPhpClassTags
      */
-    public void testInstance() {
+    public void testGetPhpClassTags() {
         Set<String> myTaggedClass = ServiceUtil.getPhpClassTags(PhpElementsUtil.getClass(getProject(), "MyTaggedClass"));
-        assertTrue(myTaggedClass.contains("foo_extends"));
-        assertTrue(myTaggedClass.contains("foo_iterator_aggregate"));
-        assertFalse(myTaggedClass.contains("foo_extends"));
+        assertContainsElements(myTaggedClass, "foo_datetime");
+        assertContainsElements(myTaggedClass, "foo_iterator");
+        assertDoesntContain(myTaggedClass, "foo_extends");
     }
 }
