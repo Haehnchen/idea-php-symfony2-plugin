@@ -12,12 +12,14 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.intellij.util.indexing.ID;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.jetbrains.annotations.NotNull;
 
@@ -212,6 +214,42 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
 
         fail(String.format("failed to check '%s' because it's unknown", lookupString));
+    }
+
+    public void assertPhpReferenceResolveTo(LanguageFileType languageFileType, String configureByText, ElementPattern<?> pattern) {
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        psiElement = PsiTreeUtil.getParentOfType(psiElement, PhpReference.class);
+        if (psiElement == null) {
+            fail("Element is not PhpReference.");
+        }
+
+        assertTrue(pattern.accepts(((PhpReference) psiElement).resolve()));
+    }
+
+    public void assertPhpReferenceNotResolveTo(LanguageFileType languageFileType, String configureByText, ElementPattern<?> pattern) {
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        psiElement = PsiTreeUtil.getParentOfType(psiElement, PhpReference.class);
+        if (psiElement == null) {
+            fail("Element is not PhpReference.");
+        }
+
+        assertFalse(pattern.accepts(((PhpReference) psiElement).resolve()));
+    }
+
+    public void assertPhpReferenceSignatureEquals(LanguageFileType languageFileType, String configureByText, String typeSignature) {
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        psiElement = PsiTreeUtil.getParentOfType(psiElement, PhpReference.class);
+        if (!(psiElement instanceof PhpReference)) {
+            fail("Element is not PhpReference.");
+        }
+
+        assertEquals(typeSignature, ((PhpReference) psiElement).getSignature());
     }
 
     public void assertCompletionResultEquals(String filename, String complete, String result) {
