@@ -3,9 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
@@ -156,6 +161,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config", "Controller"));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new DirectoryScopeCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSuperParentArrayKey("services"), new YamlCompletionProvider(SERVICE_KEYS));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getWithFirstRootKey(), new RouteKeyNameYamlCompletionProvider(new String[] {"pattern", "defaults", "path", "requirements", "methods", "condition", "resource", "prefix"}));
@@ -218,6 +224,35 @@ public class YamlCompletionContributor extends CompletionContributor {
                     completionResultSet.addElement(new PhpLookupElement(method));
                 }
             }
+
+        }
+    }
+
+    private static class DirectoryScopeCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, final ProcessingContext processingContext, @NotNull final CompletionResultSet completionResultSet) {
+
+            PsiFile originalFile = completionParameters.getOriginalFile();
+            final PsiDirectory containingDirectory = originalFile.getContainingDirectory();
+            if (containingDirectory == null) {
+                return;
+            }
+
+            final VirtualFile containingDirectoryFiles = containingDirectory.getVirtualFile();
+            VfsUtil.visitChildrenRecursively(containingDirectoryFiles, new VirtualFileVisitor() {
+                @Override
+                public boolean visitFile(@NotNull VirtualFile file) {
+
+                    String relativePath = VfsUtil.getRelativePath(file, containingDirectoryFiles, '/');
+                    if (relativePath == null) {
+                        return super.visitFile(file);
+                    }
+
+                    completionResultSet.addElement(LookupElementBuilder.create(relativePath).withIcon(file.getFileType().getIcon()));
+
+                    return super.visitFile(file);
+                }
+            });
 
         }
     }

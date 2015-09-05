@@ -3,8 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -22,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.utils.URIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -55,7 +59,8 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         }
 
         if(YamlElementPatternHelper.getSingleLineScalarKey("resource").accepts(psiElement)) {
-            this.getResourceGoto(psiElement, results);
+            this.attachResourceBundleGoto(psiElement, results);
+            this.attachResourceOnPathGoto(psiElement, results);
         }
 
         if(StandardPatterns.and(
@@ -198,7 +203,7 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
     }
 
-    private void getResourceGoto(PsiElement psiElement, List<PsiElement> results) {
+    private void attachResourceBundleGoto(PsiElement psiElement, List<PsiElement> results) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
 
         if(!text.startsWith("@") || !text.contains("/")) {
@@ -215,6 +220,36 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
         String path = text.substring(text.indexOf("/") + 1);
         PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(psiElement.getProject(), symfonyBundle.getRelative(path));
+        if(psiFile == null) {
+            return;
+        }
+
+        results.add(psiFile);
+    }
+
+    private void attachResourceOnPathGoto(PsiElement psiElement, List<PsiElement> results) {
+
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        if(text.startsWith("@")) {
+            return;
+        }
+
+        PsiFile containingFile = psiElement.getContainingFile();
+        if(containingFile == null) {
+            return;
+        }
+
+        PsiDirectory containingDirectory = containingFile.getContainingDirectory();
+        if(containingDirectory == null) {
+            return;
+        }
+
+        VirtualFile relativeFile = VfsUtil.findRelativeFile(text, containingDirectory.getVirtualFile());
+        if(relativeFile == null) {
+            return;
+        }
+
+        PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(psiElement.getProject(), relativeFile);
         if(psiFile == null) {
             return;
         }
