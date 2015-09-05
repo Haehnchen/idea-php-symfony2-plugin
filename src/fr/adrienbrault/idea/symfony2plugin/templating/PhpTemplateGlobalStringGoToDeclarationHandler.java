@@ -23,6 +23,10 @@ public class PhpTemplateGlobalStringGoToDeclarationHandler implements GotoDeclar
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
+
         if(!(psiElement.getContainingFile() instanceof PhpFile) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
             return new PsiElement[0];
         }
