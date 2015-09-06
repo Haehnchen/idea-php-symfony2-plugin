@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,14 +38,17 @@ public class AssetDirectoryReader {
         return this;
     }
 
+    @Nullable
+    public static VirtualFile getProjectAssetRoot(@NotNull Project project) {
+        VirtualFile projectDirectory = project.getBaseDir();
+        String webDirectoryName = Settings.getInstance(project).directoryToWeb;
+        return VfsUtil.findRelativeFile(projectDirectory, webDirectoryName.split("/"));
+    }
+
     public List<AssetFile> getAssetFiles() {
         final List<AssetFile> files = new ArrayList<AssetFile>();
 
-        String webDirectoryName = Settings.getInstance(project).directoryToWeb;
-
-        VirtualFile projectDirectory = project.getBaseDir();
-        final VirtualFile webDirectory = VfsUtil.findRelativeFile(projectDirectory, webDirectoryName.split("/"));
-
+        final VirtualFile webDirectory = getProjectAssetRoot(project);
         if (null == webDirectory) {
             return files;
         }

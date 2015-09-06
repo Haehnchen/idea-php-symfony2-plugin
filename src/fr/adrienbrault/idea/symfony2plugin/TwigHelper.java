@@ -955,6 +955,11 @@ public class TwigHelper {
         ;
     }
 
+    /**
+     *  {{ asset('<caret>') }}
+     *  {{ asset("<caret>") }}
+     *  {{ absolute_url("<caret>") }}
+     */
     public static ElementPattern<PsiElement> getAutocompletableAssetPattern() {
         //noinspection unchecked
         return PlatformPatterns
@@ -1321,10 +1326,10 @@ public class TwigHelper {
         );
     }
 
-    public static List<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
+    public static Set<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
 
 
-        List<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+        Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
 
         // {% javascripts [...] @jquery_js2'%}
         if(templateName.startsWith("@") && templateName.length() > 1) {
@@ -1341,11 +1346,21 @@ public class TwigHelper {
 
         }
 
+        // dont matches wildcard:
         // {% javascripts '@SampleBundle/Resources/public/js/*' %}
         // {% javascripts 'assets/js/*' %}
         // {% javascripts 'assets/js/*.js' %}
         Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(templateName);
         if (!matcher.find()) {
+
+            // directly resolve
+            VirtualFile projectAssetRoot = AssetDirectoryReader.getProjectAssetRoot(project);
+            if(projectAssetRoot != null) {
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(projectAssetRoot, templateName);
+                if(relativeFile != null) {
+                    virtualFiles.add(relativeFile);
+                }
+            }
 
             for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(project).getAssetFiles()) {
                 if(assetFile.toString().equals(templateName)) {

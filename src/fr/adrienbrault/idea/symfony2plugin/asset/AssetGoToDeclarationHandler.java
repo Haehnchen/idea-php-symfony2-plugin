@@ -4,12 +4,11 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -28,33 +27,52 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        // remove this call, if withName Pattern is working
-        if (!isValidTag(psiElement, "stylesheets", "javascripts")) {
+        String[] fileExtensionFilterIfValidTag = findValidAssetFilter(psiElement);
+        if (fileExtensionFilterIfValidTag == null) {
             return null;
         }
 
-        List<VirtualFile> virtualFiles = TwigHelper.resolveAssetsFiles(psiElement.getProject(), psiElement.getText());
-
         List<PsiElement> psiElements = new ArrayList<PsiElement>();
-        for (VirtualFile virtualFile : virtualFiles) {
+        for (VirtualFile virtualFile : TwigHelper.resolveAssetsFiles(psiElement.getProject(), psiElement.getText(), fileExtensionFilterIfValidTag)) {
             psiElements.add(PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile));
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
-    private boolean isValidTag(PsiElement psiElement, String... tags) {
-        List<ElementPattern<PsiElement>> patterns = new ArrayList<ElementPattern<PsiElement>>();
-        patterns.add(TwigHelper.getAutocompletableAssetPattern());
+    private String[] findValidAssetFilter(PsiElement psiElement) {
 
-        for (String tag: tags) {
-            patterns.add(TwigHelper.getAutocompletableAssetTag(tag));
+        // tag filter
+        String[] fileExtensionFilterIfValidTag = getFileExtensionFilterIfValidTag(psiElement);
+        if (fileExtensionFilterIfValidTag != null) {
+            return fileExtensionFilterIfValidTag;
         }
 
-        return PlatformPatterns
-            .or(patterns.toArray(new ElementPattern<?>[patterns.size()]))
-            .accepts(psiElement)
-        ;
+        // asset / absolute_url dont have pre filter
+        if(TwigHelper.getPrintBlockOrTagFunctionPattern("asset", "absolute_url").accepts(psiElement)) {
+            return (String[]) ArrayUtils.addAll(TwigHelper.CSS_FILES_EXTENSIONS, TwigHelper.JS_FILES_EXTENSIONS);
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private String[] getFileExtensionFilterIfValidTag(PsiElement psiElement) {
+        for (String tag: new String[] {"stylesheets", "javascripts"}) {
+            if (!TwigHelper.getAutocompletableAssetTag(tag).accepts(psiElement)) {
+                continue;
+            }
+
+            if (tag.equals("stylesheets")) {
+                return TwigHelper.CSS_FILES_EXTENSIONS;
+            } else if (tag.equals("javascripts")) {
+                return TwigHelper.JS_FILES_EXTENSIONS;
+            } else {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     @Nullable
