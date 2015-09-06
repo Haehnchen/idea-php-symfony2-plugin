@@ -1,7 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.Variable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
@@ -36,5 +40,37 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertSize(0, PhpElementsUtil.getArrayKeyValueMap(PhpPsiElementFactory.createPhpPsiFromText(getProject(), ArrayCreationExpression.class, "$foo = [null => 'foo'];")).keySet());
         assertSize(0, PhpElementsUtil.getArrayKeyValueMap(PhpPsiElementFactory.createPhpPsiFromText(getProject(), ArrayCreationExpression.class, "$foo = ['' => 'foo'];")).keySet());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getFirstVariableTypeInScope(Variable)
+     */
+    public void testGetFirstVariableTypeInScope() {
+        PsiElement psiElement = myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "$foo = new \\DateTime();\n" +
+            "$d->dispatch('foo', $f<caret>oo)->;").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertEquals("\\DateTime", PhpElementsUtil.getFirstVariableTypeInScope((Variable) psiElement));
+
+        psiElement = myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foo() {" +
+            "  $foo = new \\DateTime();\n" +
+            "  $d->dispatch('foo', $f<caret>oo);\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertEquals("\\DateTime", PhpElementsUtil.getFirstVariableTypeInScope((Variable) psiElement));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getFirstVariableTypeInScope(Variable)
+     */
+    public void testGetFirstVariableTypeInScopeNotFound() {
+        PsiElement psiElement = myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "$foo = new \\DateTime();\n" +
+            "function foo() {\n" +
+            "  $d->dispatch('foo', $f<caret>oo);" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertNull(PhpElementsUtil.getFirstVariableTypeInScope((Variable) psiElement));
     }
 }

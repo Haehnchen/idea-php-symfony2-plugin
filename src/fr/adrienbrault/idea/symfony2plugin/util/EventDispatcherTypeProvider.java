@@ -8,14 +8,9 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -45,7 +40,7 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider2 {
         }
 
         PsiElement[] parameters = ((MethodReference) e).getParameters();
-        if(parameters.length < 2 || !(parameters[1] instanceof NewExpression)) {
+        if(parameters.length < 2) {
             return null;
         }
 
@@ -54,13 +49,28 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        ClassReference classReference = ((NewExpression) parameters[1]).getClassReference();
-        if(classReference == null) {
-            return null;
-        }
+        String signature = null;
+        if(parameters[1] instanceof NewExpression) {
+            // dispatch('foo', new FooEvent());
+            ClassReference classReference = ((NewExpression) parameters[1]).getClassReference();
+            if(classReference == null) {
+                return null;
+            }
 
-        String signature = classReference.getFQN();
-        if(StringUtils.isBlank(signature)) {
+            signature = classReference.getFQN();
+            if(StringUtils.isBlank(signature)) {
+                return null;
+            }
+        } else if(parameters[1] instanceof Variable) {
+            // $event = new FooEvent();
+            // dispatch('foo', $event);
+            String firstVariableInstance = PhpElementsUtil.getFirstVariableTypeInScope((Variable) parameters[1]);
+            if(firstVariableInstance == null) {
+                return null;
+            }
+
+            signature = firstVariableInstance;
+        } else {
             return null;
         }
 

@@ -1100,4 +1100,57 @@ public class PhpElementsUtil {
 
         return getClassInterface(psiElement.getProject(), dataClass);
     }
+
+    /**
+     * Find first variable declaration in parent scope of a given variable:
+     *
+     * function() {
+     *   $event = new FooEvent();
+     *   dispatch('foo', $event);
+     * }
+     */
+    @Nullable
+    public static String getFirstVariableTypeInScope(@NotNull Variable variable) {
+
+        // parent search scope, eg Method else fallback to a grouped statement
+        PsiElement searchScope = PsiTreeUtil.getParentOfType(variable, Function.class);
+        if(searchScope == null) {
+            searchScope = PsiTreeUtil.getParentOfType(variable, GroupStatement.class);
+        }
+
+        if(searchScope == null) {
+            return null;
+        }
+
+        final String name = variable.getName();
+        if(name == null) {
+            return null;
+        }
+
+        final String[] result = {null};
+        searchScope.acceptChildren(new PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+                if(element instanceof Variable && name.equals(((Variable) element).getName())) {
+                    PsiElement assignmentExpression = element.getParent();
+                    if(assignmentExpression instanceof AssignmentExpression) {
+                        PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
+                        if(value instanceof NewExpression) {
+                            ClassReference classReference = ((NewExpression) value).getClassReference();
+                            if(classReference != null) {
+                                String classSignature = classReference.getFQN();
+                                if(StringUtils.isNotBlank(classSignature)) {
+                                    result[0] = classSignature;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
+
+        return result[0];
+    }
 }
