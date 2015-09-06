@@ -967,7 +967,10 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("asset")
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("asset"),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("absolute_url")
+                )
             )
             .withLanguage(TwigLanguage.INSTANCE)
         ;

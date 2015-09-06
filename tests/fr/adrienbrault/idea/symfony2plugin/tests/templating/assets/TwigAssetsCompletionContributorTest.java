@@ -44,4 +44,7 @@ public class TwigAssetsCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<img src=\"assets/foo.pn<caret>\">", "<img src=\"{{ asset('assets/foo.png') }}\">");
     }
 
+    public void testTwigAbsoluteUrlFunctionCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ absolute_url('<caret>') }}", "assets/foo.css", "assets/foo.js", "assets/foo.less", "assets/foo.coffee");
+    }
 }
