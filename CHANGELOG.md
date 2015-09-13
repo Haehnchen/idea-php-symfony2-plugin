@@ -6,6 +6,16 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.97
+* Class constant signature fixed in PhpStorm9; provide another workaround for supporting both api levels #541
+* Event dispatcher should return event class instance #570
+* Catch npe issue with plugin enabled check, for global twig navigation #574
+* Add "resource" file references for current directory scope #517
+* Add assets completion for "absolute_url" #550
+* Refactoring and fixing assets handling in PhpStorm9 #551
+* Fix invalid inspection on container expressions in yaml files and add LocalInspection testing asserts #585
+* Add Travis PhpStorm8, 9 and eap environment switches
+
 ### 0.11.96
 * Support priority and multiple registering of getSubscribedEvents in indexer
 * Provide service tag list on indexed services for service generator

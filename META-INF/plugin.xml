@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.96</version>
+    <version>0.11.97</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,18 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.97</h2>
+<ul>
+    <li>Class constant signature fixed in PhpStorm9; provide another workaround for supporting both api levels <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/541">#541</a></li>
+    <li>Event dispatcher should return event class instance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/570">#570</a></li>
+    <li>Catch npe issue with plugin enabled check, for global twig navigation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/574">#574</a></li>
+    <li>Add "resource" file references for current directory scope <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/517">#517</a></li>
+    <li>Add assets completion for "absolute_url" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/550">#550</a></li>
+    <li>Refactoring and fixing assets handling in PhpStorm9 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/551">#551</a></li>
+    <li>Fix invalid inspection on container expressions in yaml files and add LocalInspection testing asserts <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/585">#585</a></li>
+    <li>Add Travis PhpStorm8, 9 and eap environment switches</li>
+</ul>
 
 <h2>0.11.96</h2>
 <ul>
