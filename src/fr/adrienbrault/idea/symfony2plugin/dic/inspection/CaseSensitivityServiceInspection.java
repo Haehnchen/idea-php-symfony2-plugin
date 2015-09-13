@@ -58,7 +58,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
                 if (YamlElementPatternHelper.getServiceDefinition().accepts(psiElement) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
                     String serviceName = YamlHelper.trimSpecialSyntaxServiceName(psiElement.getText());
                     // dont mark "@", "@?", "@@" escaping and expressions
-                    if (serviceName.length() > 2 && !serviceName.startsWith("=") && !serviceName.startsWith("@") && !serviceName.equals(serviceName.toLowerCase())) {
+                    if (isValidService(serviceName)) {
                         holder.registerProblem(psiElement, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);
                     }
                 }
@@ -116,6 +116,19 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
                 super.visitElement(psiElement);
             }
         });
+    }
+
+    private boolean isValidService(@NotNull String serviceName) {
+        if(serviceName.length() < 2 || !serviceName.startsWith("@")) {
+            return false;
+        }
+
+        // expression
+        if(serviceName.startsWith("@=")) {
+            return false;
+        }
+
+        return true;
     }
 
 }
