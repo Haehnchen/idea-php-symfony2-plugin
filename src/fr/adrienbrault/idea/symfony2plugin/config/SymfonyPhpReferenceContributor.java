@@ -65,12 +65,6 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Twig_Environment", "resolveTemplate"), // @TODO: also "is_array($names)"
     };
 
-    public static MethodMatcher.CallToSignature[] CONSOLE_HELP_SET = new MethodMatcher.CallToSignature[] {
-        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Helper\\HelperSet", "get"),
-        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Helper\\HelperSet", "has"),
-        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Command\\Command", "getHelper"),
-    };
-
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
 
@@ -174,23 +168,6 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                 }
             }
         );
-
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, CONSOLE_HELP_SET) == null) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{ new MapClassReference((StringLiteralExpression) psiElement, CommandUtil.getCommandHelper(psiElement.getProject()))};
-                }
-            }
-        );
-
 
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class),

@@ -478,6 +478,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpEventDispatcherGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.command.PhpCommandGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.command.ConsoleHelperGotoCompletionRegistrar"/>
 
     </extensions>
 
