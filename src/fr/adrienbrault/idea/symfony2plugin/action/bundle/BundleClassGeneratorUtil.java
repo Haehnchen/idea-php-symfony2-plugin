@@ -61,7 +61,12 @@ public class BundleClassGeneratorUtil {
             return null;
         }
 
-        final PsiDirectory initialBaseDir = view.getOrChooseDirectory();
+        PsiDirectory[] directories = view.getDirectories();
+        if(directories.length == 0) {
+            return null;
+        }
+
+        final PsiDirectory initialBaseDir = directories[0];
         if (initialBaseDir == null) {
             return null;
         }

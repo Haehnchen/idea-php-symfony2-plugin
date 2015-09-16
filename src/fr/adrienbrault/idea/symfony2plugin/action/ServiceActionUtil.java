@@ -62,7 +62,12 @@ public class ServiceActionUtil {
             return;
         }
 
-        final PsiDirectory initialBaseDir = view.getOrChooseDirectory();
+        PsiDirectory[] directories = view.getDirectories();
+        if(directories.length == 0) {
+            return;
+        }
+
+        final PsiDirectory initialBaseDir = directories[0];
         if (initialBaseDir == null) {
             return;
         }
