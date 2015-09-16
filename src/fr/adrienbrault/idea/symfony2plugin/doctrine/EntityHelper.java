@@ -333,7 +333,7 @@ public class EntityHelper {
 
         SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
         if(symfonyBundle != null) {
-            for(String modelShortcut: new String[] {"orm", "mongodb"}) {
+            for(String modelShortcut: new String[] {"orm", "mongodb", "couchdb"}) {
                 String fqn = phpClass.getPresentableFQN();
 
                 String className = phpClass.getName();
@@ -515,8 +515,8 @@ public class EntityHelper {
     }
 
     @Nullable
-    public static PhpClass resolveShortcutName(Project project, String shortcutName) {
-        return resolveShortcutName(project, shortcutName, DoctrineTypes.Manager.ORM, DoctrineTypes.Manager.MONGO_DB);
+    public static PhpClass resolveShortcutName(@NotNull Project project, @NotNull String shortcutName) {
+        return resolveShortcutName(project, shortcutName, DoctrineTypes.Manager.ORM, DoctrineTypes.Manager.MONGO_DB, DoctrineTypes.Manager.COUCH_DB);
     }
 
     /**
@@ -526,13 +526,13 @@ public class EntityHelper {
      * @return null|PhpClass
      */
     @Nullable
-    public static PhpClass resolveShortcutName(Project project, String shortcutName, DoctrineTypes.Manager... managers) {
-
-        List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
+    public static PhpClass resolveShortcutName(@NotNull Project project, @Nullable String shortcutName, DoctrineTypes.Manager... managers) {
 
         if(shortcutName == null) {
             return null;
         }
+
+        List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
 
         String entity_name = shortcutName;
 
@@ -550,7 +550,7 @@ public class EntityHelper {
                 em.putAll(EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"));
             }
 
-            if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
+            if(managerList.contains(DoctrineTypes.Manager.MONGO_DB) || managerList.contains(DoctrineTypes.Manager.COUCH_DB)) {
                 Map<String, String> documentMap = ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap();
                 em.putAll(documentMap);
                 em.putAll(EntityHelper.getWeakBundleNamespaces(project, documentMap, "Document"));

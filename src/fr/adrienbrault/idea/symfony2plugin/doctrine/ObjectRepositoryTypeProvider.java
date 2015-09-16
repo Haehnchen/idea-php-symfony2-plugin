@@ -85,7 +85,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
         // overwrite parameter to get string value
         parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
         if(parameter == null) {
-            return Arrays.asList(phpNamedElement);
+            return phpNamedElementCollections;
         }
 
         // @TODO: parse xml or yml for repositoryClass?
@@ -96,7 +96,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return phpNamedElementCollections;
         }
 
-        return Arrays.asList(phpClass);
+        return Collections.singletonList(phpClass);
 
     }
 

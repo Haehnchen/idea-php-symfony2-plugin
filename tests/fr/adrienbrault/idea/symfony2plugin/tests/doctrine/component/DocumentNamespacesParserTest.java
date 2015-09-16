@@ -23,6 +23,8 @@ public class DocumentNamespacesParserTest extends Assert {
         assertEquals("\\AcmeProject\\FrontendBundle\\Document", map.get("AcmeProjectFrontendBundle"));
         assertEquals("\\AcmeProject\\ApiBundle\\Document", map.get("AcmeProjectApiBundle"));
         assertEquals("\\AcmeProject\\CoreBundle\\Document", map.get("AcmeProjectCoreBundle"));
+
+        assertEquals("\\AcmeCouchProject\\FrontendBundle\\Document", map.get("AcmeCouchProjectFrontendBundle"));
     }
 
 }

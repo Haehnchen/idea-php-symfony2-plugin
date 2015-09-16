@@ -48,5 +48,12 @@
               </argument>
           </call>
       </service>
+      <service id="doctrine_couchdb.odm.default_configuration" class="Foo">
+        <call method="setDocumentNamespaces">
+          <argument type="collection">
+            <argument key="AcmeCouchProjectFrontendBundle">AcmeCouchProject\FrontendBundle\Document</argument>
+          </argument>
+        </call>
+      </service>
   </services>
 </container>

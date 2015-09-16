@@ -42,6 +42,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         this.doctrineManagers = new ArrayList<DoctrineTypes.Manager>();
         this.doctrineManagers.add(DoctrineTypes.Manager.ORM);
         this.doctrineManagers.add(DoctrineTypes.Manager.MONGO_DB);
+        this.doctrineManagers.add(DoctrineTypes.Manager.COUCH_DB);
     }
 
     public EntityReference(@NotNull StringLiteralExpression element, DoctrineTypes.Manager... managers) {
@@ -83,8 +84,8 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         }
     }
 
-    public static List<LookupElement> getModelLookupElements(Project project, DoctrineTypes.Manager... managers) {
-        return getModelLookupElements(project, false, managers);
+    public static List<LookupElement> getModelLookupElements(@NotNull Project project) {
+        return getModelLookupElements(project, false, DoctrineTypes.Manager.ORM, DoctrineTypes.Manager.MONGO_DB, DoctrineTypes.Manager.COUCH_DB);
     }
 
     private static List<LookupElement> getModelLookupElements(Project project, boolean useClassNameAsLookupString, DoctrineTypes.Manager... managers) {
@@ -104,7 +105,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
             attachRepositoryNames(project, results, EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"), DoctrineTypes.Manager.ORM, useClassNameAsLookupString, true);
         }
 
-        if(managerList.contains(DoctrineTypes.Manager.MONGO_DB)) {
+        if(managerList.contains(DoctrineTypes.Manager.MONGO_DB) || managerList.contains(DoctrineTypes.Manager.COUCH_DB)) {
 
             Map<String, String> documentNameMap = new HashMap<String, String>(
                 ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap()

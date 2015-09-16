@@ -124,7 +124,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         private Map<String, LookupElement> getModelLookupElements() {
 
             if(this.lookupElements == null) {
-                List<LookupElement> modelLookupElements = EntityReference.getModelLookupElements(this.project, DoctrineTypes.Manager.ORM, DoctrineTypes.Manager.MONGO_DB);
+                List<LookupElement> modelLookupElements = EntityReference.getModelLookupElements(this.project);
 
                 this.lookupElements = new HashMap<String, LookupElement>();
                 for(LookupElement lookupElement: modelLookupElements) {

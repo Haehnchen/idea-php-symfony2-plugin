@@ -5,6 +5,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -61,12 +64,47 @@ public class DoctrineEntityLookupElement extends LookupElement {
 
         presentation.setTypeGrayed(true);
         if(isWeak) {
-            presentation.setIcon(manager == null || manager == DoctrineTypes.Manager.ORM ? Symfony2Icons.DOCTRINE_WEAK : Symfony2Icons.MONGODB_WEAK);
+            // @TODO: remove weak
+            presentation.setIcon(getWeakIcon());
         } else {
-            presentation.setIcon(manager == null || manager == DoctrineTypes.Manager.ORM ? Symfony2Icons.DOCTRINE : Symfony2Icons.MONGODB);
+            presentation.setIcon(getIcon());
         }
 
 
+    }
+
+    @Nullable
+    private Icon getWeakIcon() {
+        if(manager == null) {
+            return null;
+        }
+
+        if(manager == DoctrineTypes.Manager.ORM) {
+            return Symfony2Icons.DOCTRINE_WEAK;
+        }
+
+        if(manager == DoctrineTypes.Manager.MONGO_DB || manager == DoctrineTypes.Manager.COUCH_DB) {
+            return Symfony2Icons.NO_SQL;
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private Icon getIcon() {
+        if(manager == null) {
+            return null;
+        }
+
+        if(manager == DoctrineTypes.Manager.ORM) {
+            return Symfony2Icons.DOCTRINE;
+        }
+
+        if(manager == DoctrineTypes.Manager.MONGO_DB || manager == DoctrineTypes.Manager.COUCH_DB) {
+            return Symfony2Icons.NO_SQL;
+        }
+
+        return null;
     }
 
 }

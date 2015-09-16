@@ -15,7 +15,7 @@ public class DocumentNamespacesParser extends AbstractServiceParser {
 
     @Override
     public String getXPathFilter() {
-        return "/container/services/service[@id[starts-with(.,'doctrine_mongodb.odm.')]]//call[@method='setDocumentNamespaces']//argument[@key]";
+        return "/container/services/service[@id[starts-with(.,'doctrine_mongodb.odm.')] or @id[starts-with(.,'doctrine_couchdb.odm.')]]//call[@method='setDocumentNamespaces']//argument[@key]";
     }
 
     public void parser(File file) {

@@ -53,7 +53,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             }
 
             String fileName = containingFile.getName();
-            if(fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml")) {
+            if(isMetadataFile(fileName)) {
                 String keyText = ((YAMLKeyValue) psiElement).getKeyText();
                 if(StringUtils.isNotBlank(keyText)) {
                     PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), keyText);
@@ -142,7 +142,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
         PsiFile containingFile = psiElement.getContainingFile();
         String fileName = containingFile.getName();
-        if(!(fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml"))) {
+        if(!isMetadataFile(fileName)) {
             return;
         }
 
@@ -167,4 +167,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
+    private boolean isMetadataFile(String fileName) {
+        return fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml") || fileName.endsWith("couchdb.yml");
+    }
 }
