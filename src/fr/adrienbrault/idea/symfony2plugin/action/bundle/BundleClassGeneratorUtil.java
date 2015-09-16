@@ -13,6 +13,7 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,21 +67,7 @@ public class BundleClassGeneratorUtil {
             return null;
         }
 
-        final PsiDirectory initialBaseDir = directories[0];
-        if (initialBaseDir == null) {
-            return null;
-        }
-
-        if(initialBaseDir.getName().endsWith("Bundle")) {
-            return initialBaseDir;
-        }
-
-        PsiDirectory parent = initialBaseDir.getParent();
-        if(parent != null && parent.getName().endsWith("Bundle")) {
-            return parent;
-        }
-
-        return null;
+        return FilesystemUtil.findParentBundleFolder(directories[0]);
     }
 
 }
