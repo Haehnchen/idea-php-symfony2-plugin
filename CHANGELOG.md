@@ -6,6 +6,13 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.98
+* Full references support for console helpers #243
+* Add Doctrine couchdb support; merged into overall odm manager to reuse mongodb implementation
+* Doctrine getRepository now returns self instance on an unknown class
+* Fix plugin breaks the context menu in the Project view #575 thx @steinarer, #525
+* Recursively find bundle context for all related action
+
 ### 0.11.97
 * Class constant signature fixed in PhpStorm9; provide another workaround for supporting both api levels #541
 * Event dispatcher should return event class instance #570

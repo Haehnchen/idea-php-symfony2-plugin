@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.97</version>
+    <version>0.11.98</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,15 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.98</h2>
+<ul>
+    <li>Full references support for console helpers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/243">#243</a></li>
+    <li>Add Doctrine couchdb support; merged into overall odm manager to reuse mongodb implementation</li>
+    <li>Doctrine getRepository now returns self instance on an unknown class</li>
+    <li>Fix plugin breaks the context menu in the Project view <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/575">#575</a> thx @steinarer, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/525">#525</a></li>
+    <li>Recursively find bundle context for all related action</li>
+</ul>
 
 <h2>0.11.97</h2>
 <ul>
