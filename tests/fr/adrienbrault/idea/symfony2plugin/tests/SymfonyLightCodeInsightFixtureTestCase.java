@@ -301,6 +301,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
     }
 
+    public void assertIndexContainsKeyWithValue(@NotNull ID<String, String> id, @NotNull String key, @NotNull String value) {
+        assertContainsElements(FileBasedIndexImpl.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject())), value);
+    }
+
     public void assertLocalInspectionContainsContains(String filename, String content, String contains) {
         Set<String> matches = new HashSet<String>();
 

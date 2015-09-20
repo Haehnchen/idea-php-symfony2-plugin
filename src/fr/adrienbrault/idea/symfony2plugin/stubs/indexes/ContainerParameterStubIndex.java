@@ -118,7 +118,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
         return 1;
     }
 
-    private static class StringDataExternalizer implements DataExternalizer<String> {
+    public static class StringDataExternalizer implements DataExternalizer<String> {
 
         public static final StringDataExternalizer STRING_DATA_EXTERNALIZER = new StringDataExternalizer();
         private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
