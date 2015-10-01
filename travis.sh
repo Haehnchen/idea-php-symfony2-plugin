@@ -1,6 +1,12 @@
 #!/bin/bash
 
-ideaVersion="14.1.4"
+# TODO: nicer ;)
+if [ "$PHPSTORM_ENV" == "9.5" ]; then
+  ideaVersion="15-PublicPreview"
+else
+  ideaVersion="14.1.4"
+fi
+
 travisCache=".cache"
 
 if [ ! -d ${travisCache} ]; then
@@ -35,7 +41,7 @@ if [ -d ./idea  ]; then
 fi
 
 # Download main idea folder
-download "http://download.jetbrains.com/idea/ideaIU-${ideaVersion}.tar.gz"
+download "http://download.jetbrains.com/idea/ideaIU-142.5282.tar.gz"
 tar zxf ${travisCache}/ideaIU-${ideaVersion}.tar.gz -C .
 
 # Move the versioned IDEA folder to a known location
