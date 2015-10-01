@@ -41,7 +41,7 @@ if [ -d ./idea  ]; then
 fi
 
 # Download main idea folder
-download "http://download.jetbrains.com/idea/ideaIU-142.5282.tar.gz"
+download "http://download.jetbrains.com/ideaIU-${ideaVersion}.tar.gz"
 tar zxf ${travisCache}/ideaIU-${ideaVersion}.tar.gz -C .
 
 # Move the versioned IDEA folder to a known location
