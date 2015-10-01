@@ -72,8 +72,22 @@ elif [ "$PHPSTORM_ENV" == "9.5" ]; then
 
     # TODO: extract latest builds for plugins from eap site they are not public
     # https://confluence.jetbrains.com/display/PhpStorm/PhpStorm+Early+Access+Program
-    echo "No configuration for PhpStorm: $PHPSTORM_ENV"
-    exit 1
+    
+    input=$(wget -qO- https://confluence.jetbrains.com/display/PhpStorm/PhpStorm+Early+Access+Program)
+    regex='<a[^>]*href="(https*[^>]*/(PhpStorm-EAP-[0-9]{1,3}.[0-9]{1,5}.tar.gz))"'
+    
+    if [[ "$input" =~ $regex ]]; then
+      url=${BASH_REMATCH[1]}
+      basename=${BASH_REMATCH[2]}
+      
+      download $url
+      
+      tar -xvvf $travisCache/$basename --wildcards --no-anchored 'PhpStorm-*/plugins/php/*' --no-anchored 'PhpStorm-*/plugins/twig/*' --strip 1 -C ./plugins
+
+    else
+        echo "Unknown EAP version"
+        exit 1
+    fi
 
 else
     echo "Unknown PHPSTORM_ENV value: $PHPSTORM_ENV"
