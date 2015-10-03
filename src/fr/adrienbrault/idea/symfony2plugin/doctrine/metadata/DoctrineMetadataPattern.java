@@ -3,11 +3,15 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlAttributeValuePattern;
 import com.intellij.patterns.XmlPatterns;
+import org.intellij.lang.annotations.RegExp;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DoctrineMetadataPattern {
+
+    @RegExp
+    private static final String DOCTRINE_MAPPING = "doctrine-[\\w+-]*-*mapping";
 
     /**
      * <doctrine-mapping|doctrine-*-mapping>
@@ -26,7 +30,7 @@ public class DoctrineMetadataPattern {
                 .withParent(XmlPatterns
                     .xmlTag().withName(PlatformPatterns.string().oneOf("document", "entity"))
                     .withParent(XmlPatterns
-                        .xmlTag().withName(PlatformPatterns.string().matches("doctrine-[\\w+-]*-*mapping"))
+                        .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                     )
                 )
             );
@@ -46,7 +50,47 @@ public class DoctrineMetadataPattern {
                 .withParent(XmlPatterns
                     .xmlTag().withName(PlatformPatterns.string().oneOf("document", "entity"))
                     .withParent(XmlPatterns
-                        .xmlTag().withName(PlatformPatterns.string().matches("doctrine-[\\w+-]*-*mapping"))
+                        .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                    )
+                )
+            );
+    }
+
+    /**
+     * <reference-one target-document="Foo"/>
+     * <reference-many target-document="Foo"/>
+     * <embed-many target-document="Foo"/>
+     * <embed-one target-document="Foo"/>
+     */
+    public static XmlAttributeValuePattern getXmlTargetDocumentClass() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("target-document")
+                .withParent(XmlPatterns
+                    .xmlTag().withName(PlatformPatterns.string().oneOf("reference-one", "reference-many", "embed-many", "embed-one"))
+                    .withParent(XmlPatterns
+                        .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                    )
+                )
+            );
+    }
+
+    /**
+     * <one-to-one target-entity="Foo">
+     * <one-to-many target-entity="Foo">
+     * <many-to-one target-entity="Foo">
+     * <many-to-many target-entity="Foo">
+     */
+    public static XmlAttributeValuePattern getXmlTargetEntityClass() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("target-entity")
+                .withParent(XmlPatterns
+                    .xmlTag().withName(PlatformPatterns.string().oneOf("one-to-one", "one-to-many", "many-to-one", "many-to-many"))
+                    .withParent(XmlPatterns
+                         .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                     )
                 )
             );

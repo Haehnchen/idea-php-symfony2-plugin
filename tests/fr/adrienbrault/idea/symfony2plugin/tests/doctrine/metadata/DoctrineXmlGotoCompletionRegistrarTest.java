@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -64,5 +65,43 @@ public class DoctrineXmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsi
             "<doctrine-foo-mapping><document repository-class=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-foo-mapping>",
             PlatformPatterns.psiElement(PhpClass.class)
         );
+    }
+
+    /**
+     * @see DoctrineMetadataPattern#getXmlTargetDocumentClass()
+     */
+    public void testTargetDocumentNavigation() {
+        for(String s : new String[] {"reference-one", "reference-many", "embed-many", "embed-one"}) {
+            assertNavigationMatch(
+                XmlFileType.INSTANCE,
+                "<doctrine-mapping><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+
+            assertNavigationMatch(
+                XmlFileType.INSTANCE,
+                "<doctrine-foo-mapping><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-foo-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+        }
+    }
+
+    /**
+     * @see DoctrineMetadataPattern#getXmlTargetEntityClass()
+     */
+    public void testTargetEntityNavigation() {
+        for(String s : new String[] {"one-to-one", "one-to-many", "many-to-one", "many-to-many"}) {
+            assertNavigationMatch(
+                XmlFileType.INSTANCE,
+                "<doctrine-mapping><" + s + " target-entity=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+
+            assertNavigationMatch(
+                XmlFileType.INSTANCE,
+                "<doctrine-foo-mapping><" + s + " target-entity=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+        }
     }
 }

@@ -29,7 +29,9 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
 
         registrar.register(XmlPatterns.psiElement().withParent(PlatformPatterns.or(
             DoctrineMetadataPattern.getXmlModelClass(),
-            DoctrineMetadataPattern.getXmlRepositoryClass()
+            DoctrineMetadataPattern.getXmlRepositoryClass(),
+            DoctrineMetadataPattern.getXmlTargetDocumentClass(),
+            DoctrineMetadataPattern.getXmlTargetEntityClass()
         )), new GotoCompletionContributor() {
             @Nullable
             @Override
