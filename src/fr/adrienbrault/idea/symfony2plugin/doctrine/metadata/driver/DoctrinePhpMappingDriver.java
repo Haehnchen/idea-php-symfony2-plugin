@@ -40,7 +40,8 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
             }
 
             // Doctrine ORM
-            if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
+            // @TODO: external split
+            if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity", "\\TYPO3\\Flow\\Annotations\\Entity")) {
                 for(Field field: phpClass.getFields()) {
                     if(field.isConstant()) {
                         continue;

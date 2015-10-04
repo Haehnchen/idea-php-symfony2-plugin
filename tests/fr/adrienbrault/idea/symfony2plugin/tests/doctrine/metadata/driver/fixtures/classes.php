@@ -9,6 +9,10 @@ namespace Doctrine\ORM\Mapping {
     class ManyToMany {};
 }
 
+namespace TYPO3\Flow\Annotations {
+    class Entity {};
+}
+
 namespace Doctrine\Orm {
 
     use Doctrine\ORM\Mapping AS ORM;
@@ -44,4 +48,28 @@ namespace Doctrine\Orm {
         public $egg;
     };
 
+}
+
+namespace Doctrine\Flow\Orm {
+
+    use TYPO3\Flow\Annotations AS FLOW3;
+    use Doctrine\ORM\Mapping AS ORM;
+
+    /**
+     * @FLOW3\Entity()
+     */
+    class Annotation {
+
+        /**
+         * @ORM\Column(type="string")
+         */
+        private $email;
+
+        /**
+         * @var \DateTime
+         *
+         * @ORM\ManyToMany()
+         */
+        public $car;
+    }
 }

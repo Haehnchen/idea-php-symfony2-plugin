@@ -50,4 +50,19 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
         assertEquals("ManyToMany", metadata.getField("egg").getRelationType());
         assertEquals("Egg", metadata.getField("egg").getRelation());
     }
+    /**
+     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
+     */
+    public void testPhpFlowAnnotationsMetadata() {
+        PsiFile psiFile = PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php $foo = null;");
+
+        DoctrineMetadataModel metadata = new DoctrinePhpMappingDriver().getMetadata(
+            new DoctrineMappingDriverArguments(getProject(), psiFile, "\\Doctrine\\Flow\\Orm\\Annotation")
+        );
+
+        assertEquals("string", metadata.getField("email").getTypeName());
+
+        assertEquals("ManyToMany", metadata.getField("car").getRelationType());
+        assertEquals("\\DateTime", metadata.getField("car").getRelation());
+    }
 }

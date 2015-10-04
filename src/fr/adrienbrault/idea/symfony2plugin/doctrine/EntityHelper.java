@@ -11,6 +11,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -21,11 +22,13 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
+import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
+import org.apache.commons.lang.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLDocument;
@@ -651,16 +654,27 @@ public class EntityHelper {
             doctrineModelField.setTypeName(matcher.group(1));
         }
 
-        // targetEntity name
-        matcher = Pattern.compile("targetEntity[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
-        if (matcher.find()) {
-            doctrineModelField.setRelation(matcher.group(1));
-        }
-
         // relation type
         matcher = Pattern.compile("((Many|One)To(Many|One))\\(").matcher(text);
         if (matcher.find()) {
             doctrineModelField.setRelationType(matcher.group(1));
+
+            // targetEntity name
+            matcher = Pattern.compile("targetEntity[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
+            if (matcher.find()) {
+                doctrineModelField.setRelation(matcher.group(1));
+            } else {
+                // @TODO: external split
+                // FLOW shortcut:
+                // @var "\DateTime" is targetEntity
+                PhpDocParamTag varTag = docBlock.getVarTag();
+                if(varTag != null) {
+                    String type = varTag.getType().toString();
+                    if(org.apache.commons.lang.StringUtils.isNotBlank(type)) {
+                        doctrineModelField.setRelation(type);
+                    }
+                }
+            }
         }
 
         matcher = Pattern.compile("Column\\(").matcher(text);
