@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping>
+
+    <document name="Foo\Bar" indexed="true" repository-class="Foo\Bar\Repository\FooBarRepository">
+
+        <id name="id"/>
+
+        <field name="foo1" type="string" index="true"/>
+        <field name="foo2" type="mixed" fieldName="fooTwo"/>
+        <field name="foo3" type="string"/>
+
+        <reference-one field="apple1" target-document="Foo\Bar\Apple" index="true"/>
+        <embed-one field="egg1" target-document="Foo\Bar\Egg"/>
+
+        <reference-many field="apple2" target-document="Foo\Bar\Apple" index="true"/>
+        <embed-many field="egg2" target-document="Foo\Bar\Egg"/>
+    </document>
+
+</doctrine-mapping>

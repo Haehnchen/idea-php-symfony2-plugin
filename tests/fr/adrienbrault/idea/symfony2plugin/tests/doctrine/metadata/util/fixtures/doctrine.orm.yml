@@ -1,0 +1,30 @@
+Doctrine\Tests\ORM\Mapping\YamlUser:
+  type: entity
+  repositoryClass: Doctrine\Tests\ORM\Mapping\YamlUserRepository
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    name:
+      type: string
+      length: 50
+    email:
+      type: string
+      column: user_email
+    loginCount:
+      type: integer
+      column: login_count
+  oneToOne:
+    address:
+      targetEntity: Address
+  oneToMany:
+    phonenumbers:
+      targetEntity: Phonenumber
+  manyToMany:
+    groups:
+      targetEntity: Group
+  manyToOne:
+    author:
+      targetEntity: Author

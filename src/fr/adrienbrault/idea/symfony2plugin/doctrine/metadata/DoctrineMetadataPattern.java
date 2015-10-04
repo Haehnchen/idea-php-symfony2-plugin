@@ -11,7 +11,7 @@ import org.intellij.lang.annotations.RegExp;
 public class DoctrineMetadataPattern {
 
     @RegExp
-    private static final String DOCTRINE_MAPPING = "doctrine-[\\w+-]*-*mapping";
+    public static final String DOCTRINE_MAPPING = "doctrine-[\\w+-]*-*mapping";
 
     /**
      * <doctrine-mapping|doctrine-*-mapping>

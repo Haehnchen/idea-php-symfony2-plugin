@@ -119,7 +119,7 @@ public class EntityHelper {
         return resolveShortcutName(project, shortcutName + "Repository");
     }
 
-    private static List<DoctrineModelField> getModelFieldsSet(YAMLKeyValue yamlKeyValue) {
+    public static List<DoctrineModelField> getModelFieldsSet(YAMLKeyValue yamlKeyValue) {
 
         List<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
 
@@ -410,7 +410,7 @@ public class EntityHelper {
     }
 
     @NotNull
-    private static List<DoctrineModelField> getEntityFields(@NotNull XmlFile psiFile) {
+    public static List<DoctrineModelField> getEntityFields(@NotNull XmlFile psiFile) {
 
         List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
 
@@ -441,7 +441,7 @@ public class EntityHelper {
             }
 
             String type = xmlTag.getAttributeValue("type");
-            if(org.apache.commons.lang.StringUtils.isBlank(type)) {
+            if(org.apache.commons.lang.StringUtils.isNotBlank(type)) {
                 field.setTypeName(type);
             }
 

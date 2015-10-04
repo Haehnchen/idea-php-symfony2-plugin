@@ -1,0 +1,17 @@
+<doctrine-mapping>
+
+    <entity name="Doctrine\Tests\ORM\Mapping\XmlUser" table="cms_users">
+
+        <id name="id" type="integer" column="id"/>
+
+        <field name="name" column="name" type="string" length="50" nullable="true" unique="true" />
+        <field name="email" column="user_email" type="string" column-definition="CHAR(32) NOT NULL" />
+
+        <one-to-one field="address" target-entity="Address" inversed-by="user"/>
+        <one-to-many field="phonenumbers" target-entity="Phonenumber" mapped-by="user"/>
+        <many-to-many field="groups" target-entity="Group"/>
+        <many-to-one field="author" target-entity="Author" />
+
+    </entity>
+
+</doctrine-mapping>
