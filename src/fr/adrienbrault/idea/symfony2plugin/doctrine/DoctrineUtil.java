@@ -1,11 +1,22 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.util.Pair;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Processor;
+import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -18,11 +29,20 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DoctrineUtil {
+
+    public static final String[] MODEL_CLASS_ANNOTATION = new String[]{
+        "\\Doctrine\\ORM\\Mapping\\Entity",
+        "\\TYPO3\\Flow\\Annotations\\Entity",
+        "\\Doctrine\\ODM\\MongoDB\\Mapping\\Annotations\\Document",
+        "\\Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\Document",
+    };
 
     /**
      * Index metadata file with its class and repository.
@@ -37,6 +57,8 @@ public class DoctrineUtil {
             pairs = getClassRepositoryPair((XmlFile) psiFile);
         } else if(psiFile instanceof YAMLFile) {
             pairs = getClassRepositoryPair((YAMLFile) psiFile);
+        } else if(psiFile instanceof PhpFile) {
+            pairs = getClassRepositoryPair((PhpFile) psiFile);
         }
 
         return pairs;
@@ -86,6 +108,59 @@ public class DoctrineUtil {
         }
 
         return pairs;
+    }
+    /**
+     * Extract class and repository from all php annotations
+     * We support multiple use case like orm an so on
+     */
+    @Nullable
+    private static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PhpFile phpFile) {
+
+        final Collection<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+
+        phpFile.accept(new AnnotationElementWalkingVisitor(new Processor<PhpDocTag>() {
+            @Override
+            public boolean process(PhpDocTag phpDocTag) {
+
+                PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+                if (phpDocComment == null) {
+                    return false;
+                }
+
+                PhpPsiElement phpClass = phpDocComment.getNextPsiSibling();
+                if (!(phpClass instanceof PhpClass)) {
+                    return false;
+                }
+
+                String presentableFQN = ((PhpClass) phpClass).getPresentableFQN();
+                if (StringUtils.isNotBlank(presentableFQN)) {
+                    pairs.add(Pair.create(presentableFQN, getAnnotationRepositoryClass(phpDocTag)));
+                }
+
+                return false;
+            }
+        }, MODEL_CLASS_ANNOTATION));
+
+        return pairs;
+    }
+
+    /**
+     * Extract text: @Entity(repositoryClass="foo")
+     */
+    @Nullable
+    private static String getAnnotationRepositoryClass(PhpDocTag phpDocTag) {
+
+        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+        if(phpDocAttributeList == null) {
+            return null;
+        }
+
+        Matcher matcher = Pattern.compile("repositoryClass\\s*=\\s*\"([\\w\\.-]+)\"").matcher(phpDocAttributeList.getText());
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
     }
 
     /**

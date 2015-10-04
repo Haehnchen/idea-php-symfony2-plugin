@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.io.File;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
@@ -33,6 +35,12 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
             "Documents\\Yml\\OrmUser:\n" +
             "  repositoryClass: Documents\\Yml\\OrmUserRepository"
         );
+
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.php"));
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     /**
@@ -128,5 +136,24 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         );
 
         assertIndexNotContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\Yml\\OrmUserInvalid");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
+    public void testPhpOrmAnnotationMetadata() {
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation");
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Flow\\Orm\\Annotation");
+
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation", "Foo");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
+    public void testPhpOdmAnnotationMetadata() {
+        // @TODO: implement
+        //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\MongoDB\\Annotation");
+        //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\CouchDB\\Annotation");
     }
 }

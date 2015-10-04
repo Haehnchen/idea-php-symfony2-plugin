@@ -9,6 +9,7 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import org.jetbrains.annotations.NotNull;
@@ -77,7 +78,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
             @Override
             public boolean acceptInput(@NotNull VirtualFile file) {
                 FileType fileType = file.getFileType();
-                return fileType == XmlFileType.INSTANCE || fileType == YAMLFileType.YML;
+                return fileType == XmlFileType.INSTANCE || fileType == YAMLFileType.YML || fileType == PhpFileType.INSTANCE;
             }
         };
     }
