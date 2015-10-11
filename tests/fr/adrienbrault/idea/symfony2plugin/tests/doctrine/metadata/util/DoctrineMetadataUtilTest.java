@@ -17,6 +17,8 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.odm.xml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.orm.xml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.orm.yml"));
+
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
     }
 
     public String getTestDataPath() {
@@ -91,5 +93,13 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertEquals("oneToMany", modelFields.getField("phonenumbers").getRelationType());
         assertEquals("manyToMany", modelFields.getField("groups").getRelationType());
         assertEquals("manyToOne", modelFields.getField("author").getRelationType());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getClassRepository
+     */
+    public void testGetClassRepository() {
+        assertEquals("Doctrine\\Tests\\ORM\\Mapping\\YamlUserRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\YamlUser").getPresentableFQN());
+        assertEquals("Foo\\Bar\\Repository\\FooBarRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Foo\\Bar").getPresentableFQN());
     }
 }

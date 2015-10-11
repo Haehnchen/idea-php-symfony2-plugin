@@ -1153,4 +1153,34 @@ public class PhpElementsUtil {
 
         return result[0];
     }
+
+    /**
+     * Get class by shortcut namespace, on a scoped namespace
+
+     * @param project current project
+     * @param classNameScope Namespace fo search "\Foo\Foo", "Foo\Foo", "Foo\Foo\", last "\*" is stripped
+     * @param className Class name inside namespace also fqn is supported
+
+     * @return PhpClass matched
+     */
+    public static PhpClass getClassInsideNamespaceScope(@NotNull Project project, @NotNull String classNameScope, @NotNull String className) {
+
+        if(className.startsWith("\\")) {
+            return PhpElementsUtil.getClassInterface(project, className);
+        }
+
+        // strip class name we namespace
+        String strip = StringUtils.strip(classNameScope, "\\");
+        int i = strip.lastIndexOf("\\");
+        if(i <= 0) {
+            return PhpElementsUtil.getClassInterface(project, className);
+        }
+
+        PhpClass phpClass = PhpElementsUtil.getClassInterface(project, strip.substring(0, i) + "\\" + StringUtils.strip(className, "\\"));
+        if(phpClass != null) {
+            return phpClass;
+        }
+
+        return PhpElementsUtil.getClassInterface(project, className);
+    }
 }

@@ -9,10 +9,21 @@ import com.jetbrains.php.lang.psi.elements.Variable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
+import java.io.File;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    public void setUp() throws Exception {
+        super.setUp();
+        myFixture.copyFileToProject("PhpElementsUtil.php");
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getMethodParameterTypeHint
@@ -72,5 +83,19 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             "}").findElementAt(myFixture.getCaretOffset()).getParent();
 
         assertNull(PhpElementsUtil.getFirstVariableTypeInScope((Variable) psiElement));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassInsideNamespaceScope
+     */
+    public void testGetClassInsideNamespaceScope() {
+        assertNotNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Foo\\Foo", "\\Foo\\Bar"));
+        assertNotNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Foo\\Foo", "Bar"));
+        assertNotNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "\\Foo\\Foo", "Bar"));
+        assertNotNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "\\Foo\\Foo", "Bar\\"));
+        assertNotNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "\\Foo\\Foo\\", "Bar\\"));
+
+        assertNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Fooa", "Bar"));
+        assertNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Fooa\\Foo", "Bar"));
     }
 }
