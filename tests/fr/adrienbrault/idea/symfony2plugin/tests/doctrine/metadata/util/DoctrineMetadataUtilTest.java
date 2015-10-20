@@ -66,6 +66,8 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     public void testGetOrmXmlModelFields() {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\XmlUser");
 
+        assertEquals("integer", modelFields.getField("id").getTypeName());
+
         assertEquals("string", modelFields.getField("name").getTypeName());
         assertEquals("string", modelFields.getField("email").getTypeName());
 
@@ -87,6 +89,8 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      */
     public void testGetOrmYmlModelFields() {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\YamlUser");
+
+        assertEquals("integer", modelFields.getField("id").getTypeName());
 
         assertEquals("string", modelFields.getField("name").getTypeName());
         assertEquals("string", modelFields.getField("email").getTypeName());
@@ -130,5 +134,6 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      */
     public void testGetMetadataByTable() {
         assertNotNull(DoctrineMetadataUtil.getMetadataByTable(getProject(), "cms_users").getField("id"));
+        assertNotNull(DoctrineMetadataUtil.getMetadataByTable(getProject(), "cms_users").getField("name"));
     }
 }

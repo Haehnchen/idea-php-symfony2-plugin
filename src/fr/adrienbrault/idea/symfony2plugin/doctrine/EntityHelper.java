@@ -19,16 +19,15 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespaces
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
-import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
-import org.apache.commons.lang.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLDocument;
@@ -422,12 +421,15 @@ public class EntityHelper {
             return Collections.emptyList();
         }
 
-        XmlTag entity = rootTag.findFirstSubTag("entity");
+        final XmlTag entity = rootTag.findFirstSubTag("entity");
         if(entity == null) {
             return Collections.emptyList();
         }
 
-        for (XmlTag xmlTag : entity.findSubTags("field")) {
+        for (XmlTag xmlTag : new ArrayList<XmlTag>() {{
+            addAll(Arrays.asList(entity.findSubTags("field")));
+            addAll(Arrays.asList(entity.findSubTags("id")));
+        }}) {
 
             String name = xmlTag.getAttributeValue("name");
             if(org.apache.commons.lang.StringUtils.isBlank(name)) {
@@ -439,7 +441,7 @@ public class EntityHelper {
             field.addTarget(xmlTag);
 
             String column = xmlTag.getAttributeValue("column");
-            if(org.apache.commons.lang.StringUtils.isBlank(name)) {
+            if(org.apache.commons.lang.StringUtils.isNotBlank(name)) {
                 field.setColumn(column);
             }
 
