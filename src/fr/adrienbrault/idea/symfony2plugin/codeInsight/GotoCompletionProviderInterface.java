@@ -9,9 +9,9 @@ import java.util.Collection;
 public interface GotoCompletionProviderInterface {
 
     @NotNull
-    public Collection<LookupElement> getLookupElements();
+    Collection<LookupElement> getLookupElements();
 
     @NotNull
-    public Collection<PsiElement> getPsiTargets(PsiElement element);
+    Collection<PsiElement> getPsiTargets(PsiElement element);
 
 }
