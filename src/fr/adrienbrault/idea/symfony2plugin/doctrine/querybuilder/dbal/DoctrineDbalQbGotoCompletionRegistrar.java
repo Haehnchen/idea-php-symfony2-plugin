@@ -12,8 +12,11 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +32,9 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
     @Override
     public void register(GotoCompletionRegistrarParameter registrar) {
 
+        // table name completion on method eg:
+        // Doctrine\DBAL\Connection::insert
+        // Doctrine\DBAL\Query\QueryBuilder::update
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
             @Nullable
             @Override
@@ -39,7 +45,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
                     return null;
                 }
 
-                if (!isTablaNameRegistrar(context)) {
+                if (!isTableNameRegistrar(context)) {
                     return null;
                 }
 
@@ -47,14 +53,51 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             }
         });
 
+        // simple flat field names eg:
+        // Doctrine\DBAL\Connection::update('foo', ['<caret>'])
+        registrar.register(PlatformPatterns.psiElement(), new GotoCompletionContributor() {
+            @Nullable
+            @Override
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(context, 1)
+                    .withSignature("\\Doctrine\\DBAL\\Connection", "insert")
+                    .withSignature("\\Doctrine\\DBAL\\Connection", "update")
+                    .match();
+
+                if (methodMatchParameter == null) {
+                    return null;
+                }
+
+                PsiElement[] parameters = methodMatchParameter.getParameters();
+                if(parameters.length < 2) {
+                    return null;
+                }
+
+                String stringValue = PhpElementsUtil.getStringValue(parameters[0]);
+                if(StringUtils.isBlank(stringValue)) {
+                    return null;
+                }
+
+                return new DbalFieldGotoCompletionProvider(context, stringValue);
+            }
+        });
+
     }
 
-    private boolean isTablaNameRegistrar(PsiElement context) {
+    private boolean isTableNameRegistrar(PsiElement context) {
 
         MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
             .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "update")
             .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "insert")
             .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "from")
+            .withSignature("Doctrine\\DBAL\\Connection", "insert")
+            .withSignature("Doctrine\\DBAL\\Connection", "update")
             .match();
 
         if(methodMatchParameter != null) {
@@ -93,14 +136,8 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
-
-            PsiElement parent = element.getParent();
-            if(!(parent instanceof StringLiteralExpression)) {
-                return Collections.emptyList();
-            }
-
-            String contents = ((StringLiteralExpression) parent).getContents();
-            if(StringUtils.isBlank(contents)) {
+            String contents = getStringValue(element);
+            if(contents == null) {
                 return Collections.emptyList();
             }
 
@@ -121,5 +158,80 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
 
             return psiElements;
         }
+    }
+
+    private static class DbalFieldGotoCompletionProvider extends GotoCompletionProvider {
+
+        private final String stringValue;
+
+        public DbalFieldGotoCompletionProvider(PsiElement element, String stringValue) {
+            super(element);
+            this.stringValue = stringValue;
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+
+            DoctrineMetadataModel model = DoctrineMetadataUtil.getMetadataByTable(getProject(), this.stringValue);
+            if(model == null) {
+                return Collections.emptyList();
+            }
+
+            Collection<LookupElement> elements = new ArrayList<LookupElement>();
+            for (DoctrineModelField field : model.getFields()) {
+                String column = field.getColumn();
+
+                // use "column" else fallback to field name
+                if(column != null && StringUtils.isNotBlank(column)) {
+                    elements.add(LookupElementBuilder.create(column).withIcon(Symfony2Icons.DOCTRINE));
+                } else {
+                    String name = field.getName();
+                    if(StringUtils.isNotBlank(name)) {
+                        elements.add(LookupElementBuilder.create(name).withIcon(Symfony2Icons.DOCTRINE));
+                    }
+                }
+            }
+
+            return elements;
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            String contents = getStringValue(element);
+            if(contents == null) {
+                return Collections.emptyList();
+            }
+
+            DoctrineMetadataModel model = DoctrineMetadataUtil.getMetadataByTable(getProject(), this.stringValue);
+            if(model == null) {
+                return Collections.emptyList();
+            }
+
+            Collection<PsiElement> elements = new ArrayList<PsiElement>();
+            for (DoctrineModelField field : model.getFields()) {
+                if(contents.equals(field.getColumn()) || contents.equals(field.getName())) {
+                    elements.addAll(field.getTargets());
+                }
+            }
+
+            return elements;
+        }
+    }
+
+    @Nullable
+    private static String getStringValue(@NotNull PsiElement element) {
+        PsiElement parent = element.getParent();
+        if(!(parent instanceof StringLiteralExpression)) {
+            return null;
+        }
+
+        String contents = ((StringLiteralExpression) parent).getContents();
+        if(StringUtils.isBlank(contents)) {
+            return null;
+        }
+
+        return contents;
     }
 }

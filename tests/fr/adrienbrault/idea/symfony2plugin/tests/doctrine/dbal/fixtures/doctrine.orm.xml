@@ -1,3 +1,6 @@
 <doctrine-mapping>
-    <entity name="Doctrine\Tests\ORM\Mapping\XmlUser" table="cms_users"/>
+    <entity name="Doctrine\Tests\ORM\Mapping\XmlUser" table="cms_users">
+        <field name="name" type="string" />
+        <field name="email" column="user_email" type="string" />
+    </entity>
 </doctrine-mapping>

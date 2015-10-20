@@ -124,4 +124,11 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
 
         assertContainsElements(items, "cms_users", "foo_table");
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getMetadataByTable
+     */
+    public void testGetMetadataByTable() {
+        assertNotNull(DoctrineMetadataUtil.getMetadataByTable(getProject(), "cms_users").getField("id"));
+    }
 }

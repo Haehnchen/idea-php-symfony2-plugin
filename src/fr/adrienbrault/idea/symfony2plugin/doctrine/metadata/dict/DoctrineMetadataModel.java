@@ -47,4 +47,9 @@ public class DoctrineMetadataModel {
     public boolean isEmpty() {
         return this.modelFields.size() == 0 && this.table == null;
     }
+
+    @NotNull
+    public Collection<DoctrineModelField> getFields() {
+        return modelFields;
+    }
 }

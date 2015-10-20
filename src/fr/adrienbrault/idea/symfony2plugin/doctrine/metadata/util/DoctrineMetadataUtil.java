@@ -135,9 +135,36 @@ public class DoctrineMetadataUtil {
     }
 
     @Nullable
-    public static DoctrineMetadataModel getModelFields(@NotNull Project project, @NotNull String className) {
+    public static DoctrineMetadataModel getMetadataByTable(@NotNull Project project, @NotNull String tableName) {
 
-        Collection<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
+        for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
+            for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(psiFile == null) {
+                    continue;
+                }
+
+                DoctrineMappingDriverArguments arguments = new DoctrineMappingDriverArguments(project, psiFile, key);
+
+                for (DoctrineMappingDriverInterface mappingDriver : MAPPING_DRIVERS) {
+                    DoctrineMetadataModel metadata = mappingDriver.getMetadata(arguments);
+                    if(metadata == null) {
+                        continue;
+                    }
+
+                    String table = metadata.getTable();
+                    if(table != null && tableName.equals(table)) {
+                        return metadata;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static DoctrineMetadataModel getModelFields(@NotNull Project project, @NotNull String className) {
 
         for (VirtualFile file : findMetadataFiles(project, className)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
@@ -154,10 +181,6 @@ public class DoctrineMetadataUtil {
             }
         }
 
-        if(fields.size() == 0) {
-            return null;
-        }
-
-        return new DoctrineMetadataModel(fields);
+        return null;
     }
 }

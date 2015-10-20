@@ -14,3 +14,12 @@ namespace Doctrine\DBAL\Query
         public function rightJoin();
     }
 }
+
+namespace Doctrine\DBAL
+{
+    interface Connection
+    {
+        public function insert();
+        public function update();
+    }
+}
