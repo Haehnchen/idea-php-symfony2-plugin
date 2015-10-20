@@ -1,0 +1,3 @@
+<doctrine-mapping>
+    <entity name="Doctrine\Tests\ORM\Mapping\XmlUser" table="cms_users"/>
+</doctrine-mapping>

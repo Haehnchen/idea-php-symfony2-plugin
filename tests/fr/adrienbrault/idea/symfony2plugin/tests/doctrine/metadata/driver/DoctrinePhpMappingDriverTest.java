@@ -2,7 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.driver;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dic.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrinePhpMappingDriver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -30,11 +30,7 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
      */
     public void testPhpAnnotationsMetadata() {
 
-        PsiFile psiFile = PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php $foo = null;");
-
-        DoctrineMetadataModel metadata = new DoctrinePhpMappingDriver().getMetadata(
-            new DoctrineMappingDriverArguments(getProject(), psiFile, "\\Doctrine\\Orm\\Annotation")
-        );
+        DoctrineMetadataModel metadata = createOrmMetadata();
 
         assertEquals("string", metadata.getField("email").getTypeName());
 
@@ -50,6 +46,7 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
         assertEquals("ManyToMany", metadata.getField("egg").getRelationType());
         assertEquals("Egg", metadata.getField("egg").getRelation());
     }
+
     /**
      * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
      */
@@ -64,5 +61,18 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
 
         assertEquals("ManyToMany", metadata.getField("car").getRelationType());
         assertEquals("\\DateTime", metadata.getField("car").getRelation());
+    }
+
+    /**
+     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
+     */
+    public void testPhpTableAnnotationsMetadata() {
+        assertEquals("FOO", createOrmMetadata().getTable());
+    }
+
+    private DoctrineMetadataModel createOrmMetadata() {
+        return new DoctrinePhpMappingDriver().getMetadata(
+            new DoctrineMappingDriverArguments(getProject(), PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php $foo = null;"), "\\Doctrine\\Orm\\Annotation")
+        );
     }
 }

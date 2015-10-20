@@ -6,7 +6,7 @@ import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dic.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +36,7 @@ public class DoctrineXmlMappingDriver implements DoctrineMappingDriverInterface 
         }
 
         Collection<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
+        DoctrineMetadataModel model = new DoctrineMetadataModel(fields);
 
         for (XmlTag xmlTag : rootTag.getSubTags()) {
             String name = xmlTag.getAttributeValue("name");
@@ -47,17 +48,23 @@ public class DoctrineXmlMappingDriver implements DoctrineMappingDriverInterface 
                 // Doctrine ORM
                 // @TODO: refactor allow multiple
                 fields.addAll(EntityHelper.getEntityFields((XmlFile) psiFile));
+
+                // get table for dbal
+                String table = xmlTag.getAttributeValue("table");
+                if(StringUtils.isNotBlank(table)) {
+                    model.setTable(table);
+                }
             } else if("document".equals(xmlTag.getName()) && args.isEqualClass(name)) {
                 // Doctrine ODM
                 getOdmFields(xmlTag, fields);
             }
         }
 
-        if(fields.size() == 0) {
+        if(model.isEmpty()) {
             return null;
         }
 
-        return new DoctrineMetadataModel(fields);
+        return model;
     }
 
     private void getOdmFields(@NotNull XmlTag xmlTag, @NotNull Collection<DoctrineModelField> fields) {

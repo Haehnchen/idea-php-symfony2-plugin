@@ -1,6 +1,7 @@
 Doctrine\Tests\ORM\Mapping\YamlUser:
   type: entity
   repositoryClass: Doctrine\Tests\ORM\Mapping\YamlUserRepository
+  table: foo_table
   id:
     id:
       type: integer

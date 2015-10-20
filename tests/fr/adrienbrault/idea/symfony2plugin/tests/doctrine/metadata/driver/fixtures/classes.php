@@ -18,7 +18,7 @@ namespace Doctrine\Orm {
     use Doctrine\ORM\Mapping AS ORM;
 
     /**
-     * @ORM\Entity()
+     * @ORM\Entity(table="FOO")
      */
     class Annotation {
 

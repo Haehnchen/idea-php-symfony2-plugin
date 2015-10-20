@@ -3,31 +3,35 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.CachedValue;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dic.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.*;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DoctrineMetadataUtil {
+
+    private static final Key<CachedValue<Set<String>>> CLASS_KEYS = new Key<CachedValue<Set<String>>>("CLASS_KEYS");
 
     private static DoctrineMappingDriverInterface[] MAPPING_DRIVERS = new DoctrineMappingDriverInterface[] {
         new DoctrineXmlMappingDriver(),
@@ -65,7 +69,7 @@ public class DoctrineMetadataUtil {
             FileBasedIndex.getInstance().processValues(DoctrineMetadataFileStubIndex.KEY, className, virtualFile, new FileBasedIndex.ValueProcessor<String>() {
                 @Override
                 public boolean process(VirtualFile virtualFile, String s) {
-                    if(phpClass[0] != null) {
+                    if (phpClass[0] != null) {
                         return true;
                     }
 
@@ -96,6 +100,38 @@ public class DoctrineMetadataUtil {
         }, GlobalSearchScope.allScope(project));
 
         return virtualFiles;
+    }
+
+    @NotNull
+    public static Collection<Pair<String, PsiElement>> getTables(@NotNull Project project) {
+
+        Collection<Pair<String, PsiElement>> pair = new ArrayList<Pair<String, PsiElement>>();
+
+        for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
+            for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(psiFile == null) {
+                    continue;
+                }
+
+                DoctrineMappingDriverArguments arguments = new DoctrineMappingDriverArguments(project, psiFile, key);
+
+                for (DoctrineMappingDriverInterface mappingDriver : MAPPING_DRIVERS) {
+                    DoctrineMetadataModel metadata = mappingDriver.getMetadata(arguments);
+                    if(metadata == null) {
+                        continue;
+                    }
+
+                    String table = metadata.getTable();
+                    if(table != null) {
+                        // @TODO: add target
+                        pair.add(new Pair<String, PsiElement>(table, null));
+                    }
+                }
+            }
+        }
+
+        return pair;
     }
 
     @Nullable

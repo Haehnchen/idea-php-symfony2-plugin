@@ -7,13 +7,15 @@ import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dic.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -29,6 +31,7 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
         }
 
         Collection<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
+        DoctrineMetadataModel model = new DoctrineMetadataModel(fields);
 
         for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(args.getProject(), args.getClassName())) {
 
@@ -42,6 +45,13 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
             // Doctrine ORM
             // @TODO: external split
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity", "\\TYPO3\\Flow\\Annotations\\Entity")) {
+
+                // @TODO: reuse annotations plugin
+                Matcher matcher = Pattern.compile("table[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(docComment.getText());
+                if (matcher.find()) {
+                    model.setTable(matcher.group(1));
+                }
+
                 for(Field field: phpClass.getFields()) {
                     if(field.isConstant()) {
                         continue;
@@ -61,6 +71,7 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
             return null;
         }
 
-        return new DoctrineMetadataModel(fields);
+
+        return model;
     }
 }

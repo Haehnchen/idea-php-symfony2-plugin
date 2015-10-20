@@ -1,10 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.util;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dic.DoctrineMetadataModel;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
+import com.intellij.psi.PsiElement;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -73,6 +78,8 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertEquals("OneToMany", modelFields.getField("phonenumbers").getRelationType());
         assertEquals("ManyToMany", modelFields.getField("groups").getRelationType());
         assertEquals("ManyToOne", modelFields.getField("author").getRelationType());
+
+        assertEquals("cms_users", modelFields.getTable());
     }
 
     /**
@@ -93,6 +100,8 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertEquals("oneToMany", modelFields.getField("phonenumbers").getRelationType());
         assertEquals("manyToMany", modelFields.getField("groups").getRelationType());
         assertEquals("manyToOne", modelFields.getField("author").getRelationType());
+
+        assertEquals("foo_table", modelFields.getTable());
     }
 
     /**
@@ -101,5 +110,18 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     public void testGetClassRepository() {
         assertEquals("Doctrine\\Tests\\ORM\\Mapping\\YamlUserRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\YamlUser").getPresentableFQN());
         assertEquals("Foo\\Bar\\Repository\\FooBarRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Foo\\Bar").getPresentableFQN());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getTables
+     */
+    public void testGetTables() {
+
+        Collection<String> items = new ArrayList<String>();
+        for (Pair<String, PsiElement> pair : DoctrineMetadataUtil.getTables(getProject())) {
+            items.add(pair.getFirst());
+        }
+
+        assertContainsElements(items, "cms_users", "foo_table");
     }
 }

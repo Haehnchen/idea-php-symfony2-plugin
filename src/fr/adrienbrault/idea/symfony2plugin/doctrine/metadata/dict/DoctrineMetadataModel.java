@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dic;
+package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict;
 
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +14,9 @@ public class DoctrineMetadataModel {
     @NotNull
     private final Collection<DoctrineModelField> modelFields;
 
+    @Nullable
+    private String table;
+
     public DoctrineMetadataModel(@NotNull Collection<DoctrineModelField> modelFields) {
         this.modelFields = modelFields;
     }
@@ -27,5 +30,21 @@ public class DoctrineMetadataModel {
         }
 
         return null;
+    }
+
+    @Nullable
+    public String getTable() {
+        return table;
+    }
+
+    /**
+     * make Immutable @TODO:
+     */
+    public void setTable(@Nullable String table) {
+        this.table = table;
+    }
+
+    public boolean isEmpty() {
+        return this.modelFields.size() == 0 && this.table == null;
     }
 }
