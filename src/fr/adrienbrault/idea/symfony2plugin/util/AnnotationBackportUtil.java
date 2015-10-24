@@ -156,6 +156,25 @@ public class AnnotationBackportUtil {
         return false;
     }
 
+    public static PhpDocTag getReference(@Nullable PhpDocComment docComment, String className) {
+        if(docComment == null) return null;
+
+        Map<String, String> uses = AnnotationBackportUtil.getUseImportMap(docComment);
+
+        for(PhpDocTag phpDocTag: PsiTreeUtil.findChildrenOfAnyType(docComment, PhpDocTag.class)) {
+            if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                continue;
+            }
+
+            PhpClass annotationReference = AnnotationBackportUtil.getAnnotationReference(phpDocTag, uses);
+            if(annotationReference != null && PhpElementsUtil.isEqualClassName(annotationReference, className)) {
+                return phpDocTag;
+            }
+        }
+
+        return null;
+    }
+
     @Nullable
     public static String getAnnotationRouteName(@Nullable String rawDocText) {
 

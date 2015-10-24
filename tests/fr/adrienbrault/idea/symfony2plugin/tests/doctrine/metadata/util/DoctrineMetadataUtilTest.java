@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.util;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
+import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -10,6 +11,8 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -121,12 +124,17 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      */
     public void testGetTables() {
 
-        Collection<String> items = new ArrayList<String>();
-        for (Pair<String, PsiElement> pair : DoctrineMetadataUtil.getTables(getProject())) {
-            items.add(pair.getFirst());
+        Map<String, PsiElement> items = new HashMap<String, PsiElement>();
+
+        Collection<Pair<String, PsiElement>> tables = DoctrineMetadataUtil.getTables(getProject());
+        for (Pair<String, PsiElement> pair : tables) {
+            items.put(pair.getFirst(), pair.getSecond());
         }
 
-        assertContainsElements(items, "cms_users", "foo_table");
+        assertContainsElements(items.keySet(), "cms_users", "foo_table");
+
+        assertNotNull(items.get("cms_users"));
+        assertNotNull(items.get("foo_table"));
     }
 
     /**

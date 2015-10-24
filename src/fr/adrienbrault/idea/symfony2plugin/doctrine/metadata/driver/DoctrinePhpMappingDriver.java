@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -47,9 +48,12 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity", "\\TYPO3\\Flow\\Annotations\\Entity")) {
 
                 // @TODO: reuse annotations plugin
-                Matcher matcher = Pattern.compile("table[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(docComment.getText());
-                if (matcher.find()) {
-                    model.setTable(matcher.group(1));
+                PhpDocTag phpDocTag = AnnotationBackportUtil.getReference(docComment, "\\Doctrine\\ORM\\Mapping\\Table");
+                if(phpDocTag != null) {
+                    Matcher matcher = Pattern.compile("name[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(phpDocTag.getText());
+                    if (matcher.find()) {
+                        model.setTable(matcher.group(1));
+                    }
                 }
 
                 for(Field field: phpClass.getFields()) {

@@ -2,6 +2,7 @@
 
 namespace Doctrine\ORM\Mapping {
     class Entity {};
+    class Table {};
     class Column {};
     class OneToMany {};
     class OneToOne {};
@@ -18,7 +19,8 @@ namespace Doctrine\Orm {
     use Doctrine\ORM\Mapping AS ORM;
 
     /**
-     * @ORM\Entity(table="FOO")
+     * @ORM\Entity()
+     * @ORM\Table(name="FOO")
      */
     class Annotation {
 

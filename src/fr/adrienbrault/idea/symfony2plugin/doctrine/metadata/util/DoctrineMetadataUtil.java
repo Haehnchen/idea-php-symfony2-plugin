@@ -123,10 +123,12 @@ public class DoctrineMetadataUtil {
                     }
 
                     String table = metadata.getTable();
-                    if(table != null) {
-                        // @TODO: add target
-                        pair.add(new Pair<String, PsiElement>(table, null));
+                    if(table == null) {
+                        continue;
                     }
+
+                    // @TODO: add target
+                    pair.add(new Pair<String, PsiElement>(table, psiFile));
                 }
             }
         }

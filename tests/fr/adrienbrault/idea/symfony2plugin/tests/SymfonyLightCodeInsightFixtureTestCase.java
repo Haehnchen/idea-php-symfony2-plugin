@@ -141,6 +141,11 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         assertNavigationMatch(pattern);
     }
 
+    public void assertNavigationMatch(LanguageFileType languageFileType, String configureByText) {
+        myFixture.configureByText(languageFileType, configureByText);
+        assertNavigationMatch(PlatformPatterns.psiElement());
+    }
+
     private void assertNavigationMatch(ElementPattern<?> pattern) {
 
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());

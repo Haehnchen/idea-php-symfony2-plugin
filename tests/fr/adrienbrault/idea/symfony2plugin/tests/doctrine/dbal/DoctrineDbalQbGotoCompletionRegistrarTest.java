@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.dbal;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -40,6 +41,25 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
                     "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
                     "$foo->" + s + "('', '<caret>');",
                 "cms_users"
+            );
+        }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     */
+    public void testDBALTableNameNavigation() {
+        for (String s : new String[]{"update", "insert", "from"}) {
+            assertNavigationMatch(PhpFileType.INSTANCE, "<?php" +
+                    "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
+                    "$foo->" + s + "('cms_users<caret>');"
+            );
+        }
+
+        for (String s : new String[]{"innerJoin", "leftJoin", "join", "rightJoin"}) {
+            assertNavigationMatch(PhpFileType.INSTANCE, "<?php" +
+                    "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
+                    "$foo->" + s + "('', 'cms_users<caret>');"
             );
         }
     }
