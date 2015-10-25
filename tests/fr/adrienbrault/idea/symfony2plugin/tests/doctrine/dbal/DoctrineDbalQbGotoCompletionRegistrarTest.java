@@ -125,4 +125,35 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
             );
         }
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     */
+    public void testDBALAliasRelationCompletion() {
+        for (String s : new String[]{"innerJoin", "leftJoin", "join", "rightJoin"}) {
+            assertCompletionContains(PhpFileType.INSTANCE, "<?php" +
+                    "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
+                    "$foo->" +s + "('', 'foo', '<caret>');",
+                "foo"
+            );
+        }
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php" +
+                "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
+                "$foo->join('foo', 'foo', '<caret>');",
+            "f", "foo", "foo_foo", "fooFoo"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php" +
+                "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
+                "$foo->join('foo_bar', 'foo_bar', '<caret>');",
+            "f", "fb", "foo_bar", "foo_bar_foo_bar", "fooBar", "fooBarFooBar"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php" +
+                "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
+                "$foo->join('foo_bar', 'foo_bar_foo_bars', '<caret>');",
+            "fbfb"
+        );
+    }
 }

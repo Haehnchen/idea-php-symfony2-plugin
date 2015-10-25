@@ -21,9 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -55,7 +53,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
 
         // simple flat field names eg:
         // Doctrine\DBAL\Connection::update('foo', ['<caret>'])
-        registrar.register(PlatformPatterns.psiElement(), new GotoCompletionContributor() {
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
             @Nullable
             @Override
             public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
@@ -88,6 +86,104 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             }
         });
 
+        // simple flat field names eg:
+        // Doctrine\DBAL\Connection::update('foo', ['<caret>'])
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+            @Nullable
+            @Override
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 2)
+                    .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "innerJoin")
+                    .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "leftJoin")
+                    .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "join")
+                    .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "rightJoin")
+                    .match();
+
+                if (methodMatchParameter == null) {
+                    return null;
+                }
+
+                PsiElement[] parameters = methodMatchParameter.getParameters();
+                if(parameters.length < 2) {
+                    return null;
+                }
+
+                String stringValue = PhpElementsUtil.getStringValue(parameters[1]);
+                if(StringUtils.isBlank(stringValue)) {
+                    return null;
+                }
+
+                return new MyDbalAliasGotoCompletionProvider(context, stringValue, PhpElementsUtil.getStringValue(parameters[0]));
+            }
+        });
+
+    }
+
+    private static class MyDbalAliasGotoCompletionProvider extends GotoCompletionProvider {
+
+        @NotNull
+        private final String value;
+
+        @NotNull
+        private final String fromAlias;
+
+        public MyDbalAliasGotoCompletionProvider(PsiElement psiElement, @NotNull String value, @Nullable String fromAlias) {
+            super(psiElement);
+            this.value = value;
+            this.fromAlias = fromAlias;
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+
+            Set<String> aliasSet = new HashSet<String>();
+            aliasSet.add(value);
+            aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(value, true));
+            String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(value);
+            aliasSet.add(underscore);
+
+            if(value.length() > 0) {
+                aliasSet.add(value.substring(0, 1));
+            }
+
+            if(underscore.contains("_")) {
+                String[] split = underscore.split("_");
+                if(split.length > 1) {
+                    aliasSet.add(split[0].substring(0, 1) + split[1].substring(0, 1));
+                }
+
+                List<String> i = new ArrayList<String>();
+                for (String s : split) {
+                    i.add(s.substring(0, 1));
+                }
+                aliasSet.add(StringUtils.join(i, ""));
+            }
+
+            if(StringUtils.isNotBlank(this.fromAlias)) {
+                aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(this.fromAlias + "_" + value, true));
+                aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(this.fromAlias + "_" + value));
+            }
+
+            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            for (String s : aliasSet) {
+                lookupElements.add(LookupElementBuilder.create(s).withIcon(Symfony2Icons.DOCTRINE));
+            }
+
+            return lookupElements;
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            return Collections.emptyList();
+        }
     }
 
     private boolean isTableNameRegistrar(PsiElement context) {
