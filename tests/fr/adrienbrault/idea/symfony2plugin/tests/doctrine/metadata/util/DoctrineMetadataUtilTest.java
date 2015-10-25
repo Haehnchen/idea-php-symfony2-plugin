@@ -4,15 +4,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -144,5 +142,18 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     public void testGetMetadataByTable() {
         assertNotNull(DoctrineMetadataUtil.getMetadataByTable(getProject(), "cms_users").getField("id"));
         assertNotNull(DoctrineMetadataUtil.getMetadataByTable(getProject(), "cms_users").getField("name"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getModels
+     */
+    public void testGetModels() {
+
+        Set<String> classes = new HashSet<String>();
+        for (PhpClass phpClass : DoctrineMetadataUtil.getModels(getProject())) {
+            classes.add(phpClass.getPresentableFQN());
+        }
+
+        assertContainsElements(classes, "Doctrine\\Tests\\ORM\\Mapping\\YamlUser");
     }
 }

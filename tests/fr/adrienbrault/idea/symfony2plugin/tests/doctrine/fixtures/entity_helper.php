@@ -17,12 +17,18 @@ namespace FooBundle
 
 namespace FooBundle\Entity
 {
+
+    use Doctrine\Common\Persistence\ObjectRepository;
     use Doctrine\ORM\Mapping AS ORM;
 
     /**
      * @ORM\Entity(repositoryClass="FooBundle\BarRepository")
      */
     class Bar
+    {
+    }
+
+    class BarRepository implements ObjectRepository
     {
     }
 }
@@ -49,4 +55,9 @@ namespace FooBundle\Document
     class Doc
     {
     }
+}
+
+namespace Doctrine\Common\Persistence
+{
+    interface ObjectRepository{}
 }

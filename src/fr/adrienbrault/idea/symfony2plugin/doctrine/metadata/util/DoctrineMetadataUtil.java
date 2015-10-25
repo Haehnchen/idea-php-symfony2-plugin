@@ -186,4 +186,18 @@ public class DoctrineMetadataUtil {
 
         return null;
     }
+
+    @NotNull
+    public static Collection<PhpClass> getModels(@NotNull Project project) {
+
+        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
+            PhpClass classInterface = PhpElementsUtil.getClassInterface(project, key);
+            if(classInterface != null) {
+                phpClasses.add(classInterface);
+            }
+        }
+
+        return phpClasses;
+    }
 }

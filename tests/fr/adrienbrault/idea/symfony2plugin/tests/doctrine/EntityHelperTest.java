@@ -3,8 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -54,5 +58,23 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNull("FooBundle\\Document\\Doc", EntityHelper.resolveShortcutName(getProject(), "FooBundle:Bike"));
         assertNull("FooBundle\\Document\\Doc", EntityHelper.resolveShortcutName(getProject(), "BarCarBundle:Bar"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getModelClasses
+     */
+    public void testGetModelClasses() {
+        Collection<DoctrineModel> modelClasses = EntityHelper.getModelClasses(getProject());
+
+        Map<String, String> map = new HashMap<String, String>();
+        for (DoctrineModel modelClass : modelClasses) {
+            map.put(modelClass.getRepositoryName(), modelClass.getDoctrineNamespace());
+        }
+
+        assertContainsElements(map.keySet(), "FooBundle:Doc");
+        assertContainsElements(map.keySet(), "FooBundle\\Entity\\Bar");
+        assertContainsElements(map.values(), "\\FooBundle\\Document");
+
+        assertFalse(map.values().contains("FooBundle:DocBarRepository"));
     }
 }

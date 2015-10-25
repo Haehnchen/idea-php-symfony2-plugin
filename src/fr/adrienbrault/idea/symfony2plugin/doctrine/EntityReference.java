@@ -60,18 +60,8 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public Object[] getVariants() {
-
         List<LookupElement> results = new ArrayList<LookupElement>();
-        PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
-
-        // find Repository interface to filter RepositoryClasses out
-        PhpClass repositoryInterface = PhpElementsUtil.getInterface(phpIndex, DoctrineTypes.REPOSITORY_INTERFACE);
-        if(null == repositoryInterface) {
-            return results.toArray();
-        }
-
         results.addAll(getModelLookupElements(getElement().getProject(), this.useClassNameAsLookupString, this.doctrineManagers.toArray(new DoctrineTypes.Manager[this.doctrineManagers.size()])));
-
         return results.toArray();
     }
 
