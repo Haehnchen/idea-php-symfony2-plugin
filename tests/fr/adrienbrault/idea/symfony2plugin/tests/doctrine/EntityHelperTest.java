@@ -25,7 +25,15 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
      */
     public void testGetEntityRepositoryClass() {
-        //EntityHelper.getEntityRepositoryClass()
+        assertEquals("FooBundle\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Bar").getPresentableFQN());
+        assertEquals("FooBundle\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle\\Entity\\Bar").getPresentableFQN());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
+     */
+    public void testGetEntityRepositoryClassInSameNamespaceFallback() {
+        assertEquals("FooBundle\\Entity\\Car\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Car\\Bar").getPresentableFQN());
     }
     
     /**

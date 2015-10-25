@@ -81,14 +81,31 @@ public class EntityHelper {
     }
 
 
+    /**
+     * Search for a repository class of a model
+     *
+     * @param project Current project
+     * @param shortcutName "\Class\Name" or "FooBundle:Name"
+     */
     @Nullable
-    public static PhpClass getEntityRepositoryClass(Project project, String shortcutName) {
+    public static PhpClass getEntityRepositoryClass(@NotNull Project project, @NotNull String shortcutName) {
 
         PhpClass phpClass = resolveShortcutName(project, shortcutName);
         if(phpClass == null) {
             return null;
         }
 
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN == null) {
+            return null;
+        }
+
+        PhpClass classRepository = DoctrineMetadataUtil.getClassRepository(project, presentableFQN);
+        if(classRepository != null) {
+            return classRepository;
+        }
+
+        // @TODO: deprecated code
         // search on annotations
         PhpDocComment docAnnotation = phpClass.getDocComment();
         if(docAnnotation != null) {
@@ -104,16 +121,10 @@ public class EntityHelper {
 
         SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getContainingBundle(phpClass);
         if(symfonyBundle != null) {
-            String classFqnName = phpClass.getPresentableFQN();
-
-            if(classFqnName != null) {
-                PhpClass repositoryClass = getEntityRepositoryClass(project, symfonyBundle, classFqnName);
-                if(repositoryClass != null) {
-                    return repositoryClass;
-                }
-
+            PhpClass repositoryClass = getEntityRepositoryClass(project, symfonyBundle, presentableFQN);
+            if(repositoryClass != null) {
+                return repositoryClass;
             }
-
         }
 
         // old __CLASS__ Repository type
@@ -546,7 +557,7 @@ public class EntityHelper {
         // MyBundle:Folder\Model -> MyBundle\Entity\Folder\Model
 
         List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
-        
+
         // collect entitymanager namespaces on bundle or container file
         Map<String, String> em = new HashMap<String, String>();
         if(managerList.contains(DoctrineTypes.Manager.ORM)) {

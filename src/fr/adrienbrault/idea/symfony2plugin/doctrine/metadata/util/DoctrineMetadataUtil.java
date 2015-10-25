@@ -69,7 +69,7 @@ public class DoctrineMetadataUtil {
             FileBasedIndex.getInstance().processValues(DoctrineMetadataFileStubIndex.KEY, className, virtualFile, new FileBasedIndex.ValueProcessor<String>() {
                 @Override
                 public boolean process(VirtualFile virtualFile, String s) {
-                    if (phpClass[0] != null) {
+                    if (s == null || phpClass[0] != null) {
                         return true;
                     }
 

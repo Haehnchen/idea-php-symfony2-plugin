@@ -1,5 +1,9 @@
 <?php
 
+namespace Doctrine\ORM\Mapping {
+    class Entity {};
+}
+
 namespace Symfony\Component\HttpKernel\Bundle
 {
     interface Bundle {}
@@ -13,6 +17,11 @@ namespace FooBundle
 
 namespace FooBundle\Entity
 {
+    use Doctrine\ORM\Mapping AS ORM;
+
+    /**
+     * @ORM\Entity(repositoryClass="FooBundle\BarRepository")
+     */
     class Bar
     {
     }
@@ -21,6 +30,16 @@ namespace FooBundle\Entity
 namespace FooBundle\Entity\Car
 {
     class Bar
+    {
+    }
+    class BarRepository
+    {
+    }
+}
+
+namespace FooBundle
+{
+    class BarRepository
     {
     }
 }
