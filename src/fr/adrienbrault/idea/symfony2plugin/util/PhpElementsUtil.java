@@ -302,6 +302,24 @@ public class PhpElementsUtil {
     }
 
     /**
+     * $foo->bar('<caret>')
+     */
+    static public PsiElementPattern.Capture<PsiElement> getParameterInsideMethodReferencePattern() {
+        return PlatformPatterns
+            .psiElement()
+            .withParent(
+                PlatformPatterns.psiElement(StringLiteralExpression.class)
+                    .withParent(
+                        PlatformPatterns.psiElement(ParameterList.class)
+                            .withParent(
+                                PlatformPatterns.psiElement(MethodReference.class)
+                            )
+                    )
+            )
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
+    /**
      * class "Foo" extends
      */
     static public PsiElementPattern.Capture<PsiElement> getClassNamePattern() {

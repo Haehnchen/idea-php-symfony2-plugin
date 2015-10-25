@@ -33,7 +33,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         // table name completion on method eg:
         // Doctrine\DBAL\Connection::insert
         // Doctrine\DBAL\Query\QueryBuilder::update
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+        registrar.register(PhpElementsUtil.getParameterInsideMethodReferencePattern(), new GotoCompletionContributor() {
             @Nullable
             @Override
             public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
@@ -86,9 +86,9 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             }
         });
 
-        // simple flat field names eg:
-        // Doctrine\DBAL\Connection::update('foo', ['<caret>'])
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+        // simple word alias completion
+        // join('foo', 'foo', 'bar')
+        registrar.register(PhpElementsUtil.getParameterInsideMethodReferencePattern(), new GotoCompletionContributor() {
             @Nullable
             @Override
             public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
@@ -130,7 +130,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         @NotNull
         private final String value;
 
-        @NotNull
+        @Nullable
         private final String fromAlias;
 
         public MyDbalAliasGotoCompletionProvider(PsiElement psiElement, @NotNull String value, @Nullable String fromAlias) {
