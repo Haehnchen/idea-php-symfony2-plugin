@@ -532,59 +532,52 @@ public class EntityHelper {
      */
     @Nullable
     public static PhpClass resolveShortcutName(@NotNull Project project, @Nullable String shortcutName, DoctrineTypes.Manager... managers) {
-
         if(shortcutName == null) {
             return null;
         }
 
-        List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
-
-        String entity_name = shortcutName;
+        // we dont need to resolve bundle name, use class name
+        if (!shortcutName.contains(":")) {
+            return PhpElementsUtil.getClassInterface(project, shortcutName);
+        }
 
         // resolve:
         // MyBundle:Model -> MyBundle\Entity\Model
         // MyBundle:Folder\Model -> MyBundle\Entity\Folder\Model
-        if (shortcutName.contains(":")) {
 
-            // collect entitymanager namespaces on bundle or container file
-            Map<String, String> em = new HashMap<String, String>();
+        List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
+        
+        // collect entitymanager namespaces on bundle or container file
+        Map<String, String> em = new HashMap<String, String>();
+        if(managerList.contains(DoctrineTypes.Manager.ORM)) {
+            Map<String, String> entityNameMap = ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap();
+            em.putAll(entityNameMap);
+            em.putAll(EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"));
+        }
 
-            if(managerList.contains(DoctrineTypes.Manager.ORM)) {
-                Map<String, String> entityNameMap = ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap();
-                em.putAll(entityNameMap);
-                em.putAll(EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"));
-            }
+        Map<String, String> odm = new HashMap<String, String>();
+        if(managerList.contains(DoctrineTypes.Manager.MONGO_DB) || managerList.contains(DoctrineTypes.Manager.COUCH_DB)) {
+            Map<String, String> documentMap = ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap();
+            odm.putAll(documentMap);
+            odm.putAll(EntityHelper.getWeakBundleNamespaces(project, documentMap, "Document"));
+        }
 
-            if(managerList.contains(DoctrineTypes.Manager.MONGO_DB) || managerList.contains(DoctrineTypes.Manager.COUCH_DB)) {
-                Map<String, String> documentMap = ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap();
-                em.putAll(documentMap);
-                em.putAll(EntityHelper.getWeakBundleNamespaces(project, documentMap, "Document"));
-            }
+        // split bundle and model name
+        int firstDirectorySeparatorIndex = shortcutName.indexOf(":");
+        String bundlename = shortcutName.substring(0, firstDirectorySeparatorIndex);
+        String entityName = shortcutName.substring(firstDirectorySeparatorIndex + 1);
 
-            int firstDirectorySeparatorIndex = shortcutName.indexOf(":");
-
-            String bundlename = shortcutName.substring(0, firstDirectorySeparatorIndex);
-            String entityName = shortcutName.substring(firstDirectorySeparatorIndex + 1);
-
-            String namespace = em.get(bundlename);
-
+        // conditional find namespace on manager paths
+        for(Map<String, String> map: Arrays.asList(em, odm)) {
+            String namespace = map.get(bundlename);
             if(namespace == null) {
-                return null;
+                continue;
             }
 
-            entity_name = namespace + "\\" + entityName;
-        }
-
-        // only use them on entity namespace
-        if(!entity_name.contains("\\")) {
-            return null;
-        }
-
-        // dont we have any unique class getting method here?
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<PhpClass> entity_classes = phpIndex.getClassesByFQN(entity_name);
-        if(!entity_classes.isEmpty()){
-            return entity_classes.iterator().next();
+            PhpClass classInterface = PhpElementsUtil.getClassInterface(project, namespace + "\\" + entityName);
+            if(classInterface != null) {
+                return classInterface;
+            }
         }
 
         return null;
@@ -747,13 +740,20 @@ public class EntityHelper {
 
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(project).getBundles();
         for(SymfonyBundle symfonyBundle: symfonyBundles) {
-            if(!symfonyBundle.isTestBundle()) {
-                String bundleName = symfonyBundle.getName();
+            if(symfonyBundle.isTestBundle()) {
+                continue;
+            }
 
-                if(!entityNameMap.containsKey(bundleName) && symfonyBundle.getRelative(subFolder) != null) {
-                    String entityNs = symfonyBundle.getNamespaceName() + subFolder;
-                    missingMap.put(bundleName, entityNs);
-                }
+            // namespace already known
+            String bundleName = symfonyBundle.getName();
+            if(entityNameMap.containsKey(bundleName)) {
+               continue;
+            }
+
+            // find namepsace on file or class index
+            String namespace = symfonyBundle.getNamespaceName() + subFolder;
+            if(symfonyBundle.getRelative(subFolder) != null || PhpIndex.getInstance(project).getNamespacesByName(namespace).size() > 0) {
+                missingMap.put(bundleName, namespace);
             }
         }
 
