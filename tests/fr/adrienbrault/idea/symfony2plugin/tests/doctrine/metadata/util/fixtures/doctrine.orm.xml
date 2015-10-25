@@ -14,4 +14,6 @@
 
     </entity>
 
+    <entity name="Foo\Car" repository-class="Repository"/>
+
 </doctrine-mapping>

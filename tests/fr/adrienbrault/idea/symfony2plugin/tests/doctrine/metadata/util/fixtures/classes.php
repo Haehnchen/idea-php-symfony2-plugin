@@ -7,6 +7,10 @@ namespace Doctrine\Tests\ORM\Mapping {
 
 namespace Foo {
     class Bar {}
+
+    class Car {};
+
+    class Repository {};
 }
 
 namespace Foo\Bar\Repository {

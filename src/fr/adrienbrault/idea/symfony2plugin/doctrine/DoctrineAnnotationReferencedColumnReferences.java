@@ -68,7 +68,7 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
                                 if(phpPsiElement instanceof StringLiteralExpression) {
                                     PhpClass phpClass = de.espend.idea.php.annotation.util.PhpElementsUtil.getClassInsideAnnotation(((StringLiteralExpression) phpPsiElement));
                                     if(phpClass != null) {
-                                        List<DoctrineModelField> lists = EntityHelper.getModelFields(phpClass);
+                                        Collection<DoctrineModelField> lists = EntityHelper.getModelFields(phpClass);
                                         if(lists.size() > 0) {
                                             return new PsiReference[] {
                                                 new EntityReference((StringLiteralExpression) element, lists)
@@ -93,10 +93,10 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
 
     public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-        final private List<DoctrineModelField> doctrineModelField;
+        final private Collection<DoctrineModelField> doctrineModelField;
         final private String content;
 
-        public EntityReference(StringLiteralExpression psiElement, List<DoctrineModelField> doctrineModelField) {
+        public EntityReference(StringLiteralExpression psiElement, Collection<DoctrineModelField> doctrineModelField) {
             super(psiElement);
             this.doctrineModelField = doctrineModelField;
             this.content = psiElement.getContents();

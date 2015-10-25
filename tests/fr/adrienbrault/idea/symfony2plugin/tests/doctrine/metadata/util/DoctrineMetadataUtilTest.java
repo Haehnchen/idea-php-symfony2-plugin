@@ -117,6 +117,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     public void testGetClassRepository() {
         assertEquals("Doctrine\\Tests\\ORM\\Mapping\\YamlUserRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\YamlUser").getPresentableFQN());
         assertEquals("Foo\\Bar\\Repository\\FooBarRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Foo\\Bar").getPresentableFQN());
+        assertEquals("Foo\\Repository", DoctrineMetadataUtil.getClassRepository(getProject(), "Foo\\Car").getPresentableFQN());
     }
 
     /**

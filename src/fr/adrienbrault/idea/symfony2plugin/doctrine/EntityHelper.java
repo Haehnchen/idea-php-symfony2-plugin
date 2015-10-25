@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespaces
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
@@ -273,6 +274,19 @@ public class EntityHelper {
 
         Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN != null) {
+            DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), presentableFQN);
+            if(modelFields != null) {
+                for (DoctrineModelField field : modelFields.getFields()) {
+                    if(field.getName().equals(fieldName) && field.getTargets().size() > 0) {
+                        return field.getTargets().toArray(new PsiElement[psiElements.size()]);
+                    }
+                }
+            }
+        }
+
+        // @TODO: deprecated
         PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
 
         if(psiFile instanceof YAMLFile) {
@@ -344,10 +358,23 @@ public class EntityHelper {
     @Nullable
     public static PsiFile getModelConfigFile(@NotNull PhpClass phpClass) {
 
+        // new code
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN != null) {
+            Collection<VirtualFile> metadataFiles = DoctrineMetadataUtil.findMetadataFiles(phpClass.getProject(), presentableFQN);
+            if(metadataFiles.size() > 0) {
+                PsiFile file = PsiManager.getInstance(phpClass.getProject()).findFile(metadataFiles.iterator().next());
+                if(file != null) {
+                    return file;
+                }
+            }
+        }
+
+        // @TODO: deprecated code
         SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
         if(symfonyBundle != null) {
             for(String modelShortcut: new String[] {"orm", "mongodb", "couchdb"}) {
-                String fqn = phpClass.getPresentableFQN();
+                String fqn = presentableFQN;
 
                 String className = phpClass.getName();
 
@@ -370,8 +397,18 @@ public class EntityHelper {
     }
 
     @NotNull
-    public static List<DoctrineModelField> getModelFields(@NotNull PhpClass phpClass) {
+    public static Collection<DoctrineModelField> getModelFields(@NotNull PhpClass phpClass) {
 
+        // new code
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN != null) {
+            DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), presentableFQN);
+            if(modelFields != null) {
+                return modelFields.getFields();
+            }
+        }
+
+        // @TODO: old deprecated code
         PsiFile psiFile = getModelConfigFile(phpClass);
         if(psiFile == null) {
             Collections.emptyList();
