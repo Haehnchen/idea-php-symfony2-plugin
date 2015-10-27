@@ -38,7 +38,7 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
             "<?php" +
                 "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $em */\n" +
                 "$em->getRepository('\\Foo\\Bar')->b<caret>ar();",
-            "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0180' + "\\Foo\\Bar.bar"
+            "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0185' + "\\Foo\\Bar.bar"
         );
 
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -50,22 +50,44 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
 
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     */
     public void testGetRepositoryResolveByRepositoryApiClassConstantCompatibility() {
 
         // Default api level
         // PhpStorm9 api: 141.2462
-        String result = "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0180' + "#K#C\\Foo\\Bar.class.bar";
+        String result = "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0185' + "#K#C\\Foo\\Bar.class.bar";
 
         // Old api issue
         // PhpStorm8 api: 141.1534
         if(Integer.parseInt(PluginManager.getPlugin(PluginId.getId("com.jetbrains.php")).getVersion().replace(".", "")) <= 1411534) {
-            result = "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0180' + "#K#C\\Foo\\Bar..bar";
+            result = "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0185' + "#K#C\\Foo\\Bar..bar";
         }
 
         assertPhpReferenceSignatureEquals(PhpFileType.INSTANCE, "<?php" +
                 "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $em */\n" +
                 "$em->getRepository(\\Foo\\Bar::class)->b<caret>ar();",
             result
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     */
+    public void testGetRepositoryFallbackToPhpType() {
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $em */\n" +
+                "$em->getRepository('\\Foo\\Bar')->fi<caret>nd();",
+            PlatformPatterns.psiElement(Method.class).withName("find")
+        );
+
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $em */\n" +
+                "$em->getRepository('a')->fi<caret>nd();",
+            PlatformPatterns.psiElement(Method.class).withName("find")
         );
     }
 }

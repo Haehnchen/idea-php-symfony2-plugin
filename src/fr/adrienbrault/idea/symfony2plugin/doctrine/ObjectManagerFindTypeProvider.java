@@ -25,7 +25,7 @@ import java.util.Collections;
  */
 public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
 
-    final static char TRIM_KEY = '\u0180';
+    final static char TRIM_KEY = '\u0183';
 
     @Override
     public char getKey() {
@@ -80,7 +80,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
 
         PhpNamedElement phpNamedElement = phpNamedElementCollections.iterator().next();
         if(!(phpNamedElement instanceof Method)) {
-            return Arrays.asList(phpNamedElement);
+            return phpNamedElementCollections;
         }
 
         if (!new Symfony2InterfacesUtil().isCallTo((Method) phpNamedElement, "\\Doctrine\\Common\\Persistence\\ObjectManager", "find")) {
@@ -97,7 +97,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
             return phpNamedElementCollections;
         }
 
-        return Arrays.asList(phpClass);
+        return PhpTypeProviderUtil.mergeSignatureResults(phpNamedElementCollections, phpClass);
 
     }
 

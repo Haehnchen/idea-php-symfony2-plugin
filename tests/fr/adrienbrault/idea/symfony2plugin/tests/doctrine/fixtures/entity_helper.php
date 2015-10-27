@@ -57,6 +57,13 @@ namespace FooBundle\Document
     }
 }
 
+namespace FooBundle\CouchDocument
+{
+    class Couch
+    {
+    }
+}
+
 namespace Doctrine\Common\Persistence
 {
     interface ObjectRepository{}

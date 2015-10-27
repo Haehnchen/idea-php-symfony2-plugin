@@ -742,7 +742,7 @@ public class EntityHelper {
         }};
 
         for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundles()) {
-            for(String s : new String[] {"Entity", "Document"}) {
+            for(String s : new String[] {"Entity", "Document", "CouchDocument"}) {
                 String namespace = symfonyBundle.getNamespaceName() + s;
                 if(symfonyBundle.getRelative(s) != null || PhpIndex.getInstance(project).getNamespacesByName(namespace).size() > 0) {
                     shortcutNames.put(symfonyBundle.getName(), namespace);

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 public class PhpTypeProviderUtil {
 
@@ -98,4 +99,8 @@ public class PhpTypeProviderUtil {
         return parameter;
     }
 
+    @NotNull
+    public static Collection<? extends PhpNamedElement> mergeSignatureResults(@NotNull Collection<? extends PhpNamedElement> phpNamedElements, final @NotNull PhpNamedElement phpNamed) {
+        return new HashSet<PhpNamedElement>(phpNamedElements) {{ add(phpNamed); }};
+    }
 }

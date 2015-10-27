@@ -44,7 +44,7 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
             "<?php" +
                 "/** @var $container \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
                 "$container->get('foo')->for<caret>mat()",
-            "#M#" + '\u0150' + "#M#C\\Symfony\\Component\\DependencyInjection\\ContainerInterface.get" + '\u0180' + "foo.format"
+            "#M#" + '\u0150' + "#M#C\\Symfony\\Component\\DependencyInjection\\ContainerInterface.get" + '\u0182' + "foo.format"
         );
     }
 

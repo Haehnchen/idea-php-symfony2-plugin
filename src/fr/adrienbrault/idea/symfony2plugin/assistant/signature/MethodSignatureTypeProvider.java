@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
 
-    final static char TRIM_KEY = '\u0180';
+    final static char TRIM_KEY = '\u0181';
     private static final ExtensionPointName<MethodSignatureTypeProviderExtension> EXTENSIONS = new ExtensionPointName<MethodSignatureTypeProviderExtension>("fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension");
 
     @Override

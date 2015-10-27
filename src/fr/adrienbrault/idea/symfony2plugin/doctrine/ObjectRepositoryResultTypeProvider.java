@@ -26,7 +26,7 @@ import java.util.Collections;
  */
 public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
 
-    final static char TRIM_KEY = '\u0180';
+    final static char TRIM_KEY = '\u0184';
 
     @Override
     public char getKey() {
@@ -115,7 +115,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
 
         Method method = (Method) phpNamedElementCollections.iterator().next();
         if (!new Symfony2InterfacesUtil().isObjectRepositoryCall(method)) {
-            return Arrays.asList(method);
+            return phpNamedElementCollections;
         }
 
         // we can also pipe php references signatures and resolve them here
@@ -135,7 +135,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return phpNamedElementCollections;
         }
 
-        return Arrays.asList(phpClass);
+        return PhpTypeProviderUtil.mergeSignatureResults(phpNamedElementCollections, phpClass);
     }
 
 }

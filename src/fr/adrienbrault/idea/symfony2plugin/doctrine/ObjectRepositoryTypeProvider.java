@@ -16,7 +16,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -25,7 +24,7 @@ import java.util.Collections;
  */
 public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
 
-    final public static char TRIM_KEY = '\u0180';
+    final public static char TRIM_KEY = '\u0185';
 
     @Override
     public char getKey() {
@@ -88,16 +87,13 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return phpNamedElementCollections;
         }
 
-        // @TODO: parse xml or yml for repositoryClass?
         PhpClass phpClass = EntityHelper.getEntityRepositoryClass(project, parameter);
-
-        // self add :)
         if(phpClass == null) {
+            // self add :)
             return phpNamedElementCollections;
         }
 
-        return Collections.singletonList(phpClass);
-
+        return PhpTypeProviderUtil.mergeSignatureResults(phpNamedElementCollections, phpClass);
     }
 
 }

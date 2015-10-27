@@ -24,7 +24,7 @@ import java.util.Collections;
  */
 public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
-    final static char TRIM_KEY = '\u0180';
+    final static char TRIM_KEY = '\u0182';
 
     @Override
     public char getKey() {

@@ -2,15 +2,29 @@
 
 namespace Doctrine\Common\Persistence {
     interface ObjectManager {
-        function getRepository($foo);
+
+        /**
+         * @return \Doctrine\Common\Persistence\ObjectRepository
+         */
+        function getRepository();
     };
 }
 
 namespace Foo {
-    use Doctrine\Common\Persistence\ObjectManager;
 
-    abstract class Bar implements ObjectManager {}
-    abstract class BarRepository implements ObjectManager {
+    use Doctrine\Common\Persistence\ObjectRepository;
+
+    abstract class Bar implements ObjectRepository {}
+
+    class BarRepository {
         public function bar() {}
+    }
+}
+
+namespace Doctrine\Common\Persistence
+{
+    interface ObjectRepository
+    {
+        public function find();
     }
 }
