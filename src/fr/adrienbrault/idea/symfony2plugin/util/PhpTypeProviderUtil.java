@@ -8,6 +8,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -103,4 +104,26 @@ public class PhpTypeProviderUtil {
     public static Collection<? extends PhpNamedElement> mergeSignatureResults(@NotNull Collection<? extends PhpNamedElement> phpNamedElements, final @NotNull PhpNamedElement phpNamed) {
         return new HashSet<PhpNamedElement>(phpNamedElements) {{ add(phpNamed); }};
     }
+
+    /**
+     * We can have multiple types inside a TypeProvider; split them on "|" so that we dont get empty types
+     *
+     * #M#x#M#C\FooBar.get?doctrine.odm.mongodb.document_manager.getRepository|
+     * #M#x#M#C\FooBar.get?doctrine.odm.mongodb.document_manager.getRepository
+     */
+    @NotNull
+    public static Collection<? extends PhpNamedElement> getTypeSignature(@NotNull PhpIndex phpIndex, @NotNull String signature) {
+
+        if (!signature.contains("|")) {
+            return phpIndex.getBySignature(signature, null, 0);
+        }
+
+        Collection<PhpNamedElement> elements = new ArrayList<PhpNamedElement>();
+        for (String s : signature.split("\\|")) {
+            elements.addAll(phpIndex.getBySignature(s, null, 0));
+        }
+
+        return elements;
+    }
+
 }

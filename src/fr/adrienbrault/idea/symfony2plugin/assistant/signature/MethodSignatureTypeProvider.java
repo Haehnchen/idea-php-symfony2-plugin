@@ -129,7 +129,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
         String parameter = expression.substring(endIndex + 1);
 
         PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature(originalSignature, null, 0);
+        Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpTypeProviderUtil.getTypeSignature(phpIndex, originalSignature);
         if(phpNamedElementCollections.size() == 0) {
             return null;
         }

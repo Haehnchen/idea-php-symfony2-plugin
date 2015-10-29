@@ -62,7 +62,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
         // search for called method
         PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<? extends PhpNamedElement> phpNamedElementCollections = phpIndex.getBySignature(originalSignature, null, 0);
+        Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpTypeProviderUtil.getTypeSignature(phpIndex, originalSignature);
         if(phpNamedElementCollections.size() == 0) {
             return Collections.emptySet();
         }
