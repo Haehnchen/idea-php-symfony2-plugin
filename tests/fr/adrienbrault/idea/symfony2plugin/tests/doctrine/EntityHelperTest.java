@@ -81,7 +81,8 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         // class fallback
         assertContainsElements(map.keySet(), "FooBundle\\Entity\\Bar");
 
-        // interface blacklist
-        assertFalse(map.values().contains("FooBundle:DocBarRepository"));
+        // interface; instance blacklist
+        assertFalse(map.values().contains("FooBundle:BarRepository"));
+        assertFalse(map.values().contains("FooBundle:BarInterface"));
     }
 }

@@ -31,6 +31,8 @@ namespace FooBundle\Entity
     class BarRepository implements ObjectRepository
     {
     }
+
+    interface BarInterface {}
 }
 
 namespace FooBundle\Entity\Car

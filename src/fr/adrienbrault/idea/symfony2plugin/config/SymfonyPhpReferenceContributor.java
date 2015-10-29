@@ -4,6 +4,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -148,7 +149,13 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            // @TODO: implement global pattern for array parameters
+            PlatformPatterns.psiElement(StringLiteralExpression.class).withParent(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE),
+                    PlatformPatterns.psiElement(PhpElementTypes.ARRAY_KEY)
+                )
+            ).inside(PlatformPatterns.psiElement(ParameterList.class)),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -164,6 +171,10 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     }
 
                     Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(psiElement.getProject(), methodMatchParameter.getMethodReference().getType().getTypes());
+                    if(phpClasses.size() == 0) {
+                        return new PsiReference[0];
+                    }
+
                     return new PsiReference[]{ new ModelFieldReference((StringLiteralExpression) psiElement, phpClasses)};
                 }
             }

@@ -750,8 +750,13 @@ public class EntityHelper {
             }
         }
 
+        // class fqn fallback
         Collection<DoctrineModel> doctrineModels = getModelClasses(project, shortcutNames);
         for (PhpClass phpClass : DoctrineMetadataUtil.getModels(project)) {
+            if(containsDoctrineModelClass(doctrineModels, phpClass)) {
+                continue;
+            }
+
             doctrineModels.add(new DoctrineModel(phpClass));
         }
 
@@ -763,6 +768,16 @@ public class EntityHelper {
         }
 
         return doctrineModels;
+    }
+
+    private static boolean containsDoctrineModelClass(@NotNull Collection<DoctrineModel> models, @NotNull PhpClass phpClass) {
+        for (DoctrineModel doctrineModel : models) {
+            if(PhpElementsUtil.isEqualClassName(doctrineModel.getPhpClass(), phpClass)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static Collection<DoctrineModel> getModelClasses(Project project, Map<String, String> shortcutNames) {
@@ -785,7 +800,7 @@ public class EntityHelper {
 
     public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
 
-        if(entityClass.isAbstract()) {
+        if(entityClass.isAbstract() || entityClass.isInterface()) {
             return false;
         }
 

@@ -77,7 +77,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
         // #M#?#M#?#M#C\Foo\Bar\Controller\BarController.get?doctrine.getRepository?EntityBundle:User.find
         String repositorySignature = methodRef.getSignature();
 
-        int lastRepositoryName = repositorySignature.lastIndexOf(ObjectManagerFindTypeProvider.TRIM_KEY);
+        int lastRepositoryName = repositorySignature.lastIndexOf(ObjectRepositoryTypeProvider.TRIM_KEY);
         if(lastRepositoryName == -1) {
             return null;
         }
