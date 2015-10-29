@@ -241,31 +241,39 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm" id="Symfony2.SettingsForm" displayName="Symfony Plugin"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
+                             displayName="Symfony Plugin"
+                             id="Symfony2.SettingsForm"
+                             nonDefaultProject="true"
+                />
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.TwigSettingsForm"
                              displayName="Twig / Template"
                              parentId="Symfony2.SettingsForm"
+                             nonDefaultProject="true"
                 />
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.ContainerSettingsForm"
                              displayName="Container"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.ContainerSettingsForm"
-
+                             nonDefaultProject="true"
                 />
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.MethodParameterReferenceSettingsForm"
                              displayName="Method References"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.MethodReferenceSettingsForm"
+                             nonDefaultProject="true"
                 />
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.MethodSignatureTypeSettingsForm"
                              displayName="Type Provider"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.MethodSignatureTypeSettingsForm"
+                             nonDefaultProject="true"
                 />
 
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
