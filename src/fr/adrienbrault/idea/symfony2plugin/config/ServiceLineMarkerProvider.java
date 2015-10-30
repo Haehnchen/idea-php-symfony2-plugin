@@ -132,29 +132,23 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        String originFqn = ((PhpClass) phpClassContext).getPresentableFQN();
-        if(originFqn == null || !originFqn.toLowerCase().contains("entity")) {
-            return;
-        }
-
         for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(psiElement.getProject())) {
             PhpClass phpClass = doctrineModel.getPhpClass();
-            if(phpClass != null) {
-                String presentableFQN = phpClass.getPresentableFQN();
-
-                if(presentableFQN != null && presentableFQN.equals(originFqn)) {
-                    PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
-                    if(psiFile != null) {
-                        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
-                            setTarget(psiFile).
-                            setTooltipText("Navigate to model");
-
-                        result.add(builder.createLineMarkerInfo(psiElement));
-                    }
-                }
+            if(!PhpElementsUtil.isEqualClassName(phpClass, (PhpClass) phpClassContext)) {
+                continue;
             }
-        }
 
+            PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
+            if(psiFile == null) {
+                continue;
+            }
+
+            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
+                setTarget(psiFile).
+                setTooltipText("Navigate to model");
+
+            result.add(builder.createLineMarkerInfo(psiElement));
+        }
     }
 
     private void formNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {

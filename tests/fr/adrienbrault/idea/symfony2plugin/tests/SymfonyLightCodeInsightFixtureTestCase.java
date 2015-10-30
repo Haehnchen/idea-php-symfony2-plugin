@@ -1,5 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import com.intellij.codeInsight.daemon.LineMarkerInfo;
+import com.intellij.codeInsight.daemon.LineMarkerProvider;
+import com.intellij.codeInsight.daemon.LineMarkerProviders;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
@@ -13,6 +16,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -386,6 +390,55 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
     private void checkContainsCompletion(String[] lookupStrings) {
         completionContainsAssert(lookupStrings);
+    }
+
+    public void assertToolTip(@NotNull PsiElement psiElement, @NotNull LineMarker.Assert assertMatch) {
+
+        final List<PsiElement> elements = new ArrayList<PsiElement>();
+        psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+                elements.add(element);
+                super.visitElement(element);
+            }
+        });
+
+        for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.INSTANCE.allForLanguage(psiElement.getLanguage())) {
+            Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
+            lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
+
+            if(lineMarkerInfos.size() == 0) {
+                continue;
+            }
+
+            for (LineMarkerInfo lineMarkerInfo : lineMarkerInfos) {
+                if(assertMatch.match(lineMarkerInfo)) {
+                    return;
+                }
+            }
+        }
+
+        fail(String.format("Fail that '%s' matches on of '%s' PsiElements", assertMatch.getClass(), elements.size()));
+    }
+
+    public static class LineMarker {
+        public interface Assert {
+            boolean match(@NotNull LineMarkerInfo markerInfo);
+        }
+
+        public static class ToolTipEqualsAssert implements Assert {
+            @NotNull
+            private final String toolTip;
+
+            public ToolTipEqualsAssert(@NotNull String toolTip) {
+                this.toolTip = toolTip;
+            }
+
+            @Override
+            public boolean match(@NotNull LineMarkerInfo markerInfo) {
+                return markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().equals(toolTip);
+            }
+        }
     }
 
 }

@@ -71,6 +71,6 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
         phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "car"));
 
         Collection<? extends PhpNamedElement> elements = PhpTypeProviderUtil.mergeSignatureResults(phpNamedElements, PhpElementsUtil.getClass(getProject(), "\\PhpType\\Foo"));
-        assertEquals(1, elements.size());
+        assertEquals(2, elements.size());
     }
 }
