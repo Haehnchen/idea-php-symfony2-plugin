@@ -13,3 +13,17 @@ namespace Doctrine\Common\Persistence
     }
 
 }
+
+namespace PhpType
+{
+    class Foo {}
+
+    class Bar {
+        /**
+         * @return Foo
+         */
+        public function foo() {}
+
+        public function bar() {}
+    }
+}

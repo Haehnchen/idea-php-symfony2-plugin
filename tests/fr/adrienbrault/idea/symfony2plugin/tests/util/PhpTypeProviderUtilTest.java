@@ -6,12 +6,12 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -58,5 +58,19 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
             "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository"
         ));
         assertContainsElements(ContainerUtil.map(typeSignature, func), "\\Doctrine\\Common\\Persistence\\ObjectManager");
+    }
+
+    /**
+     * @see PhpTypeProviderUtil#mergeSignatureResults
+     */
+    public void testMergeSignatureResults() {
+
+        Collection<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "foo"));
+        phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "bar"));
+        phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "car"));
+
+        Collection<? extends PhpNamedElement> elements = PhpTypeProviderUtil.mergeSignatureResults(phpNamedElements, PhpElementsUtil.getClass(getProject(), "\\PhpType\\Foo"));
+        assertEquals(1, elements.size());
     }
 }

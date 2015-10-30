@@ -113,8 +113,8 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return Collections.emptySet();
         }
 
-        Method method = (Method) phpNamedElementCollections.iterator().next();
-        if (!new Symfony2InterfacesUtil().isObjectRepositoryCall(method)) {
+        Method method = getObjectRepositoryCall(phpNamedElementCollections);
+        if(method == null) {
             return phpNamedElementCollections;
         }
 
@@ -130,7 +130,8 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
             return phpNamedElementCollections;
         }
 
-        if(method.getName().equals("findAll") || method.getName().equals("findBy")) {
+        String name = method.getName();
+        if(name.equals("findAll") || name.equals("findBy")) {
             method.getType().add(phpClass.getFQN() + "[]");
             return phpNamedElementCollections;
         }
@@ -138,4 +139,13 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider2 {
         return PhpTypeProviderUtil.mergeSignatureResults(phpNamedElementCollections, phpClass);
     }
 
+    private Method getObjectRepositoryCall(Collection<? extends PhpNamedElement> phpNamedElements) {
+        for (PhpNamedElement phpNamedElement: phpNamedElements) {
+            if(phpNamedElement instanceof Method && new Symfony2InterfacesUtil().isObjectRepositoryCall((Method) phpNamedElement)) {
+                return (Method) phpNamedElement;
+            }
+        }
+
+        return null;
+    }
 }

@@ -5,12 +5,13 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 public class PhpTypeProviderUtil {
 
@@ -100,9 +101,58 @@ public class PhpTypeProviderUtil {
         return parameter;
     }
 
+    /**
+     * Mostly factory pattern doest not return a type, but eg in Doctrine getRepository we need to fallback to an interface
+     */
     @NotNull
     public static Collection<? extends PhpNamedElement> mergeSignatureResults(@NotNull Collection<? extends PhpNamedElement> phpNamedElements, final @NotNull PhpNamedElement phpNamed) {
-        return new HashSet<PhpNamedElement>(phpNamedElements) {{ add(phpNamed); }};
+
+        Collection<PhpNamedElement> result = new ArrayList<PhpNamedElement>();
+        result.add(phpNamed);
+
+        // invalidate state; we dont know what to do
+        if(!(phpNamed instanceof PhpClass)) {
+            result.addAll(phpNamedElements);
+            return result;
+        }
+
+        for (PhpNamedElement phpNamedElement : phpNamedElements) {
+            if(phpNamedElement == null) {
+                continue;
+            }
+
+            // nothing found
+            if(!(phpNamedElement instanceof Method)) {
+                result.add(phpNamedElement);
+                continue;
+            }
+
+            // type are equal
+            if(isPhpTypeEqual(phpNamedElement.getType(), (PhpClass) phpNamed)) {
+                continue;
+            }
+
+            result.add(phpNamedElement);
+        }
+
+        return result;
+    }
+
+    private static boolean isPhpTypeEqual(@NotNull PhpType phpType, @NotNull PhpClass phpClass) {
+
+        Symfony2InterfacesUtil util = null;
+
+        for (String s : phpType.getTypes()) {
+            if(util == null) {
+                util = new Symfony2InterfacesUtil();
+            }
+
+            if(util.isInstanceOf(phpClass, s)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -125,5 +175,4 @@ public class PhpTypeProviderUtil {
 
         return elements;
     }
-
 }
