@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
@@ -15,10 +14,9 @@ import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.*;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup.DoctrineRepositoryLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -40,22 +38,9 @@ public class DoctrineMetadataUtil {
         new DoctrinePhpMappingDriver(),
     };
 
+    @NotNull
     public static Collection<LookupElement> getObjectRepositoryLookupElements(@NotNull Project project) {
-
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
-
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
-            String presentableFQN = phpClass.getPresentableFQN();
-            if(presentableFQN == null) {
-                continue;
-            }
-
-            lookupElements.add(
-                LookupElementBuilder.create(phpClass.getName()).withTypeText(phpClass.getPresentableFQN(), true).withIcon(Symfony2Icons.DOCTRINE)
-            );
-        }
-
-        return lookupElements;
+        return new ArrayList<LookupElement>(DoctrineRepositoryLookupElement.create(PhpIndex.getInstance(project).getAllSubclasses("\\Doctrine\\Common\\Persistence\\ObjectRepository")));
     }
 
     /**

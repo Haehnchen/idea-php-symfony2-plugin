@@ -72,7 +72,12 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mapping><entity repository-class=\"<caret>\"/></doctrine-mapping>",
-            "BarRepo"
+            "Foo\\Bar\\Ns\\BarRepo"
+        );
+
+        assertCompletionResultEquals(XmlFileType.INSTANCE, "" +
+            "<doctrine-mapping><entity repository-class=\"Foo\\Bar\\Ns\\<caret>\"/></doctrine-mapping>",
+            "<doctrine-mapping><entity repository-class=\"Foo\\Bar\\Ns\\BarRepo\"/></doctrine-mapping>"
         );
     }
 
@@ -80,7 +85,12 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-foo-mapping><document repository-class=\"<caret>\"/></doctrine-foo-mapping>",
-            "BarRepo"
+            "Foo\\Bar\\Ns\\BarRepo"
+        );
+
+        assertCompletionResultEquals(XmlFileType.INSTANCE, "" +
+            "<doctrine-foo-mapping><document repository-class=\"Foo\\Bar\\Ns\\<caret>\"/></doctrine-foo-mapping>",
+            "<doctrine-foo-mapping><document repository-class=\"Foo\\Bar\\Ns\\BarRepo\"/></doctrine-foo-mapping>"
         );
     }
 }

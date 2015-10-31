@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.util;
 
-import com.intellij.openapi.project.Project;
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
@@ -155,5 +156,17 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         }
 
         assertContainsElements(classes, "Doctrine\\Tests\\ORM\\Mapping\\YamlUser");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getObjectRepositoryLookupElements
+     */
+    public void testGetObjectRepositoryLookupElements() {
+        assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.getObjectRepositoryLookupElements(getProject()), new Condition<LookupElement>() {
+            @Override
+            public boolean value(LookupElement lookupElement) {
+                return lookupElement.getLookupString().equals("Foo\\Bar\\BarRepository");
+            }
+        }));
     }
 }

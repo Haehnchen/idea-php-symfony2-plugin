@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -390,15 +391,7 @@ public class YamlCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
-            for(PhpClass phpClass: phpIndex.getAllSubclasses("\\Doctrine\\ORM\\EntityRepository")) {
-                String presentableFQN = phpClass.getPresentableFQN();
-                if(presentableFQN != null) {
-                    completionResultSet.addElement(LookupElementBuilder.create(phpClass.getName()).withTypeText(phpClass.getPresentableFQN(), true).withIcon(phpClass.getIcon()));
-                }
-            }
-
-
+            completionResultSet.addAllElements(DoctrineMetadataUtil.getObjectRepositoryLookupElements(parameters.getOriginalFile().getProject()));
         }
     }
 

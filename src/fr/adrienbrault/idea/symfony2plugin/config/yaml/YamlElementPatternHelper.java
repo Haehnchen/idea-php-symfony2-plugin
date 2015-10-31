@@ -571,7 +571,12 @@ public class YamlElementPatternHelper {
     }
 
     private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
-        return PlatformPatterns.psiFile().withName(PlatformPatterns.string().endsWith("orm.yml"));
+        return PlatformPatterns.psiFile().withName(PlatformPatterns.string().andOr(
+            PlatformPatterns.string().endsWith("orm.yml"),
+            PlatformPatterns.string().endsWith("couchdb.yml"),
+            PlatformPatterns.string().endsWith("odm.yml"),
+            PlatformPatterns.string().endsWith("mongodb.yml")
+        ));
     }
 
     private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String keyName) {
