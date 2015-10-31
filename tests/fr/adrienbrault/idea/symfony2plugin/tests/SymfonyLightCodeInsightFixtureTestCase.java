@@ -150,6 +150,18 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         assertNavigationMatch(PlatformPatterns.psiElement());
     }
 
+    public void assertNavigationIsEmpty(LanguageFileType languageFileType, String configureByText) {
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+            PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
+            if(gotoDeclarationTargets != null && gotoDeclarationTargets.length > 0) {
+                fail(String.format("failed that PsiElement (%s) navigate is empty; found target in '%s'", psiElement.toString(), gotoDeclarationHandler.getClass()));
+            }
+        }
+    }
+
     private void assertNavigationMatch(ElementPattern<?> pattern) {
 
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
