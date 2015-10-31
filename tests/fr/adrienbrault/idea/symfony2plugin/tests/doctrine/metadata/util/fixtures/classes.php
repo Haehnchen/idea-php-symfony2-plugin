@@ -14,5 +14,12 @@ namespace Foo {
 }
 
 namespace Foo\Bar\Repository {
-    class FooBarRepository {}
+
+    use Doctrine\Common\Persistence\ObjectRepository;
+
+    abstract class FooBarRepository implements ObjectRepository {}
+}
+
+namespace Doctrine\Common\Persistence {
+    interface ObjectRepository {};
 }

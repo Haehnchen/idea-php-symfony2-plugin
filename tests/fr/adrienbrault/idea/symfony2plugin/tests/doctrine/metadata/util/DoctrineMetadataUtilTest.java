@@ -165,7 +165,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.getObjectRepositoryLookupElements(getProject()), new Condition<LookupElement>() {
             @Override
             public boolean value(LookupElement lookupElement) {
-                return lookupElement.getLookupString().equals("Foo\\Bar\\BarRepository");
+                return lookupElement.getLookupString().equals("Foo\\Bar\\Repository\\FooBarRepository");
             }
         }));
     }
