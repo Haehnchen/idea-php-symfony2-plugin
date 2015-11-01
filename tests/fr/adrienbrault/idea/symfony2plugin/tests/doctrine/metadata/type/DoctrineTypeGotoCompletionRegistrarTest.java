@@ -26,19 +26,19 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
         for (String s : new String[]{"couchdb", "orm", "mongodb"}) {
             assertCompletionContains(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
                 "string", s + "_foo_bar"
             );
 
             assertNavigationMatch(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"string<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"string<caret>\" /></document></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
 
             assertCompletionNotContains(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
                 "foo"
             );
         }
@@ -47,7 +47,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
     public void testThatOrmTypeFilledByStatic() {
         assertCompletionContains(
             "foo.orm.xml",
-            "<doctrine-mapping><field type=\"<caret>\" /></doctrine-mapping>",
+            "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
             "string", "orm_foo_bar", "smallint", "array"
         );
     }
@@ -83,25 +83,25 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
         for (String s : new String[]{"document", "odm"}) {
             assertCompletionContains(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
                 "string", "couchdb_foo_bar"
             );
 
             assertNavigationMatch(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"couchdb_foo_bar<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"couchdb_foo_bar<caret>\" /></document></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
 
             assertCompletionContains(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
                 "string", "mongodb_foo_bar"
             );
 
             assertNavigationMatch(
                 "foo." + s + ".xml",
-                "<doctrine-mapping><field type=\"mongodb_foo_bar<caret>\" /></doctrine-mapping>",
+                "<doctrine-mapping><document><field type=\"mongodb_foo_bar<caret>\" /></document></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
         }

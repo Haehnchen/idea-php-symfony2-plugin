@@ -76,7 +76,7 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         );
 
         assertCompletionResultEquals(XmlFileType.INSTANCE, "" +
-            "<doctrine-mapping><entity repository-class=\"Foo\\Bar\\Ns\\<caret>\"/></doctrine-mapping>",
+                "<doctrine-mapping><entity repository-class=\"Foo\\Bar\\Ns\\<caret>\"/></doctrine-mapping>",
             "<doctrine-mapping><entity repository-class=\"Foo\\Bar\\Ns\\BarRepo\"/></doctrine-mapping>"
         );
     }
@@ -91,6 +91,20 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionResultEquals(XmlFileType.INSTANCE, "" +
             "<doctrine-foo-mapping><document repository-class=\"Foo\\Bar\\Ns\\<caret>\"/></doctrine-foo-mapping>",
             "<doctrine-foo-mapping><document repository-class=\"Foo\\Bar\\Ns\\BarRepo\"/></doctrine-foo-mapping>"
+        );
+    }
+
+    public void testRelationCompletion() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><document><reference-one target-document=\"<caret>\"/></document></doctrine-mapping>",
+            "DateTime"
+        );
+
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><entity><one-to-many target-entity=\"<caret>\"/></entity></doctrine-mapping>",
+            "DateTime"
         );
     }
 }

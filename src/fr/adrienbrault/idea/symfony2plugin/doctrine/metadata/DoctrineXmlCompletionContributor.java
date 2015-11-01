@@ -19,7 +19,7 @@ public class DoctrineXmlCompletionContributor extends CompletionContributor {
 
         // <entity name="Class\Name"/>
         // <document name="Class\Name"/>,
-        extend(CompletionType.BASIC, XmlPatterns.psiElement().withParent(DoctrineMetadataPattern.getXmlModelClass()), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, XmlPatterns.psiElement().withParent(PlatformPatterns.or(DoctrineMetadataPattern.getXmlModelClass(), DoctrineMetadataPattern.getXmlTargetEntityClass(), DoctrineMetadataPattern.getXmlTargetDocumentClass())), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
 

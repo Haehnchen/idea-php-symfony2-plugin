@@ -105,15 +105,17 @@ public class DoctrineMetadataPattern {
      *   <field type="Class\Name"/>
      * </doctrine-mapping>
      */
-    public static XmlAttributeValuePattern getFileType() {
+    public static XmlAttributeValuePattern getFieldType() {
         return XmlPatterns
             .xmlAttributeValue()
             .withParent(XmlPatterns
                 .xmlAttribute("type")
                 .withParent(XmlPatterns
                     .xmlTag().withName("field")
-                    .withParent(XmlPatterns
-                         .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                    .withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document")).withParent(
+                            XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                        )
                     )
                 )
             );

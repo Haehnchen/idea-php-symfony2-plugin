@@ -36,7 +36,7 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
 
         // xml files
         registrar.register(
-            XmlPatterns.psiElement().withParent(DoctrineMetadataPattern.getFileType()), new GotoCompletionContributor() {
+            XmlPatterns.psiElement().withParent(DoctrineMetadataPattern.getFieldType()), new GotoCompletionContributor() {
             @Nullable
             @Override
             public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
