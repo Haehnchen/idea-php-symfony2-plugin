@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.98</version>
+    <version>0.11.99</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,21 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.99</h2>
+<ul>
+    <li>Complete rewrite of Doctrine implementation; metadata on now index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/586">#586</a></li>
+    <li>Support Doctrine ODM MongoDB and CouchDB <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
+    <li>Add Doctrine relation shortcut for neos / flow annotations</li>
+    <li>Add some Doctrine dbal support on newly added metadata index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/395">#395</a></li>
+    <li>Add translator.logging parameter <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/606">#606</a> @mhor</li>
+    <li>Dont display configurable forms inside default project <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/578">#578</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/607">#607</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/593">#593</a></li>
+    <li>Fix empty types for all TypeProviders; eg getRepository of Doctrine</li>
+    <li>Support more use cases of TypeProvider</li>
+    <li>Improve support for Doctrine metadata in xml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
+    <li>Add navigation for all yaml strings that are possible service names; eg security.yml ids</li>
+    <li>Add Doctrine repository linemarker</li>
+</ul>
 
 <h2>0.11.98</h2>
 <ul>

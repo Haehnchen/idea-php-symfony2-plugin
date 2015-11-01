@@ -6,6 +6,19 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.99
+* Complete rewrite of Doctrine implementation; metadata on now index #586
+* Support Doctrine ODM MongoDB and CouchDB #319
+* Add Doctrine relation shortcut for neos / flow annotations
+* Add some Doctrine dbal support on newly added metadata index #395
+* Add translator.logging parameter #606 @mhor
+* Dont display configurable forms inside default project #578, #607, #593
+* Fix empty types for all TypeProviders; eg getRepository of Doctrine
+* Support more use cases of TypeProvider
+* Improve support for Doctrine metadata in xml files #319
+* Add navigation for all yaml strings that are possible service names; eg security.yml ids
+* Add Doctrine repository linemarker
+
 ### 0.11.98
 * Full references support for console helpers #243
 * Add Doctrine couchdb support; merged into overall odm manager to reuse mongodb implementation
