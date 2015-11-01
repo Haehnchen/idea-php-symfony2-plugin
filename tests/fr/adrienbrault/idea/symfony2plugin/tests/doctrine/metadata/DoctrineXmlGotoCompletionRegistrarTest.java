@@ -74,13 +74,19 @@ public class DoctrineXmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsi
         for(String s : new String[] {"reference-one", "reference-many", "embed-many", "embed-one"}) {
             assertNavigationMatch(
                 XmlFileType.INSTANCE,
-                "<doctrine-mapping><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-mapping>",
+                "<doctrine-mapping><document><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></document></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
 
             assertNavigationMatch(
                 XmlFileType.INSTANCE,
-                "<doctrine-foo-mapping><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-foo-mapping>",
+                "<doctrine-foo-mapping><document><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></document></doctrine-foo-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+
+            assertNavigationMatch(
+                XmlFileType.INSTANCE,
+                "<doctrine-foo-mapping><document name=\"Foo\\Bar\\Ns\\Foo\"><" + s + " target-document=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></document></doctrine-foo-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
         }
@@ -93,13 +99,19 @@ public class DoctrineXmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsi
         for(String s : new String[] {"one-to-one", "one-to-many", "many-to-one", "many-to-many"}) {
             assertNavigationMatch(
                 XmlFileType.INSTANCE,
-                "<doctrine-mapping><" + s + " target-entity=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-mapping>",
+                "<doctrine-mapping><entity><" + s + " target-entity=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></entity></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
 
             assertNavigationMatch(
                 XmlFileType.INSTANCE,
-                "<doctrine-foo-mapping><" + s + " target-entity=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></doctrine-mapping>",
+                "<doctrine-foo-mapping><entity><" + s + " target-entity=\"Foo\\Bar\\Ns<caret>\\BarRepo\"/></entity></doctrine-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+
+            assertNavigationMatch(
+                XmlFileType.INSTANCE,
+                "<doctrine-foo-mapping><entity name=\"Foo\\Bar\\Ns\\Foo\"><" + s + " target-entity=\"Bar<caret>Repo\"/></entity></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
         }

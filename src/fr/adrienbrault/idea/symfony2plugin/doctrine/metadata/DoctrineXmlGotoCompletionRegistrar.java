@@ -10,7 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +68,7 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
             }
 
             Collection<PsiElement> classes = new ArrayList<PsiElement>();
-            for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(getProject(), value)) {
+            for (PhpClass phpClass : DoctrineMetadataUtil.getClassInsideScope(element, value)) {
                 classes.add(phpClass);
             }
 

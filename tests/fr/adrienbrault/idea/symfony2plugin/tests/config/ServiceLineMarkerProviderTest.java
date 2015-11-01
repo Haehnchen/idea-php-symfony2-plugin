@@ -31,7 +31,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             "</doctrine-mapping>"
         );
 
-        assertToolTip(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
                 "namespace Foo{\n" +
                 "    class Bar{}\n" +
                 "}"
@@ -51,7 +51,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             "}"
         );
 
-        assertToolTip(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
                 "namespace Entity{\n" +
                 "    class Bar{}\n" +
                 "}"

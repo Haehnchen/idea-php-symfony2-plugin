@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -9,10 +11,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValue;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.psi.util.*;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
@@ -24,6 +24,9 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup.DoctrineRepo
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.xmlbeans.XmlLanguage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -269,4 +272,48 @@ public class DoctrineMetadataUtil {
         return null;
     }
 
+    @Nullable
+    public static String findModelNameInScope(@NotNull PsiElement psiElement) {
+
+        if(psiElement.getLanguage().equals(XMLLanguage.INSTANCE)) {
+            PsiElement firstParent = PsiTreeUtil.findFirstParent(psiElement, new Condition<PsiElement>() {
+                @Override
+                public boolean value(PsiElement psiElement) {
+                    if (!(psiElement instanceof XmlTag)) {
+                        return false;
+                    }
+
+                    String name = ((XmlTag) psiElement).getName();
+                    return name.equals("entity") || name.equals("document");
+                }
+            });
+
+            if(firstParent instanceof XmlTag) {
+                String name = ((XmlTag) firstParent).getAttributeValue("name");
+                if(StringUtils.isNotBlank(name)) {
+                    return name;
+                }
+            }
+        }
+
+        // @TODO: yml scope
+
+        return null;
+    }
+
+    @NotNull
+    public static Collection<PhpClass> getClassInsideScope(@NotNull PsiElement psiElement, @NotNull String originValue) {
+        Collection<PhpClass> classesInterface = new ArrayList<PhpClass>();
+        String modelNameInScope = DoctrineMetadataUtil.findModelNameInScope(psiElement);
+        if(modelNameInScope != null) {
+            PhpClass classInsideNamespaceScope = PhpElementsUtil.getClassInsideNamespaceScope(psiElement.getProject(), modelNameInScope, originValue);
+            if(classInsideNamespaceScope != null) {
+                classesInterface = Collections.singletonList(classInsideNamespaceScope);
+            }
+        } else {
+            classesInterface = PhpElementsUtil.getClassesInterface(psiElement.getProject(), originValue);
+        }
+        // @TODO: multi classes
+        return classesInterface;
+    }
 }

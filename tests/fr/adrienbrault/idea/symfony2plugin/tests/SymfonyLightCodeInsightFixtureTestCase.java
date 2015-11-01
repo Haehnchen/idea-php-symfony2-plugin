@@ -412,7 +412,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         completionContainsAssert(lookupStrings);
     }
 
-    public void assertToolTip(@NotNull PsiElement psiElement, @NotNull LineMarker.Assert assertMatch) {
+    public void assertLineMarker(@NotNull PsiElement psiElement, @NotNull LineMarker.Assert assertMatch) {
 
         final List<PsiElement> elements = new ArrayList<PsiElement>();
         psiElement.acceptChildren(new PsiRecursiveElementVisitor() {

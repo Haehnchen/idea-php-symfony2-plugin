@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
@@ -174,6 +174,9 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         }));
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findManagerByScope
+     */
     public void testFindManagerByScope() {
         for (Pair<DoctrineManagerEnum, String> pair : Arrays.asList(
             Pair.create(DoctrineManagerEnum.ORM, "orm"),
@@ -189,6 +192,9 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         }
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findMetadataForRepositoryClass
+     */
     public void testFindMetadataForRepositoryClass() {
         Condition<VirtualFile> condition = new Condition<VirtualFile>() {
             @Override
@@ -200,5 +206,18 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Foo\\Bar\\Repository\\FooBarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(PhpElementsUtil.getClassInterface(getProject(), "Entity\\BarRepository")), condition));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getMetadataByTable
+     */
+    public void testFindModelNameInScope() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "<doctrine-foo-mapping><document name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></document></doctrine-foo-mapping>");
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
+
+        myFixture.configureByText(XmlFileType.INSTANCE, "<doctrine-foo-mapping><entity name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></entity></doctrine-foo-mapping>");
+        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
     }
 }
