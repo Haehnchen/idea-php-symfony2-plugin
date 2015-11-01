@@ -259,7 +259,7 @@ public class DoctrineMetadataUtil {
     @Nullable
     public static DoctrineManagerEnum findManagerByScope(@NotNull PsiElement psiElement) {
         String name = psiElement.getContainingFile().getName();
-        Matcher matcher = Pattern.compile(".(mongodb|couchdb|orm|document|odm).(xml|yaml|yml)$").matcher(name);
+        Matcher matcher = Pattern.compile(".(mongodb|couchdb|orm|document|odm).(xml|yaml|yml)$", Pattern.CASE_INSENSITIVE).matcher(name);
 
         if(matcher.find()) {
             DoctrineManagerEnum managerEnum = DoctrineManagerEnum.getEnumFromString(matcher.group(1));
