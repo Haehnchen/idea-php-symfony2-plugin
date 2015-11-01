@@ -23,3 +23,8 @@ namespace Foo\Bar\Repository {
 namespace Doctrine\Common\Persistence {
     interface ObjectRepository {};
 }
+
+namespace Entity {
+    class Bar{};
+    class BarRepository{};
+}

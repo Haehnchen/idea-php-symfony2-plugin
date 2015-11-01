@@ -16,4 +16,6 @@
         <embed-many field="egg2" target-document="Foo\Bar\Egg"/>
     </document>
 
+    <document name="Entity\Bar" repository-class="BarRepository"/>
+
 </doctrine-mapping>

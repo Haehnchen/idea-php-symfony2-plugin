@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -35,5 +36,25 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
                 "    class Bar{}\n" +
                 "}"
         ), new LineMarker.ToolTipEqualsAssert("Navigate to model"));
+    }
+
+    public void testDoctrineRepositoryDefinitionLineMarker() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+                "<doctrine-mapping>\n" +
+                "    <document name=\"Foo\" repository-class=\"Entity\\Bar\"/>\n" +
+                "</doctrine-mapping>"
+        );
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Entity{\n" +
+            "    class Bar{}\n" +
+            "}"
+        );
+
+        assertToolTip(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+                "namespace Entity{\n" +
+                "    class Bar{}\n" +
+                "}"
+        ), new LineMarker.ToolTipEqualsAssert("Navigate to metadata"));
     }
 }

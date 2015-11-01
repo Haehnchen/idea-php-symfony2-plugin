@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.util;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
@@ -11,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManage
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.io.File;
 import java.util.*;
@@ -185,5 +187,18 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
             assertEquals(pair.getFirst(), DoctrineMetadataUtil.findManagerByScope(myFixture.configureByText("foo." + pair.getSecond() + ".xml", "")));
             assertEquals(pair.getFirst(), DoctrineMetadataUtil.findManagerByScope(myFixture.configureByText("foo." + pair.getSecond() + ".XML", "")));
         }
+    }
+
+    public void testFindMetadataForRepositoryClass() {
+        Condition<VirtualFile> condition = new Condition<VirtualFile>() {
+            @Override
+            public boolean value(VirtualFile virtualFile) {
+                return virtualFile.getName().equals("doctrine.odm.xml");
+            }
+        };
+
+        assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Foo\\Bar\\Repository\\FooBarRepository"), condition));
+        assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarRepository"), condition));
+        assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(PhpElementsUtil.getClassInterface(getProject(), "Entity\\BarRepository")), condition));
     }
 }

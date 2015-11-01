@@ -10,6 +10,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
@@ -87,6 +90,67 @@ public class DoctrineMetadataUtil {
                 return true;
             }
         }, GlobalSearchScope.allScope(project));
+
+        return virtualFiles;
+    }
+    @NotNull
+    public static Collection<VirtualFile> findMetadataForRepositoryClass(@NotNull PhpClass phpClass) {
+        String presentableFQN = phpClass.getPresentableFQN();
+        if(presentableFQN == null) {
+            return Collections.emptyList();
+        }
+
+        if(presentableFQN.startsWith("\\")) {
+            presentableFQN = presentableFQN.substring(1);
+        }
+
+        return findMetadataForRepositoryClass(phpClass.getProject(), presentableFQN);
+    }
+
+    private static final Key<CachedValue<Map<String, Collection<String>>>> DOCTRINE_REPOSITORY_CACHE = new Key<CachedValue<Map<String, Collection<String>>>>("DOCTRINE_REPOSITORY_CACHE");
+
+    @NotNull
+    public static Collection<VirtualFile> findMetadataForRepositoryClass(final @NotNull Project project, @NotNull String repositoryClass) {
+
+        CachedValue<Map<String, Collection<String>>> cache = project.getUserData(DOCTRINE_REPOSITORY_CACHE);
+        if(cache == null) {
+            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, Collection<String>>>() {
+                @Nullable
+                @Override
+                public Result<Map<String, Collection<String>>> compute() {
+                    Map<String, Collection<String>> repositoryMap = new HashMap<String, Collection<String>>();
+                    for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
+                        for (String repositoryDefinition : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                            PhpClass phpClass = PhpElementsUtil.getClassInsideNamespaceScope(project, key, repositoryDefinition);
+                            if(phpClass != null && phpClass.getPresentableFQN() != null) {
+                                String presentableFQN = phpClass.getPresentableFQN();
+                                if(!repositoryMap.containsKey(presentableFQN)) {
+                                    repositoryMap.put(presentableFQN, new HashSet<String>());
+                                }
+
+                                repositoryMap.get(presentableFQN).add(key);
+                            }
+                        }
+                    }
+
+                    return Result.create(repositoryMap, PsiModificationTracker.MODIFICATION_COUNT);
+                }
+            }, false);
+
+            project.putUserData(DOCTRINE_REPOSITORY_CACHE, cache);
+        }
+
+        if(!cache.getValue().containsKey(repositoryClass)) {
+            return Collections.emptyList();
+        }
+
+        Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
+
+        for (String s : cache.getValue().get(repositoryClass)) {
+            virtualFiles.addAll(
+                FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, s, GlobalSearchScope.allScope(project))
+            );
+        }
 
         return virtualFiles;
     }

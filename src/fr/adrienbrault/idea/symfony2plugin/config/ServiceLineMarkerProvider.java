@@ -5,8 +5,10 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -15,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -24,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -59,6 +63,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             if(PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
                 this.classNameMarker(psiElement, results);
                 this.entityClassMarker(psiElement, results);
+                this.repositoryClassMarker(psiElement, results);
             }
 
             if(phpHighlightServices) {
@@ -132,6 +137,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        Collection<PsiFile> psiFiles = new ArrayList<PsiFile>();
+        // @TODO: use DoctrineMetadataUtil, for single resolve; we have collecting overhead here
         for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(psiElement.getProject())) {
             PhpClass phpClass = doctrineModel.getPhpClass();
             if(!PhpElementsUtil.isEqualClassName(phpClass, (PhpClass) phpClassContext)) {
@@ -143,12 +150,46 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
-                setTarget(psiFile).
-                setTooltipText("Navigate to model");
-
-            result.add(builder.createLineMarkerInfo(psiElement));
+            psiFiles.add(psiFile);
         }
+
+        if(psiFiles.size() == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
+            setTargets(psiFiles).
+            setTooltipText("Navigate to model");
+
+        result.add(builder.createLineMarkerInfo(psiElement));
+    }
+
+    private void repositoryClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+
+        PsiElement phpClassContext = psiElement.getContext();
+        if(!(phpClassContext instanceof PhpClass)) {
+            return;
+        }
+
+        Collection<PsiFile> psiFiles = new ArrayList<PsiFile>();
+        for (VirtualFile virtualFile : DoctrineMetadataUtil.findMetadataForRepositoryClass((PhpClass) phpClassContext)) {
+            PsiFile file = PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile);
+            if(file == null) {
+                continue;
+            }
+
+            psiFiles.add(file);
+        }
+
+        if(psiFiles.size() == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
+            setTargets(psiFiles).
+            setTooltipText("Navigate to metadata");
+
+        result.add(builder.createLineMarkerInfo(psiElement));
     }
 
     private void formNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
