@@ -2,18 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationMethodInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationTagInsertHandler;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @link http://docs.doctrine-project.org/en/latest/reference/basic-mapping.html
@@ -22,64 +21,22 @@ public class DoctrineStaticTypeLookupBuilder {
 
     private InsertHandler insertHandler = InsertHandler.Yaml;
 
-    public static Collection<LookupElement> getTypes(@NotNull Project project) {
+    public static void fillOrmLookupElementsWithStatic(@NotNull Collection<LookupElement> lookupElements) {
 
-        final Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<String> strings = Arrays.asList("id", "string", "integer", "smallint", "bigint", "boolean", "decimal", "date", "time", "datetime", "text", "array", "float");
 
-        visitCustomTypes(project, new ColumnTypeVisitor() {
+        Collection<String> lookupStrings = ContainerUtil.map(lookupElements, new Function<LookupElement, String>() {
             @Override
-            public void visit(@NotNull String name, @Nullable PhpClass phpClass, @Nullable PsiElement psiElement) {
-                LookupElementBuilder lookupElementBuilder = LookupElementBuilder.create(name).withIcon(Symfony2Icons.DOCTRINE);
-
-                if(phpClass != null) {
-                    lookupElementBuilder = lookupElementBuilder.withTypeText(phpClass.getName(), true);
-                }
-
-                lookupElements.add(lookupElementBuilder);
+            public String fun(LookupElement lookupElement) {
+                return lookupElement.getLookupString();
             }
         });
 
-        return lookupElements;
-    }
-
-    public static void visitCustomTypes(@NotNull Project project, @NotNull ColumnTypeVisitor visitor) {
-
-        Set<String> found = new HashSet<String>();
-
-        for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("\\Doctrine\\DBAL\\Types\\Type")) {
-            String name = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
-            if(name != null) {
-                found.add(name);
-                visitor.visit(name, phpClass, phpClass.findMethodByName("getName"));
+        for (String string : strings) {
+            if(!lookupStrings.contains(string)) {
+                lookupElements.add(LookupElementBuilder.create(string).withIcon(Symfony2Icons.DOCTRINE));
             }
         }
-
-        for (String s : Arrays.asList("id", "string", "integer", "smallint", "bigint", "boolean", "decimal", "date", "time", "datetime", "text", "array", "float")) {
-            if(!found.contains(s)) {
-                visitor.visit(s, null, null);
-            }
-        }
-
-    }
-
-    private interface ColumnTypeVisitor {
-        void visit(@NotNull String name, @Nullable PhpClass phpClass, @Nullable PsiElement psiElement);
-    }
-
-    public static Collection<PsiElement> getColumnTypesTargets(@NotNull Project project, final @NotNull String contents) {
-
-        final Collection<PsiElement> targets = new ArrayList<PsiElement>();
-
-        visitCustomTypes(project, new ColumnTypeVisitor() {
-            @Override
-            public void visit(@NotNull String name, @Nullable PhpClass phpClass, @Nullable PsiElement psiElement) {
-                if(name.equals(contents) && phpClass != null) {
-                    targets.add(phpClass);
-                }
-            }
-        });
-
-        return targets;
     }
 
     public ArrayList<LookupElement> getNullAble() {

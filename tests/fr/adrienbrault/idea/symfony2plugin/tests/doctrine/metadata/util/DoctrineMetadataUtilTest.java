@@ -5,7 +5,9 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -168,5 +170,20 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
                 return lookupElement.getLookupString().equals("Foo\\Bar\\Repository\\FooBarRepository");
             }
         }));
+    }
+
+    public void testFindManagerByScope() {
+        for (Pair<DoctrineManagerEnum, String> pair : Arrays.asList(
+            Pair.create(DoctrineManagerEnum.ORM, "orm"),
+            Pair.create(DoctrineManagerEnum.COUCHDB, "couchdb"),
+            Pair.create(DoctrineManagerEnum.MONGODB, "mongodb"),
+            Pair.create(DoctrineManagerEnum.ODM, "odm"),
+            Pair.create(DoctrineManagerEnum.DOCUMENT, "document")
+        )) {
+            assertEquals(pair.getFirst(), DoctrineMetadataUtil.findManagerByScope(myFixture.configureByText("foo." + pair.getSecond() + ".yml", "")));
+            assertEquals(pair.getFirst(), DoctrineMetadataUtil.findManagerByScope(myFixture.configureByText("foo." + pair.getSecond() + ".yaml", "")));
+            assertEquals(pair.getFirst(), DoctrineMetadataUtil.findManagerByScope(myFixture.configureByText("foo." + pair.getSecond() + ".xml", "")));
+            assertEquals(pair.getFirst(), DoctrineMetadataUtil.findManagerByScope(myFixture.configureByText("foo." + pair.getSecond() + ".XML", "")));
+        }
     }
 }

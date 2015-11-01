@@ -120,19 +120,6 @@ public class YamlCompletionContributor extends CompletionContributor {
             }
         );
 
-
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), new CompletionProvider<CompletionParameters>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-                
-                if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
-                    return;
-                }
-
-                completionResultSet.addAllElements(DoctrineStaticTypeLookupBuilder.getTypes(parameters.getPosition().getProject()));
-            }
-        });
-
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("unique"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("nullable"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("associationKey"), new YamlCompletionProvider(new DoctrineStaticTypeLookupBuilder().getNullAble()));

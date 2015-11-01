@@ -14,6 +14,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup.DoctrineRepositoryLookupElement;
@@ -24,6 +25,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -185,4 +188,21 @@ public class DoctrineMetadataUtil {
 
         return phpClasses;
     }
+
+    @Nullable
+    public static DoctrineManagerEnum findManagerByScope(@NotNull PsiElement psiElement) {
+        String name = psiElement.getContainingFile().getName();
+        Matcher matcher = Pattern.compile(".(mongodb|couchdb|orm|document|odm).(xml|yaml|yml)$").matcher(name);
+
+        if(matcher.find()) {
+            DoctrineManagerEnum managerEnum = DoctrineManagerEnum.getEnumFromString(matcher.group(1));
+            if(managerEnum != null) {
+                return managerEnum;
+            }
+        }
+
+        // @TODO: implement psiElement position scope
+        return null;
+    }
+
 }

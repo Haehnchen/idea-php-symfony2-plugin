@@ -575,7 +575,8 @@ public class YamlElementPatternHelper {
             PlatformPatterns.string().endsWith("orm.yml"),
             PlatformPatterns.string().endsWith("couchdb.yml"),
             PlatformPatterns.string().endsWith("odm.yml"),
-            PlatformPatterns.string().endsWith("mongodb.yml")
+            PlatformPatterns.string().endsWith("mongodb.yml"),
+            PlatformPatterns.string().endsWith("document.yml")
         ));
     }
 

@@ -16,7 +16,6 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
-import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -25,8 +24,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.utils.URIUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -95,21 +92,7 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getArrayMethodGoto(psiElement, results);
         }
 
-        if(YamlElementPatternHelper.getOrmSingleLineScalarKey("type").accepts(psiElement)) {
-            this.getOrmTypesNavigation(psiElement, results);
-        }
-
         return results.toArray(new PsiElement[results.size()]);
-    }
-
-    private void getOrmTypesNavigation(@NotNull PsiElement psiElement, @NotNull List<PsiElement> results) {
-
-        String text = PsiElementUtils.trimQuote(psiElement.getText());
-        if(StringUtils.isBlank(text)) {
-            return;
-        }
-
-        results.addAll(DoctrineStaticTypeLookupBuilder.getColumnTypesTargets(psiElement.getProject(), text));
     }
 
     private void getArrayMethodGoto(PsiElement psiElement, List<PsiElement> results) {
