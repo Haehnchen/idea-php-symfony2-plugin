@@ -120,4 +120,46 @@ public class DoctrineMetadataPattern {
                 )
             );
     }
+
+    /**
+     * <doctrine-mapping|doctrine-*-mapping>
+     *   <document><field name="Foo"/></document>
+     * </doctrine-mapping>
+     */
+    public static XmlAttributeValuePattern getFieldName() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("name")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("field")
+                    .withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
+                            XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                        )
+                    )
+                )
+            );
+    }
+
+    /**
+     * <doctrine-mapping|doctrine-*-mapping>
+     *   <document><field type="Foo"/></document>
+     * </doctrine-mapping>
+     */
+    public static XmlAttributeValuePattern getFieldNameRelation() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("field")
+                .withParent(XmlPatterns
+                    .xmlTag().withName(XmlPatterns.string().oneOf("embed-one", "embed-many", "reference-one", "reference-many", "one-to-one", "one-to-many", "many-to-one", "many-to-many"))
+                    .withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
+                            XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                        )
+                    )
+                )
+            );
+    }
 }

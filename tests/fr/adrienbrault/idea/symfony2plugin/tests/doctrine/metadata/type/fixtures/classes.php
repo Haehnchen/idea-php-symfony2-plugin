@@ -32,3 +32,11 @@ namespace Doctrine\DBAL\Types {
         }
     }
 }
+
+namespace Doctrine\Property {
+    class Fields{
+        private $id;
+        private $name;
+        const FOO = '';
+    };
+}

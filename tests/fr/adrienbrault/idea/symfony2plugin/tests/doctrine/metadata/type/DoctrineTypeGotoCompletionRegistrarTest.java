@@ -5,6 +5,9 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -131,4 +134,64 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
         }
     }
 
+    public void testPropertyFieldName() {
+
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"document", "document"});
+            add(new String[] {"document", "embedded"});
+            add(new String[] {"orm", "entity"});
+        }};
+
+        for (String[] provider : providers) {
+            assertCompletionContains(
+                "foo." + provider[0] + ".xml",
+                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><field name=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
+                "id", "name"
+            );
+
+            assertCompletionNotContains(
+                "foo." + provider[0] + ".xml",
+                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><field name=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
+                "const"
+            );
+
+            assertNavigationMatch(
+                "foo." + provider[0] + ".xml",
+                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><field name=\"id<caret>\" /></" + provider[1] + "></doctrine-mapping>\""
+            );
+        }
+    }
+
+    public void testPropertyRelations() {
+
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"orm", "entity", "one-to-one"});
+            add(new String[] {"orm", "entity", "one-to-many"});
+            add(new String[] {"orm", "entity", "many-to-one"});
+            add(new String[] {"orm", "entity", "many-to-many"});
+            add(new String[] {"mongodb", "document", "reference-one"});
+            add(new String[] {"mongodb", "document", "reference-many"});
+            add(new String[] {"mongodb", "document", "embed-many"});
+            add(new String[] {"mongodb", "document", "embed-one"});
+        }};
+
+        for (String[] provider : providers) {
+            assertCompletionContains(
+                "foo." + provider[0] + ".xml",
+                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><" + provider[2] + " field=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
+                "id", "name"
+            );
+
+            assertCompletionNotContains(
+                "foo." + provider[0] + ".xml",
+                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><" + provider[2] + " field=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
+                "const"
+            );
+
+            assertNavigationMatch(
+                "foo." + provider[0] + ".xml",
+                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><" + provider[2] + " field=\"id<caret>\" /></" + provider[1] + "></doctrine-mapping>\""
+            );
+        }
+    }
 }
