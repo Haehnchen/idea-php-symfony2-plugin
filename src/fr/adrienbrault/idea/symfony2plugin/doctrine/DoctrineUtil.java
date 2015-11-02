@@ -15,7 +15,9 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.ArrayUtils;
@@ -28,6 +30,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -118,7 +121,7 @@ public class DoctrineUtil {
 
         final Collection<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
 
-        phpFile.accept(new AnnotationElementWalkingVisitor(new Processor<PhpDocTag>() {
+        phpFile.acceptChildren(new AnnotationElementWalkingVisitor(new Processor<PhpDocTag>() {
             @Override
             public boolean process(PhpDocTag phpDocTag) {
 

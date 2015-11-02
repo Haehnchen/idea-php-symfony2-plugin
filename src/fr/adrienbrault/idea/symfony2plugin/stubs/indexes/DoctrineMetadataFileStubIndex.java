@@ -24,6 +24,8 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
     public static final ID<String, String> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
+    private static int MAX_FILE_BYTE_SIZE = 1048576;
+
     private static class MyStringStringFileContentDataIndexer implements DataIndexer<String, String, FileContent> {
         @NotNull
         @Override
@@ -32,7 +34,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
             Map<String, String> map = new HashMap<String, String>();
 
             PsiFile psiFile = fileContent.getPsiFile();
-            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(fileContent, psiFile)) {
                 return map;
             }
 
@@ -91,5 +93,26 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
     @Override
     public int getVersion() {
         return 1;
+    }
+
+    public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
+
+        String fileName = psiFile.getName();
+
+        if(fileName.startsWith(".") || fileName.contains("Test")) {
+            return false;
+        }
+
+        // @TODO: filter .orm.xml?
+        String extension = inputData.getFile().getExtension();
+        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml")|| extension.equalsIgnoreCase("yaml") || extension.equalsIgnoreCase("php"))) {
+            return false;
+        }
+
+        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
+            return false;
+        }
+
+        return true;
     }
 }
