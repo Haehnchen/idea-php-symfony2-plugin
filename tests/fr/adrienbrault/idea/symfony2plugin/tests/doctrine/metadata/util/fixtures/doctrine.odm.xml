@@ -17,5 +17,5 @@
     </document>
 
     <document name="Entity\Bar" repository-class="BarRepository"/>
-
+    <document name="Entity\BarEmpty"/>
 </doctrine-mapping>

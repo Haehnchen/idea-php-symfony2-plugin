@@ -124,6 +124,10 @@ public class DoctrineMetadataUtil {
                     Map<String, Collection<String>> repositoryMap = new HashMap<String, Collection<String>>();
                     for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
                         for (String repositoryDefinition : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                            if(StringUtils.isBlank(repositoryDefinition)) {
+                                continue;
+                            }
+
                             PhpClass phpClass = PhpElementsUtil.getClassInsideNamespaceScope(project, key, repositoryDefinition);
                             if(phpClass != null && phpClass.getPresentableFQN() != null) {
                                 String presentableFQN = phpClass.getPresentableFQN();

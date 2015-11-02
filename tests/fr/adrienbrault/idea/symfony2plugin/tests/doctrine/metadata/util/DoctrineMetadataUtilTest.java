@@ -206,6 +206,8 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Foo\\Bar\\Repository\\FooBarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(PhpElementsUtil.getClassInterface(getProject(), "Entity\\BarRepository")), condition));
+        assertNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarEmpty"), condition))
+        ;
     }
 
     /**
