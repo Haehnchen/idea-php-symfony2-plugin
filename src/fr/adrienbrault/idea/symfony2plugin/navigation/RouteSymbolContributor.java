@@ -20,7 +20,7 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
 
         Set<String> routeNames = new HashSet<String>();
 
-        Map<String, Route> routes = RouteHelper.getCompiledRoutes(project);
+        Map<String, Route> routes = RouteHelper.getAllRoutes(project);
 
         for (Route route : routes.values()) {
             routeNames.add(route.getName());
