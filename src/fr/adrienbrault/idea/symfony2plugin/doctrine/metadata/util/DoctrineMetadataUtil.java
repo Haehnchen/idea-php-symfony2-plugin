@@ -288,7 +288,7 @@ public class DoctrineMetadataUtil {
                     }
 
                     String name = ((XmlTag) psiElement).getName();
-                    return name.equals("entity") || name.equals("document");
+                    return name.equals("entity") || name.equals("document") || name.equals("embedded") || name.equals("embedded-document");
                 }
             });
 

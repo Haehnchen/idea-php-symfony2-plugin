@@ -28,7 +28,7 @@ public class DoctrineMetadataPattern {
             .withParent(XmlPatterns
                 .xmlAttribute("name")
                 .withParent(XmlPatterns
-                    .xmlTag().withName(PlatformPatterns.string().oneOf("document", "entity"))
+                    .xmlTag().withName(PlatformPatterns.string().oneOf("document", "entity", "embedded-document", "embedded"))
                     .withParent(XmlPatterns
                         .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                     )
@@ -70,7 +70,7 @@ public class DoctrineMetadataPattern {
                 .withParent(XmlPatterns
                     .xmlTag().withName(PlatformPatterns.string().oneOf("reference-one", "reference-many", "embed-many", "embed-one"))
                     .withParent(
-                        XmlPatterns.xmlTag().withName("document").withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("embedded-document", "embedded", "document")).withParent(
                             XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                         )
                     )
@@ -113,7 +113,7 @@ public class DoctrineMetadataPattern {
                 .withParent(XmlPatterns
                     .xmlTag().withName("field")
                     .withParent(
-                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document")).withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
                             XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                         )
                     )

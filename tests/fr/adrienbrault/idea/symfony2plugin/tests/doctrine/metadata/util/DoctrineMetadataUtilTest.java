@@ -206,20 +206,22 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Foo\\Bar\\Repository\\FooBarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(PhpElementsUtil.getClassInterface(getProject(), "Entity\\BarRepository")), condition));
-        assertNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarEmpty"), condition))
-        ;
+        assertNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarEmpty"), condition));
     }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getMetadataByTable
      */
     public void testFindModelNameInScope() {
-        myFixture.configureByText(XmlFileType.INSTANCE, "<doctrine-foo-mapping><document name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></document></doctrine-foo-mapping>");
-        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-        assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
-
-        myFixture.configureByText(XmlFileType.INSTANCE, "<doctrine-foo-mapping><entity name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></entity></doctrine-foo-mapping>");
-        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-        assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
+        for (String s : new String[]{
+            "<doctrine-foo-mapping><document name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></document></doctrine-foo-mapping>",
+            "<doctrine-foo-mapping><entity name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></entity></doctrine-foo-mapping>",
+            "<doctrine-foo-mapping><embedded-document name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></embedded-document></doctrine-foo-mapping>",
+            "<doctrine-foo-mapping><embedded name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></embedded></doctrine-foo-mapping>",
+        }) {
+            myFixture.configureByText(XmlFileType.INSTANCE, s);
+            PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+            assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
+        }
     }
 }

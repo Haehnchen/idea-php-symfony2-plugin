@@ -54,6 +54,20 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         );
     }
 
+    public void testDocumentEmbeddedNameCompletion() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-mongo-mapping><embedded-document name=\"<caret>\"/></doctrine-mongo-mapping>",
+            "DateTime"
+        );
+
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-foo-mapping><embedded name=\"<caret>\"/></doctrine-foo-mapping>",
+            "DateTime"
+        );
+    }
+
     public void testDocumentNameNonSupportedCompletion() {
         assertCompletionNotContains(
             XmlFileType.INSTANCE,

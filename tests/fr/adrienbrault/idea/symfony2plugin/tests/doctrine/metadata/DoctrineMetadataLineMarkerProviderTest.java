@@ -35,6 +35,16 @@ public class DoctrineMetadataLineMarkerProviderTest extends SymfonyLightCodeInsi
             createXmlFile("<doctrine-mapping><entity><one-to-many target-entity=\"Datetime\"/></entity></doctrine-mapping>"),
             new LineMarker.ToolTipEqualsAssert("Navigate to class")
         );
+
+        assertLineMarker(
+            createXmlFile("<doctrine-mapping><embedded-document><reference-one target-document=\"Datetime\"/></embedded-document></doctrine-mapping>"),
+            new LineMarker.ToolTipEqualsAssert("Navigate to class")
+        );
+
+        assertLineMarker(
+            createXmlFile("<doctrine-mapping><embedded><reference-one target-document=\"Datetime\"/></embedded></doctrine-mapping>"),
+            new LineMarker.ToolTipEqualsAssert("Navigate to class")
+        );
     }
 
     public void testTargetDocumentLineMarkerInSameNamespace() {

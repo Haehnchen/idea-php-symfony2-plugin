@@ -30,9 +30,33 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "string", s + "_foo_bar"
             );
 
+            assertCompletionContains(
+                "foo." + s + ".xml",
+                "<doctrine-mapping><embedded-document><field type=\"<caret>\" /></embedded-document></doctrine-mapping>",
+                "string", s + "_foo_bar"
+            );
+
+            assertCompletionContains(
+                "foo." + s + ".xml",
+                "<doctrine-mapping><embedded><field type=\"<caret>\" /></embedded></doctrine-mapping>",
+                "string", s + "_foo_bar"
+            );
+
             assertNavigationMatch(
                 "foo." + s + ".xml",
                 "<doctrine-mapping><document><field type=\"string<caret>\" /></document></doctrine-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+
+            assertNavigationMatch(
+                "foo." + s + ".xml",
+                "<doctrine-mapping><embedded-document><field type=\"string<caret>\" /></embedded-document></doctrine-mapping>",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+
+            assertNavigationMatch(
+                "foo." + s + ".xml",
+                "<doctrine-mapping><embedded><field type=\"string<caret>\" /></embedded></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
             );
 
