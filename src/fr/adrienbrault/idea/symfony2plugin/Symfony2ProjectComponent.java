@@ -5,6 +5,8 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -12,6 +14,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayListener;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
@@ -24,9 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -38,11 +39,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<ServiceContainerLoader>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
 
     private Project project;
-    private Map<String, Route> routes;
-    private Long routesLastModified;
+    private final EditorFactory editorFactory;
+    private CaretListener overlayerCaretListener;
 
-    public Symfony2ProjectComponent(Project project) {
+    public Symfony2ProjectComponent(Project project, EditorFactory editorFactory) {
         this.project = project;
+        this.editorFactory = editorFactory;
     }
 
     public void initComponent() {
@@ -59,6 +61,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectOpened() {
+        editorFactory.getEventMulticaster().addCaretListener(this.overlayerCaretListener = new CaretTextOverlayListener());
 
         this.checkProject();
 
@@ -86,6 +89,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectClosed() {
+        if(overlayerCaretListener != null) {
+            editorFactory.getEventMulticaster().removeCaretListener(overlayerCaretListener);
+        }
+
         ServiceXmlParserFactory.cleanInstance(project);
 
         // clean routing
