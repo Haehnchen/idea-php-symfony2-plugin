@@ -80,7 +80,7 @@ elif [ "$PHPSTORM_ENV" == "10" ]; then
 
     #twig
     download "http://plugins.jetbrains.com/files/7303/22048/twig-143.381.48.zip"
-    unzip -qo $travisCache/$twig-143.381.48.zip -d ./plugins
+    unzip -qo $travisCache/twig-143.381.48.zip -d ./plugins
 
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
 
