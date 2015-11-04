@@ -7,6 +7,8 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
+import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.util.Pair;
@@ -28,6 +30,9 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayArguments;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayElement;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.util.CaretTextOverlayUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -446,6 +451,46 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         fail(String.format("Fail that '%s' matches on of '%s' PsiElements", assertMatch.getClass(), elements.size()));
     }
 
+    public void assertCaretTextOverlay(LanguageFileType languageFileType, String configureByText, CaretTextOverlay.Assert assertMatch) {
+
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        CaretTextOverlayArguments args = new CaretTextOverlayArguments(
+            new CaretEvent(getEditor(), new LogicalPosition(0, 0), new LogicalPosition(0, 0)),
+            psiElement.getContainingFile(),
+            psiElement
+        );
+
+        for (fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay caretTextOverlay : CaretTextOverlayUtil.getExtensions()) {
+            CaretTextOverlayElement overlay = caretTextOverlay.getOverlay(args);
+            if(overlay != null && assertMatch.match(overlay)) {
+                return;
+            }
+        }
+
+        fail(String.format("Fail that CaretTextOverlay '%s' matches on of '%s' PsiElements", assertMatch.getClass(), psiElement.getText()));
+    }
+
+    public void assertCaretTextOverlayEmpty(LanguageFileType languageFileType, String configureByText) {
+
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        CaretTextOverlayArguments args = new CaretTextOverlayArguments(
+            new CaretEvent(getEditor(), new LogicalPosition(0, 0), new LogicalPosition(0, 0)),
+            psiElement.getContainingFile(),
+            psiElement
+        );
+
+        for (fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay caretTextOverlay : CaretTextOverlayUtil.getExtensions()) {
+            CaretTextOverlayElement overlay = caretTextOverlay.getOverlay(args);
+            if(overlay != null) {
+                fail(String.format("Fail that CaretTextOverlay is empty matching '%s'", overlay.getClass()));
+            }
+        }
+    }
+
     public static class LineMarker {
         public interface Assert {
             boolean match(@NotNull LineMarkerInfo markerInfo);
@@ -462,6 +507,27 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             @Override
             public boolean match(@NotNull LineMarkerInfo markerInfo) {
                 return markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().equals(toolTip);
+            }
+        }
+    }
+
+    public static class CaretTextOverlay {
+        public interface Assert {
+            boolean match(@NotNull CaretTextOverlayElement caretTextOverlay);
+        }
+
+        public static class TextEqualsAssert implements Assert {
+
+            @NotNull
+            private final String text;
+
+            public TextEqualsAssert(@NotNull String text) {
+                this.text = text;
+            }
+
+            @Override
+            public boolean match(@NotNull CaretTextOverlayElement caretTextOverlay) {
+                return this.text.equals(caretTextOverlay.getText());
             }
         }
     }

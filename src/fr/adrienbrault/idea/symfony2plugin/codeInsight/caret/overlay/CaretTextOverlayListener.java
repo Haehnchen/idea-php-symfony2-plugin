@@ -13,6 +13,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.component.CaretOverlayComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.util.CaretTextOverlayUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -24,10 +25,6 @@ import java.util.TimerTask;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class CaretTextOverlayListener implements CaretListener {
-
-    private static CaretTextOverlay[] CONTRIBUTOR = new CaretTextOverlay[] {
-        new XmlServiceContainerCaretTextOverlay()
-    };
 
     private Timer timer = null;
     private int startDelayMs = 250;
@@ -129,7 +126,7 @@ public class CaretTextOverlayListener implements CaretListener {
 
             CaretTextOverlayArguments args = null;
 
-            for (CaretTextOverlay caretTextOverlay : CONTRIBUTOR) {
+            for (CaretTextOverlay caretTextOverlay : CaretTextOverlayUtil.getExtensions()) {
                 if(!caretTextOverlay.accepts(psiFile.getVirtualFile())) {
                     continue;
                 }

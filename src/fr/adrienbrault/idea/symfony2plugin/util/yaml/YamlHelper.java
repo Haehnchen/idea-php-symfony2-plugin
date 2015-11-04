@@ -371,7 +371,8 @@ public class YamlHelper {
 
     }
 
-    public static String trimSpecialSyntaxServiceName(String serviceName) {
+    @Nullable
+    public static String trimSpecialSyntaxServiceName(@NotNull String serviceName) {
 
         if(serviceName.startsWith("@")) {
             serviceName = serviceName.substring(1);

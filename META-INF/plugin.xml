@@ -500,6 +500,7 @@
         <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
         <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
         <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
+        <extensionPoint name="extension.CaretTextOverlay" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
@@ -519,6 +520,8 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.type.DoctrineTypeGotoCompletionRegistrar"/>
 
+        <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay"/>
+        <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.YamlServiceContainerCaretTextOverlay"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>
