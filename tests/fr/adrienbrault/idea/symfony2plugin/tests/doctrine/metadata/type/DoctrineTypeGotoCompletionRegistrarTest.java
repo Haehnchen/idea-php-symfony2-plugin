@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -134,34 +133,44 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
         }
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern#getFieldName()
+     */
     public void testPropertyFieldName() {
 
         Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"document", "document"});
-            add(new String[] {"document", "embedded"});
-            add(new String[] {"orm", "entity"});
+            add(new String[] {"document", "document", "field"});
+            add(new String[] {"document", "embedded", "field"});
+            add(new String[] {"orm", "entity", "field"});
+
+            add(new String[] {"document", "document", "id"});
+            add(new String[] {"document", "embedded", "id"});
+            add(new String[] {"orm", "entity", "id"});
         }};
 
         for (String[] provider : providers) {
             assertCompletionContains(
                 "foo." + provider[0] + ".xml",
-                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><field name=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
+                String.format("<doctrine-mapping><%s name=\"Doctrine\\Property\\Fields\"><%s name=\"<caret>\" /></%s></doctrine-mapping>\"", provider[1], provider[2], provider[1]),
                 "id", "name"
             );
 
             assertCompletionNotContains(
                 "foo." + provider[0] + ".xml",
-                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><field name=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
+                String.format("<doctrine-mapping><%s name=\"Doctrine\\Property\\Fields\"><%s name=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"", provider[1], provider[2], provider[1]),
                 "const"
             );
 
             assertNavigationMatch(
                 "foo." + provider[0] + ".xml",
-                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><field name=\"id<caret>\" /></" + provider[1] + "></doctrine-mapping>\""
+                String.format("<doctrine-mapping><%s name=\"Doctrine\\Property\\Fields\"><%s name=\"id<caret>\" /></" + provider[1] + "></doctrine-mapping>\"", provider[1], provider[2], provider[1])
             );
         }
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern#getFieldNameRelation()
+     */
     public void testPropertyRelations() {
 
         Collection<String[]> providers = new ArrayList<String[]>() {{
@@ -195,6 +204,9 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
         }
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern#getYamlFieldName()
+     */
     public void testYamlPropertyFieldNameNavigation() {
 
         Collection<String[]> providers = new ArrayList<String[]>() {{

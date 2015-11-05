@@ -129,6 +129,7 @@ public class DoctrineMetadataPattern {
     /**
      * <doctrine-mapping|doctrine-*-mapping>
      *   <document><field name="Foo"/></document>
+     *   <document><id name="Foo"/></document>
      * </doctrine-mapping>
      */
     public static XmlAttributeValuePattern getFieldName() {
@@ -137,7 +138,7 @@ public class DoctrineMetadataPattern {
             .withParent(XmlPatterns
                 .xmlAttribute("name")
                 .withParent(XmlPatterns
-                    .xmlTag().withName("field")
+                    .xmlTag().withName(XmlPatterns.string().oneOf("field", "id"))
                     .withParent(
                         XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
                             XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
@@ -149,7 +150,7 @@ public class DoctrineMetadataPattern {
 
     /**
      * <doctrine-mapping|doctrine-*-mapping>
-     *   <document><field type="Foo"/></document>
+     *   <document><embed-one field="Foo"/></document>
      * </doctrine-mapping>
      */
     public static XmlAttributeValuePattern getFieldNameRelation() {
