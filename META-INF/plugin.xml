@@ -545,6 +545,13 @@
             <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
         </component>
     </project-components>
+
+    <application-components>
+        <component>
+            <implementation-class>fr.adrienbrault.idea.symfony2plugin.SymfonyApplicationComponent</implementation-class>
+        </component>
+    </application-components>
+
     <actions>
 
         <action id="Symfony.Menu" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder">

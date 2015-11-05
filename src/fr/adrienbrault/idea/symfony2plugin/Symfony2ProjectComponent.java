@@ -39,12 +39,9 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<ServiceContainerLoader>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
 
     private Project project;
-    private final EditorFactory editorFactory;
-    private CaretListener overlayerCaretListener;
 
-    public Symfony2ProjectComponent(Project project, EditorFactory editorFactory) {
+    public Symfony2ProjectComponent(Project project) {
         this.project = project;
-        this.editorFactory = editorFactory;
     }
 
     public void initComponent() {
@@ -61,8 +58,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectOpened() {
-        editorFactory.getEventMulticaster().addCaretListener(this.overlayerCaretListener = new CaretTextOverlayListener());
-
         this.checkProject();
 
         // phpstorm pre 7.1 dont support statusbar api;
@@ -89,9 +84,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void projectClosed() {
-        if(overlayerCaretListener != null) {
-            editorFactory.getEventMulticaster().removeCaretListener(overlayerCaretListener);
-        }
 
         ServiceXmlParserFactory.cleanInstance(project);
 
