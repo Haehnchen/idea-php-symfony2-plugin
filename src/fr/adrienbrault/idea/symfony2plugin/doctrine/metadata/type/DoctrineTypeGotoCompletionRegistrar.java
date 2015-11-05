@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Processor;
@@ -27,6 +28,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 
@@ -88,6 +91,18 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
                             return GotoCompletionUtil.getXmlAttributeValue(element);
                         }
                     };
+                }
+            }
+        );
+
+        // fields:
+        //   i<caret>d: []
+        registrar.register(
+            DoctrineMetadataPattern.getYamlFieldName(), new GotoCompletionContributor() {
+                @Nullable
+                @Override
+                public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+                    return new MyYamlFieldNameGotoCompletionProvider(psiElement);
                 }
             }
         );
@@ -213,5 +228,33 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
 
         @Nullable
         abstract protected String getElementText(@NotNull PsiElement element);
+    }
+
+    private static class MyYamlFieldNameGotoCompletionProvider extends MyFieldNameGotoCompletionProvider {
+
+        public MyYamlFieldNameGotoCompletionProvider(PsiElement psiElement) {
+            super(psiElement);
+        }
+
+        @NotNull
+        public Collection<LookupElement> getLookupElements() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        protected String getElementText(@NotNull PsiElement element) {
+            PsiElement parent = element.getParent();
+            if(!(parent instanceof YAMLKeyValue)) {
+                return null;
+            }
+
+            String keyText = ((YAMLKeyValue) parent).getKeyText();
+            if(StringUtils.isBlank(keyText)) {
+                return null;
+            }
+
+            return keyText;
+        }
     }
 }

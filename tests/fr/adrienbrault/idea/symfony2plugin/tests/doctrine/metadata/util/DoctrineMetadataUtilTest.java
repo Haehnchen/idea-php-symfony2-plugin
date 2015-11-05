@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetada
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.jetbrains.yaml.YAMLFileType;
 
 import java.io.File;
 import java.util.*;
@@ -210,7 +211,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getMetadataByTable
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findModelNameInScope
      */
     public void testFindModelNameInScope() {
         for (String s : new String[]{
@@ -220,6 +221,20 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
             "<doctrine-foo-mapping><embedded name=\"Foo\\Foo\"><id attr=\"b<caret>a\"></embedded></doctrine-foo-mapping>",
         }) {
             myFixture.configureByText(XmlFileType.INSTANCE, s);
+            PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+            assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
+        }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findModelNameInScope
+     */
+    public void testYamlFindModelNameInScope() {
+        for (String s : new String[]{
+            "Foo\\Foo: \n   type: enti<caret>tiy",
+            "\n   \n   \nFoo\\Foo: \n   type: enti<caret>tiy",
+        }) {
+            myFixture.configureByText(YAMLFileType.YML, s);
             PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
             assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
         }

@@ -519,6 +519,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.type.DoctrineTypeGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineYamlGotoCompletionRegistrar"/>
 
         <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay"/>
         <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.YamlServiceContainerCaretTextOverlay"/>

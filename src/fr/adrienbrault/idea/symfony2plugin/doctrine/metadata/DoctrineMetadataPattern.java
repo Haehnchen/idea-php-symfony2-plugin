@@ -1,9 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.XmlAttributeValuePattern;
 import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.PsiElement;
 import org.intellij.lang.annotations.RegExp;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -158,6 +163,26 @@ public class DoctrineMetadataPattern {
                         XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
                             XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                         )
+                    )
+                )
+            );
+    }
+
+    /**
+     * fields:
+     *  i<caret>d: []
+     *
+     * embedOne:
+     *  add<caret>ress: []
+     */
+    public static PsiElementPattern.Capture<PsiElement> getYamlFieldName() {
+        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+            .withParent(
+                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                    PlatformPatterns.psiElement(YAMLCompoundValue.class).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns.string().oneOf(
+                            "id", "fields", "embedOne", "embedMany", "referenceOne", "referenceMany", "oneToOne", "oneToMany", "manyToOne", "manyToMany"
+                        ))
                     )
                 )
             );

@@ -29,6 +29,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.xmlbeans.XmlLanguage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -296,6 +299,18 @@ public class DoctrineMetadataUtil {
                 String name = ((XmlTag) firstParent).getAttributeValue("name");
                 if(StringUtils.isNotBlank(name)) {
                     return name;
+                }
+            }
+        } else if(psiElement.getContainingFile() instanceof YAMLFile) {
+            PsiFile psiFile = psiElement.getContainingFile();
+            YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+            if(yamlDocument != null) {
+                PsiElement firstChild = yamlDocument.getFirstChild();
+                if(firstChild instanceof YAMLKeyValue) {
+                    String keyText = ((YAMLKeyValue) firstChild).getKeyText();
+                    if(StringUtils.isNotBlank(keyText)) {
+                        return keyText;
+                    }
                 }
             }
         }

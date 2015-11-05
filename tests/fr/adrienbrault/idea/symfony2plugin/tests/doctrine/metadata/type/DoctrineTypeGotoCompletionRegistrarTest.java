@@ -194,4 +194,46 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
             );
         }
     }
+
+    public void testYamlPropertyFieldNameNavigation() {
+
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"orm", "id"});
+            add(new String[] {"orm", "fields"});
+            add(new String[] {"orm", "oneToOne"});
+            add(new String[] {"orm", "oneToMany"});
+            add(new String[] {"orm", "manyToOne"});
+            add(new String[] {"orm", "manyToMany"});
+            add(new String[] {"mondodb", "embedOne"});
+            add(new String[] {"mondodb", "embedMany"});
+            add(new String[] {"mondodb", "referenceOne"});
+            add(new String[] {"mondodb", "referenceMany"});
+        }};
+
+        for (String[] provider : providers) {
+            assertNavigationMatch(
+                "foo." + provider[0] + ".yml",
+                "Doctrine\\Property\\Fields:\n" +
+                    "  " + provider[1] + ":\n" +
+                    "    i<caret>d:\n" +
+                    "       type: string"
+            );
+
+            assertNavigationMatch(
+                "foo." + provider[0] + ".yml",
+                "Doctrine\\Property\\Fields:\n" +
+                    "  " + provider[1] + ":\n" +
+                    "    i<caret>d:\n" +
+                    "       type: string"
+            );
+        }
+
+        assertNavigationIsEmpty(
+            "foo.orm.yml",
+            "Doctrine\\Property\\Fields:\n" +
+                "  car:\n" +
+                "    i<caret>d:\n" +
+                "       type: string"
+        );
+    }
 }
