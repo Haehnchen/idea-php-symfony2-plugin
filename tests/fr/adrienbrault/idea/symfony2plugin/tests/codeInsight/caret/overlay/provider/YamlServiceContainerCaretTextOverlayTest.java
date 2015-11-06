@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.codeInsight.caret.overlay.provider;
 
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.YamlServiceContainerCaretTextOverlay;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
@@ -22,6 +23,9 @@ public class YamlServiceContainerCaretTextOverlayTest extends SymfonyLightCodeIn
         return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
+    /**
+     * @see YamlServiceContainerCaretTextOverlay#getOverlay
+     */
     public void testParameterNaming() {
 
         for (String s : new String[] {
@@ -32,6 +36,9 @@ public class YamlServiceContainerCaretTextOverlayTest extends SymfonyLightCodeIn
         }
     }
 
+    /**
+     * @see YamlServiceContainerCaretTextOverlay#getOverlay
+     */
     public void testServiceInstanceNaming() {
 
         for (String s : new String[] {
@@ -45,12 +52,31 @@ public class YamlServiceContainerCaretTextOverlayTest extends SymfonyLightCodeIn
         }
     }
 
+    /**
+     * @see YamlServiceContainerCaretTextOverlay#getOverlay
+     */
     public void testConstructorParameterArguments() {
         for (String s : new String[] {
             "fo<caret>o: \n   class: Foo\\Bar",
             "fo<caret>o: \n   class: %foo_parameter_class%",
             "fo<caret>o: \n   class: %foo_parameter_CLASS%",
             "\"fo<caret>o\": \n   class: Foo\\Bar",
+        }) {
+            assertCaretTextOverlay(YAMLFileType.YML, s, new CaretTextOverlay.TextEqualsAssert("(dateTime : \\DateTime, items : array)"));
+        }
+    }
+
+    /**
+     * @see YamlServiceContainerCaretTextOverlay#getOverlay
+     */
+    public void testGlobalClassKeyValue() {
+        for (String s : new String[] {
+            "class: Foo<caret>\\Bar",
+            "class: 'Foo<caret>\\Bar'",
+            "class: \"Foo<caret>\\Bar\"",
+            "class: %foo_paramet<caret>er_class%",
+            "class: %foo_parame<caret>ter_CLASS%",
+            "class: '%foo_parame<caret>ter_CLASS%'",
         }) {
             assertCaretTextOverlay(YAMLFileType.YML, s, new CaretTextOverlay.TextEqualsAssert("(dateTime : \\DateTime, items : array)"));
         }

@@ -71,9 +71,7 @@ public class CaretTextOverlayListener implements CaretListener {
             public void run() {
                 CaretOverlayComponent component = new CaretOverlayComponent(editor, overlayElement.getText(), psiElement.getTextOffset(), psiElement.getLanguage());
                 editor.getContentComponent().add(component);
-
-                JViewport viewpoint = ((EditorEx) editor).getScrollPane().getViewport();
-                component.setBounds(0, 0, viewpoint.getWidth(), viewpoint.getHeight());
+                component.setSize(((EditorEx) editor).getScrollPane().getViewport().getViewSize());
             }
         });
     }

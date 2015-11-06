@@ -36,7 +36,7 @@ public class CaretTextOverlayUtil {
     }
 
     @Nullable
-    private static CaretTextOverlayElement getCaretTextOverlayForConstructor(@NotNull PhpClass phpClass) {
+    public static CaretTextOverlayElement getCaretTextOverlayForConstructor(@NotNull PhpClass phpClass) {
 
         Method constructor = phpClass.getConstructor();
         if(constructor == null) {

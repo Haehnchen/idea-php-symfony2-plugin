@@ -31,17 +31,31 @@ public class YamlServiceContainerCaretTextOverlay implements CaretTextOverlay {
     @Override
     public CaretTextOverlayElement getOverlay(@NotNull CaretTextOverlayArguments args) {
 
+        PsiElement psiElement = args.getPsiElement();
+
+        // we resolve class parameter a class name first
+        // class: fo<caret>o
+        if(YamlElementPatternHelper.getSingleLineScalarKey("class").accepts(psiElement)) {
+            String text = psiElement.getText();
+            if(StringUtils.isNotBlank(text)) {
+                PhpClass clazz = ServiceUtil.getResolvedClassDefinition(args.getProject(), PsiElementUtils.trimQuote(text));
+                if(clazz != null) {
+                    return CaretTextOverlayUtil.getCaretTextOverlayForConstructor(clazz);
+                }
+            }
+        }
+
         // @service
-        if(YamlElementPatternHelper.getServiceParameterDefinition().accepts(args.getPsiElement())) {
-            CaretTextOverlayElement argumentOverlay = getArgumentValueOverlay(args.getPsiElement(), args);
+        if(YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement)) {
+            CaretTextOverlayElement argumentOverlay = getArgumentValueOverlay(psiElement, args);
             if(argumentOverlay != null) {
                 return argumentOverlay;
             }
         }
 
         // %parameter%
-        if(YamlElementPatternHelper.getServiceDefinition().accepts(args.getPsiElement())) {
-            CaretTextOverlayElement argumentOverlay = getServiceNameOverlay(args.getPsiElement());
+        if(YamlElementPatternHelper.getServiceDefinition().accepts(psiElement)) {
+            CaretTextOverlayElement argumentOverlay = getServiceNameOverlay(psiElement);
             if(argumentOverlay != null) {
                 return argumentOverlay;
             }
@@ -49,8 +63,8 @@ public class YamlServiceContainerCaretTextOverlay implements CaretTextOverlay {
 
         // fo<caret>o:
         //   class: foo
-        if(PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).accepts(args.getPsiElement())) {
-            CaretTextOverlayElement argumentOverlay = getClassConstructorSignature(args.getPsiElement(), args);
+        if(PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).accepts(psiElement)) {
+            CaretTextOverlayElement argumentOverlay = getClassConstructorSignature(psiElement, args);
             if(argumentOverlay != null) {
                 return argumentOverlay;
             }
