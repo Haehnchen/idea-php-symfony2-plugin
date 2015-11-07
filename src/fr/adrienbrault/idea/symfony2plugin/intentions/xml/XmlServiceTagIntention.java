@@ -33,12 +33,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
             return false;
         }
 
-        XmlTag serviceTagValid = XmlServiceArgumentIntention.getServiceTagValid(psiElement);
-        if(serviceTagValid == null) {
-            return false;
-        }
-
-        return true;
+        return XmlServiceArgumentIntention.getServiceTagValid(psiElement) != null;
     }
 
     @Override
@@ -86,7 +81,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
         for (String phpServiceTag : phpServiceTags) {
             ServiceTag serviceTag = new ServiceTag(phpClassFromXmlTag, phpServiceTag);
             ServiceUtil.decorateServiceTag(serviceTag);
-            xmlTag.addSubTag(XmlElementFactory.getInstance(xmlTag.getProject()).createTagFromText(serviceTag.toXmlString(), xmlTag.getLanguage()), false);
+            xmlTag.addSubTag(XmlElementFactory.getInstance(project).createTagFromText(serviceTag.toXmlString()), false);
         }
 
     }

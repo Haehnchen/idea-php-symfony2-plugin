@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.tests;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.LineMarkerProviders;
+import com.intellij.codeInsight.intention.IntentionAction;
+import com.intellij.codeInsight.intention.IntentionManager;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
@@ -370,6 +372,19 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
 
         fail(String.format("Fail matches '%s' with one of %s", contains, matches));
+    }
+
+    public void assertIntentionIsAvailable(LanguageFileType languageFileType, String configureByText, String intentionText) {
+        myFixture.configureByText(languageFileType, configureByText);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        for (IntentionAction intentionAction : IntentionManager.getInstance().getIntentionActions()) {
+            if(intentionAction.isAvailable(getProject(), getEditor(), psiElement.getContainingFile()) && intentionAction.getText().equals(intentionText)) {
+                return;
+            }
+        }
+
+        fail(String.format("Fail intention action '%s' is available in element '%s'", intentionText, psiElement.getText()));
     }
 
     public void assertLocalInspectionContainsNotContains(String filename, String content, String contains) {

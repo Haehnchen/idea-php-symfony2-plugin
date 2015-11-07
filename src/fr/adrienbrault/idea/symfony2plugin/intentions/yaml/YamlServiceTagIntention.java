@@ -40,13 +40,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
             return false;
         }
 
-        YAMLKeyValue serviceKeyValue = YamlHelper.findServiceInContext(psiElement);
-        if(serviceKeyValue == null) {
-            return false;
-        }
-
-        Pair<PhpClass, Set<String>> invoke = invoke(project, serviceKeyValue);
-        return invoke != null && invoke.getSecond().size() > 0;
+        return YamlHelper.findServiceInContext(psiElement) != null;
     }
 
     @Override
@@ -63,6 +57,11 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
         }
 
         Set<String> phpClassServiceTags = invoke.getSecond();
+        if(phpClassServiceTags.size() == 0) {
+            HintManager.getInstance().showErrorHint(editor, "Ops, no possible Tag found");
+            return;
+        }
+
         PhpClass resolvedClassDefinition = invoke.getFirst();
 
         int appendEndOffset = -1;
