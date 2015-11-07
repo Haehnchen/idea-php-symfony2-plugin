@@ -27,15 +27,23 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
 
         myFixture.configureByText(XmlFileType.INSTANCE, "" +
             "<doctrine-mapping>\n" +
-            "    <document name=\"Foo\\Bar\"/>\n" +
+            "    <document name=\"Foo\\Car\"/>\n" +
             "</doctrine-mapping>"
         );
 
         assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
-                "namespace Foo{\n" +
-                "    class Bar{}\n" +
-                "}"
+            "namespace Foo{\n" +
+            "    class Car{}\n" +
+            "}"
         ), new LineMarker.ToolTipEqualsAssert("Navigate to model"));
+    }
+
+    public void testThatDoctrineAnnotationMetadataNotProvidesSelfLineMarker() {
+        assertLineMarkerIsEmpty(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Foo{\n" +
+            "    class Bar{}\n" +
+            "}"
+        ));
     }
 
     public void testDoctrineRepositoryDefinitionLineMarker() {

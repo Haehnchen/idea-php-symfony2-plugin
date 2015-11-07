@@ -447,14 +447,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
     public void assertLineMarker(@NotNull PsiElement psiElement, @NotNull LineMarker.Assert assertMatch) {
 
-        final List<PsiElement> elements = new ArrayList<PsiElement>();
-        psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                elements.add(element);
-                super.visitElement(element);
-            }
-        });
+        final List<PsiElement> elements = collectPsiElementsRecursive(psiElement);
 
         for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.INSTANCE.allForLanguage(psiElement.getLanguage())) {
             Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
@@ -472,6 +465,33 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
 
         fail(String.format("Fail that '%s' matches on of '%s' PsiElements", assertMatch.getClass(), elements.size()));
+    }
+
+    public void assertLineMarkerIsEmpty(@NotNull PsiElement psiElement) {
+
+        final List<PsiElement> elements = collectPsiElementsRecursive(psiElement);
+
+        for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.INSTANCE.allForLanguage(psiElement.getLanguage())) {
+            Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
+            lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
+
+            if(lineMarkerInfos.size() > 0) {
+                fail(String.format("Fail that line marker is empty because it matches '%s'", lineMarkerProvider.getClass()));
+            }
+        }
+    }
+
+    @NotNull
+    private List<PsiElement> collectPsiElementsRecursive(@NotNull PsiElement psiElement) {
+        final List<PsiElement> elements = new ArrayList<PsiElement>();
+        psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+                elements.add(element);
+                super.visitElement(element);
+            }
+        });
+        return elements;
     }
 
     public void assertCaretTextOverlay(LanguageFileType languageFileType, String configureByText, CaretTextOverlay.Assert assertMatch) {

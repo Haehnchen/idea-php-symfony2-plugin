@@ -44,4 +44,5 @@ namespace Foo {
 
     };
 
+    class Car {}
 }

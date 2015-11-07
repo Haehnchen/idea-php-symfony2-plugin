@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -146,7 +147,9 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             }
 
             PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
-            if(psiFile == null) {
+
+            // prevent self navigation for line marker
+            if(psiFile == null || psiFile instanceof PhpFile) {
                 continue;
             }
 
