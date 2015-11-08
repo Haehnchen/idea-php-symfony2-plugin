@@ -6,6 +6,22 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.101
+* Use route names of index for symbol search not only compiler provider
+* Secure doctrine metadata indexer for performance reasons #610
+* Support Doctrine embedded metadata for xml
+* Add field name references on class property for doctrine xml metadata
+* Add PhpStorm 10 testing environment
+* Double check to not add empty doctrine metadata class to index #615
+* Add class name scope for all metadata providers
+* Dont provide Doctrine metadata line marker for annotation classes as this results in self navigation #613
+* Improvements for completion and navigation of all Doctrine metadata files
+* Tag generator indention for yml files is accessible for all services now
+* Add new CaretListener extension which shows several type overlays for services
+
+### 0.11.100</h2>
+* Add blank fix for empty doctrine repository index value #609
+
 ### 0.11.99
 * Complete rewrite of Doctrine implementation; metadata on now index #586
 * Support Doctrine ODM MongoDB and CouchDB #319
