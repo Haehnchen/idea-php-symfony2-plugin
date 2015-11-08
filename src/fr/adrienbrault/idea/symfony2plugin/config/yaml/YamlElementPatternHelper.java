@@ -23,7 +23,7 @@ public class YamlElementPatternHelper {
      *
      * @param keyName
      */
-    public static ElementPattern<PsiElement> getOrmSingleLineScalarKey(String keyName) {
+    public static ElementPattern<PsiElement> getOrmSingleLineScalarKey(String... keyName) {
         return getKeyPattern(keyName).inFile(getOrmFilePattern()).withLanguage(YAMLLanguage.INSTANCE);
     }
 
@@ -580,13 +580,13 @@ public class YamlElementPatternHelper {
         ));
     }
 
-    private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String keyName) {
+    private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String... keyName) {
         return PlatformPatterns
             .psiElement(YAMLTokenTypes.TEXT)
             .withParent(PlatformPatterns
                 .psiElement(YAMLKeyValue.class)
                 .withName(
-                    PlatformPatterns.string().equalTo(keyName)
+                    PlatformPatterns.string().oneOfIgnoreCase(keyName)
                 )
             );
     }

@@ -31,12 +31,6 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
         }
 
         PhpIndex phpIndex = PhpIndex.getInstance(parameters.getOriginalFile().getProject());
-
-        PhpClass repositoryInterface = PhpElementsUtil.getInterface(phpIndex, DoctrineTypes.REPOSITORY_INTERFACE);
-        if(null == repositoryInterface) {
-            return;
-        }
-
         Map<String, String> entityNamespaces = ServiceXmlParserFactory.getInstance(parameters.getOriginalFile().getProject(), EntityNamesServiceParser.class).getEntityNameMap();
 
         // copied from PhpCompletionUtil::addClassesInNamespace looks the official way to find classes in namespaces
@@ -50,14 +44,9 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
                 String namespaceFqn = PhpLangUtil.toFQN(entry.getValue());
                 Collection<PhpClass> filtered = PhpCompletionUtil.filterByNamespace(classes, namespaceFqn);
                 for (PhpClass phpClass : filtered) {
-                    if(EntityHelper.isEntity(phpClass, repositoryInterface)) {
-                        resultSet.addElement(new PhpClassLookupElement(phpClass, true, PhpClassReferenceInsertHandler.getInstance()));
-                    }
+                    resultSet.addElement(new PhpClassLookupElement(phpClass, true, PhpClassReferenceInsertHandler.getInstance()));
                 }
             }
-
         }
-
     }
-
 }

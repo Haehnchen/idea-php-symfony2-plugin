@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -56,10 +57,10 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             if(isMetadataFile(fileName)) {
                 String keyText = ((YAMLKeyValue) psiElement).getKeyText();
                 if(StringUtils.isNotBlank(keyText)) {
-                    PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), keyText);
-                    if(phpClass != null) {
+                    Collection<PhpClass> phpClasses = PhpElementsUtil.getClassesInterface(psiElement.getProject(), keyText);
+                    if(phpClasses.size() > 0) {
                         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
-                            setTargets(phpClass).
+                            setTargets(phpClasses).
                             setTooltipText("Navigate to class");
 
                         lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
@@ -130,8 +131,8 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        String keyText = ((YAMLKeyValue) psiElement).getKeyText().toLowerCase();
-        if(!keyText.equals("targetentity")) {
+        String keyText = ((YAMLKeyValue) psiElement).getKeyText();
+        if(!(keyText.equalsIgnoreCase("targetEntity") || keyText.equalsIgnoreCase("targetDocument"))) {
             return;
         }
 
@@ -140,34 +141,27 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        PsiFile containingFile = psiElement.getContainingFile();
-        String fileName = containingFile.getName();
-        if(!isMetadataFile(fileName)) {
+        Collection<PhpClass> classesInterface = DoctrineMetadataUtil.getClassInsideScope(psiElement, valueText);
+        if(classesInterface.size() == 0) {
             return;
         }
 
-        PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), EntityHelper.getOrmClass(containingFile, valueText));
-        if(phpClass != null) {
-            PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
-            if(psiFile != null) {
-
+        // get relation key
+        PsiElement parent = psiElement.getParent();
+        if(parent != null) {
+            PsiElement parent1 = parent.getParent();
+            if(parent1 != null) {
                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
-                    setTargets(psiFile).
+                    setTargets(classesInterface).
                     setTooltipText("Navigate to file");
 
-                // get relation key
-                PsiElement parent = psiElement.getParent();
-                if(parent != null) {
-                    PsiElement parent1 = parent.getParent();
-                    if(parent1 != null) {
-                        lineMarkerInfos.add(builder.createLineMarkerInfo(parent1));
-                    }
-                }
+                lineMarkerInfos.add(builder.createLineMarkerInfo(parent1));
             }
         }
     }
 
     private boolean isMetadataFile(String fileName) {
-        return fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml") || fileName.endsWith("couchdb.yml");
+        fileName = fileName.toLowerCase();
+        return fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml") || fileName.endsWith("couchdb.yml") || fileName.endsWith("document.yml");
     }
 }

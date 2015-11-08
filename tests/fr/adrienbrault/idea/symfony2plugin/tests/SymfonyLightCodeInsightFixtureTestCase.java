@@ -12,6 +12,7 @@ import com.intellij.codeInspection.*;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.extensions.Extensions;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
@@ -20,6 +21,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
@@ -492,6 +494,15 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             }
         });
         return elements;
+    }
+
+
+    protected PsiFile createFile(@NotNull FileType fileType, @NotNull String filename, @NotNull String content) {
+        return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__" + filename, fileType, content);
+    }
+
+    protected PsiFile createFile(@NotNull FileType fileType, @NotNull String content) {
+        return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + fileType.getDefaultExtension(), fileType, content);
     }
 
     public void assertCaretTextOverlay(LanguageFileType languageFileType, String configureByText, CaretTextOverlay.Assert assertMatch) {
