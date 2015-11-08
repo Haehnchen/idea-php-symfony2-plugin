@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.component.CaretOverlayComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.util.CaretTextOverlayUtil;
@@ -41,7 +42,7 @@ public class CaretTextOverlayListener implements CaretListener {
         }
 
         final Project project = editor.getProject();
-        if(project == null || DumbService.getInstance(project).isDumb()) {
+        if(project == null || DumbService.getInstance(project).isDumb() || !Symfony2ProjectComponent.isEnabled(project)) {
             return;
         }
 

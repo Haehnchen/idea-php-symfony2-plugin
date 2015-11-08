@@ -57,13 +57,15 @@ public class YamlServiceContainerCaretTextOverlayTest extends SymfonyLightCodeIn
      */
     public void testConstructorParameterArguments() {
         for (String s : new String[] {
-            "fo<caret>o: \n   class: Foo\\Bar",
-            "fo<caret>o: \n   class: %foo_parameter_class%",
-            "fo<caret>o: \n   class: %foo_parameter_CLASS%",
-            "\"fo<caret>o\": \n   class: Foo\\Bar",
+            "services:\n  fo<caret>o: \n   class: Foo\\Bar",
+            "services:\n fo<caret>o: \n   class: %foo_parameter_class%",
+            "services:\n fo<caret>o: \n   class: %foo_parameter_CLASS%",
+            "services:\n \"fo<caret>o\": \n   class: Foo\\Bar",
         }) {
             assertCaretTextOverlay(YAMLFileType.YML, s, new CaretTextOverlay.TextEqualsAssert("(dateTime : \\DateTime, items : array)"));
         }
+
+        assertCaretTextOverlayEmpty(YAMLFileType.YML, "fo<caret>o: \n   class: Foo\\Bar");
     }
 
     /**
@@ -80,5 +82,18 @@ public class YamlServiceContainerCaretTextOverlayTest extends SymfonyLightCodeIn
         }) {
             assertCaretTextOverlay(YAMLFileType.YML, s, new CaretTextOverlay.TextEqualsAssert("(dateTime : \\DateTime, items : array)"));
         }
+    }
+
+    /**
+     * @see YamlServiceContainerCaretTextOverlay#getOverlay
+     */
+    public void testArgumentsOfServiceAreNotDisplayedOnNonConstructor() {
+        assertCaretTextOverlayEmpty(YAMLFileType.YML,
+            "services:\n" +
+                "  bar_<caret>foo._bar:\n" +
+                "    class: Iterator"
+        );
+
+        assertCaretTextOverlayEmpty(YAMLFileType.YML, "class: It<caret>erator");
     }
 }

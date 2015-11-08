@@ -1,11 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.PhpPresentationUtil;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayArguments;
@@ -20,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
@@ -63,7 +58,7 @@ public class YamlServiceContainerCaretTextOverlay implements CaretTextOverlay {
 
         // fo<caret>o:
         //   class: foo
-        if(PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).accepts(psiElement)) {
+        if(YamlElementPatternHelper.getServiceIdKeyPattern().accepts(psiElement)) {
             CaretTextOverlayElement argumentOverlay = getClassConstructorSignature(psiElement, args);
             if(argumentOverlay != null) {
                 return argumentOverlay;

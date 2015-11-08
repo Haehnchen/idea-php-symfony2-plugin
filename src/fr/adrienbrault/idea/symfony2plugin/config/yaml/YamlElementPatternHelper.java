@@ -710,4 +710,19 @@ public class YamlElementPatternHelper {
             );
     }
 
+    /**
+     * services:
+     *   i<caret>d: []
+     */
+    public static PsiElementPattern.Capture<PsiElement> getServiceIdKeyPattern() {
+        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+             .withParent(PlatformPatterns.psiElement(YAMLKeyValue.class)
+                 .withParent(PlatformPatterns.psiElement(YAMLCompoundValue.class)
+                     .withParent(
+                          PlatformPatterns.psiElement(YAMLKeyValue.class)
+                              .withName(PlatformPatterns.string().oneOfIgnoreCase("services"))
+                     )
+                 )
+             );
+    }
 }
