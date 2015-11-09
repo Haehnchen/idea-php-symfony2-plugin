@@ -43,7 +43,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
 
             List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(psiFile.getProject(), serviceYamlContainer, false, getLazyServiceCollector(psiFile.getProject()));
             if(yamlMissingArgumentTypes != null && yamlMissingArgumentTypes.size() > 0) {
-                holder.registerProblem(serviceYamlContainer.getServiceKey().getFirstChild(), "Missing Argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new YamlArgumentQuickfix());
+                holder.registerProblem(serviceYamlContainer.getServiceKey().getFirstChild(), "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new YamlArgumentQuickfix());
             }
         }
 

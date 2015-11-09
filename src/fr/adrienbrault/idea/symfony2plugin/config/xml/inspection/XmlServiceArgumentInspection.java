@@ -60,7 +60,7 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
             return;
         }
 
-        holder.registerProblem(childrenOfType, "Missing Argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new AddServiceXmlArgumentLocalQuickFix(args));
+        holder.registerProblem(childrenOfType, "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new AddServiceXmlArgumentLocalQuickFix(args));
     }
 
     private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(XmlTag xmlTag) {

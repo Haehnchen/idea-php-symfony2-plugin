@@ -42,6 +42,13 @@ import java.util.*;
 
 public class ServiceActionUtil {
 
+    /**
+     * Attributes which we should not support in missing arguments constructors for server definition
+     */
+    public static final String[] INVALID_ARGUMENT_ATTRIBUTES = new String[]{
+        "parent", "factory-class", "factory-service", "abstract", "autowire"
+    };
+
     public static void buildFile(AnActionEvent event, final Project project, String templatePath) {
         String extension = templatePath.endsWith(".yml") ? "yml" : "xml" ;
 
@@ -383,13 +390,14 @@ public class ServiceActionUtil {
 
     public static boolean isValidXmlParameterInspectionService(@NotNull XmlTag xmlTag) {
 
-        // we dont supp
-        for(String s : new String[] {"parent", "factory-class", "factory-service", "abstract"}) {
+        // we dont support some attributes right now
+        for(String s : INVALID_ARGUMENT_ATTRIBUTES) {
             if(xmlTag.getAttribute(s) != null) {
                 return false;
             }
         }
 
+        // <service><factory/></service>
         // symfony2 >= 2.6
         for (XmlTag tag : xmlTag.getSubTags()) {
             if("factory".equals(tag.getName())) {
