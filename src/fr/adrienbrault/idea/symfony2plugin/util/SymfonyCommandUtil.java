@@ -19,6 +19,7 @@ import java.util.Collection;
  */
 public class SymfonyCommandUtil {
 
+    @NotNull
     public static Collection<SymfonyCommand> getCommands(@NotNull Project project) {
 
         Collection<SymfonyCommand> symfonyCommands = new ArrayList<SymfonyCommand>();
@@ -47,11 +48,17 @@ public class SymfonyCommandUtil {
                     continue;
                 }
 
-                String name = PsiElementUtils.getMethodParameterAt((MethodReference) psiElement, 0);
-                if(name != null) {
-                    symfonyCommands.add(new SymfonyCommand(name, psiElement));
+                PsiElement psiMethodParameter = PsiElementUtils.getMethodParameterPsiElementAt((MethodReference) psiElement, 0);
+                if(psiMethodParameter == null) {
+                    continue;
                 }
 
+                String stringValue = PhpElementsUtil.getStringValue(psiMethodParameter);
+                if(stringValue == null) {
+                    continue;
+                }
+
+                symfonyCommands.add(new SymfonyCommand(stringValue, psiElement));
             }
 
         }
