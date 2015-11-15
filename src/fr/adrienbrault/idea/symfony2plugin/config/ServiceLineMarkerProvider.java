@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -71,6 +72,9 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 collectNavigationMarkers(psiElement, results);
             }
 
+            if(psiElement instanceof PhpFile) {
+                routeAnnotationFileResource((PhpFile) psiElement, results);
+            }
         }
 
     }
@@ -227,5 +231,11 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
+    protected void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo> results) {
+        RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarkerInFolderScope(psiFile);
+        if(lineMarker != null) {
+            results.add(lineMarker);
+        }
+    }
 }
 

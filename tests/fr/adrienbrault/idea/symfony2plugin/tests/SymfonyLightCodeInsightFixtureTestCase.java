@@ -3,12 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.tests;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.LineMarkerProviders;
+import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInsight.intention.IntentionManager;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
+import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.extensions.Extensions;
@@ -486,6 +488,8 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     @NotNull
     private List<PsiElement> collectPsiElementsRecursive(@NotNull PsiElement psiElement) {
         final List<PsiElement> elements = new ArrayList<PsiElement>();
+        elements.add(psiElement.getContainingFile());
+
         psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement element) {
@@ -561,6 +565,38 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             @Override
             public boolean match(@NotNull LineMarkerInfo markerInfo) {
                 return markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().equals(toolTip);
+            }
+        }
+
+        public static class TargetAcceptsPattern implements Assert {
+
+            @NotNull
+            private final String toolTip;
+            @NotNull
+            private final ElementPattern<? extends PsiElement> pattern;
+
+            public TargetAcceptsPattern(@NotNull String toolTip, @NotNull ElementPattern<? extends PsiElement> pattern) {
+                this.toolTip = toolTip;
+                this.pattern = pattern;
+            }
+
+            @Override
+            public boolean match(@NotNull LineMarkerInfo markerInfo) {
+                if(markerInfo.getLineMarkerTooltip() == null || !markerInfo.getLineMarkerTooltip().equals(toolTip)) {
+                    return false;
+                }
+
+                if(!(markerInfo instanceof RelatedItemLineMarkerInfo)) {
+                    return false;
+                }
+
+                for (Object o : ((RelatedItemLineMarkerInfo) markerInfo).createGotoRelatedItems()) {
+                    if(o instanceof GotoRelatedItem && this.pattern.accepts(((GotoRelatedItem) o).getElement())) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         }
     }

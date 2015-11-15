@@ -1,7 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
+import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,6 +22,12 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("YamlLineMarkerProvider.php");
+
+        myFixture.copyFileToProject("BundleScopeLineMarkerProvider.php");
+        myFixture.configureByText(
+            XmlFileType.INSTANCE,
+            "<routes><import resource=\"@FooBundle/foo.yml\" /></routes>"
+        );
     }
 
     protected String getTestDataPath() {
@@ -58,5 +69,18 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
             );
         }
 
+    }
+
+    public void testThatResourceProvidesLineMarkerLineMarker() {
+        PsiFile psiFile = myFixture.configureByText("foo.yml", "");
+        assertLineMarker(
+            psiFile,
+            new LineMarker.ToolTipEqualsAssert("Navigate to resource")
+        );
+
+        assertLineMarker(
+            psiFile,
+            new LineMarker.TargetAcceptsPattern("Navigate to resource", XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", "@FooBundle/foo.yml"))
+        );
     }
 }

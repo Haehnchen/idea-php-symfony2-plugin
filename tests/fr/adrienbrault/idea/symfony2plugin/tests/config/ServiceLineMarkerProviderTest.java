@@ -1,11 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -32,17 +36,17 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         );
 
         assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
-            "namespace Foo{\n" +
-            "    class Car{}\n" +
-            "}"
+                "namespace Foo{\n" +
+                "    class Car{}\n" +
+                "}"
         ), new LineMarker.ToolTipEqualsAssert("Navigate to model"));
     }
 
     public void testThatDoctrineAnnotationMetadataNotProvidesSelfLineMarker() {
         assertLineMarkerIsEmpty(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
-            "namespace Foo{\n" +
-            "    class Bar{}\n" +
-            "}"
+                "namespace Foo{\n" +
+                "    class Bar{}\n" +
+                "}"
         ));
     }
 
@@ -54,9 +58,9 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         );
 
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
-            "namespace Entity{\n" +
-            "    class Bar{}\n" +
-            "}"
+                "namespace Entity{\n" +
+                "    class Bar{}\n" +
+                "}"
         );
 
         assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
@@ -64,5 +68,33 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
                 "    class Bar{}\n" +
                 "}"
         ), new LineMarker.ToolTipEqualsAssert("Navigate to metadata"));
+    }
+
+    public void testThatResourceProvidesLineMarker() {
+        myFixture.copyFileToProject("BundleScopeLineMarkerProvider.php");
+
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"@FooBundle/foo.php"});
+            add(new String[] {"@FooBundle"});
+            add(new String[] {"@FooBundle/"});
+        }};
+
+        for (String[] provider : providers) {
+            myFixture.configureByText(
+                XmlFileType.INSTANCE,
+               String.format( "<routes><import resource=\"" + provider[0] + "\" /></routes>", provider)
+            );
+
+            PsiFile psiFile = myFixture.configureByText("foo.php", "");
+            assertLineMarker(
+                psiFile,
+                new LineMarker.ToolTipEqualsAssert("Navigate to resource")
+            );
+
+            assertLineMarker(
+                psiFile,
+                new LineMarker.TargetAcceptsPattern("Navigate to resource", XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", provider[0]))
+            );
+        }
     }
 }
