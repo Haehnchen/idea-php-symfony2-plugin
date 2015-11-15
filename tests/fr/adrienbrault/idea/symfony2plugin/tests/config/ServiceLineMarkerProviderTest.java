@@ -97,4 +97,26 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             );
         }
     }
+
+    public void testServiceLineMarker() {
+        myFixture.configureByText(XmlFileType.INSTANCE,
+            "<container>\n" +
+            "  <services>\n" +
+            "      <service class=\"Service\\Bar\" id=\"service_bar\"/>\n" +
+            "  </services>\n" +
+            "</container>"
+        );
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+                "namespace Service{\n" +
+                "    class Bar{}\n" +
+                "}"
+        ), new LineMarker.ToolTipEqualsAssert("Navigate to definition"));
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+                "namespace Service{\n" +
+                "    class Bar{}\n" +
+                "}"
+        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", XmlPatterns.xmlTag().withName("service").withAttributeValue("id", "service_bar")));
+    }
 }

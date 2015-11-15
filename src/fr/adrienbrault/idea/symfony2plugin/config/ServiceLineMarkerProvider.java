@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
@@ -122,8 +123,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        PsiElement[] psiElements = ServiceIndexUtil.findServiceDefinitions((PhpClass) phpClassContext);
-        if(psiElements.length == 0) {
+        ClassServiceDefinitionTargetLazyValue psiElements = ServiceIndexUtil.findServiceDefinitionsLazy((PhpClass) phpClassContext);
+        if(psiElements == null) {
             return;
         }
 

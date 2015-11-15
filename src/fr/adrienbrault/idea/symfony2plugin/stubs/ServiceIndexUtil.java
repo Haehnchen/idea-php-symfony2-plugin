@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.stubs;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -12,6 +13,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
@@ -111,6 +113,25 @@ public class ServiceIndexUtil {
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
+    }
+
+    @Nullable
+    public static ClassServiceDefinitionTargetLazyValue findServiceDefinitionsLazy(@Nullable PhpClass phpClass) {
+        if(phpClass == null) {
+            return null;
+        }
+
+        String phpClassName = phpClass.getPresentableFQN();
+        if(phpClassName == null) {
+            return null;
+        }
+
+        Set<String> serviceNames = new ContainerCollectionResolver.ServiceCollector(phpClass.getProject(), ContainerCollectionResolver.Source.INDEX, ContainerCollectionResolver.Source.COMPILER).convertClassNameToServices(phpClassName);
+        if(serviceNames.size() == 0) {
+            return null;
+        }
+
+        return new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), phpClassName);
     }
 
     /**

@@ -117,8 +117,13 @@ public class FileResourceUtil {
      */
     @Nullable
     public static RelatedItemLineMarkerInfo<PsiElement> getFileImplementsLineMarkerInFolderScope(@NotNull PsiFile psiFile) {
+        VirtualFile virtualFile = psiFile.getVirtualFile();
+        if(virtualFile == null) {
+            return null;
+        }
+
         final Project project = psiFile.getProject();
-        String bundleLocateName = FileResourceUtil.getBundleLocateName(project, psiFile.getVirtualFile());
+        String bundleLocateName = FileResourceUtil.getBundleLocateName(project, virtualFile);
         if(bundleLocateName == null) {
             return null;
         }
