@@ -152,6 +152,14 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 processor.process(name);
             }
 
+            for(Map.Entry<String, Route> entry: getRoutes().entrySet()) {
+                processor.process(entry.getKey());
+                String path = entry.getValue().getPath();
+                if(path != null) {
+                    processor.process(path);
+                }
+            }
+
             for(String name: getTwigMacroSet()) {
                 processor.process(name);
             }
@@ -198,10 +206,29 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 }
             }
 
+            Set<String> controllers = new HashSet<String>();
             if(getRoutes().containsKey(name)) {
                 String controllerName = getRoutes().get(name).getController();
                 if(controllerName != null) {
-                    for(PsiElement psiElement: RouteHelper.getMethodsOnControllerShortcut(this.project, controllerName)) {
+                    controllers.add(controllerName);
+                }
+            }
+
+            // route path: /foo/bar
+            for (Route route : getRoutes().values()) {
+                if(!name.equals(route.getPath())) {
+                    continue;
+                }
+
+                String controller = route.getController();
+                if(controller != null) {
+                    controllers.add(controller);
+                }
+            }
+
+            if(controllers.size() > 0) {
+                for (String controller : controllers) {
+                    for(PsiElement psiElement: RouteHelper.getMethodsOnControllerShortcut(this.project, controller)) {
                         processor.process(new NavigationItemEx(psiElement, name, Symfony2Icons.ROUTE, "Route"));
                     }
                 }
