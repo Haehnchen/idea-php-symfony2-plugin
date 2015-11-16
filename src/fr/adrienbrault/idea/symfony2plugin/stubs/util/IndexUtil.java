@@ -19,7 +19,8 @@ public class IndexUtil {
             TwigMacroFunctionStubIndex.KEY,
             RoutesStubIndex.KEY,
             YamlTranslationStubIndex.KEY,
-            DoctrineMetadataFileStubIndex.KEY
+            DoctrineMetadataFileStubIndex.KEY,
+            FileResourcesIndex.KEY,
         };
 
         for(ID<?,?> id: indexIds) {
