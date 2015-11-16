@@ -6,6 +6,13 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.102
+* Support command names inside constant and property strings
+* Add autowire attribute to blacklist for service argument inspection #616 and add "autowire" and "deprecated" yaml completion
+* Add file resource index and add include line marker for routing definition
+* Use lazy line marker for class service definitions
+* Add route pattern/path provider for Symfony symbol search
+
 ### 0.11.101
 * Use route names of index for symbol search not only compiler provider
 * Secure doctrine metadata indexer for performance reasons #610

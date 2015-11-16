@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.101</version>
+    <version>0.11.102</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,15 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.102</h2>
+<ul>
+    <li>Support command names inside constant and property strings</li>
+    <li>Add autowire attribute to blacklist for service argument inspection <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/616">#616</a> and add "autowire" and "deprecated" yaml completion</li>
+    <li>Add file resource index and add include line marker for routing definition</li>
+    <li>Use lazy line marker for class service definitions</li>
+    <li>Add route pattern/path provider for Symfony symbol search</li>
+</ul>
 
 <h2>0.11.101</h2>
 <ul>
