@@ -4,13 +4,12 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.Processor;
+import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
@@ -20,7 +19,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -79,13 +81,12 @@ public class FileResourceUtil {
                 continue;
             }
 
-            FileResourceVisitorUtil.visitFile(psiFile, new Processor<Pair<String, PsiElement>>() {
+            FileResourceVisitorUtil.visitFile(psiFile, new Consumer<FileResourceVisitorUtil.FileResourceConsumer>() {
                 @Override
-                public boolean process(Pair<String, PsiElement> pair) {
-                    if (bundleFileName.equals(pair.getFirst())) {
-                        psiElements.add(pair.getSecond());
+                public void consume(FileResourceVisitorUtil.FileResourceConsumer consumer) {
+                    if (bundleFileName.equals(consumer.getResource())) {
+                        psiElements.add(consumer.getPsiElement());
                     }
-                    return true;
                 }
             });
         }

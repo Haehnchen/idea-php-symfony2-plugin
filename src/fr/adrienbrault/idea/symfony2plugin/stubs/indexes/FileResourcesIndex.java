@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.Consumer;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -22,10 +23,7 @@ import org.jetbrains.yaml.YAMLFileType;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class FileResourcesIndex extends FileBasedIndexExtension<String, FileResource> {
 
@@ -53,32 +51,18 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
                     return Collections.emptyMap();
                 }
 
-                final Collection<String> items = new HashSet<String>();
+                final Map<String, FileResource> items = new THashMap<String, FileResource>();
 
-                FileResourceVisitorUtil.visitFile(psiFile, new Processor<Pair<String, PsiElement>>() {
+                FileResourceVisitorUtil.visitFile(psiFile, new Consumer<FileResourceVisitorUtil.FileResourceConsumer>() {
                     @Override
-                    public boolean process(Pair<String, PsiElement> pair) {
-                        items.add(pair.getFirst());
-                        return true;
+                    public void consume(FileResourceVisitorUtil.FileResourceConsumer consumer) {
+                        items.put(consumer.getResource(), consumer.createFileResource());
                     }
                 });
 
-                return convertResult(items);
+                return items;
             }
         };
-    }
-
-    private Map<String, FileResource>  convertResult(@NotNull Collection<String> items) {
-        if(items.size() == 0) {
-            return Collections.emptyMap();
-        }
-
-        final Map<String, FileResource> map = new THashMap<String, FileResource>();
-        for (String s : items) {
-            map.put(s, new FileResource(s));
-        }
-
-        return map;
     }
 
     @NotNull

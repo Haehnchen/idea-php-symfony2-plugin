@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
@@ -23,7 +25,7 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
         myFixture.configureByText(YAMLFileType.YML, "" +
                 "app:\n" +
                 "  resource: \"@AppBundle/Controller/\"\n" +
-                "  type: annotation\n" +
+                "  prefix: \"/foo\"\n" +
                 "\n" +
                 "app1:\n" +
                 "  resource: \"@AcmeOtherBundle/Resources/config/routing1.yml\"\n" +
@@ -37,7 +39,7 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
 
         myFixture.configureByText(XmlFileType.INSTANCE, "" +
                 "<routes>\n" +
-                "    <import resource=\"@AcmeOtherBundle/Resources/config/routing.xml\" />\n" +
+                "    <import resource=\"@AcmeOtherBundle/Resources/config/routing.xml\" prefix=\"/foo2\"/>\n" +
                 "    <import resource=\"@AcmeOtherBundle//Resources/config/routing1.xml\" />\n" +
                 "    <import resource=\"@AcmeOtherBundle\\\\\\Resources/config///routing2.xml\" />\n" +
                 "</routes>"
@@ -57,5 +59,13 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
         assertIndexContains(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing.xml");
         assertIndexContains(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing1.xml");
         assertIndexContains(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing2.xml");
+    }
+
+    public void testIndexValue() {
+        FileResource item = ContainerUtil.getFirstItem(FileBasedIndex.getInstance().getValues(FileResourcesIndex.KEY, "@AppBundle/Controller", GlobalSearchScope.allScope(getProject())));
+        assertEquals("/foo", item.getPrefix());
+
+        item = ContainerUtil.getFirstItem(FileBasedIndex.getInstance().getValues(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing.xml", GlobalSearchScope.allScope(getProject())));
+        assertEquals("/foo2", item.getPrefix());
     }
 }
