@@ -328,13 +328,11 @@ public class XmlHelper {
 
                                     // <service id="doctrine.orm.metadata.annotation_reader" alias="annotation_reader"/>
                                     // @TODO: resolve alias
-                                    XmlAttribute attrAlias = serviceTag.getAttribute("alias");
-                                    if(attrAlias != null && attrAlias.getValue() != null) {
-                                        serviceNameId = attrAlias.getValue();
-
+                                    String attrAlias = serviceTag.getAttributeValue("alias");
+                                    if(StringUtils.isNotBlank(attrAlias)) {
                                         // if aliased service is in current file use value; not nice here but a simple workaround
-                                        if(serviceClassName == null && services.containsKey(serviceNameId)) {
-                                            serviceClassName = services.get(serviceNameId).getClassName();
+                                        if(serviceClassName == null && services.containsKey(attrAlias)) {
+                                            serviceClassName = services.get(attrAlias).getClassName();
                                         }
                                     }
 

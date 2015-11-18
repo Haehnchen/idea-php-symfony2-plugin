@@ -283,11 +283,10 @@ public class YamlHelper {
 
                                 String serviceAlias = this.getKeyValue(yamlServiceKeyValue, "alias");
                                 if(serviceAlias != null && serviceAlias.length() > 0) {
-                                    serviceName = serviceAlias;
 
                                     // if aliased service is in current file use value; not nice here but a simple workaound
-                                    if(serviceClass == null && services.containsKey(serviceName)) {
-                                        serviceClass = services.get(serviceName).getClassName();
+                                    if(serviceClass == null && services.containsKey(serviceAlias)) {
+                                        serviceClass = services.get(serviceAlias).getClassName();
                                     }
                                 }
 

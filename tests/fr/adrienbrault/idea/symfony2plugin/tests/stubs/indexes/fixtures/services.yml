@@ -1,0 +1,10 @@
+services:
+    foo.yml_id:
+        class: AppBundle\Controller\DefaultController
+
+    foo.yml_id.private:
+        class: AppBundle\Controller\DefaultController
+        public: false
+
+    foo.yml_id.alias:
+        alias: foo.yml_id

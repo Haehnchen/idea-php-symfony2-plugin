@@ -1,0 +1,52 @@
+package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.indexing.FileBasedIndexImpl;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex
+ */
+public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    public void setUp() throws Exception {
+        super.setUp();
+
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.xml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
+
+    public void testThatServiceIdOfYamlFileIsIndexed() {
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id.alias");
+
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id")[0]);
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.alias")[0]);
+
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.private")[0]);
+        assertEquals("true", getFirstValue("foo.yml_id.private")[1]);
+    }
+
+    public void testThatServiceIdOfXmlFileIsIndexed() {
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id");
+
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id")[0]);
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.alias")[0]);
+
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.private")[0]);
+        assertEquals("true", getFirstValue("foo.xml_id.private")[1]);
+    }
+
+    private String[] getFirstValue(@NotNull String key) {
+        return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
+    }
+}
