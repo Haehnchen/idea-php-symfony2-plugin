@@ -500,15 +500,6 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         return elements;
     }
 
-
-    protected PsiFile createFile(@NotNull FileType fileType, @NotNull String filename, @NotNull String content) {
-        return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__" + filename, fileType, content);
-    }
-
-    protected PsiFile createFile(@NotNull FileType fileType, @NotNull String content) {
-        return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + fileType.getDefaultExtension(), fileType, content);
-    }
-
     public void assertCaretTextOverlay(LanguageFileType languageFileType, String configureByText, CaretTextOverlay.Assert assertMatch) {
 
         myFixture.configureByText(languageFileType, configureByText);

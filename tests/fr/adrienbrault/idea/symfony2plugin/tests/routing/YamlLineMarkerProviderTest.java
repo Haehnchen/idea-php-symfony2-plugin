@@ -37,7 +37,7 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
     public void testDoctrineFirstLineModelNavigation() {
         for (String s : new String[]{"foo.orm.yml", "foo.odm.yml", "foo.couchdb.yml", "foo.mongodb.yml", "foo.document.yml", "foo.ORM.YML"}) {
             assertLineMarker(
-                createFile(YAMLFileType.YML, s, "Foo\\Bar:\n   foo:\n"),
+                myFixture.configureByText(s, "Foo\\Bar:\n   foo:\n"),
                 new LineMarker.ToolTipEqualsAssert("Navigate to class")
             );
         }
@@ -57,7 +57,7 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
 
         for (String[] provider : providers) {
             assertLineMarker(
-                createFile(YAMLFileType.YML, String.format(
+                myFixture.configureByText(YAMLFileType.YML, String.format(
                     "Foo\\Bar:\n" +
                     "  manyToOne:\n" +
                     "    foo:\n" +
