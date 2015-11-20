@@ -179,7 +179,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
         @Override
         public ServiceInterface read(@NotNull DataInput in) throws IOException {
             try {
-                return new ImmutableDecoratorService(GSON.fromJson(myStringEnumerator.read(in), SerializableService.class));
+                return GSON.fromJson(myStringEnumerator.read(in), SerializableService.class);
             } catch (JsonSyntaxException e) {
                 return null;
             }
