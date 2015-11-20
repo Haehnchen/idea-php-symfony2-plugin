@@ -9,7 +9,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class YamlKeyValueAttributeValue implements AttributeValueInterface {
+public class YamlKeyValueAttributeValue extends AttributeValueAbstract {
 
     @NotNull
     private final YAMLKeyValue yamlKeyValue;

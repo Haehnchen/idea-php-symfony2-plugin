@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class XmlTagAttributeValue implements AttributeValueInterface {
+public class XmlTagAttributeValue extends AttributeValueAbstract {
 
     @NotNull
     private final XmlTag xmlTag;
