@@ -1,23 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ImmutableDecoratorService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import gnu.trove.THashMap;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,83 +28,35 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, String[]> {
+public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, ServiceInterface> {
 
     private static int MAX_FILE_BYTE_SIZE = 5242880;
 
-    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
+    public static final ID<String, ServiceInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition_json");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
+    private static JsonDataExternalizer JSON_EXTERNALIZER = new JsonDataExternalizer();
 
     @NotNull
     @Override
-    public DataIndexer<String, String[], FileContent> getIndexer() {
+    public DataIndexer<String, ServiceInterface, FileContent> getIndexer() {
 
-        return new DataIndexer<String, String[], FileContent>() {
+        return new DataIndexer<String, ServiceInterface, FileContent>() {
             @NotNull
             @Override
-            public Map<String, String[]> map(@NotNull FileContent inputData) {
+            public Map<String, ServiceInterface> map(@NotNull FileContent inputData) {
 
-                Map<String, String[]> map = new THashMap<String, String[]>();
+                Map<String, ServiceInterface> map = new THashMap<String, ServiceInterface>();
 
                 PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                    return map;
-                }
-                if (!isValidForIndex(inputData, psiFile)) {
+                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(inputData, psiFile)) {
                     return map;
                 }
 
-                if(psiFile instanceof YAMLFile) {
-                    attachServiceMap(map, (YAMLFile) psiFile);
-                }
-
-                if(psiFile instanceof XmlFile) {
-                    attachServiceMap(map, (XmlFile) psiFile);
-
+                for (ServiceInterface service : ServiceContainerUtil.getServicesInFile(psiFile)) {
+                    map.put(service.getId(), service);
                 }
 
                 return map;
-            }
-
-            private void attachServiceMap(Map<String, String[]> map, XmlFile psiFile) {
-                attachServiceMap(map, XmlHelper.getLocalServiceMap(psiFile));
-            }
-
-            private void attachServiceMap(Map<String, String[]> map, YAMLFile psiFile) {
-                attachServiceMap(map, YamlHelper.getLocalServiceMap(psiFile));
-            }
-
-            private void attachServiceMap(Map<String, String[]> map, Map<String, ContainerService> localServiceMap) {
-
-                if(localServiceMap.size() == 0) {
-                    return;
-                }
-
-                for(Map.Entry<String, ContainerService> entry: localServiceMap.entrySet()) {
-                    if(StringUtils.isNotBlank(entry.getKey())) {
-                        addContainerService(map, entry);
-                    }
-                }
-            }
-
-            private void addContainerService(Map<String, String[]> map, Map.Entry<String, ContainerService> entry) {
-
-                if(StringUtils.isBlank(entry.getKey())) {
-                    return;
-                }
-
-                String className = entry.getValue().getClassName();
-                if(StringUtils.isBlank(className)) {
-                    className = null;
-                }
-
-                String isPrivate = null;
-                if(entry.getValue().isPrivate()) {
-                    isPrivate = "true";
-                }
-
-                map.put(entry.getKey(), new String[] {className, isPrivate});
-
             }
 
         };
@@ -112,7 +64,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @NotNull
     @Override
-    public ID<String, String[]> getName() {
+    public ID<String, ServiceInterface> getName() {
         return KEY;
     }
 
@@ -124,8 +76,8 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     }
 
     @NotNull
-    public DataExternalizer<String[]> getValueExternalizer() {
-        return new MySetDataExternalizer();
+    public DataExternalizer<ServiceInterface> getValueExternalizer() {
+        return JSON_EXTERNALIZER;
     }
 
     @NotNull
@@ -146,7 +98,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 3;
+        return 1;
     }
 
     /**
@@ -212,6 +164,26 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
         }
 
         return true;
+    }
+
+    private static class JsonDataExternalizer implements DataExternalizer<ServiceInterface> {
+
+        private static final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
+        private static final Gson GSON = new Gson();
+
+        @Override
+        public void save(@NotNull DataOutput dataOutput, ServiceInterface fileResource) throws IOException {
+            myStringEnumerator.save(dataOutput, GSON.toJson(fileResource));
+        }
+
+        @Override
+        public ServiceInterface read(@NotNull DataInput in) throws IOException {
+            try {
+                return new ImmutableDecoratorService(GSON.fromJson(myStringEnumerator.read(in), SerializableService.class));
+            } catch (JsonSyntaxException e) {
+                return null;
+            }
+        }
     }
 
 }

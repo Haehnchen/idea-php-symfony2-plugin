@@ -8,10 +8,12 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServ
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +21,7 @@ import java.util.*;
 
 public class ContainerCollectionResolver {
 
-    private static final Key<CachedValue<Map<String, List<String[]>>>> SERVICE_CONTAINER_INDEX = new Key<CachedValue<Map<String, List<String[]>>>>("SYMFONY_SERVICE_CONTAINER_INDEX");
+    private static final Key<CachedValue<Map<String, List<ServiceInterface>>>> SERVICE_CONTAINER_INDEX = new Key<CachedValue<Map<String, List<ServiceInterface>>>>("SYMFONY_SERVICE_CONTAINER_INDEX");
     private static final Key<CachedValue<Map<String, List<String>>>> SERVICE_PARAMETER_INDEX = new Key<CachedValue<Map<String, List<String>>>>("SERVICE_PARAMETER_INDEX");
 
     private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
@@ -174,12 +176,12 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
-                for (Map.Entry<String, List<String[]>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+                for (Map.Entry<String, List<ServiceInterface>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
                     String serviceName = entry.getKey();
                     if(this.services.containsKey(serviceName)) {
                         continue;
                     }
-                    List<String[]> value = entry.getValue();
+                    List<ServiceInterface> value = entry.getValue();
                     if(value.size() == 0) {
                         this.services.put(serviceName, new ContainerService(serviceName, null, true));
                     } else {
@@ -192,35 +194,19 @@ public class ContainerCollectionResolver {
             return this.services;
         }
 
-        private Map<String, ContainerService> convertIndexToService(String serviceName, List<String[]> serviceDefinitions) {
+        private Map<String, ContainerService> convertIndexToService(String serviceName, List<ServiceInterface> serviceDefinitions) {
 
             Map<String, ContainerService> serviceMap = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
 
-            for(String[] serviceDefinitionArray: serviceDefinitions) {
+            for(ServiceInterface service: serviceDefinitions) {
 
-                // 0: class name
-                // 1: private: (String) "true" if presented
-                if(serviceDefinitionArray.length == 0) {
-                    // just a fallback should not happen, but provide at least a service name
-                    serviceMap.put(serviceName, new ContainerService(serviceName, null, true));
-                } else {
-
-                    // resolve class value, it can be null or a parameter
-                    String classValue = serviceDefinitionArray[0];
-                    if(classValue != null && !classValue.equals("")) {
-                        classValue = getParameterCollector().resolve(serviceDefinitionArray[0]);
-                    }
-
-                    if(serviceDefinitionArray.length == 1) {
-                        serviceMap.put(serviceName, new ContainerService(serviceName, classValue, true));
-                    }
-
-                    if(serviceDefinitionArray.length == 2) {
-                        serviceMap.put(serviceName, new ContainerService(serviceName, classValue, true, "true".equals(serviceDefinitionArray[1])));
-                    }
-
+                // resolve class value, it can be null or a parameter
+                String classValue = service.getClassName();
+                if(!StringUtils.isBlank(classValue)) {
+                    classValue = getParameterCollector().resolve(classValue);
                 }
 
+                serviceMap.put(serviceName, new ContainerService(service.getId(), classValue, true, !service.isPublic()));
             }
 
             return serviceMap;
