@@ -82,7 +82,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         for (String[] provider : providers) {
             myFixture.configureByText(
                 XmlFileType.INSTANCE,
-               String.format( "<routes><import resource=\"" + provider[0] + "\" /></routes>", provider)
+               String.format("<routes><import resource=\"%s\" /></routes>", provider[0] )
             );
 
             PsiFile psiFile = myFixture.configureByText("foo.php", "");

@@ -97,7 +97,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     private void completionContainsAssert(String[] lookupStrings) {
         List<String> lookupElements = myFixture.getLookupElementStrings();
         if(lookupElements == null) {
-            fail(String.format("failed that empty completion contains %s", lookupStrings));
+            fail(String.format("failed that empty completion contains %s", Arrays.toString(lookupStrings)));
         }
 
         for (String s : Arrays.asList(lookupStrings)) {
