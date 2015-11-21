@@ -13,10 +13,10 @@ public class ContainerService {
     private boolean isPrivate = false;
     private boolean isWeak = false;
 
-    public ContainerService(@NotNull ServiceInterface service) {
+    public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
         this.service = service;
         this.name = service.getId();
-        this.className = service.getClassName();
+        this.className = classResolved != null ? classResolved : service.getClassName();
         this.isPrivate = !service.isPublic();
         this.isWeak = true;
     }
