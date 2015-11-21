@@ -1,0 +1,21 @@
+services:
+  bar:
+    class: "stdClass"
+    decorates: "foo"
+    decoration_inner_name: "bar.wooz"
+    public: false
+
+  defaults:
+    class: DateTime
+
+  non.defaults:
+    class: DateTime
+    decorates: "foo"
+    decoration_inner_name: 'foo'
+    abstract: true
+    autowrite: true
+    deprecated: true
+    lazy: true
+    public: false
+    alias: foo
+    parent: foo

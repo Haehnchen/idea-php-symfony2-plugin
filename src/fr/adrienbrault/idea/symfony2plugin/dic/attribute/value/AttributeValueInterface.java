@@ -7,6 +7,16 @@ import org.jetbrains.annotations.Nullable;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public interface AttributeValueInterface {
+
     @Nullable
     String getString(@NotNull String key);
+
+    @Nullable
+    Boolean getBoolean(@NotNull String key);
+
+    @NotNull
+    String getString(@NotNull String key, String defaultValue);
+
+    @NotNull
+    Boolean getBoolean(@NotNull String key, Boolean defaultValue);
 }

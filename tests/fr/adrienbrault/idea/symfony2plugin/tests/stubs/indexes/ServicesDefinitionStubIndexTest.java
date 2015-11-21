@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndexImpl;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -29,24 +30,24 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id.alias");
 
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id")[0]);
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.alias")[0]);
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id").getClassName());
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.alias").getClassName());
 
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.private")[0]);
-        assertEquals("true", getFirstValue("foo.yml_id.private")[1]);
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.private").getClassName());
+        assertEquals("false", getFirstValue("foo.yml_id.private").isPublic());
     }
 
     public void testThatServiceIdOfXmlFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id");
 
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id")[0]);
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.alias")[0]);
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id").getClassName());
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.alias").getClassName());
 
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.private")[0]);
-        assertEquals("true", getFirstValue("foo.xml_id.private")[1]);
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.private").getClassName());
+        assertEquals("false", getFirstValue("foo.xml_id.private").isPublic());
     }
 
-    private String[] getFirstValue(@NotNull String key) {
+    private ServiceInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
 }

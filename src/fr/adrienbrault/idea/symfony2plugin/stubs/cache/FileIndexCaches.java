@@ -30,17 +30,17 @@ public class FileIndexCaches {
      * @param dataHolderKey Main data to cache
      * @param dataHolderNames Cache extracted name Set
      */
-    static public synchronized Map<String, List<String[]>> getSetDataCache(@NotNull final Project project, @NotNull Key<CachedValue<Map<String, List<String[]>>>> dataHolderKey, final @NotNull Key<CachedValue<Set<String>>> dataHolderNames, @NotNull final ID<String, String[]> ID, @NotNull final GlobalSearchScope scope) {
+    static public synchronized <T> Map<String, List<T>> getSetDataCache(@NotNull final Project project, @NotNull Key<CachedValue<Map<String, List<T>>>> dataHolderKey, final @NotNull Key<CachedValue<Set<String>>> dataHolderNames, @NotNull final ID<String, T> ID, @NotNull final GlobalSearchScope scope) {
 
-        CachedValue<Map<String, List<String[]>>> cache = project.getUserData(dataHolderKey);
+        CachedValue<Map<String, List<T>>> cache = project.getUserData(dataHolderKey);
 
         if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, List<String[]>>>() {
+            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, List<T>>>() {
                 @Nullable
                 @Override
-                public Result<Map<String, List<String[]>>> compute() {
+                public Result<Map<String, List<T>>> compute() {
 
-                    Map<String, List<String[]>> items = new HashMap<String, List<String[]>>();
+                    Map<String, List<T>> items = new HashMap<String, List<T>>();
 
                     FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
                     for (String serviceName : getIndexKeysCache(project, dataHolderNames, ID)) {
