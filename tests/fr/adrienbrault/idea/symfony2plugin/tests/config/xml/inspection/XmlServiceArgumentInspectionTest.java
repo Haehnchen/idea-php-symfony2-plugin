@@ -22,13 +22,13 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testMissingArgumentProvidesInspection() {
-        assertLocalInspectionContainsContains(
+        assertLocalInspectionContains(
             "services.xml",
             createContainer("<serv<caret>ice class=\"Foo\\Bar\"/>"),
             "Missing argument"
         );
 
-        assertLocalInspectionContainsContains(
+        assertLocalInspectionContains(
             "services.xml",
             createContainer("<serv<caret>ice class=\"Foo\\Bar\"><argument>foo</argument></service>"),
             "Missing argument"

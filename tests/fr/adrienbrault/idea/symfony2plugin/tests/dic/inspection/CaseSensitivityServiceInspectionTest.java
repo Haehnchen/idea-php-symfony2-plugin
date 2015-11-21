@@ -9,8 +9,8 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testCaseSensitivityForXmlFiles() {
-        assertLocalInspectionContainsContains("service.xml",
-                "<container>\n" +
+        assertLocalInspectionContains("service.xml",
+            "<container>\n" +
                 "  <services>\n" +
                 "      <service id=\"F<caret>oo\" class=\"DateTime\"/>\n" +
                 "  </services>\n" +
@@ -37,7 +37,7 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
     }
 
     public void testCaseSensitivityForYamlFiles() {
-        assertLocalInspectionContainsContains("service.yml", "services:\n" +
+        assertLocalInspectionContains("service.yml", "services:\n" +
                 "    foo<caret>_A:\n" +
                 "        class: DateTime",
             "Symfony: lowercase letters for service and parameter"
@@ -54,7 +54,7 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
                 "        class: DateTime"
         );
 
-        assertLocalInspectionContainsContains("service.yml", "parameters:\n" +
+        assertLocalInspectionContains("service.yml", "parameters:\n" +
                 "    F<caret>oo: bar",
             "Symfony: lowercase letters for service and parameter"
         );

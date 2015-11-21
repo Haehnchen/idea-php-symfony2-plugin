@@ -1,0 +1,15 @@
+<container>
+
+    <parameters>
+        <parameter key="foo_bar">Foo\Bar\FooBar</parameter>
+    </parameters>
+
+    <services>
+        <service id="foo" class="%foo_bar%"/>
+    </services>
+
+    <services>
+        <service id="foo_deprecated" deprecated="true"/>
+    </services>
+
+</container>

@@ -1,13 +1,25 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ContainerService {
 
+    @Nullable
+    private ServiceInterface service;
     private String name;
     private String className;
     private boolean isPrivate = false;
     private boolean isWeak = false;
+
+    public ContainerService(@NotNull ServiceInterface service) {
+        this.service = service;
+        this.name = service.getId();
+        this.className = service.getClassName();
+        this.isPrivate = !service.isPublic();
+        this.isWeak = true;
+    }
 
     public ContainerService(String name, String className) {
         this.name = name;
@@ -45,5 +57,12 @@ public class ContainerService {
         return name;
     }
 
+    /**
+     * legacy support
+     */
+    @Nullable
+    public ServiceInterface getService() {
+        return service;
+    }
 }
 

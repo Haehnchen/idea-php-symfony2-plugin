@@ -209,12 +209,7 @@ public class ContainerCollectionResolver {
                         }
 
                         // @TODO: legacy bridge; replace this with ServiceInterface
-                        this.services.put(serviceName, new ContainerService(
-                            service.getId(),
-                            classValue,
-                            true,
-                            !service.isPublic()) // negate private
-                        );
+                        this.services.put(serviceName, new ContainerService(service));
                     }
                 }
 

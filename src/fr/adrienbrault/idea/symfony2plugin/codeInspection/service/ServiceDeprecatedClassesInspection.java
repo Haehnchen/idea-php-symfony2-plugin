@@ -18,6 +18,8 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -25,6 +27,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLFile;
+
+import java.util.Map;
 
 
 public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
@@ -72,6 +76,20 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
 
     }
 
+    private void attachServiceDeprecatedProblem(@NotNull PsiElement element, @NotNull String serviceName, @NotNull ProblemsHolder holder) {
+
+        Map<String, ContainerService> services = getLazyServiceCollector(element.getProject()).getCollector().getServices();
+        if(!services.containsKey(serviceName)) {
+            return;
+        }
+
+        ServiceInterface serviceDef = services.get(serviceName).getService();
+        if(serviceDef == null || !serviceDef.isDeprecated()) {
+            return;
+        }
+
+        holder.registerProblem(element, String.format("Service '%s' is deprecated", serviceName), ProblemHighlightType.LIKE_DEPRECATED);
+    }
 
     private class XmlClassElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
         private final ProblemsHolder holder;
@@ -82,13 +100,19 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(XmlHelper.getServiceIdPattern().accepts(element) || XmlHelper.getArgumentServiceIdPattern().accepts(element)) {
+            boolean serviceArgumentAccepted = XmlHelper.getArgumentServiceIdPattern().accepts(element);
+            if(serviceArgumentAccepted || XmlHelper.getServiceIdPattern().accepts(element)) {
                 String text = PsiElementUtils.trimQuote(element.getText());
                 PsiElement[] psiElements = element.getChildren();
 
                 // we need to attach to child because else strike out equal and quote char
                 if(StringUtils.isNotBlank(text) && psiElements.length > 2) {
                     attachDeprecatedProblem(psiElements[1], text, holder);
+
+                    // check service arguments for "deprecated" defs
+                    if(serviceArgumentAccepted) {
+                        attachServiceDeprecatedProblem(psiElements[1], text, holder);
+                    }
                 }
             }
 
@@ -117,6 +141,7 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
                 String text = element.getText();
                 if(text != null && StringUtils.isNotBlank(text) && text.startsWith("@")) {
                     attachDeprecatedProblem(element, text.substring(1), holder);
+                    attachServiceDeprecatedProblem(element, text.substring(1), holder);
                 }
             }
 
@@ -152,6 +177,7 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
             String contents = ((StringLiteralExpression) psiElement).getContents();
             if(StringUtils.isNotBlank(contents)) {
                 attachDeprecatedProblem(element, contents, holder);
+                attachServiceDeprecatedProblem(element, contents, holder);
             }
 
             super.visitElement(element);
