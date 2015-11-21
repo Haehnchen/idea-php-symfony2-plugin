@@ -31,20 +31,18 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id.alias");
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id").getClassName());
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.alias").getClassName());
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.private").getClassName());
-        assertEquals("false", getFirstValue("foo.yml_id.private").isPublic());
+        assertEquals(false, getFirstValue("foo.yml_id.private").isPublic());
     }
 
     public void testThatServiceIdOfXmlFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id");
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id").getClassName());
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.alias").getClassName());
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.private").getClassName());
-        assertEquals("false", getFirstValue("foo.xml_id.private").isPublic());
+        assertEquals(false, getFirstValue("foo.xml_id.private").isPublic());
     }
 
     private ServiceInterface getFirstValue(@NotNull String key) {

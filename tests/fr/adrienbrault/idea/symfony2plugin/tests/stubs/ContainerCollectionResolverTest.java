@@ -33,4 +33,20 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertTrue(ContainerCollectionResolver.getParameterNames(getProject()).contains("Bar"));
         assertTrue(ContainerCollectionResolver.getParameterNames(getProject()).contains("bar"));
     }
+
+    public void testThatAliasedServiceIsEqualWithMainService() {
+
+        myFixture.configureByText(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    foo_as_alias:\n" +
+                "        alias: foo\n" +
+                "    foo:\n" +
+                "        class: DateTime\n"
+        );
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "foo_as_alias"));
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "foo"));
+        assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo_as_alias").getClassName());
+        assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo").getClassName());
+    }
 }

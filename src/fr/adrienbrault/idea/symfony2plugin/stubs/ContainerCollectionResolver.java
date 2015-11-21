@@ -176,40 +176,64 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
+
+                Collection<ServiceInterface> aliases = new ArrayList<ServiceInterface>();
+
                 for (Map.Entry<String, List<ServiceInterface>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+
+                    // dont work twice on service;
+                    // @TODO: to need to optimize this to decorate as much service data as possible
                     String serviceName = entry.getKey();
                     if(this.services.containsKey(serviceName)) {
                         continue;
                     }
-                    List<ServiceInterface> value = entry.getValue();
-                    if(value.size() == 0) {
+
+                    // fake empty service, case which is not allowed by catch it
+                    List<ServiceInterface> services = entry.getValue();
+                    if(services.size() == 0) {
                         this.services.put(serviceName, new ContainerService(serviceName, null, true));
-                    } else {
-                        this.services.putAll(convertIndexToService(serviceName, value));
+                        continue;
+                    }
+
+                    for(ServiceInterface service: services) {
+
+                        // reuse iteration for alias mapping
+                        if(service.getAlias() != null) {
+                            aliases.add(service);
+                        }
+
+                        // resolve class value, it can be null or a parameter
+                        String classValue = service.getClassName();
+                        if(!StringUtils.isBlank(classValue)) {
+                            classValue = getParameterCollector().resolve(classValue);
+                        }
+
+                        // @TODO: legacy bridge; replace this with ServiceInterface
+                        this.services.put(serviceName, new ContainerService(
+                            service.getId(),
+                            classValue,
+                            true,
+                            !service.isPublic()) // negate private
+                        );
+                    }
+                }
+
+                // replace alias with main service
+                if(aliases.size() > 0) {
+                    for (ServiceInterface service : aliases) {
+
+                        // double check alias name
+                        String alias = service.getAlias();
+                        if(alias == null || StringUtils.isBlank(alias) || !this.services.containsKey(alias)) {
+                            continue;
+                        }
+
+                        this.services.put(service.getId(), this.services.get(alias));
                     }
                 }
             }
 
-
             return this.services;
-        }
-
-        private Map<String, ContainerService> convertIndexToService(String serviceName, List<ServiceInterface> serviceDefinitions) {
-
-            Map<String, ContainerService> serviceMap = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
-
-            for(ServiceInterface service: serviceDefinitions) {
-
-                // resolve class value, it can be null or a parameter
-                String classValue = service.getClassName();
-                if(!StringUtils.isBlank(classValue)) {
-                    classValue = getParameterCollector().resolve(classValue);
-                }
-
-                serviceMap.put(serviceName, new ContainerService(service.getId(), classValue, true, !service.isPublic()));
-            }
-
-            return serviceMap;
         }
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
