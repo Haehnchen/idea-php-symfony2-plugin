@@ -8,3 +8,9 @@ services:
 
     foo.yml_id.alias:
         alias: foo.yml_id
+
+    foo.yml_id.deprecated_tilde:
+        deprecated: ~
+
+    foo.yml_id.deprecated_bool:
+        deprecated: true

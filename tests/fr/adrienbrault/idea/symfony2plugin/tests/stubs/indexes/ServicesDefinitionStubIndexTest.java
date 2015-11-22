@@ -45,6 +45,11 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertEquals(false, getFirstValue("foo.xml_id.private").isPublic());
     }
 
+    public void testServiceIdOfYmlWithDeprecatedShortcut() {
+        assertTrue(getFirstValue("foo.yml_id.deprecated_tilde").isDeprecated());
+        assertTrue(getFirstValue("foo.yml_id.deprecated_bool").isDeprecated());
+    }
+
     private ServiceInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }

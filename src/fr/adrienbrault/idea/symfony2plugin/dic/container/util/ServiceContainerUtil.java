@@ -36,6 +36,7 @@ public class ServiceContainerUtil {
                 public void consume(ServiceConsumer serviceConsumer) {
                     SerializableService serializableService = createService(serviceConsumer);
                     serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration-inner-name"));
+                    serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
 
                     services.add(serializableService);
                 }
@@ -48,6 +49,14 @@ public class ServiceContainerUtil {
                 public void consume(ServiceConsumer serviceConsumer) {
                     SerializableService serializableService = createService(serviceConsumer);
                     serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration_inner_name"));
+
+                    // catch: deprecated: ~
+                    String string = serviceConsumer.attributes().getString("deprecated");
+                    if("~".equals(string)) {
+                        serializableService.setIsDeprecated(true);
+                    } else {
+                        serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
+                    }
 
                     services.add(serializableService);
                 }
@@ -68,7 +77,6 @@ public class ServiceContainerUtil {
             .setParent(attributes.getString("parent"))
             .setIsAbstract(attributes.getBoolean("abstract"))
             .setIsAutowire(attributes.getBoolean("autowrite"))
-            .setIsDeprecated(attributes.getBoolean("deprecated"))
             .setIsLazy(attributes.getBoolean("lazy"))
             .setIsPublic(attributes.getBoolean("public"));
     }

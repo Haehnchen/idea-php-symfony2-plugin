@@ -98,6 +98,11 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         }
     }
 
+    public void testYmlDeprecatedAsTilde() {
+        ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("bar.deprecated"));
+        assertEquals(true, bar.isDeprecated());
+    }
+
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {
 
         @NotNull
