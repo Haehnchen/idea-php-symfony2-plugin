@@ -1,7 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
+import com.intellij.util.indexing.FileBasedIndexImpl;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase.IndexValue;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -50,8 +54,8 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\MongoUser");
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\OrmUser");
 
-        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\MongoUser", "Documents\\Xml\\MongoUserRepository");
-        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\OrmUser", "Documents\\Xml\\OrmUserRepository");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\MongoUser", new IndexValueRepositoryClassEquals("Documents\\Xml\\MongoUserRepository"));
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\OrmUser", new IndexValueRepositoryClassEquals("Documents\\Xml\\OrmUserRepository"));
     }
 
     /**
@@ -76,7 +80,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\Yml\\OdmUser");
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\Yml\\OrmUser");
 
-        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\Yml\\OrmUser", "Documents\\Yml\\OrmUserRepository");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\Yml\\OrmUser", new IndexValueRepositoryClassEquals("Documents\\Yml\\OrmUserRepository"));
     }
 
     /**
@@ -145,7 +149,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation");
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Flow\\Orm\\Annotation");
 
-        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation", "Foo");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation", new IndexValueRepositoryClassEquals("Foo"));
     }
 
     /**
@@ -155,5 +159,20 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         // @TODO: implement
         //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\MongoDB\\Annotation");
         //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\CouchDB\\Annotation");
+    }
+
+    private static class IndexValueRepositoryClassEquals implements IndexValue.Assert<DoctrineModelInterface> {
+
+        @NotNull
+        private final String repositoryClass;
+
+        public IndexValueRepositoryClassEquals(@NotNull String repositoryClass) {
+            this.repositoryClass = repositoryClass;
+        }
+
+        @Override
+        public boolean match(@NotNull DoctrineModelInterface value) {
+            return repositoryClass.equals(value.getRepositoryClass());
+        }
     }
 }

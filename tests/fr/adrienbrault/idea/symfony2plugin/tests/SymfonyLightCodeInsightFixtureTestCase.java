@@ -362,6 +362,17 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         assertContainsElements(FileBasedIndexImpl.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject())), value);
     }
 
+    public <T> void assertIndexContainsKeyWithValue(@NotNull ID<String, T> id, @NotNull String key, @NotNull IndexValue.Assert<T> tAssert) {
+        List<T> values = FileBasedIndexImpl.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject()));
+        for (T t : values) {
+            if(tAssert.match(t)) {
+                return;
+            }
+        }
+
+        fail(String.format("Fail that Key '%s' matches on of '%s' values", key, values.size()));
+    }
+
     public void assertLocalInspectionContains(String filename, String content, String contains) {
         Set<String> matches = new HashSet<String>();
 
@@ -540,6 +551,12 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
     }
 
+    public static class IndexValue {
+        public interface Assert<T> {
+            boolean match(@NotNull T value);
+        }
+    }
+    
     public static class LineMarker {
         public interface Assert {
             boolean match(@NotNull LineMarkerInfo markerInfo);

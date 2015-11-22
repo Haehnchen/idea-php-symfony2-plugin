@@ -17,6 +17,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.*;
@@ -64,14 +65,14 @@ public class DoctrineMetadataUtil {
         final PhpClass[] phpClass = {null};
         for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, className, GlobalSearchScope.allScope(project))) {
 
-            FileBasedIndex.getInstance().processValues(DoctrineMetadataFileStubIndex.KEY, className, virtualFile, new FileBasedIndex.ValueProcessor<String>() {
+            FileBasedIndex.getInstance().processValues(DoctrineMetadataFileStubIndex.KEY, className, virtualFile, new FileBasedIndex.ValueProcessor<DoctrineModelInterface>() {
                 @Override
-                public boolean process(VirtualFile virtualFile, String s) {
-                    if (s == null || phpClass[0] != null) {
+                public boolean process(VirtualFile virtualFile, DoctrineModelInterface model) {
+                    if (model == null || model.getRepositoryClass() == null) {
                         return true;
                     }
 
-                    phpClass[0] = PhpElementsUtil.getClassInsideNamespaceScope(project, className, s);
+                    phpClass[0] = PhpElementsUtil.getClassInsideNamespaceScope(project, className, model.getRepositoryClass());
                     return true;
                 }
             }, GlobalSearchScope.allScope(project));
@@ -126,12 +127,12 @@ public class DoctrineMetadataUtil {
                 public Result<Map<String, Collection<String>>> compute() {
                     Map<String, Collection<String>> repositoryMap = new HashMap<String, Collection<String>>();
                     for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
-                        for (String repositoryDefinition : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
-                            if(StringUtils.isBlank(repositoryDefinition)) {
+                        for (DoctrineModelInterface repositoryDefinition : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                            if(StringUtils.isBlank(repositoryDefinition.getRepositoryClass())) {
                                 continue;
                             }
 
-                            PhpClass phpClass = PhpElementsUtil.getClassInsideNamespaceScope(project, key, repositoryDefinition);
+                            PhpClass phpClass = PhpElementsUtil.getClassInsideNamespaceScope(project, key, repositoryDefinition.getRepositoryClass());
                             if(phpClass != null && phpClass.getPresentableFQN() != null) {
                                 String presentableFQN = phpClass.getPresentableFQN();
                                 if(!repositoryMap.containsKey(presentableFQN)) {
