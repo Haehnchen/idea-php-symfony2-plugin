@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony2 Plugin</name>
-    <version>0.11.102</version>
+    <version>0.11.103</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -102,6 +102,14 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.103</h2>
+<ul>
+    <li>All service definitions now indexed as json</li>
+    <li>Support service alias for weak services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/391">#391</a></li>
+    <li>Add deprecated service inspection <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/608">#608</a></li>
+    <li>Migrate doctrine metadata index to json and fix npe state for indexer process <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/610">#610</a></li>
+</ul>
 
 <h2>0.11.102</h2>
 <ul>

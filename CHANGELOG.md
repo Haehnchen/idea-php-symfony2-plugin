@@ -6,6 +6,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.103
+* All service definitions now indexed as json
+* Support service alias for weak services #391
+* Add deprecated service inspection #608
+* Migrate doctrine metadata index to json and fix npe #610
+
 ### 0.11.102
 * Support command names inside constant and property strings
 * Add autowire attribute to blacklist for service argument inspection #616 and add "autowire" and "deprecated" yaml completion
