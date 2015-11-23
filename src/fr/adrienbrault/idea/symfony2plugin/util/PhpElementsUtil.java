@@ -709,7 +709,9 @@ public class PhpElementsUtil {
     public static Collection<PhpClass> getClassFromPhpTypeSet(Project project, Set<String> types) {
 
         PhpType phpType = new PhpType();
-        phpType.add(types);
+        for (String type : types) {
+            phpType.add(type);
+        }
 
         List<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
@@ -728,7 +730,9 @@ public class PhpElementsUtil {
     public static Collection<PhpClass> getClassFromPhpTypeSetArrayClean(Project project, Set<String> types) {
 
         PhpType phpType = new PhpType();
-        phpType.add(types);
+        for (String type : types) {
+            phpType.add(types);
+        }
 
         ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
 

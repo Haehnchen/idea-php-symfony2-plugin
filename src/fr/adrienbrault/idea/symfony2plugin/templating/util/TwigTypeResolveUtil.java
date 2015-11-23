@@ -319,9 +319,11 @@ public class TwigTypeResolveUtil {
                 }
             }
 
-         } else {
+        } else {
             // add single "for" var
-            phpType.add(globalVars.get(variableName).getTypes());
+            for (String s : globalVars.get(variableName).getTypes()) {
+                phpType.add(s);
+            }
         }
 
         String scopeVariable = forScopeVariable.getText();
@@ -442,7 +444,9 @@ public class TwigTypeResolveUtil {
         }
 
         PhpType phpType = new PhpType();
-        phpType.add(types);
+        for (String type : types) {
+            phpType.add(type);
+        }
         PhpType phpTypeFormatted = PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>());
 
         if(phpTypeFormatted.getTypes().size() > 0) {
