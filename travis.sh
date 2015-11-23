@@ -3,6 +3,8 @@
 ideaVersion="14.1.4"
 if [ "$PHPSTORM_ENV" == "10" ]; then
     ideaVersion="15.0"
+elif [ "$PHPSTORM_ENV" == "10eap" ]; then
+    ideaVersion="143.870.1"  
 fi
 
 travisCache=".cache"
@@ -82,6 +84,16 @@ elif [ "$PHPSTORM_ENV" == "10" ]; then
     download "http://plugins.jetbrains.com/files/7303/22048/twig-143.381.48.zip"
     unzip -qo $travisCache/twig-143.381.48.zip -d ./plugins
 
+elif [ "$PHPSTORM_ENV" == "10eap" ]; then
+
+    #php
+    download "http://plugins.jetbrains.com/files/6610/22267/php-143.790.zip"
+    unzip -qo $travisCache/php-143.790.zip -d ./plugins
+
+    #twig
+    download "http://plugins.jetbrains.com/files/7303/22048/twig-143.381.48.zip"
+    unzip -qo $travisCache/twig-143.381.48.zip -d ./plugins
+    
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
 
     # TODO: extract latest builds for plugins from eap site they are not public
