@@ -731,7 +731,7 @@ public class PhpElementsUtil {
 
         PhpType phpType = new PhpType();
         for (String type : types) {
-            phpType.add(types);
+            phpType.add(type);
         }
 
         ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
