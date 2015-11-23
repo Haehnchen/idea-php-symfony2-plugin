@@ -133,7 +133,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
             try {
                 return GSON.fromJson(myStringEnumerator.read(in), FileResource.class);
             } catch (JsonSyntaxException e) {
-                throw new IOException();
+                return null;
             }
         }
     }
