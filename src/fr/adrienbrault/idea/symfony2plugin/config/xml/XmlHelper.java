@@ -6,7 +6,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -284,72 +283,6 @@ public class XmlHelper {
         }
 
         return null;
-    }
-
-    @Nullable
-    public static Map<String, ContainerService> getLocalServiceMap(PsiFile psiFile) {
-
-        Map<String, ContainerService> services = new HashMap<String, ContainerService>();
-
-        if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
-            return services;
-        }
-
-        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
-        if(xmlTags == null) {
-            return services;
-        }
-
-        for(XmlTag xmlTag: xmlTags) {
-            if(xmlTag.getName().equals("container")) {
-                for(XmlTag servicesTag: xmlTag.getSubTags()) {
-                    if(servicesTag.getName().equals("services")) {
-                        for(XmlTag serviceTag: servicesTag.getSubTags()) {
-                            XmlAttribute attrValue = serviceTag.getAttribute("id");
-                            if(attrValue != null) {
-
-                                // <service id="foo.bar" class="Class\Name">
-                                String serviceNameId = attrValue.getValue();
-                                if(serviceNameId != null) {
-
-                                    // <service ... class="%doctrine.orm.proxy_cache_warmer.class%">
-                                    String serviceClassName = null;
-                                    XmlAttribute attrClass = serviceTag.getAttribute("class");
-                                    if(attrClass != null) {
-                                        serviceClassName = attrClass.getValue();
-                                    }
-
-                                    // <service ... public="false" />
-                                    boolean isPrivate = false;
-                                    XmlAttribute publicAttr = serviceTag.getAttribute("public");
-                                    if(publicAttr != null && "false".equals(publicAttr.getValue())) {
-                                        isPrivate = true;
-                                    }
-
-                                    // <service id="doctrine.orm.metadata.annotation_reader" alias="annotation_reader"/>
-                                    // @TODO: resolve alias
-                                    String attrAlias = serviceTag.getAttributeValue("alias");
-                                    if(StringUtils.isNotBlank(attrAlias)) {
-                                        // if aliased service is in current file use value; not nice here but a simple workaround
-                                        if(serviceClassName == null && services.containsKey(attrAlias)) {
-                                            serviceClassName = services.get(attrAlias).getClassName();
-                                        }
-                                    }
-
-                                    if(StringUtils.isNotBlank(serviceNameId)) {
-                                        services.put(serviceNameId, new ContainerService(serviceNameId, serviceClassName, true, isPrivate));
-                                    }
-
-                                }
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return services;
     }
 
     public static Map<String, String> getFileParameterMap(XmlFile psiFile) {
