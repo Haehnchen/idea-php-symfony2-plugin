@@ -90,13 +90,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                FileType fileType = file.getFileType();
-                return fileType == XmlFileType.INSTANCE || fileType == YAMLFileType.YML || fileType == PhpFileType.INSTANCE;
-            }
-        };
+        return new DefaultFileTypeSpecificInputFilter(XmlFileType.INSTANCE, PhpFileType.INSTANCE, YAMLFileType.YML);
     }
 
     @Override
