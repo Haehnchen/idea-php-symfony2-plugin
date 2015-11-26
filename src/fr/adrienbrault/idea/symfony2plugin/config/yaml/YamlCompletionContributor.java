@@ -217,7 +217,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
-    private static class DirectoryScopeCompletionProvider extends CompletionProvider<CompletionParameters> {
+    public static class DirectoryScopeCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, final ProcessingContext processingContext, @NotNull final CompletionResultSet completionResultSet) {
 

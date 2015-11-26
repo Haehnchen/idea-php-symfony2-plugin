@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
@@ -10,10 +11,13 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterLookupPercentElement;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +38,18 @@ public class XmlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "alias").inside(XmlHelper.getInsideTagPattern("services")), new FormAliasParametersCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getArgumentValuePattern(), new ArgumentParameterCompletionProvider());
+
+        extend(
+            CompletionType.BASIC,
+            XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()),
+            new SymfonyBundleFileCompletionProvider("Resources/config", "Controller")
+        );
+
+        extend(
+            CompletionType.BASIC,
+            XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()),
+            new YamlCompletionContributor.DirectoryScopeCompletionProvider()
+        );
     }
 
     private static class FormAliasParametersCompletionProvider extends CompletionProvider<CompletionParameters> {

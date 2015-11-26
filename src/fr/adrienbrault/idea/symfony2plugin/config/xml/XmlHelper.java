@@ -187,6 +187,22 @@ public class XmlHelper {
             );
     }
 
+    /**
+     * <import>
+     *   <resource="@Foo"/>
+     * </import>
+     */
+    public static XmlAttributeValuePattern getImportResourcePattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("resource")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("import")
+                )
+            );
+    }
+
     public static PsiElementPattern.Capture<XmlTag> getInsideTagPattern(String insideTagName) {
         return XmlPatterns.psiElement(XmlTag.class).withName(insideTagName);
     }

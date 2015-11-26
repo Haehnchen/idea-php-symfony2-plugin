@@ -4,7 +4,9 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -12,17 +14,16 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
+import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -186,5 +187,61 @@ public class FileResourceUtil {
 
             return psiElements;
         }
+    }
+
+    /**
+     * Gives targets to files on Bundle locate syntax. "@FooBundle/.../foo.yml"
+     */
+    @NotNull
+    public static Collection<PsiFile> getFileResourceTargetsInBundleScope(@NotNull Project project, @NotNull String content) {
+
+        // min validation "@FooBundle/foo.yml"
+        if(!content.startsWith("@") || !content.contains("/")) {
+            return Collections.emptyList();
+        }
+
+        String bundleName = content.substring(1, content.indexOf("/"));
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getBundle(bundleName);
+        if(symfonyBundle == null) {
+            return Collections.emptyList();
+        }
+
+        String path = content.substring(content.indexOf("/") + 1);
+        PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, symfonyBundle.getRelative(path));
+        if(psiFile == null) {
+            return Collections.emptyList();
+        }
+
+        return Collections.singletonList(psiFile);
+    }
+
+    /**
+     * Gives targets to files which relative to current file directory
+     */
+    @NotNull
+    public static Collection<PsiFile> getFileResourceTargetsInDirectoryScope(@NotNull PsiFile psiFile, @NotNull String content) {
+
+        // bundle scope
+        if(content.startsWith("@")) {
+            return Collections.emptyList();
+        }
+
+        PsiDirectory containingDirectory = psiFile.getContainingDirectory();
+        if(containingDirectory == null) {
+            return Collections.emptyList();
+        }
+
+        VirtualFile relativeFile = VfsUtil.findRelativeFile(content, containingDirectory.getVirtualFile());
+        if(relativeFile == null) {
+            return Collections.emptyList();
+        }
+
+        PsiFile targetFile = PsiElementUtils.virtualFileToPsiFile(psiFile.getProject(), relativeFile);
+        if(targetFile == null) {
+            return Collections.emptyList();
+        }
+
+        return Collections.singletonList(targetFile);
     }
 }

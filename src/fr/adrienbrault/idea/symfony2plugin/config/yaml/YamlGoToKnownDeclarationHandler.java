@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -188,32 +189,17 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
     private void attachResourceBundleGoto(PsiElement psiElement, List<PsiElement> results) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
-
-        if(!text.startsWith("@") || !text.contains("/")) {
+        if(StringUtils.isBlank(text)) {
             return;
         }
 
-        String bundleName = text.substring(1, text.indexOf("/"));
-
-        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(psiElement.getProject())).getBundle(bundleName);
-
-        if(symfonyBundle == null) {
-            return;
-        }
-
-        String path = text.substring(text.indexOf("/") + 1);
-        PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(psiElement.getProject(), symfonyBundle.getRelative(path));
-        if(psiFile == null) {
-            return;
-        }
-
-        results.add(psiFile);
+        results.addAll(FileResourceUtil.getFileResourceTargetsInBundleScope(psiElement.getProject(), text));
     }
 
     private void attachResourceOnPathGoto(PsiElement psiElement, List<PsiElement> results) {
 
         String text = PsiElementUtils.trimQuote(psiElement.getText());
-        if(text.startsWith("@")) {
+        if(StringUtils.isBlank(text) || text.startsWith("@")) {
             return;
         }
 
@@ -222,22 +208,7 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             return;
         }
 
-        PsiDirectory containingDirectory = containingFile.getContainingDirectory();
-        if(containingDirectory == null) {
-            return;
-        }
-
-        VirtualFile relativeFile = VfsUtil.findRelativeFile(text, containingDirectory.getVirtualFile());
-        if(relativeFile == null) {
-            return;
-        }
-
-        PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(psiElement.getProject(), relativeFile);
-        if(psiFile == null) {
-            return;
-        }
-
-        results.add(psiFile);
+        results.addAll(FileResourceUtil.getFileResourceTargetsInDirectoryScope(containingFile, text));
     }
 
     private void getControllerGoto(PsiElement psiElement, List<PsiElement> results) {
