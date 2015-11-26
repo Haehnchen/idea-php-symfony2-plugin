@@ -6,6 +6,10 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.104
+* Replace deprecated eap "PhpType#add" collection signature with string iteration #611, #622, #627
+* Globally provide references for xml "resources" attributes with Bundle and relative path syntax
+
 ### 0.11.103
 * All service definitions now indexed as json
 * Support service alias for weak services #391
