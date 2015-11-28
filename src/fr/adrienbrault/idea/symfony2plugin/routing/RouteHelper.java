@@ -524,6 +524,15 @@ public class RouteHelper {
                             route.setPath(routePath);
                         }
 
+                        String methods = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "methods", false);
+                        if(methods != null) {
+                            // value: [GET, POST,
+                            String[] split = methods.replace("[", "").replace("]", "").replaceAll(" +", "").split(",");
+                            if(split.length > 0) {
+                                route.addMethod(split);
+                            }
+                        }
+
                         String controller = getYamlController(yamlKeyValue);
                         if(controller != null) {
                             route.setController(controller);
@@ -550,7 +559,7 @@ public class RouteHelper {
 
         /**
          * <routes>
-         *   <route id="foo" path="/blog/{slug}">
+         *   <route id="foo" path="/blog/{slug}" methods="GET">
          *     <default key="_controller">Foo</default>
          *   </route>
          * </routes>
@@ -565,22 +574,27 @@ public class RouteHelper {
                             if(StringUtils.isNotBlank(attrValue)) {
 
                                 StubIndexedRoute e = new StubIndexedRoute(attrValue);
-                                XmlAttribute pathAttribute = servicesTag.getAttribute("path");
+                                String pathAttribute = servicesTag.getAttributeValue("path");
                                 if(pathAttribute == null) {
-                                    pathAttribute = servicesTag.getAttribute("pattern");
+                                    pathAttribute = servicesTag.getAttributeValue("pattern");
                                 }
 
-                                if(pathAttribute != null) {
-                                    String pathValue = pathAttribute.getValue();
-                                    if(pathValue != null && StringUtils.isNotBlank(pathValue)) {
-                                        e.setPath(pathValue);
+                                if(pathAttribute != null && StringUtils.isNotBlank(pathAttribute) ) {
+                                    e.setPath(pathAttribute);
+                                }
+
+                                String methods = servicesTag.getAttributeValue("methods");
+                                if(methods != null && StringUtils.isNotBlank(methods))  {
+                                    String[] split = methods.replaceAll(" +", " ").split(" ");
+                                    if(split.length > 0) {
+                                        e.addMethod(split);
                                     }
                                 }
 
                                 for(XmlTag subTag :servicesTag.getSubTags()) {
                                     if("default".equalsIgnoreCase(subTag.getName())) {
-                                        XmlAttribute xmlAttr = subTag.getAttribute("key");
-                                        if(xmlAttr != null && "_controller".equals(xmlAttr.getValue())) {
+                                        String keyValue = subTag.getAttributeValue("key");
+                                        if(keyValue != null && "_controller".equals(keyValue)) {
                                             String actionName = subTag.getValue().getTrimmedText();
                                             if(StringUtils.isNotBlank(actionName)) {
                                                 e.setController(actionName);
