@@ -103,6 +103,13 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertEquals(true, bar.isDeprecated());
     }
 
+    public void testYmlAliasDefinitionAsInline() {
+        assertEquals("bar", ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_1")).getAlias());
+        assertEquals("bar", ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_2")).getAlias());
+        assertEquals("bar", ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_3")).getAlias());
+        assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_4")).getAlias());
+    }
+
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {
 
         @NotNull

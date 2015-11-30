@@ -14,6 +14,7 @@ public class XmlTagAttributeValue extends AttributeValueAbstract {
     private final XmlTag xmlTag;
 
     public XmlTagAttributeValue(@NotNull XmlTag xmlTag) {
+        super(xmlTag);
         this.xmlTag = xmlTag;
     }
 

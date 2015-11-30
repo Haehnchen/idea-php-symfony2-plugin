@@ -15,6 +15,7 @@ public class YamlKeyValueAttributeValue extends AttributeValueAbstract {
     private final YAMLKeyValue yamlKeyValue;
 
     public YamlKeyValueAttributeValue(@NotNull YAMLKeyValue yamlKeyValue) {
+        super(yamlKeyValue);
         this.yamlKeyValue = yamlKeyValue;
     }
 

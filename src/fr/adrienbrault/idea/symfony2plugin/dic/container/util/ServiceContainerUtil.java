@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlFile;
@@ -47,6 +49,20 @@ public class ServiceContainerUtil {
             visitFile((YAMLFile) psiFile, new Consumer<ServiceConsumer>() {
                 @Override
                 public void consume(ServiceConsumer serviceConsumer) {
+
+                    // alias inline "foo: @bar"
+                    PsiElement yamlKeyValue = serviceConsumer.attributes().getPsiElement();
+                    if(yamlKeyValue instanceof YAMLKeyValue) {
+                        PsiElement value = ((YAMLKeyValue) yamlKeyValue).getValue();
+                        if(value instanceof LeafPsiElement) {
+                            String valueText = ((YAMLKeyValue) yamlKeyValue).getValueText();
+                            if(StringUtils.isNotBlank(valueText) && valueText.startsWith("@")) {
+                                services.add(new SerializableService(serviceConsumer.getServiceId()).setAlias(valueText.substring(1)));
+                                return;
+                            }
+                        }
+                    }
+
                     SerializableService serializableService = createService(serviceConsumer);
                     serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration_inner_name"));
 

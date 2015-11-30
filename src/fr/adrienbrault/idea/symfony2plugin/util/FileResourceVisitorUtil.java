@@ -114,7 +114,7 @@ public class FileResourceVisitorUtil {
                  return this.attributeValue = new XmlTagAttributeValue((XmlTag) this.scope);
              }
 
-             return this.attributeValue = new DummyAttributeValue();
+             return this.attributeValue = new DummyAttributeValue(this.psiElement);
          }
 
          @NotNull

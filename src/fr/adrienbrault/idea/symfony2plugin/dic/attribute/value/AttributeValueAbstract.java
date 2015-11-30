@@ -1,11 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.attribute.value;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 abstract class AttributeValueAbstract implements AttributeValueInterface {
+
+    @NotNull
+    private final PsiElement psiElement;
+
+    public AttributeValueAbstract(@NotNull PsiElement psiElement) {
+        this.psiElement = psiElement;
+    }
 
     @Override
     public Boolean getBoolean(@NotNull String key) {
@@ -35,5 +43,10 @@ abstract class AttributeValueAbstract implements AttributeValueInterface {
     public String getString(@NotNull String key, @NotNull String defaultValue) {
         String string = getString(key);
         return string != null ? string : defaultValue;
+    }
+
+    @NotNull
+    public PsiElement getPsiElement() {
+        return this.psiElement;
     }
 }
