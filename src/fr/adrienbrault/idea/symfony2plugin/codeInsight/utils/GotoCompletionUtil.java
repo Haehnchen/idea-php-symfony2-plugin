@@ -4,6 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -51,5 +52,20 @@ public class GotoCompletionUtil {
         }
 
         return value;
+    }
+
+    @Nullable
+    public static String getStringLiteralValue(@NotNull PsiElement psiElement) {
+        PsiElement parent = psiElement.getParent();
+        if(!(parent instanceof StringLiteralExpression)) {
+            return null;
+        }
+
+        String contents = ((StringLiteralExpression) parent).getContents();
+        if(StringUtils.isBlank(contents)) {
+            return null;
+        }
+
+        return contents;
     }
 }

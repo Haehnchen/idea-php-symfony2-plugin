@@ -79,10 +79,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                         String keyString = key.getContents();
 
-                        if(keyString.equals("translation_domain")) {
-                            return new PsiReference[]{ new TranslationDomainReference((StringLiteralExpression) psiElement) };
-                        }
-
                         // @TODO: how to handle custom bundle fields like help_block
                         if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline")) {
 

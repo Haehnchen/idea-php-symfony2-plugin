@@ -13,10 +13,13 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationDomainGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpMethodReferenceCall;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpPsiMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,6 +29,12 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
+
+    private static final PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher CHOICE_TRANSLATION_DOMAIN_MATCHER = new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
+        new String[] {"choice_translation_domain", "translation_domain"},
+        new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormBuilderInterface", 2, "add", "create"),
+        new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormInterface", 2, "add", "create")
+    );
 
     public void register(GotoCompletionRegistrarParameter registrar) {
 
@@ -172,6 +181,31 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         });
 
+        /**
+         * $builder->add('foo', null, [
+         *    'choice_translation_domain => '<caret>',
+         *    'translation_domain => '<caret>',
+         * ]);
+         */
+        registrar.register(PhpPsiMatcher.ArrayValueWithKeyAndMethod.pattern().withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
+            @Nullable
+            @Override
+            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+
+                PsiElement parent = psiElement.getParent();
+                if(!(parent instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+
+                PhpPsiMatcher.ArrayValueWithKeyAndMethod.Result result = PhpPsiMatcher.match(parent, CHOICE_TRANSLATION_DOMAIN_MATCHER);
+                if(result == null) {
+                    return null;
+                }
+
+                return new TranslationDomainGotoCompletionProvider(psiElement);
+            }
+        });
     }
 
     /**

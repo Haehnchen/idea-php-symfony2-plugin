@@ -13,6 +13,12 @@ namespace Symfony\Component\Form {
         public function all();
         public function getForm();
     }
+
+    interface FormInterface {
+        public function add();
+        public function create();
+    }
+
     interface FormTypeExtensionInterface {}
 }
 
