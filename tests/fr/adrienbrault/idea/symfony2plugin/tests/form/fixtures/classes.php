@@ -62,3 +62,13 @@ namespace Symfony\Component\Form\Extension\Core\Type {
 
     }
 }
+
+namespace Form\FormType {
+    class Foo
+    {
+        public function getName()
+        {
+            return 'foo_type';
+        }
+    }
+}
