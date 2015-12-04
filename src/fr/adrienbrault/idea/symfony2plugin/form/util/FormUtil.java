@@ -172,7 +172,7 @@ public class FormUtil {
      * $form->get('field', new FileType());
      */
     @Nullable
-    public static PhpClass getFormTypeClassOnParameter(PsiElement psiElement) {
+    public static PhpClass getFormTypeClassOnParameter(@NotNull PsiElement psiElement) {
 
         if(psiElement instanceof StringLiteralExpression) {
             return getFormTypeToClass(psiElement.getProject(), ((StringLiteralExpression) psiElement).getContents());
@@ -181,6 +181,16 @@ public class FormUtil {
         if(psiElement instanceof PhpTypedElementImpl) {
             String typeName = ((PhpTypedElementImpl) psiElement).getType().toString();
             return getFormTypeToClass(psiElement.getProject(), typeName);
+        }
+
+        if(psiElement instanceof ClassConstantReference) {
+            PhpExpression classReference = ((ClassConstantReference) psiElement).getClassReference();
+            if(classReference instanceof PhpReference) {
+                String typeName = ((PhpReference) classReference).getFQN();
+                if(typeName != null && StringUtils.isNotBlank(typeName)) {
+                    return PhpElementsUtil.getClassInterface(psiElement.getProject(), typeName);
+                }
+            }
         }
 
         return null;
@@ -368,27 +378,19 @@ public class FormUtil {
         return tags;
     }
 
-    public static Map<String, FormTypeClass> getFormTypeClasses(Project project) {
+    @NotNull
+    public static Map<String, FormTypeClass> getFormTypeClasses(@NotNull Project project) {
 
         Collection<PhpClass> phpClasses = ServiceUtil.getTaggedClasses(project, "form.type");
         final Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
 
         for(final PhpClass phpClass: phpClasses) {
-            Method method = phpClass.findMethodByName("getName");
-            if(method != null) {
-                method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                    @Override
-                    public void visitElement(PsiElement element) {
-                        if(element instanceof StringLiteralExpression && PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
-                            String formTypeName = ((StringLiteralExpression) element).getContents();
-                            if(StringUtils.isNotBlank(formTypeName)) {
-                                map.put(formTypeName, new FormTypeClass(formTypeName, phpClass, element, EnumFormTypeSource.INDEX));
-                            }
-                        }
-                        super.visitElement(element);
-                    }
-                });
+            String name = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
+            if(name == null) {
+                continue;
             }
+
+            map.put(name, new FormTypeClass(name, phpClass, EnumFormTypeSource.INDEX));
         }
 
         return map;

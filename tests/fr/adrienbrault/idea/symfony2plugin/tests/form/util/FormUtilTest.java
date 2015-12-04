@@ -1,0 +1,59 @@
+package fr.adrienbrault.idea.symfony2plugin.tests.form.util;
+
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.impl.ClassConstantReferenceImpl;
+import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
+import com.jetbrains.php.lang.psi.elements.impl.StringLiteralExpressionImpl;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+
+import java.io.File;
+import java.util.Map;
+
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ *
+ * @see fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
+ */
+public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    public void setUp() throws Exception {
+        super.setUp();
+        myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("services.xml");
+    }
+
+    protected String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
+
+    @SuppressWarnings({"ConstantConditions"})
+    public void testGetFormTypeClassOnParameter() {
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeClassOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpTypedElementImpl.class, "<?php new \\Form\\FormType\\Foo();")
+        ).getFQN());
+
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeClassOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), StringLiteralExpressionImpl.class, "<?php '\\Form\\FormType\\Foo'")
+        ).getFQN());
+
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeClassOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), StringLiteralExpressionImpl.class, "<?php 'Form\\FormType\\Foo'")
+        ).getFQN());
+
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeClassOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), ClassConstantReferenceImpl.class, "<?php Form\\FormType\\Foo::class")
+        ).getFQN());
+    }
+
+    @SuppressWarnings({"ConstantConditions"})
+    public void testGetFormTypeClasses() {
+        Map<String, FormTypeClass> formTypeClasses = FormUtil.getFormTypeClasses(getProject());
+        assertNotNull(formTypeClasses.get("foo_type"));
+        assertEquals(formTypeClasses.get("foo_type").getPhpClass().getFQN(), "\\Form\\FormType\\Foo");
+
+        assertNotNull(formTypeClasses.get("foo_bar"));
+        assertEquals(formTypeClasses.get("foo_bar").getPhpClass().getFQN(), "\\Form\\FormType\\FooBar");
+    }
+}

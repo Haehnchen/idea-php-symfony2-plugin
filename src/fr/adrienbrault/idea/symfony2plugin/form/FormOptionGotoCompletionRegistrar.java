@@ -4,10 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -19,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOption;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
@@ -71,13 +69,13 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         private GotoCompletionProvider getMatchingOption(ParameterList parameterList, @NotNull PsiElement psiElement) {
 
             // form name can be a string alias; also resolve on constants, properties, ...
-            String formTypeName = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1));
+            PsiElement psiElementAt = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1);
 
-            // formtype is not a string, so try to find php class types
-            if(formTypeName == null) {
-                PsiElement psiElement1 = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1);
-                if(psiElement1 instanceof PhpTypedElementImpl) {
-                    formTypeName = ((PhpTypedElementImpl) psiElement1).getType().toString();
+            String formTypeName = null;
+            if(psiElementAt != null) {
+                PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(psiElementAt);
+                if(phpClass != null) {
+                    formTypeName = phpClass.getFQN();
                 }
             }
 

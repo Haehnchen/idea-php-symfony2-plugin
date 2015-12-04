@@ -278,7 +278,7 @@ public class ServiceUtil {
         return service;
     }
 
-    public static Collection<PhpClass> getTaggedClasses(Project project, String tagName) {
+    public static Collection<PhpClass> getTaggedClasses(@NotNull Project project, @NotNull String tagName) {
 
         List<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
