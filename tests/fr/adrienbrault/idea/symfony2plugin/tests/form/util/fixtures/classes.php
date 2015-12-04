@@ -20,3 +20,8 @@ namespace Form\FormType
         }
     }
 }
+
+namespace Symfony\Component\Form
+{
+    interface FormTypeInterface {}
+}

@@ -196,31 +196,14 @@ public class FormUtil {
         return null;
     }
 
-    public static Set<String> getFormAliases(@NotNull PhpClass phpClass) {
-        final Set<String> aliases = new HashSet<String>();
-
+    @NotNull
+    public static Collection<String> getFormAliases(@NotNull PhpClass phpClass) {
+        // check class implements form interface
         if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, ABSTRACT_FORM_INTERFACE)) {
-            return aliases;
+            return Collections.emptySet();
         }
 
-        Method method = phpClass.findMethodByName("getName");
-        if(method != null) {
-            method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                @Override
-                public void visitElement(PsiElement element) {
-                    if(PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
-                        String value = PhpElementsUtil.getStringValue(element);
-                        if(value != null && StringUtils.isNotBlank(value)) {
-                            aliases.add(value);
-                        }
-                    }
-                    super.visitElement(element);
-                }
-            });
-        }
-
-        return aliases;
-
+        return PhpElementsUtil.getMethodReturnAsStrings(phpClass, "getName");
     }
 
     public static void attachFormAliasesCompletions(@NotNull PhpClass phpClass, @NotNull CompletionResultSet completionResultSet) {

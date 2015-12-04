@@ -417,7 +417,7 @@ public class ServiceUtil {
         // @TODO: provide extension
         // form alias
         if(service.getTagName().equals("form.type") && new Symfony2InterfacesUtil().isInstanceOf(service.getPhpClass(), FormUtil.ABSTRACT_FORM_INTERFACE)) {
-            Set<String> aliases = FormUtil.getFormAliases(service.getPhpClass());
+            Collection<String> aliases = FormUtil.getFormAliases(service.getPhpClass());
             if(aliases.size() > 0) {
                 service.addAttribute("alias", aliases.iterator().next());
             }

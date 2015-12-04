@@ -369,10 +369,24 @@ public class PhpElementsUtil {
      */
     @Nullable
     static public String getMethodReturnAsString(@NotNull PhpClass phpClass, @NotNull String methodName) {
+        final Collection<String> values = getMethodReturnAsStrings(phpClass, methodName);
+        if(values.size() == 0) {
+            return null;
+        }
+
+        // we support only first item
+        return values.iterator().next();
+    }
+
+    /**
+     * Find a string return value of a method context "function() { return 'foo'}"
+     */
+    @NotNull
+    static public Collection<String> getMethodReturnAsStrings(@NotNull PhpClass phpClass, @NotNull String methodName) {
 
         Method method = phpClass.findMethodByName(methodName);
         if(method == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         final Set<String> values = new HashSet<String>();
@@ -391,12 +405,7 @@ public class PhpElementsUtil {
             }
         });
 
-        if(values.size() == 0) {
-            return null;
-        }
-
-        // we support only first item
-        return values.iterator().next();
+        return values;
     }
 
     @Nullable

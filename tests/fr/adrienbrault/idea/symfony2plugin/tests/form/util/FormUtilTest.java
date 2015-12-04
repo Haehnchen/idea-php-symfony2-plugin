@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form.util;
 
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.impl.ClassConstantReferenceImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import com.jetbrains.php.lang.psi.elements.impl.StringLiteralExpressionImpl;
@@ -9,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -55,5 +57,32 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNotNull(formTypeClasses.get("foo_bar"));
         assertEquals(formTypeClasses.get("foo_bar").getPhpClass().getFQN(), "\\Form\\FormType\\FooBar");
+    }
+
+    public void testGetFormAliases() {
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "class Foo implements \\Symfony\\Component\\Form\\FormTypeInterface {\n" +
+                "  public function getName()" +
+                "  {\n" +
+                "    return 'bar';\n" +
+                "    return 'foo';\n" +
+                "  }\n" +
+                "}"
+        );
+
+        assertContainsElements(Arrays.asList("bar", "foo"), FormUtil.getFormAliases(phpClass));
+    }
+
+    public void testGetFormAliasesPhpClassNotImplementsInterfaceAndShouldBeEmpty() {
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "class Foo {\n" +
+                "  public function getName()" +
+                "  {\n" +
+                "    return 'bar';\n" +
+                "  }\n" +
+                "}"
+        );
+
+        assertSize(0, FormUtil.getFormAliases(phpClass));
     }
 }
