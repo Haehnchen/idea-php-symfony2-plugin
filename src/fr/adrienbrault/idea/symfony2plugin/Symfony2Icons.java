@@ -6,6 +6,7 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Calendar;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -13,7 +14,22 @@ import java.awt.image.BufferedImage;
  */
 public class Symfony2Icons {
 
-    public static final Icon SYMFONY = IconLoader.getIcon("icons/symfony.png");
+    public static final Icon SYMFONY;
+    public static final Icon SYMFONY_LINE_MARKER;
+
+    static {
+        if(Calendar.getInstance().get(Calendar.MONTH) == 11 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) > 7) {
+            SYMFONY = IconLoader.getIcon("icons/symfony_dec.png");
+            SYMFONY_LINE_MARKER = IconLoader.getIcon("icons/symfony_line_marker_dec.png");
+        } else if(Calendar.getInstance().get(Calendar.MONTH) == 3 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 7) {
+            SYMFONY = IconLoader.getIcon("icons/symfony_birth.png");
+            SYMFONY_LINE_MARKER = IconLoader.getIcon("icons/symfony_line_marker_birth.png");
+        } else {
+            SYMFONY = IconLoader.getIcon("icons/symfony.png");
+            SYMFONY_LINE_MARKER = IconLoader.getIcon("icons/symfony_line_marker.png");
+        }
+    }
+
     public static final Icon SYMFONY_TOOL_WINDOW = IconLoader.getIcon("icons/symfony_tool_window.png");
     public static final Icon DOCTRINE = IconLoader.getIcon("icons/doctrine.png");
     public static final Icon DOCTRINE_LINE_MARKER = IconLoader.getIcon("icons/doctrine_line_marker.png");
@@ -42,7 +58,6 @@ public class Symfony2Icons {
     public static final Icon FORM_TYPE_LINE_MARKER = IconLoader.getIcon("icons/form_type_line_marker.png");
     public static final Icon ROUTE_LINE_MARKER = IconLoader.getIcon("icons/route_line_marker.png");
     public static final Icon TWIG_CONTROLLER_LINE_MARKER = IconLoader.getIcon("icons/twig_controller_line_marker.png");
-    public static final Icon SYMFONY_LINE_MARKER = IconLoader.getIcon("icons/symfony_line_marker.png");
     public static final Icon TWIG_LINE_MARKER = IconLoader.getIcon("icons/twig_line_marker.png");
     public static final Icon TWIG_LINE_OVERWRITE = IconLoader.getIcon("icons/overwrite.png");
 
