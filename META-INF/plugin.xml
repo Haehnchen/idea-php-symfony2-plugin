@@ -628,6 +628,10 @@
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
+        <action id="Symfony2.FormTypeMigrationGenerator" class="fr.adrienbrault.idea.symfony2plugin.form.action.generator.FormTypeConstantMigrationAction" text="Class constants migration" icon="SymfonyIcons.FormType">
+            <add-to-group group-id="GenerateGroup" anchor="last" />
+        </action>
+
         <group id="Symfony2Group" text="Symfony" popup="false">
             <group id="Symfony2GroupService" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Service" popup="true" icon="SymfonyIcons.Symfony">
                 <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>

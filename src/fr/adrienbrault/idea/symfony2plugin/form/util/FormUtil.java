@@ -476,7 +476,7 @@ public class FormUtil {
             throw new Exception("Empty content");
         }
 
-        PhpClass phpClass = PhpElementsUtil.findSubclassWithMethodReturnString(psiElement.getProject(), "Symfony\\Component\\Form\\FormTypeInterface", "getName", contents);
+        PhpClass phpClass = getFormTypeToClass(psiElement.getProject(), contents);
         if(phpClass == null) {
             throw new Exception("No class found");
         }
