@@ -46,7 +46,13 @@ public class SymfonyInstallerUtilTest extends Assert {
         assertEquals("2.7.1 (latest)", versions.get(0).getPresentableName());
 
         assertEquals("2.6.9", versions.get(2).getVersion());
-        assertEquals("2.6.9", versions.get(2).getPresentableName());
+        assertEquals("2.6 (2.6.9)", versions.get(2).getPresentableName());
+
+        assertEquals("2.3.30", versions.get(3).getVersion());
+        assertEquals("2.3 (2.3.30)", versions.get(3).getPresentableName());
+
+        assertEquals("2.6.9", versions.get(4).getVersion());
+        assertEquals("2.6.9", versions.get(4).getPresentableName());
     }
 
     @Test

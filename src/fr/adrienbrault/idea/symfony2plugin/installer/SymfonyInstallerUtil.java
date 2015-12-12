@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,6 +115,9 @@ public class SymfonyInstallerUtil {
 
         List<SymfonyInstallerVersion> symfonyInstallerVersions = new ArrayList<SymfonyInstallerVersion>();
 
+        // prevent adding duplicate version on alias names
+        Set<String> aliasBranches = new HashSet<String>();
+
         // get alias version, in most common order
         for(String s : new String[] {"latest", "lts"}) {
             JsonElement asJsonObject = jsonObject.get(s);
@@ -125,8 +126,38 @@ public class SymfonyInstallerUtil {
             }
 
             String asString = asJsonObject.getAsString();
+            aliasBranches.add(asString);
+
             symfonyInstallerVersions.add(new SymfonyInstallerVersion(s, String.format("%s (%s)", asString, s)));
         }
+
+
+        List<SymfonyInstallerVersion> branches = new ArrayList<SymfonyInstallerVersion>();
+        Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
+        for (Map.Entry<String, JsonElement> entry : entries) {
+            if(!entry.getKey().matches("^\\d+\\.\\d+$")) {
+                continue;
+            }
+
+            // "2.8.0-dev", "2.8.0-DEV" is not supported
+            String asString = entry.getValue().getAsString();
+            if(asString.matches(".*[a-zA-Z].*") || aliasBranches.contains(asString)) {
+                continue;
+            }
+
+            branches.add(new SymfonyInstallerVersion(asString, String.format("%s (%s)", entry.getKey(), asString)));
+        }
+
+        Collections.sort(branches, new Comparator<SymfonyInstallerVersion>() {
+            @Override
+            public int compare(SymfonyInstallerVersion o1, SymfonyInstallerVersion o2) {
+                return o1.getVersion().compareTo(o2.getVersion());
+            }
+        });
+
+        Collections.reverse(branches);
+
+        symfonyInstallerVersions.addAll(branches);
 
         // we need reverse order for sorting them on version string
         List<SymfonyInstallerVersion> installableVersions = new ArrayList<SymfonyInstallerVersion>();

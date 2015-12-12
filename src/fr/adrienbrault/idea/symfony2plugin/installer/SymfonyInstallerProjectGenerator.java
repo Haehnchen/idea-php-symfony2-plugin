@@ -10,11 +10,13 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PlatformUtils;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.io.File;
 
 /**
@@ -25,12 +27,12 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
     @NotNull
     @Override
     public String getName() {
-        return "Symfony Installer Project";
+        return "Symfony Installer";
     }
 
     @Override
     public String getDescription() {
-        return "Symfony Installer Project";
+        return "Symfony Installer";
     }
 
     @Override
@@ -115,4 +117,8 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
         return PlatformUtils.isPhpStorm();
     }
 
+    @Override
+    public Icon getLogo() {
+        return Symfony2Icons.SYMFONY;
+    }
 }
