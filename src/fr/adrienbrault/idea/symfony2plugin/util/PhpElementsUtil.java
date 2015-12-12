@@ -364,6 +364,20 @@ public class PhpElementsUtil {
     }
 
     /**
+     * Search for class with returns a string on a given method name
+     */
+    @Nullable
+    static public PhpClass findSubclassWithMethodReturnString(@NotNull Project project, @NotNull String subClass, @NotNull String methodName, @NotNull String returnString) {
+        for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses(subClass)) {
+            if(returnString.equals(getMethodReturnAsString(phpClass, methodName))) {
+                return phpClass;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Find a string return value of a method context "function() { return 'foo'}"
      * First match wins
      */
