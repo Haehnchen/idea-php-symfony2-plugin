@@ -380,6 +380,7 @@
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
 
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
 
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
 

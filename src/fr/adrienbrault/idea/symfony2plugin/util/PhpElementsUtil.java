@@ -1231,4 +1231,25 @@ public class PhpElementsUtil {
 
         return new Symfony2InterfacesUtil().isInstanceOf(containingClass, expectedClassName);
     }
+
+    /**
+     * Resolves MethodReference and compare containing class against implementations instances
+     */
+    public static boolean isMethodReferenceInstanceOf(@NotNull MethodReference methodReference, @NotNull String expectedClassName, @NotNull String methodName) {
+        if(!methodName.equals(methodReference.getName())) {
+            return false;
+        }
+
+        PsiElement resolve = methodReference.resolve();
+        if(!(resolve instanceof Method)) {
+            return false;
+        }
+
+        PhpClass containingClass = ((Method) resolve).getContainingClass();
+        if(containingClass == null) {
+            return false;
+        }
+
+        return new Symfony2InterfacesUtil().isInstanceOf(containingClass, expectedClassName);
+    }
 }
