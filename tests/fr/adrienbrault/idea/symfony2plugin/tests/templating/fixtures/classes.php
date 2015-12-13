@@ -18,3 +18,11 @@ namespace FooBundle\Controller
         public function barAction() {}
     }
 }
+
+namespace Foo\ConstantBar
+{
+    class Foo
+    {
+        const FOO = 'BAR';
+    }
+}

@@ -28,6 +28,7 @@ import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -1295,5 +1296,26 @@ public class PhpElementsUtil {
             ClassConstantReference.class,
             "<?php " + phpClass.getName() + "::class"
         ));
+    }
+
+    /**
+     * add('', <caret>), add('', Foo<caret>)
+     */
+    @Nullable
+    public static MethodReference findMethodReferenceOnClassConstant(PsiElement psiElement) {
+        PsiElement parameterList = psiElement.getParent();
+        if(parameterList instanceof ParameterList) {
+            PsiElement psiElement2 = parameterList.getParent();
+            if(psiElement2 instanceof MethodReference) {
+                return (MethodReference) psiElement2;
+            }
+        } else if(parameterList instanceof ConstantReference) {
+            PsiElement parent = parameterList.getParent();
+            if(parent instanceof ParameterList) {
+                return PsiElementAssertUtil.getParentOfTypeOrNull(parent, MethodReference.class);
+            }
+        }
+
+        return null;
     }
 }

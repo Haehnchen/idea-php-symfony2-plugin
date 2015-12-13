@@ -381,6 +381,7 @@
 
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
 
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
 

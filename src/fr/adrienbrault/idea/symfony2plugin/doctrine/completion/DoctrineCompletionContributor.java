@@ -1,24 +1,32 @@
-package fr.adrienbrault.idea.symfony2plugin.form.completion;
+package fr.adrienbrault.idea.symfony2plugin.doctrine.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.ConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ClassConstantLookupElementAbstract;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormCompletionContributor extends CompletionContributor {
+public class DoctrineCompletionContributor extends CompletionContributor {
 
-    public FormCompletionContributor() {
+    public DoctrineCompletionContributor() {
+
+        // getRepository(FOO) -> getRepository(FOO::class)
         extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(ConstantReference.class), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
@@ -28,25 +36,26 @@ public class FormCompletionContributor extends CompletionContributor {
                 }
 
                 MethodReference methodReference = PhpElementsUtil.findMethodReferenceOnClassConstant(psiElement);
-                if(methodReference == null) {
+                if (methodReference == null) {
                     return;
                 }
 
                 if(!(
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "create") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ObjectManager", "getRepository") ||
+                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository")
                 )) {
                     return;
                 }
 
-                for (PhpClass phpClass : PhpIndex.getInstance(psiElement.getProject()).getAllSubclasses("\\Symfony\\Component\\Form\\FormTypeInterface")) {
+                Collection<DoctrineModel> modelClasses = EntityHelper.getModelClasses(psiElement.getProject());
+
+                for (DoctrineModel doctrineModel : modelClasses) {
+                    PhpClass phpClass = doctrineModel.getPhpClass();
                     if(phpClass.isAbstract() || phpClass.isInterface()) {
                         continue;
                     }
 
-                    LookupElement elementBuilder = new FormClassConstantsLookupElement(phpClass);
+                    LookupElement elementBuilder = new Foo(phpClass);
 
                     // does this have an effect really?
                     completionResultSet.addElement(
@@ -59,4 +68,16 @@ public class FormCompletionContributor extends CompletionContributor {
         });
     }
 
+    private static class Foo extends ClassConstantLookupElementAbstract {
+
+        public Foo(@NotNull PhpClass phpClass) {
+            super(phpClass);
+        }
+
+        @Override
+        public void renderElement(LookupElementPresentation presentation) {
+            super.renderElement(presentation);
+            presentation.setIcon(Symfony2Icons.DOCTRINE);
+        }
+    }
 }

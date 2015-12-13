@@ -43,9 +43,6 @@ public class FormClassConstantsLookupElement extends ClassConstantLookupElementA
         }
 
         presentation.setIcon(Symfony2Icons.FORM_TYPE);
-        presentation.setItemText(phpClass.getName());
-        presentation.setTypeText(phpClass.getPresentableFQN());
-        presentation.setTypeGrayed(true);
 
         super.renderElement(presentation);
     }

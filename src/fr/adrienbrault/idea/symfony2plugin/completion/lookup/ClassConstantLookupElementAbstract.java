@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.completion.lookup;
 
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.completion.insertHandler.ClassConstantInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,6 +18,14 @@ abstract public class ClassConstantLookupElementAbstract extends LookupElement i
 
     public ClassConstantLookupElementAbstract(@NotNull PhpClass phpClass) {
         this.phpClass = phpClass;
+    }
+
+    @Override
+    public void renderElement(LookupElementPresentation presentation) {
+        presentation.setItemText(phpClass.getName());
+        presentation.setTypeText(phpClass.getPresentableFQN());
+        presentation.setTypeGrayed(true);
+        super.renderElement(presentation);
     }
 
     @NotNull
