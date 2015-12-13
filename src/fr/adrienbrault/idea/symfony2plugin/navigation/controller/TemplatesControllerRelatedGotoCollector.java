@@ -54,14 +54,17 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
         }
 
         // on method name
-        String templateName = TwigUtil.getControllerMethodShortcut(parameter.getMethod());
-        if(templateName != null) {
-            for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(parameter.getProject(), templateName)) {
-                if(!uniqueTemplates.contains(templateName)) {
-                    parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, TwigUtil.getFoldingTemplateNameOrCurrent(templateName)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
-                    uniqueTemplates.add(templateName);
+        String[] templateNames = TwigUtil.getControllerMethodShortcut(parameter.getMethod());
+        if(templateNames != null) {
+            for (String templateName : templateNames) {
+                for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(parameter.getProject(), templateName)) {
+                    if(!uniqueTemplates.contains(templateName)) {
+                        parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, TwigUtil.getFoldingTemplateNameOrCurrent(templateName)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+                        uniqueTemplates.add(templateName);
+                    }
                 }
             }
+
         }
 
         for(PsiElement psiElement: parameter.getParameterLists()) {

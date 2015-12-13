@@ -13,6 +13,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,14 +37,14 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
         }
 
         String tagValue = phpDocAttrList.getText();
-        String templateName;
+        Collection<String> templateNames = new HashSet<String>();
 
         // @Template("FooBundle:Folder:foo.html.twig")
         // @Template("FooBundle:Folder:foo.html.twig", "asdas")
         // @Template(tag="name")
         Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
         if (matcher.find()) {
-            templateName = matcher.group(1);
+            templateNames.add(matcher.group(1));
         } else {
 
             // find template name on last method
@@ -55,23 +58,28 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
                 return;
             }
 
-            templateName = TwigUtil.getControllerMethodShortcut(method);
+            String[] controllerMethodShortcut = TwigUtil.getControllerMethodShortcut(method);
+            if(controllerMethodShortcut != null) {
+                templateNames.addAll(Arrays.asList(controllerMethodShortcut));
+            }
         }
 
-        if(templateName == null) {
+        if(templateNames.size() == 0) {
             return;
         }
 
-        if ( TwigHelper.getTemplatePsiElements(parameter.getProject(), templateName).length > 0) {
-            return;
+        for (String templateName : templateNames) {
+            if (TwigHelper.getTemplatePsiElements(parameter.getProject(), templateName).length > 0) {
+                return;
+            }
         }
 
         if(null != parameter.getPhpDocTag().getFirstChild()) {
+            // @TODO: first is "html.twig"
             parameter.getHolder().createWarningAnnotation(parameter.getPhpDocTag().getFirstChild().getTextRange(), "Create Template")
-                .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName));
+                .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateNames.iterator().next()))
+            ;
         }
-
-
     }
 
 }

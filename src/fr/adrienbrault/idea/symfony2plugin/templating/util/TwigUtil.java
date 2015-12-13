@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 public class TwigUtil {
 
     @Nullable
-    public static String getControllerMethodShortcut(Method method) {
+    public static String[] getControllerMethodShortcut(Method method) {
 
         // indexAction
         String methodName = method.getName();
@@ -86,9 +86,13 @@ public class TwigUtil {
         templateFolderName = templateFolderName.replace("\\", "/");
         String shortcutName = symfonyBundle.getName() + ":" + templateFolderName + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
 
-        // we should support types later on
+        // @TODO: we should support types later on; but nicer
         // HomeBundle:default:indexes.html.twig
-        return shortcutName + ".html.twig";
+        return new String[] {
+            shortcutName + ".html.twig",
+            shortcutName + ".json.twig",
+            shortcutName + ".xml.twig",
+        };
     }
 
     @NotNull
@@ -128,10 +132,12 @@ public class TwigUtil {
         if(phpDocComment != null) {
             PsiElement method = phpDocComment.getNextPsiSibling();
             if(method instanceof Method) {
-                String templateName = TwigUtil.getControllerMethodShortcut((Method) method);
-                if(templateName != null) {
-                    for(PsiElement psiElement: TwigHelper.getTemplatePsiElements(method.getProject(), templateName)) {
-                        targets.put(templateName, psiElement);
+                String[] templateNames = TwigUtil.getControllerMethodShortcut((Method) method);
+                if(templateNames != null) {
+                    for (String name : templateNames) {
+                        for(PsiElement psiElement: TwigHelper.getTemplatePsiElements(method.getProject(), name)) {
+                            targets.put(name, psiElement);
+                        }
                     }
                 }
             }
