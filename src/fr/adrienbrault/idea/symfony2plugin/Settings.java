@@ -21,7 +21,12 @@ import java.util.List;
 )
 public class Settings implements PersistentStateComponent<Settings> {
 
-    public static String DEFAULT_CONTAINER_PATH = "app/cache/dev/appDevDebugProjectContainer.xml";
+    // Symfony 2 and 3 paths
+    public static String[] DEFAULT_CONTAINER_PATHS = new String[] {
+        "app/cache/dev/appDevDebugProjectContainer.xml",
+        "var/cache/dev/appDevDebugProjectContainer.xml",
+    };
+
     public static String DEFAULT_URL_GENERATOR_PATH = "app/cache/dev/appDevUrlGenerator.php";
     public static String DEFAULT_TRANSLATION_PATH = "app/cache/dev/translations";
 

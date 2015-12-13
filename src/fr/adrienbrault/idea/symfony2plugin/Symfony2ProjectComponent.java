@@ -5,8 +5,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -14,11 +12,9 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayListener;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -120,7 +116,9 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         if(containerFiles.size() == 0) {
-            containerFiles.add(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
+            for (String s : Settings.DEFAULT_CONTAINER_PATHS) {
+                containerFiles.add(new ContainerFile(s));
+            }
         }
 
         List<File> validFiles = new ArrayList<File>();
@@ -145,7 +143,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         if(!this.isEnabled() && !Settings.getInstance(project).dismissEnableNotification) {
             if(VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor") != null
-                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "cache") != null
+                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "config") != null
+                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "Resources") != null
                 && VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor", "symfony", "symfony") != null
               ) {
                 IdeHelper.notifyEnableMessage(project);

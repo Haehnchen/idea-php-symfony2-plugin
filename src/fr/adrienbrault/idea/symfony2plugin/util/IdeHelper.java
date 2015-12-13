@@ -136,7 +136,7 @@ public class IdeHelper {
 
     public static void notifyEnableMessage(final Project project) {
 
-        Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin in <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, new NotificationListener() {
+        Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, new NotificationListener() {
             @Override
             public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
 
@@ -145,7 +145,9 @@ public class IdeHelper {
 
                     // open settings dialog and show panel
                     SettingsForm.show(project);
-
+                } else if("enable".equals(event.getDescription())) {
+                    enablePluginAndConfigure(project);
+                    Notifications.Bus.notify(new Notification("Symfony Plugin", "Symfony Plugin", "Plugin enabled", NotificationType.INFORMATION), project);
                 } else if("dismiss".equals(event.getDescription())) {
 
                     // use dont want to show notification again
@@ -158,6 +160,16 @@ public class IdeHelper {
         });
 
         Notifications.Bus.notify(notification, project);
+    }
+
+    public static void enablePluginAndConfigure(@NotNull Project project) {
+        Settings.getInstance(project).pluginEnabled = true;
+
+        // Symfony 3.0 structure
+        if(VfsUtil.findRelativeFile(project.getBaseDir(), "var", "cache") == null) {
+            Settings.getInstance(project).pathToUrlGenerator = "var/cache/dev/appDevUrlGenerator.php";
+            Settings.getInstance(project).pathToTranslation = "var/cache/dev/translations";
+        }
     }
 
     public static void navigateToPsiElement(@NotNull PsiElement psiElement) {

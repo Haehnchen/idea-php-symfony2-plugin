@@ -12,6 +12,7 @@ import com.intellij.util.PlatformUtils;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +66,8 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
         SymfonyInstallerCommandExecutor executor = new SymfonyInstallerCommandExecutor(project, baseDir, commands) {
             @Override
             protected void onFinish(@Nullable String message) {
-                Settings.getInstance(project).pluginEnabled = true;
+                IdeHelper.enablePluginAndConfigure(project);
+
                 if(message != null) {
                     // replace empty lines, provide html output, and remove our temporary path
                     showInfoNotification(project, message

@@ -69,7 +69,9 @@ public class ContainerSettingsForm implements Configurable {
                 resetContainerList();
 
                 // add default path
-                ContainerSettingsForm.this.modelList.addRow(new ContainerFile(Settings.DEFAULT_CONTAINER_PATH));
+                for (String defaultContainerPath : Settings.DEFAULT_CONTAINER_PATHS) {
+                    ContainerSettingsForm.this.modelList.addRow(new ContainerFile(defaultContainerPath));
+                }
 
             }
         });
