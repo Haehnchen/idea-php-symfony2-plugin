@@ -5,7 +5,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -13,11 +12,8 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
-import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
-import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
@@ -481,28 +477,6 @@ public class FormUtil {
             throw new Exception("No class found");
         }
 
-        String fqn = phpClass.getFQN();
-        if(fqn == null) {
-            throw new Exception("Class fqn empty");
-        }
-
-        if(!fqn.startsWith("\\")) {
-            fqn = "\\" + fqn;
-        }
-
-        PhpPsiElement scopeForUseOperator = PhpCodeInsightUtil.findScopeForUseOperator(psiElement);
-        if(scopeForUseOperator == null) {
-            throw new Exception("Class fqn error");
-        }
-
-        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).values().contains(fqn)) {
-            PhpAliasImporter.insertUseStatement(fqn, scopeForUseOperator);
-        }
-
-        psiElement.replace(PhpPsiElementFactory.createPhpPsiFromText(
-            psiElement.getProject(),
-            ClassConstantReference.class,
-            "<?php " + phpClass.getName() + "::class"
-        ));
+        PhpElementsUtil.replaceElementWithClassConstant(phpClass, psiElement);
     }
 }

@@ -12,6 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.CommonProcessors;
 import com.intellij.util.Processor;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.PhpLanguage;
@@ -19,10 +20,12 @@ import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
+import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import org.apache.commons.lang.StringUtils;
@@ -1265,5 +1268,32 @@ public class PhpElementsUtil {
         }
 
         return new Symfony2InterfacesUtil().isInstanceOf(containingClass, expectedClassName);
+    }
+
+    public static void replaceElementWithClassConstant(@NotNull PhpClass phpClass, @NotNull PsiElement originElement) throws Exception{
+
+        String fqn = phpClass.getFQN();
+        if(fqn == null) {
+            throw new Exception("Class fqn empty");
+        }
+
+        if(!fqn.startsWith("\\")) {
+            fqn = "\\" + fqn;
+        }
+
+        PhpPsiElement scopeForUseOperator = PhpCodeInsightUtil.findScopeForUseOperator(originElement);
+        if(scopeForUseOperator == null) {
+            throw new Exception("Class fqn error");
+        }
+
+        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).values().contains(fqn)) {
+            PhpAliasImporter.insertUseStatement(fqn, scopeForUseOperator);
+        }
+
+        originElement.replace(PhpPsiElementFactory.createPhpPsiFromText(
+            originElement.getProject(),
+            ClassConstantReference.class,
+            "<?php " + phpClass.getName() + "::class"
+        ));
     }
 }
