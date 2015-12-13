@@ -136,7 +136,7 @@ public class IdeHelper {
 
     public static void notifyEnableMessage(final Project project) {
 
-        Notification notification = new Notification("Symfony2 Plugin", "Symfony2 Plugin", "Enable the Symfony2 Plugin in <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, new NotificationListener() {
+        Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin in <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, new NotificationListener() {
             @Override
             public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
 

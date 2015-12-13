@@ -241,7 +241,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         dialog.init();
 
         dialog.setMinimumSize(new Dimension(620, 300));
-        dialog.setTitle("Symfony2: Add Argument");
+        dialog.setTitle("Symfony: Add Argument");
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
 

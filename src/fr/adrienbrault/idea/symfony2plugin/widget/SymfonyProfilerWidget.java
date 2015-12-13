@@ -164,7 +164,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     public ListPopup getPopupStep() {
 
         ActionGroup popupGroup = getActions();
-        ListPopup listPopup = new PopupFactoryImpl.ActionGroupPopup("Symfony2 Profiler", popupGroup, SimpleDataContext.getProjectContext(project), false, false, false, true, null, -1, null, null);
+        ListPopup listPopup = new PopupFactoryImpl.ActionGroupPopup("Symfony Profiler", popupGroup, SimpleDataContext.getProjectContext(project), false, false, false, true, null, -1, null, null);
 
         return listPopup;
 

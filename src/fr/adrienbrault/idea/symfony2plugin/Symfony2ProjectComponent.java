@@ -35,7 +35,7 @@ import java.util.*;
 public class Symfony2ProjectComponent implements ProjectComponent {
 
     public static String HELP_URL = "http://symfony2-plugin.espend.de/";
-    final private static Logger LOG = Logger.getInstance("Symfony2-Plugin");
+    final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<ServiceContainerLoader>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
 
     private Project project;
@@ -98,7 +98,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     public void showInfoNotification(String content) {
-        Notification errorNotification = new Notification("Symfony2 Plugin", "Symfony2 Plugin", content, NotificationType.INFORMATION);
+        Notification errorNotification = new Notification("Symfony Plugin", "Symfony Plugin", content, NotificationType.INFORMATION);
         Notifications.Bus.notify(errorNotification, this.project);
     }
 

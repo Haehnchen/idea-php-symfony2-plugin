@@ -14,7 +14,7 @@ public class SymfonySymbolSearchModel extends ContributorsBasedGotoByModel {
 
     @Override
     public String getPromptText() {
-        return "Symfony2 Symbol";
+        return "Symfony Symbol";
     }
 
     @Override
