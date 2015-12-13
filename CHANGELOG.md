@@ -6,6 +6,22 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.105
+* Plugin renaming "Symfony2" -> "Symfony"
+* Support yml inline service alias #628
+* Support form field types as class constants #623
+* Add FromType class constant completion and insert handler #623
+* Add form intention action and generator for replace string parameter with class constant #623
+* Parse branches level for symfony-installer version combobox; wait for next symfony.com deployment #645, #643
+* Add a navigation going from the constraint class to its constraint validator and vice versa #632
+* Add Doctrine class contents intention replacement
+* Add class contents completion for Doctrine getRepository and intention
+* Controller::redirectToRoute should provide routing auto completion #614
+* Whitelist twig "set tag" for twig extension references #600
+* Dropping all version strings of "Symfony2", which are not system related
+* Add support for Symfony 2.8 and 3 using the new directory structure #635, also add auto configuration to set all custom paths and enabled plugin directly out of notification box
+* Twig controller method targets now recognize xml and json files to fix @Template annotation doesn't recognize non-html templates #602
+
 ### 0.11.104
 * Replace deprecated eap "PhpType#add" collection signature with string iteration #611, #622, #627
 * Globally provide references for xml "resources" attributes with Bundle and relative path syntax

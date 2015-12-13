@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.104</version>
+    <version>0.11.105</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -13,7 +13,7 @@
 <h2>Install</h2>
 
 <ul>
-    <li>Activate plugin per project in "Settings -> Plugins" and reopen project</li>
+    <li>Activate plugin per project in "Settings -> Plugins" or use auto configuration notification</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
 </ul>
 
@@ -24,6 +24,9 @@
 </ul>
 
 <h2>Features:</h2>
+
+<h3>Version</h3>
+<p>This plugin supports Symfony 2 and 3</p>
 
 <h3>Dependency Injection Container</h3>
 <ul>
@@ -102,6 +105,24 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.105</h2>
+<ul>
+    <li>Plugin renaming "Symfony2" -> "Symfony"</li>
+    <li>Support yml inline service alias <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/628">#628</a></li>
+    <li>Support form field types as class constants <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
+    <li>Add FromType class constant completion and insert handler <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
+    <li>Add form intention action and generator for replace string parameter with class constant <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
+    <li>Parse branches level for symfony-installer version combobox; wait for next symfony.com deployment <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/645">#645</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/643">#643</a></li>
+    <li>Add a navigation going from the constraint class to its constraint validator and vice versa <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/632">#632</a></li>
+    <li>Add Doctrine class contents intention replacement</li>
+    <li>Add class contents completion for Doctrine getRepository and intention</li>
+    <li>Controller::redirectToRoute should provide routing auto completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/614">#614</a></li>
+    <li>Whitelist twig "set tag" for twig extension references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/600">#600</a></li>
+    <li>Dropping all version strings of "Symfony2", which are not system related</li>
+    <li>Add support for Symfony 2.8 and 3 using the new directory structure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/635">#635</a>, also add auto configuration to set all custom paths and enabled plugin directly out of notification box</li>
+    <li>Twig controller method targets now recognize xml and json files to fix @Template annotation doesn't recognize non-html templates <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/602">#602</a></li>
+</ul>
 
 <h2>0.11.104</h2>
 <ul>
@@ -210,81 +231,6 @@
     <li>Add PhpClass collector for "kernel.event_listener" events that are defined in xml and yaml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/531">#531</a></li>
     <li>Collect type hints for methods of getSubscribedEvents <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/531">#531</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/529">#529</a></li>
     <li>Implement support of "kernel.event_listener" events in completion, navigation and method creation argument type hints</li>
-</ul>
-
-<h2>0.11.94</h2>
-<ul>
-    <li>Remove postfix completion because its a PhpStorm9 core feature <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/389">#389</a></li>
-    <li>Improvement template name resolving for overwrites: support parent bundle and app resources; overwrite template linemarker <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/437">#437</a></li>
-    <li>Add Travis CI infrastructure thx to @Sorien <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/536">#536</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/534">#534</a></li>
-    <li>Whitelist Twig_Environment parameter completion for template name</li>
-</ul>
-
-<h2>0.11.93</h2>
-<ul>
-    <li>Add "kernel.event_subscriber" to known tags and provide some more user feedback in error case <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/511">#511</a></li>
-    <li>Add _self support for twig macros <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/419">#419</a></li>
-    <li>Fix newline issue in controller template <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/509">#509</a></li>
-    <li>Add project generator for symfony installer and demo application <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/475">#475</a></li>
-</ul>
-
-<h2>0.11.92</h2>
-<ul>
-    <li>Optimize service name generator and provide custom javascript strategy for it <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362">#362</a></li>
-    <li>Add navigation form options of setRequired, setOptional, setDefined and refactor form options to visitor strategy <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/502">#502</a></li>
-    <li>Remove double Controller in classname <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/507">#507</a></li>
-    <li>Optimize form ui handling of service generator, prepare "insert" button, add generator action <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362">#362</a></li>
-    <li>Use ContainerAwareCommand for command template<li>
-</ul>
-
-<h2>0.11.91</h2>
-<ul>
-    <li>Add support for doctrine xml metadata <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
-    <li>Add support for conditional twig extends tags, and replace regular match with pattern style</li>
-    <li>Provide twig completion for html form action attribute <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/497">#497</a></li>
-    <li>Twig template file create quickfix should use PsiManager to support eg vcs <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/498">#498</a></li>
-    <li>Support for query_builder in entity form field type <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/426">#426</a></li>
-    <li>Fix npe in doctrine querybuilder chain processor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/495">#495</a></li>
-    <li>Fix multiple resolve issues in php type provider</li>
-</ul>
-
-<h2>0.11.90</h2>
-<ul>
-    <li>Add CompilerPass intention and generator action for Bundle context <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/484">#484</a></li>
-    <li>Add support for new configureOptions in replacement for deprecated setDefaultOptions <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/491">#491</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/486">#486</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/490">#490</a></li>
-    <li>Add more bundle related file templates in NewGroup</li>
-    <li>Fix "Missing argument" in services.yml doesn't keep track of factory methods <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/492">#492</a></li>
-</ul>
-
-<h2>0.11.89</h2>
-<ul>
-    <li>Add yaml service arguments and tags intention / quickfixes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/470">#470</a></li>
-    <li>Add xml tag intention and reuse tagged class interface list also for service generator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/470">#470</a></li>
-    <li>Add method psi collector to support parent methods of a command <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/454">#454</a></li>
-    <li>Overall "Controllers as Services" optimize like navigation, related files, ... <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/428">#428</a></li>
-    <li>Use more stable PsiElements to find twig trans_default_domain domain name instead of regular expressions <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/476">#476</a></li>
-    <li>Fix multiResolve issue in method instance checks to resolve issue <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/477">#477</a> in multiple project command classes</li>
-    <li>Fix wrong inspection for FormTypeExtensions tags <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/483">#483</a></li>
-    <li>Fix npe in index route arguments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/482">#482</a></li>
-    <li>Fix warning for optional xml arguments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/485">#485</a></li>
-</ul>
-
-<h2>0.11.88</h2>
-<ul>
-    <li>Add console "getArgument" and "getOption" references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/454">#454</a></li>
-    <li>"%" char in xml arguments now is a valid completion event <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/461">#461</a></li>
-    <li>Initial "Missing Argument" xml service inspection and quickfix <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/470">#470</a></li>
-    <li>Some performance improvements in xml and yaml service resolving</li>
-</ul>
-
-<h2>0.11.87</h2>
-<ul>
-    <li>Add completion for twig tags of Twig_TokenParserInterface::getTag implementations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/457">#457</a></li>
-    <li>Add trans / transchoice twig tag 'from' support <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459">#459</a></li>
-    <li>Add completion for Twig_SimpleTest extension in twig files after IS token</li>
-    <li>Add twig operator completion in IF tags</li>
-    <li>Fix pattern of twig trans_default_domain tag and use translation index for domain completion</li>
-    <li>Fix several issues in twig array completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/463">#463</a></li>
 </ul>
 
 <br/>
