@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
@@ -158,5 +159,14 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% render \"<caret>\" %}", "FooBundle:Foo:bar");
         assertNavigationMatch(TwigFileType.INSTANCE, "{% render \"FooBundl<caret>e:Foo:bar\" %}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToLocalDeclarationHandler
+     */
+    public void testSetTagIsAvailableForFunctionReferences() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% set = <caret> %}", "json_bar");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% set = json_<caret>bar() %}", PlatformPatterns.psiElement(Function.class));
     }
 }

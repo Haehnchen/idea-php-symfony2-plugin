@@ -74,9 +74,10 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         if (PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .beforeLeaf(PlatformPatterns.psiElement(TwigTokenTypes.LBRACE))
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)
-            ).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
+            .withParent(PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
+                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
+            )).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
 
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
         }
