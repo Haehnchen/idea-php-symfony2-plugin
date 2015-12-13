@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -67,6 +68,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 this.classNameMarker(psiElement, results);
                 this.entityClassMarker(psiElement, results);
                 this.repositoryClassMarker(psiElement, results);
+                this.validatorClassMarker(psiElement, results);
+                this.constraintValidatorClassMarker(psiElement, results);
             }
 
             if(phpHighlightServices) {
@@ -237,6 +240,70 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         if(lineMarker != null) {
             results.add(lineMarker);
         }
+    }
+
+    /**
+     * Constraints in same namespace and validateBy service name
+     */
+    private void validatorClassMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
+        PsiElement phpClassContext = psiElement.getContext();
+        if(!(phpClassContext instanceof PhpClass) || !new Symfony2InterfacesUtil().isInstanceOf((PhpClass) phpClassContext, "Symfony\\Component\\Validator\\Constraint")) {
+            return;
+        }
+
+        // class in same namespace
+        String fqn = ((PhpClass) phpClassContext).getFQN();
+        if(fqn == null) {
+            return;
+        }
+
+        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
+
+        String className = fqn + "Validator";
+        phpClasses.addAll(
+            PhpElementsUtil.getClassesInterface(psiElement.getProject(), className)
+        );
+
+        // @TODO: validateBy alias
+
+        if(phpClasses.size() == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER).
+            setTargets(phpClasses).
+            setTooltipText("Navigate to validator");
+
+        results.add(builder.createLineMarkerInfo(psiElement));
+    }
+
+    /**
+     * "FooValidator" back to "Foo" constraint
+     */
+    private void constraintValidatorClassMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
+        PsiElement phpClass = psiElement.getContext();
+        if(!(phpClass instanceof PhpClass) || !new Symfony2InterfacesUtil().isInstanceOf((PhpClass) phpClass, "Symfony\\Component\\Validator\\ConstraintValidatorInterface")) {
+            return;
+        }
+
+        String fqn = ((PhpClass) phpClass).getFQN();
+        if(fqn == null || !fqn.endsWith("Validator")) {
+            return;
+        }
+
+        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>(
+            PhpElementsUtil.getClassesInterface(psiElement.getProject(), fqn.substring(0, fqn.length() - "Validator".length()))
+        );
+
+        if(phpClasses.size() == 0) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER).
+            setTargets(phpClasses).
+            setTooltipText("Navigate to constraint");
+
+        results.add(builder.createLineMarkerInfo(psiElement));
     }
 }
 
