@@ -285,7 +285,12 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             fail("Element is not PhpReference.");
         }
 
-        assertTrue(pattern.accepts(((PhpReference) psiElement).resolve()));
+        PsiElement resolve = ((PhpReference) psiElement).resolve();
+        if(!pattern.accepts(resolve)) {
+            fail(String.format("failed pattern matches element of '%s'", resolve == null ? "null" : resolve.toString()));
+        }
+
+        assertTrue(pattern.accepts(resolve));
     }
 
     public void assertPhpReferenceNotResolveTo(LanguageFileType languageFileType, String configureByText, ElementPattern<?> pattern) {
