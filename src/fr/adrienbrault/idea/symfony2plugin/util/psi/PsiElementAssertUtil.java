@@ -14,8 +14,16 @@ public class PsiElementAssertUtil {
         return psiElement != null && psiElement.getNode().getElementType() == iElementType;
     }
 
+    @Nullable
     public static <T extends PsiElement> T getParentOfTypeOrNull(@NotNull PsiElement element, @NotNull Class<T> aClass) {
         PsiElement parent = element.getParent();
         return aClass.isInstance(parent) ? (T) parent : null;
     }
+
+    @Nullable
+    public static <T extends PsiElement> T getInstanceOfOrNull(@Nullable PsiElement element, @NotNull Class<T> aClass) {
+        if(element == null) return null;
+        return aClass.isInstance(element) ? (T) element : null;
+    }
+
 }

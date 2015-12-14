@@ -246,15 +246,10 @@ public class FormOptionsUtil {
         getDefaultOptions(project, phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
 
         // recursive search for parent form types
-        PsiElement parentMethod = phpClass.findMethodByName("getParent");
-        if (parentMethod != null && depth < 10) {
-            PhpReturn phpReturn = PsiTreeUtil.findChildOfType(parentMethod, PhpReturn.class);
-            if(phpReturn != null) {
-                PhpPsiElement returnValue = phpReturn.getFirstPsiChild();
-                if(returnValue instanceof StringLiteralExpression) {
-                    getFormDefaultKeys(project, ((StringLiteralExpression) returnValue).getContents(), defaultValues, collector, ++depth, visitor);
-                }
-
+        if (depth < 10) {
+            String formParent = FormUtil.getFormParentOfPhpClass(phpClass);
+            if(formParent != null) {
+                getFormDefaultKeys(project, formParent, defaultValues, collector, ++depth, visitor);
             }
         }
 

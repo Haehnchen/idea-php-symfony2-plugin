@@ -85,4 +85,65 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertSize(0, FormUtil.getFormAliases(phpClass));
     }
+
+    public void testGetFormParentOfPhpClass() {
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "class Foo {\n" +
+                "  public function getParent()" +
+                "  {\n" +
+                "    return 'bar';\n" +
+                "  }\n" +
+                "}"
+        );
+
+        assertEquals("bar", FormUtil.getFormParentOfPhpClass(phpClass));
+
+        phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {\n" +
+                "    public function getParent()" +
+                "    {\n" +
+                "      return __NAMESPACE__ . '\\Foo';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"
+        );
+
+        assertEquals("My\\Bar\\Foo", FormUtil.getFormParentOfPhpClass(phpClass));
+    }
+
+    public void testGetFormParentOfPhpClassShouldOnlyUseOwnMethod() {
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {\n" +
+                "    public function getParent()" +
+                "    {\n" +
+                "      return __NAMESPACE__ . '\\Foo';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}" +
+                "class FooBar extends My\\Bar\\Foo {}\n"
+        );
+
+        assertNull(FormUtil.getFormParentOfPhpClass(phpClass));
+
+        phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {\n" +
+                "    public function getParent()" +
+                "    {\n" +
+                "      return __NAMESPACE__ . '\\Foo';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}" +
+                "class FooBar extends My\\Bar\\Foo {" +
+                "    public function getParent()" +
+                "    {\n" +
+                "      return 'foo_bar';\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        assertEquals("foo_bar", FormUtil.getFormParentOfPhpClass(phpClass));
+    }
 }

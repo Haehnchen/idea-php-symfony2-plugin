@@ -33,6 +33,7 @@ public class FormClassConstantsLookupElement extends ClassConstantLookupElementA
             tailsText.add(getName);
         }
 
+        // @TODO: getParent should
         String getParent = PhpElementsUtil.getMethodReturnAsString(phpClass, "getParent");
         if(getParent != null && !getParent.equals("form")) {
             tailsText.add(getParent);

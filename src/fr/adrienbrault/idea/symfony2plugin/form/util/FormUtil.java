@@ -12,6 +12,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -23,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -481,5 +483,53 @@ public class FormUtil {
         }
 
         PhpElementsUtil.replaceElementWithClassConstant(phpClass, psiElement);
+    }
+
+    /**
+     * Finds form parent by "getParent" method
+     *
+     * Concatenation "__NAMESPACE__.'\Foo' and string 'foo' supported
+     */
+    @Nullable
+    public static String getFormParentOfPhpClass(@NotNull PhpClass phpClass) {
+        Method getParent = phpClass.findOwnMethodByName("getParent");
+        if(getParent == null) {
+            return null;
+        }
+
+        for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(getParent, PhpReturn.class)) {
+            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+            if(firstPsiChild instanceof StringLiteralExpression) {
+                String contents = ((StringLiteralExpression) firstPsiChild).getContents();
+                if(StringUtils.isNotBlank(contents)) {
+                    return contents;
+                }
+                continue;
+            }
+
+            if(!(firstPsiChild instanceof BinaryExpression) || !PsiElementAssertUtil.isNotNullAndIsElementType(firstPsiChild, PhpElementTypes.CONCATENATION_EXPRESSION)) {
+                continue;
+            }
+
+            PsiElement leftOperand = ((BinaryExpression) firstPsiChild).getLeftOperand();
+            ConstantReference constantReference = PsiElementAssertUtil.getInstanceOfOrNull(leftOperand, ConstantReference.class);
+            if(constantReference == null || !"__NAMESPACE__".equals(constantReference.getName())) {
+                continue;
+            }
+
+            StringLiteralExpression stringValue = PsiElementAssertUtil.getInstanceOfOrNull(((BinaryExpression) firstPsiChild).getRightOperand(), StringLiteralExpression.class);
+            if(stringValue == null) {
+                continue;
+            }
+
+            String contents = stringValue.getContents();
+            if(StringUtils.isBlank(contents)) {
+                continue;
+            }
+
+            return StringUtils.strip(phpClass.getNamespaceName(), "\\") + contents;
+        }
+
+        return null;
     }
 }
