@@ -368,10 +368,9 @@ public class FormUtil {
     @NotNull
     public static Map<String, FormTypeClass> getFormTypeClasses(@NotNull Project project) {
 
-        Collection<PhpClass> phpClasses = ServiceUtil.getTaggedClasses(project, "form.type");
-        final Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
+        Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
 
-        for(final PhpClass phpClass: phpClasses) {
+        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Form\\FormTypeInterface")) {
             String name = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
             if(name == null) {
                 continue;

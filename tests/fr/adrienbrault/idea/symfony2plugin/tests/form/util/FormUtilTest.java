@@ -23,7 +23,6 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
-        myFixture.copyFileToProject("services.xml");
     }
 
     protected String getTestDataPath() {

@@ -2,7 +2,9 @@
 
 namespace Form\FormType
 {
-    class Foo
+    use Symfony\Component\Form\FormTypeInterface;
+
+    class Foo implements FormTypeInterface
     {
         public function getName()
         {
@@ -10,7 +12,7 @@ namespace Form\FormType
         }
     }
 
-    class FooBar
+    class FooBar implements FormTypeInterface
     {
         const FOO_BAR = 'foo_bar';
 
