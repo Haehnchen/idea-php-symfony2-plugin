@@ -3,6 +3,7 @@
 namespace Symfony\Component\Form {
     interface FormTypeInterface {
         public function setDefaultOptions(OptionsResolverInterface $resolver);
+        public function getName();
     }
     interface FormBuilderInterface {
         public function add($child, $type = null, array $options = array());
@@ -64,7 +65,10 @@ namespace Symfony\Component\Form\Extension\Core\Type {
 }
 
 namespace Form\FormType {
-    class Foo
+
+    use Symfony\Component\Form\FormTypeInterface;
+
+    class Foo implements FormTypeInterface
     {
         public function getName()
         {

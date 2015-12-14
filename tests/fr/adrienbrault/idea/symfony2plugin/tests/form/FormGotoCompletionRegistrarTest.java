@@ -18,7 +18,6 @@ public class FormGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
         super.setUp();
         myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("foo.de.xlf");
-        myFixture.copyFileToProject("services.xml");
     }
 
     protected String getTestDataPath() {

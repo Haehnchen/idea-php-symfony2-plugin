@@ -1,9 +1,0 @@
-<container>
-
-    <services>
-        <service id="form_type_foo" class="Form\FormType\Foo">
-            <tag name="form.type"/>
-        </service>
-    </services>
-
-</container>
