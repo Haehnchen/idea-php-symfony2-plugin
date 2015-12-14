@@ -111,12 +111,12 @@
     <li>Plugin renaming "Symfony2" -> "Symfony"</li>
     <li>Support yml inline service alias <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/628">#628</a></li>
     <li>Support form field types as class constants <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
-    <li>Add FromType class constant completion and insert handler <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
+    <li>Add FormType class constant completion and insert handler <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
     <li>Add form intention action and generator for replace string parameter with class constant <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a></li>
     <li>Parse branches level for symfony-installer version combobox; wait for next symfony.com deployment <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/645">#645</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/643">#643</a></li>
     <li>Add a navigation going from the constraint class to its constraint validator and vice versa <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/632">#632</a></li>
-    <li>Add Doctrine class contents intention replacement</li>
-    <li>Add class contents completion for Doctrine getRepository and intention</li>
+    <li>Add Doctrine class constants intention replacement</li>
+    <li>Add class constants completion for Doctrine getRepository and intention</li>
     <li>Controller::redirectToRoute should provide routing auto completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/614">#614</a></li>
     <li>Whitelist twig "set tag" for twig extension references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/600">#600</a></li>
     <li>Dropping all version strings of "Symfony2", which are not system related</li>
