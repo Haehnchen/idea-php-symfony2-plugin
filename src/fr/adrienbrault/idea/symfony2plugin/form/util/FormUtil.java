@@ -142,6 +142,9 @@ public class FormUtil {
 
         // $form = "$this->createForm("new Type()", $entity)";
         PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(calledMethodReference, 0);
+        if(formType == null) {
+            return null;
+        }
 
         return getFormTypeClassOnParameter(formType);
     }
