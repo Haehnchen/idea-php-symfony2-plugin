@@ -32,7 +32,7 @@ public class FormOptionsUtil {
     public static final String[] FORM_OPTION_METHODS = new String[]{"setDefaultOptions", "configureOptions"};
 
     @NotNull
-    public static List<FormClass> getExtendedTypeClasses(@NotNull Project project,@NotNull String... formTypeNames) {
+    public static List<FormClass> getExtendedTypeClasses(@NotNull Project project, @NotNull String... formTypeNames) {
 
         List<String> formTypeNamesList = Arrays.asList(formTypeNames);
 
@@ -45,12 +45,14 @@ public class FormOptionsUtil {
         }
 
         // use form extension interface if service is empty
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Form\\FormTypeExtensionInterface")) {
-            if(!phpClass.isAbstract() && !phpClass.isInterface() && !PhpUnitUtil.isTestClass(phpClass)) {
-                String className = phpClass.getPresentableFQN();
-                if(className != null && !stringSet.contains(className)) {
-                    visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, true, phpClass.findMethodByName(EXTENDED_TYPE_METHOD));
-                }
+        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(FormUtil.FORM_EXTENSION_INTERFACE)) {
+            if(!FormUtil.isValidFormPhpClass(phpClass)) {
+                continue;
+            }
+
+            String className = phpClass.getPresentableFQN();
+            if(className != null && !stringSet.contains(className)) {
+                visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, true, phpClass.findMethodByName(EXTENDED_TYPE_METHOD));
             }
         }
 
@@ -66,7 +68,11 @@ public class FormOptionsUtil {
             stringSet.add(s.startsWith("\\") ? s.substring(1) : s);
         }
 
-        for (PhpClass phpClass : ServiceUtil.getTaggedClasses(project, "form.type_extension")) {
+        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(FormUtil.FORM_EXTENSION_INTERFACE)) {
+            if(!FormUtil.isValidFormPhpClass(phpClass)) {
+                continue;
+            }
+
             String s = phpClass.getPresentableFQN();
             if(s != null) {
                 stringSet.add(s.startsWith("\\") ? s.substring(1) : s);

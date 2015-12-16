@@ -118,48 +118,13 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "  class Foo {\n" +
                 "    public function getParent()" +
                 "    {\n" +
-                "      return Bar::class';\n" +
+                "      return Bar::class;\n" +
                 "    }\n" +
                 "  }\n" +
                 "}"
         );
 
         assertEquals("My\\Bar\\Bar", FormUtil.getFormParentOfPhpClass(phpClass));
-    }
-
-    public void testGetFormParentOfPhpClassShouldOnlyUseOwnMethod() {
-        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
-                "namespace My\\Bar {\n" +
-                "  class Foo {\n" +
-                "    public function getParent()" +
-                "    {\n" +
-                "      return __NAMESPACE__ . '\\Foo';\n" +
-                "    }\n" +
-                "  }\n" +
-                "}" +
-                "class FooBar extends My\\Bar\\Foo {}\n"
-        );
-
-        assertNull(FormUtil.getFormParentOfPhpClass(phpClass));
-
-        phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
-                "namespace My\\Bar {\n" +
-                "  class Foo {\n" +
-                "    public function getParent()" +
-                "    {\n" +
-                "      return __NAMESPACE__ . '\\Foo';\n" +
-                "    }\n" +
-                "  }\n" +
-                "}" +
-                "class FooBar extends My\\Bar\\Foo {" +
-                "    public function getParent()" +
-                "    {\n" +
-                "      return 'foo_bar';\n" +
-                "    }\n" +
-                "}\n"
-        );
-
-        assertEquals("foo_bar", FormUtil.getFormParentOfPhpClass(phpClass));
     }
 
     public void testGetFormNameOfPhpClass() {

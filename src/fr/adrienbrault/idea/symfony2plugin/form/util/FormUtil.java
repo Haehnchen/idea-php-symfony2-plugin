@@ -368,9 +368,13 @@ public class FormUtil {
 
         Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
 
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Form\\FormTypeInterface")) {
+        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(ABSTRACT_FORM_INTERFACE)) {
+            if(!isValidFormPhpClass(phpClass)) {
+                continue;
+            }
+
             String name = FormUtil.getFormNameOfPhpClass(phpClass);
-            if(name == null) {
+            if (name == null) {
                 continue;
             }
 
@@ -378,6 +382,10 @@ public class FormUtil {
         }
 
         return map;
+    }
+
+    public static boolean isValidFormPhpClass(PhpClass phpClass) {
+        return !(phpClass.isAbstract() || phpClass.isInterface() || PhpElementsUtil.isTestClass(phpClass));
     }
 
     public static class FormTypeCollector {
@@ -489,7 +497,7 @@ public class FormUtil {
      */
     @Nullable
     public static String getFormParentOfPhpClass(@NotNull PhpClass phpClass) {
-        Method getParent = phpClass.findOwnMethodByName("getParent");
+        Method getParent = phpClass.findMethodByName("getParent");
         if(getParent == null) {
             return null;
         }
