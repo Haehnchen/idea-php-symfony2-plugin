@@ -10,7 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -158,5 +160,91 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertEquals("foo_bar", FormUtil.getFormParentOfPhpClass(phpClass));
+    }
+
+    public void testGetFormNameOfPhpClass() {
+
+        // Symfony < 2.8
+        assertEquals("datetime", FormUtil.getFormNameOfPhpClass(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {\n" +
+                "    public function getName()\n" +
+                "    {\n" +
+                "        return 'datetime';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"
+        )));
+
+        // Symfony 2.8+
+        // getBlockPrefix for bc
+        assertEquals("datetime", FormUtil.getFormNameOfPhpClass(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {\n" +
+                "    public function getName()\n" +
+                "    {\n" +
+                "        return $this->getBlockPrefix();\n" +
+                "    }\n" +
+                "    public function getBlockPrefix()\n" +
+                "    {\n" +
+                "        return 'datetime';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"
+        )));
+
+        // invalid method logic
+        assertNull(FormUtil.getFormNameOfPhpClass(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {\n" +
+                "    public function getName()\n" +
+                "    {\n" +
+                "        return $this->foo();\n" +
+                "    }\n" +
+                "    public function foo()\n" +
+                "    {\n" +
+                "        return 'datetime';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"
+        )));
+
+        // Symfony 2.8
+        // class name as type but stripped Type
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"foo", "Foo"});
+            add(new String[] {"foo", "FooType"});
+            add(new String[] {"foo_bar", "FooBar"});
+            add(new String[] {"foo_bar", "fooBar"});
+            add(new String[] {"foo", "footype"});
+            add(new String[] {"type", "type"});
+        }};
+
+        for (String[] provider : providers) {
+            assertEquals(provider[0], FormUtil.getFormNameOfPhpClass(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                    "namespace My\\Bar {\n" +
+                    "  class Foo {\n" +
+                    "    public function getBlockPrefix()\n" +
+                    "    {\n" +
+                    "        return 'datetime';\n" +
+                    "    }\n" +
+                    "}\n" +
+                    String.format("  class %s extends Foo {", provider[1]) +
+                    "    public function getName()\n" +
+                    "    {\n" +
+                    "        return $this->getBlockPrefix();\n" +
+                    "    }\n" +
+                    "   }\n" +
+                    "}"
+            )));
+        }
+
+        // Symfony 3
+        // class name if no "getName" method found
+        assertEquals("My\\Bar\\Foo", FormUtil.getFormNameOfPhpClass(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Foo {}\n" +
+                "}"
+        )));
     }
 }

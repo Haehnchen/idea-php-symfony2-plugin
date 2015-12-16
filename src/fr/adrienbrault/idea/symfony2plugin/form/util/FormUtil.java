@@ -23,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -201,7 +200,12 @@ public class FormUtil {
             return Collections.emptySet();
         }
 
-        return PhpElementsUtil.getMethodReturnAsStrings(phpClass, "getName");
+        String className = FormUtil.getFormNameOfPhpClass(phpClass);
+        if(className == null) {
+            return Collections.emptySet();
+        }
+
+        return Collections.singleton(className);
     }
 
     public static void attachFormAliasesCompletions(@NotNull PhpClass phpClass, @NotNull CompletionResultSet completionResultSet) {
@@ -365,7 +369,7 @@ public class FormUtil {
         Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
 
         for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Form\\FormTypeInterface")) {
-            String name = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
+            String name = FormUtil.getFormNameOfPhpClass(phpClass);
             if(name == null) {
                 continue;
             }
@@ -539,13 +543,60 @@ public class FormUtil {
      *
      * Symfony 2.8
      * "$this->getName()" -> "$this->getBlockPrefix()" -> return 'datetime';
+     * "UserProfileType" => "user_profile" and namespace removal
      *
      * Symfony 3.0
-     * "UserProfileType" => "user_profile"
+     * Use class name: Foo\Class
      *
      */
     @Nullable
     public static String getFormNameOfPhpClass(@NotNull PhpClass phpClass) {
+        Method method = phpClass.findOwnMethodByName("getName");
+
+        // @TODO: think of interface switches
+
+        // method not found so use class fqn
+        if(method == null) {
+            String fqn = phpClass.getFQN();
+            return fqn != null ? StringUtils.stripStart(fqn, "\\") : null;
+        }
+
+        for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(method, PhpReturn.class)) {
+            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+
+            // $this->getBlockPrefix()
+            if(firstPsiChild instanceof MethodReference) {
+                PhpExpression classReference = ((MethodReference) firstPsiChild).getClassReference();
+                if(classReference != null && "this".equals(classReference.getName())) {
+                    String name = firstPsiChild.getName();
+                    if(name != null && "getBlockPrefix".equals(name)) {
+                        if(phpClass.findOwnMethodByName("getBlockPrefix") != null) {
+                            return PhpElementsUtil.getMethodReturnAsString(phpClass, name);
+                        } else {
+                            // method has no custom overwrite; rebuild expression here:
+                            // FooBarType -> foo_bar
+                            String className = phpClass.getName();
+
+                            // strip Type and type
+                            if(className.toLowerCase().endsWith("type") && className.length() > 4) {
+                                className = className.substring(0, className.length() - 4);
+                            }
+
+                            return fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(className);
+                        }
+                    }
+                }
+                continue;
+            }
+
+            // string value fallback
+            String stringValue = PhpElementsUtil.getStringValue(firstPsiChild);
+            if(stringValue != null) {
+                return stringValue;
+            }
+        }
+
+
         return null;
     }
 }
