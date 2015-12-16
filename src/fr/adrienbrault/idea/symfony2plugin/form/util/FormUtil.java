@@ -493,7 +493,7 @@ public class FormUtil {
     /**
      * Finds form parent by "getParent" method
      *
-     * Concatenation "__NAMESPACE__.'\Foo' and string 'foo' supported
+     * Concatenation "__NAMESPACE__.'\Foo', "Foo::class" and string 'foo' supported
      */
     @Nullable
     public static String getFormParentOfPhpClass(@NotNull PhpClass phpClass) {
@@ -604,6 +604,35 @@ public class FormUtil {
             }
         }
 
+
+        return null;
+    }
+
+    /**
+     * Get getExtendedType as string
+     *
+     * 'Foo::class' and string 'foo' supported
+     */
+    @Nullable
+    public static String getFormExtendedType(@NotNull PhpClass phpClass) {
+        Method getParent = phpClass.findMethodByName(FormOptionsUtil.EXTENDED_TYPE_METHOD);
+        if(getParent == null) {
+            return null;
+        }
+
+        for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(getParent, PhpReturn.class)) {
+            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+
+            // Foo::class
+            if(firstPsiChild instanceof ClassConstantReference) {
+                return PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) firstPsiChild);
+            }
+
+            String stringValue = PhpElementsUtil.getStringValue(firstPsiChild);
+            if(stringValue != null) {
+                return stringValue;
+            }
+        }
 
         return null;
     }

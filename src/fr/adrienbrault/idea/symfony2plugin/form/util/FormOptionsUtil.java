@@ -6,20 +6,19 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.*;
+import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -28,31 +27,31 @@ import java.util.*;
  */
 public class FormOptionsUtil {
 
-    private static final String EXTENDED_TYPE_METHOD = "getExtendedType";
+    public static final String EXTENDED_TYPE_METHOD = "getExtendedType";
     public static final String[] FORM_OPTION_METHODS = new String[]{"setDefaultOptions", "configureOptions"};
 
+    /**
+     * Find form extensions extends given form type
+     *
+     * @param formTypeNames Fqn class "Foo\Foo", "\Foo\Foo" or string value "foo";
+     *                      should have all parents a FormType can have
+     */
     @NotNull
-    public static List<FormClass> getExtendedTypeClasses(@NotNull Project project, @NotNull String... formTypeNames) {
+    public static Collection<FormClass> getExtendedTypeClasses(@NotNull Project project, @NotNull String... formTypeNames) {
 
-        List<String> formTypeNamesList = Arrays.asList(formTypeNames);
-
-        Set<String> stringSet = getFormTypeExtensionClassNames(project);
-
-        List<FormClass> extendedTypeClasses = new ArrayList<FormClass>();
-
-        for(String formClass: stringSet) {
-            visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, false, PhpElementsUtil.getClassMethod(project, formClass, EXTENDED_TYPE_METHOD));
-        }
-
-        // use form extension interface if service is empty
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(FormUtil.FORM_EXTENSION_INTERFACE)) {
-            if(!FormUtil.isValidFormPhpClass(phpClass)) {
-                continue;
+        // strip "\"
+        List<String> formTypeNamesList = ContainerUtil.map(Arrays.asList(formTypeNames), new Function<String, String>() {
+            @Override
+            public String fun(String s) {
+                return StringUtils.stripStart(s, "\\");
             }
+        });
 
-            String className = phpClass.getPresentableFQN();
-            if(className != null && !stringSet.contains(className)) {
-                visitExtendedTypeMethod(formTypeNamesList, extendedTypeClasses, true, phpClass.findMethodByName(EXTENDED_TYPE_METHOD));
+        Collection<FormClass> extendedTypeClasses = new ArrayList<FormClass>();
+        for(PhpClass phpClass: getFormTypeExtensionClassNames(project)) {
+            String formExtendedType = FormUtil.getFormExtendedType(phpClass);
+            if(formExtendedType != null && formTypeNamesList.contains(formExtendedType)) {
+                extendedTypeClasses.add(new FormClass(FormClassEnum.EXTENSION, phpClass, true));
             }
         }
 
@@ -60,12 +59,16 @@ public class FormOptionsUtil {
     }
 
     @NotNull
-    private static Set<String> getFormTypeExtensionClassNames(@NotNull Project project) {
+    private static Set<PhpClass> getFormTypeExtensionClassNames(@NotNull Project project) {
 
-        Set<String> stringSet = new HashSet<String>();
+        Set<PhpClass> phpClasses = new HashSet<PhpClass>();
 
+        // @TODO: should be same as interface?
         for (String s : ServiceXmlParserFactory.getInstance(project, FormExtensionServiceParser.class).getFormExtensions().keySet()) {
-            stringSet.add(s.startsWith("\\") ? s.substring(1) : s);
+            ContainerUtil.addIfNotNull(
+                phpClasses,
+                PhpElementsUtil.getClass(project, s)
+            );
         }
 
         for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(FormUtil.FORM_EXTENSION_INTERFACE)) {
@@ -73,40 +76,16 @@ public class FormOptionsUtil {
                 continue;
             }
 
-            String s = phpClass.getPresentableFQN();
-            if(s != null) {
-                stringSet.add(s.startsWith("\\") ? s.substring(1) : s);
-            }
+            phpClasses.add(phpClass);
         }
 
-        return stringSet;
-    }
-
-    private static void visitExtendedTypeMethod(List<String> formTypeNamesList, List<FormClass> extendedTypeClasses, boolean isWeak, @Nullable Method method) {
-        if(method == null) {
-            return;
-        }
-
-        // method without class, exit we need fqn class name
-        PhpClass containingClass = method.getContainingClass();
-        if(containingClass == null) {
-            return;
-        }
-
-        PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
-        if(phpReturn != null) {
-            PhpPsiElement returnValue = phpReturn.getFirstPsiChild();
-            if(returnValue instanceof StringLiteralExpression && formTypeNamesList.contains(((StringLiteralExpression) returnValue).getContents())) {
-                extendedTypeClasses.add(new FormClass(FormClassEnum.EXTENSION, containingClass, isWeak));
-            }
-        }
-
+        return phpClasses;
     }
 
     @NotNull
     public static Map<String, FormOption> getFormExtensionKeys(@NotNull Project project, @NotNull String... formTypeNames) {
 
-        List<FormClass> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
+        Collection<FormClass> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
         Map<String, FormOption> extensionClassMap = new HashMap<String, FormOption>();
 
         for(FormClass extensionClass: typeClasses) {
