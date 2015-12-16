@@ -188,13 +188,7 @@ public class FormUtil {
         }
 
         if(psiElement instanceof ClassConstantReference) {
-            PhpExpression classReference = ((ClassConstantReference) psiElement).getClassReference();
-            if(classReference instanceof PhpReference) {
-                String typeName = ((PhpReference) classReference).getFQN();
-                if(typeName != null && StringUtils.isNotBlank(typeName)) {
-                    return PhpElementsUtil.getClassInterface(psiElement.getProject(), typeName);
-                }
-            }
+            return PhpElementsUtil.getClassConstantPhpClass((ClassConstantReference) psiElement);
         }
 
         return null;
@@ -506,6 +500,11 @@ public class FormUtil {
                 continue;
             }
 
+            // Foo::class
+            if(firstPsiChild instanceof ClassConstantReference) {
+                return PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) firstPsiChild);
+            }
+
             if(!(firstPsiChild instanceof BinaryExpression) || !PsiElementAssertUtil.isNotNullAndIsElementType(firstPsiChild, PhpElementTypes.CONCATENATION_EXPRESSION)) {
                 continue;
             }
@@ -529,6 +528,24 @@ public class FormUtil {
             return StringUtils.strip(phpClass.getNamespaceName(), "\\") + contents;
         }
 
+        return null;
+    }
+
+    /**
+     * Finds form name by "getName" method
+     *
+     * Symfony < 2.8
+     * 'foo_bar'
+     *
+     * Symfony 2.8
+     * "$this->getName()" -> "$this->getBlockPrefix()" -> return 'datetime';
+     *
+     * Symfony 3.0
+     * "UserProfileType" => "user_profile"
+     *
+     */
+    @Nullable
+    public static String getFormNameOfPhpClass(@NotNull PhpClass phpClass) {
         return null;
     }
 }

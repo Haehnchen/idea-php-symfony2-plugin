@@ -1318,4 +1318,25 @@ public class PhpElementsUtil {
 
         return null;
     }
+
+    /**
+     * Foo::class to its PhpClass
+     */
+    public static PhpClass getClassConstantPhpClass(@NotNull ClassConstantReference classConstant) {
+        String typeName = getClassConstantPhpFqn(classConstant);
+        return typeName != null ? PhpElementsUtil.getClassInterface(classConstant.getProject(), typeName) : null;
+    }
+
+    /**
+     * Foo::class to its class fqn include namespace
+     */
+    public static String getClassConstantPhpFqn(@NotNull ClassConstantReference classConstant) {
+        PhpExpression classReference = classConstant.getClassReference();
+        if(!(classReference instanceof PhpReference)) {
+            return null;
+        }
+
+        String typeName = ((PhpReference) classReference).getFQN();
+        return typeName != null && StringUtils.isNotBlank(typeName) ? StringUtils.stripStart(typeName, "\\") : null;
+    }
 }

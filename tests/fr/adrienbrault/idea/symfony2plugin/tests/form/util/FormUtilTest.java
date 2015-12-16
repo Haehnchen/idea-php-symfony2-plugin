@@ -109,6 +109,20 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertEquals("My\\Bar\\Foo", FormUtil.getFormParentOfPhpClass(phpClass));
+
+        phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+                "namespace My\\Bar {\n" +
+                "  class Bar() {}\n" +
+                "  class Foo {\n" +
+                "    public function getParent()" +
+                "    {\n" +
+                "      return Bar::class';\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"
+        );
+
+        assertEquals("My\\Bar\\Bar", FormUtil.getFormParentOfPhpClass(phpClass));
     }
 
     public void testGetFormParentOfPhpClassShouldOnlyUseOwnMethod() {
