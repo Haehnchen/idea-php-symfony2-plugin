@@ -9,7 +9,6 @@ import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +28,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         super.setUp();
 
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("RouteHelper.php"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
     }
 
     protected String getTestDataPath() {
@@ -215,15 +215,15 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         }));
     }
 
-    public void testParse() {
-        // File testFile = new File(this.getClass().getResource("appTestUrlGenerator.php").getFile());
-
-        // @TODO: re-implement test on PsiElements
-        //Map<String, Route> routes = RouteHelper.getRoutes(fileToString(testFile.getPath()));
-        //assertEquals("Lol\\CoreBundle\\Controller\\FeedbackController::feedbackAction", routes.get("feedback").getController());
-        //assertEquals("Lol\\ApiBundle\\Controller\\UsersController::getInfoAction", routes.get("api_users_getInfo").getController());
-        //assertNull(routes.get("ru__RG__page"));
-        //assertNull(routes.get("_assetic_91dd2a8"));
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesInsideUrlGeneratorFile
+     */
+    public void testGetRoutesInsideUrlGeneratorFile() {
+        Map<String, Route> routes = RouteHelper.getRoutesInsideUrlGeneratorFile(getProject(), myFixture.copyFileToProject("appTestUrlGenerator.php"));
+        assertEquals("Lol\\CoreBundle\\Controller\\FeedbackController::feedbackAction", routes.get("feedback").getController());
+        assertEquals("Lol\\ApiBundle\\Controller\\UsersController::getInfoAction", routes.get("api_users_getInfo").getController());
+        assertNull(routes.get("ru__RG__page"));
+        assertNull(routes.get("_assetic_91dd2a8"));
     }
 
     @NotNull
