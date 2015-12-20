@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,6 +44,12 @@ public class Route {
     public Route(@NotNull String name, @NotNull String controller) {
         this.name = name;
         this.controller = controller;
+    }
+
+    public Route(@NotNull RouteInterface routeInterface) {
+        this.name = routeInterface.getName();
+        this.controller = routeInterface.getController();
+        this.path = routeInterface.getPath();
     }
 
     public Route(@NotNull String name, @Nullable String[] indexed) {

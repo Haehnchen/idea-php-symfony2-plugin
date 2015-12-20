@@ -19,6 +19,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.PhpFileType;
@@ -32,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
@@ -815,6 +817,9 @@ public class RouteHelper {
         SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueSet);
         FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
         for(String routeName: ymlProjectProcessor.getResult()) {
+            if(uniqueSet.contains(routeName)) {
+                continue;
+            }
             for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 lookupElements.add(new RouteLookupElement(new Route(routeName, splits), true));
                 uniqueSet.add(routeName);
@@ -823,9 +828,16 @@ public class RouteHelper {
 
         SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueSet);
         FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
-        for(String s: annotationProjectProcessor.getResult()) {
-            lookupElements.add(new RouteLookupElement(new Route(s), true));
-            uniqueSet.add(s);
+        for(String routeName: annotationProjectProcessor.getResult()) {
+            if(uniqueSet.contains(routeName)) {
+                continue;
+            }
+
+            RouteInterface firstItem = ContainerUtil.getFirstItem(FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project)));
+            if(firstItem != null) {
+                lookupElements.add(new RouteLookupElement(new Route(firstItem), true));
+                uniqueSet.add(routeName);
+            }
         }
 
         return lookupElements;
@@ -893,7 +905,10 @@ public class RouteHelper {
                 continue;
             }
 
-            routes.put(routeName, new Route(routeName));
+            RouteInterface firstItem = ContainerUtil.getFirstItem(FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project)));
+            if(firstItem != null) {
+                routes.put(routeName, new Route(firstItem));
+            }
         }
 
         return routes;
