@@ -217,6 +217,33 @@ public class FormOptionsUtil {
         return items;
     }
 
+    public static void visitFormOptions(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
+        visitFormOptions(project, formTypeName, new HashMap<String, String>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
+    }
+
+    private static Map<String, String> visitFormOptions(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
+
+        PhpClass phpClass = collector.getFormTypeToClass(formTypeName);
+        if(phpClass == null) {
+            return defaultValues;
+        }
+
+        getDefaultOptions(project, phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
+        for (FormClass formClass : getExtendedTypeClasses(project, formTypeName)) {
+            getDefaultOptions(project, formClass.getPhpClass(), new FormClass(FormClassEnum.EXTENSION, formClass.getPhpClass(), false), visitor);
+        }
+
+        // recursive search for parent form types
+        if (depth < 10) {
+            String formParent = FormUtil.getFormParentOfPhpClass(phpClass);
+            if(formParent != null) {
+                visitFormOptions(project, formParent, defaultValues, collector, ++depth, visitor);
+            }
+        }
+
+        return defaultValues;
+    }
+
     public static void getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
         getFormDefaultKeys(project, formTypeName, new HashMap<String, String>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
     }

@@ -5,7 +5,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
@@ -13,7 +12,6 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOption;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
@@ -113,10 +111,10 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
             final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
-            FormOptionsUtil.getFormDefaultKeys(getProject(), formType, new FormOptionVisitor() {
+            FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionVisitor() {
                 @Override
                 public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                    if(option.equals(value)) {
+                    if (option.equals(value)) {
                         psiElements.add(psiElement);
                     }
                 }
@@ -127,15 +125,8 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
         @NotNull
         public Collection<LookupElement> getLookupElements() {
-
-            final Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
-
-            for(FormOption formOption: FormOptionsUtil.getFormExtensionKeys(getProject(), "form", this.formType).values()) {
-                lookupElements.add(FormOptionsUtil.getOptionLookupElement(formOption));
-            }
-
-            FormOptionsUtil.getFormDefaultKeys(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
-
+            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
             return lookupElements;
         }
 

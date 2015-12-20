@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\Form
-{
-    interface FormTypeExtensionInterface
-    {
-        public function getExtendedType();
-    }
-}
-
 namespace Foo\Bar
 {
     use Symfony\Component\Form\FormTypeExtensionInterface;
