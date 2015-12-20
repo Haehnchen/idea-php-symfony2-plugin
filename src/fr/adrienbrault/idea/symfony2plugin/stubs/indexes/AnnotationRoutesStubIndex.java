@@ -1,19 +1,25 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.PhpUse;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.JsonRoute;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import gnu.trove.THashMap;
@@ -21,28 +27,34 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, Void> {
+public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, RouteInterface> {
 
-    public static final ID<String, Void> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.annotation_routes");
+    public static final ID<String, RouteInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.annotation_routes_json");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
+    private static JsonDataExternalizer JSON_EXTERNALIZER = new JsonDataExternalizer();
 
     @NotNull
     @Override
-    public ID<String, Void> getName() {
+    public ID<String, RouteInterface> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, Void, FileContent> getIndexer() {
-        return new DataIndexer<String, Void, FileContent>() {
+    public DataIndexer<String, RouteInterface, FileContent> getIndexer() {
+        return new DataIndexer<String, RouteInterface, FileContent>() {
             @NotNull
             @Override
-            public Map<String, Void> map(@NotNull FileContent inputData) {
-                final Map<String, Void> map = new THashMap<String, Void>();
+            public Map<String, RouteInterface> map(@NotNull FileContent inputData) {
+                final Map<String, RouteInterface> map = new THashMap<String, RouteInterface>();
 
                 PsiFile psiFile = inputData.getPsiFile();
                 if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
@@ -72,8 +84,8 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
 
     @NotNull
     @Override
-    public DataExternalizer<Void> getValueExternalizer() {
-        return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
+    public DataExternalizer<RouteInterface> getValueExternalizer() {
+        return JSON_EXTERNALIZER;
     }
 
     @NotNull
@@ -89,7 +101,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
 
     @Override
     public int getVersion() {
-        return 8;
+        return 9;
     }
 
     public static Map<String, String> getFileUseImports(PsiFile psiFile) {
@@ -164,10 +176,10 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
 
     private static class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
 
-        private final Map<String, Void> map;
+        private final Map<String, RouteInterface> map;
         private Map<String, String> fileImports;
 
-        public MyPsiRecursiveElementWalkingVisitor(Map<String, Void> map) {
+        public MyPsiRecursiveElementWalkingVisitor(Map<String, RouteInterface> map) {
             this.map = map;
         }
 
@@ -196,18 +208,143 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, V
             }
 
             String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, this.fileImports);
-            if("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
-                PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
-                if(phpDocAttributeList != null) {
-                    // @TODO: use pattern
-                    String routeName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
-                    if(routeName != null) {
-                        map.put(routeName, null);
+            if(!"\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
+                return;
+            }
+
+            PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+            if(!(phpDocAttributeList instanceof PhpPsiElement)) {
+                return;
+            }
+
+            String routeName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
+            if(routeName == null) {
+                routeName = getRouteByMethod(phpDocTag);
+            }
+
+            if(routeName != null && StringUtils.isNotBlank(routeName)) {
+
+                JsonRoute route = new JsonRoute(routeName);
+
+                String path = "";
+
+                // get class scope pattern
+                String classPath = getClassRoutePattern(phpDocTag);
+                if(classPath != null) {
+                    path += classPath;
+                }
+
+                // extract method path
+                PhpPsiElement firstPsiChild = ((PhpPsiElement) phpDocAttributeList).getFirstPsiChild();
+                if(firstPsiChild instanceof StringLiteralExpression) {
+                    String contents = ((StringLiteralExpression) firstPsiChild).getContents();
+                    if(StringUtils.isNotBlank(contents)) {
+                        path += contents;
                     }
                 }
+
+                if (path.length() > 0) {
+                    route.setPath(path);
+                }
+
+                map.put(routeName, route);
             }
         }
 
+        /**
+         * "@SensioBlogBundle/Controller/PostController.php => sensio_blog_post_index"
+         */
+        private String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
+            PhpDocComment parentOfType = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+            if(parentOfType == null) {
+                return null;
+            }
+
+            PhpPsiElement method = parentOfType.getNextPsiSibling();
+            if(!(method instanceof Method)) {
+                return null;
+            }
+
+            String name = method.getName();
+            if(name == null) {
+                return null;
+            }
+
+            if(name.endsWith("Action")) {
+                name = name.substring(0, name.length() - "Action".length());
+            }
+
+            PhpClass containingClass = ((Method) method).getContainingClass();
+            if(containingClass == null) {
+                return null;
+            }
+
+            String fqn = containingClass.getFQN();
+            if(fqn != null) {
+                Matcher matcher = Pattern.compile("\\\\(\\w+)Bundle\\\\Controller\\\\(\\w+)Controller").matcher(fqn);
+                if (matcher.find()) {
+                    return String.format("%s_%s_%s",
+                        fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(1)),
+                        fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(2)),
+                        name
+                    );
+                }
+            }
+
+            return null;
+        }
+
+        @Nullable
+        private String getClassRoutePattern(@NotNull PhpDocTag phpDocTag) {
+            PhpClass phpClass = PsiTreeUtil.getParentOfType(phpDocTag, PhpClass.class);
+            if(phpClass == null) {
+                return null;
+            }
+
+            PhpDocComment docComment = phpClass.getDocComment();
+            for (PhpDocTag docTag : PsiTreeUtil.getChildrenOfTypeAsList(docComment, PhpDocTag.class)) {
+                if(!"\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(AnnotationRoutesStubIndex.getClassNameReference(docTag, this.fileImports))) {
+                    continue;
+                }
+
+                PsiElement docAttr = PsiElementUtils.getChildrenOfType(docTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+                if(!(docAttr instanceof PhpPsiElement)) {
+                    continue;
+                }
+
+                PhpPsiElement firstPsiChild = ((PhpPsiElement) docAttr).getFirstPsiChild();
+                if(!(firstPsiChild instanceof StringLiteralExpression)) {
+                    continue;
+                }
+
+                String contents = ((StringLiteralExpression) firstPsiChild).getContents();
+                if(StringUtils.isNotBlank(contents)) {
+                    return contents;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    private static class JsonDataExternalizer implements DataExternalizer<RouteInterface> {
+
+        private static final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
+        private static final Gson GSON = new Gson();
+
+        @Override
+        public void save(@NotNull DataOutput dataOutput, RouteInterface fileResource) throws IOException {
+            myStringEnumerator.save(dataOutput, GSON.toJson(fileResource));
+        }
+
+        @Override
+        public RouteInterface read(@NotNull DataInput in) throws IOException {
+            try {
+                return GSON.fromJson(myStringEnumerator.read(in), JsonRoute.class);
+            } catch (JsonSyntaxException e) {
+                return null;
+            }
+        }
     }
 }
 
