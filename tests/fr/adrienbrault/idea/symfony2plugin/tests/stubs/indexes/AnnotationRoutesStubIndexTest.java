@@ -28,14 +28,20 @@ public class AnnotationRoutesStubIndexTest extends SymfonyLightCodeInsightFixtur
 
     public void testIndexOfMethodPatternAndClassPrefix() {
         assertIndexContains(AnnotationRoutesStubIndex.KEY, "blog_home");
-        assertEquals("blog_home", getFirstValue("blog_home").getName());
-        assertEquals("/foo/edit/{id}", getFirstValue("blog_home").getPath());
+        RouteInterface route = getFirstValue("blog_home");
+
+        assertEquals("blog_home", route.getName());
+        assertEquals("/foo/edit/{id}", route.getPath());
+        assertEquals("My\\PostController::editAction", route.getController());
     }
 
     public void testThatEmptyRouteNameUseBundleMethodName() {
         assertIndexContains(AnnotationRoutesStubIndex.KEY, "my_foo_bar_car_index");
-        assertEquals("my_foo_bar_car_index", getFirstValue("my_foo_bar_car_index").getName());
-        assertEquals("/foo_bar/edit/{id}", getFirstValue("my_foo_bar_car_index").getPath());
+        RouteInterface route = getFirstValue("my_foo_bar_car_index");
+
+        assertEquals("my_foo_bar_car_index", route.getName());
+        assertEquals("/foo_bar/edit/{id}", route.getPath());
+        assertEquals("MyFooBarBundle\\Controller\\CarController::indexAction", route.getController());
     }
 
     private RouteInterface getFirstValue(@NotNull String key) {

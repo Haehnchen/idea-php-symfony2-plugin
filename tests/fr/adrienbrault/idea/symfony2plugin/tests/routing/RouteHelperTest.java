@@ -201,6 +201,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals("my_foo_bar_car_index", allRoutes.get("my_foo_bar_car_index").getName());
         assertEquals("/foo_bar/edit/{id}", allRoutes.get("my_foo_bar_car_index").getPath());
+        assertEquals("MyFooBarBundle\\Controller\\CarController::indexAction", allRoutes.get("my_foo_bar_car_index").getController());
     }
 
     /**

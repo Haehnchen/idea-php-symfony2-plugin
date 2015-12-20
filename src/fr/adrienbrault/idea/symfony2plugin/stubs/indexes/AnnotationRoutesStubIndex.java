@@ -247,21 +247,42 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
                     route.setPath(path);
                 }
 
+                route.setController(getController(phpDocTag));
+
                 map.put(routeName, route);
             }
+        }
+
+        /**
+         * FooController::fooAction
+         */
+        @Nullable
+        private String getController(@NotNull PhpDocTag phpDocTag) {
+            Method method = getMethodScope(phpDocTag);
+
+            if(method != null) {
+                PhpClass containingClass = method.getContainingClass();
+                if(containingClass != null) {
+                    String fqn = containingClass.getFQN();
+                    if(fqn != null) {
+                        return String.format("%s::%s",
+                            StringUtils.stripStart(fqn, "\\"),
+                            method.getName()
+                        );
+                    }
+
+                }
+            }
+
+            return null;
         }
 
         /**
          * "@SensioBlogBundle/Controller/PostController.php => sensio_blog_post_index"
          */
         private String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
-            PhpDocComment parentOfType = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
-            if(parentOfType == null) {
-                return null;
-            }
-
-            PhpPsiElement method = parentOfType.getNextPsiSibling();
-            if(!(method instanceof Method)) {
+            PhpPsiElement method = getMethodScope(phpDocTag);
+            if (method == null) {
                 return null;
             }
 
@@ -292,6 +313,21 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
             }
 
             return null;
+        }
+
+        @Nullable
+        private Method getMethodScope(@NotNull PhpDocTag phpDocTag) {
+            PhpDocComment parentOfType = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+            if(parentOfType == null) {
+                return null;
+            }
+
+            PhpPsiElement method = parentOfType.getNextPsiSibling();
+            if(!(method instanceof Method)) {
+                return null;
+            }
+
+            return (Method) method;
         }
 
         @Nullable
