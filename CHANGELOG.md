@@ -6,6 +6,13 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.106
+* Check null before calling getFormTypeClassOnParameter in FormUtil #650
+* Support form getParent syntax of Symfony 2.8 / 3.0 #651
+* Dropping service alias "form.type" and "form.type_extension" form sources using interfaces instead
+* Add path support, class prefix routes and auto naming for route annotation indexer
+* Add new form extension visitor to reuse type visitor and support for nested ExtendedType form; resolves #623 #651
+
 ### 0.11.105
 * Plugin renaming "Symfony2" -> "Symfony"
 * Support yml inline service alias #628

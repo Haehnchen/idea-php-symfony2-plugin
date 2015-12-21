@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.105</version>
+    <version>0.11.106</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -105,6 +105,15 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.106</h2>
+<ul>
+    <li>Check null before calling getFormTypeClassOnParameter in FormUtil <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/650">#650</a></li>
+    <li>Support form getParent syntax of Symfony 2.8 / 3.0 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/651">#651</a></li>
+    <li>Dropping service alias "form.type" and "form.type_extension" form sources using interfaces instead</li>
+    <li>Add path support, class prefix routes and auto naming for route annotation indexer</li>
+    <li>Add new form extension visitor to reuse type visitor and support for nested ExtendedType form; resolves <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/623">#623</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/651">#651</a></li>
+</ul>
 
 <h2>0.11.105</h2>
 <ul>
