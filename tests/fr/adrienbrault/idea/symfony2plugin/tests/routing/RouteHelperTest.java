@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.util.Condition;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.containers.ContainerUtil;
@@ -225,6 +226,19 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("Lol\\ApiBundle\\Controller\\UsersController::getInfoAction", routes.get("api_users_getInfo").getController());
         assertNull(routes.get("ru__RG__page"));
         assertNull(routes.get("_assetic_91dd2a8"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRouteNameTarget
+     */
+    public void testGetRouteNameTarget() {
+        PsiElement element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff");
+        assertNotNull(element);
+        assertTrue(element.getText().contains("my_car_foo_stuff"));
+
+        element = RouteHelper.getRouteNameTarget(getProject(), "my_foo_bar_car_index");
+        assertNotNull(element);
+        assertTrue(element.getText().contains("Route"));
     }
 
     @NotNull

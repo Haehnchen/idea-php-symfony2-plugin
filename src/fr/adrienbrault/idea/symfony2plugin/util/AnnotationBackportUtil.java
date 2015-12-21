@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
@@ -7,10 +8,12 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
+import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -214,4 +217,58 @@ public class AnnotationBackportUtil {
 
         return qualifiedName;
     }
+
+    /**
+     * "@SensioBlogBundle/Controller/PostController.php => sensio_blog_post_index"
+     */
+    public static String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
+        PhpPsiElement method = getMethodScope(phpDocTag);
+        if (method == null) {
+            return null;
+        }
+
+        String name = method.getName();
+        if(name == null) {
+            return null;
+        }
+
+        if(name.endsWith("Action")) {
+            name = name.substring(0, name.length() - "Action".length());
+        }
+
+        PhpClass containingClass = ((Method) method).getContainingClass();
+        if(containingClass == null) {
+            return null;
+        }
+
+        String fqn = containingClass.getFQN();
+        if(fqn != null) {
+            Matcher matcher = Pattern.compile("\\\\(\\w+)Bundle\\\\Controller\\\\(\\w+)Controller").matcher(fqn);
+            if (matcher.find()) {
+                return String.format("%s_%s_%s",
+                    fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(1)),
+                    fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(2)),
+                    name
+                );
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static Method getMethodScope(@NotNull PhpDocTag phpDocTag) {
+        PhpDocComment parentOfType = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+        if(parentOfType == null) {
+            return null;
+        }
+
+        PhpPsiElement method = parentOfType.getNextPsiSibling();
+        if(!(method instanceof Method)) {
+            return null;
+        }
+
+        return (Method) method;
+    }
+
 }

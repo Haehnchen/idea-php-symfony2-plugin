@@ -39,6 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -55,8 +56,6 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RouteHelper {
 
@@ -724,7 +723,7 @@ public class RouteHelper {
     }
 
     @Nullable
-    public static PsiElement getRouteNameTarget(Project project, String routeName) {
+    public static PsiElement getRouteNameTarget(@NotNull Project project, @NotNull String routeName) {
 
         VirtualFile[] virtualFiles = RouteHelper.getRouteDefinitionInsideFile(project, routeName);
         for(VirtualFile virtualFile: virtualFiles) {
@@ -755,9 +754,14 @@ public class RouteHelper {
                         PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
                         if(phpDocAttributeList != null) {
                             // @TODO: use pattern
-                            Matcher matcher = Pattern.compile("name\\s*=\\s*\"(\\w+)\"").matcher(phpDocAttributeList.getText());
-                            if (matcher.find() && matcher.group(1).equals(routeName)) {
+                            String annotationRouteName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
+                            if(annotationRouteName != null) {
                                 return phpDocAttributeList;
+                            } else {
+                                String routeByMethod = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
+                                if(routeName.equals(routeByMethod)) {
+                                    return phpDocTag;
+                                }
                             }
                         }
                     }

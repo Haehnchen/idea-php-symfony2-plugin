@@ -32,8 +32,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, RouteInterface> {
 
@@ -219,7 +217,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
 
             String routeName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
             if(routeName == null) {
-                routeName = getRouteByMethod(phpDocTag);
+                routeName = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
             }
 
             if(routeName != null && StringUtils.isNotBlank(routeName)) {
@@ -258,7 +256,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
          */
         @Nullable
         private String getController(@NotNull PhpDocTag phpDocTag) {
-            Method method = getMethodScope(phpDocTag);
+            Method method = AnnotationBackportUtil.getMethodScope(phpDocTag);
 
             if(method != null) {
                 PhpClass containingClass = method.getContainingClass();
@@ -275,59 +273,6 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
             }
 
             return null;
-        }
-
-        /**
-         * "@SensioBlogBundle/Controller/PostController.php => sensio_blog_post_index"
-         */
-        private String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
-            PhpPsiElement method = getMethodScope(phpDocTag);
-            if (method == null) {
-                return null;
-            }
-
-            String name = method.getName();
-            if(name == null) {
-                return null;
-            }
-
-            if(name.endsWith("Action")) {
-                name = name.substring(0, name.length() - "Action".length());
-            }
-
-            PhpClass containingClass = ((Method) method).getContainingClass();
-            if(containingClass == null) {
-                return null;
-            }
-
-            String fqn = containingClass.getFQN();
-            if(fqn != null) {
-                Matcher matcher = Pattern.compile("\\\\(\\w+)Bundle\\\\Controller\\\\(\\w+)Controller").matcher(fqn);
-                if (matcher.find()) {
-                    return String.format("%s_%s_%s",
-                        fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(1)),
-                        fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(2)),
-                        name
-                    );
-                }
-            }
-
-            return null;
-        }
-
-        @Nullable
-        private Method getMethodScope(@NotNull PhpDocTag phpDocTag) {
-            PhpDocComment parentOfType = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
-            if(parentOfType == null) {
-                return null;
-            }
-
-            PhpPsiElement method = parentOfType.getNextPsiSibling();
-            if(!(method instanceof Method)) {
-                return null;
-            }
-
-            return (Method) method;
         }
 
         @Nullable
