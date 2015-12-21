@@ -53,7 +53,7 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
      * @see FormOptionsUtil#getExtendedTypeClasses
      */
     public void testGetExtendedTypeClassesAsStringValue() {
-        FormClass foo = ContainerUtil.getFirstItem(FormOptionsUtil.getExtendedTypeClasses(getProject(), "foo"));
+        FormClass foo = ContainerUtil.getFirstItem(FormOptionsUtil.getExtendedTypeClasses(getProject(), "foo_bar_my_type"));
 
         assertNotNull(foo);
         assertEquals(FormClassEnum.EXTENSION, foo.getType());

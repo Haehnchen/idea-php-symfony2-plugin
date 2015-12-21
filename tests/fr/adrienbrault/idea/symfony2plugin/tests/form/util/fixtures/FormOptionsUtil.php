@@ -7,7 +7,7 @@ namespace Foo\Bar
     class MyType implements FormTypeExtensionInterface {
         public function getExtendedType()
         {
-            return 'foo';
+            return 'foo_bar_my_type';
         }
     }
 
