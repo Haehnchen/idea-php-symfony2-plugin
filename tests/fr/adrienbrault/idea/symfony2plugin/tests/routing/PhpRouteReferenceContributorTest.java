@@ -1,13 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
-import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
-import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,9 +26,24 @@ public class PhpRouteReferenceContributorTest extends SymfonyLightCodeInsightFix
     }
 
     public void testGenerateUrlProvidesNavigation() {
-        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
-            "/** @var $f \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
-            "$f->generate('<caret>')"
-        , "foo_bar");
+
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface", "generate"});
+            add(new String[] {"Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "generateUrl"});
+            add(new String[] {"Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "redirectToRoute"});
+            add(new String[] {"My\\Proxy\\Routing\\Controller", "generateUrl"});
+        }};
+
+        for (String[] provider : providers) {
+            assertCompletionContains(PhpFileType.INSTANCE,
+                String.format("<?php\n" +
+                    "/** @var $f \\%s */\n" +
+                    "$f->%s('<caret>')",
+                    provider[0], provider[1]
+                ),
+                "foo_bar"
+            );
+        }
+
     }
 }

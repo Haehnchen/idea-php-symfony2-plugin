@@ -29,3 +29,24 @@ namespace Symfony\Component\Routing\Generator
         public function generate();
     };
 }
+
+namespace Symfony\Bundle\FrameworkBundle\Controller
+{
+    class Controller
+    {
+        public function generateUrl($name) {}
+        public function redirectToRoute($name) {}
+    }
+}
+
+namespace My\Proxy\Routing
+{
+    class Controller
+    {
+        public function generateUrl($name)
+        {
+            /** @var \Symfony\Bundle\FrameworkBundle\Controller\Controller $foo */
+            $foo->generateUrl($name);
+        }
+    }
+}
