@@ -1,9 +1,10 @@
-IDEA PHP Symfony Plugin
+IntelliJ IDEA / PhpStorm Symfony Plugin
 ========================
 [![Build Status](https://travis-ci.org/Haehnchen/idea-php-symfony2-plugin.svg?branch=master)](https://travis-ci.org/Haehnchen/idea-php-symfony2-plugin)
 [![Version](http://phpstorm.espend.de/badge/7219/version)](https://plugins.jetbrains.com/plugin/7219)
 [![Downloads](http://phpstorm.espend.de/badge/7219/downloads)](https://plugins.jetbrains.com/plugin/7219)
 [![Downloads last month](http://phpstorm.espend.de/badge/7219/last-month)](https://plugins.jetbrains.com/plugin/7219)
+[![Donate to this project using Paypal](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8)
 
 Plugin url: https://plugins.jetbrains.com/plugin/7219
 
