@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
@@ -20,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
@@ -72,7 +74,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
             // we dont an "tags" key so we need to create one
 
-            String indent = serviceKeyValue.getValueIndent();
+            String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(serviceKeyValue));
 
             List<String> yamlSequences = new ArrayList<String>();
             for (String item : phpClassServiceTags) {
@@ -98,7 +100,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
             PsiElement firstChild = value.getFirstChild();
             if(firstChild instanceof YAMLSequence) {
 
-                String indent = argumentsKeyValue.getValueIndent();
+                String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(argumentsKeyValue));
 
                 List<String> yamlSequences = new ArrayList<String>();
                 for (String item : phpClassServiceTags) {

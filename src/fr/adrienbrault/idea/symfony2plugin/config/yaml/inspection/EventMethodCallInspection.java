@@ -34,8 +34,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLHash;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
 public class EventMethodCallInspection extends LocalInspectionTool {
@@ -136,7 +136,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         } else if(psiElement.getContainingFile() instanceof YAMLFile) {
 
             // yaml services
-            YAMLHash yamlHash = PsiTreeUtil.getParentOfType(psiElement, YAMLHash.class);
+            YAMLMapping yamlHash = PsiTreeUtil.getParentOfType(psiElement, YAMLMapping.class);
             if(yamlHash != null) {
                 YAMLKeyValue event = YamlHelper.getYamlKeyValue(yamlHash, "event");
                 if(event != null) {

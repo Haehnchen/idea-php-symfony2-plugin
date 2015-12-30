@@ -19,10 +19,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLArray;
-import org.jetbrains.yaml.psi.YAMLHash;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.YAMLSequenceItem;
 
 import java.util.*;
 
@@ -151,11 +151,11 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
      *  - b<caret>ar
      */
     private PsiElementPattern.Capture<PsiElement> getGlobalServiceStringPattern() {
-        return PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
-            PlatformPatterns.psiElement(YAMLKeyValue.class),
-            PlatformPatterns.psiElement(YAMLSequence.class),
-            PlatformPatterns.psiElement(YAMLArray.class),
-            PlatformPatterns.psiElement(YAMLHash.class)
-        ));
+        return PlatformPatterns.psiElement().withParent(
+                PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns.or(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class),
+                        PlatformPatterns.psiElement(YAMLSequenceItem.class),
+                        PlatformPatterns.psiElement(YAMLMapping.class)
+                )));
     }
 }

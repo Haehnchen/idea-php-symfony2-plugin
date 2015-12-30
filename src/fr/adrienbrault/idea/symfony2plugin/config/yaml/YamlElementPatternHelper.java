@@ -7,9 +7,8 @@ import com.intellij.psi.PsiWhiteSpace;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -31,33 +30,36 @@ public class YamlElementPatternHelper {
         // key: | and key: "quote" is valid here
         // getKeyPattern
         return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withName(
-                        PlatformPatterns.string().oneOf(keyName)
-                    )
-                )
-                .withLanguage(YAMLLanguage.INSTANCE)
+                PlatformPatterns
+                        .psiElement(YAMLTokenTypes.TEXT)
+                        .withParent(PlatformPatterns.psiElement(YAMLScalar.class)
+                                .withParent(PlatformPatterns
+                                        .psiElement(YAMLKeyValue.class)
+                                        .withName(
+                                                PlatformPatterns.string().oneOf(keyName)
+                                        )
+                                ))
+                        .withLanguage(YAMLLanguage.INSTANCE)
             ,
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withName(
-                        PlatformPatterns.string().oneOf(keyName)
-                    )
-                )
+                    .withParent(PlatformPatterns.psiElement(YAMLScalar.class)
+                            .withParent(PlatformPatterns
+                                    .psiElement(YAMLKeyValue.class)
+                                    .withName(
+                                            PlatformPatterns.string().oneOf(keyName)
+                                    )
+                            ))
                 .withLanguage(YAMLLanguage.INSTANCE),
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withName(
-                        PlatformPatterns.string().oneOf(keyName)
-                    )
-                )
+                    .withParent(PlatformPatterns.psiElement(YAMLScalar.class)
+                            .withParent(PlatformPatterns
+                                    .psiElement(YAMLKeyValue.class)
+                                    .withName(
+                                            PlatformPatterns.string().oneOf(keyName)
+                                    )
+                            ))
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
     }
@@ -83,7 +85,7 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
                             .withName(
@@ -101,9 +103,9 @@ public class YamlElementPatternHelper {
             //   xxx: xxx
             //   refer|
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
                         .withName(
@@ -146,7 +148,7 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
                             .withName(
@@ -163,9 +165,9 @@ public class YamlElementPatternHelper {
             //   xxx: xxx
             //   refer|
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
                         .withName(
@@ -205,12 +207,13 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
-                            .psiElement(YAMLKeyValue.class)
-                            .withParent(PlatformPatterns
-                                .psiElement(YAMLDocument.class)
-                            )
+                                .psiElement(YAMLKeyValue.class)
+                                .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                                        .withParent(PlatformPatterns
+                                                .psiElement(YAMLDocument.class)
+                                        ))
                         )
                     )
                 )
@@ -223,14 +226,15 @@ public class YamlElementPatternHelper {
             //   xxx: xxx
             //   refer|
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
-                        .withParent(PlatformPatterns
-                            .psiElement(YAMLDocument.class)
-                        )
+                        .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                                .withParent(PlatformPatterns
+                                        .psiElement(YAMLDocument.class)
+                                ))
                     )
                 )
                 .inFile(getOrmFilePattern())
@@ -245,9 +249,10 @@ public class YamlElementPatternHelper {
                 .psiElement(YAMLTokenTypes.TEXT)
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLDocument.class)
-                    )
+                    .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                            .withParent(PlatformPatterns
+                                    .psiElement(YAMLDocument.class)
+                            ))
                 )
                 .inFile(getOrmFilePattern())
                 .withLanguage(YAMLLanguage.INSTANCE)
@@ -266,12 +271,13 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
-                            .withParent(PlatformPatterns
-                                .psiElement(YAMLDocument.class)
-                            )
+                            .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                                    .withParent(PlatformPatterns
+                                            .psiElement(YAMLDocument.class)
+                                    ))
                         )
                     )
                 )
@@ -283,32 +289,19 @@ public class YamlElementPatternHelper {
             //   xxx: xxx
             //   refer|
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
-                        .withParent(PlatformPatterns
-                            .psiElement(YAMLDocument.class)
-                        )
-                    )
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-
-            // match
-            //
-            // xxx:
-            //   refer|
-            //   xxx: xxx
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLDocument.class)
+                        .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                                .withParent(PlatformPatterns
+                                        .psiElement(YAMLDocument.class)
+                                ))
                     )
                 )
                 .withLanguage(YAMLLanguage.INSTANCE)
+
         );
     }
 
@@ -334,11 +327,11 @@ public class YamlElementPatternHelper {
             .withParent(PlatformPatterns
                 .psiElement(YAMLKeyValue.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
                         .withParent(PlatformPatterns
-                            .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                            .psiElement(YAMLCompoundValue.class)
                             .withParent(PlatformPatterns
                                 .psiElement(YAMLKeyValue.class)
                                 .withName(PlatformPatterns
@@ -359,13 +352,13 @@ public class YamlElementPatternHelper {
             //     xxx: xxx
             //     refer|
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
                         .withParent(PlatformPatterns
-                            .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                            .psiElement(YAMLCompoundValue.class)
                             .withParent(PlatformPatterns
                                 .psiElement(YAMLKeyValue.class)
                                 .withName(PlatformPatterns
@@ -385,11 +378,11 @@ public class YamlElementPatternHelper {
             //     refer|
             //     xxx: xxx
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
                             .withName(PlatformPatterns
@@ -423,11 +416,11 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
                             .withParent(PlatformPatterns
-                                .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                                .psiElement(YAMLCompoundValue.class)
                                 .withParent(PlatformPatterns
                                     .psiElement(YAMLKeyValue.class)
                                     .withName(PlatformPatterns
@@ -447,13 +440,13 @@ public class YamlElementPatternHelper {
             //     xxx: xxx
             //     refer|
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLCompoundValue.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
                         .withParent(PlatformPatterns
-                            .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                            .psiElement(YAMLCompoundValue.class)
                             .withParent(PlatformPatterns
                                 .psiElement(YAMLKeyValue.class)
                                 .withName(PlatformPatterns
@@ -472,11 +465,11 @@ public class YamlElementPatternHelper {
             //     refer|
             //     xxx: xxx
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
+                .psiElement(YAMLPlainTextImpl.class)
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                        .psiElement(YAMLCompoundValue.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
                             .withName(PlatformPatterns
@@ -582,7 +575,7 @@ public class YamlElementPatternHelper {
 
     private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String... keyName) {
         return PlatformPatterns
-            .psiElement(YAMLTokenTypes.TEXT)
+            .psiElement(YAMLTokenTypes.SCALAR_KEY)
             .withParent(PlatformPatterns
                 .psiElement(YAMLKeyValue.class)
                 .withName(
@@ -598,7 +591,7 @@ public class YamlElementPatternHelper {
     public static ElementPattern<PsiElement> getConfigKeyPattern() {
         return PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
             PlatformPatterns.psiElement(YAMLDocument.class),
-            PlatformPatterns.psiElement(YAMLCompoundValue.class),
+            PlatformPatterns.psiElement(YAMLScalar.class),
             PlatformPatterns.psiElement(YAMLKeyValue.class)
         )).inFile(
             // not should fire this in all yaml files
@@ -613,23 +606,11 @@ public class YamlElementPatternHelper {
      * [@service, createNewsletterManager|]
      * ['@service', createNewsletterManager|]
      */
-    public static ElementPattern<PsiElement> getAfterCommaPattern() {
+    public static ElementPattern<? extends PsiElement> getAfterCommaPattern() {
 
         return PlatformPatterns.or(
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .afterLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withText(",")
-                ),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .afterLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withText(",")
-                ),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .psiElement(YAMLScalar.class)
                 .afterLeafSkipping(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement().withText(",")
@@ -645,23 +626,11 @@ public class YamlElementPatternHelper {
      * [@service, createNewsletterManager|]
      * ['@service', createNewsletterManager|]
      */
-    public static ElementPattern<PsiElement> getPreviousCommaSibling() {
+    public static ElementPattern<? extends PsiElement> getPreviousCommaSibling() {
 
         return PlatformPatterns.or(
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .beforeLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withText(",")
-                ),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .beforeLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withText(",")
-                ),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
+                .psiElement(YAMLScalar.class)
                 .beforeLeafSkipping(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement().withText(",")
@@ -675,16 +644,16 @@ public class YamlElementPatternHelper {
      *    foo.example.class: |
      *
      */
-    static PsiElementPattern.Capture<PsiElement> getParameterClassPattern() {
+    static PsiElementPattern.Capture<? extends PsiElement> getParameterClassPattern() {
         return PlatformPatterns
-            .psiElement(YAMLTokenTypes.TEXT)
+            .psiElement(YAMLScalar.class)
             .withParent(PlatformPatterns
                 .psiElement(YAMLKeyValue.class)
                 .withName(
                     PlatformPatterns.string().endsWith(".class")
                 )
                 .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.COMPOUND_VALUE)
+                    .psiElement(YAMLElementTypes.MAPPING)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
                         .withName("parameters")

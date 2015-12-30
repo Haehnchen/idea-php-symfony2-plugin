@@ -5,7 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLHash;
+import org.jetbrains.yaml.psi.YAMLMapping;
 
 /**
  * Abstract visitor, so we can support as YAMLHash in future
@@ -22,12 +22,12 @@ public class YamlServiceTag implements ServiceTagInterface {
     private final String serviceId;
 
     @NotNull
-    private final YAMLHash yamlHash;
+    private final YAMLMapping yamlMapping;
 
-    private YamlServiceTag(@NotNull String name, @NotNull String serviceId, @NotNull YAMLHash yamlHash) {
+    private YamlServiceTag(@NotNull String name, @NotNull String serviceId, @NotNull YAMLMapping yamlMapping) {
         this.name = name;
         this.serviceId = serviceId;
-        this.yamlHash = yamlHash;
+        this.yamlMapping = yamlMapping;
     }
 
     @NotNull
@@ -43,11 +43,11 @@ public class YamlServiceTag implements ServiceTagInterface {
 
     @Nullable
     public String getAttribute(@NotNull String attr) {
-        return YamlHelper.getYamlKeyValueAsString(yamlHash, attr);
+        return YamlHelper.getYamlKeyValueAsString(yamlMapping, attr);
     }
 
     @Nullable
-    public static ServiceTagInterface create(@NotNull String serviceId, @NotNull YAMLHash yamlHash) {
+    public static ServiceTagInterface create(@NotNull String serviceId, @NotNull YAMLMapping yamlHash) {
         String name = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
         if(StringUtils.isBlank(name)) {
             return null;

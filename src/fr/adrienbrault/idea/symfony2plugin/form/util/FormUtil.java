@@ -266,25 +266,21 @@ public class FormUtil {
             return Collections.emptySet();
         }
 
-        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(tagTag, YAMLCompoundValue.class);
-        if(yamlCompoundValue == null) {
+        final YAMLValue tagsValue = tagTag.getValue();
+        if(!(tagsValue instanceof YAMLSequence)) {
             return Collections.emptySet();
         }
 
-        Collection<YAMLSequence> yamlSequences = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class);
-        for(YAMLSequence yamlSequence: yamlSequences) {
-            YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
+        for(YAMLSequenceItem yamlSequenceItem: ((YAMLSequence) tagsValue).getItems()) {
+            final YAMLValue itemValue = yamlSequenceItem.getValue();
 
-            if(yamlHash != null) {
-                YAMLKeyValue yamlTagNameKeyValue = YamlHelper.getYamlKeyValue(yamlHash, "name");
+            if(itemValue instanceof YAMLMapping) {
+                YAMLKeyValue yamlTagNameKeyValue = YamlHelper.getYamlKeyValue(((YAMLMapping) itemValue), "name");
                 if(yamlTagNameKeyValue != null) {
                     String tagName = yamlTagNameKeyValue.getValueText();
-                    if(tagName != null) {
 
-                        tagName = PsiElementUtils.trimQuote(tagName);
-                        if(StringUtils.isNotBlank(tagName)) {
-                            tags.add(tagName);
-                        }
+                    if(StringUtils.isNotBlank(tagName)) {
+                        tags.add(tagName);
                     }
                 }
             }
