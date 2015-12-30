@@ -732,25 +732,15 @@ public class RouteHelper {
 
         YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(psiElement, "defaults");
         if(yamlKeyValue != null) {
-            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(yamlKeyValue, YAMLCompoundValue.class);
-            if(yamlCompoundValue != null) {
+            final YAMLValue container = yamlKeyValue.getValue();
+            if(container instanceof YAMLMapping) {
 
-                // if we have a child of YAMLKeyValue, we need to go back to parent
-                // else on YAMLHash we can directly visit array keys
-                PsiElement yamlHashElement = PsiTreeUtil.getChildOfAnyType(yamlCompoundValue, YAMLHash.class, YAMLKeyValue.class);
-                if(yamlHashElement instanceof YAMLKeyValue) {
-                    yamlHashElement = yamlCompoundValue;
-                }
-
-                if(yamlHashElement != null) {
-                    YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(yamlHashElement, "_controller", true);
-                    if(yamlKeyValueController != null) {
-                        String valueText = yamlKeyValueController.getValueText();
-                        if(StringUtils.isNotBlank(valueText)) {
-                            return valueText;
-                        }
+                YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(container, "_controller", true);
+                if(yamlKeyValueController != null) {
+                    String valueText = yamlKeyValueController.getValueText();
+                    if(StringUtils.isNotBlank(valueText)) {
+                        return valueText;
                     }
-
                 }
             }
 

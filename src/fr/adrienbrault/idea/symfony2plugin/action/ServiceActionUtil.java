@@ -351,7 +351,7 @@ public class ServiceActionUtil {
 
             PsiElement yamlCompoundValue = container.getArgument().getValue();
             if(yamlCompoundValue instanceof YAMLCompoundValue) {
-                List<PsiElement> yamlArrayOnSequenceOrArrayElements = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
+                List<YAMLSequenceItem> yamlArrayOnSequenceOrArrayElements = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
                 if(yamlArrayOnSequenceOrArrayElements != null) {
                     serviceArguments = yamlArrayOnSequenceOrArrayElements.size();
                 }

@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
@@ -29,10 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLArray;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -173,29 +169,29 @@ public class YamlAnnotator implements Annotator {
         if (!isStringValue(psiElement)) {
             return;
         }
-
+        
         // @TODO: simplify code checks
 
-        if(!(psiElement.getContext() instanceof YAMLArray)) {
+        if(!(psiElement.getContext() instanceof YAMLSequenceItem)) {
+            return;
+        }
+        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) psiElement.getContext();
+        
+        if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
+            return;
+        }
+        final YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
+        
+        if(!(yamlArray.getContext() instanceof YAMLKeyValue)) {
             return;
         }
 
-        YAMLArray yamlArray = (YAMLArray) psiElement.getContext();
-        if(!(yamlArray.getContext() instanceof YAMLCompoundValue)) {
+        final YAMLKeyValue yamlKeyValue = (YAMLKeyValue) yamlArray.getContext();
+        if(!yamlKeyValue.getKeyText().equals("arguments")) {
             return;
         }
 
-        YAMLCompoundValue yamlCompoundValue = (YAMLCompoundValue) yamlArray.getContext();
-        if(!(yamlCompoundValue.getContext() instanceof YAMLKeyValue)) {
-            return;
-        }
-
-        YAMLKeyValue yamlKeyValue = (YAMLKeyValue) yamlCompoundValue.getContext();
-        if(yamlKeyValue == null || !yamlKeyValue.getKeyText().equals("arguments")) {
-            return;
-        }
-
-        YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue.getContext(), "class");
+        final YAMLKeyValue classKeyValue = yamlKeyValue.getParentMapping().getKeyValueByKey("class");
         if(classKeyValue == null) {
             return;
         }
@@ -227,39 +223,47 @@ public class YamlAnnotator implements Annotator {
         }
 
         // @TODO: simplify code checks
-        if(!(psiElement.getContext() instanceof YAMLArray)) {
+        if(!(psiElement.getContext() instanceof YAMLSequenceItem)) {
+            return;
+        }
+        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) psiElement.getContext();
+        
+        if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
             return;
         }
 
-        YAMLArray yamlCallParameterArray = (YAMLArray) psiElement.getContext();
-        if(!(yamlCallParameterArray.getContext() instanceof YAMLArray)) {
+        YAMLSequence yamlCallParameterArray = (YAMLSequence) sequenceItem.getContext();
+        if(!(yamlCallParameterArray.getContext() instanceof YAMLSequenceItem)) {
             return;
         }
 
-        YAMLArray yamlCallArray = (YAMLArray) yamlCallParameterArray.getContext();
+        final YAMLSequenceItem enclosingItem = (YAMLSequenceItem) yamlCallParameterArray.getContext();
+        if (!(enclosingItem.getContext() instanceof YAMLSequence)) {
+            return;
+        }
+        
+        YAMLSequence yamlCallArray = (YAMLSequence) enclosingItem.getContext();
         if(!(yamlCallArray.getContext() instanceof YAMLSequence)) {
             return;
         }
 
-        List<PsiElement> methodParameter = YamlHelper.getYamlArrayValues(yamlCallArray);
+        final List<YAMLSequenceItem> methodParameter = YamlHelper.getYamlArrayValues(yamlCallArray);
         if(methodParameter.size() < 2) {
             return;
         }
 
-        String methodName = PsiElementUtils.getText(methodParameter.get(0));
+        final YAMLValue methodNameElement = methodParameter.get(0).getValue();
+        final String methodName = methodNameElement instanceof YAMLScalar
+                ? ((YAMLScalar) methodNameElement).getTextValue()
+                : "";
 
-        YAMLSequence yamlSequence = (YAMLSequence) yamlCallArray.getContext();
-        if(!(yamlSequence.getContext() instanceof YAMLCompoundValue)) {
+        
+        YAMLSequence yamlSequence = (YAMLSequence) enclosingItem.getContext();
+        if(!(yamlSequence.getContext() instanceof YAMLKeyValue)) {
             return;
         }
 
-        YAMLCompoundValue yamlCompoundValue = (YAMLCompoundValue) yamlSequence.getContext();
-        if(!(yamlCompoundValue.getContext() instanceof YAMLKeyValue)) {
-            return;
-        }
-
-        YAMLCompoundValue serviceDefinition = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
-        YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(serviceDefinition, "class");
+        final YAMLKeyValue classKeyValue = ((YAMLKeyValue) yamlSequence.getContext()).getParentMapping().getKeyValueByKey("class");
         if(classKeyValue == null) {
             return;
         }
@@ -305,7 +309,7 @@ public class YamlAnnotator implements Annotator {
         }
     }
 
-    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLArray yamlArray, Method constructor) {
+    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLSequence yamlArray, Method constructor) {
 
         if(psiElement == null) {
             return;

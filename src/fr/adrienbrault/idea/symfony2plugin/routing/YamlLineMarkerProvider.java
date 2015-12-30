@@ -7,7 +7,6 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -86,31 +85,22 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLDocument) {
             YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue((YAMLKeyValue) psiElement, "defaults");
             if(yamlKeyValue != null) {
-                YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(yamlKeyValue, YAMLCompoundValue.class);
-                if(yamlCompoundValue != null) {
+                final YAMLValue container = yamlKeyValue.getValue();
+                if(container instanceof YAMLMapping) {
 
-                    // if we have a child of YAMLKeyValue, we need to go back to parent
-                    // else on YAMLHash we can directly visit array keys
-                    PsiElement yamlHashElement = PsiTreeUtil.getChildOfAnyType(yamlCompoundValue, YAMLHash.class, YAMLKeyValue.class);
-                    if(yamlHashElement instanceof YAMLKeyValue) {
-                        yamlHashElement = yamlCompoundValue;
-                    }
+                    YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(container, "_controller", true);
+                    if(yamlKeyValueController != null) {
+                        PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlKeyValueController.getValueText());
+                        if(methods.length > 0) {
+                            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
+                                setTargets(methods).
+                                setTooltipText("Navigate to action");
 
-                    if(yamlHashElement != null) {
-                        YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(yamlHashElement, "_controller", true);
-                        if(yamlKeyValueController != null) {
-                            PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlKeyValueController.getValueText());
-                            if(methods.length > 0) {
-                                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                                    setTargets(methods).
-                                    setTooltipText("Navigate to action");
-
-                                lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
-                            }
-
+                            lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
                         }
 
                     }
+
                 }
 
             }

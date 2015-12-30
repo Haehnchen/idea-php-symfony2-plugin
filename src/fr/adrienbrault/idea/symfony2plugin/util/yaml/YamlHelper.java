@@ -5,7 +5,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -14,9 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
-import org.jetbrains.yaml.psi.impl.YAMLPsiElementImpl;
 
 import java.util.*;
 
@@ -61,43 +58,43 @@ public class YamlHelper {
      *
      *  TODO: drop this hack; included in core now
      */
-    static public List<PsiElement> getYamlArrayValues(YAMLArray yamlArray) {
-
-
-        // split possible element at comma sperator
-        HashMap<Integer, ArrayList<PsiElement>> argumentSplitter = new HashMap<Integer, ArrayList<PsiElement>>();
-        int currentParameter = 0;
-        argumentSplitter.put(currentParameter, new ArrayList<PsiElement>());
-        for(PsiElement psiElement: getChildrenFix(yamlArray)) {
-            if(psiElement.getText().equals(",")) {
-                argumentSplitter.put(++currentParameter, new ArrayList<PsiElement>());
-            } else {
-                if(!(psiElement instanceof PsiWhiteSpace)) {
-                    argumentSplitter.get(currentParameter).add(psiElement);
-                }
-            }
-        }
-
-        // search for valid psi argument value
-        List<PsiElement> keys = new ArrayList<PsiElement>();
-        for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
-            PsiElement parameterPsiElement = null;
-            for(PsiElement psiElement: psiEntry.getValue()) {
-                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.QUESTION).accepts(psiElement)) {
-                    parameterPsiElement = psiElement;
-                } else if(psiElement instanceof YAMLPsiElementImpl) {
-                    parameterPsiElement = psiElement;
-                }
-
-            }
-
-            if(parameterPsiElement != null) {
-                keys.add(parameterPsiElement);
-            }
-
-        }
-
-        return keys;
+    @NotNull
+    static public List<YAMLSequenceItem> getYamlArrayValues(@NotNull YAMLSequence yamlArray) {
+        return yamlArray.getItems();
+//        // split possible element at comma sperator
+//        HashMap<Integer, ArrayList<PsiElement>> argumentSplitter = new HashMap<Integer, ArrayList<PsiElement>>();
+//        int currentParameter = 0;
+//        argumentSplitter.put(currentParameter, new ArrayList<PsiElement>());
+//        for(PsiElement psiElement: getChildrenFix(yamlArray)) {
+//            if(psiElement.getText().equals(",")) {
+//                argumentSplitter.put(++currentParameter, new ArrayList<PsiElement>());
+//            } else {
+//                if(!(psiElement instanceof PsiWhiteSpace)) {
+//                    argumentSplitter.get(currentParameter).add(psiElement);
+//                }
+//            }
+//        }
+//
+//        // search for valid psi argument value
+//        List<PsiElement> keys = new ArrayList<PsiElement>();
+//        for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
+//            PsiElement parameterPsiElement = null;
+//            for(PsiElement psiElement: psiEntry.getValue()) {
+//                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.QUESTION).accepts(psiElement)) {
+//                    parameterPsiElement = psiElement;
+//                } else if(psiElement instanceof YAMLPsiElementImpl) {
+//                    parameterPsiElement = psiElement;
+//                }
+//
+//            }
+//
+//            if(parameterPsiElement != null) {
+//                keys.add(parameterPsiElement);
+//            }
+//
+//        }
+//
+//        return keys;
     }
 
     @Nullable
@@ -107,17 +104,16 @@ public class YamlHelper {
 
     @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable PsiElement yamlCompoundValue, String keyName, boolean ignoreCase) {
-
-        if(yamlCompoundValue == null) {
+        if (!(yamlCompoundValue instanceof YAMLMapping)) {
             return null;
         }
 
-        YAMLKeyValue classKeyValue;
-        if(ignoreCase) {
-            classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns.string().oneOfIgnoreCase(keyName)));
-        } else {
-            classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(keyName));
+        if (!ignoreCase) {
+            return ((YAMLMapping) yamlCompoundValue).getKeyValueByKey(keyName);
         }
+        
+        YAMLKeyValue classKeyValue;
+        classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns.string().oneOfIgnoreCase(keyName)));
 
         if(classKeyValue == null) {
             return null;
@@ -127,14 +123,12 @@ public class YamlHelper {
     }
 
 
-
-
-    public static int getYamlParameter(YAMLArray yamlArray, PsiElement psiKeyElement) {
+    public static int getYamlParameter(@NotNull YAMLSequence yamlArray, @NotNull PsiElement psiKeyElement) {
         int parameter = -1;
 
-        for(PsiElement psiElement: getYamlArrayValues(yamlArray)) {
+        for(YAMLSequenceItem sequenceItem: getYamlArrayValues(yamlArray)) {
             parameter++;
-            if(psiElement != null && psiElement.equals(psiKeyElement)) {
+            if(sequenceItem != null && psiKeyElement.equals(sequenceItem.getValue())) {
                 return parameter;
             }
         }
@@ -278,7 +272,7 @@ public class YamlHelper {
 
     }
 
-    @Nullable
+    @NotNull
     public static String trimSpecialSyntaxServiceName(@NotNull String serviceName) {
 
         if(serviceName.startsWith("@")) {
@@ -339,33 +333,28 @@ public class YamlHelper {
     }
 
     @Nullable
-    public static YAMLKeyValue getYamlKeyValue(@NotNull YAMLHash yamlHash, String keyName) {
+    public static YAMLKeyValue getYamlKeyValue(@NotNull YAMLMapping yamlHash, String keyName) {
         return getYamlKeyValue(yamlHash, keyName, false);
     }
 
     @Nullable
-    public static String getYamlKeyValueAsString(@NotNull YAMLHash yamlHash, String keyName) {
+    public static String getYamlKeyValueAsString(@NotNull YAMLMapping yamlHash, @NotNull String keyName) {
         YAMLKeyValue yamlKeyValue = getYamlKeyValue(yamlHash, keyName, false);
         if(yamlKeyValue == null) {
             return null;
         }
 
-        String valueText = yamlKeyValue.getValueText();
+        final String valueText = yamlKeyValue.getValueText();
         if(StringUtils.isBlank(valueText)) {
             return null;
         }
 
-        String s = PsiElementUtils.trimQuote(valueText);
-        if(StringUtils.isBlank(s)) {
-            return null;
-        }
-
-        return s;
+        return valueText;
     }
 
 
     @Nullable
-    public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, String keyName) {
+    public static YAMLKeyValue getYamlKeyValue(@Nullable YAMLKeyValue yamlKeyValue, @NotNull String keyName) {
         return getYamlKeyValue(yamlKeyValue, keyName, false);
     }
 
@@ -398,11 +387,11 @@ public class YamlHelper {
         }
 
         String valueText = yamlKeyValue1.getValueText();
-        if(valueText == null) {
+        if (StringUtils.isBlank(valueText)) {
             return null;
         }
 
-        return PsiElementUtils.trimQuote(valueText);
+        return valueText;
     }
 
     @Nullable
@@ -488,7 +477,9 @@ public class YamlHelper {
         if(yamlKeyValues.size() > 0) {
             for(PsiElement psiElement: yamlKeyValues) {
                 if(psiElement instanceof YAMLKeyValue) {
-                    holder.registerProblem(((YAMLKeyValue) psiElement).getKey(), "Duplicate key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                    final PsiElement keyElement = ((YAMLKeyValue) psiElement).getKey();
+                    assert keyElement != null;
+                    holder.registerProblem(keyElement, "Duplicate keyElement", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                 }
             }
         }
@@ -560,14 +551,10 @@ public class YamlHelper {
      *
      */
     @Nullable
-    public static List<PsiElement> getYamlArrayOnSequenceOrArrayElements(@NotNull YAMLCompoundValue yamlCompoundValue) {
+    public static List<YAMLSequenceItem> getYamlArrayOnSequenceOrArrayElements(@NotNull YAMLCompoundValue yamlCompoundValue) {
 
-        PsiElement firstChild = yamlCompoundValue.getFirstChild();
-
-        if(firstChild instanceof YAMLArray) {
-            return YamlHelper.getYamlArrayValues((YAMLArray) firstChild);
-        } else if(firstChild instanceof YAMLSequence) {
-            return new ArrayList<PsiElement>(PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class));
+        if (yamlCompoundValue instanceof YAMLSequence) {
+            return ((YAMLSequence) yamlCompoundValue).getItems();
         }
 
         return null;
@@ -590,7 +577,7 @@ public class YamlHelper {
 
         // we are inside a YAMLHash element, find most parent array key
         // { name: foo }
-        if(serviceSubKeyCompound instanceof YAMLHash) {
+        if(serviceSubKeyCompound instanceof YAMLMapping) {
             YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(serviceSubKeyCompound, YAMLKeyValue.class);
             if(yamlKeyValue == null) {
                 return null;
@@ -607,7 +594,7 @@ public class YamlHelper {
                 if(servicesKeyCompound instanceof YAMLCompoundValue) {
                     PsiElement servicesKey = servicesKeyCompound.getParent();
                     if(servicesKey instanceof YAMLKeyValue) {
-                        if("services".equals(((YAMLKeyValue) servicesKey).getName())) {
+                        if("services".equals(((YAMLKeyValue) servicesKey).getKeyText())) {
                             return (YAMLKeyValue) serviceKey;
                         }
                     }
@@ -634,20 +621,20 @@ public class YamlHelper {
         }
 
         PsiElement tagsCompound = tagsKeyValue.getValue();
-        if(!(tagsCompound instanceof YAMLCompoundValue)) {
+        if(!(tagsCompound instanceof YAMLSequence)) {
             return null;
         }
 
         Set<String> tags = new HashSet<String>();
 
-        for (YAMLSequence yamlSequence : PsiTreeUtil.getChildrenOfTypeAsList(tagsCompound, YAMLSequence.class)) {
+        for (YAMLSequenceItem yamlSequenceItem : ((YAMLSequence) tagsCompound).getItems()) {
 
-            YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
-            if(yamlHash == null) {
+            final YAMLValue value = yamlSequenceItem.getValue();
+            if(!(value instanceof YAMLMapping)) {
                 continue;
             }
 
-            String name = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
+            String name = YamlHelper.getYamlKeyValueAsString(((YAMLMapping) value), "name");
             if(name != null) {
                 tags.add(name);
             }
@@ -667,16 +654,16 @@ public class YamlHelper {
             return;
         }
 
-        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(tagTag, YAMLCompoundValue.class);
-        if(yamlCompoundValue == null) {
+        final YAMLValue tagsValue = tagTag.getValue();
+        if(!(tagsValue instanceof YAMLSequence)) {
             return;
         }
 
-        Collection<YAMLSequence> yamlSequences = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class);
-        for(YAMLSequence yamlSequence: yamlSequences) {
-            YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
+        for(YAMLSequenceItem yamlSequenceItem: ((YAMLSequence) tagsValue).getItems()) {
+            final YAMLValue itemValue = yamlSequenceItem.getValue();
 
-            if(yamlHash != null) {
+            if(itemValue instanceof YAMLMapping) {
+                final YAMLMapping yamlHash = (YAMLMapping) itemValue;
                 String tagName = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
                 if(tagName != null) {
                     visitor.visit(new YamlServiceTag(tagName, yamlHash));

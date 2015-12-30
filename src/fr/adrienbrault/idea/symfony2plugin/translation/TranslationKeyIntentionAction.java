@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
@@ -17,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -99,7 +101,7 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
                 String currentIndentOffset = "";
                 PsiElement lastKnownPsiElement = goToPsi.getYamlKeyValue();
                 if(lastKnownPsiElement instanceof YAMLKeyValue) {
-                    currentIndentOffset = ((YAMLKeyValue) lastKnownPsiElement).getValueIndent();
+                    currentIndentOffset = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(lastKnownPsiElement));
                 }
 
                 String insertString = "";

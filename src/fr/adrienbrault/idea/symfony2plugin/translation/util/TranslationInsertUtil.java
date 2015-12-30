@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -16,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -50,7 +52,7 @@ public class TranslationInsertUtil {
                 String currentIndentOffset = "";
                 PsiElement lastKnownPsiElement = goToPsi.getYamlKeyValue();
                 if(lastKnownPsiElement instanceof YAMLKeyValue) {
-                    currentIndentOffset = ((YAMLKeyValue) lastKnownPsiElement).getValueIndent();
+                    currentIndentOffset = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(lastKnownPsiElement));
                 }
 
                 String insertString = "";
@@ -116,7 +118,7 @@ public class TranslationInsertUtil {
 
         YAMLKeyValue parentYamlKey = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
         if(parentYamlKey != null) {
-            return parentYamlKey.getValueIndent();
+            return StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(parentYamlKey));
         }
 
         PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), new PsiElementFilter() {

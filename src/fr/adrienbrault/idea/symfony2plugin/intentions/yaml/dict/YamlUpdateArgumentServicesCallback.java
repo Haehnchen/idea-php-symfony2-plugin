@@ -2,16 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.yaml.psi.YAMLArray;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.YAMLUtil;
+import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
+import org.jetbrains.yaml.psi.impl.YAMLBlockSequenceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
     @Override
     public void insert(List<String> items) {
 
-        PsiElement yamlCompoundValue = argumentsKeyValue.getValue();
+        YAMLValue yamlCompoundValue = argumentsKeyValue.getValue();
         if(!(yamlCompoundValue instanceof YAMLCompoundValue)) {
             return;
         }
@@ -46,11 +47,11 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
         PsiElement firstChild1 = yamlCompoundValue.getFirstChild();
 
 
-        if(firstChild1 instanceof YAMLSequence) {
+        if(firstChild1 instanceof YAMLBlockSequenceImpl) {
             // - @foo
 
             // search indent and EOL value
-            String indent = argumentsKeyValue.getValueIndent();
+            String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(argumentsKeyValue));
             String eol = TranslationInsertUtil.findEol(yamlKeyValue);
 
             List<String> yamlSequences = new ArrayList<String>();
@@ -62,10 +63,10 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
             appendEndOffset = yamlCompoundValue.getTextRange().getEndOffset();
             insertString = eol + StringUtils.join(yamlSequences, eol);
 
-        } else if(firstChild1 instanceof YAMLArray) {
+        } else if(firstChild1 instanceof YAMLArrayImpl) {
 
             // we wound array
-            List<PsiElement> yamlArguments = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
+            List<YAMLSequenceItem> yamlArguments = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
             if(yamlArguments != null && yamlArguments.size() > 0) {
                 appendEndOffset = yamlArguments.get(yamlArguments.size() - 1).getTextRange().getEndOffset();
 

@@ -45,7 +45,7 @@ public class ServiceTagFactory {
                     return;
                 }
 
-                ServiceTagInterface e = YamlServiceTag.create(serviceId, args.getYamlHash());
+                ServiceTagInterface e = YamlServiceTag.create(serviceId, args.getYamlMapping());
                 if(e != null) {
                     tags.add(e);
                 }
