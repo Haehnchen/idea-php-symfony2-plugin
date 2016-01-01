@@ -20,11 +20,4 @@ env:
   
 matrix:
   allow_failures:
-    - jdk: oraclejdk8
-      env: PHPSTORM_ENV=8
-    - jdk: oraclejdk8
-      env: PHPSTORM_ENV=9
-    - jdk: oraclejdk8
-      env: PHPSTORM_ENV=10
-      
     - env: PHPSTORM_ENV=10eap
