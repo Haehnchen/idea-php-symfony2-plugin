@@ -233,7 +233,7 @@ public class TwigUtil {
             return matcher.group(1);
         }
 
-        regex = "\\|\\s*transchoice\\s*\\(\\s*\\d+\\s*,\\s*[\\{|\\[].*?[\\}|\\]]\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
+        regex = "\\|\\s*transchoice\\s*\\(\\s*\\w*\\s*,\\s*[\\{|\\[].*?[\\}|\\]]\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {

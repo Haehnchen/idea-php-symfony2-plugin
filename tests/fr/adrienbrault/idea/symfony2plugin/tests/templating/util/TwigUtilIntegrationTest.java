@@ -79,7 +79,11 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
             "{{ '<caret>'|transchoice(3, [], 'foo') }}",
             "{{ '<caret>'|trans({}, 'foo') }}",
             "{{ '<caret>'|trans([], 'foo') }}",
+            //@TODO "{{ '<caret>'|trans(, 'foo') }}",
             "{{ '<caret>'|trans({'foo': 'foo', 'foo'}, 'foo') }}",
+            "{{ '<caret>' | transchoice(count, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>' | transchoice(c, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>' | transchoice(, {'%var%': value}, 'foo') }}"
         };
 
         for (String s : blocks) {
