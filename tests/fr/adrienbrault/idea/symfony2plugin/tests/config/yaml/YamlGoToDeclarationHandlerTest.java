@@ -29,11 +29,11 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         assertNavigationMatch(YAMLFileType.YML, "bar: f<caret>oo", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: [ f<caret>oo ]", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: { f<caret>oo }", getClassPattern());
-        assertNavigationMatch(YAMLFileType.YML, "bar:\\n  - f<caret>oo", getClassPattern());
+        assertNavigationMatch(YAMLFileType.YML, "bar:\n  - f<caret>oo", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: [ bar, f<caret>oo ]", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: { bar: f<caret>oo }", getClassPattern());
 
-        assertNavigationIsEmpty(YAMLFileType.YML, "fo<caret>o:\\n  - foo");
+        assertNavigationIsEmpty(YAMLFileType.YML, "fo<caret>o:\n  - foo");
         assertNavigationIsEmpty(YAMLFileType.YML, "bar: { f<caret>oo: bar }");
 
         assertNavigationMatch(YAMLFileType.YML, "bar: foo.ba<caret>r_foo", getClassPattern());
@@ -44,14 +44,14 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         assertNavigationMatch(YAMLFileType.YML, "bar: 'f<caret>oo'", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: [ 'f<caret>oo' ]", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: { 'f<caret>oo' }", getClassPattern());
-        assertNavigationMatch(YAMLFileType.YML, "bar:\\n  - 'f<caret>oo'", getClassPattern());
-        assertNavigationIsEmpty(YAMLFileType.YML, "'fo<caret>o':\\n  - foo");
+        assertNavigationMatch(YAMLFileType.YML, "bar:\n  - 'f<caret>oo'", getClassPattern());
+        assertNavigationIsEmpty(YAMLFileType.YML, "'fo<caret>o':\n  - foo");
 
         assertNavigationMatch(YAMLFileType.YML, "bar: \"f<caret>oo\"", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: [ \"f<caret>oo\" ]", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: { \"f<caret>oo\" }", getClassPattern());
-        assertNavigationMatch(YAMLFileType.YML, "bar:\\n  - \"f<caret>oo\"", getClassPattern());
-        assertNavigationIsEmpty(YAMLFileType.YML, "\"fo<caret>o\":\\n  - foo");
+        assertNavigationMatch(YAMLFileType.YML, "bar:\n  - \"f<caret>oo\"", getClassPattern());
+        assertNavigationIsEmpty(YAMLFileType.YML, "\"fo<caret>o\":\n  - foo");
 
     }
 
