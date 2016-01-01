@@ -729,24 +729,47 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {% block 'foo' %}
+     * {% block "foo" %}
+     * {% block foo %}
+     */
     public static ElementPattern<PsiElement> getBlockTagPattern() {
         //noinspection unchecked
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.BLOCK_TAG)
-            )
+        return PlatformPatterns.or(
+
+            // {% block "foo" %}
+            PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
                 PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("block")
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
             )
-            .withLanguage(TwigLanguage.INSTANCE);
+            .withParent(
+                PlatformPatterns.psiElement(TwigBlockTag.class)
+            )
+            .withLanguage(TwigLanguage.INSTANCE),
+
+            // {% block foo %}
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+                )
+                .withParent(
+                    PlatformPatterns.psiElement(TwigBlockTag.class)
+                )
+                .withLanguage(TwigLanguage.INSTANCE)
+        );
     }
 
     /**

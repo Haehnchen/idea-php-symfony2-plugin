@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -605,7 +604,6 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
     }
 
-
     class BlockCompletionProvider extends CompletionProvider<CompletionParameters> {
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
@@ -613,16 +611,28 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(parameters.getPosition().getProject());
-            List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).walk(parameters.getPosition().getContainingFile());
-            List<String> uniqueList = new ArrayList<String>();
-            for (TwigBlock block : blocks) {
-                if(!uniqueList.contains(block.getName())) {
-                    uniqueList.add(block.getName());
-                    resultSet.addElement(new TwigBlockLookupElement(block));
-                }
-            }
+            // wtf: need to prefix the block tag itself. remove this behavior and strip for new Matcher
+            // Find first Identifier "b" char or fallback to empty:
+            // "{% block b", "{% block"
+            String blockNamePrefix = resultSet.getPrefixMatcher().getPrefix();
+            int spacePos = blockNamePrefix.lastIndexOf(' ');
+            blockNamePrefix = spacePos > 0 ? blockNamePrefix.substring(spacePos + 1) : "";
+            CompletionResultSet myResultSet = resultSet.withPrefixMatcher(blockNamePrefix);
 
+            // collect blocks in all related files
+            List<TwigBlock> blocks = new TwigBlockParser(
+                TwigHelper.getTwigFilesByName(parameters.getPosition().getProject())
+            ).walk(parameters.getPosition().getContainingFile());
+
+            Set<String> uniqueList = new HashSet<String>();
+            for (TwigBlock block : blocks) {
+                if(uniqueList.contains(block.getName())) {
+                    continue;
+                }
+
+                uniqueList.add(block.getName());
+                myResultSet.addElement(new TwigBlockLookupElement(block));
+            }
         }
     }
 

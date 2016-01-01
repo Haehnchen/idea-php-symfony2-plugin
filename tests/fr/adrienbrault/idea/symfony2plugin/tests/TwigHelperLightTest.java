@@ -124,6 +124,25 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertSize(0, getIncludeTemplates("{% import 'foo.html.twig' %}", TwigElementTypes.IMPORT_TAG));
     }
 
+    /**
+     * @see TwigHelper#getBlockTagPattern
+     */
+    public void testGetBlockTagPattern() {
+        String[] blocks = {
+            "{% block 'a<caret>a' %}",
+            "{% block \"a<caret>a\" %}",
+            "{% block a<caret>a %}"
+        };
+
+        for (String s : blocks) {
+            myFixture.configureByText(TwigFileType.INSTANCE, s);
+
+            assertTrue(TwigHelper.getBlockTagPattern().accepts(
+                myFixture.getFile().findElementAt(myFixture.getCaretOffset()))
+            );
+        }
+    }
+
     private void assertEqual(Collection<String> c, String... values) {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));
