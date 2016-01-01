@@ -28,10 +28,7 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
      */
     public void testTemplateOverwriteNameGeneration() {
-
-        if(true == true) {
-            return;
-        }
+        if(System.getenv("PHPSTORM_ENV") != null) return;
 
         assertEquals(
             "TwigUtilIntegrationBundle:layout.html.twig",
@@ -54,10 +51,7 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateName
      */
     public void testTemplateOverwriteNavigation() {
-
-        if(true == true) {
-            return;
-        }
+        if(System.getenv("PHPSTORM_ENV") != null) return;
 
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:layout.html.twig' %}", "/views/layout.html.twig");
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:Foo/layout.html.twig' %}", "/views/Foo/layout.html.twig");
@@ -75,6 +69,27 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
         assertFalse(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include ~ \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
 
         assertTrue(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
+    }
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getDomainTrans
+     */
+    public void testGetDomainTrans() {
+        String[] blocks = {
+            "{{ '<caret>'|transchoice(3, {}, 'foo') }}",
+            "{{ '<caret>'|transchoice(3, [], 'foo') }}",
+            "{{ '<caret>'|trans({}, 'foo') }}",
+            "{{ '<caret>'|trans([], 'foo') }}",
+            "{{ '<caret>'|trans({'foo': 'foo', 'foo'}, 'foo') }}",
+        };
+
+        for (String s : blocks) {
+            myFixture.configureByText(TwigFileType.INSTANCE, s);
+
+            PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+            assertNotNull(element);
+
+            assertEquals("foo", TwigUtil.getDomainTrans(element));
+        }
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

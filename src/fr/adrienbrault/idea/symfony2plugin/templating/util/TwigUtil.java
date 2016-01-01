@@ -202,8 +202,12 @@ public class TwigUtil {
         return domain == null ? "messages" : domain;
     }
 
+    /**
+     * Extract translation domain parameter
+     * trans({}, 'Domain')
+     */
     @Nullable
-    public static String getDomainTrans(PsiElement psiElement) {
+    public static String getDomainTrans(@NotNull PsiElement psiElement) {
 
         // we only get a PRINT_BLOCK with a huge flat list of psi elements
         // parsing this would be harder than use regex
@@ -222,14 +226,14 @@ public class TwigUtil {
 
         // @TODO: in another life dont use regular expression to find twig parameter :)
 
-        String regex = "\\|\\s*trans\\s*\\(\\s*\\{.*?\\}\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
+        String regex = "\\|\\s*trans\\s*\\(\\s*[\\{|\\[].*?[\\}|\\]]\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {
             return matcher.group(1);
         }
 
-        regex = "\\|\\s*transchoice\\s*\\(\\s*\\d+\\s*,\\s*\\{.*?\\}\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
+        regex = "\\|\\s*transchoice\\s*\\(\\s*\\d+\\s*,\\s*[\\{|\\[].*?[\\}|\\]]\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
         matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
 
         if (matcher.find()) {

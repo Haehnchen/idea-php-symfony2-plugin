@@ -20,12 +20,17 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
         assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>' | trans({}, 'foo') }}", "foo.symfony.great");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>' | trans( {}, 'foo') }}", "foo.symfony.great");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'  |   trans(  {}, 'foo'     ) }}", "foo.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans([], 'foo') }}", "foo.symfony.great");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans|desc('Profile') }}", "yaml_weak.symfony.great");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'foo'|trans({}, '<caret>')|desc('Profile') }}", "messages");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans({}, 'foo')|desc('Profile') }}", "foo.symfony.great");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain \"foo\" %}\n{{ '<caret>'|trans }}", "foo.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain \"foo\" %}\n{{ '<caret>'|transchoice }}", "foo.symfony.great");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|transchoice(3, {}, 'foo') }}", "foo.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|transchoice(3, [], 'foo') }}", "foo.symfony.great");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ sonata_block_render({\n" +
             "    'type': 'nice_block',\n" +
