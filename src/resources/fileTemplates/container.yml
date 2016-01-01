@@ -1,12 +1,9 @@
-parameters:
-#    {{ BundleNameUnderscore }}.example.class: {{ BundleName }}\Example
-
 services:
 #    {{ BundleNameUnderscore }}.example:
-#        class: %{{ BundleNameUnderscore }}.example.class%
-#        arguments: [@service_id, "plain_value", %parameter%]
+#        class:     {{ BundleName }}\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
 #        calls:
-#            - [setService, [@service_id]]
+#            - [setService, ["@service_id"]]
 #        tags:
 #            - { name: twig.extension }
 #            - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
