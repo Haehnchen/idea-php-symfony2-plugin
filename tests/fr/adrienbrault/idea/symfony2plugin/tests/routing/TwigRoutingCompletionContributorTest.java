@@ -26,7 +26,7 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
 
         assertCompletionContains(TwigFileType.INSTANCE, "<a href=\"<caret>\">foo</a>", "route_foo", "route_bar", "xml_route");
 
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_foo<caret>\">foo</a>", "<a href=\"{{ path('route_foo', {'var3': 'x', 'var1': 'x', 'var2': 'x'}) }}\">foo</a>");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_foo<caret>\">foo</a>", "<a href=\"{{ path('route_foo', {'var1': 'x', 'var2': 'x', 'var3': 'x'}) }}\">foo</a>");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"route_bar<caret>\">foo</a>", "<a href=\"{{ path('route_bar') }}\">foo</a>");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "<a href=\"xml_route<caret>\">foo</a>", "<a href=\"{{ path('xml_route', {'slug': 'x'}) }}\">foo</a>");
 
@@ -35,7 +35,7 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
     }
 
     public void testTwigPathParameterTailCompletion() {
-        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "route_foo", "(var3, var1, var2)");
+        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "route_foo", "(var1, var2, var3)");
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "xml_route", "(slug)");
     }
 

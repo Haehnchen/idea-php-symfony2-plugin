@@ -91,7 +91,7 @@ public class Route {
 
         // possible fallback
         // /hello/{foo}/{foo1}/bar
-        Set<String> hashSet = new HashSet<String>();
+        Set<String> hashSet = new TreeSet<String>();
         Matcher matcher = Pattern.compile("\\{(\\w+)}").matcher(this.path);
         while(matcher.find()){
             hashSet.add(matcher.group(1));
