@@ -27,5 +27,4 @@ matrix:
     - jdk: oraclejdk8
       env: PHPSTORM_ENV=10
       
-    - env: PHPSTORM_ENV=10
     - env: PHPSTORM_ENV=10eap
