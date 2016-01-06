@@ -86,7 +86,7 @@ public class ServiceActionUtil {
 
         String content;
         try {
-            content = StreamUtil.readText(ServiceActionUtil.class.getResourceAsStream(templatePath), "UTF-8");
+            content = StreamUtil.readText(ServiceActionUtil.class.getResourceAsStream(templatePath), "UTF-8").replace("\r\n", "\n");
         } catch (IOException e) {
             e.printStackTrace();
             return;
