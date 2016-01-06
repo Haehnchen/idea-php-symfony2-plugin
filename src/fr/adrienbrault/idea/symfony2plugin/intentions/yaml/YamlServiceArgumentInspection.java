@@ -23,7 +23,7 @@ import java.util.Set;
  */
 public class YamlServiceArgumentInspection extends LocalInspectionTool {
 
-    private static final String[] INVALID_KEYS = new String[]{"parent", "factory_class", "factory_service", "factory_method", "abstract", "factory"};
+    public static final String[] INVALID_KEYS = new String[]{"parent", "factory_class", "factory_service", "factory_method", "abstract", "factory", "autowrite"};
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     @NotNull
