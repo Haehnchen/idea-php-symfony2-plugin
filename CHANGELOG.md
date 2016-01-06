@@ -2,9 +2,18 @@ Changelog
 =========
 
 ### Version names
-0.11.x: PhpStorm 8
+0.11.x: PhpStorm 8,9,10
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
+
+### 0.11.107
+* Implement twig block name completion workaround; need to strip block tag content on prefixmatcher #563, #390, #460, WI-24362</li>
+* Update yaml service template to match Symfony best practices #657 @Ma27
+* Add array syntax whitelist for twig "trans" domain extraction and support "transchoice" variable in regex #662
+* Update travis test matrix dont allow Java8 and PhpStorm10 failing
+* Autowire services must not inspect constructor arguments #664
+* Synchronized clearing of CaretTextOverlayListener timer to prevent npe #642
+* "Method References" and "Type Provider" are deprecated by now and will replaced by Plugin "PHP Toolbox"
 
 ### 0.11.106
 * Check null before calling getFormTypeClassOnParameter in FormUtil #650

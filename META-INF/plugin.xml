@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.106</version>
+    <version>0.11.107</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -19,7 +19,6 @@
 
 <h2>Open Api Issues</h2>
 <ul>
-    <li>Twig block name completion "{% block foo %}" <a href="https://youtrack.jetbrains.com/issue/WI-24362">WI-24362</a></li>
     <li>Bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-23727">WI-23727</a>; our issue <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
 </ul>
 
@@ -89,6 +88,7 @@
     <li><a href="http://plugins.jetbrains.com/plugin/7487">Drupal Symfony2 Bridge</a></li>
     <li><a href="http://plugins.jetbrains.com/plugin/7532">Laravel Plugin</a></li>
     <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
+    <li><a href="http://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
 </ul>
 
 <h2><a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
@@ -100,11 +100,22 @@
 
     <change-notes><![CDATA[
 
-0.11.x: PhpStorm 8<br>
+0.11.x: PhpStorm 8,9,10<br>
 0.10.x: PhpStorm 7 (no support)<br>
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.107</h2>
+<ul>
+    <li>Implement twig block name completion workaround; need to strip block tag content on prefixmatcher <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/563">#563</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/390">#390</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/460">#460</a>, <a href="https://youtrack.jetbrains.com/issue/WI-24362">WI-24362</a></li>
+    <li>Update yaml service template to match Symfony best practices <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/657">#657</a> @Ma27</li>
+    <li>Add array syntax whitelist for twig "trans" domain extraction and support "transchoice" variable in regex <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/662">#662</a></li>
+    <li>Update travis test matrix dont allow Java8 and PhpStorm10 failing</li>
+    <li>Autowire services must not inspect constructor arguments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/664">#664</a></li>
+    <li>Synchronized clearing of CaretTextOverlayListener timer to prevent npe <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/642">#642</a></li>
+    <li>"Method References" and "Type Provider" are deprecated by now and will replaced by Plugin <a href="http://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
+</ul>
 
 <h2>0.11.106</h2>
 <ul>
