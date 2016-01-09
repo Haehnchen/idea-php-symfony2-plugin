@@ -36,13 +36,9 @@ public class PhpIndexUtil {
             return phpClasses;
         }
 
-        StubIndex.getInstance().process(PhpNamespaceIndex.KEY, namespaceName.toLowerCase(), project, phpIndex.getSearchScope(), new Processor<PhpNamespace>() {
-            @Override
-            public boolean process(PhpNamespace phpNamespace) {
-                phpClasses.addAll(PsiTreeUtil.getChildrenOfTypeAsList(phpNamespace.getStatements(), PhpClass.class));
-                return true;
-            }
-        });
+        for (PhpNamespace phpNamespace : phpIndex.getNamespacesByName(namespaceName.toLowerCase())) {
+            phpClasses.addAll(PsiTreeUtil.getChildrenOfTypeAsList(phpNamespace.getStatements(), PhpClass.class));
+        }
 
         for(String ns: phpIndex.getChildNamespacesByParentName(namespaceName + "\\")) {
             phpClasses.addAll(getPhpClassInsideNamespace(project, phpIndex, namespaceName + "\\" + ns, maxDeep));
