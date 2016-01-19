@@ -554,7 +554,9 @@
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
+
     <depends optional="true">de.espend.idea.php.annotation</depends>
+    <depends optional="true">de.espend.idea.php.toolbox</depends>
 
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationReferences"/>
@@ -563,6 +565,16 @@
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationReferencedColumnReferences"/>
         <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
         <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationGotoHandler"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="de.espend.idea.php.toolbox.extension">
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.RoutesToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TwigToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TranslationDomainToolboxProvider"/>
+
+        <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.TwigFileToolboxTargetLocator"/>
+        <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.BundleFileToolboxTargetLocator"/>
     </extensions>
 
     <project-components>

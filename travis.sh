@@ -100,6 +100,9 @@ fi
 download "http://plugins.jetbrains.com/files/7320/19208/php-annotation.jar"
 cp $travisCache/php-annotation.jar ./plugins
 
+rm -f $travisCache/php-toolbox.jar
+download "https://plugins.jetbrains.com/files/8133/23580/php-toolbox.jar"
+cp $travisCache/php-toolbox.jar ./plugins
 
 # Run the tests
 if [ "$1" = "-d" ]; then

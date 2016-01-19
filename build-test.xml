@@ -176,7 +176,7 @@
             <jvmarg value="-Didea.home.path=${idea.build}"/>
             <jvmarg value="-Xbootclasspath/a:${idea.build}/lib/boot.jar"/>
             <jvmarg value="-Dfile.encoding=UTF-8"/>
-            <jvmarg value="-Didea.load.plugins.id=com.jetbrains.php,com.jetbrains.twig,com.intellij.modules.platformorg.jetbrains.plugins.yaml,de.espend.idea.php.annotation,fr.adrienbrault.idea.symfony2plugin"/>
+            <jvmarg value="-Didea.load.plugins.id=com.jetbrains.php,com.jetbrains.twig,com.intellij.modules.platformorg.jetbrains.plugins.yaml,de.espend.idea.php.annotation,de.espend.idea.php.toolbox,fr.adrienbrault.idea.symfony2plugin"/>
             <jvmarg value="-ea"/>
             <jvmarg value="-Didea.plugins.path=${plugins}"/>
             <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=${suspend},address=43251"/>

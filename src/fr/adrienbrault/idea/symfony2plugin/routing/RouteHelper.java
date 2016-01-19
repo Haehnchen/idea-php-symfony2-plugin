@@ -848,6 +848,7 @@ public class RouteHelper {
 
     }
 
+    @NotNull
     public static List<PsiElement> getRouteDefinitionTargets(Project project, String routeName) {
 
         List<PsiElement> targets = new ArrayList<PsiElement>();
