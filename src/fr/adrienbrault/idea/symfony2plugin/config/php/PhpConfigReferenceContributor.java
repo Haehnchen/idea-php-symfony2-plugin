@@ -66,7 +66,8 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                     }
 
                     if (!phpStringLiteralExpressionClassReference("\\Symfony\\Component\\DependencyInjection\\Reference", 0, psiElement) &&
-                        !phpStringLiteralExpressionClassReference("\\Symfony\\Component\\DependencyInjection\\Alias", 0, psiElement)
+                        !phpStringLiteralExpressionClassReference("\\Symfony\\Component\\DependencyInjection\\Alias", 0, psiElement) &&
+                        !phpStringLiteralExpressionClassReference("\\Symfony\\Component\\DependencyInjection\\DefinitionDecorator", 0, psiElement)
                     ) {
                         return new PsiReference[0];
                     }
