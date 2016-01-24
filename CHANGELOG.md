@@ -6,6 +6,11 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.108
+* Try to fix "unable to get stub builder", looks like input filter is true always in helper class #630, #617
+* Implement PHP Toolbox providers: services, parameter, routes, templates, translation domains
+* Fix autocomplete and goto is missing for service ids in DefinitionDecorator #667
+
 ### 0.11.107
 * Implement twig block name completion workaround; need to strip block tag content on prefixmatcher #563, #390, #460, WI-24362</li>
 * Update yaml service template to match Symfony best practices #657 @Ma27

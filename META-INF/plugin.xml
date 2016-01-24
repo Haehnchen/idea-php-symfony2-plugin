@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.107</version>
+    <version>0.11.108</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -105,6 +105,13 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.108</h2>
+<ul>
+    <li>Try to fix "unable to get stub builder", looks like input filter is true always in helper class <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/630">#630</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/617">#617</a></li>
+    <li>Implement PHP Toolbox providers: services, parameter, routes, templates</li>
+    <li>Fix autocomplete and goto is missing for service ids in DefinitionDecorator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/667">#667</a></li>
+</ul>
 
 <h2>0.11.107</h2>
 <ul>
@@ -572,6 +579,7 @@
         <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.RoutesToolboxProvider"/>
         <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TwigToolboxProvider"/>
         <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TranslationDomainToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceParameterToolboxProvider"/>
 
         <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.TwigFileToolboxTargetLocator"/>
         <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.BundleFileToolboxTargetLocator"/>
