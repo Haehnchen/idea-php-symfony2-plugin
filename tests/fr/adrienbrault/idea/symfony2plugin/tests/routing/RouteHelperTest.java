@@ -229,6 +229,18 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesInsideUrlGeneratorFile
+     */
+    public void testGetRoutesInsideUrlGeneratorFileForConstructor() {
+        Map<String, Route> routes = RouteHelper.getRoutesInsideUrlGeneratorFile(getProject(), myFixture.copyFileToProject("appDevUrlGenerator-28.php"));
+        Route wdt = routes.get("_wdt");
+        assertEquals("web_profiler.controller.profiler:toolbarAction", wdt.getController());
+        assertSize(1, wdt.getVariables());
+        assertSize(1, wdt.getDefaults().values());
+        assertSize(2, wdt.getTokens());
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRouteNameTarget
      */
     public void testGetRouteNameTarget() {

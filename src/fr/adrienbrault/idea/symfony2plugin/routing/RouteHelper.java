@@ -316,41 +316,83 @@ public class RouteHelper {
         // list($variables, $defaults, $requirements, $tokens, $hostTokens)
         Collection<PhpClass> phpClasses = PsiTreeUtil.findChildrenOfType(psiFile, PhpClass.class);
         for(PhpClass phpClass: phpClasses) {
-            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface")) {
-                for(Field field: phpClass.getFields()) {
-                    if(field.getName().equals("declaredRoutes")) {
-                        PsiElement defaultValue = field.getDefaultValue();
-                        if(defaultValue instanceof ArrayCreationExpression) {
-                            Iterable<ArrayHashElement> arrayHashElements = ((ArrayCreationExpression) defaultValue).getHashElements();
-                            for(ArrayHashElement arrayHashElement: arrayHashElements) {
-
-                                PsiElement hashKey = arrayHashElement.getKey();
-                                if(hashKey instanceof StringLiteralExpression) {
-                                    String routeName = ((StringLiteralExpression) hashKey).getContents();
-                                    if(isProductionRouteName(routeName)) {
-                                        routeName = convertLanguageRouteName(routeName);
-                                        PsiElement hashValue = arrayHashElement.getValue();
-                                        if(hashValue instanceof ArrayCreationExpression) {
-                                            routes.put(routeName, convertRouteConfig(routeName, (ArrayCreationExpression) hashValue));
-                                        }
-                                    }
-
-                                }
-
-
-                            }
-
-                        }
-
-                    }
-                }
-
+            if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface")) {
+                continue;
             }
 
+            // Symfony < 2.8
+            // static private $declaredRoutes = array(...)
+            for(Field field: phpClass.getFields()) {
+                if(!field.getName().equals("declaredRoutes")) {
+                    continue;
+                }
+
+                PsiElement defaultValue = field.getDefaultValue();
+                if(!(defaultValue instanceof ArrayCreationExpression)) {
+                    continue;
+                }
+
+                collectRoutesOnArrayCreation(routes, (ArrayCreationExpression) defaultValue);
+            }
+
+            // Symfony >= 2.8
+            // if (null === self::$declaredRoutes) {
+            //   self::$declaredRoutes = array()
+            // }
+            Method constructor = phpClass.getConstructor();
+            if(constructor == null) {
+                continue;
+            }
+
+            for (FieldReference fieldReference : PsiTreeUtil.collectElementsOfType(constructor, FieldReference.class)) {
+                String canonicalText = fieldReference.getCanonicalText();
+                if(!"declaredRoutes".equals(canonicalText)) {
+                    continue;
+                }
+
+                PsiElement assignExpression = fieldReference.getParent();
+                if(!(assignExpression instanceof AssignmentExpression)) {
+                    continue;
+                }
+
+                PhpPsiElement value = ((AssignmentExpression) assignExpression).getValue();
+                if(!(value instanceof ArrayCreationExpression)) {
+                    continue;
+                }
+
+                collectRoutesOnArrayCreation(routes, (ArrayCreationExpression) value);
+            }
         }
 
         return routes;
+    }
 
+    /**
+     * Collects routes in:
+     *
+     * array(
+     *  _wdt' => array(..)
+     * }
+     *
+     */
+    private static void collectRoutesOnArrayCreation(@NotNull Map<String, Route> routes, @NotNull ArrayCreationExpression defaultValue) {
+        for(ArrayHashElement arrayHashElement: defaultValue.getHashElements()) {
+            PsiElement hashKey = arrayHashElement.getKey();
+            if(!(hashKey instanceof StringLiteralExpression)) {
+                continue;
+            }
+
+            String routeName = ((StringLiteralExpression) hashKey).getContents();
+            if(!isProductionRouteName(routeName)) {
+                continue;
+            }
+
+            routeName = convertLanguageRouteName(routeName);
+            PsiElement hashValue = arrayHashElement.getValue();
+            if(hashValue instanceof ArrayCreationExpression) {
+                routes.put(routeName, convertRouteConfig(routeName, (ArrayCreationExpression) hashValue));
+            }
+        }
     }
 
     private static Route convertRouteConfig(String routeName, ArrayCreationExpression hashValue) {
