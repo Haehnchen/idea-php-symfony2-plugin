@@ -36,12 +36,20 @@ public class AnnotationRoutesStubIndexTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testThatEmptyRouteNameUseBundleMethodName() {
-        assertIndexContains(AnnotationRoutesStubIndex.KEY, "my_foo_bar_car_index");
-        RouteInterface route = getFirstValue("my_foo_bar_car_index");
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "myfoobar_car_index");
+        RouteInterface route = getFirstValue("myfoobar_car_index");
 
-        assertEquals("my_foo_bar_car_index", route.getName());
+        assertEquals("myfoobar_car_index", route.getName());
         assertEquals("/foo_bar/edit/{id}", route.getPath());
         assertEquals("MyFooBarBundle\\Controller\\CarController::indexAction", route.getController());
+    }
+
+    public void testThatEmptyRouteNameUseBundleMethodNameAndStripsReservedWords() {
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "foo_parkresort_sub_bundle_foo_nestedfoo");
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "foo_parkresort_sub_car_index");
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "foo_parkresort_default_index");
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "foo_parkresort_actions_foo_index");
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "app_default_foo");
     }
 
     private RouteInterface getFirstValue(@NotNull String key) {

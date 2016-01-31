@@ -1,19 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
-import com.intellij.patterns.PlatformPatterns;
+import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
-import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -219,7 +219,8 @@ public class AnnotationBackportUtil {
     }
 
     /**
-     * "@SensioBlogBundle/Controller/PostController.php => sensio_blog_post_index"
+     * "AppBundle\Controller\DefaultController::fooAction" => app_default_foo"
+     * "Foo\ParkResortBundle\Controller\SubController\BundleController\FooController::nestedFooAction" => foo_parkresort_sub_bundle_foo_nestedfoo"
      */
     public static String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
         PhpPsiElement method = getMethodScope(phpDocTag);
@@ -232,6 +233,7 @@ public class AnnotationBackportUtil {
             return null;
         }
 
+        // strip action
         if(name.endsWith("Action")) {
             name = name.substring(0, name.length() - "Action".length());
         }
@@ -241,19 +243,33 @@ public class AnnotationBackportUtil {
             return null;
         }
 
-        String fqn = containingClass.getFQN();
-        if(fqn != null) {
-            Matcher matcher = Pattern.compile("\\\\(\\w+)Bundle\\\\Controller\\\\(\\w+)Controller").matcher(fqn);
-            if (matcher.find()) {
-                return String.format("%s_%s_%s",
-                    fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(1)),
-                    fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(2)),
-                    name
-                );
+        String[] fqn = org.apache.commons.lang.StringUtils.strip(containingClass.getFQN(), "\\").split("\\\\");
+
+        // remove empty and controller only namespace
+        List<String> filter = ContainerUtil.filter(fqn, new Condition<String>() {
+            @Override
+            public boolean value(String s) {
+                return org.apache.commons.lang.StringUtils.isNotBlank(s) && !"controller".equalsIgnoreCase(s);
             }
+        });
+
+        if(filter.size() == 0) {
+            return null;
         }
 
-        return null;
+        return org.apache.commons.lang.StringUtils.join(ContainerUtil.map(filter, new Function<String, String>() {
+            @Override
+            public String fun(String s) {
+                String content = s.toLowerCase();
+                if (content.endsWith("bundle") && !content.equalsIgnoreCase("bundle")) {
+                    return content.substring(0, content.length() - "bundle".length());
+                }
+                if (content.endsWith("controller") && !content.equalsIgnoreCase("controller")) {
+                    return content.substring(0, content.length() - "controller".length());
+                }
+                return content;
+            }
+        }), "_") + "_" + name.toLowerCase();
     }
 
     @Nullable
