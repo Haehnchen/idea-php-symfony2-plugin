@@ -2,9 +2,15 @@ Changelog
 =========
 
 ### Version names
-0.11.x: PhpStorm 8,9,10
+0.12.x: PhpStorm 11 (upcoming)
+0.11.x: PhpStorm 8, 9, 10
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
+
+### 0.11.109
+* Fix autocomplete route name in php and twig not working since Symfony 2.8 #669
+* Implement more annotation controller route naming strategies #673
+* Add Doctrine model PHP Toolbox provider
 
 ### 0.11.108
 * Try to fix "unable to get stub builder", looks like input filter is true always in helper class #630, #617
