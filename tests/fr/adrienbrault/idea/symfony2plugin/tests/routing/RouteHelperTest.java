@@ -200,9 +200,9 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetAllRoutes() {
         Map<String, Route> allRoutes = RouteHelper.getAllRoutes(getProject());
 
-        assertEquals("my_foo_bar_car_index", allRoutes.get("my_foo_bar_car_index").getName());
-        assertEquals("/foo_bar/edit/{id}", allRoutes.get("my_foo_bar_car_index").getPath());
-        assertEquals("MyFooBarBundle\\Controller\\CarController::indexAction", allRoutes.get("my_foo_bar_car_index").getController());
+        assertEquals("myfoobar_car_index", allRoutes.get("myfoobar_car_index").getName());
+        assertEquals("/foo_bar/edit/{id}", allRoutes.get("myfoobar_car_index").getPath());
+        assertEquals("MyFooBarBundle\\Controller\\CarController::indexAction", allRoutes.get("myfoobar_car_index").getController());
     }
 
     /**
@@ -212,7 +212,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(ContainerUtil.find(RouteHelper.getRoutesLookupElements(getProject()), new Condition<LookupElement>() {
             @Override
             public boolean value(LookupElement lookupElement) {
-                return "my_foo_bar_car_index".equals(lookupElement.getLookupString());
+                return "myfoobar_car_index".equals(lookupElement.getLookupString());
             }
         }));
     }
@@ -248,7 +248,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(element);
         assertTrue(element.getText().contains("my_car_foo_stuff"));
 
-        element = RouteHelper.getRouteNameTarget(getProject(), "my_foo_bar_car_index");
+        element = RouteHelper.getRouteNameTarget(getProject(), "myfoobar_car_index");
         assertNotNull(element);
         assertTrue(element.getText().contains("Route"));
     }
