@@ -591,6 +591,7 @@
         <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TranslationDomainToolboxProvider"/>
         <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceParameterToolboxProvider"/>
         <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.DoctrineModelProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ControllerToolboxProvider"/>
 
         <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.TwigFileToolboxTargetLocator"/>
         <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.BundleFileToolboxTargetLocator"/>

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.controller;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.PhpIcons;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -24,7 +25,7 @@ public class ControllerActionLookupElement extends LookupElement {
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
-        presentation.setTypeText(controllerAction.getMethod().getFQN());
+        presentation.setTypeText(StringUtils.stripStart(controllerAction.getMethod().getFQN(), "\\"));
         presentation.setTypeGrayed(true);
         presentation.setIcon(PhpIcons.METHOD_ICON);
     }
