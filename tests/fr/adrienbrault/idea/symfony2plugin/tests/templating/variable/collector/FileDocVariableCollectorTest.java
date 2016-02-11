@@ -39,6 +39,16 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
         assertCompletionNotContains(TwigFileType.INSTANCE, "{# @var bar \\Bar\\FooClass #} {{ bar.<caret> }}", "privateBar");
     }
 
+    public void testFileBasedVarDocPhpTypesAsMultiline() {
+        assertCompletionContains(TwigFileType.INSTANCE,  "{# @var bar \\Bar\\FooClass \n @var foo \\Bar\\FooClass #} {{ <caret> }}", "bar", "foo");
+        assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar \\Bar\\FooClass \n @var foo \\Bar\\FooClass #} {{ bar.<caret> }}", "fooBar");
+        assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar \\Bar\\FooClass \n @var foo \\Bar\\FooClass #} {{ foo.<caret> }}", "fooBar");
+    }
+
+    public void testFileBasedVarDocPhpTypesWithDescription() {
+        assertCompletionContains(TwigFileType.INSTANCE,  "{# @var bar \\Bar\\FooClass Foo asd Kassdsdsd adasd \n @var foo \\Bar\\FooClass #} {{ <caret> }}", "bar", "foo");
+    }
+
     public void testFileBasedVarDocPhpTypesAsDeprecated() {
         // remove on dropped feature
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar \\Bar\\FooClass #} {{ <caret> }}", "bar");

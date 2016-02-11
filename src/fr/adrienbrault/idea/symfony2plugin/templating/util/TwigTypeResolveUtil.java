@@ -41,8 +41,12 @@ import java.util.regex.Pattern;
 
 public class TwigTypeResolveUtil {
 
-    public static final String DOC_PATTERN  = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
-    public static final String DOC_PATTERN_2  = "\\{#[\\s]+@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+    public static final String DEPRECATED_DOC_TYPE_PATTERN = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+    public static final String DOC_TYPE_PATTERN = "@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]*";
+
+    // for supporting completion and navigation of one line element
+    public static final String DOC_TYPE_PATTERN_SINGLE  = "\\{#[\\s]+@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+
     private static String[] propertyShortcuts = new String[] {"get", "is"};
 
     private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
@@ -127,7 +131,9 @@ public class TwigTypeResolveUtil {
     }
 
     /**
-     * duplicate use a collector interface
+     * Find scope related inline @var docs
+     *
+     * "@var foo \Foo"
      */
     private static Map<String, String> findInlineStatementVariableDocBlock(PsiElement psiInsideBlock, final IElementType parentStatement) {
 
@@ -148,47 +154,40 @@ public class TwigTypeResolveUtil {
             return variables;
         }
 
-        // wtf in completion { | } root we have no comments in child context !?
-        Pattern pattern = Pattern.compile(DOC_PATTERN);
-        Pattern pattern2 = Pattern.compile(DOC_PATTERN_2);
-
-        for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
-            if(psiComment instanceof PsiComment) {
-
-                Matcher matchVar = pattern2.matcher(psiComment.getText());
-                if (matchVar.find()) {
-                    variables.put(matchVar.group(1), matchVar.group(2));
-                } else {
-                    Matcher matchInline = pattern.matcher(psiComment.getText());
-                    if (matchInline.find()) {
-                        variables.put(matchInline.group(1), matchInline.group(2));
-                    }
-                }
-
-            }
-        }
-
-        return variables;
+        return getInlineCommentDocsVars(twigCompositeElement);
     }
 
     /**
-     * duplicate use a collector interface
+     * Find file related doc blocks:
+     *
+     * "@var foo \Foo"
      */
-    public static Map<String, String> findFileVariableDocBlock(TwigFile twigFile) {
+    public static Map<String, String> findFileVariableDocBlock(@NotNull TwigFile twigFile) {
+        return getInlineCommentDocsVars(twigFile);
+    }
 
-        Pattern pattern = Pattern.compile(DOC_PATTERN);
-        Pattern pattern2 = Pattern.compile(DOC_PATTERN_2);
+    private static Map<String, String> getInlineCommentDocsVars(@NotNull PsiElement twigCompositeElement) {
+        Map<String, String> variables = new HashMap<String, String>();
 
         // wtf in completion { | } root we have no comments in child context !?
-        Map<String, String> variables = new HashMap<String, String>();
-        for(PsiElement psiComment: YamlHelper.getChildrenFix(twigFile)) {
-            if(psiComment instanceof PsiComment) {
-                Matcher matcher = pattern.matcher(psiComment.getText());
-                if (matcher.find()) {
-                    variables.put(matcher.group(1), matcher.group(2));
-                }
-                matcher = pattern2.matcher(psiComment.getText());
-                if (matcher.find()) {
+        Pattern[] patterns = new Pattern[] {
+            Pattern.compile(DOC_TYPE_PATTERN, Pattern.MULTILINE),
+            Pattern.compile(DEPRECATED_DOC_TYPE_PATTERN),
+        };
+
+        for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
+            if(!(psiComment instanceof PsiComment)) {
+                continue;
+            }
+
+            String text = psiComment.getText();
+            if(StringUtils.isBlank(text)) {
+                continue;
+            }
+
+            for (Pattern pattern : patterns) {
+                Matcher matcher = pattern.matcher(text);
+                while (matcher.find()) {
                     variables.put(matcher.group(1), matcher.group(2));
                 }
             }

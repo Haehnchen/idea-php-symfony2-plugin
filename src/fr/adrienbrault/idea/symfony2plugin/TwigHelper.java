@@ -928,8 +928,8 @@ public class TwigHelper {
 
     public static ElementPattern<PsiComment> getTwigTypeDocBlock() {
         return PlatformPatterns.or(
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN)).withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_PATTERN_2)).withLanguage(TwigLanguage.INSTANCE)
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DEPRECATED_DOC_TYPE_PATTERN)).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE)).withLanguage(TwigLanguage.INSTANCE)
         );
     }
 

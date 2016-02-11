@@ -152,7 +152,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             return Collections.emptyList();
         }
 
-        for(String pattern: new String[] {TwigTypeResolveUtil.DOC_PATTERN, TwigTypeResolveUtil.DOC_PATTERN_2}) {
+        for(String pattern: new String[] {TwigTypeResolveUtil.DEPRECATED_DOC_TYPE_PATTERN, TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE}) {
             Matcher matcher = Pattern.compile(pattern).matcher(comment);
             if (matcher.find()) {
                 String className = matcher.group(2);
