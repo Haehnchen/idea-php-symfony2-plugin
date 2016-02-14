@@ -17,5 +17,6 @@
     <orderEntry type="library" scope="TEST" name="css" level="project" />
     <orderEntry type="library" scope="TEST" name="java-i18n" level="project" />
     <orderEntry type="library" scope="TEST" name="properties" level="project" />
+    <orderEntry type="library" scope="TEST" name="yaml" level="project" />
   </component>
 </module>
