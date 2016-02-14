@@ -3,10 +3,15 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -27,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
@@ -108,6 +114,12 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(this.getVarClassGoto(psiElement));
         }
 
+        // {# @see Foo.html.twig #}
+        // {# @see \Class #}
+        if(TwigHelper.getTwigDocSeePattern().accepts(psiElement)) {
+            psiElements.addAll(this.getSeeDocTagTargets(psiElement));
+        }
+
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
@@ -163,6 +175,49 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         }
 
         return Collections.emptyList();
+    }
+
+    @NotNull
+    private Collection<PsiElement> getSeeDocTagTargets(@NotNull PsiElement psiElement) {
+        String comment = psiElement.getText();
+        if(StringUtils.isBlank(comment)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+
+        for(String pattern: new String[] {TwigHelper.DOC_SEE_REGEX, TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE}) {
+            Matcher matcher = Pattern.compile(pattern).matcher(comment);
+            if (!matcher.find()) {
+                continue;
+            }
+
+            String content = matcher.group(1);
+
+            if(content.toLowerCase().endsWith(".twig")) {
+                ContainerUtil.addAll(psiElements, TwigHelper.getTemplatePsiElements(psiElement.getProject(), content));
+            }
+
+            psiElements.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), content));
+            ContainerUtil.addIfNotNull(psiElements, ControllerIndex.getControllerMethod(psiElement.getProject(), content));
+
+            PsiDirectory parent = psiElement.getContainingFile().getParent();
+            if(parent != null) {
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(parent.getVirtualFile(), content.replace("\\", "/").split("/"));
+                if(relativeFile != null) {
+                    ContainerUtil.addIfNotNull(psiElements, PsiManager.getInstance(psiElement.getProject()).findFile(relativeFile));
+                }
+            }
+
+            Matcher methodMatcher = Pattern.compile("([\\w\\\\-]+):+([\\w_\\-]+)").matcher(content);
+            if (methodMatcher.find()) {
+                for (PhpClass phpClass : PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(methodMatcher.group(1))) {
+                    ContainerUtil.addIfNotNull(psiElements, phpClass.findMethodByName(methodMatcher.group(2)));
+                }
+            }
+        }
+
+        return psiElements;
     }
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {

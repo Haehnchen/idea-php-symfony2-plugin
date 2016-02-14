@@ -61,6 +61,9 @@ public class TwigHelper {
     private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_TWIG = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_TWIG");
     private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_ALL = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_ALL");
 
+    public static final String DOC_SEE_REGEX  = "\\{#[\\s]+@see[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
+    public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "\\{#[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
+
     /**
      * ([) "FOO", 'FOO' (])
      */
@@ -930,6 +933,19 @@ public class TwigHelper {
         return PlatformPatterns.or(
             PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DEPRECATED_DOC_TYPE_PATTERN)).withLanguage(TwigLanguage.INSTANCE),
             PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE)).withLanguage(TwigLanguage.INSTANCE)
+        );
+    }
+
+    /**
+     * {# @see Foo.html.twig #}
+     * {# @see \Class #}
+     * {# \Class #}
+     */
+    @NotNull
+    public static ElementPattern<PsiComment> getTwigDocSeePattern() {
+        return PlatformPatterns.or(
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(DOC_SEE_REGEX)).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
         );
     }
 
