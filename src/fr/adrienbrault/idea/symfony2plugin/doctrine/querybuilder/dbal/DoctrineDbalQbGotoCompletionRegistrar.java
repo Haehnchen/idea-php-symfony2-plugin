@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
@@ -232,7 +233,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
-            String contents = getStringValue(element);
+            String contents = GotoCompletionUtil.getStringLiteralValue(element);
             if(contents == null) {
                 return Collections.emptyList();
             }
@@ -295,7 +296,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
-            String contents = getStringValue(element);
+            String contents = GotoCompletionUtil.getStringLiteralValue(element);
             if(contents == null) {
                 return Collections.emptyList();
             }
@@ -314,20 +315,5 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
 
             return elements;
         }
-    }
-
-    @Nullable
-    private static String getStringValue(@NotNull PsiElement element) {
-        PsiElement parent = element.getParent();
-        if(!(parent instanceof StringLiteralExpression)) {
-            return null;
-        }
-
-        String contents = ((StringLiteralExpression) parent).getContents();
-        if(StringUtils.isBlank(contents)) {
-            return null;
-        }
-
-        return contents;
     }
 }
