@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -24,6 +25,8 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
@@ -51,6 +54,10 @@ import java.util.regex.Pattern;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigHelper {
+
+    private static final ExtensionPointName<TwigNamespaceExtension> EXTENSIONS = new ExtensionPointName<TwigNamespaceExtension>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
+    );
 
     public static String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
     public static String[] JS_FILES_EXTENSIONS = new String[] { "js", "dart", "coffee" };
@@ -406,6 +413,12 @@ public class TwigHelper {
             if(views != null) {
                 twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName(), TwigPathIndex.NamespaceType.BUNDLE));
             }
+        }
+
+        // load extension
+        TwigNamespaceExtensionParameter parameter = new TwigNamespaceExtensionParameter(project);
+        for (TwigNamespaceExtension namespaceExtension : EXTENSIONS.getExtensions()) {
+            twigPaths.addAll(namespaceExtension.getNamespaces(parameter));
         }
 
         for(TwigPath twigPath: twigPaths) {

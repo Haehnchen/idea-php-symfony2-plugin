@@ -1,0 +1,20 @@
+{
+  "namespaces": [
+    {
+      "namespace": "foo",
+      "path": "res"
+    },
+    {
+      "namespace": "foo1",
+      "path": "\\res"
+    },
+    {
+      "namespace": "bar"
+    },
+    {
+      "namespace": "FooBundle",
+      "type": "bundle",
+      "path": "\\res"
+    }
+  ]
+}
