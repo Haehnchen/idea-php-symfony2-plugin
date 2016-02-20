@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 
+import com.intellij.openapi.util.Condition;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
@@ -74,12 +77,29 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
             }
         }
 
-        if(null != parameter.getPhpDocTag().getFirstChild()) {
-            // @TODO: first is "html.twig"
-            parameter.getHolder().createWarningAnnotation(parameter.getPhpDocTag().getFirstChild().getTextRange(), "Create Template")
-                .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateNames.iterator().next()))
-            ;
+        // find html target, as this this our first priority for end users condition
+        String templateName = ContainerUtil.find(templateNames, new Condition<String>() {
+            @Override
+            public boolean value(String s) {
+                return s.toLowerCase().endsWith(".html.twig");
+            }
+        });
+
+        // fallback on first item
+        if(templateName == null) {
+            templateName = templateNames.iterator().next();
         }
+
+        // add fix to doc tag
+        PsiElement firstChild = parameter.getPhpDocTag().getFirstChild();
+        if(null == firstChild) {
+            return;
+        }
+
+        parameter.getHolder()
+            .createWarningAnnotation(firstChild.getTextRange(), "Create Template")
+            .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName))
+        ;
     }
 
 }
