@@ -4,7 +4,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -690,7 +693,7 @@ public class TwigUtil {
     public static Collection<String> getCreateAbleTemplatePaths(@NotNull Project project, @NotNull String templateName) {
         templateName = TwigHelper.normalizeTemplateName(templateName);
 
-        Collection<String> paths = new ArrayList<String>();
+        Collection<String> paths = new HashSet<String>();
 
         for (TwigPath twigPath : TwigHelper.getTwigNamespaces(project)) {
             if(!twigPath.isEnabled()) {

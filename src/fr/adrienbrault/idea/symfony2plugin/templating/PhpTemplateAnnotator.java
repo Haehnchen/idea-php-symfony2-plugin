@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.ui.TemplateCreationSelectionDialog;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
@@ -101,8 +102,20 @@ public class PhpTemplateAnnotator implements Annotator {
                         return;
                     }
 
-                    // @TODO: provide dialog for multiple targets
-                    String relativePath = templatePaths.iterator().next();
+                    if(templatePaths.size() == 1) {
+                        createFile(templatePaths.iterator().next());
+                        return;
+                    }
+
+                    TemplateCreationSelectionDialog.create(templatePaths, new TemplateCreationSelectionDialog.Callback() {
+                        @Override
+                        public void ok(@NotNull String selected) {
+                            createFile(selected);
+                        }
+                    });
+                }
+
+                private void createFile(@NotNull  String relativePath) {
                     VirtualFile relativeBlockScopeFile = null;
 
                     int i = relativePath.lastIndexOf("/");
