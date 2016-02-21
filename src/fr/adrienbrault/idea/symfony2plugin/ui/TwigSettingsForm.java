@@ -13,6 +13,7 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
@@ -24,6 +25,8 @@ import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -35,6 +38,7 @@ public class TwigSettingsForm implements Configurable {
     private JPanel panel1;
     private JPanel panelTableView;
     private JButton resetToDefault;
+    private JButton buttonJsonExample;
     private TableView<TwigPath> tableView;
     private Project project;
     private boolean changed = false;
@@ -164,6 +168,13 @@ public class TwigSettingsForm implements Configurable {
         tablePanel.disableDownAction();
 
         this.panelTableView.add(tablePanel.createPanel());
+
+        buttonJsonExample.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TwigJsonExampleDialog.open(TwigSettingsForm.this.panel1);
+            }
+        });
 
         return this.panel1;
     }
