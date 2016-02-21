@@ -151,11 +151,6 @@ public class TwigAnnotator implements Annotator {
 
         holder.createWarningAnnotation(element, "Missing Template");
 
-        int test = templateName.indexOf("Bundle:");
-        if(test == -1) {
-            return;
-        }
-
         holder.createWarningAnnotation(element, "Create Template")
             .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName));
 
