@@ -7,6 +7,15 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.110
+* Add controller provider for PHP Toolbox
+* Add description to PhpTyes @var syntax and allow multiline doc comments #439
+* Add @see doc tag support for twig. supports: relative files, controller names, twig files, classes and methods syntax #439
+* Add Symfony 3 controller getParameter shortcut support; migrate container getParameter registrar for supporting all proxy methods and navigation #680
+* Create template for controller action on annotation should prioritize html files #681
+* Migrate template create annotator to twig namespaces handling to not only support bundle files
+* Add twig namespace extension point and provide json file for twig namespace configuration "ide-twig.json" see "Twig Settings" for example
+
 ### 0.11.109
 * Fix autocomplete route name in php and twig not working since Symfony 2.8 #669
 * Implement more annotation controller route naming strategies #673

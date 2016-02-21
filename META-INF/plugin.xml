@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.109</version>
+    <version>0.11.110</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,17 @@
 0.9.x: PhpStorm 6 (no support)<br>
 
 <br>
+
+<h2>0.11.110</h2>
+<ul>
+    <li>Add controller provider for PHP Toolbox</li>
+    <li>Add description to PhpTyes @var syntax and allow multiline doc comments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/439">#439</a></li>
+    <li>Add @see doc tag support for twig. supports: relative files, controller names, twig files, classes and methods syntax <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/439">#439</a></li>
+    <li>Add Symfony 3 controller getParameter shortcut support; migrate container getParameter registrar for supporting all proxy methods and navigation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/680">#680</a></li>
+    <li>Create template for controller action on annotation should prioritize html files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/681">#681</a></li>
+    <li>Migrate template create annotator to twig namespaces handling to not only support bundle files</li>
+    <li>Add twig namespace extension point and provide json file for twig namespace configuration "ide-twig.json" see "Twig Settings" for example</li>
+</ul>
 
 <h2>0.11.109</h2>
 <ul>
