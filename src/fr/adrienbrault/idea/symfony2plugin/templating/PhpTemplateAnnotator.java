@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.impl.BaseIntentionAction;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -21,13 +22,10 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Collection;
 
 
 public class PhpTemplateAnnotator implements Annotator {
@@ -61,11 +59,6 @@ public class PhpTemplateAnnotator implements Annotator {
         }
 
         holder.createWarningAnnotation(element, "Missing Template");
-
-        int test = templateName.indexOf("Bundle:");
-        if(test == -1) {
-            return;
-        }
 
         holder.createWarningAnnotation(element, "Create Template")
             .registerFix(new CreateTemplateFix(templateName));
@@ -102,33 +95,29 @@ public class PhpTemplateAnnotator implements Annotator {
                 @Override
                 public void run() {
 
-                    Matcher matcher = Pattern.compile("(.*Bundle):(.*):(.*\\.twig)").matcher(templateName);
-                    if (!matcher.find()) {
+                    Collection<String> templatePaths = TwigUtil.getCreateAbleTemplatePaths(project, templateName);
+                    if(templatePaths.size() == 0) {
+                        HintManager.getInstance().showErrorHint(editor, "Can not find a target dir");
                         return;
                     }
 
-                    String bundleName = matcher.group(1);
-                    final String fileName = "Resources/views/" + matcher.group(2) + "/" + matcher.group(3);
+                    // @TODO: provide dialog for multiple targets
+                    String relativePath = templatePaths.iterator().next();
+                    VirtualFile relativeBlockScopeFile = null;
 
-
-                    SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getBundle(bundleName);
-                    if(symfonyBundle == null) {
-                        return;
+                    int i = relativePath.lastIndexOf("/");
+                    if(i > 0) {
+                        relativeBlockScopeFile = VfsUtil.findRelativeFile(project.getBaseDir(), relativePath.substring(0, i).split("/"));
                     }
 
-                    final VirtualFile virtualFile = symfonyBundle.getVirtualDirectory();
-                    if(virtualFile == null) {
-                        return;
-                    }
+                    String content = TwigUtil.buildStringFromTwigCreateContainer(project, relativeBlockScopeFile);
 
-                    String content = TwigUtil.buildStringFromTwigCreateContainer(project, VfsUtil.findRelativeFile(virtualFile, ("Resources/views/" + matcher.group(2)).split("/")));
-                    IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, TwigFileType.INSTANCE, virtualFile, fileName);
+                    IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, TwigFileType.INSTANCE, project.getBaseDir(), relativePath);
                     if(content != null) {
                         runnableCreateAndOpenFile.setContent(content);
                     }
 
                     ApplicationManager.getApplication().runWriteAction(runnableCreateAndOpenFile);
-
                 }
             });
         }

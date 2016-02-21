@@ -1,0 +1,16 @@
+{
+  "namespaces": [
+    {
+      "namespace": "foo",
+      "path": "res"
+    },
+    {
+      "path": "res"
+    },
+    {
+      "type": "Bundle",
+      "namespace": "FooBundle",
+      "path": "res"
+    }
+  ]
+}

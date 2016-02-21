@@ -25,6 +25,8 @@ import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -682,5 +684,37 @@ public class TwigUtil {
         };
 
         return true;
+    }
+
+    @NotNull
+    public static Collection<String> getCreateAbleTemplatePaths(@NotNull Project project, @NotNull String templateName) {
+        templateName = TwigHelper.normalizeTemplateName(templateName);
+
+        Collection<String> paths = new ArrayList<String>();
+
+        for (TwigPath twigPath : TwigHelper.getTwigNamespaces(project)) {
+            if(!twigPath.isEnabled()) {
+                continue;
+            }
+
+            if(templateName.startsWith("@")) {
+                int i = templateName.indexOf("/");
+                if(i > 0 && templateName.substring(1, i).equals(twigPath.getNamespace())) {
+                    paths.add(twigPath.getRelativePath(project) + "/" + templateName.substring(i + 1));
+                }
+            } else if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && templateName.matches("^\\w+Bundle:.*")) {
+
+                int i = templateName.indexOf("Bundle:");
+                String substring = templateName.substring(0, i + 6);
+                if(substring.equals(twigPath.getNamespace())) {
+                    paths.add(twigPath.getRelativePath(project) + "/" + templateName.substring(templateName.indexOf(":") + 1).replace(":", "/"));
+                }
+            } else if(twigPath.isGlobalNamespace() && !templateName.contains(":") && !templateName.contains("@")) {
+                paths.add(twigPath.getRelativePath(project) + "/" + StringUtils.stripStart(templateName, "/"));
+            }
+
+        }
+
+        return paths;
     }
 }

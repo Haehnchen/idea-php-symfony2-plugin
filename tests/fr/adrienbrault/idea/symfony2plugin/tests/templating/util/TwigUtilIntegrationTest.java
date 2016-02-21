@@ -8,9 +8,13 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
 
 public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -22,6 +26,10 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
             "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig",
             "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig"
         );
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     /**
@@ -94,6 +102,24 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
 
             assertEquals("foo", TwigUtil.getDomainTrans(element));
         }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getCreateAbleTemplatePaths
+     */
+    public void testGetCreateAbleTemplatePaths() {
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.copyFileToProject("dummy.html.twig", "res/dummy.html.twig");
+        myFixture.copyFileToProject("dummy.html.twig", "res/foo/dummy.html.twig");
+
+        assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "@foo/bar.html.twig"), "src/res/bar.html.twig");
+        assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "bar.html.twig"), "src/res/bar.html.twig");
+
+        assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "FooBundle:Bar:dummy.html.twig"), "src/res/Bar/dummy.html.twig");
+        assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "FooBundle:Bar\\Foo:dummy.html.twig"), "src/res/Bar/Foo/dummy.html.twig");
+        assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "FooBundle:Bar:Foo\\dummy.html.twig"), "src/res/Bar/Foo/dummy.html.twig");
+
+        assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "@FooBundle/Bar/dummy.html.twig"), "src/res/Bar/dummy.html.twig");
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

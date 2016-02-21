@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigConfigJson;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.dict.TwigPathJson;
+import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -93,6 +94,11 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
                     continue;
                 }
 
+                String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), twigRoot);
+                if(relativePath == null) {
+                    continue;
+                }
+
                 String namespace = twigPath.getNamespace();
 
                 TwigPathIndex.NamespaceType pathType = TwigPathIndex.NamespaceType.ADD_PATH;
@@ -101,7 +107,7 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
                     pathType = TwigPathIndex.NamespaceType.BUNDLE;
                 }
 
-                String namespacePath = StringUtils.stripStart(twigRoot.getPath(), "/");
+                String namespacePath = StringUtils.stripStart(relativePath, "/");
 
                 if(StringUtils.isNotBlank(namespace)) {
                     twigPaths.add(new TwigPath(namespacePath, namespace, pathType, true));
