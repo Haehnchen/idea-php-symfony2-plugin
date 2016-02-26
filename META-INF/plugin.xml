@@ -102,12 +102,12 @@
 
     <change-notes><![CDATA[
 
-0.12.x: PhpStorm 11 (upcoming)<br>
-0.11.x: PhpStorm 8, 9, 10<br>
-0.10.x: PhpStorm 7 (no support)<br>
-0.9.x: PhpStorm 6 (no support)<br>
+0.12.x: PhpStorm 11 (upcoming)<br/>
+0.11.x: PhpStorm 8, 9, 10<br/>
+0.10.x: PhpStorm 7 (no support)<br/>
+0.9.x: PhpStorm 6 (no support)<br/>
 
-<br>
+<br/>
 
 <h2>0.11.110</h2>
 <ul>
