@@ -70,7 +70,13 @@ public class TwigTypeResolveUtil {
         return strings.toArray(new String[strings.size()]);
     }
 
-    public static String[] formatPsiTypeName(PsiElement psiElement) {
+    /**
+     * Get items before foo.bar.car, foo.bar.car()
+     *
+     * ["foo", "bar"]
+     */
+    @NotNull
+    public static String[] formatPsiTypeName(@NotNull PsiElement psiElement) {
 
         String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.or(
             PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
@@ -95,7 +101,14 @@ public class TwigTypeResolveUtil {
         return possibleTypes;
     }
 
-    public static Collection<TwigTypeContainer> resolveTwigMethodName(PsiElement psiElement, String[] typeName) {
+    /**
+     * Collects all possible variables in given path for last given item of "typeName"
+     *
+     * @param typeName Variable path "foo.bar" => ["foo", "bar"]
+     * @return types for last item of typeName parameter
+     */
+    @NotNull
+    public static Collection<TwigTypeContainer> resolveTwigMethodName(@NotNull PsiElement psiElement, @NotNull String[] typeName) {
 
         if(typeName.length == 0) {
             return Collections.emptyList();

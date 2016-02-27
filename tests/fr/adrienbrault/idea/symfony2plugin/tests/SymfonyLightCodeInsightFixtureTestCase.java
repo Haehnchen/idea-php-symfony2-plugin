@@ -21,10 +21,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -434,6 +431,16 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             if(!(object instanceof LocalInspectionTool)) {
                 continue;
             }
+
+            final PsiElementVisitor psiElementVisitor = ((LocalInspectionTool) object).buildVisitor(problemsHolder, false);
+
+            psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
+                @Override
+                public void visitElement(PsiElement element) {
+                    psiElementVisitor.visitElement(element);
+                    super.visitElement(element);
+                }
+            });
 
             ((LocalInspectionTool) object).buildVisitor(problemsHolder, false);
         }

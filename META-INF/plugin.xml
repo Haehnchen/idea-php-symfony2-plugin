@@ -493,6 +493,12 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.CaseSensitivityServiceInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigVariablePathInspection" displayName="Field or method not found"
+                         groupName="Twig"
+                         enabledByDefault="true" level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariablePathInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
