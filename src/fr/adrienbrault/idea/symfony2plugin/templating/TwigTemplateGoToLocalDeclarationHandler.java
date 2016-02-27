@@ -88,6 +88,9 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
         }
 
+        /**
+         * {{ foo.fo<caret>o }}
+         */
         if(TwigHelper.getTypeCompletionPattern().accepts(psiElement)
             || TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)
             || TwigHelper.getVariableTypePattern().accepts(psiElement))
@@ -237,10 +240,13 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
         } else {
             Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
-            // provide method / field goto
-            for(TwigTypeContainer twigTypeContainer: types) {
-                if(twigTypeContainer.getPhpNamedElement() != null) {
-                    targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(twigTypeContainer.getPhpNamedElement(), psiElement.getText()));
+            String text = psiElement.getText();
+            if(StringUtils.isNotBlank(text)) {
+                // provide method / field goto
+                for(TwigTypeContainer twigTypeContainer: types) {
+                    if(twigTypeContainer.getPhpNamedElement() != null) {
+                        targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(twigTypeContainer.getPhpNamedElement(), text));
+                    }
                 }
             }
         }

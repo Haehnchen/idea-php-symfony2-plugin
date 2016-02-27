@@ -933,6 +933,9 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {{ foo.fo<caret>o }}
+     */
     public static ElementPattern<PsiElement> getTypeCompletionPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
