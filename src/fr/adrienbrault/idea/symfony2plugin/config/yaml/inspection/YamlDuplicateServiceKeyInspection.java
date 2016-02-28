@@ -19,11 +19,16 @@ public class YamlDuplicateServiceKeyInspection extends LocalInspectionTool {
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
 
         PsiFile psiFile = holder.getFile();
-        if(Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
-            visitRoot(psiFile, "services", holder);
+        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return super.buildVisitor(holder, isOnTheFly);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile file) {
+                visitRoot(file, "services", holder);
+            }
+        };
     }
 
     protected void visitRoot(PsiFile psiFile, String rootName, @NotNull ProblemsHolder holder) {
@@ -35,9 +40,7 @@ public class YamlDuplicateServiceKeyInspection extends LocalInspectionTool {
                 if(yaml != null) {
                     YamlHelper.attachDuplicateKeyInspection(yaml, holder);
                 }
-
             }
         }
     }
-
 }

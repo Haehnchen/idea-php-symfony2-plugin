@@ -27,22 +27,24 @@ public class ControllerMethodInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile psiFile) {
+                if(psiFile instanceof YAMLFile) {
+                    visitYaml(holder, psiFile);
+                }
 
-        if(psiFile instanceof YAMLFile) {
-            visitYaml(holder, psiFile);
-        }
+                if(psiFile instanceof XmlFile) {
+                    visitXml(holder, psiFile);
+                }
 
-        if(psiFile instanceof XmlFile) {
-            visitXml(holder, psiFile);
-        }
-
-        return super.buildVisitor(holder, isOnTheFly);
+                super.visitFile(psiFile);
+            }
+        };
     }
 
     private void visitYaml(final ProblemsHolder holder, PsiFile psiFile) {

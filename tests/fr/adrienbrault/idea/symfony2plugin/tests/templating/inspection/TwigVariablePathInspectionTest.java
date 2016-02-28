@@ -9,7 +9,7 @@ import java.io.File;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see TwigVariablePathInspection
  */
-public class TwigVariableInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();

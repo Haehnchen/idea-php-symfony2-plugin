@@ -420,11 +420,13 @@
         <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteWeakInspection" displayName="Weak Route"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
+                         language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteWeakInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
+                         language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2YamlRouteDuplicateInspection" displayName="Duplicate Route"
@@ -481,11 +483,13 @@
         <localInspection groupPath="Symfony" shortName="XmlServiceArgumentInspection" displayName="Symfony: XML Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
+                         language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlServiceArgumentInspection" displayName="Symfony: Yaml Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
+                         language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
         <localInspection groupPath="Symfony" shortName="CaseSensitivityServiceInspection" displayName="Symfony: Container sensitivity"

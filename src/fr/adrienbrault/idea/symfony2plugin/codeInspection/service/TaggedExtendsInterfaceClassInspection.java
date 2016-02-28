@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.codeInspection.service;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
@@ -31,35 +30,32 @@ import java.util.Set;
 
 public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
-    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
-
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        final PsiFile psiFile = holder.getFile();
-        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        if(psiFile instanceof YAMLFile) {
-            psiFile.acceptChildren(new YmlClassElementWalkingVisitor(holder));
-        }
-
-        if(psiFile instanceof XmlFile) {
-            psiFile.acceptChildren(new XmlClassElementWalkingVisitor(holder));
-        }
-
-        this.lazyServiceCollector = null;
-
-        return super.buildVisitor(holder, isOnTheFly);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile psiFile) {
+                if(psiFile instanceof YAMLFile) {
+                    psiFile.acceptChildren(new YmlClassElementWalkingVisitor(holder, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject())));
+                } else if(psiFile instanceof XmlFile) {
+                    psiFile.acceptChildren(new XmlClassElementWalkingVisitor(holder, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject())));
+                }
+            }
+        };
     }
 
     private class XmlClassElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
         private final ProblemsHolder holder;
+        private final ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-        public XmlClassElementWalkingVisitor(ProblemsHolder holder) {
+        public XmlClassElementWalkingVisitor(ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
             this.holder = holder;
+            this.lazyServiceCollector = lazyServiceCollector;
         }
 
         @Override
@@ -72,7 +68,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                 if(StringUtils.isNotBlank(text) && psiElements.length > 2) {
                     XmlTag parentOfType = PsiTreeUtil.getParentOfType(element, XmlTag.class);
                     if(parentOfType != null) {
-                        registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), text, holder);
+                        registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), text, holder, this.lazyServiceCollector);
                     }
                 }
             }
@@ -83,9 +79,11 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
     private class YmlClassElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
         private final ProblemsHolder holder;
+        private final ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-        public YmlClassElementWalkingVisitor(ProblemsHolder holder) {
+        public YmlClassElementWalkingVisitor(ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
             this.holder = holder;
+            this.lazyServiceCollector = lazyServiceCollector;
         }
 
         @Override
@@ -106,7 +104,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                     if(yamlCompoundValue instanceof YAMLCompoundValue) {
                         PsiElement serviceKeyValue = yamlCompoundValue.getParent();
                         if(serviceKeyValue instanceof YAMLKeyValue) {
-                            registerTaggedProblems(element, FormUtil.getTags((YAMLKeyValue) serviceKeyValue), text, holder);
+                            registerTaggedProblems(element, FormUtil.getTags((YAMLKeyValue) serviceKeyValue), text, holder, this.lazyServiceCollector);
                         }
 
                     }
@@ -120,7 +118,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
     }
 
-    private void registerTaggedProblems(@NotNull PsiElement source, @NotNull Set<String> tags, @NotNull String serviceClass, @NotNull ProblemsHolder holder) {
+    private void registerTaggedProblems(@NotNull PsiElement source, @NotNull Set<String> tags, @NotNull String serviceClass, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
 
         if(tags.size() == 0) {
             return;
@@ -141,7 +139,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
             // load PhpClass only if we need it, on error exit
             if(phpClass == null) {
-                phpClass = ServiceUtil.getResolvedClassDefinition(source.getProject(), serviceClass);
+                phpClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), serviceClass, lazyServiceCollector);
                 if(phpClass == null) {
                     return;
                 }
@@ -154,10 +152,6 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
         }
 
-    }
-
-    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
-        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
     }
 
 }

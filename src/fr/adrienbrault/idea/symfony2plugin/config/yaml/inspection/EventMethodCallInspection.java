@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
@@ -40,47 +39,44 @@ import org.jetbrains.yaml.psi.YAMLSequence;
 
 public class EventMethodCallInspection extends LocalInspectionTool {
 
-    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
-
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        if(psiFile instanceof XmlFile) {
-            visitXmlFile(psiFile, holder);
-        } else if(psiFile instanceof YAMLFile) {
-            visitYamlFile(psiFile, holder);
-        } else if(psiFile instanceof PhpFile) {
-            visitPhpFile((PhpFile) psiFile, holder);
-        }
-
-        this.lazyServiceCollector = null;
-
-        return super.buildVisitor(holder, isOnTheFly);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile psiFile) {
+                if(psiFile instanceof XmlFile) {
+                    visitXmlFile(psiFile, holder, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
+                } else if(psiFile instanceof YAMLFile) {
+                    visitYamlFile(psiFile, holder, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
+                } else if(psiFile instanceof PhpFile) {
+                    visitPhpFile((PhpFile) psiFile, holder);
+                }
+            }
+        };
     }
 
     private void visitPhpFile(PhpFile psiFile, final ProblemsHolder holder) {
         psiFile.acceptChildren(new PhpSubscriberRecursiveElementWalkingVisitor(holder));
     }
 
-    private void visitYamlFile(PsiFile psiFile, final ProblemsHolder holder) {
+    private void visitYamlFile(PsiFile psiFile, final ProblemsHolder holder, @NotNull final ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
 
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {
-                annotateCallMethod(element, holder);
+                annotateCallMethod(element, holder, lazyServiceCollector);
                 super.visitElement(element);
             }
         });
 
     }
 
-    private void visitXmlFile(@NotNull PsiFile psiFile, @NotNull final ProblemsHolder holder) {
+    private void visitXmlFile(@NotNull PsiFile psiFile, @NotNull final ProblemsHolder holder, @NotNull final ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
 
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
@@ -99,7 +95,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
                     String serviceClassValue = XmlHelper.getServiceDefinitionClass(element);
                     if(serviceClassValue != null && StringUtils.isNotBlank(serviceClassValue)) {
-                        registerMethodProblem(psiElements[1], holder, serviceClassValue);
+                        registerMethodProblem(psiElements[1], holder, serviceClassValue, lazyServiceCollector);
                     }
 
                 }
@@ -168,7 +164,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         return null;
     }
 
-    private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
+    private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector collector) {
 
         String methodName = PsiElementUtils.trimQuote(psiElement.getText());
         if(StringUtils.isBlank(methodName)) {
@@ -180,27 +176,27 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        registerMethodProblem(psiElement, holder, classValue);
+        registerMethodProblem(psiElement, holder, classValue, collector);
     }
 
-    private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
+    private void annotateCallMethod(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector collector) {
 
         if(StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
             YamlElementPatternHelper.getSingleLineScalarKey("method")
         ).accepts(psiElement)) {
-            visitYamlMethodTagKey(psiElement, holder);
+            visitYamlMethodTagKey(psiElement, holder, collector);
         }
 
         if((PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
             || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)))
         {
-            visitYamlMethod(psiElement, holder);
+            visitYamlMethod(psiElement, holder, collector);
         }
 
     }
 
-    private void visitYamlMethod(PsiElement psiElement, ProblemsHolder holder) {
+    private void visitYamlMethod(PsiElement psiElement, ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector collector) {
         if(!YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)){
             return;
         }
@@ -219,12 +215,12 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        registerMethodProblem(psiElement, holder, getServiceName(classKeyValue.getValue()));
+        registerMethodProblem(psiElement, holder, getServiceName(classKeyValue.getValue()), collector);
 
     }
 
-    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue) {
-        registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, this.getLazyServiceCollector(psiElement.getProject())));
+    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue, ContainerCollectionResolver.LazyServiceCollector collector) {
+        registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, collector));
     }
 
     private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable final PhpClass phpClass) {
@@ -321,9 +317,4 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         }
 
     }
-
-    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
-        return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
-    }
-
 }

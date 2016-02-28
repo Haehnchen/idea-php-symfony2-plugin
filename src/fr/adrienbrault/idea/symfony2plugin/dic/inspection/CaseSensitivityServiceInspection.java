@@ -9,11 +9,11 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.util.CommonProcessors;
 import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -33,24 +33,28 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
 
-        PsiFile psiFile = holder.getFile();
-        if(psiFile.getFileType() == PhpFileType.INSTANCE) {
-            phpVisitor(holder);
-        } else if(psiFile.getFileType() == YAMLFileType.YML) {
-            yamlVisitor(holder);
-        } else if(psiFile.getFileType() == XmlFileType.INSTANCE) {
-            xmlVisitor(holder);
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return super.buildVisitor(holder, isOnTheFly);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile psiFile) {
+                if(psiFile.getFileType() == PhpFileType.INSTANCE) {
+                    phpVisitor(holder, psiFile);
+                } else if(psiFile.getFileType() == YAMLFileType.YML) {
+                    yamlVisitor(holder, psiFile);
+                } else if(psiFile.getFileType() == XmlFileType.INSTANCE) {
+                    xmlVisitor(holder, psiFile);
+                }
+            }
+        };
     }
 
-    private void yamlVisitor(final @NotNull ProblemsHolder holder) {
-
-        PsiFile file = holder.getFile();
+    private void yamlVisitor(final @NotNull ProblemsHolder holder, @NotNull PsiFile psiFile) {
 
         // usage in service arguments or every other service condition
-        file.acceptChildren(new PsiRecursiveElementVisitor() {
+        psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement psiElement) {
 
@@ -58,7 +62,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
                 if (YamlElementPatternHelper.getServiceDefinition().accepts(psiElement) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
                     String serviceName = YamlHelper.trimSpecialSyntaxServiceName(psiElement.getText());
                     // dont mark "@", "@?", "@@" escaping and expressions
-                    if (isValidService(serviceName)) {
+                    if (serviceName != null && isValidService(serviceName)) {
                         holder.registerProblem(psiElement, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);
                     }
                 }
@@ -68,7 +72,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         });
 
         // services and parameter
-        YamlHelper.processKeysAfterRoot(file, new Processor<YAMLKeyValue>() {
+        YamlHelper.processKeysAfterRoot(psiFile, new Processor<YAMLKeyValue>() {
             @Override
             public boolean process(YAMLKeyValue yamlKeyValue) {
                 String keyText = yamlKeyValue.getKeyText();
@@ -84,9 +88,9 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         }, "services", "parameters");
     }
 
-    private void phpVisitor(final @NotNull ProblemsHolder holder) {
+    private void phpVisitor(final @NotNull ProblemsHolder holder, @NotNull PsiFile psiFile) {
 
-        holder.getFile().acceptChildren(new PsiRecursiveElementVisitor() {
+        psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement element) {
                 MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element);
@@ -102,8 +106,8 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         });
     }
 
-    private void xmlVisitor(final @NotNull ProblemsHolder holder) {
-        holder.getFile().acceptChildren(new PsiRecursiveElementVisitor() {
+    private void xmlVisitor(final @NotNull ProblemsHolder holder, @NotNull PsiFile psiFile) {
+        psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement psiElement) {
                 if(psiElement instanceof XmlAttributeValue && (XmlHelper.getArgumentServiceIdPattern().accepts(psiElement) || XmlHelper.getServiceIdNamePattern().accepts(psiElement))) {
@@ -124,11 +128,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         }
 
         // expression
-        if(serviceName.startsWith("@=")) {
-            return false;
-        }
-
-        return true;
+        return !serviceName.startsWith("@=");
     }
 
 }

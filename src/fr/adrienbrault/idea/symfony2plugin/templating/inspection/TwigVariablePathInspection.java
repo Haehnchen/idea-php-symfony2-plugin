@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
@@ -22,6 +23,10 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
+        }
+
         return new MyPsiRecursiveElementVisitor(holder);
     }
 

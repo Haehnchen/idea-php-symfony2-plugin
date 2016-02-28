@@ -4,9 +4,6 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
@@ -24,40 +21,23 @@ abstract public class AbstractPhpRouteInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        if(psiFile instanceof PhpFile) {
-            psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                @Override
-                public void visitElement(PsiElement element) {
-                    if(element instanceof StringLiteralExpression) {
-                        annotate(((StringLiteralExpression) element).getContents(), element, holder);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+                if(element instanceof StringLiteralExpression) {
+                    String contents = ((StringLiteralExpression) element).getContents();
+                    if(StringUtils.isNotBlank(contents)) {
+                        annotate(contents, element, holder);
                     }
-                    super.visitElement(element);
                 }
-            });
-        }
 
-        /* too slow
-        if(psiFile instanceof TwigFile) {
-            psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                @Override
-                public void visitElement(PsiElement element) {
-
-                    if(TwigHelper.getAutocompletableRoutePattern().accepts(element)) {
-                        annotateRouteName(element, holder, element.getText());
-                    }
-
-                    super.visitElement(element);
-                }
-            });
-        }*/
-
-        return super.buildVisitor(holder, isOnTheFly);
+                super.visitElement(element);
+            }
+        };
     }
 
     public void annotate(String routeName, @NotNull final PsiElement element, @NotNull ProblemsHolder holder) {

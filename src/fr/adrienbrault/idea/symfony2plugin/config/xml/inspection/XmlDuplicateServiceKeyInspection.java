@@ -25,13 +25,17 @@ public class XmlDuplicateServiceKeyInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
-            visitRoot(psiFile, holder, "services", "service", "id");
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return super.buildVisitor(holder, isOnTheFly);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile file) {
+                visitRoot(file, holder, "services", "service", "id");
+                super.visitFile(file);
+            }
+        };
     }
 
     protected void visitRoot(PsiFile psiFile, @NotNull ProblemsHolder holder, String root, String child, String tagName) {

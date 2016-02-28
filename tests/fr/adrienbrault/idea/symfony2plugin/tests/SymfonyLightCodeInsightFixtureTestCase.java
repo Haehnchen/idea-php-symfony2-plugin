@@ -442,7 +442,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
                 }
             });
 
-            ((LocalInspectionTool) object).buildVisitor(problemsHolder, false);
+            psiElementVisitor.visitFile(psiFile.getContainingFile());;
         }
 
         return new Pair<List<ProblemDescriptor>, Integer>(problemsHolder.getResults(), caretOffset);

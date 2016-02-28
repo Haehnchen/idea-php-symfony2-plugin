@@ -72,8 +72,9 @@ public class ContainerCollectionResolver {
     public static class LazyServiceCollector {
 
         private final Project project;
-        private ServiceCollector collector;
+        private ServiceCollector serviceCollector;
         private Source[] sources  = {Source.COMPILER, Source.INDEX};
+        private ParameterCollector parameterCollector;
 
         public LazyServiceCollector(Project project) {
             this.project = project;
@@ -82,13 +83,21 @@ public class ContainerCollectionResolver {
         @NotNull
         public ServiceCollector getCollector() {
 
-            if(this.collector == null) {
-                this.collector = new ServiceCollector(project, sources);
+            if(this.serviceCollector == null) {
+                this.serviceCollector = new ServiceCollector(project, sources);
             }
 
-            return this.collector;
+            return this.serviceCollector;
         }
+        @NotNull
+        public ParameterCollector getParameterCollector() {
 
+            if(this.parameterCollector == null) {
+                this.parameterCollector = new ParameterCollector(project, sources);
+            }
+
+            return this.parameterCollector;
+        }
     }
 
     /**
@@ -101,7 +110,12 @@ public class ContainerCollectionResolver {
      */
     @Nullable
     public static String resolveParameter(Project project, String paramOrClassName) {
-        return new ParameterCollector(project, Source.COMPILER, Source.INDEX).resolve(paramOrClassName);
+        return resolveParameter(new ParameterCollector(project, Source.COMPILER, Source.INDEX), paramOrClassName);
+    }
+
+    @Nullable
+    public static String resolveParameter(@NotNull ParameterCollector parameterCollector, @NotNull String paramOrClassName) {
+        return parameterCollector.resolve(paramOrClassName);
     }
 
     public static Map<String, ContainerParameter> getParameters(Project project) {

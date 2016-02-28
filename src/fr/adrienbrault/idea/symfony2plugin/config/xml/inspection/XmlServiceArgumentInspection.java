@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -24,52 +23,60 @@ import java.util.List;
  */
 public class XmlServiceArgumentInspection extends LocalInspectionTool {
 
-    private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
-
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(psiFile.getFileType() != XmlFileType.INSTANCE || !Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        for (XmlTag xmlTag : ServiceActionUtil.getXmlContainerServiceDefinition(psiFile)) {
-            visitService(xmlTag, holder);
-        }
-
-        this.lazyServiceCollector = null;
-
-        return super.buildVisitor(holder, isOnTheFly);
+        return new MyPsiElementVisitor(holder);
     }
 
-    protected void visitService(XmlTag xmlTag, @NotNull ProblemsHolder holder) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
 
-        if(!ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag)) {
-            return;
+        private final ProblemsHolder holder;
+        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+
+        public MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
         }
 
-        final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, getLazyServiceCollector(xmlTag));
-        if (args == null) {
-            return;
+        @Override
+        public void visitFile(PsiFile file) {
+            for (XmlTag xmlTag : ServiceActionUtil.getXmlContainerServiceDefinition(file)) {
+                visitService(xmlTag, holder);
+            }
+
+            this.lazyServiceCollector = null;
+
+            super.visitFile(file);
         }
 
-        PsiElement childrenOfType = PsiElementUtils.getChildrenOfType(xmlTag, PlatformPatterns.psiElement(XmlTokenType.XML_NAME));
-        if(childrenOfType == null) {
-            return;
+        private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(XmlTag xmlTag) {
+            if(this.lazyServiceCollector != null) {
+                return this.lazyServiceCollector;
+            }
+
+            return this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(xmlTag.getProject());
         }
 
-        holder.registerProblem(childrenOfType, "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new AddServiceXmlArgumentLocalQuickFix(args));
+        private void visitService(XmlTag xmlTag, @NotNull ProblemsHolder holder) {
+            if(!ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag)) {
+                return;
+            }
+
+            final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, getLazyServiceCollector(xmlTag));
+            if (args == null) {
+                return;
+            }
+
+            PsiElement childrenOfType = PsiElementUtils.getChildrenOfType(xmlTag, PlatformPatterns.psiElement(XmlTokenType.XML_NAME));
+            if(childrenOfType == null) {
+                return;
+            }
+
+            holder.registerProblem(childrenOfType, "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new AddServiceXmlArgumentLocalQuickFix(args));
+        }
     }
-
-    private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(XmlTag xmlTag) {
-
-        if(this.lazyServiceCollector != null) {
-            return this.lazyServiceCollector;
-        }
-
-        return this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(xmlTag.getProject());
-    }
-
 }

@@ -15,24 +15,34 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        // @TODO: detection of routing files in right way
-        // routing.yml
-        // comment.routing.yml
-        // routing/foo.yml
-        if(YamlHelper.isRoutingFile(psiFile)) {
-            YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
+        return new MyPsiElementVisitor(holder);
+    }
+
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        private final ProblemsHolder holder;
+
+        public MyPsiElementVisitor(ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitFile(PsiFile file) {
+            // @TODO: detection of routing files in right way
+            // routing.yml
+            // comment.routing.yml
+            // routing/foo.yml
+            if(!YamlHelper.isRoutingFile(file)) {
+                return;
+            }
+
+            YAMLDocument document = PsiTreeUtil.findChildOfType(file, YAMLDocument.class);
             if(document != null) {
                 YamlHelper.attachDuplicateKeyInspection(document, holder);
             }
         }
-
-        return super.buildVisitor(holder, isOnTheFly);
     }
-
 }

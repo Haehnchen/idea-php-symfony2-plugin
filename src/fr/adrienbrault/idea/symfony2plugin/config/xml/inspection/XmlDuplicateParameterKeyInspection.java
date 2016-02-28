@@ -11,13 +11,16 @@ public class XmlDuplicateParameterKeyInspection extends XmlDuplicateServiceKeyIn
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
-        PsiFile psiFile = holder.getFile();
-        if(Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
-            visitRoot(psiFile, holder, "parameters", "parameter", "key");
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return super.buildVisitor(holder, isOnTheFly);
+        return new PsiElementVisitor() {
+            @Override
+            public void visitFile(PsiFile file) {
+                visitRoot(file, holder, "parameters", "parameter", "key");
+            }
+        };
     }
 
 }

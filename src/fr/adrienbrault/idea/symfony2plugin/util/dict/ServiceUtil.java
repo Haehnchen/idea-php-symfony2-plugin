@@ -113,7 +113,7 @@ public class ServiceUtil {
 
         // match parameter
         if(serviceClassParameterName.startsWith("%") && serviceClassParameterName.endsWith("%")) {
-            String serviceClass = ContainerCollectionResolver.resolveParameter(project, serviceClassParameterName);
+            String serviceClass = ContainerCollectionResolver.resolveParameter(collector.getParameterCollector(), serviceClassParameterName);
 
             if(serviceClass != null) {
                 return PhpElementsUtil.getClassInterface(project, serviceClass);
