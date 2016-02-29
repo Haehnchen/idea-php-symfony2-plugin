@@ -102,6 +102,8 @@
                 <include name="**/*.xlf"/>
                 <include name="**/*.twig"/>
                 <include name="**/*.json"/>
+                <include name="**/*.xlf"/>
+                <include name="**/*.xliff"/>
             </patternset>            
 
             <copy toDir="@{dest}">

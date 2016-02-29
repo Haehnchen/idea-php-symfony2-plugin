@@ -45,7 +45,8 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
                     return map;
                 }
 
-                if("xlf".equalsIgnoreCase(inputData.getFile().getExtension())) {
+                String extension = inputData.getFile().getExtension();
+                if("xlf".equalsIgnoreCase(extension) || "xliff".equalsIgnoreCase(extension)) {
                     return getXlfStringMap(inputData, map);
                 }
 
@@ -166,7 +167,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
         return new FileBasedIndex.InputFilter() {
             @Override
             public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension());
+                return file.getFileType() == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension()) || "xliff".equalsIgnoreCase(file.getExtension());
             }
         };
     }
