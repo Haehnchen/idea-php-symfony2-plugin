@@ -1,13 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
-import com.intellij.openapi.fileChooser.FileChooser;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.ToolbarDecorator;
@@ -15,8 +10,9 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
+import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -30,33 +26,32 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContainerSettingsForm implements Configurable {
+public class RoutingSettingsForm implements Configurable {
 
     private JPanel panel1;
     private JPanel listviewPanel;
     private JButton buttonReset;
-    private TableView<ContainerFile> tableView;
+    private TableView<RoutingFile> tableView;
     private Project project;
     private boolean changed = false;
-    private ListTableModel<ContainerFile> modelList;
+    private ListTableModel<RoutingFile> modelList;
 
-
-    public ContainerSettingsForm(@NotNull Project project) {
+    public RoutingSettingsForm(@NotNull Project project) {
 
         this.project = project;
-        this.tableView = new TableView<ContainerFile>();
+        this.tableView = new TableView<RoutingFile>();
 
-        this.modelList = new ListTableModel<ContainerFile>(
+        this.modelList = new ListTableModel<RoutingFile>(
             new PathColumn(project),
             new ExistsColumn(project)
         );
 
-        this.fillContainerList();
+        this.initList();
 
         this.modelList.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                ContainerSettingsForm.this.changed = true;
+                RoutingSettingsForm.this.changed = true;
             }
         });
 
@@ -67,19 +62,19 @@ public class ContainerSettingsForm implements Configurable {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                resetContainerList();
+                resetList();
 
                 // add default path
                 for (String defaultContainerPath : Settings.DEFAULT_CONTAINER_PATHS) {
-                    ContainerSettingsForm.this.modelList.addRow(new ContainerFile(defaultContainerPath));
+                    RoutingSettingsForm.this.modelList.addRow(new RoutingFile(defaultContainerPath));
                 }
 
             }
         });
     }
 
-    private void fillContainerList() {
-        List<ContainerFile> containerFiles = getSettings().containerFiles;
+    private void initList() {
+        List<RoutingFile> containerFiles = getSettings().routingFiles;
         if(containerFiles != null && containerFiles.size() > 0) {
             this.modelList.addRows(containerFiles);
         }
@@ -100,9 +95,9 @@ public class ContainerSettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<ContainerFile>() {
+        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<RoutingFile>() {
             @Override
-            public ContainerFile createElement() {
+            public RoutingFile createElement() {
                 return null;
             }
 
@@ -115,30 +110,36 @@ public class ContainerSettingsForm implements Configurable {
         tablePanel.setEditAction(new AnActionButtonRunnable() {
             @Override
             public void run(AnActionButton anActionButton) {
-                ContainerFile containerFile = ContainerSettingsForm.this.tableView.getSelectedObject();
-                if(containerFile != null) {
-                    String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
-                    if(uri != null) {
-                        containerFile.setPath(uri);
-                        ContainerSettingsForm.this.changed = true;
-                    }
-
+                RoutingFile containerFile = RoutingSettingsForm.this.tableView.getSelectedObject();
+                if(containerFile == null) {
+                    return;
                 }
+
+                String uri = UiSettingsUtil.getPathDialog(project, PhpFileType.INSTANCE);
+                if(uri == null) {
+                    return;
+                }
+
+                containerFile.setPath(uri);
+                RoutingSettingsForm.this.changed = true;
             }
         });
 
         tablePanel.setAddAction(new AnActionButtonRunnable() {
             @Override
             public void run(AnActionButton anActionButton) {
-                String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
-                if(uri != null) {
-                    ContainerSettingsForm.this.tableView.getListTableModel().addRow(new ContainerFile(uri));
-                    ContainerSettingsForm.this.changed = true;
+                String uri = UiSettingsUtil.getPathDialog(project, PhpFileType.INSTANCE);
+                if(uri == null) {
+                    return;
                 }
+
+                RoutingSettingsForm.this.tableView.getListTableModel().addRow(new RoutingFile(uri));
+                RoutingSettingsForm.this.changed = true;
             }
         });
 
         this.panel1.add(tablePanel.createPanel());
+
         return this.panel1;
     }
 
@@ -149,13 +150,13 @@ public class ContainerSettingsForm implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
+        List<RoutingFile> containerFiles = new ArrayList<RoutingFile>();
 
-        for(ContainerFile containerFile :this.tableView.getListTableModel().getItems()) {
-            containerFiles.add(new ContainerFile(containerFile.getPath()));
+        for(RoutingFile containerFile :this.tableView.getListTableModel().getItems()) {
+            containerFiles.add(new RoutingFile(containerFile.getPath()));
         }
 
-        getSettings().containerFiles = containerFiles;
+        getSettings().routingFiles = containerFiles;
         this.changed = false;
     }
 
@@ -165,12 +166,12 @@ public class ContainerSettingsForm implements Configurable {
 
     @Override
     public void reset() {
-        this.resetContainerList();
-        this.fillContainerList();
+        this.resetList();
+        this.initList();
         this.changed = false;
     }
 
-    private void resetContainerList() {
+    private void resetList() {
         // clear list, easier?
         while(this.modelList.getRowCount() > 0) {
             this.modelList.removeRow(0);
@@ -181,7 +182,7 @@ public class ContainerSettingsForm implements Configurable {
     public void disposeUIResources() {
     }
 
-    private class PathColumn extends ColumnInfo<ContainerFile, String> {
+    private class PathColumn extends ColumnInfo<RoutingFile, String> {
 
         private Project project;
 
@@ -192,12 +193,12 @@ public class ContainerSettingsForm implements Configurable {
 
         @Nullable
         @Override
-        public String valueOf(ContainerFile containerFile) {
+        public String valueOf(RoutingFile containerFile) {
             return containerFile.getPath();
         }
     }
 
-    private class ExistsColumn extends ColumnInfo<ContainerFile, String> {
+    private class ExistsColumn extends ColumnInfo<RoutingFile, String> {
 
         private Project project;
 
@@ -208,7 +209,7 @@ public class ContainerSettingsForm implements Configurable {
 
         @Nullable
         @Override
-        public String valueOf(ContainerFile containerFile) {
+        public String valueOf(RoutingFile containerFile) {
             return containerFile.exists(this.project) ? "EXISTS" : "ERROR";
         }
     }

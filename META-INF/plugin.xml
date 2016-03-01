@@ -328,6 +328,13 @@
                              nonDefaultProject="true"
                 />
 
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.RoutingSettingsForm"
+                             displayName="Routing"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony2.RoutingSettingsForm"
+                             nonDefaultProject="true"
+        />
+
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>

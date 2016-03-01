@@ -6,6 +6,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
 import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +34,9 @@ public class Settings implements PersistentStateComponent<Settings> {
     public static String DEFAULT_WEB_DIRECTORY = "web";
     public static String DEFAULT_APP_DIRECTORY = "app";
 
+    /**
+     * @deprecated
+     */
     public String pathToUrlGenerator = DEFAULT_URL_GENERATOR_PATH;
     public String pathToTranslation = DEFAULT_TRANSLATION_PATH;
     public String directoryToWeb = DEFAULT_WEB_DIRECTORY;
@@ -78,6 +82,9 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     @Nullable
     public List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
+
+    @Nullable
+    public List<RoutingFile> routingFiles = new ArrayList<RoutingFile>();
 
     @Nullable
     public List<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();

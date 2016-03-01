@@ -35,6 +35,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcut
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
@@ -255,10 +256,23 @@ public class RouteHelper {
 
     public static Map<String, Route> getCompiledRoutes(Project project) {
 
-        String pathToUrlGenerator = Settings.getInstance(project).pathToUrlGenerator;
         Set<String> files = new HashSet<String>();
+
+        // old deprecated single file
+        String pathToUrlGenerator = Settings.getInstance(project).pathToUrlGenerator;
         if(pathToUrlGenerator != null) {
             files.add(pathToUrlGenerator);
+        }
+
+        // add custom routing files on settings
+        List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
+        if(routingFiles != null) {
+            for (RoutingFile routingFile : routingFiles) {
+                String path = routingFile.getPath();
+                if(StringUtils.isNotBlank(path)) {
+                    files.add(path);
+                }
+            }
         }
 
         for(String file: files) {
