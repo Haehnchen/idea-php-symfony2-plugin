@@ -29,4 +29,9 @@ public abstract class AbstractUiFilePath implements UiFilePathInterface {
     public void setPath(String path) {
         this.path = path;
     }
+
+    @Override
+    public boolean isRemote() {
+        return this.path != null && this.path.startsWith("remote://");
+    }
 }

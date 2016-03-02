@@ -11,6 +11,8 @@ import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.ui.ServerBrowserDialog;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,7 +60,7 @@ public class UiSettingsUtil {
         }
 
         String rootPath = server.getFileTransferConfig().getRootFolder();
-        ServerBrowserDialog d = new ServerBrowserDialog(project, server, "foo", false, FileTransferConfig.Origin.Default, new WebServerConfig.RemotePath(rootPath));
+        ServerBrowserDialog d = new ServerBrowserDialog(project, server, String.format("Remote file: %s", server.getName()), false, FileTransferConfig.Origin.Default, new WebServerConfig.RemotePath(rootPath));
         d.show();
         if (!d.isOK()) {
             return;
@@ -78,6 +80,14 @@ public class UiSettingsUtil {
         void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath);
     }
 
+    public static UiFilePathPresentable getPresentableFilePath(@NotNull Project project, @NotNull UiFilePathInterface uiFilePath) {
+        String info;
+        if(uiFilePath.isRemote()) {
+            info = "REMOTE";
+        } else {
+            info = uiFilePath.exists(project) ? "EXISTS" : "NOT FOUND";
+        }
 
-
+        return new UiFilePathPresentable(uiFilePath.getPath(), info);
+    }
 }

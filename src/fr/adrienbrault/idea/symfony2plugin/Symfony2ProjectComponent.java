@@ -9,42 +9,27 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.containers.HashMap;
-import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.plugins.webDeployment.ConnectionOwnerFactory;
-import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
-import com.jetbrains.plugins.webDeployment.config.PublishConfig;
-import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
-import com.jetbrains.plugins.webDeployment.connections.RemoteConnection;
-import com.jetbrains.plugins.webDeployment.connections.RemoteConnectionManager;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import fr.adrienbrault.idea.symfony2plugin.widget.SymfonyProfilerWidget;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -74,70 +59,13 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return "Symfony2ProjectComponent";
     }
 
-    interface RemoteFileStorage<V> {
-        Collection<String> files(@NotNull Project project);
-        void build(@NotNull Project project, @NotNull Collection<String> content);
-        V getState();
-        void clear();
-    }
 
-    class RoutingRemoteFileStorage implements RemoteFileStorage<Map<String, Route>> {
-
-        private Map<String, Route> routeMap = new HashMap<String, Route>();
-
-        @Override
-        public Collection<String> files(@NotNull Project project) {
-            List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
-            if(routingFiles == null) {
-                return Collections.emptyList();
-            }
-
-            return ContainerUtil.map(ContainerUtil.filter(routingFiles, new Condition<RoutingFile>() {
-                @Override
-                public boolean value(RoutingFile routingFile) {
-                    return routingFile.getPath().startsWith("remote://");
-                }
-            }), new Function<RoutingFile, String>() {
-                @Override
-                public String fun(RoutingFile routingFile) {
-                    return routingFile.getPath().substring("remote://".length());
-                }
-            });
-        }
-
-        @Override
-        public void build(@NotNull Project project, @NotNull Collection<String> content) {
-
-            Map<String, Route> routeMap = new HashMap<String, Route>();
-
-            for (String s : content) {
-                routeMap.putAll(RouteHelper.getRoutesInsideUrlGeneratorFile(
-                    PsiFileFactory.getInstance(project).createFileFromText("DUMMY__." + PhpFileType.INSTANCE.getDefaultExtension(), PhpFileType.INSTANCE, s)
-                ));
-            }
-
-            this.routeMap = routeMap;
-        }
-
-        @NotNull
-        public Map<String, Route> getState() {
-            return this.routeMap = new HashMap<String, Route>();
-        }
-
-        @Override
-        public void clear() {
-            this.routeMap = new HashMap<String, Route>();
-        }
-    }
 
     public void projectOpened() {
         this.checkProject();
 
-        final RemoteFileStorage[] remoteFileStorage = new RoutingRemoteFileStorage[] {
-            new RoutingRemoteFileStorage()
-        };
 
-        new Timer().schedule(new MyTimerTask(remoteFileStorage), 1000, 5000);
+        new Timer().schedule(new MyTimerTask(), 1000, 5000);
 
         // phpstorm pre 7.1 dont support statusbar api;
         if(!IdeHelper.supportsStatusBar()) {
@@ -279,11 +207,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     private class MyTimerTask extends TimerTask {
-        private final RemoteFileStorage[] remoteFileStorage;
 
-        public MyTimerTask(RemoteFileStorage[] remoteFileStorage) {
-            this.remoteFileStorage = remoteFileStorage;
-        }
         @Override
         public void run() {
 
@@ -293,56 +217,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
                     ApplicationManager.getApplication().runReadAction(new Runnable() {
                         @Override
                         public void run() {
-                            run1();
+                            RemoteWebServerUtil.collectRemoteFiles(project);
                         }
                     });
                 }
             });
 
-        }
-
-        private void run1() {
-            WebServerConfig defaultServer = PublishConfig.getInstance(project).findDefaultServer();
-            if(defaultServer == null) {
-                return;
-            }
-
-            RemoteConnection connection;
-            try {
-                connection = RemoteConnectionManager.getInstance().openConnection(ConnectionOwnerFactory.createConnectionOwner(project), "foo", defaultServer, FileTransferConfig.Origin.Default, null, null);
-            } catch (FileSystemException e) {
-                return;
-            }
-
-            for (RemoteFileStorage fileStorage : remoteFileStorage) {
-                Collection<String> contents = new ArrayList<String>();
-
-                for (Object s : fileStorage.files(project)) {
-
-                    FileObject file;
-                    try {
-                        file = defaultServer.findFile(connection.getFileSystem(), new WebServerConfig.RemotePath((String) s));
-                    } catch (FileSystemException e) {
-                        continue;
-                    }
-
-                    String content;
-                    try {
-                        content = StreamUtil.readText(file.getContent().getInputStream(), "UTF-8");
-                    } catch (IOException e) {
-                        continue;
-                    }
-
-                    if(StringUtils.isNotBlank(content)) {
-                        contents.add(content);
-                    }
-                }
-
-                fileStorage.clear();
-                fileStorage.build(project, contents);
-            }
-
-            connection.clone();
         }
     }
 }

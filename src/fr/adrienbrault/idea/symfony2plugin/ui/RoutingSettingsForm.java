@@ -16,8 +16,11 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
+import icons.WebDeploymentIcons;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -87,7 +90,7 @@ public class RoutingSettingsForm implements Configurable {
     @Nls
     @Override
     public String getDisplayName() {
-        return "Container";
+        return "Routing";
     }
 
     @Nullable
@@ -142,7 +145,7 @@ public class RoutingSettingsForm implements Configurable {
             }
         });
 
-        tablePanel.addExtraAction(new AnActionButton("Move to", AllIcons.Actions.Nextfile) {
+        tablePanel.addExtraAction(new AnActionButton("Remote", WebDeploymentIcons.Download) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 UiSettingsUtil.openFileDialogForDefaultWebServerConnection(project, new WebServerFileDialogExtensionCallback("php") {
@@ -229,8 +232,8 @@ public class RoutingSettingsForm implements Configurable {
 
         @Nullable
         @Override
-        public String valueOf(RoutingFile containerFile) {
-            return containerFile.exists(this.project) ? "EXISTS" : "ERROR";
+        public String valueOf(RoutingFile file) {
+            return UiSettingsUtil.getPresentableFilePath(project, file).getInfo();
         }
     }
 }
