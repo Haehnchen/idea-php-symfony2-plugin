@@ -19,6 +19,12 @@ namespace Foo
         public function getArray() {
             return ['foo' => 'foobar'];
         }
+
+        /**
+         * @deprecated
+         */
+        public function getDeprecated() {
+        }
     }
 
     abstract class BarArrayAccess implements \ArrayAccess

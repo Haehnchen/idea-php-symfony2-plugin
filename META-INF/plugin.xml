@@ -510,6 +510,12 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariablePathInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigVariableDeprecatedInspection" displayName="Deprecated Twig variable"
+                         groupName="Twig"
+                         enabledByDefault="true" level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariableDeprecatedInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
