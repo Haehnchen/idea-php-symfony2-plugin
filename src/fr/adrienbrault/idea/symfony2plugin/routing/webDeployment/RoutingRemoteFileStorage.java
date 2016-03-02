@@ -1,22 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.routing.webDeployment;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.PsiFileFactory;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.HashMap;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.storage.RemoteFileStorageInterface;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.vfs2.FileObject;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,34 +25,31 @@ public class RoutingRemoteFileStorage implements RemoteFileStorageInterface<Map<
 
     private Map<String, Route> routeMap = new HashMap<String, Route>();
 
+    @NotNull
     @Override
     public Collection<String> files(@NotNull Project project) {
-        List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
-        if(routingFiles == null) {
-            return Collections.emptyList();
-        }
-
-        return ContainerUtil.map(ContainerUtil.filter(routingFiles, new Condition<RoutingFile>() {
-            @Override
-            public boolean value(RoutingFile routingFile) {
-                return routingFile.getPath().startsWith("remote://");
-            }
-        }), new Function<RoutingFile, String>() {
-            @Override
-            public String fun(RoutingFile routingFile) {
-                return routingFile.getPath().substring("remote://".length());
-            }
-        });
+        return RemoteWebServerUtil.getRemoteAbleFiles(Settings.getInstance(project).routingFiles);
     }
 
     @Override
-    public void build(@NotNull Project project, @NotNull Collection<String> content) {
-
+    public void build(@NotNull Project project, @NotNull Collection<FileObject> fileObjects) {
         Map<String, Route> routeMap = new HashMap<String, Route>();
 
-        for (String s : content) {
+        for (FileObject file : fileObjects) {
+
+            String content;
+            try {
+                content = StreamUtil.readText(file.getContent().getInputStream(), "UTF-8");
+            } catch (IOException e) {
+                continue;
+            }
+
+            if(StringUtils.isBlank(content)) {
+                continue;
+            }
+
             routeMap.putAll(RouteHelper.getRoutesInsideUrlGeneratorFile(
-                PsiFileFactory.getInstance(project).createFileFromText("DUMMY__." + PhpFileType.INSTANCE.getDefaultExtension(), PhpFileType.INSTANCE, s)
+                PsiFileFactory.getInstance(project).createFileFromText("DUMMY__." + PhpFileType.INSTANCE.getDefaultExtension(), PhpFileType.INSTANCE, content)
             ));
         }
 
