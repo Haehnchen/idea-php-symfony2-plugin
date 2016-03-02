@@ -326,6 +326,28 @@ public class RouteHelper {
         return getRoutesInsideUrlGeneratorFile(psiFile);
     }
 
+
+    /**
+     * Temporary or remote files dont support "isInstanceOf", check for string implementation first
+     */
+    private static boolean isRouteClass(@NotNull PhpClass phpClass) {
+        for (ClassReference classReference : phpClass.getExtendsList().getReferenceElements()) {
+            String fqn = classReference.getFQN();
+            if(fqn != null && StringUtils.stripStart(fqn, "\\").equalsIgnoreCase("Symfony\\Component\\Routing\\Generator\\UrlGenerator")) {
+                return true;
+            }
+        }
+
+        for (PhpClass phpInterface : phpClass.getImplementedInterfaces()) {
+            String fqn = phpInterface.getFQN();
+            if( StringUtils.stripStart(fqn, "\\").equalsIgnoreCase("Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface")) {
+                return true;
+            }
+        }
+
+        return new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+    }
+
     @NotNull
     public static Map<String, Route> getRoutesInsideUrlGeneratorFile(@NotNull PsiFile psiFile) {
 
@@ -335,7 +357,7 @@ public class RouteHelper {
         // list($variables, $defaults, $requirements, $tokens, $hostTokens)
         Collection<PhpClass> phpClasses = PsiTreeUtil.findChildrenOfType(psiFile, PhpClass.class);
         for(PhpClass phpClass: phpClasses) {
-            if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface")) {
+            if(!isRouteClass(phpClass)) {
                 continue;
             }
 
