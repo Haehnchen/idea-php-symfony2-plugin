@@ -3,7 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.webDeployment.utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.*;
+import com.intellij.util.containers.HashMap;
 import com.jetbrains.plugins.webDeployment.ConnectionOwnerFactory;
 import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
@@ -19,22 +20,43 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class RemoteWebServerUtil {
 
+    public static Map<Project, RemoteFileStorageInterface[]> STORAGE_INSTANCES = new ConcurrentHashMap<Project, RemoteFileStorageInterface[]>();
+
     @NotNull
-    public static RemoteFileStorageInterface[] getExtension() {
-        return new RemoteFileStorageInterface[] {
+    public synchronized static RemoteFileStorageInterface[] getExtension(@NotNull Project project) {
+        if(STORAGE_INSTANCES.containsKey(project)) {
+            return STORAGE_INSTANCES.get(project);
+        }
+
+        STORAGE_INSTANCES.put(project, new RemoteFileStorageInterface[] {
             new ServiceContainerRemoteFileStorage(),
             new RoutingRemoteFileStorage(),
-        };
+        });
+
+        return STORAGE_INSTANCES.get(project);
+    }
+
+    @Nullable
+    public static <T> T getExtensionInstance(@Nullable Project project, @NotNull Class<T> aClass) {
+        if(!STORAGE_INSTANCES.containsKey(project)) {
+            return null;
+        }
+
+        for (RemoteFileStorageInterface remoteFileStorage : STORAGE_INSTANCES.get(project)) {
+            if(aClass.isInstance(remoteFileStorage)) {
+                return (T) remoteFileStorage;
+            }
+        }
+
+        return null;
     }
 
     public static void collectRemoteFiles(@NotNull Project project) {
@@ -50,7 +72,7 @@ public class RemoteWebServerUtil {
             return;
         }
 
-        for (RemoteFileStorageInterface fileStorage : RemoteWebServerUtil.getExtension()) {
+        for (RemoteFileStorageInterface fileStorage : RemoteWebServerUtil.getExtension(project)) {
             Collection<FileObject> contents = new ArrayList<FileObject>();
 
             for (Object s : fileStorage.files(project)) {

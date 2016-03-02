@@ -36,6 +36,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
+import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
@@ -49,6 +50,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -307,6 +309,14 @@ public class RouteHelper {
         }
 
         Map<String, Route> routes = new HashMap<String, Route>();
+
+        // @TODO: extension point;
+        // add remote first; local filesystem wins on duplicate key
+        RoutingRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, RoutingRemoteFileStorage.class);
+        if(extensionInstance != null) {
+            routes.putAll(extensionInstance.getState());
+        }
+
         if(COMPILED_CACHE.containsKey(project)) {
             for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
                 routes.putAll(container.getRoutes());

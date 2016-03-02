@@ -9,10 +9,13 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
+import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -184,6 +187,16 @@ public class ContainerCollectionResolver {
             this.services = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
+
+                // @TODO: extension point;
+                // add remote first; local filesystem wins on duplicate key
+                ServiceContainerRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
+                if(extensionInstance != null) {
+                    for (Map.Entry<String, String> entry : extensionInstance.getState().entrySet()) {
+                        services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
+                    }
+                }
+
                 for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
                     services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
                 }
@@ -281,6 +294,15 @@ public class ContainerCollectionResolver {
             Set<String> serviceNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
+
+                // @TODO: extension point;
+                // add remote first; local filesystem wins on duplicate key
+                ServiceContainerRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
+                if(extensionInstance != null) {
+                    serviceNames.addAll(extensionInstance.getState().keySet());
+                }
+
+                // local filesystem
                 serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
             }
 

@@ -94,6 +94,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         ServiceXmlParserFactory.cleanInstance(project);
 
+        if(RemoteWebServerUtil.STORAGE_INSTANCES.containsKey(project)) {
+            RemoteWebServerUtil.STORAGE_INSTANCES.remove(project);
+        }
+
         // clean routing
         if(RouteHelper.COMPILED_CACHE.containsKey(project)) {
             RouteHelper.COMPILED_CACHE.remove(project);
