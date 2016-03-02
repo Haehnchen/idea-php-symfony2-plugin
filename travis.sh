@@ -104,6 +104,9 @@ rm -f $travisCache/php-toolbox.jar
 download "https://plugins.jetbrains.com/files/8133/23580/php-toolbox.jar"
 cp $travisCache/php-toolbox.jar ./plugins
 
+download "http://phpstorm.espend.de/files/proxy/webDeployment-0.1.zip"
+cp $travisCache/webDeployment-0.1.zip ./plugins
+
 # Run the tests
 if [ "$1" = "-d" ]; then
     ant -d -f build-test.xml -DIDEA_HOME=./idea
