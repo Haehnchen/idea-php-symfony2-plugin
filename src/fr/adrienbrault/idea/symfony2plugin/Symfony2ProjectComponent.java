@@ -3,9 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -18,12 +20,16 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import fr.adrienbrault.idea.symfony2plugin.widget.SymfonyProfilerWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -53,8 +59,20 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return "Symfony2ProjectComponent";
     }
 
+
+
     public void projectOpened() {
         this.checkProject();
+
+        // remote file downloader
+        if(Settings.getInstance(project).remoteDevFileScheduler) {
+            DumbService.getInstance(project).smartInvokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    new Timer().schedule(new MyTimerTask(), 10000, 300000);
+                }
+            });
+        }
 
         // phpstorm pre 7.1 dont support statusbar api;
         if(!IdeHelper.supportsStatusBar()) {
@@ -82,6 +100,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     public void projectClosed() {
 
         ServiceXmlParserFactory.cleanInstance(project);
+
+        if(RemoteWebServerUtil.STORAGE_INSTANCES.containsKey(project)) {
+            RemoteWebServerUtil.STORAGE_INSTANCES.remove(project);
+        }
 
         // clean routing
         if(RouteHelper.COMPILED_CACHE.containsKey(project)) {
@@ -195,4 +217,23 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return psiElement != null && isEnabled(psiElement.getProject());
     }
 
+    private class MyTimerTask extends TimerTask {
+
+        @Override
+        public void run() {
+
+            DumbService.getInstance(project).smartInvokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ApplicationManager.getApplication().runReadAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            RemoteWebServerUtil.collectRemoteFiles(project);
+                        }
+                    });
+                }
+            });
+
+        }
+    }
 }

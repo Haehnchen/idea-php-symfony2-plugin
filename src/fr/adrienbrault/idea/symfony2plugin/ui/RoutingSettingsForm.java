@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
@@ -11,9 +13,15 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
+import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
+import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
+import icons.WebDeploymentIcons;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,8 +50,8 @@ public class RoutingSettingsForm implements Configurable {
         this.tableView = new TableView<RoutingFile>();
 
         this.modelList = new ListTableModel<RoutingFile>(
-            new PathColumn(project),
-            new ExistsColumn(project)
+            new UiPathColumnInfo.PathColumn(),
+            new UiPathColumnInfo.TypeColumn(project)
         );
 
         this.initList();
@@ -83,7 +91,7 @@ public class RoutingSettingsForm implements Configurable {
     @Nls
     @Override
     public String getDisplayName() {
-        return "Container";
+        return "Routing";
     }
 
     @Nullable
@@ -138,6 +146,22 @@ public class RoutingSettingsForm implements Configurable {
             }
         });
 
+        tablePanel.addExtraAction(new AnActionButton("Remote", WebDeploymentIcons.Download) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                UiSettingsUtil.openFileDialogForDefaultWebServerConnection(project, new WebServerFileDialogExtensionCallback("php") {
+                    @Override
+                    public void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath) {
+                        RoutingSettingsForm.this.tableView.getListTableModel().addRow(
+                            new RoutingFile("remote://" + org.apache.commons.lang.StringUtils.stripStart(remotePath.path, "/"))
+                        );
+
+                        RoutingSettingsForm.this.changed = true;
+                    }
+                });
+            }
+        });
+
         this.panel1.add(tablePanel.createPanel());
 
         return this.panel1;
@@ -180,37 +204,5 @@ public class RoutingSettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-    }
-
-    private class PathColumn extends ColumnInfo<RoutingFile, String> {
-
-        private Project project;
-
-        public PathColumn(Project project) {
-            super("Path");
-            this.project = project;
-        }
-
-        @Nullable
-        @Override
-        public String valueOf(RoutingFile containerFile) {
-            return containerFile.getPath();
-        }
-    }
-
-    private class ExistsColumn extends ColumnInfo<RoutingFile, String> {
-
-        private Project project;
-
-        public ExistsColumn(Project project) {
-            super("Path");
-            this.project = project;
-        }
-
-        @Nullable
-        @Override
-        public String valueOf(RoutingFile containerFile) {
-            return containerFile.exists(this.project) ? "EXISTS" : "ERROR";
-        }
     }
 }

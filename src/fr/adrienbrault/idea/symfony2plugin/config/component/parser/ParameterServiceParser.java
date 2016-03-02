@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ParameterServiceParser extends AbstractServiceParser {
 
-    protected  Map<String, String> parameterMap = new ConcurrentHashMap<String, String>();
+    protected Map<String, String> parameterMap = new ConcurrentHashMap<String, String>();
 
     @Override
     public String getXPathFilter() {

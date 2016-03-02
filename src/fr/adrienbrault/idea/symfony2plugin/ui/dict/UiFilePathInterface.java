@@ -7,4 +7,5 @@ public interface UiFilePathInterface {
     boolean exists(@NotNull Project project);
     void setPath(String path);
     String getPath();
+    boolean isRemote();
 }
