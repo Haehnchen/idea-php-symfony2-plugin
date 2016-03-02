@@ -113,5 +113,17 @@ public class RemoteWebServerUtil {
         });
     }
 
+    public static boolean hasConfiguredRemoteFile(@NotNull Project project) {
+        if(!STORAGE_INSTANCES.containsKey(project)) {
+            return false;
+        }
 
+        for (RemoteFileStorageInterface remoteFileStorage : STORAGE_INSTANCES.get(project)) {
+            if(remoteFileStorage.files(project).size() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
