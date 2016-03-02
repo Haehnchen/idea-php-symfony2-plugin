@@ -317,14 +317,19 @@ public class RouteHelper {
     }
 
     @NotNull
-    public static Map<String, Route> getRoutesInsideUrlGeneratorFile(Project project, VirtualFile virtualFile) {
-
-        Map<String, Route> routes = new HashMap<String, Route>();
-
+    public static Map<String, Route> getRoutesInsideUrlGeneratorFile(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, virtualFile);
         if(!(psiFile instanceof PhpFile)) {
-            return routes;
+            return Collections.emptyMap();
         }
+
+        return getRoutesInsideUrlGeneratorFile(psiFile);
+    }
+
+    @NotNull
+    public static Map<String, Route> getRoutesInsideUrlGeneratorFile(@NotNull PsiFile psiFile) {
+
+        Map<String, Route> routes = new HashMap<String, Route>();
 
         // heavy stuff here, to get nested routing array :)
         // list($variables, $defaults, $requirements, $tokens, $hostTokens)
