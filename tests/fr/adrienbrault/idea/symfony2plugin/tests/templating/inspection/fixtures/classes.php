@@ -15,6 +15,10 @@ namespace Foo
         public function getNext() {
             return new Bar();
         }
+
+        public function getArray() {
+            return ['foo' => 'foobar'];
+        }
     }
 
     abstract class BarArrayAccess implements \ArrayAccess

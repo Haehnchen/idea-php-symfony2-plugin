@@ -43,4 +43,9 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionContainsNotContains("f.html.twig", "{# @var bar \\Foo\\BarIterator #} {{ bar.c<caret>ar }}", "Field or method not found");
         assertLocalInspectionContainsNotContains("f.html.twig", "{# @var bar \\Foo\\BarArrayIterator #} {{ bar.c<caret>ar }}", "Field or method not found");
     }
+
+    public void testThatArrayReturnDontHighlight() {
+        assertLocalInspectionContainsNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.array.f<caret>oo }}", "Field or method not found");
+        assertLocalInspectionContainsNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.array.foo.fo<caret>o }}", "Field or method not found");
+    }
 }
