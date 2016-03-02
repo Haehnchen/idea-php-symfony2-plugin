@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
+import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
 import icons.WebDeploymentIcons;
 import org.jetbrains.annotations.Nls;
@@ -49,8 +50,8 @@ public class RoutingSettingsForm implements Configurable {
         this.tableView = new TableView<RoutingFile>();
 
         this.modelList = new ListTableModel<RoutingFile>(
-            new PathColumn(project),
-            new ExistsColumn(project)
+            new UiPathColumnInfo.PathColumn(),
+            new UiPathColumnInfo.TypeColumn(project)
         );
 
         this.initList();
@@ -203,37 +204,5 @@ public class RoutingSettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-    }
-
-    private class PathColumn extends ColumnInfo<RoutingFile, String> {
-
-        private Project project;
-
-        public PathColumn(Project project) {
-            super("Path");
-            this.project = project;
-        }
-
-        @Nullable
-        @Override
-        public String valueOf(RoutingFile containerFile) {
-            return containerFile.getPath();
-        }
-    }
-
-    private class ExistsColumn extends ColumnInfo<RoutingFile, String> {
-
-        private Project project;
-
-        public ExistsColumn(Project project) {
-            super("Path");
-            this.project = project;
-        }
-
-        @Nullable
-        @Override
-        public String valueOf(RoutingFile file) {
-            return UiSettingsUtil.getPresentableFilePath(project, file).getInfo();
-        }
     }
 }

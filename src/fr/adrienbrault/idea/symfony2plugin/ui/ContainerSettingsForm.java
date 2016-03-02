@@ -1,13 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
-import com.intellij.openapi.fileChooser.FileChooser;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.ToolbarDecorator;
@@ -15,9 +12,14 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
+import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
+import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
+import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
+import icons.WebDeploymentIcons;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,8 +49,8 @@ public class ContainerSettingsForm implements Configurable {
         this.tableView = new TableView<ContainerFile>();
 
         this.modelList = new ListTableModel<ContainerFile>(
-            new PathColumn(project),
-            new ExistsColumn(project)
+            new UiPathColumnInfo.PathColumn(),
+            new UiPathColumnInfo.TypeColumn(project)
         );
 
         this.fillContainerList();
@@ -138,6 +140,22 @@ public class ContainerSettingsForm implements Configurable {
             }
         });
 
+        tablePanel.addExtraAction(new AnActionButton("Remote", WebDeploymentIcons.Download) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                UiSettingsUtil.openFileDialogForDefaultWebServerConnection(project, new WebServerFileDialogExtensionCallback("xml") {
+                    @Override
+                    public void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath) {
+                        ContainerSettingsForm.this.tableView.getListTableModel().addRow(
+                            new ContainerFile("remote://" + org.apache.commons.lang.StringUtils.stripStart(remotePath.path, "/"))
+                        );
+
+                        ContainerSettingsForm.this.changed = true;
+                    }
+                });
+            }
+        });
+
         this.panel1.add(tablePanel.createPanel());
         return this.panel1;
     }
@@ -179,37 +197,5 @@ public class ContainerSettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
-    }
-
-    private class PathColumn extends ColumnInfo<ContainerFile, String> {
-
-        private Project project;
-
-        public PathColumn(Project project) {
-            super("Path");
-            this.project = project;
-        }
-
-        @Nullable
-        @Override
-        public String valueOf(ContainerFile containerFile) {
-            return containerFile.getPath();
-        }
-    }
-
-    private class ExistsColumn extends ColumnInfo<ContainerFile, String> {
-
-        private Project project;
-
-        public ExistsColumn(Project project) {
-            super("Path");
-            this.project = project;
-        }
-
-        @Nullable
-        @Override
-        public String valueOf(ContainerFile containerFile) {
-            return containerFile.exists(this.project) ? "EXISTS" : "ERROR";
-        }
     }
 }
