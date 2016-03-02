@@ -691,6 +691,13 @@
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
+        <action id="Symfony.WebTestCase" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction"
+                text="Create WebTestCase"
+                icon="SymfonyIcons.Symfony"
+                description="Create WebTestCase class">
+            <add-to-group group-id="PhpUnitNewGroup" anchor="last"/>
+        </action>
+
         <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony Symbol..." icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GoToTargetEx"/>
         </action>

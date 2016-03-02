@@ -58,6 +58,9 @@ public class WebTestCaseGeneratorAction extends AbstractProjectDumbAwareAction {
         }
 
         String relativePath = VfsUtil.getRelativePath(data.getVirtualFile(), bundleDirContext.getVirtualFile());
+        if(relativePath == null) {
+            return;
+        }
 
         PhpClass aClass = PhpPsiUtil.findClass((PhpFile) data, Conditions.<PhpClass>alwaysTrue());
         if(aClass == null) {
@@ -76,16 +79,21 @@ public class WebTestCaseGeneratorAction extends AbstractProjectDumbAwareAction {
         new WriteCommandAction(project) {
             @Override
             protected void run(@NotNull Result result) throws Throwable {
+                PsiElement file = null;
                 try {
-                    PhpBundleFileFactory.createBundleFile(phpClass, "controller", className, new HashMap<String, String>());
+                    file = PhpBundleFileFactory.createBundleFile(phpClass, "web_test_case", className, new HashMap<String, String>());
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
+                }
+
+                if(file != null) {
+                    new OpenFileDescriptor(getProject(), file.getContainingFile().getVirtualFile(), 0).navigate(true);
                 }
             }
 
             @Override
             public String getGroupID() {
-                return "Create Bundle Test Class";
+                return "Create Symfony WebTestFile";
             }
         }.execute();
 
