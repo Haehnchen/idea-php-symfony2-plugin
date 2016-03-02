@@ -8,6 +8,16 @@ Changelog
 0.9.x: PhpStorm 6 (no support)
 
 ### 0.11.110
+* Add twig variable type inspection
+* Add translation support for .xliff extension #684
+* Add support for multiple routes; deprecates single usage #138
+* Add controller test template #584
+* Add inspection for deprecated twig variable usage; last level only
+* Experimental: Add support for webDeployment plugin (Remote Host); supports external container and routing files on a "Default Server"
+* Experimental: Extend "Remote Host" context menu with action to download configured remote files
+* Experimental: Background task to download external files
+
+### 0.11.110
 * Add controller provider for PHP Toolbox
 * Add description to PhpTyes @var syntax and allow multiline doc comments #439
 * Add @see doc tag support for twig. supports: relative files, controller names, twig files, classes and methods syntax #439

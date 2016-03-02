@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.110</version>
+    <version>0.11.111</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,19 @@
 
 <br/>
 
+<h2>0.11.111</h2>
+<ul>
+    <li>Add twig variable type inspection</li>
+    <li>Add translation support for .xliff extension <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/684">#684</a></li>
+    <li>Add support for multiple routes; deprecates single usage <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/138">#138</a></li>
+    <li>Add controller test template <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/584">#584</a></li>
+    <li>Add inspection for deprecated twig variable usage; last level only</li>
+    <li>Migrate all local inspections to return visitor to improve performance and prevent multiple runs</li>
+    <li>Experimental: Add support for webDeployment plugin (Remote Host); supports external container and routing files on a "Default Server"</li>
+    <li>Experimental: Extend "Remote Host" context menu with action to download configured remote files</li>
+    <li>Experimental: Background task to download external files</li>
+</ul>
+
 <h2>0.11.110</h2>
 <ul>
     <li>Add controller provider for PHP Toolbox</li>
@@ -213,72 +226,6 @@
 <h2>0.11.100</h2>
 <ul>
     <li>Add blank fix for empty doctrine repository index value <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/609">#609</a></li>
-</ul>
-
-<h2>0.11.99</h2>
-<ul>
-    <li>Complete rewrite of Doctrine implementation; metadata on now index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/586">#586</a></li>
-    <li>Support Doctrine ODM MongoDB and CouchDB <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
-    <li>Add Doctrine relation shortcut for neos / flow annotations</li>
-    <li>Add some Doctrine dbal support on newly added metadata index <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/395">#395</a></li>
-    <li>Add translator.logging parameter <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/606">#606</a> @mhor</li>
-    <li>Dont display configurable forms inside default project <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/578">#578</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/607">#607</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/593">#593</a></li>
-    <li>Fix empty types for all TypeProviders; eg getRepository of Doctrine</li>
-    <li>Support more use cases of TypeProvider</li>
-    <li>Improve support for Doctrine metadata in xml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/319">#319</a></li>
-    <li>Add navigation for all yaml strings that are possible service names; eg security.yml ids</li>
-    <li>Add Doctrine repository linemarker</li>
-</ul>
-
-<h2>0.11.98</h2>
-<ul>
-    <li>Full references support for console helpers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/243">#243</a></li>
-    <li>Add Doctrine couchdb support; merged into overall odm manager to reuse mongodb implementation</li>
-    <li>Doctrine getRepository now returns self instance on an unknown class</li>
-    <li>Fix plugin breaks the context menu in the Project view <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/575">#575</a> thx @steinarer, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/525">#525</a></li>
-    <li>Recursively find bundle context for all related action</li>
-</ul>
-
-<h2>0.11.97</h2>
-<ul>
-    <li>Class constant signature fixed in PhpStorm9; provide another workaround for supporting both api levels <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/541">#541</a></li>
-    <li>Event dispatcher should return event class instance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/570">#570</a></li>
-    <li>Catch npe issue with plugin enabled check, for global twig navigation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/574">#574</a></li>
-    <li>Add "resource" file references for current directory scope <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/517">#517</a></li>
-    <li>Add assets completion for "absolute_url" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/550">#550</a></li>
-    <li>Refactoring and fixing assets handling in PhpStorm9 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/551">#551</a></li>
-    <li>Fix invalid inspection on container expressions in yaml files and add LocalInspection testing asserts <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/585">#585</a></li>
-    <li>Add Travis PhpStorm8, 9 and eap environment switches</li>
-</ul>
-
-<h2>0.11.96</h2>
-<ul>
-    <li>Support priority and multiple registering of getSubscribedEvents in indexer</li>
-    <li>Provide service tag list on indexed services for service generator</li>
-    <li>Add twig filter and functions to symfony symbol search</li>
-    <li>Remove deprecated Symfony sidebar, use symbol search instead <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/414">#414</a></li>
-    <li>Rename Symfony2 to Symfony in presentable strings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/393">#393</a></li>
-    <li>Support ternary and array syntax in twig "include" and "extends" tags</li>
-    <li>Route indexer saves nullable string value, catch them in Route constructor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/482">#482</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/508">#508</a></li>
-    <li>Remove "defaults" key detection for a valid yaml route id <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/518">#518</a></li>
-    <li>Dont annotate missing twig template in interpolated or concatenated strings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/488">#488</a></li>
-    <li>Fix global twig name navigation in php files, because of some api changes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/450">#450</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/456">#456</a></li>
-    <li>Use CASE_INSENSITIVE_ORDER for service container <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/537">#537</a></li>
-    <li>Add warning for service name if containing a uppercase char <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/537">#537</a></li>
-    <li>Remove Nullable or empty key in PhpElementsUtil.getArrayKeyValueMap <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/549">#549</a></li>
-    <li>Support "Class::class" in form data_class PHP 5.5 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/523">#523</a></li>
-</ul>
-
-<h2>0.11.95</h2>
-<ul>
-    <li>Add Doctrine simple_array and json_array for yaml files, on direct interface parsing <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/555">#555</a></li>
-    <li>Cache: Implement service definition cache layer, invalidates on global psi change <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/350">#350</a></li>
-    <li>Cache: Implement twig template name cache on psi change invalidation</li>
-    <li>Cache: Refactoring TwigExtensionParser and introduce cache</li>
-    <li>Cache: Add metadata cache for routing component</li>
-    <li>Add PhpClass collector for "kernel.event_listener" events that are defined in xml and yaml <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/531">#531</a></li>
-    <li>Collect type hints for methods of getSubscribedEvents <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/531">#531</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/529">#529</a></li>
-    <li>Implement support of "kernel.event_listener" events in completion, navigation and method creation argument type hints</li>
 </ul>
 
 <br/>
