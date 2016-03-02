@@ -43,6 +43,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public String directoryToApp = DEFAULT_APP_DIRECTORY;
     public String serviceJsNameStrategy = null;
 
+    public boolean remoteDevFileScheduler = false;
+
     public boolean pluginEnabled = false;
 
     public boolean symfonyContainerTypeProvider = true;

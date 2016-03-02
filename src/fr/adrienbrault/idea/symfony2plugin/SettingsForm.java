@@ -69,6 +69,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox codeFoldingTwigConstant;
 
     private JButton buttonReindex;
+    private JCheckBox enableSchedulerCheckBox;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -125,6 +126,8 @@ public class SettingsForm implements Configurable {
             !pluginEnabled.isSelected() == getSettings().pluginEnabled
             || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
             || !pathToTranslationRootTextField.getText().equals(getSettings().pathToTranslation)
+            || !enableSchedulerCheckBox.isSelected() == getSettings().remoteDevFileScheduler
+
             || !symfonyContainerTypeProvider.isSelected() == getSettings().symfonyContainerTypeProvider
             || !objectRepositoryTypeProvider.isSelected() == getSettings().objectRepositoryTypeProvider
             || !objectRepositoryResultTypeProvider.isSelected() == getSettings().objectRepositoryResultTypeProvider
@@ -164,6 +167,7 @@ public class SettingsForm implements Configurable {
 
         getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
         getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
+        getSettings().remoteDevFileScheduler = enableSchedulerCheckBox.isSelected();
 
         getSettings().symfonyContainerTypeProvider = symfonyContainerTypeProvider.isSelected();
         getSettings().objectRepositoryTypeProvider = objectRepositoryTypeProvider.isSelected();
@@ -215,6 +219,7 @@ public class SettingsForm implements Configurable {
 
         pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
         pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
+        enableSchedulerCheckBox.setSelected(getSettings().remoteDevFileScheduler);
 
         symfonyContainerTypeProvider.setSelected(getSettings().symfonyContainerTypeProvider);
         objectRepositoryTypeProvider.setSelected(getSettings().objectRepositoryTypeProvider);

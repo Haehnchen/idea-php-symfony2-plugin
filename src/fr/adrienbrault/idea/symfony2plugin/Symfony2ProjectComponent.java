@@ -64,8 +64,15 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     public void projectOpened() {
         this.checkProject();
 
-
-        new Timer().schedule(new MyTimerTask(), 1000, 5000);
+        // remote file downloader
+        if(Settings.getInstance(project).remoteDevFileScheduler) {
+            DumbService.getInstance(project).smartInvokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    new Timer().schedule(new MyTimerTask(), 10000, 300000);
+                }
+            });
+        }
 
         // phpstorm pre 7.1 dont support statusbar api;
         if(!IdeHelper.supportsStatusBar()) {
