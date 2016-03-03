@@ -27,7 +27,7 @@ import java.util.HashMap;
 public class WebTestCaseGeneratorAction extends AbstractProjectDumbAwareAction {
 
     public WebTestCaseGeneratorAction() {
-        super("WebTestCase", "WebTestCase", Symfony2Icons.SYMFONY);
+        super("Create WebTestCase", "Create WebTestCase class", Symfony2Icons.SYMFONY);
     }
 
     public void update(AnActionEvent event) {

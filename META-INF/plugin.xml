@@ -559,6 +559,7 @@
 
     <depends optional="true">de.espend.idea.php.annotation</depends>
     <depends optional="true">de.espend.idea.php.toolbox</depends>
+    <depends optional="true" config-file="deployment-aware.xml">com.jetbrains.plugins.webDeployment</depends>
 
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationReferences"/>
@@ -622,14 +623,6 @@
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <action id="PublishGroup.SymfonySync" class="fr.adrienbrault.idea.symfony2plugin.webDeployment.actions.SymfonyWebDeploymentDownloadAction"
-                text="Download dev files"
-                icon="SymfonyIcons.Symfony"
-                description="Download Symfony service, routes, ... from dev folder">
-            <add-to-group group-id="PublishGroup" anchor="after" relative-to-action="PublishGroup.Download"/>
-            <add-to-group group-id="RemoteHostViewPopupMenu" anchor="after" relative-to-action="PublishGroup.Download"/>
-        </action>
-
         <group id="Symfony2Group" text="Symfony" popup="false">
             <group id="Symfony2GroupService" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Service" popup="true" icon="SymfonyIcons.Symfony">
                 <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
@@ -644,10 +637,7 @@
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
-        <action id="Symfony.WebTestCase" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction"
-                text="Create WebTestCase"
-                icon="SymfonyIcons.Symfony"
-                description="Create WebTestCase class">
+        <action id="SymfonyWebTestCaseGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction">
             <add-to-group group-id="PhpUnitNewGroup" anchor="last"/>
         </action>
 

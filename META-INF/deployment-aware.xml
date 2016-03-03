@@ -1,0 +1,12 @@
+<idea-plugin url="https://www.jetbrains.com/idea">
+    <actions>
+
+        <action id="SymfonyWebDeploymentDownload"
+                class="fr.adrienbrault.idea.symfony2plugin.webDeployment.actions.SymfonyWebDeploymentDownloadAction">
+
+            <add-to-group group-id="PublishGroup" anchor="after" relative-to-action="PublishGroup.Download"/>
+            <add-to-group group-id="RemoteHostViewPopupMenu" anchor="after" relative-to-action="PublishGroup.Download"/>
+        </action>
+
+    </actions>
+</idea-plugin>
