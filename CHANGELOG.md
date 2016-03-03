@@ -7,7 +7,10 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
-### 0.11.110
+### 0.11.112
+* Extracting webDeployment plugin deps into external file, this resolves crashes for disabled "Remote Hosts Access" plugin #686
+
+### 0.11.111
 * Add twig variable type inspection
 * Add translation support for .xliff extension #684
 * Add support for multiple routes; deprecates single usage #138

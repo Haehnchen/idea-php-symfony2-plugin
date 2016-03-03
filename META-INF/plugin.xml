@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.111</version>
+    <version>0.11.112</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,11 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.11.112</h2>
+<ul>
+    <li>Extracting webDeployment plugin deps into external file, this resolves crashes for disabled "Remote Hosts Access" plugin <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/686">#686</a></li>
+</ul>
 
 <h2>0.11.111</h2>
 <ul>
