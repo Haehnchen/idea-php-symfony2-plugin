@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.dict;
 
 import org.jetbrains.annotations.NotNull;
-import java.util.Map;
+
+import java.io.InputStream;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -9,23 +11,21 @@ import java.util.Map;
 public class ServiceParameterStorage {
 
     @NotNull
-    private final Map<String, String> serviceMap;
+    private final Collection<InputStream> inputStreams;
 
-    @NotNull
-    private final Map<String, String> parameterMap;
+    private final long buildTime;
 
-    public ServiceParameterStorage(@NotNull Map<String, String> serviceMap, @NotNull Map<String, String> parameterMap) {
-        this.serviceMap = serviceMap;
-        this.parameterMap = parameterMap;
+    public ServiceParameterStorage(@NotNull Collection<InputStream> inputStreams) {
+        this.inputStreams = inputStreams;
+        this.buildTime = System.currentTimeMillis();
     }
 
     @NotNull
-    public Map<String, String> getServiceMap() {
-        return serviceMap;
+    public Collection<InputStream> getInputStreams() {
+        return inputStreams;
     }
 
-    @NotNull
-    public Map<String, String> getParameterMap() {
-        return parameterMap;
+    public long getBuildTime() {
+        return buildTime;
     }
 }

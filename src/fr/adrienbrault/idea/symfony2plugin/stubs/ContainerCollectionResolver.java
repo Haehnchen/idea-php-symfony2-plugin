@@ -187,16 +187,6 @@ public class ContainerCollectionResolver {
             this.services = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
-
-                // @TODO: extension point;
-                // add remote first; local filesystem wins on duplicate key
-                ServiceContainerRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
-                if(extensionInstance != null) {
-                    for (Map.Entry<String, String> entry : extensionInstance.getState().getServiceMap().entrySet()) {
-                        services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
-                    }
-                }
-
                 for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
                     services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
                 }
@@ -294,14 +284,6 @@ public class ContainerCollectionResolver {
             Set<String> serviceNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
-
-                // @TODO: extension point;
-                // add remote first; local filesystem wins on duplicate key
-                ServiceContainerRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
-                if(extensionInstance != null) {
-                    serviceNames.addAll(extensionInstance.getState().getServiceMap().keySet());
-                }
-
                 // local filesystem
                 serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
             }
@@ -387,20 +369,6 @@ public class ContainerCollectionResolver {
             this.containerParameterMap = new TreeMap<String, ContainerParameter>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
-
-                // remote files
-                ServiceContainerRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
-                if(extensionInstance != null) {
-                    for (Map.Entry<String, String> entry : extensionInstance.getState().getParameterMap().entrySet()) {
-                        String key = entry.getKey();
-                        if(key == null) {
-                            continue;
-                        }
-
-                        this.containerParameterMap.put(key, new ContainerParameter(entry.getKey(), entry.getValue()));
-                    }
-                }
-
                 // local filesystem
                 for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
 
@@ -443,13 +411,6 @@ public class ContainerCollectionResolver {
             Set<String> parameterNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
-
-                // remote files
-                ServiceContainerRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
-                if(extensionInstance != null) {
-                    parameterNames.addAll(extensionInstance.getState().getParameterMap().keySet());
-                }
-
                 // local filesystem
                 parameterNames.addAll(ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().keySet());
             }

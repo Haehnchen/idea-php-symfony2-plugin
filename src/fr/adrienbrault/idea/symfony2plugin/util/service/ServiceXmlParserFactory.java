@@ -1,12 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.util.service;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.StreamUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ public class ServiceXmlParserFactory {
     protected ServiceParserInterface serviceParserInstance;
 
     protected HashMap<String, Long> serviceFiles = new HashMap<String, Long>();
+
+    private long lastWebRemoteBuild = -1;
 
     public ServiceXmlParserFactory(Project project) {
         this.project = project;
@@ -42,11 +45,23 @@ public class ServiceXmlParserFactory {
             }
         }
 
+        // remote files
+        long remoteBuildTime = -1;
+        ServiceContainerRemoteFileStorage extension = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
+        if(extension != null) {
+            remoteBuildTime = extension.getState().getBuildTime();
+        }
+
+        if(remoteBuildTime != this.lastWebRemoteBuild) {
+            this.lastWebRemoteBuild = remoteBuildTime;
+            return true;
+        }
+
         return false;
     }
 
     @Nullable
-    public <T extends ServiceParserInterface> T parser(Class<T> serviceParser) {
+    synchronized public <T extends ServiceParserInterface> T parser(Class<T> serviceParser) {
 
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
@@ -64,6 +79,15 @@ public class ServiceXmlParserFactory {
         }
 
         if (this.serviceParserInstance != null) {
+
+            // collect remote files
+            ServiceContainerRemoteFileStorage extension = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
+            if(extension != null) {
+                for (InputStream inputStream : extension.getState().getInputStreams()) {
+                    this.serviceParserInstance.parser(inputStream);
+                }
+            }
+
             this.serviceFiles = new HashMap<String, Long>();
             for(File settingsServiceFile: settingsServiceFiles) {
                 if(!settingsServiceFile.exists()) {

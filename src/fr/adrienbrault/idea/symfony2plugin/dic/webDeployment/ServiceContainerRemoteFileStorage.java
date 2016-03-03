@@ -1,23 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.webDeployment;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.util.containers.HashMap;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.dict.ServiceParameterStorage;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.storage.RemoteFileStorageInterface;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
+import org.apache.sanselan.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -25,8 +23,7 @@ import java.util.Map;
 public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInterface<ServiceParameterStorage> {
 
     private ServiceParameterStorage storage = new ServiceParameterStorage(
-        Collections.<String, String>emptyMap(),
-        Collections.<String, String>emptyMap()
+        Collections.<InputStream>emptyList()
     );
 
     @NotNull
@@ -38,27 +35,25 @@ public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInter
     @Override
     public void build(@NotNull Project project, @NotNull Collection<FileObject> fileObjects) {
 
-        Map<String, String> serviceMap = new HashMap<String, String>();
-        Map<String, String> parameterMap = new HashMap<String, String>();
+        Collection<InputStream> memoryCache = new ArrayList<InputStream>();
 
         for (FileObject fileObject : fileObjects) {
+            InputStream inputStream;
             try {
-                serviceMap.putAll(
-                    new ServiceMapParser().parse(fileObject.getContent().getInputStream()).getMap()
+                // copy stream
+                inputStream = new ResetOnCloseInputStream(new ByteArrayInputStream(
+                    IOUtils.getInputStreamBytes(fileObject.getContent().getInputStream()))
                 );
-            } catch (ParserConfigurationException ignored) {
             } catch (FileSystemException ignored) {
-            } catch (SAXException ignored) {
+                continue;
             } catch (IOException ignored) {
+                continue;
             }
 
-            try {
-                parameterMap.putAll(ParameterServiceCollector.collect(fileObject.getContent().getInputStream()));
-            } catch (FileSystemException ignored) {
-            }
+            memoryCache.add(inputStream);
         }
 
-        storage = new ServiceParameterStorage(serviceMap, parameterMap);
+        storage = new ServiceParameterStorage(memoryCache);
     }
 
     @NotNull
@@ -70,9 +65,31 @@ public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInter
     @Override
     public void clear() {
         storage = new ServiceParameterStorage(
-            Collections.<String, String>emptyMap(),
-            Collections.<String, String>emptyMap()
+            Collections.<InputStream>emptyList()
         );
+    }
+
+    private static class ResetOnCloseInputStream extends InputStream {
+
+        private final InputStream decorated;
+
+        public ResetOnCloseInputStream(InputStream inputStream) {
+            if (!inputStream.markSupported()) {
+                throw new IllegalArgumentException("marking not supported");
+            }
+            inputStream.mark( 1 << 32);
+            decorated = inputStream;
+        }
+
+        @Override
+        public void close() throws IOException {
+            decorated.reset();
+        }
+
+        @Override
+        public int read() throws IOException {
+            return decorated.read();
+        }
     }
 }
 
