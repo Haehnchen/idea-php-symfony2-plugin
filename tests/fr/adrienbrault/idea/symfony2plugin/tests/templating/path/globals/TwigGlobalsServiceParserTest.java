@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 public class TwigGlobalsServiceParserTest extends Assert {
 
@@ -15,7 +16,7 @@ public class TwigGlobalsServiceParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         TwigGlobalsServiceParser parser = new TwigGlobalsServiceParser();
-        parser.parser(testFile);
+        parser.parser(new FileInputStream(testFile));
 
         assertEquals("templating.globals", parser.getTwigGlobals().get("app").getValue());
         assertEquals(TwigGlobalEnum.SERVICE, parser.getTwigGlobals().get("app").getTwigGlobalEnum());

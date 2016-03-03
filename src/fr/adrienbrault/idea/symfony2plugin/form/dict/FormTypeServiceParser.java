@@ -4,7 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
+import java.io.InputStream;
 
 public class FormTypeServiceParser extends AbstractServiceParser {
 
@@ -15,7 +15,7 @@ public class FormTypeServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id='form.registry']//service[@class]/argument[@type='collection'][1]/argument[@key]";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

@@ -4,6 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import org.junit.Assert;
 import org.junit.Test;
 import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -16,7 +17,7 @@ public class FormTypeServiceParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         FormTypeServiceParser parser = new FormTypeServiceParser();
-        parser.parser(testFile);
+        parser.parser(new FileInputStream(testFile));
 
         assertEquals("field", parser.getFormTypeMap().getMap().get("form.type.field"));
         assertEquals("locale", parser.getFormTypeMap().getMap().get("form.type.locale"));

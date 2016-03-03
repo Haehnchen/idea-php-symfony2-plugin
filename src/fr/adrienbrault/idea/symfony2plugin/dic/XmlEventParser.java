@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class XmlEventParser extends AbstractServiceParser {
         return "/container/services/service[@id]/tag[@event]";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

@@ -1,8 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.component.parser;
 
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
-
-import java.io.File;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,7 +14,7 @@ public class ParameterServiceParser extends AbstractServiceParser {
         return "";
     }
 
-    public void parser(final File file) {
+    public void parser(final InputStream file) {
         this.parameterMap = new ConcurrentHashMap<String, String>() {{
             putAll(ParameterServiceCollector.collect(file));
         }};

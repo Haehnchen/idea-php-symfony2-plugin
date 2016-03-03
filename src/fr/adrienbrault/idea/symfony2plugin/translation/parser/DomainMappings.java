@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -19,7 +20,8 @@ public class DomainMappings extends AbstractServiceParser {
         return "/container/services/service[@class=\"Symfony\\Bundle\\FrameworkBundle\\Translation\\Translator\"]//call[@method=\"addResource\"]";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
+
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

@@ -4,7 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,7 +17,7 @@ public class TwigGlobalsServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id='twig']//call[@method='addGlobal']";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

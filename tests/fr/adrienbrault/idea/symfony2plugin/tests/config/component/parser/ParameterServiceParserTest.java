@@ -4,6 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServ
 import org.junit.Assert;
 import org.junit.Test;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Map;
 
 public class ParameterServiceParserTest extends Assert {
@@ -13,7 +14,7 @@ public class ParameterServiceParserTest extends Assert {
 
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
         ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
-        parameterServiceParser.parser(testFile);
+        parameterServiceParser.parser(new FileInputStream(testFile));
 
         Map<String, String> map = parameterServiceParser.getParameterMap();
 

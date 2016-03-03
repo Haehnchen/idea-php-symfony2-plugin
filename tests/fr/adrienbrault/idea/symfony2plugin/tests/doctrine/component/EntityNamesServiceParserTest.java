@@ -4,6 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesService
 import org.junit.Assert;
 import org.junit.Test;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Map;
 
 /**
@@ -16,7 +17,7 @@ public class EntityNamesServiceParserTest extends Assert {
 
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
         EntityNamesServiceParser entityNamesServiceParser = new EntityNamesServiceParser();
-        entityNamesServiceParser.parser(testFile);
+        entityNamesServiceParser.parser(new FileInputStream(testFile));
         Map<String, String> map = entityNamesServiceParser.getEntityNameMap();
 
         assertEquals("\\My\\NiceBundle\\Entity", map.get("MyNiceBundle"));

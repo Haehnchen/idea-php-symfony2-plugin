@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class XmlTagParser extends AbstractServiceParser {
         return "/container/services/service[@id]/tag[@name]";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ public class DocumentNamespacesParserTest extends Assert {
 
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
         DocumentNamespacesParser entityNamesServiceParser = new DocumentNamespacesParser();
-        entityNamesServiceParser.parser(testFile);
+        entityNamesServiceParser.parser(new FileInputStream(testFile));
         Map<String, String> map = entityNamesServiceParser.getNamespaceMap();
 
         assertEquals("\\AcmeProject\\FrontendBundle\\Document", map.get("AcmeProjectFrontendBundle"));

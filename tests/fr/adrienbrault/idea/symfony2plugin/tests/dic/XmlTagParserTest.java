@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Set;
 
 public class XmlTagParserTest extends Assert {
@@ -15,7 +16,7 @@ public class XmlTagParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         XmlTagParser xmlTagParser = new XmlTagParser();
-        xmlTagParser.parser(testFile);
+        xmlTagParser.parser(new FileInputStream(testFile));
         Set<String> tags = xmlTagParser.get();
 
         assertTrue(tags.contains("twig.extension"));

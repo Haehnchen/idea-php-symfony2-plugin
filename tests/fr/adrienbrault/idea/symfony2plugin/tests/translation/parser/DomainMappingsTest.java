@@ -6,17 +6,19 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 
 public class DomainMappingsTest extends Assert {
 
     @Test
-    public void testParser() {
+    public void testParser() throws FileNotFoundException {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         DomainMappings bla = new DomainMappings();
-        bla.parser(testFile);
+        bla.parser(new FileInputStream(testFile));
         List<DomainFileMap> map = bla.getDomainFileMaps();
 
         assertEquals(10, map.size());

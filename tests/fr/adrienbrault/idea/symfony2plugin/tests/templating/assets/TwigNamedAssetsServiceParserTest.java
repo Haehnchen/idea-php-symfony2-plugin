@@ -4,6 +4,7 @@ import com.intellij.testFramework.UsefulTestCase;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public class TwigNamedAssetsServiceParserTest extends UsefulTestCase {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         TwigNamedAssetsServiceParser parser = new TwigNamedAssetsServiceParser();
-        parser.parser(testFile);
+        parser.parser(new FileInputStream(testFile));
 
         Map<String, String[]> namedAssets = parser.getNamedAssets();
         assertNotNull(namedAssets.get("jquery_js"));

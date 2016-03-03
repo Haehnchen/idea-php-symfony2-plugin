@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,7 +19,7 @@ public class DocumentNamespacesParser extends AbstractServiceParser {
         return "/container/services/service[@id[starts-with(.,'doctrine_mongodb.odm.')] or @id[starts-with(.,'doctrine_couchdb.odm.')]]//call[@method='setDocumentNamespaces']//argument[@key]";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

@@ -5,7 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id='assetic.asset_manager']//call[@method='addResource']//service[@class='Symfony\\Bundle\\AsseticBundle\\Factory\\Resource\\ConfigurationResource']//argument/argument[@key]";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {

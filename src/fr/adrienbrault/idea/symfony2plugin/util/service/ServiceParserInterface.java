@@ -1,8 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.util.service;
 
-import java.io.File;
+import java.io.InputStream;
 
 public interface ServiceParserInterface {
-    public String getXPathFilter();
-    public void parser(File file);
+    String getXPathFilter();
+    void parser(InputStream file);
 }

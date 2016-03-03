@@ -6,6 +6,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class XmlServiceParser extends AbstractServiceParser {
 
@@ -16,7 +17,7 @@ public class XmlServiceParser extends AbstractServiceParser {
         return "";
     }
 
-    public void parser(File file) {
+    public void parser(InputStream file) {
         try {
             // @TODO: make this one beautiful
             ServiceMap serviceMap1 = new ServiceMapParser().parse(file);

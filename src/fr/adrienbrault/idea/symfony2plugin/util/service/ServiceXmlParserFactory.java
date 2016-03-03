@@ -5,6 +5,8 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +66,17 @@ public class ServiceXmlParserFactory {
         if (this.serviceParserInstance != null) {
             this.serviceFiles = new HashMap<String, Long>();
             for(File settingsServiceFile: settingsServiceFiles) {
-                if(settingsServiceFile.exists()) {
-                    this.serviceParserInstance.parser(settingsServiceFile);
-                    serviceFiles.put(settingsServiceFile.getAbsolutePath(), settingsServiceFile.lastModified());
+                if(!settingsServiceFile.exists()) {
+                    continue;
                 }
+
+                try {
+                    this.serviceParserInstance.parser(new FileInputStream(settingsServiceFile));
+                } catch (FileNotFoundException e) {
+                    continue;
+                }
+
+                serviceFiles.put(settingsServiceFile.getAbsolutePath(), settingsServiceFile.lastModified());
             }
         }
 

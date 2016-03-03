@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Map;
 
 /**
@@ -18,7 +19,7 @@ public class FormExtensionServiceParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         FormExtensionServiceParser formExtensionServiceParser = new FormExtensionServiceParser();
-        formExtensionServiceParser.parser(testFile);
+        formExtensionServiceParser.parser(new FileInputStream(testFile));
         Map<String, String> parser = formExtensionServiceParser.getFormExtensions();
 
         assertEquals("form", parser.get("Symfony\\Component\\Form\\Extension\\Validator\\Type\\FormTypeValidatorExtension"));

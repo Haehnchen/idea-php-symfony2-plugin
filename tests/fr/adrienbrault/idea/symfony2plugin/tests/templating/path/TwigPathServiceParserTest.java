@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -18,7 +19,7 @@ public class TwigPathServiceParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         TwigPathServiceParser parser = new TwigPathServiceParser();
-        parser.parser(testFile);
+        parser.parser(new FileInputStream(testFile));
 
         assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bundle\\FrameworkBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(0).getPath());
         assertEquals("vendor\\foo\\bar\\FooBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(1).getPath());

@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Map;
 
 public class XmlEventParserTest extends Assert {
@@ -15,7 +16,7 @@ public class XmlEventParserTest extends Assert {
         File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
 
         XmlEventParser serviceMapParser = new XmlEventParser();
-        serviceMapParser.parser(testFile);
+        serviceMapParser.parser(new FileInputStream(testFile));
         Map<String, String> tags = serviceMapParser.get();
 
         assertTrue(tags.containsKey("kernel.controller"));
