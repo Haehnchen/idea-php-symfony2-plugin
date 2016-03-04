@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class Route {
 
-    private String name;
+    final private String name;
     private String controller;
     private String path;
     private Set<String> pathCache;
@@ -69,6 +69,7 @@ public class Route {
 
     }
 
+    @NotNull
     public String getName() {
         return name;
     }

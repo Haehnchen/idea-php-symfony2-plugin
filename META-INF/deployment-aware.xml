@@ -9,4 +9,9 @@
         </action>
 
     </actions>
+
+    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
+        <RoutingLoader implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.routing.WebDeploymentRoutingLoader"/>
+    </extensions>
+
 </idea-plugin>

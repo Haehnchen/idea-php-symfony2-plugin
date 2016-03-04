@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
@@ -31,6 +32,9 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
+import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
@@ -65,6 +69,10 @@ public class RouteHelper {
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<CachedValue<Map<String, Route>>>("SYMFONY:ROUTE_CACHE");
 
     public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<Project, Map<String, RoutesContainer>>();
+
+    private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<RoutingLoader>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
+    );
 
     public static LookupElement[] getRouteParameterLookupElements(Project project, String routeName) {
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
@@ -256,7 +264,7 @@ public class RouteHelper {
         return path;
     }
 
-    public static Map<String, Route> getCompiledRoutes(Project project) {
+    public static Map<String, Route> getCompiledRoutes(@NotNull Project project) {
 
         Set<String> files = new HashSet<String>();
 
@@ -309,18 +317,20 @@ public class RouteHelper {
         }
 
         Map<String, Route> routes = new HashMap<String, Route>();
-
-        // @TODO: extension point;
-        // add remote first; local filesystem wins on duplicate key
-        RoutingRemoteFileStorage extensionInstance = RemoteWebServerUtil.getExtensionInstance(project, RoutingRemoteFileStorage.class);
-        if(extensionInstance != null) {
-            routes.putAll(extensionInstance.getState());
-        }
-
         if(COMPILED_CACHE.containsKey(project)) {
             for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
                 routes.putAll(container.getRoutes());
             }
+        }
+
+        RoutingLoaderParameter parameter = null;
+
+        for (RoutingLoader routingLoader : ROUTING_LOADER.getExtensions()) {
+            if(parameter == null) {
+                parameter = new RoutingLoaderParameter(project, routes);
+            }
+
+            routingLoader.invoke(parameter);
         }
 
         return routes;
