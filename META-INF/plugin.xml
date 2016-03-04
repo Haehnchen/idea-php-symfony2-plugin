@@ -248,8 +248,9 @@
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
-                             displayName="Symfony Plugin"
+                             displayName="Symfony"
                              id="Symfony2.SettingsForm"
+                             groupId="language"
                              nonDefaultProject="true"
                 />
 
