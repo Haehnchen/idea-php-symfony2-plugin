@@ -73,7 +73,7 @@ public class RoutingSettingsForm implements Configurable {
                 resetList();
 
                 // add default path
-                for (String defaultContainerPath : Settings.DEFAULT_CONTAINER_PATHS) {
+                for (String defaultContainerPath : Settings.DEFAULT_ROUTES) {
                     RoutingSettingsForm.this.modelList.addRow(new RoutingFile(defaultContainerPath));
                 }
 

@@ -32,7 +32,6 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
@@ -40,7 +39,6 @@ import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
-import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
@@ -54,7 +52,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -283,6 +280,11 @@ public class RouteHelper {
                     files.add(path);
                 }
             }
+        }
+
+        // add defaults; if user never has changed the settings
+        if(routingFiles == null || routingFiles.size() == 0) {
+            Collections.addAll(files, Settings.DEFAULT_ROUTES);
         }
 
         for(String file: files) {

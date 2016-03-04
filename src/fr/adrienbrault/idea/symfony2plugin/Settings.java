@@ -28,6 +28,15 @@ public class Settings implements PersistentStateComponent<Settings> {
         "var/cache/dev/appDevDebugProjectContainer.xml",
     };
 
+    // Symfony 2 and 3 paths
+    public static String[] DEFAULT_ROUTES = new String[] {
+        "app/cache/dev/appDevUrlGenerator.php",
+        "var/cache/dev/appDevUrlGenerator.php",
+    };
+
+    /**
+     * @deprecated
+     */
     public static String DEFAULT_URL_GENERATOR_PATH = "app/cache/dev/appDevUrlGenerator.php";
     public static String DEFAULT_TRANSLATION_PATH = "app/cache/dev/translations";
 
