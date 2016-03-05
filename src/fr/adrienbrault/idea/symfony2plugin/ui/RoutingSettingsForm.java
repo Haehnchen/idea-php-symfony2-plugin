@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentUtil;
 import icons.WebDeploymentIcons;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -146,6 +147,16 @@ public class RoutingSettingsForm implements Configurable {
             }
         });
 
+        if(WebDeploymentUtil.isEnabled(project)) {
+            addWebDeploymentButton(tablePanel);
+        }
+
+        this.panel1.add(tablePanel.createPanel());
+
+        return this.panel1;
+    }
+
+    private void addWebDeploymentButton(ToolbarDecorator tablePanel) {
         tablePanel.addExtraAction(new AnActionButton("Remote", WebDeploymentIcons.Download) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
@@ -161,10 +172,6 @@ public class RoutingSettingsForm implements Configurable {
                 });
             }
         });
-
-        this.panel1.add(tablePanel.createPanel());
-
-        return this.panel1;
     }
 
     @Override
