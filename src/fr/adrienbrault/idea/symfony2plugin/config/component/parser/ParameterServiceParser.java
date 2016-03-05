@@ -15,9 +15,7 @@ public class ParameterServiceParser extends AbstractServiceParser {
     }
 
     public void parser(final InputStream file) {
-        this.parameterMap = new ConcurrentHashMap<String, String>() {{
-            putAll(ParameterServiceCollector.collect(file));
-        }};
+        this.parameterMap.putAll(ParameterServiceCollector.collect(file));
     }
 
     public Map<String, String> getParameterMap() {

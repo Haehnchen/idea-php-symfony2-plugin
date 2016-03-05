@@ -1,16 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.util.service;
 
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.StreamUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
+import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory;
+import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderArguments;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServiceXmlParserFactory {
 
@@ -21,7 +19,10 @@ public class ServiceXmlParserFactory {
 
     protected HashMap<String, Long> serviceFiles = new HashMap<String, Long>();
 
-    private long lastWebRemoteBuild = -1;
+    private Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<CompiledServiceBuilderFactory.Builder>();
+    private static final ExtensionPointName<CompiledServiceBuilderFactory> EXTENSIONS = new ExtensionPointName<CompiledServiceBuilderFactory>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"
+    );
 
     public ServiceXmlParserFactory(Project project) {
         this.project = project;
@@ -45,16 +46,12 @@ public class ServiceXmlParserFactory {
             }
         }
 
-        // remote files
-        long remoteBuildTime = -1;
-        ServiceContainerRemoteFileStorage extension = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
-        if(extension != null) {
-            remoteBuildTime = extension.getState().getBuildTime();
-        }
-
-        if(remoteBuildTime != this.lastWebRemoteBuild) {
-            this.lastWebRemoteBuild = remoteBuildTime;
-            return true;
+        if(this.extensions.size() > 0) {
+            for (CompiledServiceBuilderFactory.Builder builder : this.extensions) {
+                if(builder.isModified(project)) {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -80,10 +77,14 @@ public class ServiceXmlParserFactory {
 
         if (this.serviceParserInstance != null) {
 
-            // collect remote files
-            ServiceContainerRemoteFileStorage extension = RemoteWebServerUtil.getExtensionInstance(project, ServiceContainerRemoteFileStorage.class);
-            if(extension != null) {
-                for (InputStream inputStream : extension.getState().getInputStreams()) {
+            // extensions
+            if(this.extensions.size() > 0) {
+                CompiledServiceBuilderArguments args = new CompiledServiceBuilderArguments(project);
+                for (CompiledServiceBuilderFactory.Builder builder : this.extensions) {
+                    builder.build(args);
+                }
+
+                for (InputStream inputStream : args.getStreams()) {
                     this.serviceParserInstance.parser(inputStream);
                 }
             }
@@ -125,6 +126,12 @@ public class ServiceXmlParserFactory {
         ServiceXmlParserFactory serviceXmlParserFactory = projectInstance.get(serviceParser);
         if(serviceXmlParserFactory == null) {
             serviceXmlParserFactory = new ServiceXmlParserFactory(project);
+
+            // add extension for new instance
+            for (CompiledServiceBuilderFactory ext : EXTENSIONS.getExtensions()) {
+                serviceXmlParserFactory.extensions.add(ext.create());
+            }
+
             projectInstance.put(serviceParser, serviceXmlParserFactory);
         }
 
