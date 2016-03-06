@@ -1,24 +1,33 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
+import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Function;
+import com.intellij.util.IncorrectOperationException;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLArray;
@@ -26,6 +35,7 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
+import java.util.Collection;
 import java.util.List;
 
 public class YamlAnnotator implements Annotator {
@@ -296,7 +306,8 @@ public class YamlAnnotator implements Annotator {
         }
 
         if(!new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
-            holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN());
+            holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN())
+                .registerFix(new MySuggestIntentionAction(expectedClass, psiElement));
         }
     }
 
@@ -322,4 +333,103 @@ public class YamlAnnotator implements Annotator {
         return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
     }
 
+    private static class MySuggestIntentionAction extends PsiElementBaseIntentionAction {
+
+        @NotNull
+        private final PhpClass expectedClass;
+
+        @NotNull
+        private final PsiElement myPsiElement;
+
+        public MySuggestIntentionAction(@NotNull PhpClass expectedClass, @NotNull PsiElement psiElement) {
+            this.expectedClass = expectedClass;
+            this.myPsiElement = psiElement;
+        }
+
+        @Override
+        public void invoke(@NotNull final Project project, final Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
+            Collection<ContainerService> suggestions = ServiceUtil.getServiceSuggestionForPhpClass(expectedClass, ContainerCollectionResolver.getServices(project));
+            if(suggestions.size() == 0) {
+                HintManager.getInstance().showErrorHint(editor, "No suggestion found");
+                return;
+            }
+
+            ServiceSuggestDialog.create(ContainerUtil.map(suggestions, new Function<ContainerService, String>() {
+                @Override
+                public String fun(ContainerService containerService) {
+                    return containerService.getName();
+                }
+            }), new MyInsertCallback(editor, myPsiElement));
+        }
+
+        @Override
+        public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
+            return true;
+        }
+
+        @Nls
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Symfony";
+        }
+
+        @NotNull
+        @Override
+        public String getText() {
+            return "Symfony: Suggest Service";
+        }
+    }
+
+    /**
+     * This class replace a service name by plain text modification.
+     * This resolve every crazy yaml use case and lexer styles like:
+     *
+     *  - @, @?
+     *  - "@foo", '@foo', @foo
+     */
+    private static class MyInsertCallback implements ServiceSuggestDialog.Callback {
+
+        @NotNull
+        private final Editor editor;
+
+        @NotNull
+        private final PsiElement psiElement;
+
+        public MyInsertCallback(@NotNull Editor editor, @NotNull PsiElement psiElement) {
+            this.editor = editor;
+            this.psiElement = psiElement;
+        }
+
+        @Override
+        public void insert(@NotNull String selected) {
+            String text = this.psiElement.getText();
+
+            int i = getServiceChar(text);
+            if(i < 0) {
+                HintManager.getInstance().showErrorHint(editor, "No valid char in text range");
+                return;
+            }
+
+            String afterAtText = text.substring(i);
+
+            // strip ending quotes
+            int length = StringUtils.stripEnd(afterAtText, "'\"").length();
+
+            int startOffset = this.psiElement.getTextRange().getStartOffset();
+            int afterAt = startOffset + i + 1;
+
+            editor.getDocument().deleteString(afterAt, afterAt + length - 1);
+            editor.getDocument().insertString(afterAt, selected);
+        }
+
+        private int getServiceChar(@NotNull String text) {
+            int i = text.lastIndexOf("@?");
+            if(i >= 0) {
+                return i + 1;
+            }
+
+            return text.lastIndexOf("@");
+        }
+    }
 }
