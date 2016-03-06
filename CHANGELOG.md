@@ -7,6 +7,16 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.113
+* Decouple all webDeployment dependencies to extensions points and make all related feature optional #688
+* Move remote container files parsing to main service factory, this simulates a local filesystem behavior
+* Move plugin settings under "Languages and Frameworks" section #690
+* Add Symfony 2 and 3 default routing paths to new implementation
+* Add service suggestion intention for yaml and xml container files
+* Provide service name suggestion quickfix for class instance check of xml and yaml container arguments
+* Add XLIFF 2.0 support #692
+* Add some more yaml service keys completion for newly added Symfony features
+
 ### 0.11.112
 * Extracting webDeployment plugin deps into external file, this resolves crashes for disabled "Remote Hosts Access" plugin #686
 

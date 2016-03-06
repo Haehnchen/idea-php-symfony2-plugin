@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.112</version>
+    <version>0.11.113</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -15,8 +15,11 @@
 <h2>Install</h2>
 
 <ul>
-    <li>Activate plugin per project in "Settings -> Plugins" or use auto configuration notification</li>
+    <li>Activate plugin per project in "File -> Settings -> Languages & Framework -> Symfony" or use auto configuration notification</li>
+    <li>(Optional) Configure a default project connection in "Remote Hosts Access / Remote Hosts" to enable support for remote files in plugin settings</li>
+    <li>(Optional) Ignore Symfony "cache" directory because of duplicate classes "Settings -> Project -> Directories"</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
+    <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
 </ul>
 
 <h2>Open Api Issues</h2>
@@ -108,6 +111,19 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.11.113</h2>
+<ul>
+    <li>Decouple all webDeployment dependencies to extensions points and make all related feature optional <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/688">#688</a></li>
+    <li>Move remote container files parsing to main service factory, this simulates a local filesystem behavior</li>
+    <li>Move plugin settings under "Languages and Frameworks" section <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/690">#690</a></li>
+    <li>Add Symfony 2 and 3 default routing paths to new implementation</li>
+    <li>Add service suggestion intention for yaml and xml container files</li>
+    <li>Provide service name suggestion quickfix for class instance check of xml and yaml container arguments</li>
+    <li>Add XLIFF 2.0 support <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/692">#692</a></li>
+    <li>Add some more yaml service keys completion for newly added Symfony features</li>
+</li>
+</ul>
 
 <h2>0.11.112</h2>
 <ul>
