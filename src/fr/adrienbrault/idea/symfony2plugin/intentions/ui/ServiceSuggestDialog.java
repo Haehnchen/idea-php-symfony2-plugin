@@ -1,10 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.ui;
 
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.util.Collection;
 
@@ -19,9 +22,10 @@ public class ServiceSuggestDialog extends JDialog {
     private JButton buttonInsert;
     private JButton buttonCancel;
     private JList listServices;
+    private JButton buttonCopy;
 
-    public ServiceSuggestDialog(@NotNull final Collection<String> services, @NotNull final Callback callback) {
-        this.services = services.toArray(new String[services.size()]);
+    public ServiceSuggestDialog(@NotNull final Collection<String> servicesCollection, @NotNull final Callback callback) {
+        this.services = servicesCollection.toArray(new String[servicesCollection.size()]);
         this.callback = callback;
 
         setContentPane(contentPane);
@@ -37,6 +41,12 @@ public class ServiceSuggestDialog extends JDialog {
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
+            }
+        });
+
+        buttonCopy.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCopy();
             }
         });
 
@@ -77,12 +87,25 @@ public class ServiceSuggestDialog extends JDialog {
         dispose();
     }
 
+    private void onCopy() {
+        int selectedIndex = listServices.getSelectedIndex();
+        if(selectedIndex < 0) {
+            return;
+        }
+
+        Toolkit.getDefaultToolkit()
+            .getSystemClipboard()
+            .setContents(new StringSelection(services[listServices.getSelectedIndex()]), null);
+
+        dispose();
+    }
+
     public static void create(@NotNull Collection<String> services, @NotNull Callback callback) {
         ServiceSuggestDialog templateCreationSelectionDialog = new ServiceSuggestDialog(services, callback);
         Dimension dim = new Dimension();
         dim.setSize(300, 300);
         templateCreationSelectionDialog.setMinimumSize(dim);
-        templateCreationSelectionDialog.setTitle("Symfony: Service Suggestions");
+        templateCreationSelectionDialog.setTitle("Symfony: Service Suggestion");
         templateCreationSelectionDialog.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
         templateCreationSelectionDialog.setLocationRelativeTo(null);
         templateCreationSelectionDialog.setVisible(true);
