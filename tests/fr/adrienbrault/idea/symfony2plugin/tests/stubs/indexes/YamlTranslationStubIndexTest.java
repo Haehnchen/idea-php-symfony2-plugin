@@ -20,6 +20,7 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
     public void setUp() throws Exception {
         super.setUp();
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("messages.fr.xlf"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("messages_two.fr.xlf"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
     }
 
@@ -35,6 +36,14 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
     public void testThatDomainAndTranslationsKeyOfXliffIsInIndex() {
         assertIndexContains(YamlTranslationStubIndex.KEY, "foo");
         assertContainsElements(getDomainKeys("foo"), "Symfony is great xliff");
+    }
+
+    public void testThatDomainAndTranslationsKeyOfXliffv2IsInIndex() {
+        assertIndexContains(YamlTranslationStubIndex.KEY, "messages_two");
+        assertContainsElements(getDomainKeys("messages_two"), "hello xliff v2");
+
+        assertIndexContains(YamlTranslationStubIndex.KEY, "messages_two");
+        assertContainsElements(getDomainKeys("messages_two"), "hello xliff v2 group less");
     }
 
     @NotNull

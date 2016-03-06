@@ -1,0 +1,21 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0"
+       version="2.0" srcLang="en-US" trgLang="ja-JP">
+    <file id="f1" original="Graphic Example.psd">
+        <skeleton href="Graphic Example.psd.skl"/>
+        <group id="1">
+            <unit id="1">
+                <segment>
+                    <source>hello xliff v2</source>
+                    <target>>hello xliff v2 target</target>
+                </segment>
+            </unit>
+        </group>
+
+        <unit id="1">
+            <segment>
+                <source>hello xliff v2 group less</source>
+                <target>>hello xliff v2 group less</target>
+            </segment>
+        </unit>
+    </file>
+</xliff>

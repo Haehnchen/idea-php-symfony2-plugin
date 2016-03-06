@@ -291,18 +291,25 @@ public class TranslationUtil {
             return set;
         }
 
+        for (String s : new String[]{"//xliff/file/body/trans-unit/source", "//xliff/file/group/unit/segment/source", "//xliff/file/unit/segment/source"}) {
+            visitNodes(s, set, document);
+        }
+
+        return set;
+    }
+
+    private static void visitNodes(@NotNull String xpath, @NotNull Set<String> set, @NotNull Document document) {
         Object result;
         try {
             // @TODO: xpath should not use "file/body"
-            XPathExpression xPathExpr = XPathFactory.newInstance().newXPath().compile("//xliff/file/body/trans-unit/source");
+            XPathExpression xPathExpr = XPathFactory.newInstance().newXPath().compile(xpath);
             result = xPathExpr.evaluate(document, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
-            return set;
+            return;
         }
 
         if(!(result instanceof NodeList)) {
-            return set;
+            return;
         }
 
         NodeList nodeList = (NodeList) result;
@@ -313,8 +320,5 @@ public class TranslationUtil {
                 set.add(textContent);
             }
         }
-
-        return set;
     }
-
 }
