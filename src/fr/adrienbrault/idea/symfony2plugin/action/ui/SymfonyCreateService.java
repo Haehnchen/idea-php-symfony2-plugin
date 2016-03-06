@@ -14,6 +14,7 @@ import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyInterface;
@@ -21,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameSt
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -492,54 +494,20 @@ public class SymfonyCreateService extends JDialog {
         }
     }
 
-
     private Set<String> getPossibleServices(Parameter parameter) {
-
-        Set<String> possibleServices = new LinkedHashSet<String>();
-        List<ContainerService> matchedContainer = new ArrayList<ContainerService>();
 
         PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
         if(!(phpPsiElement instanceof ClassReference)) {
-            return possibleServices;
+            return Collections.emptySet();
         }
 
         String type = ((ClassReference) phpPsiElement).getFQN();
-        if(type != null) {
-            PhpClass typeClass = PhpElementsUtil.getClassInterface(project, type);
-            if(typeClass != null) {
-                for(Map.Entry<String, ContainerService> entry: serviceClass.entrySet()) {
-                    if(entry.getValue().getClassName() != null) {
-                        PhpClass serviceClass = PhpElementsUtil.getClassInterface(project, entry.getValue().getClassName());
-                        if(serviceClass != null) {
-                            if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, typeClass)) {
-                                matchedContainer.add(entry.getValue());
-                            }
-                        }
-                    }
-
-                }
-            }
+        if(type == null) {
+            return Collections.emptySet();
         }
 
-        if(matchedContainer.size() > 0) {
-
-            // weak service have lower priority
-            Collections.sort(matchedContainer, new ContainerServicePriorityWeakComparator());
-
-            // lower priority of services like "doctrine.orm.default_entity_manager"
-            Collections.sort(matchedContainer, new ContainerServicePriorityNameComparator());
-
-            for(ContainerService containerService: matchedContainer) {
-                possibleServices.add(containerService.getName());
-            }
-
-        }
-
-
-
-        return possibleServices;
+        return ServiceActionUtil.getPossibleServices(project, type, serviceClass);
     }
-
 
     public static class ContainerServicePriorityNameComparator implements Comparator<ContainerService> {
 

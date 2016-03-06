@@ -128,38 +128,26 @@ public class ServiceActionUtil {
     }
 
     @NotNull
-    public static Set<String> getPossibleServices(Project project, String type, Map<String, ContainerService> serviceClasses) {
-
-        Set<String> possibleServices = new LinkedHashSet<String>();
-        List<ContainerService> matchedContainer = new ArrayList<ContainerService>();
-
+    public static Set<String> getPossibleServices(@NotNull Project project, @NotNull String type, @NotNull Map<String, ContainerService> serviceClasses) {
         PhpClass typeClass = PhpElementsUtil.getClassInterface(project, type);
-        if(typeClass != null) {
-            for(Map.Entry<String, ContainerService> entry: serviceClasses.entrySet()) {
-                if(entry.getValue().getClassName() != null) {
-                    PhpClass serviceClass = PhpElementsUtil.getClassInterface(project, entry.getValue().getClassName());
-                    if(serviceClass != null) {
-                        if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, typeClass)) {
-                            matchedContainer.add(entry.getValue());
-                        }
-                    }
-                }
-
-            }
+        if(typeClass == null) {
+            return Collections.emptySet();
         }
 
-        if(matchedContainer.size() > 0) {
+        List<ContainerService> matchedContainer = new ArrayList<ContainerService>(ServiceUtil.getServiceSuggestionForPhpClass(typeClass, serviceClasses));
+        if(matchedContainer.size() == 0) {
+            return Collections.emptySet();
+        }
 
-            // weak service have lower priority
-            Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityWeakComparator());
+        // weak service have lower priority
+        Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityWeakComparator());
 
-            // lower priority of services like "doctrine.orm.default_entity_manager"
-            Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityNameComparator());
+        // lower priority of services like "doctrine.orm.default_entity_manager"
+        Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityNameComparator());
 
-            for(ContainerService containerService: matchedContainer) {
-                possibleServices.add(containerService.getName());
-            }
-
+        Set<String> possibleServices = new LinkedHashSet<String>();
+        for(ContainerService containerService: matchedContainer) {
+            possibleServices.add(containerService.getName());
         }
 
         return possibleServices;

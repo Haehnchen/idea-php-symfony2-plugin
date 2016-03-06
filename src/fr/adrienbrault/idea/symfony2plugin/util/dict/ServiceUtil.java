@@ -424,4 +424,29 @@ public class ServiceUtil {
         }
     }
 
+    @NotNull
+    public static Collection<ContainerService> getServiceSuggestionForPhpClass(@NotNull PhpClass phpClass, @NotNull Map<String, ContainerService> serviceMap) {
+
+        String fqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
+
+        Collection<ContainerService> instances = new ArrayList<ContainerService>();
+
+        for(Map.Entry<String, ContainerService> entry: serviceMap.entrySet()) {
+            if(entry.getValue().getClassName() == null) {
+                continue;
+            }
+
+            PhpClass serviceClass = PhpElementsUtil.getClassInterface(phpClass.getProject(), entry.getValue().getClassName());
+            if(serviceClass == null) {
+                continue;
+            }
+
+            if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, fqn)) {
+                instances.add(entry.getValue());
+            }
+        }
+
+        return instances;
+    }
+
 }
