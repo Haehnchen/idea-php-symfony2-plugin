@@ -482,6 +482,12 @@
         </intentionAction>
 
         <intentionAction>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention</className>
+            <category>XML</category>
+            <descriptionDirectoryName>XmlServiceSuggestIntention</descriptionDirectoryName>
+        </intentionAction>
+
+        <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>SymfonyXmlServiceTagIntention</descriptionDirectoryName>

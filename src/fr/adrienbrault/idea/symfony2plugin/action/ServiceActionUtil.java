@@ -134,7 +134,12 @@ public class ServiceActionUtil {
             return Collections.emptySet();
         }
 
-        List<ContainerService> matchedContainer = new ArrayList<ContainerService>(ServiceUtil.getServiceSuggestionForPhpClass(typeClass, serviceClasses));
+        return getPossibleServices(typeClass, serviceClasses);
+    }
+
+    @NotNull
+    public static Set<String> getPossibleServices(@NotNull PhpClass phpClass, @NotNull Map<String, ContainerService> serviceClasses) {
+        List<ContainerService> matchedContainer = new ArrayList<ContainerService>(ServiceUtil.getServiceSuggestionForPhpClass(phpClass, serviceClasses));
         if(matchedContainer.size() == 0) {
             return Collections.emptySet();
         }

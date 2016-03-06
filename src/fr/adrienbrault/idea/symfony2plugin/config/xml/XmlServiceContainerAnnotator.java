@@ -118,7 +118,7 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
     }
 
-    private int getArgumentIndex(XmlTag xmlTag) {
+    public static int getArgumentIndex(XmlTag xmlTag) {
 
         PsiElement psiElement = xmlTag;
         int index = 0;

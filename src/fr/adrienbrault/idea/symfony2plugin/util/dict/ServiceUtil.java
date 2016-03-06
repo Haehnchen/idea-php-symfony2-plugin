@@ -9,8 +9,11 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
@@ -449,4 +452,30 @@ public class ServiceUtil {
         return instances;
     }
 
+    @NotNull
+    public static Set<String> getServiceSuggestionsForServiceConstructorIndex(@NotNull Project project, @NotNull String serviceName, int index) {
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceName);
+        // check type hint on constructor
+        if(phpClass == null) {
+            return Collections.emptySet();
+        }
+
+        Method constructor = phpClass.getConstructor();
+        if(constructor == null) {
+            return Collections.emptySet();
+        }
+
+        Parameter[] constructorParameter = constructor.getParameters();
+        if(index >= constructorParameter.length) {
+            return Collections.emptySet();
+        }
+
+        String className = constructorParameter[index].getDeclaredType().toString();
+        PhpClass expectedClass = PhpElementsUtil.getClassInterface(project, className);
+        if(expectedClass == null) {
+            return Collections.emptySet();
+        }
+
+        return ServiceActionUtil.getPossibleServices(expectedClass, ContainerCollectionResolver.getServices(project));
+    }
 }
