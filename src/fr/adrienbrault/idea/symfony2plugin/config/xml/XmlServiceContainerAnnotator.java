@@ -1,20 +1,34 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
+import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Function;
+import com.intellij.util.IncorrectOperationException;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
+import fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 public class XmlServiceContainerAnnotator implements Annotator {
 
@@ -113,7 +127,8 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
         PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(method.getProject(), serviceName);
         if(serviceParameterClass != null && !new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
-            holder.createWeakWarningAnnotation(target, "Expect instance of: " + expectedClass.getPresentableFQN());
+            holder.createWeakWarningAnnotation(target, "Expect instance of: " + expectedClass.getPresentableFQN())
+                .registerFix(new MySuggestionIntentionAction(expectedClass, target));
         }
 
     }
@@ -133,4 +148,52 @@ public class XmlServiceContainerAnnotator implements Annotator {
         return index;
     }
 
+    private static class MySuggestionIntentionAction extends PsiElementBaseIntentionAction {
+        private final PhpClass expectedClass;
+        private final PsiElement target;
+
+        public MySuggestionIntentionAction(@NotNull PhpClass expectedClass, @NotNull PsiElement target) {
+            this.expectedClass = expectedClass;
+            this.target = target;
+        }
+
+        @Nls
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Symfony";
+        }
+
+        @Override
+        public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
+            Collection<ContainerService> suggestions = ServiceUtil.getServiceSuggestionForPhpClass(expectedClass, ContainerCollectionResolver.getServices(project));
+            if(suggestions.size() == 0) {
+                HintManager.getInstance().showErrorHint(editor, "No suggestion found");
+                return;
+            }
+
+            XmlTag xmlTag = PsiTreeUtil.getParentOfType(target, XmlTag.class);
+            if(xmlTag == null) {
+                return;
+            }
+
+            ServiceSuggestDialog.create(ContainerUtil.map(suggestions, new Function<ContainerService, String>() {
+                @Override
+                public String fun(ContainerService containerService) {
+                    return containerService.getName();
+                }
+            }), new XmlServiceSuggestIntention.MyInsertCallback(xmlTag));
+        }
+
+        @Override
+        public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
+            return true;
+        }
+
+        @NotNull
+        @Override
+        public String getText() {
+            return "Symfony: Suggest Service";
+        }
+    }
 }

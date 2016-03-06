@@ -86,7 +86,7 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
         return "Symfony: Suggest Service";
     }
 
-    private static class MyInsertCallback implements ServiceSuggestDialog.Callback {
+    public static class MyInsertCallback implements ServiceSuggestDialog.Callback {
         private final XmlTag argumentTag;
 
         public MyInsertCallback(XmlTag argumentTag) {
