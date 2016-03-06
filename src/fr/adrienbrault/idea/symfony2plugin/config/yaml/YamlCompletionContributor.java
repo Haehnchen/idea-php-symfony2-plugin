@@ -61,14 +61,15 @@ import java.util.regex.Pattern;
 public class YamlCompletionContributor extends CompletionContributor {
 
     private static final Map<String, String> SERVICE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
-        put("class", null);
-        put("public", null);
+        put("class", "(string)");
+        put("public", "(bool)");
         put("tags", null);
+        put("alias", null);
         put("calls", null);
         put("arguments", null);
         put("synchronized", null);
         put("synthetic", null);
-        put("lazy", null);
+        put("lazy", "(bool)");
         put("abstract", null);
         put("parent", null);
         put("scope", "request, prototype");
@@ -78,6 +79,9 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("factory_method", "<= 2.5");
         put("autowire", "(bool) >= 2.8");
         put("deprecated", "(string) >= 2.8");
+        put("decorates", null);
+        put("decoration_inner_name", null);
+        put("decoration_priority", "(int) >= 2.8");
     }});
 
     public YamlCompletionContributor() {
