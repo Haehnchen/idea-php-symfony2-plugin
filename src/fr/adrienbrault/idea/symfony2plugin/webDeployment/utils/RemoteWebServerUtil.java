@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.webDeployment.utils;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.Function;
@@ -59,7 +60,7 @@ public class RemoteWebServerUtil {
         return null;
     }
 
-    public static void collectRemoteFiles(@NotNull Project project) {
+    public static void collectRemoteFiles(final @NotNull Project project) {
         WebServerConfig defaultServer = PublishConfig.getInstance(project).findDefaultServer();
         if(defaultServer == null) {
             return;
@@ -72,8 +73,8 @@ public class RemoteWebServerUtil {
             return;
         }
 
-        for (RemoteFileStorageInterface fileStorage : RemoteWebServerUtil.getExtension(project)) {
-            Collection<FileObject> contents = new ArrayList<FileObject>();
+        for (final RemoteFileStorageInterface fileStorage : RemoteWebServerUtil.getExtension(project)) {
+            final Collection<FileObject> contents = new ArrayList<FileObject>();
 
             for (Object s : fileStorage.files(project)) {
 
@@ -88,7 +89,12 @@ public class RemoteWebServerUtil {
             }
 
             fileStorage.clear();
-            fileStorage.build(project, contents);
+
+            ApplicationManager.getApplication().runReadAction(new Runnable() {
+                public void run() {
+                    fileStorage.build(project, contents);
+                }
+            });
         }
 
         connection.clone();

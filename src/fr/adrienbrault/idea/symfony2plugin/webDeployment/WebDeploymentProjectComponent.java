@@ -4,6 +4,8 @@ import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -44,10 +46,12 @@ public class WebDeploymentProjectComponent implements ProjectComponent {
 
         // remote file downloader
         if(Settings.getInstance(project).remoteDevFileScheduler) {
+            Symfony2ProjectComponent.getLogger().info("Starting Symfony webDeployment background scheduler");
+
             DumbService.getInstance(project).smartInvokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    new Timer().schedule(new MyTimerTask(), 10000, 300000);
+                    new Timer().schedule(new MyTimerTask(), 1000, 300000);
                 }
             });
         }
@@ -63,19 +67,22 @@ public class WebDeploymentProjectComponent implements ProjectComponent {
 
         @Override
         public void run() {
+            if(!RemoteWebServerUtil.hasConfiguredRemoteFile(project)) {
+                return;
+            }
 
             DumbService.getInstance(project).smartInvokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ApplicationManager.getApplication().runReadAction(new Runnable() {
+                    new Task.Backgroundable(project, "Symfony: Remote File Download", false) {
                         @Override
-                        public void run() {
+                        public void run(@NotNull ProgressIndicator indicator) {
+                            Symfony2ProjectComponent.getLogger().info("Running background webDeployment dev download");
                             RemoteWebServerUtil.collectRemoteFiles(project);
                         }
-                    });
+                    }.queue();
                 }
             });
-
         }
     }
 }

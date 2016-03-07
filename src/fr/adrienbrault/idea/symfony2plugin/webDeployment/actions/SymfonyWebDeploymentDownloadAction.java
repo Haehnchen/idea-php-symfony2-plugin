@@ -11,6 +11,7 @@ import com.jetbrains.plugins.webDeployment.actions.WebDeploymentDataKeys;
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,11 +51,8 @@ public class SymfonyWebDeploymentDownloadAction extends DumbAwareAction {
         new Task.Backgroundable(project, "Symfony: Downloading Files", false) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                ApplicationManager.getApplication().runReadAction(new Runnable() {
-                    public void run() {
-                        RemoteWebServerUtil.collectRemoteFiles(project);
-                    }
-                });
+                Symfony2ProjectComponent.getLogger().info("Running webDeployment dev download");
+                RemoteWebServerUtil.collectRemoteFiles(project);
             }
         }.queue();
     }
