@@ -5,11 +5,14 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.Variable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -97,5 +100,39 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Fooa", "Bar"));
         assertNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Fooa\\Foo", "Bar"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isInstanceOf
+     */
+    public void testIsInstanceOf() {
+        myFixture.copyFileToProject("InstanceOf.php");
+
+        Collection<String[]> providers = new ArrayList<String[]>() {{
+            add(new String[] {"\\Instance\\Of\\Foo", "\\Instance\\Of\\Bar"});
+            add(new String[] {"\\Instance\\Of\\Foo", "\\Instance\\Of\\Cool"});
+            add(new String[] {"\\Instance\\Of\\Car", "\\Instance\\Of\\Bar"});
+            add(new String[] {"\\Instance\\Of\\Car", "\\Instance\\Of\\Foo"});
+            add(new String[] {"\\Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
+
+            // backslash
+            add(new String[] {"Instance\\Of\\Car", "Instance\\Of\\Cool"});
+            add(new String[] {"Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
+            add(new String[] {"\\Instance\\Of\\Car", "Instance\\Of\\Cool"});
+
+            // dups
+            add(new String[] {"\\Instance\\Of\\Car", "Instance\\Of\\Apple"});
+            add(new String[] {"\\Instance\\Of\\Foo", "Instance\\Of\\Apple"});
+        }};
+
+        for (String[] provider : providers) {
+            assertTrue(PhpElementsUtil.isInstanceOf(getProject(), provider[0], provider[1]));
+            assertTrue(PhpElementsUtil.isInstanceOf(PhpElementsUtil.getClassInterface(getProject(), provider[0]), provider[1]));
+
+            assertTrue(PhpElementsUtil.isInstanceOf(
+                PhpElementsUtil.getClassInterface(getProject(), provider[0]),
+                PhpElementsUtil.getClassInterface(getProject(), provider[1])
+            ));
+        }
     }
 }

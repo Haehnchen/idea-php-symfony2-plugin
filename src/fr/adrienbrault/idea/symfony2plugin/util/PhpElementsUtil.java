@@ -461,6 +461,30 @@ public class PhpElementsUtil {
         return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
 
+    /**
+     * @param subjectClass eg DateTime
+     * @param expectedClass eg DateTimeInterface
+     */
+    public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
+        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(subjectClass.getProject()));
+    }
+
+    /**
+     * @param subjectClass eg DateTime
+     * @param expectedClass eg DateTimeInterface
+     */
+    public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull String expectedClass) {
+        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(subjectClass.getProject()));
+    }
+
+    /**
+     * @param subjectClass eg DateTime
+     * @param expectedClass eg DateTimeInterface
+     */
+    public static boolean isInstanceOf(@NotNull Project project, @NotNull String subjectClass, @NotNull String expectedClass) {
+        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(project));
+    }
+
     static public Collection<PhpClass> getClassesInterface(Project project, @NotNull String className) {
 
         // api workaround for at least interfaces

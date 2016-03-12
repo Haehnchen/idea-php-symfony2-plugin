@@ -228,63 +228,19 @@ public class Symfony2InterfacesUtil {
         return PhpElementsUtil.getClassMethod(project, classFQN, methodName);
     }
 
-    protected boolean isImplementationOfInterface(PhpClass phpClass, PhpClass phpInterface) {
-        if (phpClass == phpInterface) {
-            return true;
-        }
-
-        for (PhpClass implementedInterface : phpClass.getImplementedInterfaces()) {
-            if (isImplementationOfInterface(implementedInterface, phpInterface)) {
-                return true;
-            }
-        }
-
-        if (null == phpClass.getSuperClass()) {
-            return false;
-        }
-
-        return isImplementationOfInterface(phpClass.getSuperClass(), phpInterface);
-    }
-
+    @Deprecated
     public boolean isInstanceOf(PhpClass subjectClass, String expectedClass) {
-
-        PhpClass instanceClass = PhpElementsUtil.getClassInterface(subjectClass.getProject(), expectedClass);
-
-        if(instanceClass == null) {
-            return false;
-        }
-
-        return isInstanceOf(subjectClass, instanceClass);
-
+        return PhpElementsUtil.isInstanceOf(subjectClass, expectedClass);
     }
 
+    @Deprecated
     public boolean isInstanceOf(Project project, String subjectClass, String expectedClass) {
-
-        PhpClass subjectPhpClass = PhpElementsUtil.getClassInterface(project, subjectClass);
-        if(subjectPhpClass == null) {
-            return false;
-        }
-
-        return isInstanceOf(subjectPhpClass, expectedClass);
-
+        return PhpElementsUtil.isInstanceOf(project, subjectClass, expectedClass);
     }
 
+    @Deprecated
     public boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
-
-        // we have equal class instance, on non multiple classes with same name fallback to namespace and classname
-        if (subjectClass == expectedClass || PhpElementsUtil.isEqualClassName(subjectClass, expectedClass)) {
-            return true;
-        }
-
-        if (expectedClass.isInterface()) {
-            return isImplementationOfInterface(subjectClass, expectedClass);
-        }
-
-        if (null == subjectClass.getSuperClass()) {
-            return false;
-        }
-
-        return isInstanceOf(subjectClass.getSuperClass(), expectedClass);
+        return PhpElementsUtil.isInstanceOf(subjectClass, expectedClass);
     }
 
     public boolean isCallTo(MethodReference e, String ClassInterfaceName, String methodName) {
