@@ -123,14 +123,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
     public void testConstraintAndValidateClassLineMarker() {
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("Validation.php"));
 
-        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
-                "namespace Foo\\Validation\n" +
-                "{\n" +
-                "    class BarValidator{}\n" +
-                "}"
-        );
-
-        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+        assertLineMarker(myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace Foo\\Validation {\n" +
                 "    class Bar extends \\Symfony\\Component\\Validator\\Constraint {}\n" +
                 "}"
@@ -145,7 +138,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
                 "}"
         );
 
-        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+        assertLineMarker(myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace Foo\\Validation {\n" +
                 "    class BarValidator implements \\Symfony\\Component\\Validator\\ConstraintValidatorInterface {}\n" +
                 "}"

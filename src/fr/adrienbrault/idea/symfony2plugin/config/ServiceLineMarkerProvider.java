@@ -250,15 +250,10 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        // class in same namespace
-        String fqn = ((PhpClass) phpClassContext).getFQN();
-        if(fqn == null) {
-            return;
-        }
-
         Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
 
-        String className = fqn + "Validator";
+        // class in same namespace
+        String className = ((PhpClass) phpClassContext).getFQN() + "Validator";
         phpClasses.addAll(
             PhpElementsUtil.getClassesInterface(psiElement.getProject(), className)
         );
