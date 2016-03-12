@@ -12,8 +12,8 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +34,7 @@ public class BundleClassGeneratorUtil {
             PhpClass aClass = PhpPsiUtil.findClass((PhpFile) psiFile, new Condition<PhpClass>() {
                 @Override
                 public boolean value(PhpClass phpClass) {
-                    return new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface");
+                    return PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface");
                 }
             });
 

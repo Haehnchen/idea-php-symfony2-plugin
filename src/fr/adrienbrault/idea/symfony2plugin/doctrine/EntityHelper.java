@@ -639,10 +639,9 @@ public class EntityHelper {
             return null;
         }
 
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
         for(String typeString: PhpIndex.getInstance(methodReference.getProject()).completeType(methodReference.getProject(), ((PhpTypedElement) phpTypedElement).getType(), new HashSet<String>()).getTypes()) {
             for(Map.Entry<DoctrineTypes.Manager, String> entry: DoctrineTypes.getManagerInstanceMap().entrySet()) {
-                if(symfony2InterfacesUtil.isInstanceOf(methodReference.getProject(), typeString, entry.getValue())) {
+                if(PhpElementsUtil.isInstanceOf(methodReference.getProject(), typeString, entry.getValue())) {
                     return entry.getKey();
                 }
             }
@@ -804,8 +803,7 @@ public class EntityHelper {
             return false;
         }
 
-        Symfony2InterfacesUtil symfony2Util = new Symfony2InterfacesUtil();
-        return !symfony2Util.isInstanceOf(entityClass, repositoryClass);
+        return !PhpElementsUtil.isInstanceOf(entityClass, repositoryClass);
     }
 
     public static Map<String, String> getWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {

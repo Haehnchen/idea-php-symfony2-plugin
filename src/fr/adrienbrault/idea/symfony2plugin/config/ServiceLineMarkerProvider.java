@@ -10,7 +10,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -247,7 +246,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
      */
     private void validatorClassMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
         PsiElement phpClassContext = psiElement.getContext();
-        if(!(phpClassContext instanceof PhpClass) || !new Symfony2InterfacesUtil().isInstanceOf((PhpClass) phpClassContext, "Symfony\\Component\\Validator\\Constraint")) {
+        if(!(phpClassContext instanceof PhpClass) || !PhpElementsUtil.isInstanceOf((PhpClass) phpClassContext, "\\Symfony\\Component\\Validator\\Constraint")) {
             return;
         }
 
@@ -282,7 +281,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
      */
     private void constraintValidatorClassMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
         PsiElement phpClass = psiElement.getContext();
-        if(!(phpClass instanceof PhpClass) || !new Symfony2InterfacesUtil().isInstanceOf((PhpClass) phpClass, "Symfony\\Component\\Validator\\ConstraintValidatorInterface")) {
+        if(!(phpClass instanceof PhpClass) || !PhpElementsUtil.isInstanceOf((PhpClass) phpClass, "Symfony\\Component\\Validator\\ConstraintValidatorInterface")) {
             return;
         }
 

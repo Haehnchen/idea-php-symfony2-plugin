@@ -7,11 +7,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -59,19 +59,13 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
                 return;
             }
 
-            Symfony2InterfacesUtil symfony2InterfacesUtil = null;
-
             for(TwigTypeContainer twigTypeContainer: types) {
                 PhpNamedElement phpNamedElement = twigTypeContainer.getPhpNamedElement();
                 if(phpNamedElement == null) {
                     continue;
                 }
 
-                if(symfony2InterfacesUtil == null) {
-                    symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-                }
-
-                if(isWeakPhpClass(symfony2InterfacesUtil, phpNamedElement)) {
+                if(isWeakPhpClass(phpNamedElement)) {
                     return;
                 }
 
@@ -84,10 +78,10 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
             this.holder.registerProblem(element, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
         }
 
-        private boolean isWeakPhpClass(Symfony2InterfacesUtil symfony2InterfacesUtil, PhpNamedElement phpNamedElement) {
+        private boolean isWeakPhpClass(PhpNamedElement phpNamedElement) {
             return phpNamedElement instanceof PhpClass && (
-                 symfony2InterfacesUtil.isInstanceOf((PhpClass) phpNamedElement, "ArrayAccess") ||
-                 symfony2InterfacesUtil.isInstanceOf((PhpClass) phpNamedElement, "Iterator")
+                PhpElementsUtil.isInstanceOf((PhpClass) phpNamedElement, "ArrayAccess") ||
+                PhpElementsUtil.isInstanceOf((PhpClass) phpNamedElement, "Iterator")
             );
         }
     }

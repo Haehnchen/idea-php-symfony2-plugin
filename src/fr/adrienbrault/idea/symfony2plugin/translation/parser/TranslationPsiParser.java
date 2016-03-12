@@ -9,8 +9,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +71,6 @@ public class TranslationPsiParser {
         }
 
         Symfony2ProjectComponent.getLogger().info("update translations: " + file.getPath());
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
 
         Collection<NewExpression> messageCatalogues = PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class);
         for(NewExpression newExpression: messageCatalogues) {
@@ -80,7 +79,7 @@ public class TranslationPsiParser {
                 PsiElement constructorMethod = classReference.resolve();
                 if(constructorMethod instanceof Method) {
                     PhpClass phpClass = ((Method) constructorMethod).getContainingClass();
-                    if(phpClass != null && symfony2InterfacesUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
+                    if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
                         this.getTranslationMessages(newExpression);
                     }
 

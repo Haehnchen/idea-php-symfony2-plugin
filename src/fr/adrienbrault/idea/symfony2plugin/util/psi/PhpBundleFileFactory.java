@@ -21,6 +21,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -174,7 +175,7 @@ public class PhpBundleFileFactory {
             return null;
         }
 
-        if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface")) {
+        if(!PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface")) {
             return null;
         }
 

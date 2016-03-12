@@ -12,7 +12,6 @@ import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
@@ -195,8 +194,6 @@ public class ServiceUtil {
         FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
         ContainerCollectionResolver.ServiceCollector collector = null;
 
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-
         Set<String> matchedTags = new HashSet<String>();
         Set<String> result = projectUniqueKeysStrong.getResult();
         for (String serviceName : result) {
@@ -228,7 +225,7 @@ public class ServiceUtil {
             for (PhpClass serviceClassImpl: getSuperClasses(serviceClass)) {
                 // find interface or extends class which also implements
                 // @TODO: currently first level only, check recursive
-                if(!PhpElementsUtil.isEqualClassName(phpClass, serviceClassImpl) && symfony2InterfacesUtil.isInstanceOf(phpClass, serviceClassImpl)) {
+                if(!PhpElementsUtil.isEqualClassName(phpClass, serviceClassImpl) && PhpElementsUtil.isInstanceOf(phpClass, serviceClassImpl)) {
                     matched = true;
                     break;
                 }
@@ -389,15 +386,13 @@ public class ServiceUtil {
 
         Set<String> tags = new HashSet<String>();
 
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-
         for (Map.Entry<String, String> entry : TAG_INTERFACES.entrySet()) {
 
             if(entry.getValue() == null) {
                 continue;
             }
 
-            if(symfony2InterfacesUtil.isInstanceOf(phpClass, entry.getValue())) {
+            if(PhpElementsUtil.isInstanceOf(phpClass, entry.getValue())) {
                 tags.add(entry.getKey());
             }
 
@@ -419,7 +414,7 @@ public class ServiceUtil {
 
         // @TODO: provide extension
         // form alias
-        if(service.getTagName().equals("form.type") && new Symfony2InterfacesUtil().isInstanceOf(service.getPhpClass(), FormUtil.ABSTRACT_FORM_INTERFACE)) {
+        if(service.getTagName().equals("form.type") && PhpElementsUtil.isInstanceOf(service.getPhpClass(), FormUtil.ABSTRACT_FORM_INTERFACE)) {
             Collection<String> aliases = FormUtil.getFormAliases(service.getPhpClass());
             if(aliases.size() > 0) {
                 service.addAttribute("alias", aliases.iterator().next());
@@ -444,7 +439,7 @@ public class ServiceUtil {
                 continue;
             }
 
-            if(new Symfony2InterfacesUtil().isInstanceOf(serviceClass, fqn)) {
+            if(PhpElementsUtil.isInstanceOf(serviceClass, fqn)) {
                 instances.add(entry.getValue());
             }
         }

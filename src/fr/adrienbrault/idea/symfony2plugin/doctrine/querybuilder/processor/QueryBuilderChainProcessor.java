@@ -4,7 +4,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -173,7 +172,8 @@ public class QueryBuilderChainProcessor {
     @NotNull
     private static InstanceType isQueryBuilderInstance(@NotNull Method method) {
 
-        if(new Symfony2InterfacesUtil().isInstanceOf(method.getContainingClass(), DOCTRINE_ORM_QUERY_BUILDER)) {
+        PhpClass containingClass = method.getContainingClass();
+        if(containingClass != null && PhpElementsUtil.isInstanceOf(containingClass, DOCTRINE_ORM_QUERY_BUILDER)) {
             return InstanceType.DIRECT;
         }
 

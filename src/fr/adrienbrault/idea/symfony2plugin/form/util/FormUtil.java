@@ -196,7 +196,7 @@ public class FormUtil {
     @NotNull
     public static Collection<String> getFormAliases(@NotNull PhpClass phpClass) {
         // check class implements form interface
-        if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, ABSTRACT_FORM_INTERFACE)) {
+        if(!PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_FORM_INTERFACE)) {
             return Collections.emptySet();
         }
 

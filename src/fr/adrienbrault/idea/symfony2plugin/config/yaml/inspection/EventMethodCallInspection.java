@@ -16,7 +16,6 @@ import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -304,7 +303,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                         String name = method.getName();
                         if("getSubscribedEvents".equals(name)) {
                             PhpClass containingClass = method.getContainingClass();
-                            if(containingClass != null && new Symfony2InterfacesUtil().isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+                            if(containingClass != null && PhpElementsUtil.isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
                                 String contents = ((StringLiteralExpression) element).getContents();
                                 if(StringUtils.isNotBlank(contents) && containingClass.findMethodByName(contents) == null) {
                                     registerMethodProblem(element, holder, containingClass);

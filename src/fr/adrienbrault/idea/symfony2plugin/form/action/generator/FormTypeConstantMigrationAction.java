@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +40,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
 
         return
             classAtCaret != null &&
-            new Symfony2InterfacesUtil().isInstanceOf(classAtCaret, "Symfony\\Component\\Form\\FormTypeInterface")
+            PhpElementsUtil.isInstanceOf(classAtCaret, "Symfony\\Component\\Form\\FormTypeInterface")
         ;
     }
 

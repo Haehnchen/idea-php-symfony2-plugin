@@ -6,17 +6,18 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ConstraintPropertyReference;
-import fr.adrienbrault.idea.symfony2plugin.dic.MapClassReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.ModelFieldReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
-import fr.adrienbrault.idea.symfony2plugin.util.*;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -223,7 +224,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                                             if(fqn != null) {
                                                 PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), fqn);
                                                 if(phpClass != null) {
-                                                    if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, instance)) {
+                                                    if(PhpElementsUtil.isInstanceOf(phpClass, instance)) {
                                                         return phpClass;
                                                     }
                                                 }

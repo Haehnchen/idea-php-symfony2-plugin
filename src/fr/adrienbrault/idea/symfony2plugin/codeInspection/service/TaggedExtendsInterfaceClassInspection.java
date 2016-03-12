@@ -11,12 +11,12 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -146,7 +146,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
             }
 
             // check interfaces
-            if(!new Symfony2InterfacesUtil().isInstanceOf(phpClass, expectedClass)) {
+            if(!PhpElementsUtil.isInstanceOf(phpClass, expectedClass)) {
                 holder.registerProblem(source, String.format("Class needs to implement '%s' for tag '%s'", expectedClass, tag), ProblemHighlightType.WEAK_WARNING);
             }
 

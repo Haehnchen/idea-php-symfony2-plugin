@@ -367,7 +367,7 @@ public class RouteHelper {
             }
         }
 
-        return new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+        return PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
     }
 
     @NotNull

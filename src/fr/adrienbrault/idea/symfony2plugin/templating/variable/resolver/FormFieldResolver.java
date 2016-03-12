@@ -27,11 +27,10 @@ public class FormFieldResolver implements TwigTypeResolver {
             return;
         }
 
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
         TwigTypeContainer twigTypeContainer = targets.iterator().next();
 
         if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
-            if(symfony2InterfacesUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
+            if(PhpElementsUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
                 if(psiVariables.size() > 0) {
                     PsiElement var = psiVariables.get(0).getElement();
 

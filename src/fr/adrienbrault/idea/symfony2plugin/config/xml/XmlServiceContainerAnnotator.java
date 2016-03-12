@@ -17,7 +17,6 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
@@ -126,7 +125,7 @@ public class XmlServiceContainerAnnotator implements Annotator {
         }
 
         PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(method.getProject(), serviceName);
-        if(serviceParameterClass != null && !new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
+        if(serviceParameterClass != null && !PhpElementsUtil.isInstanceOf(serviceParameterClass, expectedClass)) {
             holder.createWeakWarningAnnotation(target, "Expect instance of: " + expectedClass.getPresentableFQN())
                 .registerFix(new MySuggestionIntentionAction(expectedClass, target));
         }

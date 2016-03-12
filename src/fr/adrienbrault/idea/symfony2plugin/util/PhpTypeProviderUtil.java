@@ -140,14 +140,8 @@ public class PhpTypeProviderUtil {
 
     private static boolean isPhpTypeEqual(@NotNull PhpType phpType, @NotNull PhpClass phpClass) {
 
-        Symfony2InterfacesUtil util = null;
-
         for (String s : phpType.getTypes()) {
-            if(util == null) {
-                util = new Symfony2InterfacesUtil();
-            }
-
-            if(util.isInstanceOf(phpClass, s)) {
+            if(PhpElementsUtil.isInstanceOf(phpClass, s)) {
                 return true;
             }
         }

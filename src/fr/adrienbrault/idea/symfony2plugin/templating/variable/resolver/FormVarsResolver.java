@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -25,11 +26,9 @@ public class FormVarsResolver implements TwigTypeResolver {
             lastTwigTypeContainer = (List<TwigTypeContainer>) collectionItr.next();
         }
 
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-
         for(TwigTypeContainer twigTypeContainer: lastTwigTypeContainer) {
             if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
-                if(symfony2InterfacesUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
+                if(PhpElementsUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
                     attachVars(twigTypeContainer.getPhpNamedElement().getProject(), targets);
                 }
             }

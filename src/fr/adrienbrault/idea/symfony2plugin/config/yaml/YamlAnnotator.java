@@ -17,7 +17,6 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
@@ -305,7 +304,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        if(!new Symfony2InterfacesUtil().isInstanceOf(serviceParameterClass, expectedClass)) {
+        if(!PhpElementsUtil.isInstanceOf(serviceParameterClass, expectedClass)) {
             holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN())
                 .registerFix(new MySuggestIntentionAction(expectedClass, psiElement));
         }

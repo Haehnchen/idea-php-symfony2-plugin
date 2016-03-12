@@ -244,7 +244,7 @@ public class QueryBuilderMethodReferenceParser {
         if(rootAlias != null && repository == null) {
             MethodReference methodReference = methodReferences.iterator().next();
             PhpClass phpClass = PsiTreeUtil.getParentOfType(methodReference, PhpClass.class);
-            if(new Symfony2InterfacesUtil().isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
+            if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
                 for(DoctrineModel model: EntityHelper.getModelClasses(project)) {
                     String className = model.getPhpClass().getPresentableFQN();
                     if(className != null) {

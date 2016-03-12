@@ -26,7 +26,6 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import org.apache.commons.lang.StringUtils;
@@ -1029,7 +1028,7 @@ public class PhpElementsUtil {
     public static PhpClass getNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String instance) {
 
         PhpClass phpClass = getNewExpressionPhpClass(newExpression);
-        if(phpClass != null && new Symfony2InterfacesUtil().isInstanceOf(phpClass, instance)) {
+        if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, instance)) {
             return phpClass;
         }
 
@@ -1271,7 +1270,7 @@ public class PhpElementsUtil {
             return false;
         }
 
-        return new Symfony2InterfacesUtil().isInstanceOf(containingClass, expectedClassName);
+        return PhpElementsUtil.isInstanceOf(containingClass, expectedClassName);
     }
 
     /**
@@ -1292,7 +1291,7 @@ public class PhpElementsUtil {
             return false;
         }
 
-        return new Symfony2InterfacesUtil().isInstanceOf(containingClass, expectedClassName);
+        return PhpElementsUtil.isInstanceOf(containingClass, expectedClassName);
     }
 
     public static void replaceElementWithClassConstant(@NotNull PhpClass phpClass, @NotNull PsiElement originElement) throws Exception{

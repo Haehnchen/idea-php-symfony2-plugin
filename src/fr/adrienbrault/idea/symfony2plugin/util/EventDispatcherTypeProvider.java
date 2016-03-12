@@ -7,7 +7,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -123,7 +122,7 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider2 {
         }
 
         // finally search the classes
-        if(!new Symfony2InterfacesUtil().isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface")) {
+        if(!PhpElementsUtil.isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface")) {
             return phpNamedElementCollections;
         }
 
