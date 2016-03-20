@@ -7,6 +7,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.11.114
+* Reduce access of read thread in webDeployment jobs #694
+* Replace custom "instanceof" implementation with core isConvertibleFrom
+* Fixing yaml class instance checks for single quote strings
+* Increase testing coverage for mainly used yaml related features
+
 ### 0.11.113
 * Decouple all webDeployment dependencies to extensions points and make all related feature optional #688
 * Move remote container files parsing to main service factory, this simulates a local filesystem behavior

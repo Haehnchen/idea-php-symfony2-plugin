@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.113</version>
+    <version>0.11.114</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -10,7 +10,7 @@
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
 
-<br/><font color="red"><b>NEWS</b></font>: You should not switch to PhpStorm 11 EAP channel as long new Yaml Plugin lexer is not supported <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/626">#626</a>
+<br/><font color="red"><b>NEWS</b></font>: You should not switch to PhpStorm 2016.1 as long new Yaml Plugin lexer is not supported <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/626">#626</a>
 <br/>
 <h2>Install</h2>
 
@@ -105,12 +105,21 @@
 
     <change-notes><![CDATA[
 
-0.12.x: PhpStorm 11 (upcoming)<br/>
+0.12.x: PhpStorm 2016.1 (upcoming)<br/>
 0.11.x: PhpStorm 8, 9, 10<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.11.114</h2>
+<ul>
+    <li>Reduce access of read thread in webDeployment jobs <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/694">#694</a></li>
+    <li>Replace custom "instanceof" implementation with core isConvertibleFrom</li>
+    <li>Fixing yaml class instance checks for single quote strings</li>
+    <li>Increase testing coverage for mainly used yaml related features</li>
+</li>
+</ul>
 
 <h2>0.11.113</h2>
 <ul>
