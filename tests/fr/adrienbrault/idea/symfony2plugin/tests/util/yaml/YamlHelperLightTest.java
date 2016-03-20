@@ -4,9 +4,10 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
@@ -74,6 +75,24 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("kernel.event_listener", visitor.getItem().getName());
         assertEquals("eventName", visitor.getItem().getAttribute("event"));
         assertEquals("methodName", visitor.getItem().getAttribute("method"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#findServiceInContext
+     */
+    public void testFindServiceInContext() {
+        assertEquals("foo", YamlHelper.findServiceInContext(myFixture.configureByText(YAMLFileType.YML, "" +
+            "services:\n" +
+            "  foo:\n" +
+            "    tags:\n" +
+            "      - { name: fo<caret>o}\n"
+        ).findElementAt(myFixture.getCaretOffset())).getKeyText());
+
+        assertEquals("foo", YamlHelper.findServiceInContext(myFixture.configureByText(YAMLFileType.YML, "" +
+            "services:\n" +
+            "  foo:\n" +
+            "    class: fo<caret>o"
+        ).findElementAt(myFixture.getCaretOffset())).getKeyText());
     }
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
