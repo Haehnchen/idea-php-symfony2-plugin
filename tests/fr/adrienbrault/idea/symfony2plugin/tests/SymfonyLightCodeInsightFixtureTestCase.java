@@ -4,12 +4,18 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.LineMarkerProviders;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
+import com.intellij.codeInsight.daemon.impl.AnnotationHolderImpl;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInsight.intention.IntentionManager;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
+import com.intellij.lang.LanguageAnnotators;
+import com.intellij.lang.LanguageExtensionPoint;
+import com.intellij.lang.annotation.Annotation;
+import com.intellij.lang.annotation.AnnotationSession;
+import com.intellij.lang.annotation.Annotator;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.event.CaretEvent;
@@ -36,6 +42,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayArguments;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayElement;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.util.CaretTextOverlayUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -389,6 +396,40 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
 
         fail(String.format("Fail matches '%s' with one of %s", contains, matches));
+    }
+
+    public void assertAnnotationContains(String filename, String content, String contains) {
+        List<String> matches = new ArrayList<String>();
+        for (Annotation annotation : getAnnotationsAtCaret(filename, content)) {
+            matches.add(annotation.toString());
+            if(annotation.getMessage().contains(contains)) {
+                return;
+            }
+        }
+
+        fail(String.format("Fail matches '%s' with one of %s", contains, matches));
+    }
+
+    @NotNull
+    private AnnotationHolderImpl getAnnotationsAtCaret(String filename, String content) {
+        PsiFile psiFile = myFixture.configureByText(filename, content);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        AnnotationHolderImpl annotations = new AnnotationHolderImpl(new AnnotationSession(psiFile));
+
+        for (Annotator annotator : LanguageAnnotators.INSTANCE.allForLanguage(psiFile.getLanguage())) {
+            annotator.annotate(psiElement, annotations);
+        }
+
+        return annotations;
+    }
+
+    public void assertAnnotationNotContains(String filename, String content, String contains) {
+        for (Annotation annotation : getAnnotationsAtCaret(filename, content)) {
+            if(annotation.getMessage().contains(contains)) {
+                fail(String.format("Fail not matching '%s' with '%s'", contains, annotation));
+            }
+        }
     }
 
     public void assertIntentionIsAvailable(LanguageFileType languageFileType, String configureByText, String intentionText) {

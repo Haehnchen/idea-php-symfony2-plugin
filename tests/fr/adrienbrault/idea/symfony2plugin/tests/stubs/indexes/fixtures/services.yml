@@ -1,3 +1,6 @@
+parameters:
+    foo_yaml_parameter: "foo"
+
 services:
     foo.yml_id:
         class: AppBundle\Controller\DefaultController

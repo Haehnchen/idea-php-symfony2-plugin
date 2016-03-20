@@ -134,10 +134,7 @@ public class YamlAnnotator implements Annotator {
      *    - @twig
      */
     private void annotateConstructorSequenceArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-
-        IElementType elementType = psiElement.getNode().getElementType();
-        if(elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING || elementType == YAMLTokenTypes.SCALAR_STRING) {
-
+        if(isStringValue(psiElement)) {
             PsiElement yamlSequence = psiElement.getContext();
             if(yamlSequence instanceof YAMLSequence) {
                 PsiElement yamlCompoundValue = yamlSequence.getContext();
@@ -173,12 +170,7 @@ public class YamlAnnotator implements Annotator {
     }
 
     private void annotateConstructorArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-
-
-        if(!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement))
-        {
+        if (!isStringValue(psiElement)) {
             return;
         }
 
@@ -222,12 +214,15 @@ public class YamlAnnotator implements Annotator {
 
     }
 
+    private boolean isStringValue(@NotNull PsiElement psiElement) {
+        return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
+            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)
+            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement)
+        ;
+    }
+
     private void annotateCallsArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-
-
-        if(!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement))
-        {
+        if(!isStringValue(psiElement)){
             return;
         }
 
