@@ -25,7 +25,7 @@ import java.util.*;
 
 public class ServiceIndexUtil {
 
-    private static VirtualFile[] findServiceDefinitionFiles(Project project, String... serviceName) {
+    private static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, String... serviceName) {
 
         final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
 
@@ -41,7 +41,7 @@ public class ServiceIndexUtil {
 
     }
 
-    public static List<PsiElement> findServiceDefinitions(Project project, String serviceName) {
+    public static List<PsiElement> findServiceDefinitions(@NotNull Project project, @NotNull String serviceName) {
 
         List<PsiElement> items = new ArrayList<PsiElement>();
 
@@ -69,7 +69,7 @@ public class ServiceIndexUtil {
         return items;
     }
 
-    public static List<PsiElement> findParameterDefinitions(PsiFile psiFile, String parameterName) {
+    public static List<PsiElement> findParameterDefinitions(@NotNull PsiFile psiFile, @NotNull String parameterName) {
 
         List<PsiElement> items = new ArrayList<PsiElement>();
 

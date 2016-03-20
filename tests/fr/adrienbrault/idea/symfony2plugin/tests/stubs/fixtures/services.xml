@@ -1,0 +1,11 @@
+<container>
+
+    <parameters>
+        <parameter key="foo_xml_parameter">foo</parameter>
+    </parameters>
+
+    <services>
+        <service id="foo.xml_id" class="My\Foo\Service\Targets"/>
+    </services>
+
+</container>

@@ -1,0 +1,6 @@
+parameters:
+    foo_yaml_parameter: "foo"
+
+services:
+    foo.yml_id:
+        class: My\Foo\Service\Targets
