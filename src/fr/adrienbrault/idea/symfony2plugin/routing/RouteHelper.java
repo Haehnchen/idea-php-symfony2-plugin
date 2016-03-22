@@ -30,7 +30,6 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
@@ -56,6 +55,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
@@ -599,55 +599,54 @@ public class RouteHelper {
     }
 
     @NotNull
-    public static Collection<StubIndexedRoute> getYamlRouteDefinitions(YAMLDocument yamlDocument) {
-
+    public static Collection<StubIndexedRoute> getYamlRouteDefinitions(@NotNull YAMLDocument yamlDocument) {
         Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
 
-        // get services or parameter key
-        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-        if(yamlKeys == null) {
-            return Collections.emptyList();
-        }
+        for(YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues((YAMLFile) yamlDocument.getContainingFile())) {
 
-        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
+            YAMLValue element = yamlKeyValue.getValue();
 
-            PsiElement element = yamlKeyValue.getValue();
-            if(element instanceof YAMLCompoundValue) {
-                Set<String> keySet = YamlHelper.getYamlCompoundValueKeyNames((YAMLCompoundValue) element);
+            YAMLKeyValue path = YAMLUtil.findKeyInProbablyMapping(element, "path");
 
-                if((keySet.contains("path") || keySet.contains("pattern"))) {
-                    // cleanup: 'foo', "foo"
-                    String keyText = StringUtils.strip(StringUtils.strip(yamlKeyValue.getKeyText(), "'"), "\"");
-                    if(StringUtils.isNotBlank(keyText)) {
-                        StubIndexedRoute route = new StubIndexedRoute(keyText);
+            // Symfony bc
+            if(path == null) {
+                path = YAMLUtil.findKeyInProbablyMapping(element, "pattern");
+            }
 
-                        String routePath = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "path", false);
-                        if(routePath == null) {
-                            routePath = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "pattern", false);
-                        }
+            if(path == null) {
+                continue;
+            }
 
-                        if(routePath != null && StringUtils.isNotBlank(routePath)) {
-                            route.setPath(routePath);
-                        }
+            // cleanup: 'foo', "foo"
+            String keyText = StringUtils.strip(StringUtils.strip(yamlKeyValue.getKeyText(), "'"), "\"");
+            if(StringUtils.isBlank(keyText)) {
+                continue;
+            }
 
-                        String methods = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) element, "methods", false);
-                        if(methods != null) {
-                            // value: [GET, POST,
-                            String[] split = methods.replace("[", "").replace("]", "").replaceAll(" +", "").split(",");
-                            if(split.length > 0) {
-                                route.addMethod(split);
-                            }
-                        }
+            StubIndexedRoute route = new StubIndexedRoute(keyText);
 
-                        String controller = getYamlController(yamlKeyValue);
-                        if(controller != null) {
-                            route.setController(controller);
-                        }
+            String routePath = path.getValueText();
+            if(StringUtils.isNotBlank(routePath)) {
+                route.setPath(routePath);
+            }
 
-                        indexedRoutes.add(route);
-                    }
+            String methods = YamlHelper.getStringValueOfKeyInProbablyMapping(element, "methods");
+            if(methods != null) {
+                // value: [GET, POST,
+                String[] split = methods.replace("[", "").replace("]", "").replaceAll(" +", "").split(",");
+                if(split.length > 0) {
+                    route.addMethod(split);
                 }
             }
+
+            String controller = getYamlController(yamlKeyValue);
+            if(controller != null) {
+                route.setController(controller);
+            }
+
+            indexedRoutes.add(route);
+
+
         }
 
         return indexedRoutes;

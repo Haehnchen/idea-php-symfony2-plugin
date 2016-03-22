@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttri
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
@@ -98,31 +99,13 @@ public class ServiceContainerUtil {
     }
 
     public static void visitFile(@NotNull YAMLFile psiFile, @NotNull Consumer<ServiceConsumer> consumer) {
-        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-        if(yamlDocument == null) {
-            return;
-        }
-
-        // get services or parameter key
-        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-        if(yamlKeys == null) {
-            return;
-        }
-
-        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
-            String yamlConfigKey = yamlKeyValue.getName();
-            if(yamlConfigKey == null || !yamlConfigKey.equals("services")) {
+        for (YAMLKeyValue keyValue : YamlHelper.getQualifiedKeyValuesInFile(psiFile, "services")) {
+            String serviceId = keyValue.getKeyText();
+            if(StringUtils.isBlank(serviceId)) {
                 continue;
             }
 
-            for (YAMLKeyValue keyValue : PsiTreeUtil.getChildrenOfTypeAsList(yamlKeyValue.getValue(), YAMLKeyValue.class)) {
-                String serviceId = keyValue.getKeyText();
-                if(serviceId == null) {
-                    continue;
-                }
-
-                consumer.consume(new ServiceConsumer(keyValue, serviceId, new YamlKeyValueAttributeValue(keyValue)));
-            }
+            consumer.consume(new ServiceConsumer(keyValue, serviceId, new YamlKeyValueAttributeValue(keyValue)));
         }
     }
 

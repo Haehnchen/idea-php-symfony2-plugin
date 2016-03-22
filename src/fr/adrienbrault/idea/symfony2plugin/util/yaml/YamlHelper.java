@@ -6,13 +6,16 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Consumer;
 import com.intellij.util.Processor;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
+import org.apache.commons.collections.KeyValue;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
@@ -139,39 +142,19 @@ public class YamlHelper {
     private static class YamlLocalServiceMap {
 
         public Map<String, String> getLocalParameterMap(PsiFile psiFile) {
-
             Map<String, String> map = new HashMap<String, String>();
 
-            YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-            if(yamlDocument == null) {
-                return map;
-            }
+            for(YAMLKeyValue yamlParameterArray: getQualifiedKeyValuesInFile((YAMLFile) psiFile, "parameters")) {
+                String keyName = yamlParameterArray.getKeyText();
+                if(StringUtils.isBlank(keyName)) {
+                    continue;
+                }
 
-            // get services or parameter key
-            YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-            if(yamlKeys == null) {
-                return map;
-            }
-
-            for(YAMLKeyValue yamlKeyValue : yamlKeys) {
-                String yamlConfigKey = yamlKeyValue.getName();
-                if(yamlConfigKey != null && yamlConfigKey.equals("parameters")) {
-
-                    YAMLKeyValue yamlParameter[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
-                    if(yamlParameter != null) {
-
-                        for(YAMLKeyValue yamlParameterArray:  yamlParameter) {
-                            String keyName = yamlParameterArray.getKeyText();
-                            if(StringUtils.isNotBlank(keyName)) {
-                                PsiElement value = yamlParameterArray.getValue();
-                                if(value != null) {
-                                    String valueText = value.getText();
-                                    if(StringUtils.isNotBlank(valueText)) {
-                                        map.put(keyName.toLowerCase(), PsiElementUtils.trimQuote(valueText));
-                                    }
-                                }
-                            }
-                        }
+                PsiElement value = yamlParameterArray.getValue();
+                if(value != null) {
+                    String valueText = value.getText();
+                    if(StringUtils.isNotBlank(valueText)) {
+                        map.put(keyName.toLowerCase(), PsiElementUtils.trimQuote(valueText));
                     }
 
                 }
@@ -192,38 +175,25 @@ public class YamlHelper {
         }
 
         @Nullable
-        private PsiElement getYamlKeyPath(PsiFile psiFile, String findServiceName, String rootKey) {
+        private PsiElement getYamlKeyPath(@NotNull PsiFile psiFile, final @NotNull String findServiceName, @NotNull String rootKey) {
 
-            if(!(psiFile.getFirstChild() instanceof YAMLDocument)) {
-                return null;
-            }
+            final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
-            YAMLDocument yamlDocument = (YAMLDocument) psiFile.getFirstChild();
-
-            // get services or parameter key
-            YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-            if(yamlKeys == null) {
-                return null;
-            }
-
-            for(YAMLKeyValue yamlKeyValue : yamlKeys) {
-                String yamlConfigKey = yamlKeyValue.getName();
-                if(yamlConfigKey != null && yamlConfigKey.equals(rootKey)) {
-
-                    YAMLKeyValue yamlServices[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
-                    if(yamlServices != null) {
-                        for(YAMLKeyValue yamlServiceKeyValue : yamlServices) {
-                            String serviceName = yamlServiceKeyValue.getName();
-                            if(serviceName != null && serviceName.equals(findServiceName)) {
-                                return yamlServiceKeyValue;
-                            }
-
-                        }
+            visitQualifiedKeyValuesInFile((YAMLFile) psiFile, rootKey, new Consumer<YAMLKeyValue>() {
+                @Override
+                public void consume(YAMLKeyValue yamlKeyValue) {
+                    if(findServiceName.equals(yamlKeyValue.getKeyText())) {
+                        psiElements.add(yamlKeyValue);
                     }
                 }
+            });
+
+            if(psiElements.size() == 0) {
+                return null;
             }
 
-            return null;
+            // @TODO: provide support for multiple targets
+            return psiElements.iterator().next();
         }
     }
 
@@ -672,4 +642,103 @@ public class YamlHelper {
         }
     }
 
+    /**
+     * Get all children key values of a parent key value
+     */
+    @NotNull
+    private static Collection<YAMLKeyValue> getNextKeyValues(@NotNull YAMLKeyValue yamlKeyValue) {
+
+        final Collection<YAMLKeyValue> yamlKeyValues = new ArrayList<YAMLKeyValue>();
+        visitNextKeyValues(yamlKeyValue, new Consumer<YAMLKeyValue>() {
+            @Override
+            public void consume(YAMLKeyValue yamlKeyValue) {
+                yamlKeyValues.add(yamlKeyValue);
+            }
+        });
+
+        return yamlKeyValues;
+    }
+
+    /**
+     * Visit all children key values of a parent key value
+     */
+    private static void visitNextKeyValues(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Consumer<YAMLKeyValue> consumer) {
+        List<YAMLPsiElement> yamlElements = yamlKeyValue.getYAMLElements();
+
+        // @TODO: multiple?
+        if(yamlElements.size() != 1) {
+            return;
+        }
+
+        YAMLPsiElement next = yamlElements.iterator().next();
+        if(!(next instanceof YAMLMapping)) {
+            return;
+        }
+
+        for (YAMLKeyValue keyValue : ((YAMLMapping) next).getKeyValues()) {
+            consumer.consume(keyValue);
+        }
+    }
+
+
+    /**
+     * Get all key values in first level key visit
+     *
+     * parameters:
+     *  foo: "foo"
+     */
+    @NotNull
+    public static Collection<YAMLKeyValue> getQualifiedKeyValuesInFile(@NotNull YAMLFile yamlFile, @NotNull String firstLevelKeyToVisit) {
+        YAMLKeyValue parameters = YAMLUtil.getQualifiedKeyInFile(yamlFile, firstLevelKeyToVisit);
+        if(parameters == null) {
+            return Collections.emptyList();
+        }
+
+        return getNextKeyValues(parameters);
+    }
+
+    /**
+     * Visit all key values in first level key
+     *
+     * parameters:
+     *  foo: "foo"
+     */
+    public static void visitQualifiedKeyValuesInFile(@NotNull YAMLFile yamlFile, @NotNull String firstLevelKeyToVisit, @NotNull Consumer<YAMLKeyValue> consumer) {
+        YAMLKeyValue parameters = YAMLUtil.getQualifiedKeyInFile(yamlFile, firstLevelKeyToVisit);
+        if(parameters == null) {
+            return;
+        }
+
+        visitNextKeyValues(parameters, consumer);
+    }
+
+    @Nullable
+    public static String getStringValueOfKeyInProbablyMapping(@Nullable YAMLValue node, @NotNull String keyText) {
+        YAMLKeyValue mapping = YAMLUtil.findKeyInProbablyMapping(node, keyText);
+        if(mapping == null) {
+            return null;
+        }
+
+        YAMLValue value = mapping.getValue();
+        if(value == null) {
+            return null;
+        }
+
+        return value.getText();
+    }
+
+    @NotNull
+    public static Collection<YAMLKeyValue> getTopLevelKeyValues(@NotNull YAMLFile yamlFile) {
+        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(yamlFile, YAMLDocument.class);
+        if(yamlDocument == null) {
+            return Collections.emptyList();
+        }
+
+        YAMLValue topLevelValue = yamlDocument.getTopLevelValue();
+        if(!(topLevelValue instanceof YAMLMapping)) {
+            return Collections.emptyList();
+        }
+
+        return ((YAMLMapping) topLevelValue).getKeyValues();
+    }
 }

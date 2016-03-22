@@ -17,6 +17,7 @@ public class RoutesStubIndexTestTest extends SymfonyLightCodeInsightFixtureTestC
         myFixture.configureByText(YAMLFileType.YML, "" +
             "foo_yaml_pattern:\n" +
             "    pattern: /\n" +
+            "    methods: [GET, POST]\n" +
             "    defaults: { _controller: foo_controller }" +
             "\n" +
             "foo_yaml_path:\n" +

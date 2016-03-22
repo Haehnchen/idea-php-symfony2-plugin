@@ -15,22 +15,17 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -185,14 +180,14 @@ public class DoctrineUtil {
             return null;
         }
 
-        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-        if(yamlKeys == null) {
+        YAMLValue topLevelValue = yamlDocument.getTopLevelValue();
+        if(!(topLevelValue instanceof YAMLMapping)) {
             return null;
         }
 
         Collection<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
 
-        for (YAMLKeyValue yamlKey : yamlKeys) {
+        for (YAMLKeyValue yamlKey : ((YAMLMapping) topLevelValue).getKeyValues()) {
             String keyText = yamlKey.getKeyText();
             if(StringUtils.isBlank(keyText)) {
                 continue;

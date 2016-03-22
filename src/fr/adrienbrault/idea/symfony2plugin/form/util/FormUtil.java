@@ -29,7 +29,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 
@@ -214,43 +215,22 @@ public class FormUtil {
         }
     }
 
-    public static Map<String, Set<String>> getTags(YAMLFile psiFile) {
+    /**
+     * acme_demo.form.type.gender:
+     *  class: espend\Form\TypeBundle\Form\FooType
+     *  tags:
+     *   - { name: form.type, alias: foo_type_alias  }
+     *   - { name: foo  }
+     */
+    @NotNull
+    public static Map<String, Set<String>> getTags(@NotNull YAMLFile yamlFile) {
 
         Map<String, Set<String>> map = new HashMap<String, Set<String>>();
-
-        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-        if(yamlDocument == null) {
-            return map;
-        }
-
-        // get services or parameter key
-        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-        if(yamlKeys == null) {
-            return map;
-        }
-
-        /**
-         * acme_demo.form.type.gender:
-         * class: espend\Form\TypeBundle\Form\FooType
-         * tags:
-         *   - { name: form.type, alias: foo_type_alias  }
-         *   - { name: foo  }
-         */
-
-        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
-            String yamlConfigKey = yamlKeyValue.getName();
-            if(yamlConfigKey != null && yamlConfigKey.equals("services")) {
-
-                for(YAMLKeyValue yamlServiceKeyValue : PsiTreeUtil.getChildrenOfTypeAsList(yamlKeyValue.getValue(), YAMLKeyValue.class)) {
-                    String serviceName = yamlServiceKeyValue.getName();
-
-                    Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
-                    if(serviceTagMap != null && serviceTagMap.size() > 0) {
-                        map.put(serviceName, serviceTagMap);
-                    }
-
-                }
-
+        for(YAMLKeyValue yamlServiceKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
+            String serviceName = yamlServiceKeyValue.getName();
+            Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
+            if(serviceTagMap != null && serviceTagMap.size() > 0) {
+                map.put(serviceName, serviceTagMap);
             }
         }
 
