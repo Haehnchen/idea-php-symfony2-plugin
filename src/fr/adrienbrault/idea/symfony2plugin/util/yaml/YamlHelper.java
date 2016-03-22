@@ -58,6 +58,8 @@ public class YamlHelper {
     /**
      *  Try to find psi value which match should be a array value and filter out comma, whitespace...
      *  [@service, "@service2", [""], ['']];
+     *
+     *  TODO: drop this hack; included in core now
      */
     static public List<PsiElement> getYamlArrayValues(YAMLArray yamlArray) {
 

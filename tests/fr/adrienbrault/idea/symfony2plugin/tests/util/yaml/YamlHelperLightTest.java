@@ -1,15 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
 
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLHash;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +133,80 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertNotNull(fromText);
         assertContainsElements(YamlHelper.collectServiceTags(fromText), "routing.loader", "routing.loader1");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
+     */
+    public void testGetYamlArrayOnSequenceOrArrayElements() {
+
+        String[] strings = {
+            "calls: [@foo, @bar] \n",
+            "calls:\n  - @foo\n  - @bar\n",
+        };
+
+        for (String s : strings) {
+            YAMLCompoundValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLCompoundValue.class, s);
+            assertNotNull(fromText);
+
+            List<PsiElement> elements = YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText);
+            assertNotNull(elements);
+
+            String join = StringUtils.join(ContainerUtil.map(elements, new Function<PsiElement, String>() {
+                @Override
+                public String fun(PsiElement psiElement) {
+                    return psiElement.getText();
+                }
+            }), ",");
+
+            assertTrue(join.contains("foo"));
+            assertTrue(join.contains("bar"));
+        }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlParameter
+     */
+    public void testGetYamlParameter() {
+        PsiFile psiFile = myFixture.configureByText("foo.yml", "['@twig', @twig, @tw<caret>ig]");
+        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
+
+        PsiElement firstChild = psiFile.getFirstChild().getFirstChild();
+        assertInstanceOf(firstChild, YAMLArray.class);
+
+        assertEquals(2, YamlHelper.getYamlParameter((YAMLArray) firstChild, psiElement));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayValues
+     */
+    public void testGetYamlArrayValues() {
+        YAMLArray fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "['@twig', @twig, @twig]");
+        assertEquals(3, YamlHelper.getYamlArrayValues(fromText).size());
+
+        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "[@service, \"@service2\", [\"\"], ['']]");
+        assertEquals(4, YamlHelper.getYamlArrayValues(fromText).size());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
+     */
+    public void testGetYamlArrayOnSequenceOrArrayElementsForArray() {
+
+        YAMLCompoundValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLCompoundValue.class, "" +
+            "calls: [@foo, @bar] \n"
+        );
+
+        assertNotNull(fromText);
+        String join = StringUtils.join(ContainerUtil.map(YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText), new Function<PsiElement, String>() {
+            @Override
+            public String fun(PsiElement psiElement) {
+                return psiElement.getText();
+            }
+        }), ",");
+
+        assertTrue(join.contains("foo"));
+        assertTrue(join.contains("bar"));
     }
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
