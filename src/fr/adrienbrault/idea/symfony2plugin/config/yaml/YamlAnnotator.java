@@ -211,6 +211,7 @@ public class YamlAnnotator implements Annotator {
     }
 
     private boolean isStringValue(@NotNull PsiElement psiElement) {
+        // @TODO use new YAMLScalar element
         return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
             || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)
             || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement)

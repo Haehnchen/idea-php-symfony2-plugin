@@ -14,6 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
+import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,7 +115,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         for (String s : strings) {
             assertEquals("foo", YamlHelper.getYamlKeyValueAsString(
-                YamlPsiElementFactory.createFromText(getProject(), YAMLHash.class, s),
+                YamlPsiElementFactory.createFromText(getProject(), YAMLHashImpl.class, s),
                 "method"
             ));
         }
@@ -149,7 +151,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
             YAMLCompoundValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLCompoundValue.class, s);
             assertNotNull(fromText);
 
-            List<PsiElement> elements = YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText);
+            List<YAMLSequenceItem> elements = YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText);
             assertNotNull(elements);
 
             String join = StringUtils.join(ContainerUtil.map(elements, new Function<PsiElement, String>() {
@@ -172,19 +174,19 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
 
         PsiElement firstChild = psiFile.getFirstChild().getFirstChild();
-        assertInstanceOf(firstChild, YAMLArray.class);
+        assertInstanceOf(firstChild, YAMLArrayImpl.class);
 
-        assertEquals(2, YamlHelper.getYamlParameter((YAMLArray) firstChild, psiElement));
+        assertEquals(2, YamlHelper.getYamlParameter((YAMLArrayImpl) firstChild, psiElement));
     }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayValues
      */
     public void testGetYamlArrayValues() {
-        YAMLArray fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "['@twig', @twig, @twig]");
+        YAMLArrayImpl fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArrayImpl.class, "['@twig', @twig, @twig]");
         assertEquals(3, YamlHelper.getYamlArrayValues(fromText).size());
 
-        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "[@service, \"@service2\"]");
+        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArrayImpl.class, "[@service, \"@service2\"]");
         assertEquals(2, YamlHelper.getYamlArrayValues(fromText).size());
     }
 
