@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.11.114</version>
+    <version>0.12.114</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -10,8 +10,7 @@
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
 
-<br/><font color="red"><b>NEWS</b></font>: Please upgrade to PhpStorm 2016.1!
-<br/>
+<br/><font color="red"><b>NEWS</b></font>: <b>Nightly release</b> for PhpStorm 2016.1 see <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/626">#626</a><br/>
 <h2>Install</h2>
 
 <ul>
@@ -279,7 +278,7 @@
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="138.0"/>
+    <idea-version since-build="145.0"/>
 
     <extensions defaultExtensionNs="com.intellij">
 
