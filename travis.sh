@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ideaVersion="14.1.6"
+ideaVersion="2016.1"
 if [ "$PHPSTORM_ENV" == "10" ]; then
     ideaVersion="15.0.4"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
@@ -54,35 +54,15 @@ if [ -d ./plugins ]; then
   echo "created plugin dir"  
 fi
 
-if [ "$PHPSTORM_ENV" == "8" ]; then
+if [ "$PHPSTORM_ENV" == "2016.1" ]; then
 
     #php
-    download "https://plugins.jetbrains.com/files/6610/20075/php-141.1534.zip"
-    unzip -qo $travisCache/php-141.1534.zip -d ./plugins
+    download "https://plugins.jetbrains.com/files/6610/24752/php-145.258.2.zip"
+    unzip -qo $travisCache/php-145.258.2.zip -d ./plugins
 
     #twig
-    download "http://plugins.jetbrains.com/files/7303/17519/twig-139.58.zip"
-    unzip -qo $travisCache/twig-139.58.zip -d ./plugins
-
-elif [ "$PHPSTORM_ENV" == "9" ]; then
-
-    #php
-    download "http://plugins.jetbrains.com/files/6610/20930/php-141.2462.zip"
-    unzip -qo $travisCache/php-141.2462.zip -d ./plugins
-
-    #twig
-    download "http://plugins.jetbrains.com/files/7303/20774/twig-141.2325.zip"
-    unzip -qo $travisCache/twig-141.2325.zip -d ./plugins
-
-elif [ "$PHPSTORM_ENV" == "10" ]; then
-
-    #php
-    download "http://plugins.jetbrains.com/files/6610/22827/php-143.1184.87.zip"
-    unzip -qo $travisCache/php-143.1184.87.zip -d ./plugins
-
-    #twig
-    download "http://plugins.jetbrains.com/files/7303/22048/twig-143.381.48.zip"
-    unzip -qo $travisCache/twig-143.381.48.zip -d ./plugins
+    download "https://plugins.jetbrains.com/files/7303/24757/twig-145.258.2.zip"
+    unzip -qo $travisCache/twig-145.258.2.zip -d ./plugins
 
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
 
