@@ -151,7 +151,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
             YAMLCompoundValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLCompoundValue.class, s);
             assertNotNull(fromText);
 
-            List<YAMLSequenceItem> elements = YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText);
+            List<PsiElement> elements = YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText);
             assertNotNull(elements);
 
             String join = StringUtils.join(ContainerUtil.map(elements, new Function<PsiElement, String>() {

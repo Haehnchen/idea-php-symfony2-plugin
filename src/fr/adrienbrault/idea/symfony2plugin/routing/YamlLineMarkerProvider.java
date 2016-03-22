@@ -48,7 +48,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     private void attachEntityClass(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
 
-        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLDocument) {
+        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLMapping) {
 
             PsiFile containingFile;
             try {
@@ -82,7 +82,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
          *   defaults:
          *      _controller: "Bundle:Foo:Bar"
          */
-        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLDocument) {
+        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLMapping) {
             YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue((YAMLKeyValue) psiElement, "defaults");
             if(yamlKeyValue != null) {
                 final YAMLValue container = yamlKeyValue.getValue();

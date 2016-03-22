@@ -66,7 +66,7 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
         } else if(firstChild1 instanceof YAMLArrayImpl) {
 
             // we wound array
-            List<YAMLSequenceItem> yamlArguments = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
+            List<PsiElement> yamlArguments = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
             if(yamlArguments != null && yamlArguments.size() > 0) {
                 appendEndOffset = yamlArguments.get(yamlArguments.size() - 1).getTextRange().getEndOffset();
 

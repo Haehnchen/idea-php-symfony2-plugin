@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.*;
 
@@ -519,12 +520,16 @@ public class YamlHelper {
      * arguments:
      *   - @foo
      *
+     * TODO: can be handled nice know because on new yaml plugin
      */
     @Nullable
-    public static List<YAMLSequenceItem> getYamlArrayOnSequenceOrArrayElements(@NotNull YAMLCompoundValue yamlCompoundValue) {
-
+    public static List<PsiElement> getYamlArrayOnSequenceOrArrayElements(@NotNull YAMLCompoundValue yamlCompoundValue) {
         if (yamlCompoundValue instanceof YAMLSequence) {
-            return ((YAMLSequence) yamlCompoundValue).getItems();
+            return new ArrayList<PsiElement>(((YAMLSequence) yamlCompoundValue).getItems());
+        }
+
+        if (yamlCompoundValue instanceof YAMLMapping) {
+            return new ArrayList<PsiElement>(((YAMLMapping) yamlCompoundValue).getKeyValues());
         }
 
         return null;
@@ -547,7 +552,7 @@ public class YamlHelper {
 
         // we are inside a YAMLHash element, find most parent array key
         // { name: foo }
-        if(serviceSubKeyCompound instanceof YAMLMapping) {
+        if(serviceSubKeyCompound instanceof YAMLHashImpl) {
             YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(serviceSubKeyCompound, YAMLKeyValue.class);
             if(yamlKeyValue == null) {
                 return null;

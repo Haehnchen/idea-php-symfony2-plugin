@@ -30,9 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.xmlbeans.XmlLanguage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -306,11 +304,14 @@ public class DoctrineMetadataUtil {
             PsiFile psiFile = psiElement.getContainingFile();
             YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
             if(yamlDocument != null) {
-                PsiElement firstChild = yamlDocument.getFirstChild();
-                if(firstChild instanceof YAMLKeyValue) {
-                    String keyText = ((YAMLKeyValue) firstChild).getKeyText();
-                    if(StringUtils.isNotBlank(keyText)) {
-                        return keyText;
+                YAMLValue topLevelValue = yamlDocument.getTopLevelValue();
+                if(topLevelValue instanceof YAMLMapping) {
+                    PsiElement firstChild = topLevelValue.getFirstChild();
+                    if(firstChild instanceof YAMLKeyValue) {
+                        String keyText = ((YAMLKeyValue) firstChild).getKeyText();
+                        if(StringUtils.isNotBlank(keyText)) {
+                            return keyText;
+                        }
                     }
                 }
             }
