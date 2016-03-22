@@ -184,8 +184,8 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         YAMLArray fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "['@twig', @twig, @twig]");
         assertEquals(3, YamlHelper.getYamlArrayValues(fromText).size());
 
-        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "[@service, \"@service2\", [\"\"], ['']]");
-        assertEquals(4, YamlHelper.getYamlArrayValues(fromText).size());
+        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArray.class, "[@service, \"@service2\"]");
+        assertEquals(2, YamlHelper.getYamlArrayValues(fromText).size());
     }
 
     /**
