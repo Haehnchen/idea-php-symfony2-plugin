@@ -16,8 +16,3 @@ env:
   - PHPSTORM_ENV=8
   - PHPSTORM_ENV=9
   - PHPSTORM_ENV=10
-  - PHPSTORM_ENV=10eap
-  
-matrix:
-  allow_failures:
-    - env: PHPSTORM_ENV=10eap
