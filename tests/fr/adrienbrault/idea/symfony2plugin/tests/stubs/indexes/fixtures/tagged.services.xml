@@ -1,0 +1,9 @@
+<container>
+
+    <services>
+        <service id="foo.tagged.xml_type" class="AppBundle\Controller\DefaultController">
+            <tag name="xml_type_tag"/>
+        </service>
+    </services>
+
+</container>

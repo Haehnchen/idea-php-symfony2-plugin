@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -104,7 +105,10 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                     if(yamlCompoundValue instanceof YAMLCompoundValue) {
                         PsiElement serviceKeyValue = yamlCompoundValue.getParent();
                         if(serviceKeyValue instanceof YAMLKeyValue) {
-                            registerTaggedProblems(element, FormUtil.getTags((YAMLKeyValue) serviceKeyValue), text, holder, this.lazyServiceCollector);
+                            Set<String> tags = YamlHelper.collectServiceTags((YAMLKeyValue) serviceKeyValue);
+                            if(tags != null && tags.size() > 0) {
+                                registerTaggedProblems(element, tags, text, holder, this.lazyServiceCollector);
+                            }
                         }
 
                     }

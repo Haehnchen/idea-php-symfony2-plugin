@@ -1,0 +1,5 @@
+services:
+    foo.tagged.yaml_type:
+        class: AppBundle\Controller\DefaultController
+        tags:
+          - { name: yaml_type_tag }

@@ -451,6 +451,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         for (ProblemDescriptor result : localInspectionsAtCaret.getFirst()) {
             TextRange textRange = result.getPsiElement().getTextRange();
             if (textRange.contains(localInspectionsAtCaret.getSecond())) {
+                // @TODO: content filter check; fails on default inspections
                 fail(String.format("Fail inspection not contains '%s'", contains));
             }
         }

@@ -244,8 +244,8 @@ public class FormUtil {
                 for(YAMLKeyValue yamlServiceKeyValue : PsiTreeUtil.getChildrenOfTypeAsList(yamlKeyValue.getValue(), YAMLKeyValue.class)) {
                     String serviceName = yamlServiceKeyValue.getName();
 
-                    Set<String> serviceTagMap = getTags(yamlServiceKeyValue);
-                    if(serviceTagMap.size() > 0) {
+                    Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
+                    if(serviceTagMap != null && serviceTagMap.size() > 0) {
                         map.put(serviceName, serviceTagMap);
                     }
 
@@ -255,42 +255,6 @@ public class FormUtil {
         }
 
         return map;
-    }
-
-    public static Set<String> getTags(YAMLKeyValue yamlServiceKeyValue) {
-
-        Set<String> tags = new HashSet<String>();
-
-        YAMLKeyValue tagTag = YamlHelper.getYamlKeyValue(yamlServiceKeyValue, "tags");
-        if(tagTag == null) {
-            return Collections.emptySet();
-        }
-
-        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getChildOfType(tagTag, YAMLCompoundValue.class);
-        if(yamlCompoundValue == null) {
-            return Collections.emptySet();
-        }
-
-        Collection<YAMLSequence> yamlSequences = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLSequence.class);
-        for(YAMLSequence yamlSequence: yamlSequences) {
-            YAMLHash yamlHash = PsiTreeUtil.getChildOfType(yamlSequence, YAMLHash.class);
-
-            if(yamlHash != null) {
-                YAMLKeyValue yamlTagNameKeyValue = YamlHelper.getYamlKeyValue(yamlHash, "name");
-                if(yamlTagNameKeyValue != null) {
-                    String tagName = yamlTagNameKeyValue.getValueText();
-                    if(tagName != null) {
-
-                        tagName = PsiElementUtils.trimQuote(tagName);
-                        if(StringUtils.isNotBlank(tagName)) {
-                            tags.add(tagName);
-                        }
-                    }
-                }
-            }
-        }
-
-        return tags;
     }
 
     public static Map<String, Set<String>> getTags(XmlFile psiFile) {

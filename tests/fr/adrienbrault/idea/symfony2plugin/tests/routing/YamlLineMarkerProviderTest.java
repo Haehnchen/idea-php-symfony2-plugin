@@ -4,6 +4,7 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -81,6 +82,31 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
         assertLineMarker(
             psiFile,
             new LineMarker.TargetAcceptsPattern("Navigate to resource", XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", "@FooBundle/foo.yml"))
+        );
+    }
+
+    public void testRouteControllerActionProvidesLineMarker() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Foo {" +
+            "   class BarController{" +
+            "       function fooBarAction() {}" +
+            "   }" +
+            "}"
+        );
+
+        assertLineMarker(myFixture.configureByText(YAMLFileType.YML, "" +
+                "foo:\n" +
+                "    defaults: { _controller: Foo\\BarController::fooBarAction }\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
+        );
+
+        assertLineMarker(myFixture.configureByText(YAMLFileType.YML, "" +
+                "foo:\n" +
+                "    defaults:\n" +
+                "      _controller: Foo\\BarController::fooBarAction\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
         );
     }
 }

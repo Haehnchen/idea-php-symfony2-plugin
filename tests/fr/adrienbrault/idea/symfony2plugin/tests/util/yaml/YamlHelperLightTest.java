@@ -8,6 +8,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLHash;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
@@ -93,6 +94,41 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
             "  foo:\n" +
             "    class: fo<caret>o"
         ).findElementAt(myFixture.getCaretOffset())).getKeyText());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlKeyValueAsString
+     */
+    public void testGetYamlKeyValueAsString() {
+
+        String[] strings = {
+            "{ name: routing.loader, method: foo }",
+            "{ name: routing.loader, method: 'foo' }",
+            "{ name: routing.loader, method: \"foo\" }",
+        };
+
+        for (String s : strings) {
+            assertEquals("foo", YamlHelper.getYamlKeyValueAsString(
+                YamlPsiElementFactory.createFromText(getProject(), YAMLHash.class, s),
+                "method"
+            ));
+        }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#collectServiceTags
+     */
+    public void testCollectServiceTags() {
+
+        YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "foo:\n" +
+            "  tags:\n" +
+            "    - { name: routing.loader, method: crossHint }\n" +
+            "    - { name: routing.loader1, method: crossHint }\n"
+        );
+
+        assertNotNull(fromText);
+        assertContainsElements(YamlHelper.collectServiceTags(fromText), "routing.loader", "routing.loader1");
     }
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
