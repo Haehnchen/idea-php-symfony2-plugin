@@ -22,6 +22,11 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("messages.fr.xlf"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("messages_two.fr.xlf"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
+
+        myFixture.copyFileToProject("apple.de.yml", "Resources/translations/apple.de.yml");
+        myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
     }
 
     public String getTestDataPath() {
@@ -44,6 +49,16 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
 
         assertIndexContains(YamlTranslationStubIndex.KEY, "messages_two");
         assertContainsElements(getDomainKeys("messages_two"), "hello xliff v2 group less");
+    }
+
+    public void testThatDomainAndTranslationsKeyOfYamlFileIsInIndex() {
+        assertIndexContains(YamlTranslationStubIndex.KEY, "apple");
+        assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.great");
+        assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.greater than");
+        assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.greater than equals");
+
+        assertIndexContains(YamlTranslationStubIndex.KEY, "car");
+        assertContainsElements(getDomainKeys("car"), "foo_yaml.symfony.great");
     }
 
     @NotNull
