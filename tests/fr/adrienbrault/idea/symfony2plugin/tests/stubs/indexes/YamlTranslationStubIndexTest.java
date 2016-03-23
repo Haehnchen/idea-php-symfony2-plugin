@@ -57,6 +57,13 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
         assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.greater than");
         assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.greater than equals");
 
+        assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.more.lines");
+        assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.more.lines_2");
+
+        assertFalse(getDomainKeys("apple").contains("yaml_weak.symfony"));
+        assertFalse(getDomainKeys("apple").contains("yaml_weak.symfony"));
+        assertFalse(getDomainKeys("apple").contains("yaml_weak"));
+
         assertIndexContains(YamlTranslationStubIndex.KEY, "car");
         assertContainsElements(getDomainKeys("car"), "foo_yaml.symfony.great");
     }

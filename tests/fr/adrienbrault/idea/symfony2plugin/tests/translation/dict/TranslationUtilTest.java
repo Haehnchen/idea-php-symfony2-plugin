@@ -31,6 +31,10 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "yaml_weak.symfony.great", "apple").length > 0);
         assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "yaml_weak.symfony.greater than", "apple").length > 0);
         assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "yaml_weak.symfony.greater than equals", "apple").length > 0);
+
+        assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "yaml_weak.symfony.more.lines", "apple").length > 0);
+        assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "yaml_weak.symfony.more.lines_2", "apple").length > 0);
+
         assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "foo_yaml.symfony.great", "car").length > 0);
     }
 }
