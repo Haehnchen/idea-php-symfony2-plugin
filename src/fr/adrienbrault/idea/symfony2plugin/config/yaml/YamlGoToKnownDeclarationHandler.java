@@ -3,15 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
-import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -19,9 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -103,17 +97,12 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             return;
         }
 
-        PsiElement prevSiblingOfType = PsiElementUtils.getPrevSiblingOfType(psiElement, YamlElementPatternHelper.getPreviousCommaSibling());
-        if(prevSiblingOfType == null) {
+        String service = YamlHelper.getPreviousSequenceItemAsText(psiElement);
+        if (service == null) {
             return;
         }
 
-        String service = PsiElementUtils.trimQuote(prevSiblingOfType.getText());
-        if(StringUtils.isBlank(service)) {
-            return;
-        }
-
-        PhpClass phpClass = ServiceUtil.getServiceClass(prevSiblingOfType.getProject(), service);
+        PhpClass phpClass = ServiceUtil.getServiceClass(psiElement.getProject(), service);
         if(phpClass == null) {
             return;
         }

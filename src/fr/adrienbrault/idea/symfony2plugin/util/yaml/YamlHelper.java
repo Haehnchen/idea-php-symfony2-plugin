@@ -11,7 +11,6 @@ import com.intellij.util.Processor;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
-import org.apache.commons.collections.KeyValue;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -745,5 +744,34 @@ public class YamlHelper {
         }
 
         return ((YAMLMapping) topLevelValue).getKeyValues();
+    }
+
+    /**
+     * Returns "@foo" value of ["@foo", "fo<caret>o"]
+     */
+    @Nullable
+    public static String getPreviousSequenceItemAsText(@NotNull PsiElement psiElement) {
+        PsiElement yamlScalar = psiElement.getParent();
+        if(!(yamlScalar instanceof YAMLScalar)) {
+            return null;
+        }
+
+        PsiElement yamlSequence = yamlScalar.getParent();
+        if(!(yamlSequence instanceof YAMLSequenceItem)) {
+            return null;
+        }
+
+        // @TODO: catch new lexer error on empty item [<caret>,@foo] "PsiErrorElement:Sequence item expected"
+        YAMLSequenceItem prevSequenceItem = PsiTreeUtil.getPrevSiblingOfType(yamlSequence, YAMLSequenceItem.class);
+        if(prevSequenceItem == null) {
+            return null;
+        }
+
+        YAMLValue value = prevSequenceItem.getValue();
+        if(!(value instanceof YAMLScalar)) {
+            return null;
+        }
+
+        return ((YAMLScalar) value).getTextValue();
     }
 }

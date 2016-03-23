@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
-import com.intellij.patterns.*;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
@@ -607,14 +610,13 @@ public class YamlElementPatternHelper {
      * ['@service', createNewsletterManager|]
      */
     public static ElementPattern<? extends PsiElement> getAfterCommaPattern() {
-
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(YAMLScalar.class)
-                .afterLeafSkipping(
+        return PlatformPatterns.psiElement().withParent(
+            PlatformPatterns.psiElement(YAMLScalar.class).withParent(
+                PlatformPatterns.psiElement(YAMLSequenceItem.class).afterLeafSkipping(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement().withText(",")
                 )
+            )
         );
 
     }
