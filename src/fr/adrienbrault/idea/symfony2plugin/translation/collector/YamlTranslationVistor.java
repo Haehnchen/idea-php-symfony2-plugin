@@ -3,7 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.translation.collector;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
@@ -13,14 +15,7 @@ import java.util.List;
 public class YamlTranslationVistor {
 
     public static void collectFileTranslations(YAMLFile yamlFile, YamlTranslationCollector translationCollector) {
-        List<YAMLDocument> documents = yamlFile.getDocuments();
-
-        if(documents.size() < 1) {
-            return;
-        }
-
-        Collection<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.getChildrenOfTypeAsList(documents.get(0), YAMLKeyValue.class);
-        for(YAMLKeyValue yamlKeyValue: yamlKeyValues) {
+        for(YAMLKeyValue yamlKeyValue: YamlHelper.getTopLevelKeyValues(yamlFile)) {
             collectItems(yamlKeyValue, translationCollector);
         }
 
@@ -53,15 +48,16 @@ public class YamlTranslationVistor {
             return true;
         }
 
+        // @TODO: use features of new yaml integration
         // yaml key-value provide main psielement in last child element
         // depending of what we get here we have another key-value inside, multiline or string value
-        if(childElements.size() == 1) {
+        if(childElements.size() == 1 && childElements.get(0) instanceof YAMLMapping) {
 
 
             PsiElement lastChildElement = childElements.get(0);
 
             // catch next level keys
-            if(lastChildElement instanceof YAMLCompoundValue) {
+            if(lastChildElement instanceof YAMLMapping) {
 
                 // use copy of current level and pipe to children call
                 ArrayList<String> copyLevels = new ArrayList<String>(levels);
