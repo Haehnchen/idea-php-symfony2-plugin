@@ -172,16 +172,22 @@ public class YamlAnnotator implements Annotator {
         
         // @TODO: simplify code checks
 
-        if(!(psiElement.getContext() instanceof YAMLSequenceItem)) {
+        PsiElement yamlScalar = psiElement.getContext();
+        if(!(yamlScalar instanceof YAMLScalar)) {
             return;
         }
-        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) psiElement.getContext();
-        
+
+        PsiElement context = yamlScalar.getContext();
+        if(!(context instanceof YAMLSequenceItem)) {
+            return;
+        }
+
+        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
         if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
             return;
         }
+
         final YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
-        
         if(!(yamlArray.getContext() instanceof YAMLKeyValue)) {
             return;
         }
@@ -224,11 +230,18 @@ public class YamlAnnotator implements Annotator {
         }
 
         // @TODO: simplify code checks
-        if(!(psiElement.getContext() instanceof YAMLSequenceItem)) {
+
+        PsiElement yamlScalar = psiElement.getContext();
+        if(!(yamlScalar instanceof YAMLScalar)) {
             return;
         }
-        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) psiElement.getContext();
-        
+
+        PsiElement context = yamlScalar.getContext();
+        if(!(context instanceof YAMLSequenceItem)) {
+            return;
+        }
+
+        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
         if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
             return;
         }

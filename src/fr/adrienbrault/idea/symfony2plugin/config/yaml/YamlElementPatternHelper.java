@@ -648,19 +648,22 @@ public class YamlElementPatternHelper {
      */
     static PsiElementPattern.Capture<? extends PsiElement> getParameterClassPattern() {
         return PlatformPatterns
-            .psiElement(YAMLScalar.class)
+            .psiElement()
             .withParent(PlatformPatterns
-                .psiElement(YAMLKeyValue.class)
-                .withName(
-                    PlatformPatterns.string().endsWith(".class")
-                )
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLElementTypes.MAPPING)
+                .psiElement(YAMLScalar.class)
                     .withParent(PlatformPatterns
                         .psiElement(YAMLKeyValue.class)
-                        .withName("parameters")
+                        .withName(
+                            PlatformPatterns.string().endsWith(".class")
+                        )
+                        .withParent(PlatformPatterns
+                            .psiElement(YAMLElementTypes.MAPPING)
+                            .withParent(PlatformPatterns
+                                .psiElement(YAMLKeyValue.class)
+                                .withName("parameters")
+                            )
+                        )
                     )
-                )
             );
 
     }
