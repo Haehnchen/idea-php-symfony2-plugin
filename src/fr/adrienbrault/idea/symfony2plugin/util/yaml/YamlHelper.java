@@ -64,40 +64,6 @@ public class YamlHelper {
     @NotNull
     static public List<YAMLSequenceItem> getYamlArrayValues(@NotNull YAMLSequence yamlArray) {
         return yamlArray.getItems();
-//        // split possible element at comma sperator
-//        HashMap<Integer, ArrayList<PsiElement>> argumentSplitter = new HashMap<Integer, ArrayList<PsiElement>>();
-//        int currentParameter = 0;
-//        argumentSplitter.put(currentParameter, new ArrayList<PsiElement>());
-//        for(PsiElement psiElement: getChildrenFix(yamlArray)) {
-//            if(psiElement.getText().equals(",")) {
-//                argumentSplitter.put(++currentParameter, new ArrayList<PsiElement>());
-//            } else {
-//                if(!(psiElement instanceof PsiWhiteSpace)) {
-//                    argumentSplitter.get(currentParameter).add(psiElement);
-//                }
-//            }
-//        }
-//
-//        // search for valid psi argument value
-//        List<PsiElement> keys = new ArrayList<PsiElement>();
-//        for(Map.Entry<Integer, ArrayList<PsiElement>> psiEntry: argumentSplitter.entrySet()) {
-//            PsiElement parameterPsiElement = null;
-//            for(PsiElement psiElement: psiEntry.getValue()) {
-//                if(PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.QUESTION).accepts(psiElement)) {
-//                    parameterPsiElement = psiElement;
-//                } else if(psiElement instanceof YAMLPsiElementImpl) {
-//                    parameterPsiElement = psiElement;
-//                }
-//
-//            }
-//
-//            if(parameterPsiElement != null) {
-//                keys.add(parameterPsiElement);
-//            }
-//
-//        }
-//
-//        return keys;
     }
 
     @Nullable
