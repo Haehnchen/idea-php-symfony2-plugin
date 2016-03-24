@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.Set;
 
@@ -99,7 +100,13 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                     return;
                 }
 
-                PsiElement classKey = element.getParent();
+                PsiElement yamlScalar = element.getParent();
+                if(!(yamlScalar instanceof YAMLScalar)) {
+                    super.visitElement(element);
+                    return;
+                }
+
+                PsiElement classKey = yamlScalar.getParent();
                 if(classKey instanceof YAMLKeyValue) {
                     PsiElement yamlCompoundValue = classKey.getParent();
                     if(yamlCompoundValue instanceof YAMLCompoundValue) {
