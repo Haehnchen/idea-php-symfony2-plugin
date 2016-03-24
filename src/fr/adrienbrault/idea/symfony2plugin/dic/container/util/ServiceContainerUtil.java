@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlFile;
@@ -11,15 +10,15 @@ import com.intellij.util.Consumer;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,8 +54,8 @@ public class ServiceContainerUtil {
                     PsiElement yamlKeyValue = serviceConsumer.attributes().getPsiElement();
                     if(yamlKeyValue instanceof YAMLKeyValue) {
                         PsiElement value = ((YAMLKeyValue) yamlKeyValue).getValue();
-                        if(value instanceof LeafPsiElement) {
-                            String valueText = ((YAMLKeyValue) yamlKeyValue).getValueText();
+                        if(value instanceof YAMLScalar) {
+                            String valueText = ((YAMLScalar) value).getTextValue();
                             if(StringUtils.isNotBlank(valueText) && valueText.startsWith("@")) {
                                 services.add(new SerializableService(serviceConsumer.getServiceId()).setAlias(valueText.substring(1)));
                                 return;
