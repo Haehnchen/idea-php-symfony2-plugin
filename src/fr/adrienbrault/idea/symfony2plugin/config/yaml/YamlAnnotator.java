@@ -8,7 +8,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.tree.IElementType;
 import com.intellij.util.Function;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
@@ -224,6 +223,11 @@ public class YamlAnnotator implements Annotator {
         ;
     }
 
+    /**
+     * class: FooClass
+     * tags:
+     *  - [ setFoo, [@args_bar] ]
+     */
     private void annotateCallsArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
         if(!isStringValue(psiElement)){
             return;
@@ -257,27 +261,40 @@ public class YamlAnnotator implements Annotator {
         }
         
         YAMLSequence yamlCallArray = (YAMLSequence) enclosingItem.getContext();
-        if(!(yamlCallArray.getContext() instanceof YAMLSequence)) {
+
+        PsiElement seqItem = yamlCallArray.getContext();
+        if(!(seqItem instanceof YAMLSequenceItem)) {
             return;
         }
 
+        // - [ setFoo, [@args_bar] ]
+        PsiElement callYamlSeq = seqItem.getContext();
+        if(!(callYamlSeq instanceof YAMLSequence)) {
+            return;
+        }
+
+        // only given method and args are valid "setFoo, [@args_bar]"
         final List<YAMLSequenceItem> methodParameter = YamlHelper.getYamlArrayValues(yamlCallArray);
         if(methodParameter.size() < 2) {
             return;
         }
 
         final YAMLValue methodNameElement = methodParameter.get(0).getValue();
-        final String methodName = methodNameElement instanceof YAMLScalar
-                ? ((YAMLScalar) methodNameElement).getTextValue()
-                : "";
-
-        
-        YAMLSequence yamlSequence = (YAMLSequence) enclosingItem.getContext();
-        if(!(yamlSequence.getContext() instanceof YAMLKeyValue)) {
+        if(!(methodNameElement instanceof YAMLScalar)) {
             return;
         }
 
-        final YAMLKeyValue classKeyValue = ((YAMLKeyValue) yamlSequence.getContext()).getParentMapping().getKeyValueByKey("class");
+        final String methodName = ((YAMLScalar) methodNameElement).getTextValue();
+        if(StringUtils.isBlank(methodName)) {
+            return;
+        }
+
+        PsiElement yamlSequence = callYamlSeq.getContext();
+        if(!(yamlSequence instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        final YAMLKeyValue classKeyValue = ((YAMLKeyValue) yamlSequence).getParentMapping().getKeyValueByKey("class");
         if(classKeyValue == null) {
             return;
         }
