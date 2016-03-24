@@ -425,18 +425,16 @@ public class YamlHelper {
     /**
      * Process yaml key in second level filtered by a root:
      * File > roots -> "Item"
+     * TODO: visitQualifiedKeyValuesInFile
      */
     public static void processKeysAfterRoot(@NotNull PsiFile psiFile, @NotNull Processor<YAMLKeyValue> yamlKeyValueProcessor, @NotNull String... roots) {
-        YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
-        if(document != null) {
-            for (String root : roots) {
-                YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(document, root);
-                if(yamlKeyValue != null) {
-                    YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
-                    if(yaml != null) {
-                        for(YAMLKeyValue yamlKeyValueVisit: PsiTreeUtil.getChildrenOfTypeAsList(yaml, YAMLKeyValue.class)) {
-                            yamlKeyValueProcessor.process(yamlKeyValueVisit);
-                        }
+        for (String root : roots) {
+            YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, root);
+            if(yamlKeyValue != null) {
+                YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
+                if(yaml != null) {
+                    for(YAMLKeyValue yamlKeyValueVisit: PsiTreeUtil.getChildrenOfTypeAsList(yaml, YAMLKeyValue.class)) {
+                        yamlKeyValueProcessor.process(yamlKeyValueVisit);
                     }
                 }
             }
