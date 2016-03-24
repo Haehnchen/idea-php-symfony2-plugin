@@ -32,14 +32,11 @@ public class DoctrineYamlMappingDriver implements DoctrineMappingDriverInterface
         Collection<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
         DoctrineMetadataModel model = new DoctrineMetadataModel(fields);
 
-        PsiElement yamlDocument = psiFile.getFirstChild();
-        if(yamlDocument instanceof YAMLDocument) {
-            for (YAMLKeyValue yamlKeyValue : PsiTreeUtil.getChildrenOfTypeAsList(yamlDocument, YAMLKeyValue.class)) {
-                // first line is class name; check of we are right
-                if(args.isEqualClass(YamlHelper.getYamlKeyName(yamlKeyValue))) {
-                    model.setTable(YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "table"));
-                    fields.addAll(EntityHelper.getModelFieldsSet(yamlKeyValue));
-                }
+        for (YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues((YAMLFile) psiFile)) {
+            // first line is class name; check of we are right
+            if(args.isEqualClass(YamlHelper.getYamlKeyName(yamlKeyValue))) {
+                model.setTable(YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "table"));
+                fields.addAll(EntityHelper.getModelFieldsSet(yamlKeyValue));
             }
         }
 
