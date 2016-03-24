@@ -576,15 +576,19 @@ public class YamlElementPatternHelper {
         ));
     }
 
+    /**
+     * foo: <caret>
+     * foo: a<caret>
+     */
     private static PsiElementPattern.Capture<PsiElement> getKeyPattern(String... keyName) {
         return PlatformPatterns
-            .psiElement(YAMLTokenTypes.SCALAR_KEY)
-            .withParent(PlatformPatterns
+            .psiElement()
+            .withParent(PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns
                 .psiElement(YAMLKeyValue.class)
                 .withName(
                     PlatformPatterns.string().oneOfIgnoreCase(keyName)
                 )
-            );
+            ));
     }
 
     /**
