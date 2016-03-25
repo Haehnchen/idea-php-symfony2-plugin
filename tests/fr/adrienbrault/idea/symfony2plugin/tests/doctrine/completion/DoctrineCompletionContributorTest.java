@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.completion;
 
 import com.jetbrains.php.lang.PhpFileType;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -24,11 +25,13 @@ public class DoctrineCompletionContributorTest extends SymfonyLightCodeInsightFi
     public void testClassConstantsCompletionWithoutNamespace() {
         assertCompletionResultEquals(PhpFileType.INSTANCE,
             "<?php\n /** @var $f \\Doctrine\\Common\\Persistence\\ObjectManager */\n $f->getRepository(FooMod<caret>)",
-            "<?php\n /** @var $f \\Doctrine\\Common\\Persistence\\ObjectManager */\n $f->getRepository(\\My\\Model\\FooModel::class)"
+            "<?php\n /** @var $f \\Doctrine\\Common\\Persistence\\ObjectManager */\n $f->getRepository(\\My\\Model\\FooModel::class)",
+            new LookupElementInsert.Icon(Symfony2Icons.DOCTRINE)
         );
         assertCompletionResultEquals(PhpFileType.INSTANCE,
             "<?php\n /** @var $f \\Doctrine\\Common\\Persistence\\ManagerRegistry */\n $f->getRepository(FooMod<caret>)",
-            "<?php\n /** @var $f \\Doctrine\\Common\\Persistence\\ManagerRegistry */\n $f->getRepository(\\My\\Model\\FooModel::class)"
+            "<?php\n /** @var $f \\Doctrine\\Common\\Persistence\\ManagerRegistry */\n $f->getRepository(\\My\\Model\\FooModel::class)",
+            new LookupElementInsert.Icon(Symfony2Icons.DOCTRINE)
         );
     }
 
@@ -44,7 +47,8 @@ public class DoctrineCompletionContributorTest extends SymfonyLightCodeInsightFi
                 "    use My\\Model\\FooModel;\n\n" +
                 "    /** @var $f \\Doctrine\\Common\\Persistence\\ObjectManager */\n" +
                 "  $f->getRepository(FooModel::class);\n" +
-                "};"
+                "};",
+            new LookupElementInsert.Icon(Symfony2Icons.DOCTRINE)
         );
     }
 }

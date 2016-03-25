@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form.completion;
 
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -25,7 +25,8 @@ public class FormCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     public void testClassConstantsCompletionWithoutNamespace() {
         assertCompletionResultEquals(PhpFileType.INSTANCE,
             "<?php\n /** @var $foo \\Symfony\\Component\\Form\\FormBuilderInterface */\n $foo->add('', HiddenType<caret>)",
-            "<?php\n /** @var $foo \\Symfony\\Component\\Form\\FormBuilderInterface */\n $foo->add('', \\Symfony\\Component\\Form\\Extension\\Core\\Type\\HiddenType::class)"
+            "<?php\n /** @var $foo \\Symfony\\Component\\Form\\FormBuilderInterface */\n $foo->add('', \\Symfony\\Component\\Form\\Extension\\Core\\Type\\HiddenType::class)",
+            new LookupElementInsert.Icon(Symfony2Icons.FORM_TYPE)
         );
     }
 
@@ -41,7 +42,8 @@ public class FormCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "    use Symfony\\Component\\Form\\Extension\\Core\\Type\\HiddenType;\n\n" +
                 "    /** @var $foo \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "  $foo->add('', HiddenType::class);\n" +
-                "};"
+                "};",
+            new LookupElementInsert.Icon(Symfony2Icons.FORM_TYPE)
         );
     }
 
