@@ -29,6 +29,10 @@ public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixture
             assertTrue(YamlElementPatternHelper.getOrmRoot().accepts(createCaretElement(
                 "class\\Foo:\n" + s, "foo.orm.yml"))
             );
+
+            assertFalse(YamlElementPatternHelper.getOrmRoot().accepts(createCaretElement(
+                "class\\Foo:\n" + s, "foo.aaa.yml"))
+            );
         }
     }
 

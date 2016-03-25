@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.patterns.StandardPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.util.ProcessingContext;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.ParentPathPatternCondition;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -191,120 +191,60 @@ public class YamlElementPatternHelper {
     }
 
     /**
-     * provides auto complete on
-     *
-     * xxx:
-     *   refer|
-     *   refer|: xxx
-     *   refer|
+     * Proxy for getWithFirstRootKey to filter with file name condition
      */
-    public static ElementPattern<PsiElement> getOrmRoot() {
-        return PlatformPatterns.or(
-
-            // match
-            //
-            // xxx:
-            //   refer|: xxx
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_KEY)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLCompoundValue.class)
-                        .withParent(PlatformPatterns
-                                .psiElement(YAMLKeyValue.class)
-                                .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
-                                        .withParent(PlatformPatterns
-                                                .psiElement(YAMLDocument.class)
-                                        ))
-                        )
-                    )
-                )
-                .inFile(getOrmFilePattern())
-                .withLanguage(YAMLLanguage.INSTANCE),
-
-            // match
-            //
-            // xxx:
-            //   xxx: xxx
-            //   refer|
-            PlatformPatterns
-                .psiElement(YAMLPlainTextImpl.class)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLCompoundValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLKeyValue.class)
-                        .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
-                                .withParent(PlatformPatterns
-                                        .psiElement(YAMLDocument.class)
-                                ))
-                    )
-                )
-                .inFile(getOrmFilePattern())
-                .withLanguage(YAMLLanguage.INSTANCE),
-
-            // match
-            //
-            // xxx:
-            //   refer|
-            //   xxx: xxx
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
-                            .withParent(PlatformPatterns
-                                    .psiElement(YAMLDocument.class)
-                            ))
-                )
-                .inFile(getOrmFilePattern())
-                .withLanguage(YAMLLanguage.INSTANCE)
-        );
+    public static ElementPattern<? extends PsiElement> getOrmRoot() {
+        return PlatformPatterns.and(PlatformPatterns.psiElement().with(new PatternCondition<PsiElement>("Doctrine file") {
+            @Override
+            public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+                return getOrmFilePattern().accepts(psiElement.getContainingFile());
+            }
+        }), getWithFirstRootKey());
     }
 
     public static ElementPattern<PsiElement> getWithFirstRootKey() {
         return PlatformPatterns.or(
-
-            // match
-            //
-            // xxx:
-            //   refer|: xxx
+            // foo:
+            //   <caret>
             PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_KEY)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLCompoundValue.class)
-                        .withParent(PlatformPatterns
-                            .psiElement(YAMLKeyValue.class)
-                            .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
-                                    .withParent(PlatformPatterns
-                                            .psiElement(YAMLDocument.class)
-                                    ))
-                        )
+                .psiElement().with(new ParentPathPatternCondition(
+                    YAMLScalar.class, YAMLMapping.class,
+                    YAMLKeyValue.class, YAMLMapping.class,
+                    YAMLDocument.class
+                ))
+                .withLanguage(YAMLLanguage.INSTANCE),
+
+            // foo:
+            //   <caret> (on incomplete)
+            PlatformPatterns
+                .psiElement().afterLeaf(
+                    PlatformPatterns.psiElement(YAMLTokenTypes.INDENT).with(
+                        new ParentPathPatternCondition(YAMLKeyValue.class, YAMLMapping.class, YAMLDocument.class)
                     )
                 )
                 .withLanguage(YAMLLanguage.INSTANCE),
 
             // match
             //
-            // xxx:
-            //   xxx: xxx
-            //   refer|
+            // foo:
+            //   <caret>: bar
+            //   <caret>:
+            //   <caret>a:
             PlatformPatterns
-                .psiElement(YAMLPlainTextImpl.class)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLCompoundValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLKeyValue.class)
-                        .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
-                                .withParent(PlatformPatterns
-                                        .psiElement(YAMLDocument.class)
-                                ))
-                    )
+                .psiElement().with(new ParentPathPatternCondition(
+                    YAMLScalar.class, YAMLKeyValue.class,
+                    YAMLMapping.class, YAMLKeyValue.class,
+                    YAMLMapping.class, YAMLDocument.class)
                 )
-                .withLanguage(YAMLLanguage.INSTANCE)
+                .withLanguage(YAMLLanguage.INSTANCE),
 
+            // foo:
+            //   fo<caret>:
+            PlatformPatterns.psiElement().with(new ParentPathPatternCondition(
+                YAMLKeyValue.class, YAMLMapping.class,
+                YAMLKeyValue.class, YAMLMapping.class,
+                YAMLDocument.class)
+            )
         );
     }
 
