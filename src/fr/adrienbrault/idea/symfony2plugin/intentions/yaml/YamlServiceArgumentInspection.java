@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlUpdateArgume
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.List;
@@ -46,7 +47,11 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
 
         @Override
         public void visitFile(PsiFile file) {
-            for (ServiceActionUtil.ServiceYamlContainer serviceYamlContainer : ServiceActionUtil.getYamlContainerServiceArguments(file)) {
+            if(!(file instanceof YAMLFile)) {
+                return;
+            }
+
+            for (ServiceActionUtil.ServiceYamlContainer serviceYamlContainer : ServiceActionUtil.getYamlContainerServiceArguments((YAMLFile) file)) {
 
                 // we dont support parent services for now
                 if(!isValidService(serviceYamlContainer)) {

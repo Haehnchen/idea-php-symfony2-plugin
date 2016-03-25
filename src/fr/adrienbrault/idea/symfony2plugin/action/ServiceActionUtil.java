@@ -20,13 +20,11 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceArgumentSelectionDialog;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -211,26 +209,34 @@ public class ServiceActionUtil {
             return serviceKey;
         }
 
+        /**
+         * fo<caret>o:
+         *   class: foo
+         *   arguments: []
+         */
         @Nullable
-        public static ServiceYamlContainer create(YAMLKeyValue yamlServiceKeyValue) {
-            String serviceClass;
-            YAMLKeyValue[] yamlServiceKeys = PsiTreeUtil.getChildrenOfType(yamlServiceKeyValue.getValue(),YAMLKeyValue.class);
-            if(yamlServiceKeys != null) {
-
-                String serviceClassName = YamlHelper.getYamlKeyValueAsString(yamlServiceKeyValue, "class");
-                if(serviceClassName != null) {
-                    serviceClass = PsiElementUtils.trimQuote(serviceClassName);
-
-                    // after trim check empty string again
-                    if(StringUtils.isNotBlank(serviceClass)) {
-                        return new ServiceYamlContainer(yamlServiceKeyValue, YamlHelper.getYamlKeyValue(yamlServiceKeyValue, "arguments"), serviceClassName);
-                    }
-
-                }
-
+        public static ServiceYamlContainer create(@NotNull YAMLKeyValue yamlServiceKeyValue) {
+            YAMLMapping childOfType = PsiTreeUtil.getChildOfType(yamlServiceKeyValue, YAMLMapping.class);
+            if(childOfType == null) {
+                return null;
             }
 
-            return null;
+            YAMLKeyValue aClass = childOfType.getKeyValueByKey("class");
+            if(aClass == null) {
+                return null;
+            }
+
+            YAMLValue value = aClass.getValue();
+            if(!(value instanceof YAMLScalar)) {
+                return null;
+            }
+
+            String serviceClass = ((YAMLScalar) value).getTextValue();
+            if (StringUtils.isBlank(serviceClass)) {
+                return null;
+            }
+
+            return new ServiceYamlContainer(yamlServiceKeyValue, childOfType.getKeyValueByKey("arguments"), serviceClass);
         }
 
     }
@@ -239,34 +245,14 @@ public class ServiceActionUtil {
      * Gets all services inside yaml file with "arguments" key context
      */
     @NotNull
-    public static Collection<ServiceYamlContainer> getYamlContainerServiceArguments(@NotNull PsiFile psiFile) {
+    public static Collection<ServiceYamlContainer> getYamlContainerServiceArguments(@NotNull YAMLFile yamlFile) {
 
         Collection<ServiceYamlContainer> services = new ArrayList<ServiceYamlContainer>();
 
-        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-        if(yamlDocument == null) {
-            return Collections.emptyList();
-        }
-
-        // get services or parameter key
-        YAMLKeyValue[] yamlKeys = PsiTreeUtil.getChildrenOfType(yamlDocument, YAMLKeyValue.class);
-        if(yamlKeys == null) {
-            return Collections.emptyList();
-        }
-
-        for(YAMLKeyValue yamlKeyValue : yamlKeys) {
-            String yamlConfigKey = yamlKeyValue.getName();
-            if(yamlConfigKey != null && yamlConfigKey.equals("services")) {
-
-                YAMLKeyValue yamlServices[] = PsiTreeUtil.getChildrenOfType(yamlKeyValue.getValue(),YAMLKeyValue.class);
-                if(yamlServices != null) {
-                    for(YAMLKeyValue yamlServiceKeyValue : yamlServices) {
-                        ServiceYamlContainer serviceYamlContainer = ServiceYamlContainer.create(yamlServiceKeyValue);
-                        if(serviceYamlContainer != null) {
-                            services.add(serviceYamlContainer);
-                        }
-                     }
-                }
+        for(YAMLKeyValue yamlKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
+            ServiceYamlContainer serviceYamlContainer = ServiceYamlContainer.create(yamlKeyValue);
+            if(serviceYamlContainer != null) {
+                services.add(serviceYamlContainer);
             }
         }
 
