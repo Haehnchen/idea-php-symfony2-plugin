@@ -85,7 +85,7 @@ public class CaretTextOverlayListener implements CaretListener {
         }
     }
 
-    synchronized private void clear() {
+    synchronized public void clear() {
         if(timer == null) {
             return;
         }

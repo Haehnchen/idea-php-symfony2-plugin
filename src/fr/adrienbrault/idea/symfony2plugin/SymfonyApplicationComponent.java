@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.event.CaretListener;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayListener;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class SymfonyApplicationComponent implements ApplicationComponent {
 
     private final EditorFactory editorFactory;
-    private CaretListener overlayerCaretListener;
+    private CaretTextOverlayListener overlayerCaretListener;
 
     public SymfonyApplicationComponent(@NotNull EditorFactory editorFactory) {
         this.editorFactory = editorFactory;
@@ -26,6 +25,7 @@ public class SymfonyApplicationComponent implements ApplicationComponent {
     @Override
     public void disposeComponent() {
         if(overlayerCaretListener != null) {
+            overlayerCaretListener.clear();
             editorFactory.getEventMulticaster().removeCaretListener(overlayerCaretListener);
         }
     }

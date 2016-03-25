@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -105,7 +106,11 @@ public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixture
         )));
 
         // @TODO: PhpStorm <= 9 drop
-        if(true) return;
+        int baselineVersion = ApplicationInfo.getInstance().getBuild().getBaselineVersion();
+        if(baselineVersion < 143) {
+            System.out.println("Skipping testGetSuperParentArrayKey for wrong baseline version");
+            return;
+        }
 
         assertTrue(YamlElementPatternHelper.getSuperParentArrayKey("services").accepts(createCaretElement(
             "services:\n" +
