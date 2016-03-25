@@ -458,17 +458,17 @@ public class YamlHelper {
     @Nullable
     public static String getServiceDefinitionClass(PsiElement psiElement) {
 
-        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
+        YAMLHashImpl yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLHashImpl.class);
         if(yamlCompoundValue == null) {
             return null;
         }
 
-        yamlCompoundValue = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
-        if(yamlCompoundValue == null) {
+        YAMLMapping yamlMapping = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLMapping.class);
+        if(yamlMapping == null) {
             return null;
         }
 
-        YAMLKeyValue aClass = YamlHelper.getYamlKeyValue(yamlCompoundValue, "class");
+        YAMLKeyValue aClass = yamlMapping.getKeyValueByKey("class");
         if(aClass == null) {
             return null;
         }

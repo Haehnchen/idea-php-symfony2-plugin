@@ -31,10 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLMapping;
-import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.*;
 
 public class EventMethodCallInspection extends LocalInspectionTool {
 
@@ -200,7 +197,18 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        if(psiElement.getParent() == null || !(psiElement.getParent().getContext() instanceof YAMLSequence)) {
+        PsiElement parent = psiElement.getParent();
+        if(!(parent instanceof YAMLScalar)) {
+            return;
+        }
+
+        PsiElement yamlSeq = parent.getContext();
+        if(!(yamlSeq instanceof YAMLSequenceItem)) {
+            return;
+        }
+
+        PsiElement context = yamlSeq.getContext();
+        if(!(context instanceof YAMLSequence)) {
             return;
         }
 
