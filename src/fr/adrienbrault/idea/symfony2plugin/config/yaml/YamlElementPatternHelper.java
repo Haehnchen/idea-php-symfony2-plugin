@@ -348,6 +348,38 @@ public class YamlElementPatternHelper {
      */
     public static ElementPattern<PsiElement> getSuperParentArrayKey(String... tree) {
         return PlatformPatterns.or(
+            // foo:
+            //   <caret> (on incomplete)
+            PlatformPatterns.psiElement().afterLeaf(
+                PlatformPatterns.psiElement(YAMLTokenTypes.INDENT).withParent(
+                    PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                        PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                            PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns
+                                .string().oneOfIgnoreCase(tree)
+                            )
+                        )
+                    )
+                )
+            ),
+
+            /**
+             * services:
+             *   foo:
+             *     cla<caret>:
+             */
+            PlatformPatterns.psiElement().withParent(
+                PlatformPatterns.psiElement(YAMLScalar.class).withParent(
+                    PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                            PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                                PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns
+                                    .string().oneOfIgnoreCase(tree)
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
 
             // match
             //
@@ -359,64 +391,17 @@ public class YamlElementPatternHelper {
                 .withParent(PlatformPatterns
                     .psiElement(YAMLKeyValue.class)
                     .withParent(PlatformPatterns
-                        .psiElement(YAMLCompoundValue.class)
+                        .psiElement(YAMLMapping.class)
                         .withParent(PlatformPatterns
                             .psiElement(YAMLKeyValue.class)
                             .withParent(PlatformPatterns
-                                .psiElement(YAMLCompoundValue.class)
+                                .psiElement(YAMLMapping.class)
                                 .withParent(PlatformPatterns
                                     .psiElement(YAMLKeyValue.class)
                                     .withName(PlatformPatterns
                                         .string().oneOfIgnoreCase(tree)
                                     )
                                 )
-                            )
-                        )
-                    )
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-
-            // match
-            //
-            // tree:
-            //   xxx:
-            //     xxx: xxx
-            //     refer|
-            PlatformPatterns
-                .psiElement(YAMLPlainTextImpl.class)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLCompoundValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLKeyValue.class)
-                        .withParent(PlatformPatterns
-                            .psiElement(YAMLCompoundValue.class)
-                            .withParent(PlatformPatterns
-                                .psiElement(YAMLKeyValue.class)
-                                .withName(PlatformPatterns
-                                    .string().oneOfIgnoreCase(tree)
-                                )
-                            )
-                        )
-                    )
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-
-            // match
-            //
-            // tree:
-            //   xxx:
-            //     refer|
-            //     xxx: xxx
-            PlatformPatterns
-                .psiElement(YAMLPlainTextImpl.class)
-                .withParent(PlatformPatterns
-                    .psiElement(YAMLKeyValue.class)
-                    .withParent(PlatformPatterns
-                        .psiElement(YAMLCompoundValue.class)
-                        .withParent(PlatformPatterns
-                            .psiElement(YAMLKeyValue.class)
-                            .withName(PlatformPatterns
-                                .string().oneOfIgnoreCase(tree)
                             )
                         )
                     )
