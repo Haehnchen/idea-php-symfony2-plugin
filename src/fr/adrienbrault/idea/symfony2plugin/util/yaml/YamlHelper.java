@@ -415,7 +415,7 @@ public class YamlHelper {
                 if(psiElement instanceof YAMLKeyValue) {
                     final PsiElement keyElement = ((YAMLKeyValue) psiElement).getKey();
                     assert keyElement != null;
-                    holder.registerProblem(keyElement, "Duplicate keyElement", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                    holder.registerProblem(keyElement, "Duplicate key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                 }
             }
         }

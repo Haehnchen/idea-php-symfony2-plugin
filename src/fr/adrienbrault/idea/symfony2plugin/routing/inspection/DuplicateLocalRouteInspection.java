@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLValue;
 
 public class DuplicateLocalRouteInspection extends LocalInspectionTool {
 
@@ -40,8 +41,13 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
             }
 
             YAMLDocument document = PsiTreeUtil.findChildOfType(file, YAMLDocument.class);
-            if(document != null) {
-                YamlHelper.attachDuplicateKeyInspection(document, holder);
+            if(document == null) {
+                return;
+            }
+
+            YAMLValue topLevelValue = document.getTopLevelValue();
+            if(topLevelValue != null) {
+                YamlHelper.attachDuplicateKeyInspection(topLevelValue, holder);
             }
         }
     }

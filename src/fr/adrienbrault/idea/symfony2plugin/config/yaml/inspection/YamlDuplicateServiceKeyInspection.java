@@ -8,9 +8,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 
 public class YamlDuplicateServiceKeyInspection extends LocalInspectionTool {
 
@@ -32,15 +34,18 @@ public class YamlDuplicateServiceKeyInspection extends LocalInspectionTool {
     }
 
     protected void visitRoot(PsiFile psiFile, String rootName, @NotNull ProblemsHolder holder) {
-        YAMLDocument document = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
-        if(document != null) {
-            YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(document, rootName);
-            if(yamlKeyValue != null) {
-                YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
-                if(yaml != null) {
-                    YamlHelper.attachDuplicateKeyInspection(yaml, holder);
-                }
-            }
+        if(!(psiFile instanceof YAMLFile)) {
+            return;
+        }
+
+        YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, rootName);
+        if(yamlKeyValue == null) {
+            return;
+        }
+
+        YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLMapping.class);
+        if(yaml != null) {
+            YamlHelper.attachDuplicateKeyInspection(yaml, holder);
         }
     }
 }
