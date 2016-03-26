@@ -45,7 +45,12 @@ public class YamlCompletionProvider extends CompletionProvider<CompletionParamet
             resultSet.addAllElements(this.lookupList);
         } else if(lookupMap != null) {
             for (Map.Entry<String, String> lookup : lookupMap.entrySet()) {
-                resultSet.addElement(LookupElementBuilder.create(lookup.getKey()).withTypeText(lookup.getValue(), true).withIcon(Symfony2Icons.SYMFONY));
+                LookupElementBuilder lookupElement = LookupElementBuilder.create(lookup.getKey()).withTypeText(lookup.getValue(), true).withIcon(Symfony2Icons.SYMFONY);
+                if(lookup.getValue() != null && lookup.getValue().contains("deprecated")) {
+                    lookupElement = lookupElement.withStrikeoutness(true);
+                }
+
+                resultSet.addElement(lookupElement);
             }
         } else if(lookupArray != null) {
             for (String lookup : lookupArray) {

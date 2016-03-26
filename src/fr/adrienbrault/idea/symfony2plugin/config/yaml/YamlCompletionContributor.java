@@ -84,6 +84,18 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("decoration_priority", "(int) >= 2.8");
     }});
 
+    private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
+        put("pattern", "deprecated");
+        put("defaults", "(bool)");
+        put("path", "(string)");
+        put("requirements", "(array)");
+        put("methods", "(array|string)");
+        put("condition", "(string / expression)");
+        put("resource", "(string)");
+        put("prefix", "(string)");
+        put("schemes", "(array|string)");
+    }});
+
     public YamlCompletionContributor() {
 
         extend(
@@ -157,7 +169,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new DirectoryScopeCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSuperParentArrayKey("services"), new YamlCompletionProvider(SERVICE_KEYS));
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getWithFirstRootKey(), new RouteKeyNameYamlCompletionProvider(new String[] {"pattern", "defaults", "path", "requirements", "methods", "condition", "resource", "prefix"}));
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getWithFirstRootKey(), new RouteKeyNameYamlCompletionProvider(ROUTE_KEYS));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParentKeyName("requirements"), new RouteRequirementsCompletion());
 
         extend(CompletionType.BASIC, StandardPatterns.and(
@@ -477,7 +489,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     private static class RouteKeyNameYamlCompletionProvider extends YamlCompletionProvider {
 
-        public RouteKeyNameYamlCompletionProvider(String[] lookups) {
+        public RouteKeyNameYamlCompletionProvider(Map<String, String> lookups) {
             super(lookups);
         }
 
