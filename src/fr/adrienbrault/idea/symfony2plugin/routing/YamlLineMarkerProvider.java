@@ -48,7 +48,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     private void attachEntityClass(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
 
-        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLMapping) {
+        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLMapping && psiElement.getParent().getParent() instanceof YAMLDocument) {
 
             PsiFile containingFile;
             try {
