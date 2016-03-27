@@ -482,6 +482,16 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.CaseSensitivityServiceInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="RouteSettingDeprecatedInspection" displayName="Symfony: Route settings deprecated"
+                         groupName="Route"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.RouteSettingDeprecatedInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="ContainerSettingDeprecatedInspection" displayName="Symfony: Container settings deprecated"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerSettingDeprecatedInspection"/>
+
         <localInspection groupPath="Symfony" shortName="TwigVariablePathInspection" displayName="Field or method not found"
                          groupName="Twig"
                          enabledByDefault="true" level="WARNING"
