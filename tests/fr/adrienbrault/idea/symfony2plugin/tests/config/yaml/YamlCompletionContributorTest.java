@@ -66,7 +66,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "foo:\n" +
                 "    pattern:  /hello/{name}\n" +
                 "    requirements:\n" +
-                "      '<caret>'\n",
+                "      'n<caret>'\n",
             "name"
         );
 
@@ -74,7 +74,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "foo:\n" +
                 "    pattern:  /hello/{name}\n" +
                 "    requirements:\n" +
-                "      <caret>\n",
+                "      n<caret>\n",
             "name"
         );
     }
