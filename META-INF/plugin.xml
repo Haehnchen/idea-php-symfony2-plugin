@@ -504,6 +504,12 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariableDeprecatedInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Yaml escaped \ in quoted inspection"
+                         groupName="Twig"
+                         enabledByDefault="true" level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlQuotedEscapedInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
