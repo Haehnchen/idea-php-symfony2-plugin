@@ -31,9 +31,6 @@ import java.util.*;
 
 public class ServiceBuilder {
 
-    final private static String TWIG_EXTENSION = "\\Twig_Extension";
-    final private static String EVENT_SUBSCRIBER_INTERFACE = "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface";
-
     public enum OutputType {
         Yaml, XML,
     }
@@ -250,13 +247,13 @@ public class ServiceBuilder {
         String classAsParameter = getClassAsParameter(className);
 
         lines.add(serviceName + ":");
-        lines.add(indent + "class: " + (classAsParameter != null ? "%" + classAsParameter + "%" : className));
+        lines.add(indent + "class: " + (classAsParameter != null ? "'%" + classAsParameter + "%'" : className));
 
         if(methods.containsKey("__construct")) {
 
             List<String> parameters = getParameters(methods.get("__construct"));
             if(parameters != null) {
-                lines.add(String.format("%sarguments: [ %s ]", indent, StringUtils.join(formatYamlService(parameters), ", ")));
+                lines.add(String.format("%sarguments: [%s]", indent, StringUtils.join(formatYamlService(parameters), ", ")));
             }
 
             methods.remove("__construct");
@@ -266,7 +263,7 @@ public class ServiceBuilder {
         for(Map.Entry<String, ArrayList<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
             List<String> parameters = getParameters(entry.getValue());
             if(parameters != null) {
-                calls.add(String.format("%s%s- [ %s, [ %s ] ]", indent, indent, entry.getKey(), StringUtils.join(formatYamlService(parameters), ", ")));
+                calls.add(String.format("%s%s- [%s, [%s]]", indent, indent, entry.getKey(), StringUtils.join(formatYamlService(parameters), ", ")));
             }
         }
 
@@ -314,14 +311,14 @@ public class ServiceBuilder {
         // append yaml syntax, more will follow...
         List<String> yamlSyntaxParameters = new ArrayList<String>();
         for(String parameter: parameters) {
-            yamlSyntaxParameters.add("@" + parameter);
+            yamlSyntaxParameters.add(String.format("'@%s'", parameter));
         }
 
         return yamlSyntaxParameters;
     }
 
     public interface TagCallbackInterface {
-        public void onTags(@NotNull List<ServiceTag> tags);
+        void onTags(@NotNull List<ServiceTag> tags);
     }
 
 }
