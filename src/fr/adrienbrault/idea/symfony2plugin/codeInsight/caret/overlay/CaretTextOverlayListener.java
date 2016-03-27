@@ -114,7 +114,7 @@ public class CaretTextOverlayListener implements CaretListener {
                 return;
             }
 
-            if (DumbService.getInstance(project).isDumb()) {
+            if (DumbService.getInstance(project).isDumb() || project.isDisposed()) {
                 return;
             }
 
