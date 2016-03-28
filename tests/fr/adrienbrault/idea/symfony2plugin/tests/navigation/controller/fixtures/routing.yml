@@ -1,0 +1,8 @@
+foo_route_bar_foo:
+    path: foo
+    defaults: { _controller: Foo\Route\Bar::fooAction }
+
+foo_route_bar_bar_sequence:
+    path: sequence
+    defaults:
+        _controller: Foo\Route\Bar::barAction
