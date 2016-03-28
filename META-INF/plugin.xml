@@ -10,7 +10,7 @@
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
 
-<br/><font color="red"><b>NEWS</b></font>: You should not switch to PhpStorm 2016.1 as long new Yaml Plugin lexer is not supported <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/626">#626</a>
+<br/><font color="red"><b>NEWS</b></font>: Please upgrade to PhpStorm 2016.1!
 <br/>
 <h2>Install</h2>
 
@@ -105,12 +105,25 @@
 
     <change-notes><![CDATA[
 
-0.12.x: PhpStorm 2016.1 (upcoming)<br/>
+0.12.x: PhpStorm 2016.1<br/>
 0.11.x: PhpStorm 8, 9, 10<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.11.115 / 0.12.115</h2>
+<ul>
+    <li>Migrate our yaml features to new yaml plugin and support PhpStorm 2016.1 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/626">#626</a></li>
+    <li>Provide additional text for yaml route keys completion</li>
+    <li>Add quick fix for wrong service instance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/566">#566</a>; Use popup overlay for suggestion</li>
+    <li>Respect formatting for generated service definitions <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/374">#374</a></li>
+    <li>Activate xml service generator insert button</li>
+    <li>Add deprecated inspection for route and container settings in yaml and xml files</li>
+    <li>Add Symfony 2.8 / 3.1 YAML deprecations inspections <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/693">#693</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/601">#601</a></li>
+    <li>Fix definition created by "Generate Symfony2 service" is invalid because yaml deprecations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/638">#638</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/693">#693</a></li>
+</li>
+</ul>
 
 <h2>0.11.114</h2>
 <ul>

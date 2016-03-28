@@ -2,10 +2,20 @@ Changelog
 =========
 
 ### Version names
-0.12.x: PhpStorm 11 (upcoming)
+0.12.x: PhpStorm 2016.1
 0.11.x: PhpStorm 8, 9, 10
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
+
+### 0.11.115 / 0.12.115
+* Migrate our yaml features to new yaml plugin and support PhpStorm 2016.1 #626
+* Provide additional text for yaml route keys completion
+* Add quick fix for wrong service instance #566; Use popup overlay for suggestion
+* Respect formatting for generated service definitions #374
+* Activate xml service generator insert button
+* Add deprecated inspection for route and container settings in yaml and xml files
+* Add Symfony 2.8 / 3.1 YAML deprecations inspections #693, #601
+* Fix definition created by "Generate Symfony2 service" is invalid because yaml deprecations #638, #693
 
 ### 0.11.114
 * Reduce access of read thread in webDeployment jobs #694
