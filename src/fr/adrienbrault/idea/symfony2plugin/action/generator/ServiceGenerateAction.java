@@ -17,6 +17,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ServiceGenerateAction extends CodeInsightAction {
 
@@ -26,8 +27,8 @@ public class ServiceGenerateAction extends CodeInsightAction {
         event.getPresentation().setVisible(Symfony2ProjectComponent.isEnabled(event.getProject()));
     }
 
-    public static void invokeServiceGenerator(@NotNull Project project, @NotNull PsiFile file, @NotNull PhpClass phpClass) {
-        SymfonyCreateService.create(project, file, phpClass);
+    public static void invokeServiceGenerator(@NotNull Project project, @NotNull PsiFile file, @NotNull PhpClass phpClass, @Nullable Editor editor) {
+        SymfonyCreateService.create(project, file, phpClass, editor);
     }
 
     @Override
@@ -103,7 +104,7 @@ public class ServiceGenerateAction extends CodeInsightAction {
             return false;
         }
 
-        SymfonyCreateService.create(project, file);
+        SymfonyCreateService.create(project, file, editor);
 
         return true;
     }
@@ -130,7 +131,7 @@ public class ServiceGenerateAction extends CodeInsightAction {
             return false;
         }
 
-        invokeServiceGenerator(project, file, phpClass);
+        invokeServiceGenerator(project, file, phpClass, editor);
 
         return true;
     }

@@ -1,8 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.xml.XmlFile;
@@ -13,7 +17,6 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
@@ -22,7 +25,6 @@ import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameSt
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,14 +73,18 @@ public class SymfonyCreateService extends JDialog {
     @Nullable
     private PsiFile psiFile;
 
+    @Nullable
+    private Editor editor;
+
     public SymfonyCreateService(Project project, String className) {
-        this(project, (PsiFile) null);
+        this(project, (PsiFile) null, null);
         this.className = className;
     }
 
-    public SymfonyCreateService(Project project, @Nullable PsiFile psiFile) {
+    public SymfonyCreateService(Project project, @Nullable PsiFile psiFile, @Nullable Editor editor) {
         this.project = project;
         this.psiFile = psiFile;
+        this.editor = editor;
     }
 
     private static ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
@@ -217,11 +223,9 @@ public class SymfonyCreateService extends JDialog {
 
         // @TODO: support yaml
         if(this.psiFile instanceof XmlFile) {
-            this.buttonInsert.setEnabled(false);
-            this.buttonInsert.setVisible(false);
+            this.buttonInsert.setEnabled(true);
+            this.buttonInsert.setVisible(true);
 
-            /*
-            not working npe: !?
             this.buttonInsert.requestFocusInWindow();
             this.getRootPane().setDefaultButton(buttonInsert);
 
@@ -233,7 +237,7 @@ public class SymfonyCreateService extends JDialog {
                     }
                 }
             });
-            */
+
         } else {
             this.buttonInsert.setEnabled(false);
             this.buttonInsert.setVisible(false);
@@ -243,27 +247,35 @@ public class SymfonyCreateService extends JDialog {
 
     private void insertXmlServiceTag() {
 
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
+        final XmlTag rootTag = ((XmlFile) SymfonyCreateService.this.psiFile).getRootTag();
+        if(rootTag == null) {
+            return;
+        }
 
-                final XmlTag rootTag = ((XmlFile) SymfonyCreateService.this.psiFile).getRootTag();
-                if(rootTag == null) {
-                    return;
-                }
+        final TextRange[] textRange = {null};
+        new WriteCommandAction.Simple(project, "Generate Service", SymfonyCreateService.this.psiFile) {
+            @Override
+            protected void run() {
 
                 XmlTag services = rootTag.findFirstSubTag("services");
                 XmlElementFactory instance = XmlElementFactory.getInstance(SymfonyCreateService.this.project);
+
                 if(services == null) {
                     services = rootTag.addSubTag(instance.createTagFromText("<services/>", rootTag.getLanguage()), false);
                 }
 
                 XmlTag tag = instance.createTagFromText(textAreaOutput.getText().replace("\r\n", "\n").replace("\n", " "), services.getLanguage());
-                //XmlTag tag = instance.createTagFromText("<service id=\"test\"></service>", services.getLanguage());
-                services.addSubTag(tag, false);
-            }
 
-        });
+                textRange[0] = services.addSubTag(tag, false).getTextRange();
+            }
+        }.execute();
+
+        if(editor != null && textRange[0] != null) {
+            editor.getCaretModel().moveToOffset(textRange[0].getStartOffset() + 1);
+            editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
+        }
+
+        dispose();
     }
 
     private void generateServiceDefinition() {
@@ -585,13 +597,13 @@ public class SymfonyCreateService extends JDialog {
         return service;
     }
 
-    public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile) {
-        return prepare(new SymfonyCreateService(project, psiFile));
+    public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile, @Nullable Editor editor) {
+        return prepare(new SymfonyCreateService(project, psiFile, editor));
     }
 
-    public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass) {
+    public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass, @Nullable Editor editor) {
 
-        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(project, psiFile);
+        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(project, psiFile, editor);
         String presentableFQN = phpClass.getPresentableFQN();
         if(presentableFQN != null) {
             symfonyCreateService.setClassName(presentableFQN);

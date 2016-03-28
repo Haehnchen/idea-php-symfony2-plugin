@@ -1,8 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
@@ -91,12 +93,15 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
         }
 
+        Editor editor = event.getData(CommonDataKeys.EDITOR);
+
+
         if(phpClass == null) {
-            SymfonyCreateService.create(project, (PsiFile) psiFile);
+            SymfonyCreateService.create(project, (PsiFile) psiFile, editor);
             return;
         }
 
-        SymfonyCreateService.create(project, (PsiFile) psiFile, phpClass);
+        SymfonyCreateService.create(project, (PsiFile) psiFile, phpClass, editor);
     }
 
 }

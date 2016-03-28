@@ -26,7 +26,7 @@ public class PhpServiceIntention extends PsiElementBaseIntentionAction {
             return;
         }
 
-        ServiceGenerateAction.invokeServiceGenerator(project, phpClass.getContainingFile(), phpClass);
+        ServiceGenerateAction.invokeServiceGenerator(project, phpClass.getContainingFile(), phpClass, editor);
     }
 
     @Override
