@@ -1,6 +1,6 @@
 IntelliJ IDEA / PhpStorm Symfony Plugin
 ========================
-[![Build Status](https://travis-ci.org/Haehnchen/idea-php-symfony2-plugin.svg?branch=master)](https://travis-ci.org/Haehnchen/idea-php-symfony2-plugin)
+[![Build Status](https://travis-ci.org/Haehnchen/idea-php-symfony2-plugin.svg?branch=0.11)](https://travis-ci.org/Haehnchen/idea-php-symfony2-plugin)
 [![Version](http://phpstorm.espend.de/badge/7219/version)](https://plugins.jetbrains.com/plugin/7219)
 [![Downloads](http://phpstorm.espend.de/badge/7219/downloads)](https://plugins.jetbrains.com/plugin/7219)
 [![Downloads last month](http://phpstorm.espend.de/badge/7219/last-month)](https://plugins.jetbrains.com/plugin/7219)
