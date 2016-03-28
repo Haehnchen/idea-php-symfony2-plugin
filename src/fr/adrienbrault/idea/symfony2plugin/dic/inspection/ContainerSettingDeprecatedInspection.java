@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
@@ -57,11 +58,15 @@ public class ContainerSettingDeprecatedInspection extends LocalInspectionTool {
 
         XmlTag xmlTagRoute = PsiElementAssertUtil.getParentOfTypeWithNameOrNull(xmlAttribute, XmlTag.class, "service");
         if(xmlTagRoute != null) {
-            registerProblem(holder, xmlAttribute);
+            registerProblem(holder, xmlAttribute.getFirstChild());
         }
     }
 
-    private void registerProblem(@NotNull ProblemsHolder holder, @NotNull PsiElement target) {
+    private void registerProblem(@NotNull ProblemsHolder holder, @Nullable PsiElement target) {
+        if(target == null) {
+            return;
+        }
+
         holder.registerProblem(target, "Symfony: this factory pattern is deprecated use 'factory' instead", ProblemHighlightType.LIKE_DEPRECATED);
     }
 }

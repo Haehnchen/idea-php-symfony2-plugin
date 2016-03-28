@@ -32,6 +32,11 @@ public class RouteSettingDeprecatedInspectionTest extends SymfonyLightCodeInsigh
                 "<route pat<caret>tern=\"foo\"/>\n",
             "Pattern is deprecated; use path instead"
         );
+
+        assertLocalInspectionContainsNotContains("routing.xml", "" +
+                "<route pattern=\"f<caret>oo\"/>\n",
+            "Pattern is deprecated; use path instead"
+        );
     }
 
     public void testYmlRoutePatternAreDeprecated() {

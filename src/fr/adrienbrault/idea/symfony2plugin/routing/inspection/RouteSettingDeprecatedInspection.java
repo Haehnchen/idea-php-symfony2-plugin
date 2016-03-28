@@ -68,8 +68,8 @@ public class RouteSettingDeprecatedInspection extends LocalInspectionTool {
         }
 
         XmlTag xmlTagRoute = PsiElementAssertUtil.getParentOfTypeWithNameOrNull(xmlAttribute, XmlTag.class, "route");
-        if(xmlTagRoute != null) {
-            holder.registerProblem(xmlAttribute, "Pattern is deprecated; use path instead", ProblemHighlightType.LIKE_DEPRECATED);
+        if(xmlTagRoute != null && xmlAttribute.getFirstChild() != null) {
+            holder.registerProblem(xmlAttribute.getFirstChild(), "Pattern is deprecated; use path instead", ProblemHighlightType.LIKE_DEPRECATED);
         }
     }
 
