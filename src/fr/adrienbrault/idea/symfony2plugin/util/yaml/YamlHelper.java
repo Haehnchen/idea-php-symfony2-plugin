@@ -176,17 +176,6 @@ public class YamlHelper {
         return stringSet;
     }
 
-    @Nullable
-    public static YAMLKeyValue getRootKey(PsiFile psiFile, String keyName) {
-
-        YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-        if(yamlDocument != null) {
-            return YamlKeyFinder.find(yamlDocument, keyName);
-        }
-
-        return null;
-    }
-
     public static boolean isValidParameterName(String parameterName) {
 
         if(parameterName.length() < 3) {

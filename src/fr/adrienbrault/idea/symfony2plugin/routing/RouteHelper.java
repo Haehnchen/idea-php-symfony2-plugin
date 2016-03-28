@@ -825,10 +825,7 @@ public class RouteHelper {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
             if(psiFile instanceof YAMLFile) {
-                YAMLKeyValue yamlKeyValue = YamlHelper.getRootKey(psiFile, routeName);
-                if(yamlKeyValue != null) {
-                    return yamlKeyValue;
-                }
+                return YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName);
             }
 
             if(psiFile instanceof XmlFile) {
