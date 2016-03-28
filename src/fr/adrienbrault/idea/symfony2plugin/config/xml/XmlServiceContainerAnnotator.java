@@ -176,7 +176,7 @@ public class XmlServiceContainerAnnotator implements Annotator {
                 return;
             }
 
-            ServiceSuggestDialog.create(ContainerUtil.map(suggestions, new Function<ContainerService, String>() {
+            ServiceSuggestDialog.create(editor, ContainerUtil.map(suggestions, new Function<ContainerService, String>() {
                 @Override
                 public String fun(ContainerService containerService) {
                     return containerService.getName();

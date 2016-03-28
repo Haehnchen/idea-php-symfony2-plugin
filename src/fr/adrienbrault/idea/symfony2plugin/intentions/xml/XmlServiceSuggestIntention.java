@@ -71,7 +71,7 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
             return;
         }
 
-        ServiceSuggestDialog.create(suggestions, new MyInsertCallback(argumentTag));
+        ServiceSuggestDialog.create(editor, suggestions, new MyInsertCallback(argumentTag));
     }
 
     @NotNull
