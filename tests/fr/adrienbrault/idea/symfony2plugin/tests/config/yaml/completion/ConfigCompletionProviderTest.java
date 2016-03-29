@@ -33,4 +33,20 @@ public class ConfigCompletionProviderTest extends SymfonyLightCodeInsightFixture
             "framework", "swiftmailer"
         );
     }
+
+    public void testXmlNormalize() {
+        assertCompletionContains("config.yml", "" +
+                "web_profiler:\n" +
+                "   t<caret>\n" +
+                "   foo: foo\n",
+            "toolbar"
+        );
+
+        assertCompletionContains("config.yml", "" +
+                "web_profiler:\n" +
+                "   i<caret>\n" +
+                "   foo: foo\n",
+            "intercept_redirects"
+        );
+    }
 }
