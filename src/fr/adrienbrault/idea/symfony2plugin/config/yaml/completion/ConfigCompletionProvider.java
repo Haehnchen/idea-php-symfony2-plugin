@@ -8,7 +8,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.util.Function;
 import com.intellij.util.ProcessingContext;
+import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -48,10 +50,15 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             return;
         }
 
-        PsiElement yamlCompount = element.getParent();
+        PsiElement yamlScalar = element.getParent();
+        if(yamlScalar == null) {
+            return;
+        }
+
+        PsiElement yamlCompount = yamlScalar.getParent();
 
         // yaml document root context
-        if(yamlCompount instanceof YAMLDocument) {
+        if(yamlCompount.getParent() instanceof YAMLDocument) {
             attachRootConfig(completionResultSet, element);
             return;
         }
@@ -67,9 +74,13 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             return;
         }
 
-        for (int i = 0; i < items.size(); i++) {
-            items.set(i, items.get(i).replace('_', '-'));
-        }
+        // normalize for xml
+        items = ContainerUtil.map(items, new Function<String, String>() {
+            @Override
+            public String fun(String s) {
+                return s.replace('_', '-');
+            }
+        });
 
         // reverse to get top most item first
         Collections.reverse(items);

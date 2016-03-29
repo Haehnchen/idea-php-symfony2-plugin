@@ -341,6 +341,7 @@ public class YamlHelper {
      *
      *  Will return [foo, bar]
      *
+     * todo: YAMLUtil.getFullKey is useless because its not possible to prefix self item value and needs array value
      * @param psiElement any PsiElement inside a key value
      */
     public static List<String> getParentArrayKeys(PsiElement psiElement) {
