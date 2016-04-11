@@ -167,19 +167,6 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlParameter
-     */
-    public void testGetYamlParameter() {
-        PsiFile psiFile = myFixture.configureByText("foo.yml", "['@twig', @twig, @tw<caret>ig]");
-        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
-
-        PsiElement firstChild = psiFile.getFirstChild().getFirstChild();
-        assertInstanceOf(firstChild, YAMLArrayImpl.class);
-
-        assertEquals(2, YamlHelper.getYamlParameter((YAMLArrayImpl) firstChild, psiElement));
-    }
-
-    /**
      * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayValues
      */
     public void testGetYamlArrayValues() {

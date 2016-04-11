@@ -211,7 +211,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        attachInstanceAnnotation(psiElement, holder, yamlArray, constructor);
+        attachInstanceAnnotation(psiElement, holder, sequenceItem, constructor);
 
     }
 
@@ -309,7 +309,7 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        attachInstanceAnnotation(psiElement, holder, yamlCallParameterArray, method);
+        attachInstanceAnnotation(psiElement, holder, (YAMLSequenceItem) seqItem, method);
 
     }
     private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, int parameterIndex, Method constructor) {
@@ -340,18 +340,14 @@ public class YamlAnnotator implements Annotator {
         }
     }
 
-    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLSequence yamlArray, Method constructor) {
+    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLSequenceItem yamlSequenceItem, Method constructor) {
 
         if(psiElement == null) {
             return;
         }
 
-        int parameterIndex = YamlHelper.getYamlParameter(yamlArray, psiElement);
-        if(parameterIndex == -1) {
-            return;
-        }
-
-        attachInstanceAnnotation(psiElement, holder, parameterIndex, constructor);
+        List<YAMLSequenceItem> sequenceItems = PsiElementUtils.getPrevSiblingsOfType(yamlSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class));
+        attachInstanceAnnotation(psiElement, holder, sequenceItems.size(), constructor);
     }
 
     private String getServiceName(PsiElement psiElement) {

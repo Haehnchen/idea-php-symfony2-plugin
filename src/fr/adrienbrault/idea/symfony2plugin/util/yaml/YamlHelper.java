@@ -91,20 +91,6 @@ public class YamlHelper {
         return classKeyValue;
     }
 
-
-    public static int getYamlParameter(@NotNull YAMLSequence yamlArray, @NotNull PsiElement psiKeyElement) {
-        int parameter = -1;
-
-        for(YAMLSequenceItem sequenceItem: getYamlArrayValues(yamlArray)) {
-            parameter++;
-            if(sequenceItem != null && psiKeyElement.equals(sequenceItem.getValue())) {
-                return parameter;
-            }
-        }
-
-        return parameter;
-    }
-
     private static class YamlLocalServiceMap {
 
         public Map<String, String> getLocalParameterMap(PsiFile psiFile) {
