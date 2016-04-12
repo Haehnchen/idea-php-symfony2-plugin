@@ -28,6 +28,10 @@ namespace FooBundle\Entity
     {
     }
 
+    class Yaml
+    {
+    }
+    
     class BarRepository implements ObjectRepository
     {
     }

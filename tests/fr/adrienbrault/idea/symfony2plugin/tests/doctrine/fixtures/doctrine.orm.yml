@@ -1,0 +1,4 @@
+FooBundle\Entity\Yaml:
+  fields:
+    name:
+      type: string

@@ -1,9 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
 
+import com.intellij.openapi.util.Condition;
+import com.intellij.psi.PsiElement;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.io.File;
 import java.util.Collection;
@@ -19,6 +24,7 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("entity_helper.php"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.orm.yml"));
     }
 
     public String getTestDataPath() {
@@ -84,5 +90,19 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         // interface; instance blacklist
         assertFalse(map.values().contains("FooBundle:BarRepository"));
         assertFalse(map.values().contains("FooBundle:BarInterface"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getModelFieldTargets
+     */
+    public void testGetModelFieldTargets() {
+        PsiElement[] names = EntityHelper.getModelFieldTargets(PhpElementsUtil.getClass(getProject(), "FooBundle\\Entity\\Yaml"), "name");
+
+        assertNotNull(ContainerUtil.find(names, new Condition<PsiElement>() {
+            @Override
+            public boolean value(PsiElement psiElement) {
+                return psiElement instanceof YAMLKeyValue && ((YAMLKeyValue) psiElement).getKeyText().equals("name");
+            }
+        }));
     }
 }

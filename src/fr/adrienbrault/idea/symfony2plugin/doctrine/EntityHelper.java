@@ -9,6 +9,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
@@ -31,9 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -291,15 +290,12 @@ public class EntityHelper {
 
         if(psiFile instanceof YAMLFile) {
             // @TODO: migrate to getEntityFields()
-            PsiElement yamlDocument = psiFile.getFirstChild();
-            if(yamlDocument instanceof YAMLDocument) {
-                PsiElement arrayKeyValue = yamlDocument.getFirstChild();
-                if(arrayKeyValue instanceof YAMLKeyValue) {
-                    for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues((YAMLKeyValue) arrayKeyValue).values()) {
-                        YAMLKeyValue target = YamlKeyFinder.findKey(yamlKeyValue, fieldName);
-                        if(target != null) {
-                            psiElements.add(target);
-                        }
+            YAMLValue topLevelValue = ((YAMLFile) psiFile).getDocuments().get(0).getTopLevelValue();
+            if(topLevelValue instanceof YAMLMapping) {
+                Collection<YAMLKeyValue> keyValues = ((YAMLMapping) topLevelValue).getKeyValues();
+                if(keyValues.size() > 0) {
+                    for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues(keyValues.iterator().next()).values()) {
+                        ContainerUtil.addIfNotNull(psiElements, YamlHelper.getYamlKeyValue(yamlKeyValue, "name"));
                     }
                 }
             }
