@@ -2,11 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.Result;
+import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
+import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
@@ -14,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLElementGenerator;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
@@ -713,5 +720,91 @@ public class YamlHelper {
         }
 
         return ((YAMLScalar) value).getTextValue();
+    }
+
+    /**
+     * Adds a yaml key on path. This implemention merge values and support nested key values
+     * foo:\n  bar: car -> foo.car.foo.bar
+     *
+     * @param value any string think of provide qoute
+     */
+    public static void insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
+        final Pair<YAMLKeyValue, String[]> lastKeyStorage = findLastKnownKeyInFile(yamlFile, keys);
+
+        if(lastKeyStorage.getSecond().length == 0) {
+            return;
+        }
+
+        YAMLMapping childOfType = null;
+
+        // root condition
+        if(lastKeyStorage.getFirst() == null && lastKeyStorage.getSecond().length == keys.length) {
+            YAMLValue topLevelValue = yamlFile.getDocuments().get(0).getTopLevelValue();
+            if(topLevelValue instanceof YAMLMapping) {
+                childOfType = (YAMLMapping) topLevelValue;
+            }
+        } else if(lastKeyStorage.getFirst() != null) {
+            // found a key value in key path append it there
+            childOfType = PsiTreeUtil.getChildOfType(lastKeyStorage.getFirst(), YAMLMapping.class);
+        }
+
+        if(childOfType == null) {
+            return;
+        }
+
+        // append value to generate key value
+        String chainedKey = YAMLElementGenerator.createChainedKey(Arrays.asList(lastKeyStorage.getSecond()), YAMLUtil.getIndentInThisLine(childOfType));
+        if(value != null) {
+            chainedKey += " " + value;
+        }
+
+        YAMLFile dummyFile = YAMLElementGenerator.getInstance(yamlFile.getProject()).createDummyYamlWithText(chainedKey);
+
+        final YAMLKeyValue next = PsiTreeUtil.collectElementsOfType(dummyFile, YAMLKeyValue.class).iterator().next();
+        if(next == null) {
+            return;
+        }
+
+        // finally wirte changes
+        final YAMLMapping finalChildOfType = childOfType;
+        new WriteCommandAction(yamlFile.getProject()) {
+            @Override
+            protected void run(@NotNull Result result) throws Throwable {
+                finalChildOfType.putKeyValue(next);
+            }
+
+            @Override
+            public String getGroupID() {
+                return "Translation insertion";
+            }
+        }.execute();
+    }
+
+    /**
+     * Find last known KeyValue of key path, so that we can merge new incoming keys
+     */
+    @NotNull
+    private static Pair<YAMLKeyValue, String[]> findLastKnownKeyInFile(@NotNull YAMLFile file, @NotNull String... keys) {
+
+        YAMLKeyValue last = null;
+        YAMLMapping mapping = ObjectUtils.tryCast(file.getDocuments().get(0).getTopLevelValue(), YAMLMapping.class);
+
+        for (int i = 0; i < keys.length; i++) {
+            String s = keys[i];
+            if (mapping == null) {
+                return Pair.create(last, Arrays.copyOfRange(keys, i, keys.length));
+            }
+
+            YAMLKeyValue keyValue = mapping.getKeyValueByKey(s);
+            if (keyValue == null) {
+                return Pair.create(last, Arrays.copyOfRange(keys, i, keys.length));
+            }
+
+            last = keyValue;
+
+            mapping = ObjectUtils.tryCast(keyValue.getValue(), YAMLMapping.class);
+        }
+
+        return Pair.create(last, new String[]{});
     }
 }

@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
-
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -13,7 +11,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
@@ -196,6 +196,50 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertTrue(join.contains("foo"));
         assertTrue(join.contains("bar"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     */
+    public void testInsertKeyIntoFile() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "" +
+            "foo:\n" +
+            "   bar:\n" +
+            "       car: test"
+        );
+
+        YamlHelper.insertKeyIntoFile(yamlFile, "value", "foo", "bar", "apple");
+
+        assertEquals("" +
+            "foo:\n" +
+            "   bar:\n" +
+            "       car: test\n" +
+            "       apple: value",
+            yamlFile.getText()
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     */
+    public void testInsertKeyIntoFileOnRoot() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "" +
+            "foo:\n" +
+            "   bar:\n" +
+            "       car: test"
+        );
+
+        YamlHelper.insertKeyIntoFile(yamlFile, "value", "car", "bar", "apple");
+
+        assertEquals("" +
+                "foo:\n" +
+                "   bar:\n" +
+                "       car: test\n" +
+                "car:\n" +
+                "  bar:\n" +
+                "    apple: value",
+            yamlFile.getText()
+        );
     }
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
