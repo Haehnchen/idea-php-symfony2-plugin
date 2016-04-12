@@ -728,11 +728,11 @@ public class YamlHelper {
      *
      * @param value any string think of provide qoute
      */
-    public static void insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
+    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
         final Pair<YAMLKeyValue, String[]> lastKeyStorage = findLastKnownKeyInFile(yamlFile, keys);
 
         if(lastKeyStorage.getSecond().length == 0) {
-            return;
+            return false;
         }
 
         YAMLMapping childOfType = null;
@@ -749,7 +749,7 @@ public class YamlHelper {
         }
 
         if(childOfType == null) {
-            return;
+            return false;
         }
 
         // append value to generate key value
@@ -762,7 +762,7 @@ public class YamlHelper {
 
         final YAMLKeyValue next = PsiTreeUtil.collectElementsOfType(dummyFile, YAMLKeyValue.class).iterator().next();
         if(next == null) {
-            return;
+            return false;
         }
 
         // finally wirte changes
@@ -778,6 +778,8 @@ public class YamlHelper {
                 return "Translation insertion";
             }
         }.execute();
+
+        return true;
     }
 
     /**

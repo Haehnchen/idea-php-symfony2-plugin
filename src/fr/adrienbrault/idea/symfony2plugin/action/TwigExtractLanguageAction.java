@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtract
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.awt.*;
 import java.util.*;
@@ -251,7 +252,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
             // so finally insert it; first file can be a navigation target
             for(TranslationFileModel transPsiFile: files) {
-                TranslationInsertUtil.invokeTranslation(keyName, finalTranslationText, transPsiFile.getPsiFile(), navigateTo);
+                TranslationInsertUtil.invokeTranslation(editor, keyName, finalTranslationText, (YAMLFile) transPsiFile.getPsiFile(), navigateTo);
                 navigateTo = false;
             }
 

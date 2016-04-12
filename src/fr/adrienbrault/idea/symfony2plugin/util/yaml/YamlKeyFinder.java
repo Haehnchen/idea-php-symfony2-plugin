@@ -9,6 +9,10 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
 
+/**
+ * Remove TODO: Moved to core
+ */
+@Deprecated
 public class YamlKeyFinder {
 
     private PsiElement startRoot;
