@@ -3,9 +3,16 @@ Changelog
 
 ### Version names
 0.12.x: PhpStorm 2016.1
-0.11.x: PhpStorm 8, 9, 10
+0.11.x: PhpStorm 8, 9, 10 (no support)
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
+
+### 0.12.116
+* Migrate yaml routing controller navigation feature
+* Migrate yaml config completion
+* Migrate yaml sequence item usages, to fix wrong parameter resolving in call and arguments keys #710
+* PhpUse#getOriginal is deprecated, use #getFQN instead @artspb
+* Use yaml core utils to generate keys for translation, also support nested keys again #708, #711
 
 ### 0.11.115 / 0.12.115
 * Migrate our yaml features to new yaml plugin and support PhpStorm 2016.1 #626

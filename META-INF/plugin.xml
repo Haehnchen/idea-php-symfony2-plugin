@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.115</version>
+    <version>0.12.116</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -105,11 +105,20 @@
     <change-notes><![CDATA[
 
 0.12.x: PhpStorm 2016.1<br/>
-0.11.x: PhpStorm 8, 9, 10<br/>
+0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.116</h2>
+<ul>
+    <li>Migrate yaml routing controller navigation feature</li>
+    <li>Migrate yaml config completion</li>
+    <li>Migrate yaml sequence item usages, to fix wrong parameter resolving in call and arguments keys <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/710">#710</a></li>
+    <li>PhpUse#getOriginal is deprecated, use #getFQN instead @artspb</li>
+    <li>Use yaml core utils to generate keys for translation, also support nested keys again <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/708">#708</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/711">#711</a></li>
+</li>
+</ul>
 
 <h2>0.11.115 / 0.12.115</h2>
 <ul>
