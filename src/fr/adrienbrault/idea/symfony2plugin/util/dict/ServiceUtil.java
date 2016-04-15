@@ -1,12 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.ui.components.JBList;
+import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -473,4 +479,41 @@ public class ServiceUtil {
 
         return ServiceActionUtil.getPossibleServices(expectedClass, ContainerCollectionResolver.getServices(project));
     }
+
+    public static void insertTagWithPopupDecision(final @NotNull Editor editor, final @NotNull Set<String> phpServiceTags, final @NotNull Consumer<String> consumer) {
+        final JBList list = new JBList(phpServiceTags);
+
+        if(phpServiceTags.size() == 0) {
+            HintManager.getInstance().showErrorHint(editor, "Ops, no tag found");
+            return;
+        }
+
+        if(phpServiceTags.size() == 1) {
+            new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
+                @Override
+                protected void run() {
+                    consumer.consume(phpServiceTags.iterator().next());
+                }
+            }.execute();
+
+            return;
+        }
+
+        JBPopupFactory.getInstance().createListPopupBuilder(list)
+            .setTitle("Symfony: Tag Suggestion")
+            .setItemChoosenCallback(new Runnable() {
+                @Override
+                public void run() {
+                    new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
+                        @Override
+                        protected void run() {
+                            consumer.consume((String) list.getSelectedValue());
+                        }
+                    }.execute();
+                }
+            })
+            .createPopup()
+            .showInBestPositionFor(editor);
+    }
+
 }

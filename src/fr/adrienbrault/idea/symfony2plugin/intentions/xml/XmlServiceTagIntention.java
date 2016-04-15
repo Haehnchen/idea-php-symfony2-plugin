@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Consumer;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -19,7 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -37,14 +38,14 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
     }
 
     @Override
-    public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
+    public void invoke(@NotNull final Project project, final Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
 
-        XmlTag xmlTag = XmlServiceArgumentIntention.getServiceTagValid(psiElement);
+        final XmlTag xmlTag = XmlServiceArgumentIntention.getServiceTagValid(psiElement);
         if(xmlTag == null) {
             return;
         }
 
-        PhpClass phpClassFromXmlTag = ServiceActionUtil.getPhpClassFromXmlTag(xmlTag, new ContainerCollectionResolver.LazyServiceCollector(project));
+        final PhpClass phpClassFromXmlTag = ServiceActionUtil.getPhpClassFromXmlTag(xmlTag, new ContainerCollectionResolver.LazyServiceCollector(project));
         if(phpClassFromXmlTag == null) {
             return;
         }
@@ -73,23 +74,21 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
 
         }
 
-        if(phpServiceTags.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "Ops, no need for additional tag");
-            return;
-        }
-
-        for (String phpServiceTag : phpServiceTags) {
-            ServiceTag serviceTag = new ServiceTag(phpClassFromXmlTag, phpServiceTag);
-            ServiceUtil.decorateServiceTag(serviceTag);
-            xmlTag.addSubTag(XmlElementFactory.getInstance(project).createTagFromText(serviceTag.toXmlString()), false);
-        }
-
+        ServiceUtil.insertTagWithPopupDecision(editor, phpServiceTags, new Consumer<String>() {
+            @Override
+            public void consume(String tag) {
+                ServiceTag serviceTag = new ServiceTag(phpClassFromXmlTag, tag);
+                ServiceUtil.decorateServiceTag(serviceTag);
+                xmlTag.addSubTag(XmlElementFactory.getInstance(project).createTagFromText(serviceTag.toXmlString()), false);
+            }
+        });
     }
+
 
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Foo";
+        return "Symfony";
     }
 
     @NotNull
