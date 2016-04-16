@@ -28,8 +28,11 @@ public class YamlQuotedEscapedInspection extends LocalInspectionTool {
                 if(element.getNode().getElementType() == YAMLTokenTypes.SCALAR_DSTRING) {
                     // "Foo\Foo" -> "Foo\\Foo"
                     String text = StringUtils.strip(element.getText(), "\"");
-                    if(text.matches(".*[^\\\\]\\\\[^\\\\].*")) {
-                        holder.registerProblem(element, "Not escaping a backslash in a double-quoted string is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
+
+                    // dont check to long strings
+                    // ascii chars that need to be escape; some @see Symfony\Component\Yaml\Unescaper
+                    if(text.length() < 255 && text.matches(".*[^\\\\]\\\\[^\\\\0abtnvfre \"/N_LPxuU].*")) {
+                        holder.registerProblem(element, "Not escaping a backslash in a double-quoted string is deprecated", ProblemHighlightType.WEAK_WARNING);
                     }
                 } else if (element.getNode().getElementType() == YAMLTokenTypes.TEXT) {
                     // @foo -> "@foo"
@@ -37,9 +40,9 @@ public class YamlQuotedEscapedInspection extends LocalInspectionTool {
                     if(text.length() > 1) {
                         String startChar = text.substring(0, 1);
                         if(startChar.equals("@") || startChar.equals("`") || startChar.equals("|") || startChar.equals(">")) {
-                            holder.registerProblem(element, String.format("Deprecated usage of '%s' at the beginning of unquoted string", startChar), ProblemHighlightType.LIKE_DEPRECATED);
+                            holder.registerProblem(element, String.format("Deprecated usage of '%s' at the beginning of unquoted string", startChar), ProblemHighlightType.WEAK_WARNING);
                         } else if(startChar.equals("%")) {
-                            holder.registerProblem(element, "Not quoting a scalar starting with the '%' indicator character is deprecated since Symfony 3.1", ProblemHighlightType.LIKE_DEPRECATED);
+                            holder.registerProblem(element, "Not quoting a scalar starting with the '%' indicator character is deprecated since Symfony 3.1", ProblemHighlightType.WEAK_WARNING);
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.intentions.yaml;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,6 +27,22 @@ public class YamlQuotedEscapedInspectionTest extends SymfonyLightCodeInsightFixt
 
         assertLocalInspectionContainsNotContains("foo.yml",
             "class: Foo<caret>\\Bar",
+            "Not escaping a backslash in a double-quoted string is deprecated"
+        );
+    }
+
+    public void testDeprecatedNonEscapedWhitelistCharInDoubleQuotedStrings() {
+        for (String s : new String[]{"\\n", "\\r", "\\t", "\\_", " "}) {
+            assertLocalInspectionContainsNotContains("foo.yml",
+                "class: \"Foo<caret>" + s +"Bar\"",
+                "Not escaping a backslash in a double-quoted string is deprecated"
+            );
+        }
+    }
+
+    public void testDeprecatedNonEscapedBlacklistConditionInDoubleQuotedStrings() {
+        assertLocalInspectionContainsNotContains("foo.yml",
+            "class: \"Foo<caret>\\Bar" + StringUtils.repeat("a", 255) + "\"",
             "Not escaping a backslash in a double-quoted string is deprecated"
         );
     }
