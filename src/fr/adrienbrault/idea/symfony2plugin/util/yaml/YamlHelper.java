@@ -7,16 +7,20 @@ import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
+import com.intellij.util.Function;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -722,13 +726,18 @@ public class YamlHelper {
         return ((YAMLScalar) value).getTextValue();
     }
 
+    private interface KeyInsertValueFormatter {
+        @Nullable
+        String format(@NotNull YAMLMapping yamlMapping, @NotNull String chainedKey);
+    }
+
     /**
      * Adds a yaml key on path. This implemention merge values and support nested key values
      * foo:\n  bar: car -> foo.car.foo.bar
      *
-     * @param value any string think of provide qoute
+     * @param formatter any string think of provide qoute
      */
-    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
+    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, @NotNull KeyInsertValueFormatter formatter, @NotNull String... keys) {
         final Pair<YAMLKeyValue, String[]> lastKeyStorage = findLastKnownKeyInFile(yamlFile, keys);
 
         if(lastKeyStorage.getSecond().length == 0) {
@@ -752,10 +761,13 @@ public class YamlHelper {
             return false;
         }
 
-        // append value to generate key value
+        // pre-generate an empty key value
         String chainedKey = YAMLElementGenerator.createChainedKey(Arrays.asList(lastKeyStorage.getSecond()), YAMLUtil.getIndentInThisLine(childOfType));
+
+        // append value: should be string with right indent for key value
+        String value = formatter.format(childOfType, chainedKey);
         if(value != null) {
-            chainedKey += " " + value;
+            chainedKey += value;
         }
 
         YAMLFile dummyFile = YAMLElementGenerator.getInstance(yamlFile.getProject()).createDummyYamlWithText(chainedKey);
@@ -780,6 +792,44 @@ public class YamlHelper {
         }.execute();
 
         return true;
+    }
+
+    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @NotNull YAMLKeyValue yamlKeyValue, @NotNull String... keys) {
+        String keyText = yamlKeyValue.getKeyText();
+
+        return insertKeyIntoFile(yamlFile, new KeyInsertValueFormatter() {
+            @Nullable
+            @Override
+            public String format(@Nullable YAMLMapping yamlMapping, @NotNull String chainedKey) {
+
+                String text = yamlKeyValue.getText();
+
+                final String previousIndent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentInThisLine(yamlMapping));
+
+                // split content of array value object;
+                // drop first item as getValueText() removes our key indent
+                String[] remove = (String[]) ArrayUtils.remove(text.split("\\r?\\n"), 0);
+
+                List<String> map = ContainerUtil.map(remove, new Function<String, String>() {
+                    @Override
+                    public String fun(String s) {
+                        return previousIndent + s;
+                    }
+                });
+
+                return "\n" + StringUtils.strip(StringUtils.join(map, "\n"), "\n");
+            }
+        }, (String[]) ArrayUtils.add(keys, keyText));
+    }
+
+    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
+        return insertKeyIntoFile(yamlFile, new KeyInsertValueFormatter() {
+            @Nullable
+            @Override
+            public String format(@NotNull YAMLMapping yamlMapping, @NotNull String chainedKey) {
+                return " " + value;
+            }
+        }, keys);
     }
 
     /**

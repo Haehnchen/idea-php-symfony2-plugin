@@ -27,10 +27,15 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.ClassCompletionPanelWrapper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLElementGenerator;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -247,11 +252,42 @@ public class SymfonyCreateService extends JDialog {
                 }
             });
 
+        } else if(this.psiFile instanceof YAMLFile) {
+
+            this.buttonInsert.setEnabled(true);
+            this.buttonInsert.setVisible(true);
+
+            this.buttonInsert.requestFocusInWindow();
+            this.getRootPane().setDefaultButton(buttonInsert);
+
+            this.buttonInsert.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(psiFile instanceof YAMLFile) {
+                        insertYamlServiceTag();
+                    }
+                }
+            });
+
         } else {
             this.buttonInsert.setEnabled(false);
             this.buttonInsert.setVisible(false);
         }
 
+    }
+
+    private void insertYamlServiceTag() {
+        if(!(this.psiFile instanceof YAMLFile)) {
+            return;
+        }
+
+        String text = textAreaOutput.getText();
+        YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(project, YAMLKeyValue.class, text);
+        if(fromText == null) {
+            return;
+        }
+
+        YamlHelper.insertKeyIntoFile((YAMLFile) this.psiFile, fromText, "services");
     }
 
     private void insertXmlServiceTag() {

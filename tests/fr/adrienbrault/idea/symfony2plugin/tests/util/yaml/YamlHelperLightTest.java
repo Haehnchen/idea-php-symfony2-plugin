@@ -242,6 +242,85 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         );
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     * TODO empty file
+     */
+    public void skipTestInsertKeyIntoEmptyFile() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "");
+
+        YamlHelper.insertKeyIntoFile(yamlFile, "value", "car", "bar", "apple");
+
+        assertEquals("" +
+                "foo:\n" +
+                "   bar:\n" +
+                "       car: test\n" +
+                "car:\n" +
+                "  bar:\n" +
+                "    apple: value",
+            yamlFile.getText()
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     */
+    public void testInsertKeyWithArrayValue() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "" +
+            "services:\n" +
+            "   foo:\n" +
+            "       car: test"
+        );
+
+        YAMLKeyValue yamlKeyValue = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "my_service:\n" +
+            "   class: foo\n" +
+            "   tag:\n" +
+            "       - foo\n"
+        );
+
+        assertNotNull(yamlKeyValue);
+
+        YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
+
+        assertEquals("" +
+                "services:\n" +
+                "   foo:\n" +
+                "       car: test\n" +
+                "   my_service:\n" +
+                "      class: foo\n" +
+                "      tag:\n" +
+                "          - foo",
+            yamlFile.getText()
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     */
+    public void testInsertKeyValueWithMissingMainKeyInRoot() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "foo: foo");
+
+        YAMLKeyValue yamlKeyValue = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "my_service:\n" +
+            "   class: foo\n" +
+            "   tag: foo"
+        );
+
+        assertNotNull(yamlKeyValue);
+
+        YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
+
+        assertEquals("" +
+                "foo: foo\n" +
+                "services:\n" +
+                "  my_service:\n" +
+                "   class: foo\n" +
+                "   tag: foo",
+            yamlFile.getText()
+        );
+    }
+
     private static class ListYamlTagVisitor implements YamlTagVisitor {
 
         private List<YamlServiceTag> items = new ArrayList<YamlServiceTag>();
