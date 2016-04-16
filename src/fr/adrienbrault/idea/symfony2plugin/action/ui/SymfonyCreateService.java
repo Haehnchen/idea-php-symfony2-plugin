@@ -13,6 +13,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
+import com.intellij.util.Consumer;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -24,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameSt
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.ui.utils.ClassCompletionPanelWrapper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +50,6 @@ public class SymfonyCreateService extends JDialog {
 
     private JPanel panel1;
     private JPanel content;
-    private JTextField textFieldClassName;
     private JPanel tableViewPanel;
     private JTextArea textAreaOutput;
     private JButton generateButton;
@@ -60,6 +61,7 @@ public class SymfonyCreateService extends JDialog {
     private JTextField textFieldServiceName;
     private JButton buttonSettings;
     private JButton buttonInsert;
+    private JPanel panelFoo;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -76,12 +78,14 @@ public class SymfonyCreateService extends JDialog {
     @Nullable
     private Editor editor;
 
-    public SymfonyCreateService(Project project, String className) {
+    private ClassCompletionPanelWrapper classCompletionPanelWrapper;
+
+    public SymfonyCreateService(@NotNull Project project, String className) {
         this(project, (PsiFile) null, null);
         this.className = className;
     }
 
-    public SymfonyCreateService(Project project, @Nullable PsiFile psiFile, @Nullable Editor editor) {
+    public SymfonyCreateService(@NotNull final Project project, @Nullable PsiFile psiFile, @Nullable Editor editor) {
         this.project = project;
         this.psiFile = psiFile;
         this.editor = editor;
@@ -96,6 +100,13 @@ public class SymfonyCreateService extends JDialog {
 
         setContentPane(panel1);
         setModal(true);
+
+        this.classCompletionPanelWrapper = new ClassCompletionPanelWrapper(project, panelFoo, new Consumer<String>() {
+            @Override
+            public void consume(String s) {
+                update();
+            }
+        });
 
         this.modelList = new ListTableModel<MethodParameter.MethodModelParameter>(
             new IconColumn(),
@@ -171,19 +182,17 @@ public class SymfonyCreateService extends JDialog {
         this.buttonSettings.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SymfonyJavascriptServiceNameForm.create(SymfonyCreateService.this, project, textFieldClassName.getText());
+                SymfonyJavascriptServiceNameForm.create(SymfonyCreateService.this, project, classCompletionPanelWrapper.getClassName());
             }
         });
 
         if(this.className != null) {
-            this.textFieldClassName.setText(this.className);
-            update();
+            classCompletionPanelWrapper.setClassName(this.className);
         } else {
             try {
                 String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
                 if(data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
-                    this.textFieldClassName.setText(data);
-                    update();
+                    classCompletionPanelWrapper.setClassName(data);
                 }
             } catch (UnsupportedFlavorException ignored) {
             } catch (IOException ignored) {
@@ -280,7 +289,7 @@ public class SymfonyCreateService extends JDialog {
 
     private void generateServiceDefinition() {
 
-        String className = textFieldClassName.getText();
+        String className = classCompletionPanelWrapper.getClassName();
         if(StringUtils.isBlank(className)) {
             return;
         }
@@ -317,7 +326,7 @@ public class SymfonyCreateService extends JDialog {
 
     private void updateTask() {
 
-        String className = textFieldClassName.getText();
+        String className = classCompletionPanelWrapper.getClassName();
         if(className.startsWith("\\")) {
             className = className.substring(1);
         }
@@ -326,13 +335,14 @@ public class SymfonyCreateService extends JDialog {
             return;
         }
 
-        textFieldServiceName.setText(generateServiceName(className));
+        textFieldServiceName.setText("");
 
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
         if(phpClass == null) {
-            JOptionPane.showMessageDialog(null, String.format("invalid %s class", className));
             return;
         }
+
+        textFieldServiceName.setText(generateServiceName(className));
 
         List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<MethodParameter.MethodModelParameter>();
 
