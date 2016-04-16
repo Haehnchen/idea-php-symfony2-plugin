@@ -196,7 +196,12 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        final YAMLKeyValue classKeyValue = yamlKeyValue.getParentMapping().getKeyValueByKey("class");
+        YAMLMapping parentMapping = yamlKeyValue.getParentMapping();
+        if(parentMapping == null) {
+            return;
+        }
+        
+        final YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
         if(classKeyValue == null) {
             return;
         }
