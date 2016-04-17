@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.instance;
+package fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;

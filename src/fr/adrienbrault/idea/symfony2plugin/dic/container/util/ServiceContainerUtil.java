@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
+import com.intellij.openapi.util.Pair;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -7,18 +9,24 @@ import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,5 +142,73 @@ public class ServiceContainerUtil {
                 }
             }
         }
+    }
+
+
+    /**
+     * foo:
+     *  class: Foo
+     *  arguments: [@<caret>]
+     *  arguments:
+     *      - @<caret>
+     */
+    @Nullable
+    public static ServiceTypeHint getYamlConstructorTypeHint(@NotNull PsiElement psiElement, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        if (!YamlAnnotator.isStringValue(psiElement)) {
+            return null;
+        }
+
+        // @TODO: simplify code checks
+
+        PsiElement yamlScalar = psiElement.getContext();
+        if(!(yamlScalar instanceof YAMLScalar)) {
+            return null;
+        }
+
+        PsiElement context = yamlScalar.getContext();
+        if(!(context instanceof YAMLSequenceItem)) {
+            return null;
+        }
+
+        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
+        if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
+            return null;
+        }
+
+        final YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
+        if(!(yamlArray.getContext() instanceof YAMLKeyValue)) {
+            return null;
+        }
+
+        final YAMLKeyValue yamlKeyValue = (YAMLKeyValue) yamlArray.getContext();
+        if(!yamlKeyValue.getKeyText().equals("arguments")) {
+            return null;
+        }
+
+        YAMLMapping parentMapping = yamlKeyValue.getParentMapping();
+        if(parentMapping == null) {
+            return null;
+        }
+
+        final YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
+        if(classKeyValue == null) {
+            return null;
+        }
+
+        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText(), lazyServiceCollector);
+        if(serviceClass == null) {
+            return null;
+        }
+
+        Method constructor = serviceClass.getConstructor();
+        if(constructor == null) {
+            return null;
+        }
+
+        return new ServiceTypeHint(
+            constructor,
+            PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
+            psiElement
+        );
     }
 }

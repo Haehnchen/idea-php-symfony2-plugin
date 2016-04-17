@@ -17,6 +17,8 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -165,62 +167,15 @@ public class YamlAnnotator implements Annotator {
     }
 
     private void annotateConstructorArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-        if (!isStringValue(psiElement)) {
-            return;
-        }
-        
-        // @TODO: simplify code checks
-
-        PsiElement yamlScalar = psiElement.getContext();
-        if(!(yamlScalar instanceof YAMLScalar)) {
+        ServiceTypeHint methodTypeHint = ServiceContainerUtil.getYamlConstructorTypeHint(psiElement, getLazyServiceCollector(psiElement.getProject()));
+        if(methodTypeHint == null) {
             return;
         }
 
-        PsiElement context = yamlScalar.getContext();
-        if(!(context instanceof YAMLSequenceItem)) {
-            return;
-        }
-
-        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
-        if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
-            return;
-        }
-
-        final YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
-        if(!(yamlArray.getContext() instanceof YAMLKeyValue)) {
-            return;
-        }
-
-        final YAMLKeyValue yamlKeyValue = (YAMLKeyValue) yamlArray.getContext();
-        if(!yamlKeyValue.getKeyText().equals("arguments")) {
-            return;
-        }
-
-        YAMLMapping parentMapping = yamlKeyValue.getParentMapping();
-        if(parentMapping == null) {
-            return;
-        }
-        
-        final YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
-        if(classKeyValue == null) {
-            return;
-        }
-
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText(), this.getLazyServiceCollector(psiElement.getProject()));
-        if(serviceClass == null) {
-            return;
-        }
-
-        Method constructor = serviceClass.getConstructor();
-        if(constructor == null) {
-            return;
-        }
-
-        attachInstanceAnnotation(psiElement, holder, sequenceItem, constructor);
-
+        attachInstanceAnnotation(psiElement, holder, methodTypeHint.getIndex(), methodTypeHint.getMethod());
     }
 
-    private boolean isStringValue(@NotNull PsiElement psiElement) {
+    public static boolean isStringValue(@NotNull PsiElement psiElement) {
         // @TODO use new YAMLScalar element
         return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
             || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)

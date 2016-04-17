@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container>
+    <services>
+        <service id="foo_bar_apple" class="Foo\Bar\Apple"/>
+        <service id="foo_bar_car" class="Foo\Bar\Car"/>
+    </services>
+</container>
