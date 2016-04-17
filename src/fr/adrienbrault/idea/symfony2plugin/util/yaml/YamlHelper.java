@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.PlatformPatterns;
@@ -858,5 +859,30 @@ public class YamlHelper {
         }
 
         return Pair.create(last, new String[]{});
+    }
+
+    /**
+     * Bridge to allow YAMLKeyValue adding child key-values elements.
+     * Yaml plugin provides key adding only on YAMLMapping
+     *
+     * ser<caret>vice:
+     *   foo: "aaa"
+     *
+     */
+    @Nullable
+    public static YAMLKeyValue putKeyValue(@NotNull YAMLKeyValue yamlKeyValue, @NotNull String keyName, @NotNull String valueText) {
+
+        // create "foo: foo"
+        YAMLKeyValue newYamlKeyValue = YAMLElementGenerator.getInstance(yamlKeyValue.getProject())
+            .createYamlKeyValue(keyName, valueText);
+
+        YAMLMapping childOfAnyType = PsiTreeUtil.findChildOfAnyType(yamlKeyValue, YAMLMapping.class);
+        if(childOfAnyType == null) {
+            return null;
+        }
+
+        childOfAnyType.putKeyValue(newYamlKeyValue);
+
+        return newYamlKeyValue;
     }
 }

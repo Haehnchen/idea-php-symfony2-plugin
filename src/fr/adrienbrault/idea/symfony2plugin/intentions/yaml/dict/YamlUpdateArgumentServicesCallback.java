@@ -10,9 +10,11 @@ import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUti
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.yaml.YAMLUtil;
-import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.YAMLValue;
 import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
-import org.jetbrains.yaml.psi.impl.YAMLBlockSequenceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,30 +42,11 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
             return;
         }
 
-
         int appendEndOffset = -1;
         String insertString = null;
 
-        PsiElement firstChild1 = yamlCompoundValue.getFirstChild();
-
-
-        if(firstChild1 instanceof YAMLBlockSequenceImpl) {
-            // - @foo
-
-            // search indent and EOL value
-            String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(argumentsKeyValue));
-            String eol = TranslationInsertUtil.findEol(yamlKeyValue);
-
-            List<String> yamlSequences = new ArrayList<String>();
-            for (String item : items) {
-                // should be faster then YamlPsiElementFactory.createFromText
-                yamlSequences.add(indent + String.format("- @%s", StringUtils.isNotBlank(item) ? item : "?"));
-            }
-
-            appendEndOffset = yamlCompoundValue.getTextRange().getEndOffset();
-            insertString = eol + StringUtils.join(yamlSequences, eol);
-
-        } else if(firstChild1 instanceof YAMLArrayImpl) {
+        if(yamlCompoundValue instanceof YAMLArrayImpl) {
+            // [ @foo ]
 
             // we wound array
             List<PsiElement> yamlArguments = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
@@ -72,12 +55,27 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
 
                 List<String> arrayList = new ArrayList<String>();
                 for (String item : items) {
-                    arrayList.add("@" + (StringUtils.isNotBlank(item) ? item : "?"));
+                    arrayList.add(String.format("'@%s'", StringUtils.isNotBlank(item) ? item : "?"));
                 }
 
                 insertString = ", " + StringUtils.join(arrayList, ", ");
             }
 
+        } else if(yamlCompoundValue instanceof YAMLSequence) {
+            // - @foo
+
+            // search indent and EOL value
+            String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(yamlCompoundValue));
+            String eol = TranslationInsertUtil.findEol(yamlKeyValue);
+
+            List<String> yamlSequences = new ArrayList<String>();
+            for (String item : items) {
+                // should be faster then YamlPsiElementFactory.createFromText
+                yamlSequences.add(indent + String.format("- '@%s'", StringUtils.isNotBlank(item) ? item : "?"));
+            }
+
+            appendEndOffset = yamlCompoundValue.getTextRange().getEndOffset();
+            insertString = eol + StringUtils.join(yamlSequences, eol);
         }
 
         if(appendEndOffset == -1) {
