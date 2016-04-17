@@ -8,7 +8,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.Function;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -54,7 +53,6 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        this.annotateConstructorSequenceArguments(psiElement, holder);
         this.annotateConstructorArguments(psiElement, holder);
         this.annotateCallsArguments(psiElement, holder);
 
@@ -126,46 +124,12 @@ public class YamlAnnotator implements Annotator {
     }
 
     /**
-     * arguments:
-     *    - @twig
-     *    - @twig
+     * foo:
+     *  class: Foo
+     *  arguments: [@<caret>]
+     *  arguments:
+     *      - @<caret>
      */
-    private void annotateConstructorSequenceArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-        if(isStringValue(psiElement)) {
-            PsiElement yamlSequence = psiElement.getContext();
-            if(yamlSequence instanceof YAMLSequence) {
-                PsiElement yamlCompoundValue = yamlSequence.getContext();
-                if(yamlCompoundValue instanceof YAMLCompoundValue) {
-                    PsiElement yamlKeyValue = yamlCompoundValue.getContext();
-                    if(yamlKeyValue instanceof YAMLKeyValue) {
-                        String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
-                        if("arguments".equals(keyText)) {
-                            List<YAMLSequence> test = PsiElementUtils.getPrevSiblingsOfType(yamlSequence, PlatformPatterns.psiElement(YAMLSequence.class));
-
-                            PsiElement yamlCompoundValueService = yamlKeyValue.getParent();
-                            if(yamlCompoundValueService instanceof YAMLCompoundValue) {
-                                String className = YamlHelper.getYamlKeyValueAsString((YAMLCompoundValue) yamlCompoundValueService, "class", false);
-                                if(className != null) {
-                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), className, this.getLazyServiceCollector(psiElement.getProject()));
-                                    if(serviceClass != null) {
-                                        Method constructor = serviceClass.getConstructor();
-                                        if(constructor != null) {
-                                            attachInstanceAnnotation(psiElement, holder, test.size(), constructor);
-                                        }
-                                    }
-                                }
-                            }
-
-
-                        }
-                    }
-                }
-            }
-
-        }
-
-    }
-
     private void annotateConstructorArguments(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
         ServiceTypeHint methodTypeHint = ServiceContainerUtil.getYamlConstructorTypeHint(psiElement, getLazyServiceCollector(psiElement.getProject()));
         if(methodTypeHint == null) {
@@ -339,12 +303,11 @@ public class YamlAnnotator implements Annotator {
                 return;
             }
 
-            ServiceSuggestDialog.create(editor, ContainerUtil.map(suggestions, new Function<ContainerService, String>() {
-                @Override
-                public String fun(ContainerService containerService) {
-                    return containerService.getName();
-                }
-            }), new MyInsertCallback(editor, myPsiElement));
+            ServiceSuggestDialog.create(
+                editor,
+                ContainerUtil.map(suggestions, ContainerService::getName),
+                new MyInsertCallback(editor, myPsiElement)
+            );
         }
 
         @Override
