@@ -1362,4 +1362,25 @@ public class PhpElementsUtil {
         String typeName = ((PhpReference) classReference).getFQN();
         return typeName != null && StringUtils.isNotBlank(typeName) ? StringUtils.stripStart(typeName, "\\") : null;
     }
+
+    /**
+     * Get type hint PhpClass of an given method index
+     *
+     * @param parameterIndex staring 0
+     */
+    @Nullable
+    public static PhpClass getMethodTypeHintParameterPhpClass(@NotNull Method method, int parameterIndex) {
+        Parameter[] constructorParameter = method.getParameters();
+        if(parameterIndex >= constructorParameter.length) {
+            return null;
+        }
+
+        String className = constructorParameter[parameterIndex].getDeclaredType().toString();
+        if(StringUtils.isBlank(className)) {
+            return null;
+        }
+
+        return PhpElementsUtil.getClassInterface(method.getProject(), className);
+    }
+
 }

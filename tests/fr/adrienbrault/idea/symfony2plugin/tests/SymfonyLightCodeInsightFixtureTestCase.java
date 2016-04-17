@@ -259,6 +259,28 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         fail(String.format("failed that PsiElement (%s) navigate to file %s", psiElement.toString(), targetShortcut));
     }
 
+    public void assertCompletionLookupContainsPresentableItem(LanguageFileType languageFileType, String configureByText, LookupElementPresentationAssert.Assert presentationAssert) {
+
+        myFixture.configureByText(languageFileType, configureByText);
+        myFixture.completeBasic();
+
+        LookupElement[] lookupElements = myFixture.getLookupElements();
+        if(lookupElements == null) {
+            fail("failed to find lookup presentable on empty collection");
+        }
+
+        for (LookupElement lookupElement : lookupElements) {
+            LookupElementPresentation presentation = new LookupElementPresentation();
+            lookupElement.renderElement(presentation);
+
+            if(presentationAssert.match(presentation)) {
+                return;
+            }
+        }
+
+        fail("failed to find lookup presentable");
+    }
+
     public void assertCompletionLookupTailEquals(LanguageFileType languageFileType, String configureByText, String lookupString, String tailText) {
 
         myFixture.configureByText(languageFileType, configureByText);
@@ -717,6 +739,12 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
                 lookupElement.renderElement(presentation);
                 return presentation.getIcon() == this.icon;
             }
+        }
+    }
+
+    public static class LookupElementPresentationAssert {
+        public interface Assert {
+            boolean match(@NotNull LookupElementPresentation lookupElement);
         }
     }
 

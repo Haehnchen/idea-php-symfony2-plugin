@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.AbstractServiceReference;
 import org.jetbrains.annotations.NotNull;
 
-public class ServiceXmlReference  extends AbstractServiceReference {
+public class ServiceXmlReference extends AbstractServiceReference {
 
     public ServiceXmlReference(@NotNull PsiElement element, String ServiceId) {
         super(element);

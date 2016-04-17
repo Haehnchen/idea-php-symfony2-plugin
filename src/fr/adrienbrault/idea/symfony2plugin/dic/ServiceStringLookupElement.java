@@ -11,6 +11,7 @@ public class ServiceStringLookupElement extends LookupElement {
     private String serviceClass;
     private boolean isWeakIndexService = false;
     private ContainerService containerService;
+    private boolean boldText = false;
 
     public ServiceStringLookupElement(ContainerService containerService) {
         this(containerService.getName(), containerService.getClassName(), containerService.isWeak());
@@ -60,6 +61,16 @@ public class ServiceStringLookupElement extends LookupElement {
             presentation.setTypeText(serviceClass);
         }
 
+        presentation.setItemTextBold(this.boldText);
+        if(this.boldText) {
+            presentation.setTypeGrayed(false);
+            presentation.setItemTextUnderlined(true);
+        }
     }
 
+    public ServiceStringLookupElement setBoldText(boolean boldText) {
+        this.boldText = boldText;
+
+        return this;
+    }
 }

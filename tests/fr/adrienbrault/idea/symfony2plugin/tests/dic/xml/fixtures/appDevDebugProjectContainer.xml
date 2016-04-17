@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+  <parameters>
+      <parameter key="foo.class">My\Class</parameter>
+      <parameter key="foo_bar">MyFoo</parameter>
+  </parameters>
+
+  <services>
+      <service id="genemu.twig.extension.form" class="Genemu\Bundle\FormBundle\Twig\Extension\FormExtension">
+          <tag name="twig.extension"/>
+          <tag name="twig.extension.reloaded"/>
+          <argument type="service" id="twig.form.renderer"/>
+      </service>
+      <service id="genemu.twig.extension.form" class="Genemu\Bundle\FormBundle\Twig\Extension\FormExtension">
+          <tag name="twig.extension.foo"/>
+          <argument type="service" id="twig.form.renderer"/>
+      </service>
+      <service id="data_collector.router" class="Symfony\Bundle\FrameworkBundle\DataCollector\RouterDataCollector">
+          <tag name="kernel.event_listener" event="kernel.controller" method="onKernelController"/>
+          <tag name="data_collector" template="@WebProfiler/Collector/router.html.twig" id="router" priority="255"/>
+      </service>
+  </services>
+</container>

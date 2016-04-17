@@ -430,23 +430,28 @@ public class ServiceUtil {
 
     @NotNull
     public static Collection<ContainerService> getServiceSuggestionForPhpClass(@NotNull PhpClass phpClass, @NotNull Map<String, ContainerService> serviceMap) {
+        return getServiceSuggestionForPhpClass(phpClass, serviceMap.values());
+    }
+
+    @NotNull
+    public static Collection<ContainerService> getServiceSuggestionForPhpClass(@NotNull PhpClass phpClass, @NotNull Collection<ContainerService> serviceMap) {
 
         String fqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
 
         Collection<ContainerService> instances = new ArrayList<ContainerService>();
 
-        for(Map.Entry<String, ContainerService> entry: serviceMap.entrySet()) {
-            if(entry.getValue().getClassName() == null) {
+        for(ContainerService service: serviceMap) {
+            if(service.getClassName() == null) {
                 continue;
             }
 
-            PhpClass serviceClass = PhpElementsUtil.getClassInterface(phpClass.getProject(), entry.getValue().getClassName());
+            PhpClass serviceClass = PhpElementsUtil.getClassInterface(phpClass.getProject(), service.getClassName());
             if(serviceClass == null) {
                 continue;
             }
 
             if(PhpElementsUtil.isInstanceOf(serviceClass, fqn)) {
-                instances.add(entry.getValue());
+                instances.add(service);
             }
         }
 
@@ -514,6 +519,16 @@ public class ServiceUtil {
             })
             .createPopup()
             .showInBestPositionFor(editor);
+    }
+
+    @NotNull
+    public static Collection<ContainerService> getServiceSuggestionsForTypeHint(@NotNull Method method, int index, @NotNull Collection<ContainerService> services) {
+        PhpClass phpClass = PhpElementsUtil.getMethodTypeHintParameterPhpClass(method, index);
+        if(phpClass == null) {
+            return Collections.emptyList();
+        }
+
+        return ServiceUtil.getServiceSuggestionForPhpClass(phpClass, services);
     }
 
 }

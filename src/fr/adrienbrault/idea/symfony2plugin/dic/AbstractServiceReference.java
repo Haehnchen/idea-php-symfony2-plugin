@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.xml.XmlTokenType;
+import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -57,15 +59,18 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
             collector.addCollectorSource(ContainerCollectionResolver.Source.INDEX);
         }
 
-        for(ContainerService containerService: collector.collect()) {
-
-            // dont attach private services; if configured
-            if(containerService.isPrivate() && !usePrivateServices) {
-                continue;
+        // @TODO: remove getVariants
+        // just simulate scope for completion
+        PsiElement psiElement = ContainerUtil.find(this.getElement().getChildren(), new Condition<PsiElement>() {
+            @Override
+            public boolean value(PsiElement psiElement) {
+                return psiElement.getNode().getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN;
             }
+        });
 
-            results.add(new ServiceStringLookupElement(containerService));
-        }
+        results.addAll(
+            ServiceCompletionProvider.getLookupElements(psiElement, collector.getServices().values())
+        );
 
         return results.toArray();
     }

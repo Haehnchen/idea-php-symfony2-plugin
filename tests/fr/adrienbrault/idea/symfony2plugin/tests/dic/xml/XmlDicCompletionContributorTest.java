@@ -1,6 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.xml;
 
+import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.psi.xml.XmlFile;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -13,6 +17,8 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes1.php"));
+        myFixture.copyFileToProject("services.xml");
 
         myFixture.configureByText("classes.php", "<?php\n" +
             "namespace Foo\\Name;\n" +
@@ -24,7 +30,7 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("..").getFile()).getAbsolutePath();
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     public void testServiceCompletion() {
@@ -153,6 +159,22 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
             "<services><service><argument>%foo_bar%</argument></service></services>"
         );
 
+    }
+
+    public void skipTestServiceInstanceHighlightCompletion() {
+        assertCompletionLookupContainsPresentableItem(XmlFileType.INSTANCE, "" +
+                "<services>" +
+                "   <service class=\"Foo\\Bar\\Car\">" +
+                "       <argument type=\"service\" id=\"<caret>\"/>" +
+                "   </service>" +
+                "</services>",
+            new LookupElementPresentationAssert.Assert() {
+                @Override
+                public boolean match(@NotNull LookupElementPresentation lookupElement) {
+                    return "foo_bar_apple".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold() && lookupElement.isItemTextUnderlined();
+                }
+            }
+        );
     }
 
 }
