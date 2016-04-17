@@ -149,7 +149,7 @@
         <sequential>
             <pathconvert property="classpathProp" refid="classpath"/>
 
-            <javac2 destdir="${build}" classpathref="classpath" verbose="false" debug="true" source="1.6" target="1.6" includeantruntime="false">
+            <javac2 destdir="${build}" classpathref="classpath" verbose="false" debug="true" source="1.8" target="1.8" includeantruntime="false">
                 <src path="${src}"/>
             </javac2>
 
@@ -163,7 +163,7 @@
         <sequential>
             <pathconvert property="classpathProp" refid="classpath"/>
 
-            <javac2 destdir="${test.build}" classpathref="classpath" verbose="false" debug="true" source="1.6" target="1.6" includeantruntime="false">
+            <javac2 destdir="${test.build}" classpathref="classpath" verbose="false" debug="true" source="1.8" target="1.8" includeantruntime="false">
                 <src path="${src}"/>
                 <src path="${test.src}"/>
             </javac2>
