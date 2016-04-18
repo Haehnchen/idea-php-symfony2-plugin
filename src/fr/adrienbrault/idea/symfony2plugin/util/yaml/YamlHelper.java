@@ -738,11 +738,12 @@ public class YamlHelper {
      *
      * @param formatter any string think of provide qoute
      */
-    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, @NotNull KeyInsertValueFormatter formatter, @NotNull String... keys) {
+    @Nullable
+    public static PsiElement insertKeyIntoFile(final @NotNull YAMLFile yamlFile, @NotNull KeyInsertValueFormatter formatter, @NotNull String... keys) {
         final Pair<YAMLKeyValue, String[]> lastKeyStorage = findLastKnownKeyInFile(yamlFile, keys);
 
         if(lastKeyStorage.getSecond().length == 0) {
-            return false;
+            return null;
         }
 
         YAMLMapping childOfType = null;
@@ -759,7 +760,7 @@ public class YamlHelper {
         }
 
         if(childOfType == null) {
-            return false;
+            return null;
         }
 
         // pre-generate an empty key value
@@ -775,7 +776,7 @@ public class YamlHelper {
 
         final YAMLKeyValue next = PsiTreeUtil.collectElementsOfType(dummyFile, YAMLKeyValue.class).iterator().next();
         if(next == null) {
-            return false;
+            return null;
         }
 
         // finally wirte changes
@@ -788,14 +789,15 @@ public class YamlHelper {
 
             @Override
             public String getGroupID() {
-                return "Translation insertion";
+                return "Key insertion";
             }
         }.execute();
 
-        return true;
+        return childOfType;
     }
 
-    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @NotNull YAMLKeyValue yamlKeyValue, @NotNull String... keys) {
+    @Nullable
+    public static PsiElement insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @NotNull YAMLKeyValue yamlKeyValue, @NotNull String... keys) {
         String keyText = yamlKeyValue.getKeyText();
 
         return insertKeyIntoFile(yamlFile, new KeyInsertValueFormatter() {
@@ -823,7 +825,7 @@ public class YamlHelper {
         }, (String[]) ArrayUtils.add(keys, keyText));
     }
 
-    public static boolean insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
+    public static PsiElement insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
         return insertKeyIntoFile(yamlFile, new KeyInsertValueFormatter() {
             @Nullable
             @Override

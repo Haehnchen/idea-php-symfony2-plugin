@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.xml.XmlFile;
@@ -32,8 +33,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLElementGenerator;
-import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -75,7 +74,6 @@ public class SymfonyCreateService extends JDialog {
     private Set<String> serviceSetComplete;
 
     private Project project;
-    private String className;
 
     @Nullable
     private PsiFile psiFile;
@@ -85,9 +83,9 @@ public class SymfonyCreateService extends JDialog {
 
     private ClassCompletionPanelWrapper classCompletionPanelWrapper;
 
-    public SymfonyCreateService(@NotNull Project project, String className) {
-        this(project, (PsiFile) null, null);
-        this.className = className;
+    public SymfonyCreateService(@NotNull final Project project, @Nullable PsiFile psiFile, @Nullable Editor editor, @NotNull String className) {
+        this(project, psiFile, editor);
+        classCompletionPanelWrapper.setClassName(className);
     }
 
     public SymfonyCreateService(@NotNull final Project project, @Nullable PsiFile psiFile, @Nullable Editor editor) {
@@ -191,17 +189,12 @@ public class SymfonyCreateService extends JDialog {
             }
         });
 
-        if(this.className != null) {
-            classCompletionPanelWrapper.setClassName(this.className);
-        } else {
-            try {
-                String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-                if(data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
-                    classCompletionPanelWrapper.setClassName(data);
-                }
-            } catch (UnsupportedFlavorException ignored) {
-            } catch (IOException ignored) {
+        try {
+            String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            if(data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
+                classCompletionPanelWrapper.setClassName(data);
             }
+        } catch (UnsupportedFlavorException | IOException ignored) {
         }
 
         radioButtonOutXml.addChangeListener(new ChangeListener() {
@@ -235,37 +228,19 @@ public class SymfonyCreateService extends JDialog {
             }
         });
 
-        // @TODO: support yaml
-        if(this.psiFile instanceof XmlFile) {
+        // insert
+        if(this.psiFile instanceof XmlFile || this.psiFile instanceof YAMLFile) {
             this.buttonInsert.setEnabled(true);
             this.buttonInsert.setVisible(true);
 
             this.buttonInsert.requestFocusInWindow();
             this.getRootPane().setDefaultButton(buttonInsert);
 
-            this.buttonInsert.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if(psiFile instanceof XmlFile) {
-                        insertXmlServiceTag();
-                    }
-                }
-            });
-
-        } else if(this.psiFile instanceof YAMLFile) {
-
-            this.buttonInsert.setEnabled(true);
-            this.buttonInsert.setVisible(true);
-
-            this.buttonInsert.requestFocusInWindow();
-            this.getRootPane().setDefaultButton(buttonInsert);
-
-            this.buttonInsert.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if(psiFile instanceof YAMLFile) {
-                        insertYamlServiceTag();
-                    }
+            this.buttonInsert.addActionListener(e -> {
+                if(psiFile instanceof XmlFile) {
+                    insertXmlServiceTag();
+                } else if(psiFile instanceof YAMLFile) {
+                    insertYamlServiceTag();
                 }
             });
 
@@ -281,13 +256,18 @@ public class SymfonyCreateService extends JDialog {
             return;
         }
 
-        String text = textAreaOutput.getText();
+        String text = createServiceAsText(ServiceBuilder.OutputType.Yaml);
         YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(project, YAMLKeyValue.class, text);
         if(fromText == null) {
             return;
         }
 
-        YamlHelper.insertKeyIntoFile((YAMLFile) this.psiFile, fromText, "services");
+        PsiElement psiElement = YamlHelper.insertKeyIntoFile((YAMLFile) psiFile, fromText, "services");
+        if(psiElement != null) {
+            navigateToElement(new TextRange[] {psiElement.getTextRange()});
+        }
+
+        dispose();
     }
 
     private void insertXmlServiceTag() {
@@ -309,18 +289,30 @@ public class SymfonyCreateService extends JDialog {
                     services = rootTag.addSubTag(instance.createTagFromText("<services/>", rootTag.getLanguage()), false);
                 }
 
-                XmlTag tag = instance.createTagFromText(textAreaOutput.getText().replace("\r\n", "\n").replace("\n", " "), services.getLanguage());
+                XmlTag tag = instance.createTagFromText(createServiceAsText(ServiceBuilder.OutputType.XML).replace("\r\n", "\n").replace("\n", " "), services.getLanguage());
 
                 textRange[0] = services.addSubTag(tag, false).getTextRange();
             }
         }.execute();
 
+        navigateToElement(textRange);
+
+        dispose();
+    }
+
+    private void navigateToElement(TextRange[] textRange) {
         if(editor != null && textRange[0] != null) {
             editor.getCaretModel().moveToOffset(textRange[0].getStartOffset() + 1);
             editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
         }
+    }
 
-        dispose();
+    private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType) {
+        return new ServiceBuilder(this.modelList.getItems(), this.project).build(
+            outputType,
+            classCompletionPanelWrapper.getClassName(),
+            textFieldServiceName.getText()
+        );
     }
 
     private void generateServiceDefinition() {
@@ -344,11 +336,7 @@ public class SymfonyCreateService extends JDialog {
             outputType = ServiceBuilder.OutputType.Yaml;
         }
 
-        textAreaOutput.setText(new ServiceBuilder(this.modelList.getItems(), this.project).build(
-            outputType,
-            className,
-            textFieldServiceName.getText()
-        ));
+        textAreaOutput.setText(createServiceAsText(outputType));
     }
 
     private void update() {
@@ -432,10 +420,6 @@ public class SymfonyCreateService extends JDialog {
     @Override
     protected void dialogInit() {
         super.dialogInit();
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
     }
 
     private class IsServiceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, Boolean> {
@@ -630,7 +614,6 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private static SymfonyCreateService prepare(@NotNull SymfonyCreateService service) {
-
         service.init();
         service.setTitle("Symfony: Service Generator");
         service.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
@@ -648,16 +631,8 @@ public class SymfonyCreateService extends JDialog {
     }
 
     public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass, @Nullable Editor editor) {
-
-        SymfonyCreateService symfonyCreateService = new SymfonyCreateService(project, psiFile, editor);
-        String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN != null) {
-            symfonyCreateService.setClassName(presentableFQN);
-        }
-
-        return prepare(symfonyCreateService);
+        return prepare(new SymfonyCreateService(project, psiFile, editor, phpClass.getPresentableFQN()));
     }
-
 }
 
 

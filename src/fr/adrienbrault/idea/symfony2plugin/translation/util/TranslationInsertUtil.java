@@ -25,7 +25,7 @@ public class TranslationInsertUtil {
             @Override
             public void run() {
                 final String[] keys = keyName.split("\\.");
-                if(!YamlHelper.insertKeyIntoFile(yamlFile, "'" + translation + "'", keys)) {
+                if(YamlHelper.insertKeyIntoFile(yamlFile, "'" + translation + "'", keys) == null) {
                     HintManager.getInstance().showErrorHint(editor, "Error adding key");
                     return;
                 }
