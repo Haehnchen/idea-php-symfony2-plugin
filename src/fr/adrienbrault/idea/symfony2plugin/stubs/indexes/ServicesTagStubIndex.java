@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.*;
@@ -10,6 +9,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -71,7 +71,6 @@ public class ServicesTagStubIndex extends FileBasedIndexExtension<String, String
         return KEY;
     }
 
-
     @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
@@ -80,18 +79,14 @@ public class ServicesTagStubIndex extends FileBasedIndexExtension<String, String
 
     @NotNull
     public DataExternalizer<String[]> getValueExternalizer() {
-        return new ServicesDefinitionStubIndex.MySetDataExternalizer();
+        return new ArrayDataExternalizer();
     }
 
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML;
-            }
-        };
+        return file ->
+            file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML;
     }
 
     @Override

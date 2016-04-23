@@ -1,13 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
@@ -158,18 +158,14 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
     @NotNull
     public DataExternalizer<String[]> getValueExternalizer() {
-        return new ServicesDefinitionStubIndex.MySetDataExternalizer();
+        return new ArrayDataExternalizer();
     }
 
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension()) || "xliff".equalsIgnoreCase(file.getExtension());
-            }
-        };
+        return file ->
+            file.getFileType() == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension()) || "xliff".equalsIgnoreCase(file.getExtension());
     }
 
     @Override

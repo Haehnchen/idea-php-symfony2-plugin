@@ -4,17 +4,16 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ImmutableDecoratorService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -23,7 +22,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,25 +38,20 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     @Override
     public DataIndexer<String, ServiceInterface, FileContent> getIndexer() {
 
-        return new DataIndexer<String, ServiceInterface, FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, ServiceInterface> map(@NotNull FileContent inputData) {
+        return inputData -> {
 
-                Map<String, ServiceInterface> map = new THashMap<String, ServiceInterface>();
+            Map<String, ServiceInterface> map = new THashMap<>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(inputData, psiFile)) {
-                    return map;
-                }
-
-                for (ServiceInterface service : ServiceContainerUtil.getServicesInFile(psiFile)) {
-                    map.put(service.getId(), service);
-                }
-
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(inputData, psiFile)) {
                 return map;
             }
 
+            for (ServiceInterface service : ServiceContainerUtil.getServicesInFile(psiFile)) {
+                map.put(service.getId(), service);
+            }
+
+            return map;
         };
     }
 
@@ -83,12 +76,8 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML;
-            }
-        };
+        return file ->
+            file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML;
     }
 
     @Override
@@ -98,37 +87,13 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 1;
+        return 3;
     }
 
     /**
-     * com.jetbrains.php.lang.psi.stubs.indexes.PhpTraitUsageIndex
+     * @deprecated
      */
-    public static class MySetDataExternalizer implements DataExternalizer<String[]> {
-
-        private final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
-
-        public synchronized void save(@NotNull DataOutput out, String[] values) throws IOException {
-
-            out.writeInt(values.length);
-            for(String value: values) {
-                this.myStringEnumerator.save(out, value != null ? value : "");
-            }
-
-        }
-
-        public synchronized String[] read(@NotNull DataInput in) throws IOException {
-            List<String> list = new ArrayList<String>();
-            int r = in.readInt();
-            while (r > 0) {
-                list.add(this.myStringEnumerator.read(in));
-                r--;
-            }
-
-            return list.toArray(new String[list.size()]);
-        }
-
-    }
+    public static class MySetDataExternalizer extends ArrayDataExternalizer {};
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
 

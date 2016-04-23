@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
@@ -13,6 +12,7 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -86,18 +86,14 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
     @NotNull
     @Override
     public DataExternalizer<String[]> getValueExternalizer() {
-        return new ServicesDefinitionStubIndex.MySetDataExternalizer();
+        return new ArrayDataExternalizer();
     }
 
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == YAMLFileType.YML || file.getFileType() == XmlFileType.INSTANCE;
-            }
-        };
+        return file ->
+            file.getFileType() == YAMLFileType.YML || file.getFileType() == XmlFileType.INSTANCE;
     }
 
     @Override
@@ -125,9 +121,6 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
         return true;
     }
-
-
-
 }
 
 

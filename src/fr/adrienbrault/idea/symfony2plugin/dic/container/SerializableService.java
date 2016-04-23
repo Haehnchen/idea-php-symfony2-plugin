@@ -4,12 +4,14 @@ import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
  * We dont want to serialize default values so eg use Boolean and nullable values for properties
  */
-public class SerializableService implements ServiceInterface {
+public class SerializableService implements ServiceInterface, Serializable {
 
     @NotNull
     private final String id;
