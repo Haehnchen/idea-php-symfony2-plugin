@@ -9,6 +9,7 @@ import com.intellij.util.indexing.ID;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SymfonyProcessors {
 
@@ -22,7 +23,7 @@ public class SymfonyProcessors {
         public CollectProjectUniqueKeys(Project project, ID id) {
             this.project = project;
             this.id = id;
-            this.stringSet = new HashSet<String>();
+            this.stringSet = new HashSet<>();
         }
 
         @Override
@@ -32,18 +33,11 @@ public class SymfonyProcessors {
         }
 
         public Set<String> getResult() {
-            Set<String> set = new HashSet<String>();
-
-            for (String key : stringSet) {
-                Collection fileCollection = FileBasedIndex.getInstance().getContainingFiles(id, key, GlobalSearchScope.allScope(project));
-
-                if (fileCollection.size() > 0) {
-                    set.add(key);
-                }
-
-            }
-
-            return set;
+            return stringSet.stream()
+                .filter(
+                    s -> FileBasedIndex.getInstance().getContainingFiles(id, s, GlobalSearchScope.allScope(project)).size() > 0)
+                .collect(Collectors.toSet()
+            );
         }
 
     }
@@ -60,7 +54,7 @@ public class SymfonyProcessors {
             this.project = project;
             this.id = id;
             this.strongKeys = strongKeys;
-            this.stringSet = new HashSet<String>();
+            this.stringSet = new HashSet<>();
         }
 
         @Override
@@ -72,18 +66,12 @@ public class SymfonyProcessors {
         }
 
         public Set<String> getResult() {
-            Set<String> set = new HashSet<String>();
-
-            for (String key : stringSet) {
-                Collection fileCollection = FileBasedIndex.getInstance().getContainingFiles(id, key, GlobalSearchScope.allScope(project));
-
-                if (fileCollection.size() > 0) {
-                    set.add(key);
-                }
-
-            }
-
-            return set;
+            return stringSet.stream()
+                .filter(
+                    s -> FileBasedIndex.getInstance().getContainingFiles(id, s, GlobalSearchScope.allScope(project)).size() > 0
+                )
+                .collect(Collectors.toSet()
+            );
         }
 
     }

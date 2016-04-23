@@ -11,7 +11,6 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,20 +34,16 @@ public class FileIndexCaches {
         CachedValue<Map<String, List<T>>> cache = project.getUserData(dataHolderKey);
 
         if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, List<T>>>() {
-                @Nullable
-                @Override
-                public Result<Map<String, List<T>>> compute() {
+            cache = CachedValuesManager.getManager(project).createCachedValue(() -> {
+                Map<String, List<T>> items = new HashMap<>();
 
-                    Map<String, List<T>> items = new HashMap<String, List<T>>();
+                final FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
 
-                    FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
-                    for (String serviceName : getIndexKeysCache(project, dataHolderNames, ID)) {
-                        items.put(serviceName, fileBasedIndex.getValues(ID, serviceName, scope));
-                    }
+                getIndexKeysCache(project, dataHolderNames, ID).stream().forEach(service -> {
+                    items.put(service, fileBasedIndex.getValues(ID, service, scope));
+                });
 
-                    return Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
-                }
+                return CachedValueProvider.Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
             }, false);
 
             project.putUserData(dataHolderKey, cache);
@@ -65,26 +60,21 @@ public class FileIndexCaches {
 
         CachedValue<Map<String, List<String>>> cache = project.getUserData(dataHolderKey);
         if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, List<String>>>() {
-                @Nullable
-                @Override
-                public Result<Map<String, List<String>>> compute() {
+            cache = CachedValuesManager.getManager(project).createCachedValue(() -> {
 
-                    Map<String, List<String>> strings = new HashMap<String, List<String>>();
+                Map<String, List<String>> strings = new HashMap<>();
 
-                    FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
-                    for(String parameterName: getIndexKeysCache(project, dataHolderNames, ID)) {
-
-                        // just for secure
-                        if(parameterName == null) {
-                            continue;
-                        }
-
-                        strings.put(parameterName, fileBasedIndex.getValues(ID, parameterName, scope));
+                final FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
+                getIndexKeysCache(project, dataHolderNames, ID).stream().forEach(parameterName -> {
+                    // just for secure
+                    if(parameterName == null) {
+                        return;
                     }
 
-                    return Result.create(strings, PsiModificationTracker.MODIFICATION_COUNT);
-                }
+                    strings.put(parameterName, fileBasedIndex.getValues(ID, parameterName, scope));
+                });
+
+                return CachedValueProvider.Result.create(strings, PsiModificationTracker.MODIFICATION_COUNT);
             }, false);
 
             project.putUserData(dataHolderKey, cache);
@@ -101,14 +91,10 @@ public class FileIndexCaches {
         CachedValue<Set<String>> cache = project.getUserData(dataHolderKey);
 
         if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Set<String>>() {
-                @Nullable
-                @Override
-                public Result<Set<String>> compute() {
-                    SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeys = new SymfonyProcessors.CollectProjectUniqueKeys(project, ID);
-                    FileBasedIndex.getInstance().processAllKeys(ID, projectUniqueKeys, project);
-                    return Result.create(projectUniqueKeys.getResult(), PsiModificationTracker.MODIFICATION_COUNT);
-                }
+            cache = CachedValuesManager.getManager(project).createCachedValue(() -> {
+                SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeys = new SymfonyProcessors.CollectProjectUniqueKeys(project, ID);
+                FileBasedIndex.getInstance().processAllKeys(ID, projectUniqueKeys, project);
+                return CachedValueProvider.Result.create(projectUniqueKeys.getResult(), PsiModificationTracker.MODIFICATION_COUNT);
             }, false);
 
             project.putUserData(dataHolderKey, cache);
