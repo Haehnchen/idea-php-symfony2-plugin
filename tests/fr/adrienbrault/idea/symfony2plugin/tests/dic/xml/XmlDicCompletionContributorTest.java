@@ -161,20 +161,25 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
 
     }
 
-    public void skipTestServiceInstanceHighlightCompletion() {
+    public void testServiceInstanceHighlightCompletion() {
         assertCompletionLookupContainsPresentableItem(XmlFileType.INSTANCE, "" +
                 "<services>" +
                 "   <service class=\"Foo\\Bar\\Car\">" +
                 "       <argument type=\"service\" id=\"<caret>\"/>" +
                 "   </service>" +
                 "</services>",
-            new LookupElementPresentationAssert.Assert() {
-                @Override
-                public boolean match(@NotNull LookupElementPresentation lookupElement) {
-                    return "foo_bar_apple".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold() && lookupElement.isItemTextUnderlined();
-                }
-            }
+            lookupElement -> "foo_bar_apple".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold() && lookupElement.isItemTextUnderlined()
         );
     }
 
+    public void testServiceCompletionOfFactoryService() {
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "<services>\n" +
+                "    <service>\n" +
+                "        <factory service=\"<caret>\" />\n" +
+                "    </service>\n" +
+                "</services>",
+            "foo_bar_apple"
+        );
+    }
 }

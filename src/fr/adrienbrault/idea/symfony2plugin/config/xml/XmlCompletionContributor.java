@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -35,8 +36,12 @@ public class XmlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("factory-class").inside(XmlHelper.getInsideTagPattern("services")), new PhpClassAndParameterCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getTagPattern("parent").inside(XmlHelper.getInsideTagPattern("services")), new ServiceCompletionProvider());
 
-        // @TODO: drop reference usage and fully implement getVariants here
-        //extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(XmlHelper.getArgumentServiceIdPattern()), new ServiceCompletionProvider());
+        // <argument type="service" id="<caret>" />
+        // <factory service="<caret>" />
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
+            XmlHelper.getArgumentServiceIdPattern(),
+            XmlHelper.getFactoryServiceCompletionPattern())
+        ), new ServiceCompletionProvider());
 
         extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "alias").inside(XmlHelper.getInsideTagPattern("services")), new FormAliasParametersCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getArgumentValuePattern(), new ArgumentParameterCompletionProvider());

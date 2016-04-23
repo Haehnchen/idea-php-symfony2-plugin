@@ -16,4 +16,9 @@ public class ServiceXmlReference extends AbstractServiceReference {
         this.useIndexedServices = useIndexedServices;
     }
 
+    @NotNull
+    public Object[] getVariants() {
+        // dont support in xml
+        return new Object[0];
+    }
 }

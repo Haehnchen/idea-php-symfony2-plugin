@@ -5,7 +5,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementWeigher;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.intellij.util.containers.ArrayListSet;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.HashSet;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -18,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ServiceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
@@ -62,21 +63,17 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
             }
         }
 
-        Collection<LookupElement> lookupElements = new ArrayListSet<LookupElement>();
-        Collection<String> topElements = new HashSet<>();
+        Collection<LookupElement> collect = services.stream().map((Function<ContainerService, LookupElement>) service -> {
+            ServiceStringLookupElement lookupElement = new ServiceStringLookupElement(service);
 
-        for(ContainerService containerService: services) {
-            ServiceStringLookupElement lookupElement = new ServiceStringLookupElement(containerService);
-
-            if(servicesForInstance.contains(containerService.getName())) {
-                topElements.add(containerService.getName());
+            if (servicesForInstance.contains(service.getName())) {
                 lookupElement.setBoldText(true);
             }
 
-            lookupElements.add(lookupElement);
-        }
+            return lookupElement;
+        }).collect(Collectors.toList());
 
-        return new LookupResult(lookupElements, topElements);
+        return new LookupResult(collect, servicesForInstance);
     }
 
     public static class LookupResult {

@@ -59,17 +59,8 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
             collector.addCollectorSource(ContainerCollectionResolver.Source.INDEX);
         }
 
-        // @TODO: remove getVariants
-        // just simulate scope for completion
-        PsiElement psiElement = ContainerUtil.find(this.getElement().getChildren(), new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                return psiElement.getNode().getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN;
-            }
-        });
-
         results.addAll(
-            ServiceCompletionProvider.getLookupElements(psiElement, collector.getServices().values()).getLookupElements()
+            ServiceCompletionProvider.getLookupElements(null, collector.getServices().values()).getLookupElements()
         );
 
         return results.toArray();
