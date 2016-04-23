@@ -69,7 +69,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
         });
 
         results.addAll(
-            ServiceCompletionProvider.getLookupElements(psiElement, collector.getServices().values())
+            ServiceCompletionProvider.getLookupElements(psiElement, collector.getServices().values()).getLookupElements()
         );
 
         return results.toArray();

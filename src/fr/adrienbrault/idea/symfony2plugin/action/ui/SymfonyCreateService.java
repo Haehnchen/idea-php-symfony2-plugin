@@ -553,7 +553,7 @@ public class SymfonyCreateService extends JDialog {
 
     public static class ContainerServicePriorityNameComparator implements Comparator<ContainerService> {
 
-        private static String[] LOWER_PRIORITY = new String[] { "debug", "default", "abstract"};
+        public static String[] LOWER_PRIORITY = new String[] { "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"};
 
         @Override
         public int compare(ContainerService o1, ContainerService o2) {
