@@ -5,13 +5,15 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlDocument;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
@@ -22,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +33,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -210,5 +214,123 @@ public class ServiceContainerUtil {
             PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
             psiElement
         );
+    }
+
+    /**
+     *  <services>
+     *   <service class="Foo\\Bar\\Car">
+     *    <argument type="service" id="<caret>" />
+     *  </service>
+     * </services>
+     */
+    @Nullable
+    public static ServiceTypeHint getXmlConstructorTypeHint(@NotNull PsiElement psiElement, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        if(!(psiElement.getContainingFile() instanceof XmlFile) || psiElement.getNode().getElementType() != XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN) {
+            return null;
+        }
+
+        XmlAttributeValue xmlAttributeValue = PsiTreeUtil.getParentOfType(psiElement, XmlAttributeValue.class);
+        if(xmlAttributeValue == null) {
+            return null;
+        }
+
+        XmlTag argumentTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+        if(argumentTag == null) {
+            return null;
+        }
+
+        XmlTag serviceTag = PsiElementAssertUtil.getParentOfTypeOrNull(argumentTag, XmlTag.class);
+        if(serviceTag == null) {
+            return null;
+        }
+
+        if(!serviceTag.getName().equals("service")) {
+            return null;
+        }
+
+        // service/argument[id]
+        String serviceDefName = serviceTag.getAttributeValue("class");
+        if(serviceDefName != null) {
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+
+            // check type hint on constructor
+            if(phpClass != null) {
+                Method constructor = phpClass.getConstructor();
+                if(constructor != null) {
+                    return new ServiceTypeHint(constructor, getArgumentIndex(argumentTag), psiElement);
+                }
+            }
+
+        }
+
+        return null;
+    }
+
+    /**
+     *  <services>
+     *   <service class="Foo\\Bar\\Car">
+     *    <call method="foo"></call>
+     *      <argument type="service" id="<caret>" />
+     *    </call>
+     *  </service>
+     * </services>
+     */
+    @Nullable
+    public static ServiceTypeHint getXmlCallTypeHint(@NotNull PsiElement psiElement, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        // search for parent service definition
+        XmlTag currentXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+        XmlTag parentXmlTag = PsiTreeUtil.getParentOfType(currentXmlTag, XmlTag.class);
+        if(parentXmlTag == null) {
+            return null;
+        }
+
+        String name = parentXmlTag.getName();
+        if(!"call".equals(name)) {
+            return null;
+        }
+
+        // service/call/argument[id]
+        XmlAttribute methodAttribute = parentXmlTag.getAttribute("method");
+        if(methodAttribute != null) {
+            String methodName = methodAttribute.getValue();
+            XmlTag serviceTag = parentXmlTag.getParentTag();
+
+            // get service class
+            if(serviceTag != null && "service".equals(serviceTag.getName())) {
+                XmlAttribute classAttribute = serviceTag.getAttribute("class");
+                if(classAttribute != null) {
+
+                    String serviceDefName = classAttribute.getValue();
+                    if(serviceDefName != null) {
+                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+
+                        // finally check method type hint
+                        if(phpClass != null) {
+                            Method method = phpClass.findMethodByName(methodName);
+                            if(method != null) {
+                                return new ServiceTypeHint(method, getArgumentIndex(currentXmlTag), psiElement);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static int getArgumentIndex(@NotNull XmlTag xmlTag) {
+
+        PsiElement psiElement = xmlTag;
+        int index = 0;
+
+        while (psiElement != null) {
+            psiElement = psiElement.getPrevSibling();
+            if(psiElement instanceof XmlTag && "argument".equalsIgnoreCase(((XmlTag) psiElement).getName())) {
+                index++;
+            }
+        }
+
+        return index;
     }
 }

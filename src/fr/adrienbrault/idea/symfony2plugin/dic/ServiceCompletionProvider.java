@@ -10,6 +10,7 @@ import com.intellij.util.containers.HashSet;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.ServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlCallServiceSuggestionCollector;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlConstructServiceSuggestionCollector;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -25,6 +26,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
     private static ServiceSuggestionCollector[] COLLECTORS = new ServiceSuggestionCollector[] {
         new XmlConstructServiceSuggestionCollector(),
         new YamlConstructServiceSuggestionCollector(),
+        new XmlCallServiceSuggestionCollector(),
     };
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
