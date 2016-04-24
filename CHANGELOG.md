@@ -7,6 +7,14 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.117
+* Use popover for xml container tag suggestion
+* Add class name completion for service generator dialog
+* Service generator can now directly insert yaml services
+* Some yaml ascii char dont need to be escaped, fix inspection for them and reduce deprecated warning to weak notification #693
+* Migrate yaml argument creation and update callback to new lexer
+* Add service completion suggestion / highlights for service arguments
+
 ### 0.12.116
 * Migrate yaml routing controller navigation feature
 * Migrate yaml config completion

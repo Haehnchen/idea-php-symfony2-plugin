@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.116</version>
+    <version>0.12.117</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -110,6 +110,18 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.12.117</h2>
+<ul>
+    <li>Use popover for container tag suggestion</li>
+    <li>Add class name completion for service generator dialog</li>
+    <li>Service generator can now directly insert yaml services</li>
+    <li>Some yaml ascii char dont need to be escaped, fix inspection for them and reduce deprecated warning to weak notification <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/693">#693</a></li>
+    <li>Migrate yaml argument creation and update callback to new lexer</li>
+    <li>Add service completion suggestion / highlights for service arguments</li>
+</li>
+</ul>
+
 <h2>0.12.116</h2>
 <ul>
     <li>Migrate yaml routing controller navigation feature</li>
