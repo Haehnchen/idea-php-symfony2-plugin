@@ -30,6 +30,8 @@ public class CaretTextOverlayListener implements CaretListener {
     private Timer timer = null;
     private int startDelayMs = 250;
 
+    private final Object lock = new Object();
+
     @Override
     public void caretPositionChanged(final CaretEvent caretEvent) {
 
@@ -46,14 +48,16 @@ public class CaretTextOverlayListener implements CaretListener {
             return;
         }
 
-        this.timer = new Timer();
-        this.timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runReadAction(new MyPsiElementRunnable(project, caretEvent, editor));
-                timer = null;
-            }
-        }, startDelayMs);
+        synchronized (lock) {
+            this.timer = new Timer();
+            this.timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    ApplicationManager.getApplication().runReadAction(new MyPsiElementRunnable(project, caretEvent, editor));
+                    timer = null;
+                }
+            }, startDelayMs);
+        }
     }
 
     @Override
@@ -86,13 +90,15 @@ public class CaretTextOverlayListener implements CaretListener {
     }
 
     synchronized public void clear() {
-        if(timer == null) {
-            return;
-        }
+        synchronized (lock) {
+            if(timer == null) {
+                return;
+            }
 
-        timer.cancel();
-        timer.purge();
-        timer = null;
+            timer.cancel();
+            timer.purge();
+            timer = null;
+        }
     }
 
     private class MyPsiElementRunnable implements Runnable {
