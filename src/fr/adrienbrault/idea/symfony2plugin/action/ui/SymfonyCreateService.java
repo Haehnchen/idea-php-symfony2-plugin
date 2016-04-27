@@ -81,11 +81,14 @@ public class SymfonyCreateService extends JDialog {
     @Nullable
     private Editor editor;
 
+    @Nullable
+    private String classInit;
+
     private ClassCompletionPanelWrapper classCompletionPanelWrapper;
 
     public SymfonyCreateService(@NotNull final Project project, @Nullable PsiFile psiFile, @Nullable Editor editor, @NotNull String className) {
         this(project, psiFile, editor);
-        classCompletionPanelWrapper.setClassName(className);
+        this.classInit = className;
     }
 
     public SymfonyCreateService(@NotNull final Project project, @Nullable PsiFile psiFile, @Nullable Editor editor) {
@@ -189,13 +192,7 @@ public class SymfonyCreateService extends JDialog {
             }
         });
 
-        try {
-            String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-            if(data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
-                classCompletionPanelWrapper.setClassName(data);
-            }
-        } catch (UnsupportedFlavorException | IOException ignored) {
-        }
+        initClassName();
 
         radioButtonOutXml.addChangeListener(new ChangeListener() {
             @Override
@@ -249,6 +246,21 @@ public class SymfonyCreateService extends JDialog {
             this.buttonInsert.setVisible(false);
         }
 
+    }
+
+    private void initClassName() {
+        if(this.classInit != null) {
+            classCompletionPanelWrapper.setClassName(StringUtils.stripStart(this.classInit, "\\"));
+            return;
+        }
+
+        try {
+            String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            if(data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
+                classCompletionPanelWrapper.setClassName(data);
+            }
+        } catch (UnsupportedFlavorException | IOException ignored) {
+        }
     }
 
     private void insertYamlServiceTag() {
@@ -631,7 +643,7 @@ public class SymfonyCreateService extends JDialog {
     }
 
     public static SymfonyCreateService create(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass, @Nullable Editor editor) {
-        return prepare(new SymfonyCreateService(project, psiFile, editor, phpClass.getPresentableFQN()));
+        return prepare(new SymfonyCreateService(project, psiFile, editor, phpClass.getFQN()));
     }
 }
 
