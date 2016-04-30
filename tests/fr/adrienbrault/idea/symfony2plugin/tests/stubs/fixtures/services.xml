@@ -6,6 +6,7 @@
 
     <services>
         <service id="foo.xml_id" class="My\Foo\Service\Targets"/>
+        <service id="foo.xml_id.UPPER" class="My\Foo\Service\Targets"/>
     </services>
 
 </container>

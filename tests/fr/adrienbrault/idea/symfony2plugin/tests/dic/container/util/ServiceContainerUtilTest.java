@@ -78,6 +78,13 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         }
     }
 
+    public void testUpperToLower() {
+        for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
+            ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("bar.upper"));
+            assertEquals("bar.upper", bar.getId());
+        }
+    }
+
     public void testNonDefaultValuesAreSerialized() {
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("non.defaults"));

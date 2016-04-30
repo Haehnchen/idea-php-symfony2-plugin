@@ -255,7 +255,7 @@ public class XmlHelper {
                             XmlAttribute attrValue = serviceTag.getAttribute("id");
                             if(attrValue != null) {
                                 String serviceNameId = attrValue.getValue();
-                                if(serviceNameId != null && serviceNameId.equals(serviceName)) {
+                                if(serviceNameId != null && serviceNameId.equalsIgnoreCase(serviceName)) {
                                     return serviceTag;
                                 }
                             }

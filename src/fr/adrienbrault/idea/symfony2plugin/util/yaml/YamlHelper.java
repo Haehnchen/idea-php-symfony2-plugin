@@ -143,6 +143,7 @@ public class YamlHelper {
 
             final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
 
+            // @TODO: support case insensitive
             visitQualifiedKeyValuesInFile((YAMLFile) psiFile, rootKey, new Consumer<YAMLKeyValue>() {
                 @Override
                 public void consume(YAMLKeyValue yamlKeyValue) {

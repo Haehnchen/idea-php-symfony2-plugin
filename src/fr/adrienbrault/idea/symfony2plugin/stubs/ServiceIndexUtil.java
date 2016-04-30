@@ -2,14 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.stubs;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlFile;
-import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -25,16 +23,13 @@ import java.util.*;
 
 public class ServiceIndexUtil {
 
-    private static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, String... serviceName) {
+    private static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, @NotNull String serviceName) {
 
-        final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
+        final List<VirtualFile> virtualFiles = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(ServicesDefinitionStubIndex.KEY, new HashSet<String>(Arrays.asList(serviceName)), new Processor<VirtualFile>() {
-            @Override
-            public boolean process(VirtualFile virtualFile) {
-                virtualFiles.add(virtualFile);
-                return true;
-            }
+        FileBasedIndexImpl.getInstance().getFilesWithKey(ServicesDefinitionStubIndex.KEY, new HashSet<>(Collections.singletonList(serviceName.toLowerCase())), virtualFile -> {
+            virtualFiles.add(virtualFile);
+            return true;
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
 
         return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);

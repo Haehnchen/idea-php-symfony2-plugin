@@ -50,6 +50,10 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertTrue(getFirstValue("foo.yml_id.deprecated_bool").isDeprecated());
     }
 
+    public void testServiceIdOfIsConvertedToLower() {
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id.upper");
+    }
+
     private ServiceInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }

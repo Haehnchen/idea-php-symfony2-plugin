@@ -27,3 +27,6 @@ services:
   alias.inline_2: '@bar'
   alias.inline_3: "@bar"
   alias.inline_4: bar
+
+  bar.UPPER:
+    class: stdClass

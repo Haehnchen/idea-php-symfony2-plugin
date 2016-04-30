@@ -49,6 +49,13 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         ));
     }
 
+    public void testFindServiceDefinitionsForStringInsideXmlUpperCase() {
+        assertNotNull(ContainerUtil.find(
+            ServiceIndexUtil.findServiceDefinitions(getProject(), "foo.xml_id.upper"),
+            new MyXmlTagCondition("foo.xml_id.UPPER")
+        ));
+    }
+
     public void testFindServiceDefinitionsForPhpClassInsideYaml() {
         assertNotNull(ContainerUtil.find(
             ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(), "My\\Foo\\Service\\Targets")),

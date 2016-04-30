@@ -14,5 +14,6 @@
                  alias="foo"
                  parent="foo"/>
 
+        <service id="bar.UPPER" class="stdClass"/>
     </services>
 </container>
