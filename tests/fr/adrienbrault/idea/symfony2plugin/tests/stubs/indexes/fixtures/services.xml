@@ -9,6 +9,7 @@
         <service id="foo.xml_id.private" class="AppBundle\Controller\DefaultController" public="false"/>
         <service id="foo.xml_id.alias" alias="foo.xml_id" />
         <service id="foo.xml_id.UPPER" class="AppBundle\Controller\DefaultController"/>
+        <service id="foo.xml_id.slash" class="\AppBundle\Controller\DefaultController"/>
     </services>
 
 </container>

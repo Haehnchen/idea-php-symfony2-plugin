@@ -54,6 +54,11 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id.upper");
     }
 
+    public void testThatIndexProcessStripsLeadingSlash() {
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.slash").getClassName());
+        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.slash").getClassName());
+    }
+
     private ServiceInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }

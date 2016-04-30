@@ -4,6 +4,9 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class ContainerService {
 
     @Nullable
@@ -12,6 +15,7 @@ public class ContainerService {
     private String className;
     private boolean isPrivate = false;
     private boolean isWeak = false;
+    private Set<String> classVariants = new HashSet<>();
 
     public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
         this.service = service;
@@ -43,6 +47,20 @@ public class ContainerService {
     @Nullable
     public String getClassName() {
         return className;
+    }
+
+    public void addClassName(@NotNull String className) {
+        this.classVariants.add(className);
+    }
+
+    @NotNull
+    public Set<String> getClassNames() {
+        Set<String> variants = new HashSet<>();
+
+        variants.add(className);
+        variants.addAll(classVariants);
+
+        return variants;
     }
 
     public boolean isWeak() {

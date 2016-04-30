@@ -12,6 +12,9 @@ services:
     foo.yml_id.alias:
         alias: foo.yml_id
 
+    foo.yml_id.slash:
+        class: \AppBundle\Controller\DefaultController
+
     foo.yml_id.deprecated_tilde:
         deprecated: ~
 

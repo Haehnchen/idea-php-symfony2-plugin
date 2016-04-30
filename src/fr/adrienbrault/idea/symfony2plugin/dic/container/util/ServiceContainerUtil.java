@@ -1,19 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
-import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
-import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
@@ -33,7 +28,6 @@ import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -100,7 +94,7 @@ public class ServiceContainerUtil {
 
         return new SerializableService(serviceConsumer.getServiceId())
             .setAlias(attributes.getString("alias"))
-            .setClassName(attributes.getString("class"))
+            .setClassName(StringUtils.stripStart(attributes.getString("class"), "\\"))
             .setDecorates(attributes.getString("decorates"))
             .setParent(attributes.getString("parent"))
             .setIsAbstract(attributes.getBoolean("abstract"))

@@ -201,9 +201,6 @@ public class ContainerCollectionResolver {
                     // dont work twice on service;
                     // @TODO: to need to optimize this to decorate as much service data as possible
                     String serviceName = entry.getKey();
-                    if(this.services.containsKey(serviceName)) {
-                        continue;
-                    }
 
                     // fake empty service, case which is not allowed by catch it
                     List<ServiceInterface> services = entry.getValue();
@@ -213,6 +210,26 @@ public class ContainerCollectionResolver {
                     }
 
                     for(ServiceInterface service: services) {
+                        String classValue = service.getClassName();
+
+                        // duplicate services
+                        if(this.services.containsKey(serviceName)) {
+                            if(classValue == null) {
+                                continue;
+                            }
+
+                            String compiledClassName = this.services.get(serviceName).getClassName();
+                            if(classValue.equalsIgnoreCase(compiledClassName)) {
+                                continue;
+                            }
+
+                            String resolvedClassValue = getParameterCollector().resolve(classValue);
+                            if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
+                                this.services.get(serviceName).addClassName(resolvedClassValue);
+                            }
+
+                            continue;
+                        }
 
                         // reuse iteration for alias mapping
                         if(service.getAlias() != null) {
@@ -220,7 +237,6 @@ public class ContainerCollectionResolver {
                         }
 
                         // resolve class value, it can be null or a parameter
-                        String classValue = service.getClassName();
                         if(!StringUtils.isBlank(classValue)) {
                             classValue = getParameterCollector().resolve(classValue);
                         }
@@ -250,30 +266,19 @@ public class ContainerCollectionResolver {
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
 
-            Set<String> serviceNames = new HashSet<String>();
+            Set<String> serviceNames = new HashSet<>();
 
-            // normalize class name; prepend "\"
-            if(!fqnClassName.startsWith("\\")) {
-                fqnClassName = "\\" + fqnClassName;
-            }
+            fqnClassName = StringUtils.stripStart(fqnClassName, "\\");
 
             for(Map.Entry<String, ContainerService> entry: this.getServices().entrySet()) {
-                if(entry.getValue().getClassName() != null) {
-                    String indexedClassName = this.getParameterCollector().resolve(entry.getValue().getClassName());
+                for (String className : entry.getValue().getClassNames()) {
+                    String indexedClassName = this.getParameterCollector().resolve(className);
                     if(indexedClassName != null) {
-
-                        // also normalize user input string inside container
-                        if(!indexedClassName.startsWith("\\")) {
-                            indexedClassName = "\\" + indexedClassName;
-                        }
-
-                        if(indexedClassName.equals(fqnClassName)) {
+                        if(StringUtils.stripStart(indexedClassName, "\\").equalsIgnoreCase(fqnClassName)) {
                             serviceNames.add(entry.getKey());
                         }
                     }
-
                 }
-
             }
 
             return serviceNames;

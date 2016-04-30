@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,10 +43,10 @@ public class ServiceMapParser {
         for (int i = 0; i < servicesNodes.getLength(); i++) {
             Element node = (Element) servicesNodes.item(i);
             if (node.hasAttribute("class") && node.hasAttribute("id")) {
-                map.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
+                map.put(node.getAttribute("id"), StringUtils.stripStart(node.getAttribute("class"), "\\"));
             }
             if (!(node.hasAttribute("public") && node.getAttribute("public").equals("false"))) {
-                publicMap.put(node.getAttribute("id"), "\\" + node.getAttribute("class"));
+                publicMap.put(node.getAttribute("id"), StringUtils.stripStart(node.getAttribute("class"), "\\"));
             }
             if (node.hasAttribute("alias") && publicMap.get(node.getAttribute("alias")) != null) {
                 map.put(node.getAttribute("id"), map.get(node.getAttribute("alias")));
@@ -61,10 +62,10 @@ public class ServiceMapParser {
     }
 
     private void populateMapWithDefaultServices(Map<String, String> map) {
-        map.put("request", "\\Symfony\\Component\\HttpFoundation\\Request");
-        map.put("service_container", "\\Symfony\\Component\\DependencyInjection\\ContainerInterface");
-        map.put("kernel", "\\Symfony\\Component\\HttpKernel\\KernelInterface");
-        map.put("controller_resolver", "\\Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface");
+        map.put("request", "Symfony\\Component\\HttpFoundation\\Request");
+        map.put("service_container", "Symfony\\Component\\DependencyInjection\\ContainerInterface");
+        map.put("kernel", "Symfony\\Component\\HttpKernel\\KernelInterface");
+        map.put("controller_resolver", "Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface");
    }
 
 }
