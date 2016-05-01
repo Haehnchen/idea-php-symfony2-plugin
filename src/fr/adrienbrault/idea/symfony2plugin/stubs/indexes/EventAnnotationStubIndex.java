@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, DispatcherEvent> {
 
-    public static final ID<String, DispatcherEvent> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.parameter2");
+    public static final ID<String, DispatcherEvent> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.events_annotation");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static ObjectStreamDataExternalizer<DispatcherEvent> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
