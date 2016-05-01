@@ -4,18 +4,22 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
+import com.intellij.util.containers.HashMap;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagVisitorInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -29,6 +33,7 @@ import java.util.*;
 public class EventDispatcherSubscriberUtil {
 
     private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> EVENT_SUBSCRIBERS = new Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>>("SYMFONY_EVENT_SUBSCRIBERS");
+    private static final Key<CachedValue<Set<String>>> EVENT_ANNOTATIONS = new Key<>("SYMFONY_EVENT_ANNOTATIONS");
 
     @NotNull
     public static Collection<EventDispatcherSubscribedEvent> getSubscribedEvents(final @NotNull Project project) {
@@ -193,7 +198,7 @@ public class EventDispatcherSubscriberUtil {
     @NotNull
     public static Collection<PsiElement> getEventPsiElements(@NotNull final Project project, final @NotNull String eventName) {
 
-        final Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        final Collection<PsiElement> psiElements = new HashSet<>();
 
         // @TODO: remove
         XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(project, XmlEventParser.class);
@@ -213,51 +218,64 @@ public class EventDispatcherSubscriberUtil {
 
         final ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver.ServiceCollector.create(project);
 
-        EventSubscriberUtil.visitNamedTag(project, "kernel.event_listener", new ServiceTagVisitorInterface() {
-            @Override
-            public void visit(@NotNull ServiceTagInterface args) {
-                String event = args.getAttribute("event");
-                if (StringUtils.isNotBlank(event) && eventName.equals(event)) {
-                    String serviceId = args.getServiceId();
-                    if(StringUtils.isNotBlank(serviceId)) {
-                        String resolve = collector.resolve(serviceId);
-                        if(resolve != null) {
-                            psiElements.addAll(PhpElementsUtil.getClassesInterface(project, resolve));
-                        }
+        EventSubscriberUtil.visitNamedTag(project, "kernel.event_listener", args -> {
+            String event = args.getAttribute("event");
+            if (StringUtils.isNotBlank(event) && eventName.equals(event)) {
+                String serviceId = args.getServiceId();
+                if(StringUtils.isNotBlank(serviceId)) {
+                    String resolve = collector.resolve(serviceId);
+                    if(resolve != null) {
+                        psiElements.addAll(PhpElementsUtil.getClassesInterface(project, resolve));
                     }
                 }
             }
         });
 
+        // loading targets on @Event
+        Set<String> annotationEvents = new HashSet<>();
+        for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(EventAnnotationStubIndex.KEY, eventName, GlobalSearchScope.allScope(project))) {
+            FileBasedIndex.getInstance().processValues(EventAnnotationStubIndex.KEY, eventName, virtualFile, (virtualFile1, event) -> {
+                if(event.getInstance() != null && StringUtils.isNotBlank(event.getInstance())) {
+                    annotationEvents.add(event.getInstance());
+                }
+                return true;
+            }, GlobalSearchScope.allScope(project));
+        }
+
+        // Convert class name from @Event; we need to do after collecting because of cross index access
+        for (String instance : annotationEvents) {
+            psiElements.addAll(PhpElementsUtil.getClassesInterface(project, instance));
+        }
+
         return psiElements;
     }
-
 
     @NotNull
     public static Collection<LookupElement> getEventNameLookupElements(@NotNull Project project) {
 
-        final List<LookupElement> results = new ArrayList<LookupElement>();
+        Map<String, LookupElement> results = new HashMap<>();
 
         XmlEventParser xmlEventParser = ServiceXmlParserFactory.getInstance(project, XmlEventParser.class);
         for(EventDispatcherSubscribedEvent event : xmlEventParser.getEvents()) {
-            results.add(LookupElementBuilder.create(event.getStringValue()).withTypeText(event.getType(), true).withIcon(Symfony2Icons.EVENT));
+            results.put(event.getStringValue(), LookupElementBuilder.create(event.getStringValue()).withTypeText(event.getType(), true).withIcon(Symfony2Icons.EVENT));
         }
 
         for(EventDispatcherSubscribedEvent event: EventDispatcherSubscriberUtil.getSubscribedEvents(project)) {
-            results.add(LookupElementBuilder.create(event.getStringValue()).withTypeText(event.getType(), true).withIcon(Symfony2Icons.EVENT));
+            results.put(event.getStringValue(), LookupElementBuilder.create(event.getStringValue()).withTypeText(event.getType(), true).withIcon(Symfony2Icons.EVENT));
         }
 
-        EventSubscriberUtil.visitNamedTag(project, "kernel.event_listener", new ServiceTagVisitorInterface() {
-            @Override
-            public void visit(@NotNull ServiceTagInterface args) {
-                String event = args.getAttribute("event");
-                if (event != null && StringUtils.isNotBlank(event)) {
-                    results.add(LookupElementBuilder.create(event).withTypeText("kernel.event_listener", true).withIcon(Symfony2Icons.EVENT));
-                }
+        EventSubscriberUtil.visitNamedTag(project, "kernel.event_listener", args -> {
+            String event = args.getAttribute("event");
+            if (event != null && StringUtils.isNotBlank(event)) {
+                results.put(event, LookupElementBuilder.create(event).withTypeText("kernel.event_listener", true).withIcon(Symfony2Icons.EVENT));
             }
         });
 
-        return results;
+        for (String s : FileIndexCaches.getIndexKeysCache(project, EVENT_ANNOTATIONS, EventAnnotationStubIndex.KEY)) {
+            results.put(s, LookupElementBuilder.create(s).withTypeText("Event", true).withIcon(Symfony2Icons.EVENT));
+        }
+
+        return results.values();
     }
 }
 

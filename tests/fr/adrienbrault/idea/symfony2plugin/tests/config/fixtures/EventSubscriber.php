@@ -13,6 +13,10 @@ namespace Symfony\Component\EventDispatcher {
     }
 }
 
+namespace My {
+   class MyFooEvent {} 
+}
+
 namespace {
 
     use Foo\Bar;

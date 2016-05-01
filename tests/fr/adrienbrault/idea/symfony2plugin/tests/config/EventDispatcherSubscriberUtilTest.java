@@ -1,10 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config;
 
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.psi.PsiElement;
+import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -14,6 +19,10 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("EventSubscriber.php");
+        myFixture.copyFileToProject("EventSubscriberAnnotation.php");
+
+        myFixture.copyFileToProject("event.services.xml");
+        myFixture.copyFileToProject("event.services.yml");
     }
 
     public String getTestDataPath() {
@@ -54,4 +63,54 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
         assertNull( event6.getMethodName());
     }
 
+    /**
+     * @see EventDispatcherSubscriberUtil#getEventNameLookupElements
+     */
+    public void testGetEventNameLookupElementsForEventAnnotations() {
+        Collection<LookupElement> eventNameLookupElements = EventDispatcherSubscriberUtil.getEventNameLookupElements(getProject());
+        ContainerUtil.find(eventNameLookupElements, lookupElement ->
+            lookupElement.getLookupString().equals("bar.pre_bar")
+        );
+
+        ContainerUtil.find(eventNameLookupElements, lookupElement ->
+            lookupElement.getLookupString().equals("bar.post_bar")
+        );
+    }
+
+    /**
+     * @see EventDispatcherSubscriberUtil#getEventPsiElements
+     */
+    public void testGetEventTargetsElementsForTags() {
+        Collection<PsiElement> elements = EventDispatcherSubscriberUtil.getEventPsiElements(getProject(), "kernel.exception.xml");
+
+        assertNotNull(
+            ContainerUtil.find(elements, psiElement -> psiElement instanceof PhpClass && ((PhpClass) psiElement).getFQN().contains("DateTime"))
+        );
+    }
+
+    /**
+     * @see EventDispatcherSubscriberUtil#getEventPsiElements
+     */
+    public void testGetEventTargetsElementsForEventAnnotations() {
+        Collection<PsiElement> elements = EventDispatcherSubscriberUtil.getEventPsiElements(getProject(), "bar.post_bar");
+
+        assertNotNull(
+            ContainerUtil.find(elements, psiElement -> psiElement instanceof PhpClass && ((PhpClass) psiElement).getFQN().contains("MyFooEvent"))
+        );
+    }
+
+    /**
+     * @see EventDispatcherSubscriberUtil#getEventNameLookupElements
+     */
+    public void testGetEventNameLookupElementsForTaggedKernelListener() {
+        Collection<LookupElement> eventNameLookupElements = EventDispatcherSubscriberUtil.getEventNameLookupElements(getProject());
+
+        ContainerUtil.find(eventNameLookupElements, lookupElement ->
+            lookupElement.getLookupString().equals("kernel.exception.xml")
+        );
+
+        ContainerUtil.find(eventNameLookupElements, lookupElement ->
+            lookupElement.getLookupString().equals("kernel.exception.yml")
+        );
+    }
 }
