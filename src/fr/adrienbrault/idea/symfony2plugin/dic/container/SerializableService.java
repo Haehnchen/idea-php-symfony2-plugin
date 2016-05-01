@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container;
 
-import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,27 +15,21 @@ public class SerializableService implements ServiceInterface, Serializable {
     @NotNull
     private final String id;
 
-    @SerializedName("class")
     @Nullable
     private String className;
 
-    @SerializedName("public")
     @Nullable
     private Boolean isPublic;
 
-    @SerializedName("lazy")
     @Nullable
     private Boolean isLazy;
 
-    @SerializedName("abstract")
     @Nullable
     private Boolean isAbstract;
 
-    @SerializedName("autowire")
     @Nullable
     private Boolean isAutowire;
 
-    @SerializedName("deprecated")
     @Nullable
     private Boolean isDeprecated;
 
@@ -47,7 +40,6 @@ public class SerializableService implements ServiceInterface, Serializable {
     private String decorates;
 
     @Nullable
-    @SerializedName("decoration_inner_name")
     private String decorationInnerName;
 
     @Nullable

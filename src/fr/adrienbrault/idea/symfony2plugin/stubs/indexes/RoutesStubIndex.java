@@ -35,44 +35,39 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
     @NotNull
     @Override
     public DataIndexer<String, String[], FileContent> getIndexer() {
-        return new DataIndexer<String, String[], FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, String[]> map(@NotNull FileContent inputData) {
-                Map<String, String[]> map = new THashMap<String, String[]>();
+        return inputData -> {
+            Map<String, String[]> map = new THashMap<>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
+                return map;
+            }
+
+            if(psiFile instanceof YAMLFile) {
+
+                if(!isValidForIndex(inputData, psiFile)) {
                     return map;
                 }
 
-                if(psiFile instanceof YAMLFile) {
-
-                    if(!isValidForIndex(inputData, psiFile)) {
-                        return map;
-                    }
-
-                    YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-                    if(yamlDocument == null) {
-                        return map;
-                    }
-
-                    for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
-                        map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
-                    }
-
+                YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+                if(yamlDocument == null) {
                     return map;
                 }
 
-                if(psiFile instanceof XmlFile) {
-                    for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
-                        map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
-                    }
+                for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
+                    map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
                 }
 
                 return map;
             }
 
+            if(psiFile instanceof XmlFile) {
+                for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
+                    map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
+                }
+            }
+
+            return map;
         };
 
     }
@@ -103,7 +98,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

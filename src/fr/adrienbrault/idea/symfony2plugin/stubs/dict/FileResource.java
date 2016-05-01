@@ -2,10 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FileResource {
+public class FileResource implements Serializable {
 
     private final String resource;
     private String prefix = null;

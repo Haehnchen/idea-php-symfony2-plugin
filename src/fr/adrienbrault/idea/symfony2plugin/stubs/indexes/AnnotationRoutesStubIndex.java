@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -20,6 +18,7 @@ import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.JsonRoute;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import gnu.trove.THashMap;
@@ -27,17 +26,14 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, RouteInterface> {
 
-    public static final ID<String, RouteInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.annotation_routes_json");
+    public static final ID<String, RouteInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.annotation_routes_object");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static JsonDataExternalizer JSON_EXTERNALIZER = new JsonDataExternalizer();
+    private static ObjectStreamDataExternalizer<RouteInterface> JSON_EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
@@ -305,26 +301,6 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
             }
 
             return null;
-        }
-    }
-
-    private static class JsonDataExternalizer implements DataExternalizer<RouteInterface> {
-
-        private static final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
-        private static final Gson GSON = new Gson();
-
-        @Override
-        public void save(@NotNull DataOutput dataOutput, RouteInterface fileResource) throws IOException {
-            myStringEnumerator.save(dataOutput, GSON.toJson(fileResource));
-        }
-
-        @Override
-        public RouteInterface read(@NotNull DataInput in) throws IOException {
-            try {
-                return GSON.fromJson(myStringEnumerator.read(in), JsonRoute.class);
-            } catch (JsonSyntaxException e) {
-                return null;
-            }
         }
     }
 }

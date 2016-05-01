@@ -35,8 +35,8 @@ import java.util.Collection;
 public class ServiceContainerUtil {
 
     @NotNull
-    public static Collection<ServiceInterface> getServicesInFile(@NotNull PsiFile psiFile) {
-        final Collection<ServiceInterface> services = new ArrayList<ServiceInterface>();
+    public static Collection<SerializableService> getServicesInFile(@NotNull PsiFile psiFile) {
+        final Collection<SerializableService> services = new ArrayList<SerializableService>();
 
         if(psiFile instanceof XmlFile) {
             visitFile((XmlFile) psiFile, new Consumer<ServiceConsumer>() {

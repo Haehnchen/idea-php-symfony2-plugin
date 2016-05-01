@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
@@ -14,40 +12,38 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 
-public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, ServiceInterface> {
+public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, SerializableService> {
 
     private static int MAX_FILE_BYTE_SIZE = 5242880;
 
-    public static final ID<String, ServiceInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition_json");
+    public static final ID<String, SerializableService> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition_object");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static JsonDataExternalizer JSON_EXTERNALIZER = new JsonDataExternalizer();
+    private static ObjectStreamDataExternalizer<SerializableService> JSON_EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
-    public DataIndexer<String, ServiceInterface, FileContent> getIndexer() {
+    public DataIndexer<String, SerializableService, FileContent> getIndexer() {
 
         return inputData -> {
 
-            Map<String, ServiceInterface> map = new THashMap<>();
+            Map<String, SerializableService> map = new THashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(inputData, psiFile)) {
                 return map;
             }
 
-            for (ServiceInterface service : ServiceContainerUtil.getServicesInFile(psiFile)) {
+            for (SerializableService service : ServiceContainerUtil.getServicesInFile(psiFile)) {
                 map.put(service.getId(), service);
             }
 
@@ -57,7 +53,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @NotNull
     @Override
-    public ID<String, ServiceInterface> getName() {
+    public ID<String, SerializableService> getName() {
         return KEY;
     }
 
@@ -69,7 +65,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     }
 
     @NotNull
-    public DataExternalizer<ServiceInterface> getValueExternalizer() {
+    public DataExternalizer<SerializableService> getValueExternalizer() {
         return JSON_EXTERNALIZER;
     }
 
@@ -87,7 +83,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 3;
+        return 1;
     }
 
     /**
@@ -130,25 +126,4 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         return true;
     }
-
-    private static class JsonDataExternalizer implements DataExternalizer<ServiceInterface> {
-
-        private static final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
-        private static final Gson GSON = new Gson();
-
-        @Override
-        public void save(@NotNull DataOutput dataOutput, ServiceInterface fileResource) throws IOException {
-            myStringEnumerator.save(dataOutput, GSON.toJson(fileResource));
-        }
-
-        @Override
-        public ServiceInterface read(@NotNull DataInput in) throws IOException {
-            try {
-                return GSON.fromJson(myStringEnumerator.read(in), SerializableService.class);
-            } catch (JsonSyntaxException e) {
-                return null;
-            }
-        }
-    }
-
 }
