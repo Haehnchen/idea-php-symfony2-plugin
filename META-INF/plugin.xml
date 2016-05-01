@@ -417,6 +417,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
