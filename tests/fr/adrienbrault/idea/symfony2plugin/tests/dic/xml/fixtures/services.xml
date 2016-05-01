@@ -3,5 +3,6 @@
     <services>
         <service id="foo_bar_apple" class="Foo\Bar\Apple"/>
         <service id="foo_bar_car" class="Foo\Bar\Car"/>
+        <service id="foo_bar_car_UPPER_COMPLETION" class="Foo\Bar\Car"/>
     </services>
 </container>

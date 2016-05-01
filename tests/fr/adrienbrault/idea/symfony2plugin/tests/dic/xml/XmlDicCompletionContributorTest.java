@@ -172,6 +172,17 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
         );
     }
 
+    public void testThatUppserCaseServiceAreInsideCompletion() {
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "<services>" +
+                "   <service class=\"Foo\\Bar\\Car\">" +
+                "       <argument type=\"service\" id=\"<caret>\"/>" +
+                "   </service>" +
+                "</services>",
+            "foo_bar_car_UPPER_COMPLETION"
+        );
+    }
+
     public void testServiceCompletionOfFactoryService() {
         assertCompletionContains(XmlFileType.INSTANCE, "" +
                 "<services>\n" +

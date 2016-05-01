@@ -52,6 +52,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
 
     public void testServiceIdOfIsConvertedToLower() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id.upper");
+        assertEquals("foo.xml_id.UPPER", getFirstValue("foo.xml_id.upper").getId());
     }
 
     public void testThatIndexProcessStripsLeadingSlash() {

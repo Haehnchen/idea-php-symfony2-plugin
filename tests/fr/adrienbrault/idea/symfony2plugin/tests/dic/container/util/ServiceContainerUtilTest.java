@@ -80,8 +80,11 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
 
     public void testUpperToLower() {
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
-            ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("bar.upper"));
-            assertEquals("bar.upper", bar.getId());
+            ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), serviceInterface ->
+                serviceInterface.getId().equalsIgnoreCase("bar.UPPER")
+            );
+
+            assertEquals("bar.UPPER", bar.getId());
         }
     }
 

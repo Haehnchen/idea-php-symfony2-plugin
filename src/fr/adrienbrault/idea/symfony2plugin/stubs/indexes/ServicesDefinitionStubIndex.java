@@ -48,7 +48,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             }
 
             for (ServiceInterface service : ServiceContainerUtil.getServicesInFile(psiFile)) {
-                map.put(service.getId(), service);
+                map.put(service.getId().toLowerCase(), service);
             }
 
             return map;

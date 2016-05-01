@@ -110,7 +110,7 @@ public class ServiceContainerUtil {
                 continue;
             }
 
-            consumer.consume(new ServiceConsumer(keyValue, serviceId.toLowerCase(), new YamlKeyValueAttributeValue(keyValue)));
+            consumer.consume(new ServiceConsumer(keyValue, serviceId, new YamlKeyValueAttributeValue(keyValue)));
         }
     }
 
@@ -134,7 +134,7 @@ public class ServiceContainerUtil {
                                 continue;
                             }
 
-                            consumer.consume(new ServiceConsumer(serviceTag, serviceId.toLowerCase(), new XmlTagAttributeValue(serviceTag)));
+                            consumer.consume(new ServiceConsumer(serviceTag, serviceId, new XmlTagAttributeValue(serviceTag)));
                        }
                     }
                 }
