@@ -539,11 +539,17 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariableDeprecatedInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Yaml escaped \ in quoted inspection"
-                         groupName="Twig"
+        <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Quoted issues"
+                         groupName="Yaml"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlQuotedEscapedInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="YamlUnquotedColon" displayName="Colon in the unquoted mapping"
+                         groupName="Yaml"
+                         enabledByDefault="true" level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlUnquotedColon"/>
 
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
