@@ -3,12 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.config;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.HashMap;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
@@ -19,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedE
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -272,7 +275,20 @@ public class EventDispatcherSubscriberUtil {
         });
 
         for (String s : FileIndexCaches.getIndexKeysCache(project, EVENT_ANNOTATIONS, EventAnnotationStubIndex.KEY)) {
-            results.put(s, LookupElementBuilder.create(s).withTypeText("Event", true).withIcon(Symfony2Icons.EVENT));
+
+            String typeText = "Event";
+
+            // Find class name on fast index
+            DispatcherEvent event = ContainerUtil.find(FileBasedIndex.getInstance().getValues(
+                EventAnnotationStubIndex.KEY, s, GlobalSearchScope.allScope(project)),
+                dispatcherEvent -> dispatcherEvent.getInstance() != null
+            );
+
+            if(event != null) {
+                typeText = event.getInstance();
+            }
+
+            results.put(s, LookupElementBuilder.create(s).withTypeText(typeText, true).withIcon(Symfony2Icons.EVENT));
         }
 
         return results.values();

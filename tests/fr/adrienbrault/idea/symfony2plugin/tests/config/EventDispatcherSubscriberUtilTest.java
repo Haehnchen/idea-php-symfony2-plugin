@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -75,6 +76,17 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
         ContainerUtil.find(eventNameLookupElements, lookupElement ->
             lookupElement.getLookupString().equals("bar.post_bar")
         );
+
+        ContainerUtil.find(eventNameLookupElements, lookupElement -> {
+            if(!"bar.post_bar".equals(lookupElement.getLookupString())) {
+                return false;
+            }
+
+            LookupElementPresentation lookupElementPresentation = new LookupElementPresentation();
+            lookupElement.renderElement(lookupElementPresentation);
+
+            return "My\\MyFooEvent".equals(lookupElementPresentation.getTypeText());
+        });
     }
 
     /**
