@@ -1,6 +1,7 @@
 <?php
 
-namespace Symfony\Component\EventDispatcher {
+namespace Symfony\Component\EventDispatcher
+{
     interface EventSubscriberInterface
     {
         public static function getSubscribedEvents();
@@ -25,3 +26,24 @@ namespace {
         public function preFoo(\DateTime $d) {}
     }
 }
+
+
+namespace Foo\Event
+{
+
+    use Symfony\Component\EventDispatcher\Event;
+
+    class MyEvents
+    {
+
+        /**
+         * @Event("Foo\Event\MyEvent")
+         */
+        const MY_FOO_EVENT = 'my.foo.event';
+    }
+
+    class MyEvent extends Event
+    {
+    }
+}
+

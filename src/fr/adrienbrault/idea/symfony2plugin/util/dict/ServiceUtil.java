@@ -88,7 +88,7 @@ public class ServiceUtil {
     /**
      * static event parameter list
      *
-     * TODO: replace with live fetch
+     * TODO: replace with live fetch; now redundant because of @Event const in Symfony itself
      */
     public static final Map<String , String> TAGS = new HashMap<String , String>() {{
         put("kernel.request", "\\Symfony\\Component\\HttpKernel\\Event\\GetResponseEvent");

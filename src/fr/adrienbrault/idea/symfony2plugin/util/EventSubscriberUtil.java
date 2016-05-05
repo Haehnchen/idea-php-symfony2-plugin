@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
@@ -10,6 +13,8 @@ import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagFactory;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagVisitorInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -47,10 +52,23 @@ public class EventSubscriberUtil {
     @Nullable
     public static String getTaggedEventMethodParameter(@NotNull Project project, @NotNull String eventName) {
 
+        // Static list
         if(ServiceUtil.TAGS.containsKey(eventName)) {
             return ServiceUtil.TAGS.get(eventName);
         }
 
+        // @Event annotation
+        DispatcherEvent dispatcherEvent = ContainerUtil.getFirstItem(FileBasedIndex.getInstance().getValues(
+            EventAnnotationStubIndex.KEY,
+            eventName,
+            GlobalSearchScope.allScope(project))
+        );
+
+        if(dispatcherEvent != null && StringUtils.isNotBlank(dispatcherEvent.getInstance())) {
+            return dispatcherEvent.getInstance();
+        }
+
+        // Extract from directly from EventSubscriberInterface
         for (EventDispatcherSubscribedEvent event : EventDispatcherSubscriberUtil.getSubscribedEvent(project, eventName)) {
             String methodName = event.getMethodName();
             if(methodName == null) {
@@ -66,6 +84,7 @@ public class EventSubscriberUtil {
             }
         }
 
+        // Visit all services tagged with "kernel.event_listener"
         for (String service : ServiceUtil.getTaggedServices(project, "kernel.event_listener")) {
             for (PsiElement psiElement : ServiceIndexUtil.findServiceDefinitions(project, service)) {
                 Collection<ServiceTagInterface> serviceTagVisitorArguments = ServiceTagFactory.create(service, psiElement);
