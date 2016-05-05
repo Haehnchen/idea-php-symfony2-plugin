@@ -41,6 +41,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
         add("setDefinition");
         add("setParameter");
         add("setAlias");
+        add("register");
     }};
 
     @NotNull

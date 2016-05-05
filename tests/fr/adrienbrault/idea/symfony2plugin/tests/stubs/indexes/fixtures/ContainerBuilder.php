@@ -14,6 +14,7 @@ class Foo
         $container2->setParameter('parameter');
         $container2->setDefinition('definition');
         $container2->setAlias('alias');
+        $container2->register('register.id', 'Register');
     }
 
     public function process2(Container $container2)
