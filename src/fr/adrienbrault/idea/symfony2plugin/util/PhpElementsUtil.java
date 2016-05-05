@@ -1383,4 +1383,28 @@ public class PhpElementsUtil {
         return PhpElementsUtil.getClassInterface(method.getProject(), className);
     }
 
+    @Nullable
+    public static String insertUseIfNecessary(@NotNull PsiElement phpClass, @NotNull String fqnClasName) {
+        if(!fqnClasName.startsWith("\\")) {
+            fqnClasName = "\\" + fqnClasName;
+        }
+
+        PhpPsiElement scopeForUseOperator = PhpCodeInsightUtil.findScopeForUseOperator(phpClass);
+        if(scopeForUseOperator == null) {
+            return null;
+        }
+
+        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).values().contains(fqnClasName)) {
+            PhpAliasImporter.insertUseStatement(fqnClasName, scopeForUseOperator);
+        }
+
+        for (Map.Entry<String, String> entry : PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).entrySet()) {
+            if(fqnClasName.equals(entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
 }

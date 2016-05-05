@@ -135,4 +135,26 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             ));
         }
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#insertUseIfNecessary
+     */
+    public void testUseImports() {
+        assertEquals("Bar", PhpElementsUtil.insertUseIfNecessary(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace Foo;\n" +
+            "class Foo{}\n"
+        ), "\\Foo\\Bar"));
+
+        assertEquals("Bar", PhpElementsUtil.insertUseIfNecessary(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace Foo;\n" +
+            "use Foo\\Bar;\n" +
+            "class Foo{}\n"
+        ), "\\Foo\\Bar"));
+
+        assertEquals("Apple", PhpElementsUtil.insertUseIfNecessary(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace Bar\\Bar;\n" +
+            "use Foo as Car;\n" +
+            "class Foo{}\n"
+        ), "Foo\\Cool\\Apple"));
+    }
 }

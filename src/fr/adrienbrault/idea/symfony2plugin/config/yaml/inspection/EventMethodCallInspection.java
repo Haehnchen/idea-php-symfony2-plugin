@@ -261,6 +261,11 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
                 String parameter = "";
                 if(taggedEventMethodParameter != null) {
+                    String s = PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
+                    if(s != null) {
+                        taggedEventMethodParameter = s;
+                    }
+
                     parameter = taggedEventMethodParameter + " $event";
                 }
 
