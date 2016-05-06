@@ -25,7 +25,13 @@ public class EventDispatcherUtil {
             return null;
         }
 
-        return StringUtils.stripStart(matcher.group(1).trim(), "\\");
+        // dont let index long stuff
+        String group = matcher.group(1);
+        if(group.length() > 350) {
+            return null;
+        }
+
+        return StringUtils.stripStart(group.trim(), "\\");
     }
 
 }

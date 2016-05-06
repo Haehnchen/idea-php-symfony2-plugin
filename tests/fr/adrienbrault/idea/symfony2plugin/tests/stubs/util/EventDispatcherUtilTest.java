@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.util;
 
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.EventDispatcherUtil;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,6 +14,7 @@ public class EventDispatcherUtilTest extends Assert {
     public void testTextInstanceExtraction() {
         String[] strings = {
             "The event listener method receives a Symfony\\Component\\Form\\FormEvent instance.",
+            "The event listener method receives a \\Symfony\\Component\\Form\\FormEvent instance.",
             "The event listener method receives an Symfony\\Component\\Form\\FormEvent instance.",
             "The event listener method receive an Symfony\\Component\\Form\\FormEvent instance.",
             " method receive f Symfony\\Component\\Form\\FormEvent instance.",
@@ -28,5 +30,18 @@ public class EventDispatcherUtilTest extends Assert {
                 EventDispatcherUtil.extractEventClassInstance(string)
             );
         }
+    }
+    @Test
+    public void testTextInstanceExtractionForUnderline() {
+        assertEquals("Symfony\\Compo_nent\\Form\\FormEvent", EventDispatcherUtil.extractEventClassInstance(
+            "The event listener method receives a Symfony\\Compo_nent\\Form\\FormEvent instance."
+        ));
+    }
+
+    @Test
+    public void testTextInstanceExtractionForLongStringShouldBeNull() {
+        assertNull(EventDispatcherUtil.extractEventClassInstance(
+            "The event listener method receives a " + StringUtils.repeat("a", 500) + " instance."
+        ));
     }
 }

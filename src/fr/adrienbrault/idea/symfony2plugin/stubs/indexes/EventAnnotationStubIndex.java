@@ -147,7 +147,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
                 PsiElement childrenOfType = PsiElementUtils.getChildrenOfType(phpDocAttributeList, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocString));
                 if(childrenOfType instanceof StringLiteralExpression) {
                     String contents = StringUtils.stripStart(((StringLiteralExpression) childrenOfType).getContents(), "\\");
-                    if(StringUtils.isNotBlank(contents)) {
+                    if(StringUtils.isNotBlank(contents) && contents.length() < 350) {
                         return contents;
                     }
                 }

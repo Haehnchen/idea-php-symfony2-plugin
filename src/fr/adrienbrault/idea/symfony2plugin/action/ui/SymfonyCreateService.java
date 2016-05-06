@@ -322,7 +322,7 @@ public class SymfonyCreateService extends JDialog {
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType) {
         return new ServiceBuilder(this.modelList.getItems(), this.project).build(
             outputType,
-            classCompletionPanelWrapper.getClassName(),
+            StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
             textFieldServiceName.getText()
         );
     }
