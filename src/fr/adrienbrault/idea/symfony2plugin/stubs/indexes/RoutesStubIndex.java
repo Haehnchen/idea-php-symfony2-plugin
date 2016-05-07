@@ -12,7 +12,7 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -21,58 +21,54 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
 
-public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
+public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexedRoute> {
 
-    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes");
+    public static final ID<String, StubIndexedRoute> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes_object");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
+    private static ObjectStreamDataExternalizer<StubIndexedRoute> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
-    public ID<String, String[]> getName() {
+    public ID<String, StubIndexedRoute> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, String[], FileContent> getIndexer() {
-        return new DataIndexer<String, String[], FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, String[]> map(@NotNull FileContent inputData) {
-                Map<String, String[]> map = new THashMap<String, String[]>();
+    public DataIndexer<String, StubIndexedRoute, FileContent> getIndexer() {
+        return inputData -> {
+            Map<String, StubIndexedRoute> map = new THashMap<>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
+                return map;
+            }
+
+            if(psiFile instanceof YAMLFile) {
+
+                if(!isValidForIndex(inputData, psiFile)) {
                     return map;
                 }
 
-                if(psiFile instanceof YAMLFile) {
-
-                    if(!isValidForIndex(inputData, psiFile)) {
-                        return map;
-                    }
-
-                    YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
-                    if(yamlDocument == null) {
-                        return map;
-                    }
-
-                    for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
-                        map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
-                    }
-
+                YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(psiFile, YAMLDocument.class);
+                if(yamlDocument == null) {
                     return map;
                 }
 
-                if(psiFile instanceof XmlFile) {
-                    for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
-                        map.put(indexedRoutes.getName(), new String[] { indexedRoutes.getController(), indexedRoutes.getPath()} );
-                    }
+                for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
+                    map.put(indexedRoutes.getName(), indexedRoutes);
                 }
 
                 return map;
             }
 
+            if(psiFile instanceof XmlFile) {
+                for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
+                    map.put(indexedRoutes.getName(), indexedRoutes);
+                }
+            }
+
+            return map;
         };
 
     }
@@ -85,8 +81,8 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
     @NotNull
     @Override
-    public DataExternalizer<String[]> getValueExternalizer() {
-        return new ArrayDataExternalizer();
+    public DataExternalizer<StubIndexedRoute> getValueExternalizer() {
+        return EXTERNALIZER;
     }
 
     @NotNull
@@ -103,7 +99,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, String[]> {
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

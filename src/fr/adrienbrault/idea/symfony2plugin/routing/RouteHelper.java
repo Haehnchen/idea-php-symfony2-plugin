@@ -87,22 +87,22 @@ public class RouteHelper {
     }
 
     @Nullable
-    public static Route getRoute(Project project, String routeName) {
+    public static Route getRoute(@NotNull Project project, @NotNull String routeName) {
 
         Map<String, Route> compiledRoutes = RouteHelper.getCompiledRoutes(project);
-        if(!compiledRoutes.containsKey(routeName)) {
-
-            // @TODO: provide multiple ones
-            Collection<VirtualFile> foo = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
-            for(String[] str: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, foo))) {
-                return new Route(routeName, str);
-            }
-
-            return null;
+        if(compiledRoutes.containsKey(routeName)) {
+            return compiledRoutes.get(routeName);
         }
 
-        return compiledRoutes.get(routeName);
+        // @TODO: provide multiple ones
+        Collection<VirtualFile> routeFiles = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
+        for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
+            return new Route(route);
+        }
+
+        return null;
     }
+
     public static PsiElement[] getRouteParameterPsiElements(Project project, String routeName, String parameterName) {
 
         List<PsiElement> results = new ArrayList<PsiElement>();
@@ -633,7 +633,7 @@ public class RouteHelper {
             String methods = YamlHelper.getStringValueOfKeyInProbablyMapping(element, "methods");
             if(methods != null) {
                 // value: [GET, POST,
-                String[] split = methods.replace("[", "").replace("]", "").replaceAll(" +", "").split(",");
+                String[] split = methods.replace("[", "").replace("]", "").replaceAll(" +", "").toLowerCase().split(",");
                 if(split.length > 0) {
                     route.addMethod(split);
                 }
@@ -690,7 +690,7 @@ public class RouteHelper {
 
                                 String methods = servicesTag.getAttributeValue("methods");
                                 if(methods != null && StringUtils.isNotBlank(methods))  {
-                                    String[] split = methods.replaceAll(" +", " ").split(" ");
+                                    String[] split = methods.replaceAll(" +", "").toLowerCase().split("\\|");
                                     if(split.length > 0) {
                                         e.addMethod(split);
                                     }
@@ -915,8 +915,8 @@ public class RouteHelper {
             if(uniqueSet.contains(routeName)) {
                 continue;
             }
-            for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
-                lookupElements.add(new RouteLookupElement(new Route(routeName, splits), true));
+            for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                lookupElements.add(new RouteLookupElement(new Route(route), true));
                 uniqueSet.add(routeName);
             }
         }
@@ -987,9 +987,9 @@ public class RouteHelper {
                 continue;
             }
 
-            for(String[] splits: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+            for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 uniqueKeySet.add(routeName);
-                routes.put(routeName, new Route(routeName, splits));
+                routes.put(routeName, new Route(route));
             }
         }
 

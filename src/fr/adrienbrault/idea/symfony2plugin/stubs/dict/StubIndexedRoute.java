@@ -1,13 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
 
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class StubIndexedRoute {
+public class StubIndexedRoute implements RouteInterface, Serializable{
 
     @NotNull
     private final String name;

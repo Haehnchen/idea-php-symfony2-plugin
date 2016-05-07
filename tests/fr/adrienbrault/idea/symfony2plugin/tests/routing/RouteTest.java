@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,29 +13,19 @@ public class RouteTest extends Assert {
 
     @Test
     public void testIndexInit() {
-        Route route = new Route("foo", new String[] {"foo", "foo_1"});
+        StubIndexedRoute stubIndexedRoute = new StubIndexedRoute("foo");
+        stubIndexedRoute.setPath("foo_1");
+        stubIndexedRoute.setController("foo");
+
+        Route route = new Route(stubIndexedRoute);
         assertEquals("foo", route.getController());
         assertEquals("foo_1", route.getPath());
-
-        route = new Route("foo", new String[] {null, "foo_1"});
-        assertEquals("foo_1", route.getPath());
-
-        route = new Route("foo", new String[] {"foo"});
-        assertEquals("foo", route.getController());
     }
 
     @Test
     public void testIndexNullable() {
-        Route route = new Route("foo", new String[] {null, null});
-        assertNull(route.getController());
-        assertNull(route.getPath());
-
-        route = new Route("foo", new String[] {"", ""});
-        assertNull(route.getController());
-        assertNull(route.getPath());
-
-        route = new Route("foo", new String[] {});
-        assertEquals("foo", route.getName());
+        StubIndexedRoute stubIndexedRoute = new StubIndexedRoute("foo");
+        Route route = new Route(stubIndexedRoute);
         assertNull(route.getController());
         assertNull(route.getPath());
     }

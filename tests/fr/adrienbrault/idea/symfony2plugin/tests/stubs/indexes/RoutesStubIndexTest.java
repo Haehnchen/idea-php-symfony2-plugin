@@ -9,7 +9,7 @@ import org.jetbrains.yaml.YAMLFileType;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex
  */
-public class RoutesStubIndexTestTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
@@ -32,7 +32,7 @@ public class RoutesStubIndexTestTest extends SymfonyLightCodeInsightFixtureTestC
 
         myFixture.configureByText(XmlFileType.INSTANCE, "" +
             "<routes>\n" +
-            "  <route id=\"foo_xml_pattern\" pattern=\"/blog/{slug}\"/>\n" +
+            "  <route id=\"foo_xml_pattern\" pattern=\"/blog/{slug}\" methods=\"GET|POST\"/>\n" +
             "  <route id=\"foo_xml_path\" path=\"/blog/{slug}\">\n" +
             "    <default key=\"_controller\">Foo</default>\n" +
             "  </route>\n" +
@@ -52,6 +52,28 @@ public class RoutesStubIndexTestTest extends SymfonyLightCodeInsightFixtureTestC
 
         assertIndexNotContains(RoutesStubIndex.KEY,
             "foo_yaml_invalid"
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     */
+    public void testRouteValueIndex() {
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_yaml_path",
+            value -> "foo_controller".equalsIgnoreCase(value.getController())
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     */
+    public void testRouteValueWithMethodsInIndex() {
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_yaml_pattern",
+            value -> "foo_yaml_pattern".equalsIgnoreCase(value.getName()) && value.getMethods().contains("get") && value.getMethods().contains("post")
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_xml_pattern",
+            value -> "foo_xml_pattern".equalsIgnoreCase(value.getName()) && value.getMethods().contains("get") && value.getMethods().contains("post")
         );
     }
 }
