@@ -99,9 +99,9 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
             "    methods: [GET,   POST]\n"
         ));
 
-        assertContainsElements(Collections.singletonList("GET"), ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("route1")).getMethods());
-        assertContainsElements(Collections.singletonList("GET"), ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("route2")).getMethods());
-        assertContainsElements(Arrays.asList("GET", "POST"), ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("route3")).getMethods());
+        assertContainsElements(Collections.singletonList("get"), ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("route1")).getMethods());
+        assertContainsElements(Collections.singletonList("get"), ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("route2")).getMethods());
+        assertContainsElements(Arrays.asList("get", "post"), ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("route3")).getMethods());
     }
 
     /**
@@ -179,17 +179,17 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         Collection<StubIndexedRoute> xmlRouteDefinitions = RouteHelper.getXmlRouteDefinitions(createXmlFile("" +
                 "<routes>\n" +
                 "   <route id=\"foo2\" methods=\"GET\"/>\n" +
-                "   <route id=\"foo3\" methods=\"GET   POST PUT   FIGHT\"/>\n" +
+                "   <route id=\"foo3\" methods=\"GET |  POST |PUT  | FIGHT\"/>\n" +
                 "</routes>"
         ));
 
         assertContainsElements(
-            Collections.singletonList("GET"),
+            Collections.singletonList("get"),
             ContainerUtil.find(xmlRouteDefinitions, new MyEqualStubIndexedRouteCondition("foo2")).getMethods()
         );
 
         assertContainsElements(
-            Arrays.asList("GET", "POST", "PUT", "FIGHT"),
+            Arrays.asList("get", "post", "put", "fight"),
             ContainerUtil.find(xmlRouteDefinitions, new MyEqualStubIndexedRouteCondition("foo3")).getMethods()
         );
     }
