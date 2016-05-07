@@ -7,6 +7,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.HashSet;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -30,8 +32,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, RouteInterface> {
 
@@ -48,29 +53,25 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
     @NotNull
     @Override
     public DataIndexer<String, RouteInterface, FileContent> getIndexer() {
-        return new DataIndexer<String, RouteInterface, FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, RouteInterface> map(@NotNull FileContent inputData) {
-                final Map<String, RouteInterface> map = new THashMap<String, RouteInterface>();
+        return inputData -> {
+            final Map<String, RouteInterface> map = new THashMap<>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                    return map;
-                }
-
-                if(!(inputData.getPsiFile() instanceof PhpFile)) {
-                    return map;
-                }
-
-                if(!RoutesStubIndex.isValidForIndex(inputData, psiFile)) {
-                    return map;
-                }
-
-                psiFile.accept(new MyPsiRecursiveElementWalkingVisitor(map));
-
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
                 return map;
             }
+
+            if(!(inputData.getPsiFile() instanceof PhpFile)) {
+                return map;
+            }
+
+            if(!RoutesStubIndex.isValidForIndex(inputData, psiFile)) {
+                return map;
+            }
+
+            psiFile.accept(new MyPsiRecursiveElementWalkingVisitor(map));
+
+            return map;
         };
     }
 
@@ -247,7 +248,47 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
 
                 route.setController(getController(phpDocTag));
 
+                // @Method(...)
+                extractMethods(phpDocTag, route);
+
                 map.put(routeName, route);
+            }
+        }
+
+        private void extractMethods(@NotNull PhpDocTag phpDocTag, @NotNull JsonRoute route) {
+            PsiElement phpDoc = phpDocTag.getParent();
+            if(!(phpDoc instanceof PhpDocComment)) {
+                return;
+            }
+
+            PsiElement methodTag = ContainerUtil.find(phpDoc.getChildren(), psiElement ->
+                psiElement instanceof PhpDocTag &&
+                "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Method".equals(
+                    AnnotationRoutesStubIndex.getClassNameReference((PhpDocTag) psiElement, fileImports)
+                )
+            );
+
+            if(!(methodTag instanceof PhpDocTag)) {
+                return;
+            }
+
+            PhpPsiElement attrList = ((PhpDocTag) methodTag).getFirstPsiChild();
+            if(attrList == null || attrList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
+                return;
+            }
+
+            String content = attrList.getText();
+
+            // ({"POST", "GET"}), ("POST")
+            Matcher matcher = Pattern.compile("\"([\\w]{3,7})\"", Pattern.DOTALL).matcher(content);
+
+            Collection<String> methods = new HashSet<>();
+            while (matcher.find()) {
+                methods.add(matcher.group(1).toLowerCase());
+            }
+
+            if(methods.size() > 0) {
+                route.setMethods(methods);
             }
         }
 
@@ -257,22 +298,19 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
         @Nullable
         private String getController(@NotNull PhpDocTag phpDocTag) {
             Method method = AnnotationBackportUtil.getMethodScope(phpDocTag);
-
-            if(method != null) {
-                PhpClass containingClass = method.getContainingClass();
-                if(containingClass != null) {
-                    String fqn = containingClass.getFQN();
-                    if(fqn != null) {
-                        return String.format("%s::%s",
-                            StringUtils.stripStart(fqn, "\\"),
-                            method.getName()
-                        );
-                    }
-
-                }
+            if(method == null) {
+                return null;
             }
 
-            return null;
+            PhpClass containingClass = method.getContainingClass();
+            if(containingClass == null) {
+                return null;
+            }
+
+            return String.format("%s::%s",
+                StringUtils.stripStart(containingClass.getFQN(), "\\"),
+                method.getName()
+            );
         }
 
         @Nullable

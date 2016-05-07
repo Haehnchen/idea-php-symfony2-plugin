@@ -3,6 +3,7 @@
 namespace My
 {
     use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+    use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
     /**
      * @Route("/foo")
@@ -11,8 +12,17 @@ namespace My
     {
         /**
          * @Route("/edit/{id}", name="blog_home")
+         * @Method("GET")
          */
         public function editAction()
+        {
+        }
+
+        /**
+         * @Route("/edit/{id}", name="blog_home_get_head")
+         * @Method({"GET","HEAD"})
+         */
+        public function getHeadAction()
         {
         }
     }

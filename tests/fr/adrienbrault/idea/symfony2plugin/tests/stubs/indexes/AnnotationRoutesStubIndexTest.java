@@ -52,6 +52,15 @@ public class AnnotationRoutesStubIndexTest extends SymfonyLightCodeInsightFixtur
         assertIndexContains(AnnotationRoutesStubIndex.KEY, "app_default_foo");
     }
 
+    public void testThatMethodsAreInIndex() {
+        RouteInterface route = getFirstValue("blog_home");
+        route.getMethods().contains("get");
+
+        route = getFirstValue("blog_home_get_head");
+        route.getMethods().contains("get");
+        route.getMethods().contains("head");
+    }
+
     private RouteInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
