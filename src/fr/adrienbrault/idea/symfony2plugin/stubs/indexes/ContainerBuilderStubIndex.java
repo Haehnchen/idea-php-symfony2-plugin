@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
@@ -14,6 +15,7 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import gnu.trove.THashMap;
@@ -24,11 +26,18 @@ import java.util.Map;
 import java.util.Set;
 
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ *
+ * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex
+ */
 public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, ContainerBuilderCall> {
 
     public static final ID<String, ContainerBuilderCall> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.container_builder");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private final static ObjectStreamDataExternalizer<ContainerBuilderCall> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+
+    private static int MAX_FILE_BYTE_SIZE = 2621440;
 
     private static final Set<String> SET = new HashSet<String>() {{
         add("Symfony\\Component\\DependencyInjection\\Container");
@@ -53,7 +62,11 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
             Map<String, ContainerBuilderCall> map = new THashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
-            if(!(psiFile instanceof PhpFile)) {
+            if(!(psiFile instanceof PhpFile) ||
+                !Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) ||
+                !isValidForIndex(inputData, psiFile)
+                ){
+
                 return map;
             }
 
@@ -95,6 +108,27 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
     @Override
     public int getVersion() {
         return 1;
+    }
+
+    private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
+
+        String fileName = psiFile.getName();
+        if(fileName.startsWith(".") || fileName.contains("Test")) {
+            return false;
+        }
+
+        // is Test file in path name
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
+            return false;
+        }
+
+        // dont index files larger then files; use 5 MB here
+        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
+            return false;
+        }
+
+        return true;
     }
 
     private class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementVisitor {
