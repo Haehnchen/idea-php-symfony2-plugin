@@ -9,18 +9,21 @@ public class IndexUtil {
     public static void forceReindex() {
 
         ID<?,?>[] indexIds = new ID<?,?>[] {
-            ServicesDefinitionStubIndex.KEY,
             AnnotationRoutesStubIndex.KEY,
+            ContainerBuilderStubIndex.KEY,
             ContainerParameterStubIndex.KEY,
+            DoctrineMetadataFileStubIndex.KEY,
+            EventAnnotationStubIndex.KEY,
+            FileResourcesIndex.KEY,
+            PhpTwigTemplateUsageStubIndex.KEY,
+            RoutesStubIndex.KEY,
+            ServicesDefinitionStubIndex.KEY,
             ServicesTagStubIndex.KEY,
             TwigExtendsStubIndex.KEY,
             TwigIncludeStubIndex.KEY,
             TwigMacroFromStubIndex.KEY,
             TwigMacroFunctionStubIndex.KEY,
-            RoutesStubIndex.KEY,
             YamlTranslationStubIndex.KEY,
-            DoctrineMetadataFileStubIndex.KEY,
-            FileResourcesIndex.KEY,
         };
 
         for(ID<?,?> id: indexIds) {
