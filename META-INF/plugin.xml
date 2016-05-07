@@ -437,12 +437,6 @@
         <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerProjectGenerator"/>
         <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerTemplatesFactory"/>
 
-        <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteWeakInspection" displayName="Weak Route"
-                         groupName="Route"
-                         enabledByDefault="true" level="WARNING"
-                         language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteWeakInspection"/>
-
         <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
