@@ -3,9 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.HashSet;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -83,10 +86,11 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
             ContainerService containerService = ContainerCollectionResolver.getService(project, parameter);
             if(containerService != null) {
-                String serviceClass = containerService.getClassName();
-                if(serviceClass != null) {
-                    return PhpIndex.getInstance(project).getAnyByFQN(serviceClass);
+                Collection<PhpNamedElement> phpClasses = new HashSet<>();
+                for (String s : containerService.getClassNames()) {
+                    phpClasses.addAll(PhpIndex.getInstance(project).getAnyByFQN(s));
                 }
+                return phpClasses;
             }
 
         }

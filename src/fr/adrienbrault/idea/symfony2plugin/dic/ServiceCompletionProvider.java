@@ -65,15 +65,10 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
             }
         }
 
-        Collection<LookupElement> collect = services.stream().map((Function<ContainerService, LookupElement>) service -> {
-            ServiceStringLookupElement lookupElement = new ServiceStringLookupElement(service);
-
-            if (servicesForInstance.contains(service.getName())) {
-                lookupElement.setBoldText(true);
-            }
-
-            return lookupElement;
-        }).collect(Collectors.toList());
+        Collection<LookupElement> collect = services.stream()
+            .map((Function<ContainerService, LookupElement>)
+                service -> new ServiceStringLookupElement(service, servicesForInstance.contains(service.getName())))
+            .collect(Collectors.toList());
 
         return new LookupResult(collect, servicesForInstance);
     }

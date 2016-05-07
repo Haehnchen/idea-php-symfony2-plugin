@@ -9,12 +9,14 @@ import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
  */
 public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("types.xml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("types2.xml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
     }
 
@@ -48,4 +50,22 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     */
+    public void testThatDuplicateServiceClassInstancesAreMerged() {
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var $d \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$d->get('foo.bar')->for<caret>mat();",
+            PlatformPatterns.psiElement(Method.class).withName("format")
+        );
+
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var $d \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$d->get('foo.bar')->get<caret>Bar();",
+            PlatformPatterns.psiElement(Method.class).withName("getBar")
+        );
+    }
 }
