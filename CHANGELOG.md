@@ -7,6 +7,20 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.118
+* Fixing npe in service generator intention #722
+* Implement lock for timer clear on caret listener #722
+* Add index to provide autocompletion for DIC parameters defined dynamically #478
+* Convert service name to lowercase in index and xml navigation should navigation to service name case insensitive
+* Add service container class name variants if definition not unique in project
+* Add @Event annotation indexer; provide completion, navigation, method type hint #493
+* Fix exception Accessing indexes from PhpTypeProvider2 while building indexes violates contract #670
+* Fix missing Yaml deprecation detection for colon in unquoted values #719
+* Add method type hint class importer for subscriber events #564
+* Dropping weak route name inspection, no need for this anymore
+* Refactoring route to use object serialization, add route method index and force reindexing #725
+* Add inspection for form types as name deprecation; includes a quickfix
+
 ### 0.12.117
 * Use popover for xml container tag suggestion
 * Add class name completion for service generator dialog
