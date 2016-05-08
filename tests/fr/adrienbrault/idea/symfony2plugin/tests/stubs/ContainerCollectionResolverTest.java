@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs;
 
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
+import java.io.File;
 import java.util.Set;
 
 /**
@@ -50,6 +52,12 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
             "    foo_datetime:\n" +
             "        class: %bar%\n"
         );
+
+        myFixture.copyFileToProject("ContainerBuilder.php");
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     public void testCaseInsensitiveService() {
@@ -93,5 +101,12 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "foo"));
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo_as_alias").getClassName());
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo").getClassName());
+    }
+
+    public void testThatContainerBuilderParameterAreCollected() {
+        assertContainsElements(ContainerCollectionResolver.getParameterNames(getProject()), "container.builder.parameter");
+        ContainerParameter containerParameter = ContainerCollectionResolver.getParameters(getProject()).get("container.builder.parameter");
+        assertNotNull(containerParameter);
+        assertTrue(containerParameter.isWeak());
     }
 }

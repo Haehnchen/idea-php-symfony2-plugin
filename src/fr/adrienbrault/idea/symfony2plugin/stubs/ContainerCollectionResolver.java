@@ -4,14 +4,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
+import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
 import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -371,7 +374,7 @@ public class ContainerCollectionResolver {
                 return this.containerParameterMap;
             }
 
-            this.containerParameterMap = new TreeMap<String, ContainerParameter>(String.CASE_INSENSITIVE_ORDER);
+            this.containerParameterMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
                 // local filesystem
@@ -400,6 +403,23 @@ public class ContainerCollectionResolver {
                     }
                 }
 
+                // setParameter("foo") for ContainerBuilder
+                for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
+                    Collection<String> parameters = call.getParameter();
+                    if(parameters == null || parameters.size() == 0) {
+                        continue;
+                    }
+
+                    for (String parameter : parameters) {
+                        if(this.containerParameterMap.containsKey(parameter)) {
+                           continue;
+                        }
+
+                        this.containerParameterMap.put(parameter, new ContainerParameter(parameter, true));
+                    }
+
+                }
+
             }
 
             return this.containerParameterMap;
@@ -413,7 +433,7 @@ public class ContainerCollectionResolver {
                 return this.containerParameterMap.keySet();
             }
 
-            Set<String> parameterNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+            Set<String> parameterNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
             if(this.sources.contains(Source.COMPILER)) {
                 // local filesystem
@@ -424,11 +444,17 @@ public class ContainerCollectionResolver {
                 parameterNames.addAll(
                     FileIndexCaches.getIndexKeysCache(project, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY)
                 );
+
+                // setParameter("foo") for ContainerBuilder
+                for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
+                    Collection<String> parameter = call.getParameter();
+                    if(parameter != null) {
+                        parameterNames.addAll(parameter);
+                    }
+                }
             }
 
             return parameterNames;
-
-
         }
 
     }

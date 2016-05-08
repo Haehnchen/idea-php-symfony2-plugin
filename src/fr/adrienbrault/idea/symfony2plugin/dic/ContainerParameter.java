@@ -4,8 +4,8 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 public class ContainerParameter {
 
@@ -18,8 +18,12 @@ public class ContainerParameter {
         this(name, value, false);
     }
 
+    public ContainerParameter(@NotNull String name, boolean isWeak) {
+        this(name, Collections.emptyList(), isWeak);
+    }
+
     public ContainerParameter(@NotNull String name, @Nullable String value, boolean isWeak) {
-        this(name, Arrays.asList(value), isWeak);
+        this(name, Collections.singletonList(value), isWeak);
     }
 
     public ContainerParameter(@NotNull String name, Collection<String> values, boolean isWeak) {
