@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.117</version>
+    <version>0.12.118</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -110,6 +110,23 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.12.118</h2>
+<ul>
+    <li>Fixing npe in service generator intention <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/722">#722</a></li>
+    <li>Implement lock for timer clear on caret listener <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/722">#722</a></li>
+    <li>Add index to provide autocompletion for DIC parameters defined dynamically <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/478">#478</a></li>
+    <li>Convert service name to lowercase in index and xml navigation should navigation to service name case insensitive</li>
+    <li>Add service container class name variants if definition not unique in project</li>
+    <li>Add @Event annotation indexer; provide completion, navigation, method type hint <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/493">#493</a></li>
+    <li>Fix exception Accessing indexes from PhpTypeProvider2 while building indexes violates contract <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/670">#670</a></li>
+    <li>Fix missing Yaml deprecation detection for colon in unquoted values <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/719">#719</a></li>
+    <li>Add method type hint class importer for subscriber events <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/564">#564</a></li>
+    <li>Dropping weak route name inspection, no need for this anymore</li>
+    <li>Refactoring route to use object serialization, add route method index and force reindexing <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/725">#725</a></li>
+    <li>Add inspection for form types as name deprecation; includes a quickfix</li>
+</li>
+</ul>
 
 <h2>0.12.117</h2>
 <ul>
