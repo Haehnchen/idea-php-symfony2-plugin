@@ -481,7 +481,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         fail(String.format("Fail intention action '%s' is available in element '%s'", intentionText, psiElement.getText()));
     }
 
-    public void assertLocalInspectionContainsNotContains(String filename, String content, String contains) {
+    public void assertLocalInspectionNotContains(String filename, String content, String contains) {
         Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(filename, content);
 
         for (ProblemDescriptor result : localInspectionsAtCaret.getFirst()) {

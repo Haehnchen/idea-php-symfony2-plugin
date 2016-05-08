@@ -35,7 +35,7 @@ public class ControllerMethodInspectionTest extends SymfonyLightCodeInsightFixtu
             "Create Method"
         );
 
-        assertLocalInspectionContainsNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains("routing.yml", "" +
             "foo:\n" +
             "    defaults: { _controller: Route\\Controller\\FooController::fooA<caret>ction }",
             "Create Method"

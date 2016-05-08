@@ -33,7 +33,7 @@ public class RouteSettingDeprecatedInspectionTest extends SymfonyLightCodeInsigh
             "Pattern is deprecated; use path instead"
         );
 
-        assertLocalInspectionContainsNotContains("routing.xml", "" +
+        assertLocalInspectionNotContains("routing.xml", "" +
                 "<route pattern=\"f<caret>oo\"/>\n",
             "Pattern is deprecated; use path instead"
         );
@@ -71,7 +71,7 @@ public class RouteSettingDeprecatedInspectionTest extends SymfonyLightCodeInsigh
             );
         }
 
-        assertLocalInspectionContainsNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains("routing.yml", "" +
                 "foo:\n" +
                 "   bar: { _m<caret>ethod: foo }",
             "The '_method' requirement is deprecated"

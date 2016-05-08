@@ -35,7 +35,7 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
     }
 
     public void testThatFormNamesWithFqnAsStringNotDeprecated() {
-        assertLocalInspectionContainsNotContains("my_form.php", "<?php\n" +
+        assertLocalInspectionNotContains("my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->add(null, 'Foo\\B<caret>ar')",
             FormTypeAsClassConstantInspection.MESSAGE

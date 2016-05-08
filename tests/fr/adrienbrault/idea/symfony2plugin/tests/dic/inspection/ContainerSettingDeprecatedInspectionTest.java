@@ -18,7 +18,7 @@ public class ContainerSettingDeprecatedInspectionTest extends SymfonyLightCodeIn
             "Symfony: this factory pattern is deprecated use 'factory' instead"
         );
 
-        assertLocalInspectionContainsNotContains("service.xml",
+        assertLocalInspectionNotContains("service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service factory-class=\"Date<caret>Time\"/>\n" +

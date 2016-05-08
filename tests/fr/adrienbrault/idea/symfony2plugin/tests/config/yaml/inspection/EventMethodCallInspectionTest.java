@@ -35,7 +35,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
                 "            - { name: kernel.event_listener, event: kernel.exception, method: get<caret>Foos }"
             , "Missing Method");
 
-        assertLocalInspectionContainsNotContains("services.yml", "services:\n" +
+        assertLocalInspectionNotContains("services.yml", "services:\n" +
                 "    newsletter_manager:\n" +
                 "        class: Foo\\Service\\Method\\MyFoo\n" +
                 "        calls:\n" +

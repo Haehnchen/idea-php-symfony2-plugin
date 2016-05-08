@@ -15,17 +15,17 @@ public class YamlQuotedEscapedInspectionTest extends SymfonyLightCodeInsightFixt
             "Not escaping a backslash in a double-quoted string is deprecated"
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: \"Foo<caret>\\\\Bar\"",
             "Not escaping a backslash in a double-quoted string is deprecated"
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: 'Foo<caret>\\Bar'",
             "Not escaping a backslash in a double-quoted string is deprecated"
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: Foo<caret>\\Bar",
             "Not escaping a backslash in a double-quoted string is deprecated"
         );
@@ -33,7 +33,7 @@ public class YamlQuotedEscapedInspectionTest extends SymfonyLightCodeInsightFixt
 
     public void testDeprecatedNonEscapedWhitelistCharInDoubleQuotedStrings() {
         for (String s : new String[]{"\\n", "\\r", "\\t", "\\_", " "}) {
-            assertLocalInspectionContainsNotContains("foo.yml",
+            assertLocalInspectionNotContains("foo.yml",
                 "class: \"Foo<caret>" + s +"Bar\"",
                 "Not escaping a backslash in a double-quoted string is deprecated"
             );
@@ -41,7 +41,7 @@ public class YamlQuotedEscapedInspectionTest extends SymfonyLightCodeInsightFixt
     }
 
     public void testDeprecatedNonEscapedBlacklistConditionInDoubleQuotedStrings() {
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: \"Foo<caret>\\Bar" + StringUtils.repeat("a", 255) + "\"",
             "Not escaping a backslash in a double-quoted string is deprecated"
         );
@@ -73,17 +73,17 @@ public class YamlQuotedEscapedInspectionTest extends SymfonyLightCodeInsightFixt
             "Not quoting a scalar starting with the '%' indicator character is deprecated since Symfony 3.1"
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: '%f<caret>oo'",
             "Not quoting a scalar starting with the '%' indicator character is deprecated since Symfony 3.1"
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: '@f<caret>oo'",
             "Deprecated usage of '@' at the beginning of unquoted string"
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: \"@f<caret>oo\"",
             "Deprecated usage of '@' at the beginning of unquoted string"
         );

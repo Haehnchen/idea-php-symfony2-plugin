@@ -17,16 +17,16 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
     }
 
     public void testColonInUnquotedWithoutMappingScopeShouldNotDeprecated() {
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: [fo<caret>obar:fff]",
             YamlUnquotedColon.MESSAGE
         );
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: [foo, fo<caret>obar:fff]",
             YamlUnquotedColon.MESSAGE
         );
 
-        assertLocalInspectionContainsNotContains("foo.yml",
+        assertLocalInspectionNotContains("foo.yml",
             "class: {fo<caret>obar:fff}",
             YamlUnquotedColon.MESSAGE
         );
