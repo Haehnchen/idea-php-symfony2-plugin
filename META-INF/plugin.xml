@@ -545,6 +545,12 @@
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlUnquotedColon"/>
 
+        <localInspection groupPath="Symfony" shortName="FormTypeAsClassConstant" displayName="Fully-qualified class name (FQCN) in form types"
+                         groupName="Form"
+                         enabledByDefault="true" level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
