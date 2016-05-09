@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -11,14 +12,12 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
-import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
-import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +31,10 @@ public class ContainerCollectionResolver {
 
     private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
     private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SERVICE_PARAMETER_INDEX_NAMES");
+
+    private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
+    );
 
     public static enum Source {
         INDEX, COMPILER
@@ -199,6 +202,16 @@ public class ContainerCollectionResolver {
 
                 Collection<ServiceInterface> aliases = new ArrayList<ServiceInterface>();
 
+                // Extension points
+                ServiceCollectorParameter.Service parameter = null;
+                for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
+                    if(parameter == null) {
+                        parameter = new ServiceCollectorParameter.Service(project, aliases);
+                    }
+
+                    collectorEx.collectServices(parameter);
+                }
+
                 for (Map.Entry<String, List<ServiceInterface>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
 
                     // dont work twice on service;
@@ -297,6 +310,16 @@ public class ContainerCollectionResolver {
             }
 
             if(this.sources.contains(Source.INDEX)) {
+
+                // Extension points
+                ServiceCollectorParameter.Id parameter = null;
+                for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
+                    if(parameter == null) {
+                        parameter = new ServiceCollectorParameter.Id(project, serviceNames);
+                    }
+
+                    collectorEx.collectIds(parameter);
+                }
 
                 serviceNames.addAll(
                     FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
