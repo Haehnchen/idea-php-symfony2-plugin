@@ -638,6 +638,7 @@
         <extensionPoint name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
         <extensionPoint name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
         <extensionPoint name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"/>
+        <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">

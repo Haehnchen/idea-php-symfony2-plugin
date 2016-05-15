@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class ContainerCollectionResolver {
 
@@ -204,12 +205,17 @@ public class ContainerCollectionResolver {
 
                 // Extension points
                 ServiceCollectorParameter.Service parameter = null;
+                Collection<ServiceInterface> exps = new ArrayList<ServiceInterface>();
                 for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
                     if(parameter == null) {
-                        parameter = new ServiceCollectorParameter.Service(project, aliases);
+                        parameter = new ServiceCollectorParameter.Service(project, exps);
                     }
 
                     collectorEx.collectServices(parameter);
+                }
+
+                if(exps.size() > 0) {
+                    exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
                 }
 
                 for (Map.Entry<String, List<ServiceInterface>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {

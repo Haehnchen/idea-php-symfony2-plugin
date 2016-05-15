@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -12,6 +13,9 @@ import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +26,10 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.util.*;
 
 public class ServiceIndexUtil {
+
+    private static final ExtensionPointName<ServiceDefinitionLocator> EXTENSIONS = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"
+    );
 
     private static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, @NotNull String serviceName) {
 
@@ -59,6 +67,15 @@ public class ServiceIndexUtil {
                 }
             }
 
+        }
+
+        // extension points
+        ServiceDefinitionLocator[] extensions = EXTENSIONS.getExtensions();
+        if(extensions.length > 0) {
+            ServiceDefinitionLocatorParameter parameter = new ServiceDefinitionLocatorParameter(project, items);
+            for (ServiceDefinitionLocator locator : extensions) {
+                locator.locate(serviceName, parameter);
+            }
         }
 
         return items;

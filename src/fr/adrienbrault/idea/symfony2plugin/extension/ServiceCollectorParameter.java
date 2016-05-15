@@ -16,6 +16,8 @@ public class ServiceCollectorParameter {
 
         @NotNull
         private final Project project;
+
+        @NotNull
         private final Collection<ServiceInterface> services;
 
         public Service(@NotNull Project project, @NotNull Collection<ServiceInterface> services) {
@@ -28,38 +30,34 @@ public class ServiceCollectorParameter {
             return project;
         }
 
-        public void addService(@NotNull ServiceInterface service) {
+        public void add(@NotNull ServiceInterface service) {
             this.services.add(service);
         }
 
-        public void addServices(@NotNull Collection<ServiceInterface> services) {
+        public void addAll(@NotNull Collection<ServiceInterface> services) {
             this.services.addAll(services);
         }
 
-        public void addService(@NotNull String id) {
+        public void add(@NotNull String id) {
             this.services.add(new SerializableService(id));
         }
 
-        public void addService(@NotNull String id, @NotNull String clazz) {
+        public void add(@NotNull String id, @NotNull String clazz) {
             this.services.add(new SerializableService(id).setClassName(clazz));
         }
-
-        public void addServices(@NotNull ServiceInterface service) {
-            this.services.add(service);
-        }
-
     }
 
     public static class Id {
 
         @NotNull
         private final Project project;
-        @NotNull
-        private final Collection<String> names;
 
-        public Id(@NotNull Project project, @NotNull Collection<String> names) {
+        @NotNull
+        private final Collection<String> ids;
+
+        public Id(@NotNull Project project, @NotNull Collection<String> ids) {
             this.project = project;
-            this.names = names;
+            this.ids = ids;
         }
 
         @NotNull
@@ -67,12 +65,12 @@ public class ServiceCollectorParameter {
             return project;
         }
 
-        public void addName(@NotNull String name) {
-            this.names.add(name);
+        public void add(@NotNull String id) {
+            this.ids.add(id);
         }
 
-        public void addNames(@NotNull Collection<String> names) {
-            this.names.addAll(names);
+        public void addAll(@NotNull Collection<String> names) {
+            this.ids.addAll(names);
         }
     }
 }
