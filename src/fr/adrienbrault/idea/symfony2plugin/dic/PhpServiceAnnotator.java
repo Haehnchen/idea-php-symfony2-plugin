@@ -37,8 +37,7 @@ public class PhpServiceAnnotator implements Annotator {
             return;
         }
 
-        ContainerService containerService = ContainerCollectionResolver.getService(element.getProject(), serviceName);
-        if(containerService != null) {
+        if(ContainerCollectionResolver.hasServiceNames(element.getProject(), serviceName)) {
             return;
         }
 
