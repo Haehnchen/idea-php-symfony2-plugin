@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.118</version>
+    <version>0.12.119</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -110,6 +110,12 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.119</h2>
+<ul>
+    <li>Add extension points to allow service collecting for external plugins</li>
+    <li>Add extension point to locate service declaration in file</li>
+    <li>Move default services from static file to collector</li>
+</ul>
 
 <h2>0.12.118</h2>
 <ul>

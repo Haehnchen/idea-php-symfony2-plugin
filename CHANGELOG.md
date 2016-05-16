@@ -7,6 +7,11 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.119
+* Add extension points to allow service collecting for external plugins
+* Add extension point to locate service declaration in file
+* Move default services from static file to collector
+
 ### 0.12.118
 * Fixing npe in service generator intention #722
 * Implement lock for timer clear on caret listener #722
