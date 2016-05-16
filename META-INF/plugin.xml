@@ -663,6 +663,8 @@
 
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.JsonFileIndexTwigNamespaces"/>
 
+        <ServiceCollector implementation="fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector"/>
+
         <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay"/>
         <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.YamlServiceContainerCaretTextOverlay"/>
     </extensions>

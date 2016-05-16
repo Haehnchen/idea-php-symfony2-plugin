@@ -54,18 +54,6 @@ public class ServiceMapParser {
             }
         }
 
-        // Support services whose class isn't specified
-        populateMapWithDefaultServices(map);
-        populateMapWithDefaultServices(publicMap);
-
         return new ServiceMap(map, publicMap);
     }
-
-    private void populateMapWithDefaultServices(Map<String, String> map) {
-        map.put("request", "Symfony\\Component\\HttpFoundation\\Request");
-        map.put("service_container", "Symfony\\Component\\DependencyInjection\\ContainerInterface");
-        map.put("kernel", "Symfony\\Component\\HttpKernel\\KernelInterface");
-        map.put("controller_resolver", "Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface");
-   }
-
 }
