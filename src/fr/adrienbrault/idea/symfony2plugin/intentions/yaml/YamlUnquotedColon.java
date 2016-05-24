@@ -54,7 +54,7 @@ public class YamlUnquotedColon extends LocalInspectionTool {
             }
 
             String text = ((YAMLPlainTextImpl) plainScalar).getTextValue();
-            if(!text.contains(":")) {
+            if(!text.contains(": ")) {
                 super.visitElement(element);
                 return;
             }
