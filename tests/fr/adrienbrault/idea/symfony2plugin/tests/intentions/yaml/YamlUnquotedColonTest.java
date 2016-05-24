@@ -9,8 +9,15 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
  */
 public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCase {
 
-    public void testColonInUnquotedMappingShouldDeprecated() {
+    public void testColonInUnquotedMappingFollowedBySpaceShouldDeprecated() {
         assertLocalInspectionContains("foo.yml",
+            "class: fo<caret>obar: fff",
+            YamlUnquotedColon.MESSAGE
+        );
+    }
+
+    public void testColonInUnquotedMappingNotFollowedBySpaceShouldNotDeprecated() {
+        assertLocalInspectionNotContains("foo.yml",
             "class: fo<caret>obar:fff",
             YamlUnquotedColon.MESSAGE
         );
