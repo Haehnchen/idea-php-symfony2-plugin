@@ -16,13 +16,6 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
         );
     }
 
-    public void testColonInUnquotedMappingNotFollowedBySpaceShouldNotDeprecated() {
-        assertLocalInspectionNotContains("foo.yml",
-            "class: fo<caret>obar:fff",
-            YamlUnquotedColon.MESSAGE
-        );
-    }
-
     public void testColonInUnquotedWithoutMappingScopeShouldNotDeprecated() {
         assertLocalInspectionNotContains("foo.yml",
             "class: [fo<caret>obar:fff]",
@@ -35,6 +28,17 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
 
         assertLocalInspectionNotContains("foo.yml",
             "class: {fo<caret>obar:fff}",
+            YamlUnquotedColon.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("foo.yml",
+            "class: fo<caret>obar:ddd",
+            YamlUnquotedColon.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("foo.yml",
+            "class: fo<caret>obar: ddd \n" +
+                " fff",
             YamlUnquotedColon.MESSAGE
         );
     }

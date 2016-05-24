@@ -7,7 +7,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
@@ -36,29 +38,30 @@ public class YamlUnquotedColon extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(element.getNode().getElementType() != YAMLTokenTypes.TEXT) {
+            PsiElement yamlCompoundValue = element.getParent();
+
+            // every array element implements this interface
+            // check for inside "foo: <foo: foo>"
+            if(!(yamlCompoundValue instanceof YAMLCompoundValue) || yamlCompoundValue.getNode().getElementType() != YAMLElementTypes.COMPOUND_VALUE) {
                 super.visitElement(element);
                 return;
             }
 
-            PsiElement plainScalar = element.getParent();
-            if(!(plainScalar instanceof YAMLPlainTextImpl)) {
-                super.visitElement(element);
-                return;
-            }
-
-            PsiElement yamlKeyValue = plainScalar.getParent();
+            // element need to be inside key value
+            PsiElement yamlKeyValue = yamlCompoundValue.getParent();
             if(!(yamlKeyValue instanceof YAMLKeyValue)) {
                 super.visitElement(element);
                 return;
             }
 
-            String text = ((YAMLPlainTextImpl) plainScalar).getTextValue();
-            if(!text.contains(": ")) {
+            // invalid inline item "foo: foo: foo", also check text length
+            String text = yamlKeyValue.getText();
+            if(!text.contains(": ") || text.contains("\n") || text.length() > 200) {
                 super.visitElement(element);
                 return;
             }
 
+            // attach notification "foo: <foo: foo>"
             holder.registerProblem(
                 element,
                 YamlUnquotedColon.MESSAGE,
