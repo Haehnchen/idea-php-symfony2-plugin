@@ -6,12 +6,11 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
-import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -22,7 +21,7 @@ public class YamlUnquotedColon extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject()) || !SymfonyUtil.isVersionGreaterThenEquals(holder.getProject(), "2.8")) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 

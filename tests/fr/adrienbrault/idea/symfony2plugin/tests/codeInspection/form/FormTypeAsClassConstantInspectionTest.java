@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.codeInspection.form;
 
+import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -21,6 +23,8 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
     }
 
     public void testThatFormNamesAreInspectedAsDeprecated() {
+        this.initVersion();
+
         assertLocalInspectionContains("my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->add(null, 'fo<caret>o')",
@@ -34,11 +38,37 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatFormNamesAreNotDeprecatedForWrongSymfonyVersion() {
+        this.initVersion("2.5");
+
+        assertLocalInspectionNotContains("my_form.php", "<?php\n" +
+                "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
+                "$builder->add(null, 'fo<caret>o')",
+            FormTypeAsClassConstantInspection.MESSAGE
+        );
+    }
+
     public void testThatFormNamesWithFqnAsStringNotDeprecated() {
+        this.initVersion();
+
         assertLocalInspectionNotContains("my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->add(null, 'Foo\\B<caret>ar')",
             FormTypeAsClassConstantInspection.MESSAGE
+        );
+    }
+
+    private void initVersion() {
+        initVersion("2.8");
+    }
+
+    private void initVersion(@NotNull String version) {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\HttpKernel {\n" +
+            "   class Kernel {\n" +
+            "       const VERSION = '" + version + "';" +
+            "   }" +
+            "}"
         );
     }
 }
