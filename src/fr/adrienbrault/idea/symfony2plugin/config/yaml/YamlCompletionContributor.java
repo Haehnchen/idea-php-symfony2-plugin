@@ -69,7 +69,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("lazy", "(bool)");
         put("abstract", null);
         put("parent", null);
-        put("scope", "request, prototype");
+        put("scope", "(request, prototype) <= 3.0");
         put("factory", ">= 2.6");
         put("factory_class", "<= 2.5");
         put("factory_service", "<= 2.5");
@@ -79,6 +79,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("decorates", null);
         put("decoration_inner_name", null);
         put("decoration_priority", "(int) >= 2.8");
+        put("shared", "(bool) >= 3.0");
     }});
 
     private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
