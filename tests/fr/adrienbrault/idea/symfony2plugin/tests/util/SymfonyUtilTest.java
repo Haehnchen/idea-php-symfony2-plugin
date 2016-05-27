@@ -79,6 +79,42 @@ public class SymfonyUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(SymfonyUtil.isVersionGreaterThen(getProject(), "3.2.0"));
     }
 
+    public void testVersionSuffixStrip() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\HttpKernel {\n" +
+            "   class Kernel {\n" +
+            "       const VERSION = '3.2.0-RC1';" +
+            "   }" +
+            "}"
+        );
+
+        assertTrue(SymfonyUtil.isVersionGreaterThen(getProject(), "3.1.0"));
+    }
+
+    public void testVersionSuffixStrip2() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\HttpKernel {\n" +
+            "   class Kernel {\n" +
+            "       const VERSION = '3.2.0-RC-111';" +
+            "   }" +
+            "}"
+        );
+
+        assertTrue(SymfonyUtil.isVersionGreaterThen(getProject(), "3.1.0"));
+    }
+
+    public void testVersionSuffixStrip3() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\HttpKernel {\n" +
+            "   class Kernel {\n" +
+            "       const VERSION = '3.2.0-RC_111';" +
+            "   }" +
+            "}"
+        );
+
+        assertTrue(SymfonyUtil.isVersionGreaterThen(getProject(), "3.1.0"));
+    }
+
     public void testIsVersionInvalidateNull() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace Symfony\\Component\\HttpKernel {\n" +

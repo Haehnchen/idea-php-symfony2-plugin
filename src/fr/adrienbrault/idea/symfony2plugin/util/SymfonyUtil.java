@@ -31,10 +31,8 @@ public class SymfonyUtil {
                 continue;
             }
 
-            // 3.2.0-DEV
-            contents = stripEnd(contents.toLowerCase(), "dev");
-            contents = stripEnd(contents, "-");
-
+            // 3.2.0-DEV, 3.2.0-RC1
+            contents = contents.toLowerCase().replaceAll("(.*)-([\\w]+)$", "$1");
             if(comparator.accepts(contents)) {
                 return true;
             }
