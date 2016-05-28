@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container;
 
 import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -166,5 +168,42 @@ public class SerializableService implements ServiceInterface, Serializable {
     public SerializableService setDecorationInnerName(@Nullable String decorationInnerName) {
         this.decorationInnerName = decorationInnerName;
         return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(this.id)
+            .append(this.className)
+            .append(this.isPublic)
+            .append(this.isDeprecated)
+            .append(this.isLazy)
+            .append(this.isAbstract)
+            .append(this.isAutowire)
+            .append(this.isDeprecated)
+            .append(this.alias)
+            .append(this.decorates)
+            .append(this.decorationInnerName)
+            .append(this.parent)
+            .toHashCode()
+        ;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SerializableService &&
+            Objects.equals(((SerializableService) obj).id, this.id) &&
+            Objects.equals(((SerializableService) obj).className, this.className) &&
+            Objects.equals(((SerializableService) obj).isPublic, this.isPublic) &&
+            Objects.equals(((SerializableService) obj).isDeprecated, this.isDeprecated) &&
+            Objects.equals(((SerializableService) obj).isLazy, this.isLazy) &&
+            Objects.equals(((SerializableService) obj).isAbstract, this.isAbstract) &&
+            Objects.equals(((SerializableService) obj).isAutowire, this.isAutowire) &&
+            Objects.equals(((SerializableService) obj).isDeprecated, this.isDeprecated) &&
+            Objects.equals(((SerializableService) obj).alias, this.alias) &&
+            Objects.equals(((SerializableService) obj).decorates, this.decorates) &&
+            Objects.equals(((SerializableService) obj).decorationInnerName, this.decorationInnerName) &&
+            Objects.equals(((SerializableService) obj).parent, this.parent)
+        ;
     }
 }
