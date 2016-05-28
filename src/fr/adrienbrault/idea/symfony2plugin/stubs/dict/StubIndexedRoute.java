@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
 
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,6 +9,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class StubIndexedRoute implements RouteInterface, Serializable{
 
@@ -61,5 +63,26 @@ public class StubIndexedRoute implements RouteInterface, Serializable{
 
     public void addMethod(@NotNull String[] content) {
         this.methods.addAll(Arrays.asList(content));
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(this.name)
+            .append(this.controller)
+            .append(this.path)
+            .append(new HashSet<>(this.methods))
+            .toHashCode()
+        ;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof RouteInterface &&
+             Objects.equals(((RouteInterface) obj).getName(), this.name) &&
+             Objects.equals(((RouteInterface) obj).getController(), this.controller) &&
+             Objects.equals(((RouteInterface) obj).getPath(), this.path) &&
+             Objects.equals(new HashSet<>(((RouteInterface) obj).getMethods()), new HashSet<>(this.methods))
+        ;
     }
 }
