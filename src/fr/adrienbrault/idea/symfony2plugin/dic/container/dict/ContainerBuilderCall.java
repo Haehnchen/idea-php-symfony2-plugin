@@ -1,11 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.dict;
 
 import com.intellij.util.containers.HashSet;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -53,4 +55,25 @@ public class ContainerBuilderCall implements Serializable {
     public void addParameter(@NotNull String parameter) {
         this.parameter.add(parameter);
     }
+
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(this.scope)
+            .append(this.name)
+            .append(new java.util.HashSet<>(this.parameter))
+            .toHashCode()
+        ;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ContainerBuilderCall &&
+            Objects.equals(((ContainerBuilderCall) obj).scope, this.scope) &&
+            Objects.equals(((ContainerBuilderCall) obj).name, this.scope) &&
+            Objects.equals(new java.util.HashSet<>(((ContainerBuilderCall) obj).parameter), new java.util.HashSet<>(this.parameter))
+        ;
+    }
+
 }
