@@ -9,7 +9,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -19,55 +19,43 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class ServicesTagStubIndex extends FileBasedIndexExtension<String, String[]> {
+public class ServicesTagStubIndex extends FileBasedIndexExtension<String, Set<String>> {
 
-    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_tags");
+    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_tags");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
     @Override
-    public DataIndexer<String, String[], FileContent> getIndexer() {
+    public DataIndexer<String, Set<String>, FileContent> getIndexer() {
 
-        return new DataIndexer<String, String[], FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, String[]> map(@NotNull FileContent inputData) {
+        return inputData -> {
 
-                Map<String, String[]> map = new THashMap<String, String[]>();
+            Map<String, Set<String>> map = new THashMap<>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                    return map;
-                }
-
-                if (!ServicesDefinitionStubIndex.isValidForIndex(inputData, psiFile)) {
-                    return map;
-                }
-
-                if(psiFile instanceof YAMLFile) {
-                    this.attachSet(FormUtil.getTags((YAMLFile) psiFile), map);
-                }
-
-                if(psiFile instanceof XmlFile) {
-                    this.attachSet(FormUtil.getTags((XmlFile) psiFile), map);
-                }
-
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
                 return map;
             }
 
-            private void attachSet(Map<String, Set<String>> source, Map<String, String[]> target) {
-                for(Map.Entry<String, Set<String>> entry: source.entrySet()) {
-                    Set<String> key = entry.getValue();
-                    target.put(entry.getKey(), key.toArray(new String[key.size()]));
-                }
+            if (!ServicesDefinitionStubIndex.isValidForIndex(inputData, psiFile)) {
+                return map;
             }
 
+            if(psiFile instanceof YAMLFile) {
+                map.putAll(FormUtil.getTags((YAMLFile) psiFile));
+            }
+
+            if(psiFile instanceof XmlFile) {
+                map.putAll(FormUtil.getTags((XmlFile) psiFile));
+            }
+
+            return map;
         };
     }
 
     @NotNull
     @Override
-    public ID<String, String[]> getName() {
+    public ID<String, Set<String>> getName() {
         return KEY;
     }
 
@@ -78,8 +66,8 @@ public class ServicesTagStubIndex extends FileBasedIndexExtension<String, String
     }
 
     @NotNull
-    public DataExternalizer<String[]> getValueExternalizer() {
-        return new ArrayDataExternalizer();
+    public DataExternalizer<Set<String>> getValueExternalizer() {
+        return new StringSetDataExternalizer();
     }
 
     @NotNull

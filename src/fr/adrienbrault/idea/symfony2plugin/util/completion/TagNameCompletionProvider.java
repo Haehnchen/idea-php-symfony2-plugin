@@ -47,8 +47,8 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
 
         for(String serviceName: projectUniqueKeysStrong.getResult()) {
-            List<String[]> tags = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
-            for(String[] tagDef: tags) {
+            List<Set<String>> tags = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            for(Set<String> tagDef: tags) {
                 for(String tag: tagDef) {
                     if(!uniqueTags.contains(tag)) {
                         uniqueTags.add(tag);

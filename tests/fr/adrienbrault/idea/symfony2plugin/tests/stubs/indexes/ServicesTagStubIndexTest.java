@@ -2,10 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -34,7 +34,7 @@ public class ServicesTagStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         assertIndexContainsKeyWithValue(ServicesTagStubIndex.KEY, "foo.tagged.yaml_type", new MyStringContainsAssert("yaml_type_tag"));
     }
 
-    private static class MyStringContainsAssert implements IndexValue.Assert<String[]> {
+    private static class MyStringContainsAssert implements IndexValue.Assert<Set<String>> {
         @NotNull
         private final String find;
 
@@ -43,8 +43,8 @@ public class ServicesTagStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         }
 
         @Override
-        public boolean match(@NotNull String[] value) {
-            return ArrayUtils.contains(value, this.find);
+        public boolean match(@NotNull Set<String> value) {
+            return value.contains(this.find);
         }
     }
 }

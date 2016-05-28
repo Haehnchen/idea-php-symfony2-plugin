@@ -208,15 +208,15 @@ public class ServiceUtil {
         for (String serviceName : result) {
 
             // get service where we found our tags
-            List<String[]> values = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            List<Set<String>> values = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
             if(values.size() == 0) {
                 continue;
             }
 
             // create unique tag list
             Set<String> tags = new HashSet<String>();
-            for(String[] tagValue: values) {
-                Collections.addAll(tags, tagValue);
+            for(Set<String> tagValue: values) {
+                tags.addAll(tagValue);
             }
 
             if(collector == null) {
@@ -275,9 +275,9 @@ public class ServiceUtil {
 
         for(String serviceName: projectUniqueKeysStrong.getResult()) {
 
-            List<String[]> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
-            for(String[] strings: serviceDefinitions) {
-                if(Arrays.asList(strings).contains(tagName)) {
+            List<Set<String>> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            for(Set<String> strings: serviceDefinitions) {
+                if(strings.contains(tagName)) {
                     service.add(serviceName);
                 }
             }
