@@ -6,7 +6,7 @@ if [ "$PHPSTORM_ENV" == "2016.1" ]; then
 elif [ "$PHPSTORM_ENV" == "2016.1.2" ]; then
     ideaVersion="2016.1.2"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
-    ideaVersion="143.870.1"  
+    ideaVersion="162.426.1"
 fi
 
 travisCache=".cache"
@@ -78,10 +78,18 @@ elif [ "$PHPSTORM_ENV" == "2016.1.2" ]; then
 
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
 
+    #php
+    download "https://plugins.jetbrains.com/files/6610/26101/php-162.426.10.zip"
+    unzip -qo $travisCache/php-145.258.2.zip -d ./plugins
+
+    #twig
+    download "https://plugins.jetbrains.com/files/7303/24757/twig-145.258.2.zip"
+    unzip -qo $travisCache/twig-145.258.2.zip -d ./plugins
+
     # TODO: extract latest builds for plugins from eap site they are not public
     # https://confluence.jetbrains.com/display/PhpStorm/PhpStorm+Early+Access+Program
-    echo "No configuration for PhpStorm: $PHPSTORM_ENV"
-    exit 1
+    # echo "No configuration for PhpStorm: $PHPSTORM_ENV"
+    # exit 1
 
 else
     echo "Unknown PHPSTORM_ENV value: $PHPSTORM_ENV"
