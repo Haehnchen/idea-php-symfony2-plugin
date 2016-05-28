@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see com.jetbrains.php.lang.psi.stubs.indexes.PhpTraitUsageIndex
+ * @deprecated because of results into "violates equals / hashCode"
  */
 public class ArrayDataExternalizer implements DataExternalizer<String[]> {
 
