@@ -22,6 +22,8 @@ import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.JsonRoute;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import gnu.trove.THashMap;
@@ -38,23 +40,23 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, RouteInterface> {
+public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, StubIndexedRoute> {
 
-    public static final ID<String, RouteInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.annotation_routes_json");
+    public static final ID<String, StubIndexedRoute> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.annotation_routes_json");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static JsonDataExternalizer JSON_EXTERNALIZER = new JsonDataExternalizer();
+    private static ObjectStreamDataExternalizer<StubIndexedRoute> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
-    public ID<String, RouteInterface> getName() {
+    public ID<String, StubIndexedRoute> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, RouteInterface, FileContent> getIndexer() {
+    public DataIndexer<String, StubIndexedRoute, FileContent> getIndexer() {
         return inputData -> {
-            final Map<String, RouteInterface> map = new THashMap<>();
+            final Map<String, StubIndexedRoute> map = new THashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
@@ -83,8 +85,8 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
 
     @NotNull
     @Override
-    public DataExternalizer<RouteInterface> getValueExternalizer() {
-        return JSON_EXTERNALIZER;
+    public DataExternalizer<StubIndexedRoute> getValueExternalizer() {
+        return EXTERNALIZER;
     }
 
     @NotNull
@@ -175,10 +177,10 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
 
     private static class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
 
-        private final Map<String, RouteInterface> map;
+        private final Map<String, StubIndexedRoute> map;
         private Map<String, String> fileImports;
 
-        public MyPsiRecursiveElementWalkingVisitor(Map<String, RouteInterface> map) {
+        public MyPsiRecursiveElementWalkingVisitor(Map<String, StubIndexedRoute> map) {
             this.map = map;
         }
 
@@ -223,7 +225,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
 
             if(routeName != null && StringUtils.isNotBlank(routeName)) {
 
-                JsonRoute route = new JsonRoute(routeName);
+                StubIndexedRoute route = new StubIndexedRoute(routeName);
 
                 String path = "";
 
@@ -255,7 +257,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, R
             }
         }
 
-        private void extractMethods(@NotNull PhpDocTag phpDocTag, @NotNull JsonRoute route) {
+        private void extractMethods(@NotNull PhpDocTag phpDocTag, @NotNull StubIndexedRoute route) {
             PsiElement phpDoc = phpDocTag.getParent();
             if(!(phpDoc instanceof PhpDocComment)) {
                 return;
