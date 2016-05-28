@@ -7,7 +7,7 @@ import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
@@ -25,21 +25,21 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, String[]> {
+public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, Set<String>> {
 
-    public static final ID<String, String[]> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.translations");
+    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.translations");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
     @Override
-    public DataIndexer<String, String[], FileContent> getIndexer() {
+    public DataIndexer<String, Set<String>, FileContent> getIndexer() {
 
-        return new DataIndexer<String, String[], FileContent>() {
+        return new DataIndexer<String, Set<String>, FileContent>() {
             @NotNull
             @Override
-            public Map<String, String[]> map(@NotNull FileContent inputData) {
+            public Map<String, Set<String>> map(@NotNull FileContent inputData) {
 
-                Map<String, String[]> map = new THashMap<String, String[]>();
+                Map<String, Set<String>> map = new THashMap<>();
 
                 if(!Symfony2ProjectComponent.isEnabledForIndex(inputData.getProject())) {
                     return map;
@@ -78,7 +78,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
                     return map;
                 }
 
-                map.put(domainName, translationKeySet.toArray(new String[translationKeySet.size()]));
+                map.put(domainName, translationKeySet);
 
                 return map;
 
@@ -102,7 +102,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
                 return false;
             }
 
-            private Map<String, String[]> getXlfStringMap(FileContent inputData, Map<String, String[]> map) {
+            private Map<String, Set<String>> getXlfStringMap(FileContent inputData, Map<String, Set<String>> map) {
 
                 // testing files are not that nice
                 String relativePath = VfsUtil.getRelativePath(inputData.getFile(), inputData.getProject().getBaseDir(), '/');
@@ -124,7 +124,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
                 Set<String> set = TranslationUtil.getXliffTranslations(inputStream);
                 if(set.size() > 0) {
-                    map.put(domainName, set.toArray(new String[set.size()]));
+                    map.put(domainName, set);
                 }
 
                 return map;
@@ -145,7 +145,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
 
     @NotNull
     @Override
-    public ID<String, String[]> getName() {
+    public ID<String, Set<String>> getName() {
         return KEY;
     }
 
@@ -157,8 +157,8 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, St
     }
 
     @NotNull
-    public DataExternalizer<String[]> getValueExternalizer() {
-        return new ArrayDataExternalizer();
+    public DataExternalizer<Set<String>> getValueExternalizer() {
+        return new StringSetDataExternalizer();
     }
 
     @NotNull

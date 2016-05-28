@@ -72,7 +72,7 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
     private Set<String> getDomainKeys(@NotNull String domain) {
         Set<String> uniqueKeySet = new ArrayListSet<String>();
 
-        for(String[] splits: FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.allScope(getProject()))) {
+        for(Set<String> splits: FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.allScope(getProject()))) {
             ContainerUtil.addAll(uniqueKeySet, splits);
         }
 

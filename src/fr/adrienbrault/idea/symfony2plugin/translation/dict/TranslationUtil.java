@@ -126,8 +126,8 @@ public class TranslationUtil {
                 } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
                     // xlf are plain text because not supported by jetbrains
                     // for now we can only set file target
-                    for(String[] string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
-                        if(Arrays.asList(string).contains(translationKey)) {
+                    for(Set<String> string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
+                        if(string.contains(translationKey)) {
                             psiFoundElements.add(psiFile);
                         }
                     }
@@ -161,8 +161,8 @@ public class TranslationUtil {
             return true;
         }
 
-        for(String keys[]: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
-            if(Arrays.asList(keys).contains(keyName)) {
+        for(Set<String> keys: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
+            if(keys.contains(keyName)) {
                 return true;
             }
         }
@@ -174,9 +174,9 @@ public class TranslationUtil {
     public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
 
         Set<String> keySet = new HashSet<String>();
-        List<String[]> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
-        for(String keys[]: test ){
-            keySet.addAll(Arrays.asList(keys));
+        List<Set<String>> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
+        for(Set<String> keys: test ){
+            keySet.addAll(keys);
         }
 
         List<LookupElement> lookupElements = new ArrayList<LookupElement>();
