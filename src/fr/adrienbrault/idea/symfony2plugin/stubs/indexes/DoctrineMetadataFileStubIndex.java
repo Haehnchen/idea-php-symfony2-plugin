@@ -1,11 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -15,31 +12,29 @@ import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<String, DoctrineModelInterface> {
+public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<String, DoctrineModelSerializable> {
 
-    public static final ID<String, DoctrineModelInterface> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata_json");
+    public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata_json");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static JsonDataExternalizer JSON_EXTERNALIZER = new JsonDataExternalizer();
+    private static ObjectStreamDataExternalizer<DoctrineModelSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     private static int MAX_FILE_BYTE_SIZE = 1048576;
 
-    private static class MyStringStringFileContentDataIndexer implements DataIndexer<String, DoctrineModelInterface, FileContent> {
+    private static class MyStringStringFileContentDataIndexer implements DataIndexer<String, DoctrineModelSerializable, FileContent> {
         @NotNull
         @Override
-        public Map<String, DoctrineModelInterface> map(@NotNull FileContent fileContent) {
+        public Map<String, DoctrineModelSerializable> map(@NotNull FileContent fileContent) {
 
-            Map<String, DoctrineModelInterface> map = new THashMap<String, DoctrineModelInterface>();
+            Map<String, DoctrineModelSerializable> map = new THashMap<>();
 
             PsiFile psiFile = fileContent.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(fileContent, psiFile)) {
@@ -65,13 +60,13 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @NotNull
     @Override
-    public ID<String, DoctrineModelInterface> getName() {
+    public ID<String, DoctrineModelSerializable> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, DoctrineModelInterface, FileContent> getIndexer() {
+    public DataIndexer<String, DoctrineModelSerializable, FileContent> getIndexer() {
         return new MyStringStringFileContentDataIndexer();
     }
 
@@ -83,23 +78,20 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @NotNull
     @Override
-    public DataExternalizer<DoctrineModelInterface> getValueExternalizer() {
-        return JSON_EXTERNALIZER;
+    public DataExternalizer<DoctrineModelSerializable> getValueExternalizer() {
+        return EXTERNALIZER;
     }
 
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile virtualFile) {
-                FileType fileType = virtualFile.getFileType();
-                return
-                    fileType == XmlFileType.INSTANCE ||
-                    fileType == PhpFileType.INSTANCE ||
-                    fileType == YAMLFileType.YML
-                ;
-            }
+        return virtualFile -> {
+            FileType fileType = virtualFile.getFileType();
+            return
+                fileType == XmlFileType.INSTANCE ||
+                fileType == PhpFileType.INSTANCE ||
+                fileType == YAMLFileType.YML
+            ;
         };
     }
 
@@ -132,25 +124,5 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
         }
 
         return true;
-    }
-
-    private static class JsonDataExternalizer implements DataExternalizer<DoctrineModelInterface> {
-
-        private static final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
-        private static final Gson GSON = new Gson();
-
-        @Override
-        public void save(@NotNull DataOutput dataOutput, DoctrineModelInterface fileResource) throws IOException {
-            myStringEnumerator.save(dataOutput, GSON.toJson(fileResource));
-        }
-
-        @Override
-        public DoctrineModelInterface read(@NotNull DataInput in) throws IOException {
-            try {
-                return GSON.fromJson(myStringEnumerator.read(in), DoctrineModel.class);
-            } catch (JsonSyntaxException e) {
-                return null;
-            }
-        }
     }
 }

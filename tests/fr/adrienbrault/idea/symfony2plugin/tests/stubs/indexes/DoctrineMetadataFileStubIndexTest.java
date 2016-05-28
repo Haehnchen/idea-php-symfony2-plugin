@@ -1,10 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
-import com.intellij.util.indexing.FileBasedIndexImpl;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase.IndexValue;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -161,7 +159,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\CouchDB\\Annotation");
     }
 
-    private static class IndexValueRepositoryClassEquals implements IndexValue.Assert<DoctrineModelInterface> {
+    private static class IndexValueRepositoryClassEquals implements IndexValue.Assert<DoctrineModelSerializable> {
 
         @NotNull
         private final String repositoryClass;
@@ -171,7 +169,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         }
 
         @Override
-        public boolean match(@NotNull DoctrineModelInterface value) {
+        public boolean match(@NotNull DoctrineModelSerializable value) {
             return repositoryClass.equals(value.getRepositoryClass());
         }
     }
