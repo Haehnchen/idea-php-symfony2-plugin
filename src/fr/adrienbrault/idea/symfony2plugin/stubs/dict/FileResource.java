@@ -1,6 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
 
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,5 +30,22 @@ public class FileResource {
 
     public String getPrefix() {
         return prefix;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(this.resource)
+            .append(this.prefix)
+            .toHashCode()
+        ;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof FileResource &&
+            Objects.equals(((FileResource) obj).resource, this.resource) &&
+            Objects.equals(((FileResource) obj).prefix, this.prefix)
+        ;
     }
 }
