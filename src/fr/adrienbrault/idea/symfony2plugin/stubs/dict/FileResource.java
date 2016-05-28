@@ -1,15 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FileResource {
+public class FileResource implements Serializable {
 
     private final String resource;
     private String prefix = null;

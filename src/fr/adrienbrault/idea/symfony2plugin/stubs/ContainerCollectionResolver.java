@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
@@ -27,7 +28,7 @@ import java.util.function.Consumer;
 
 public class ContainerCollectionResolver {
 
-    private static final Key<CachedValue<Map<String, List<ServiceInterface>>>> SERVICE_CONTAINER_INDEX = new Key<CachedValue<Map<String, List<ServiceInterface>>>>("SYMFONY_SERVICE_CONTAINER_INDEX");
+    private static final Key<CachedValue<Map<String, List<ServiceSerializable>>>> SERVICE_CONTAINER_INDEX = new Key<>("SYMFONY_SERVICE_CONTAINER_INDEX");
     private static final Key<CachedValue<Map<String, List<String>>>> SERVICE_PARAMETER_INDEX = new Key<CachedValue<Map<String, List<String>>>>("SERVICE_PARAMETER_INDEX");
 
     private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
@@ -218,14 +219,14 @@ public class ContainerCollectionResolver {
                     exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
                 }
 
-                for (Map.Entry<String, List<ServiceInterface>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+                for (Map.Entry<String, List<ServiceSerializable>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
 
                     // dont work twice on service;
                     // @TODO: to need to optimize this to decorate as much service data as possible
                     String serviceName = entry.getKey();
 
                     // fake empty service, case which is not allowed by catch it
-                    List<ServiceInterface> services = entry.getValue();
+                    List<ServiceSerializable> services = entry.getValue();
                     if(services.size() == 0) {
                         this.services.put(serviceName, new ContainerService(serviceName, null, true));
                         continue;

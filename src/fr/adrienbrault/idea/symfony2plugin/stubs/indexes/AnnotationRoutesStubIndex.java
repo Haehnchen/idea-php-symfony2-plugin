@@ -347,26 +347,6 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
             return null;
         }
     }
-
-    private static class JsonDataExternalizer implements DataExternalizer<RouteInterface> {
-
-        private static final EnumeratorStringDescriptor myStringEnumerator = new EnumeratorStringDescriptor();
-        private static final Gson GSON = new Gson();
-
-        @Override
-        public void save(@NotNull DataOutput dataOutput, RouteInterface fileResource) throws IOException {
-            myStringEnumerator.save(dataOutput, GSON.toJson(fileResource));
-        }
-
-        @Override
-        public RouteInterface read(@NotNull DataInput in) throws IOException {
-            try {
-                return GSON.fromJson(myStringEnumerator.read(in), JsonRoute.class);
-            } catch (JsonSyntaxException e) {
-                return null;
-            }
-        }
-    }
 }
 
 

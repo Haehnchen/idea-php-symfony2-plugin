@@ -13,7 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInt
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -35,8 +35,8 @@ import java.util.Collection;
 public class ServiceContainerUtil {
 
     @NotNull
-    public static Collection<ServiceInterface> getServicesInFile(@NotNull PsiFile psiFile) {
-        final Collection<ServiceInterface> services = new ArrayList<ServiceInterface>();
+    public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {
+        final Collection<ServiceSerializable> services = new ArrayList<>();
 
         if(psiFile instanceof XmlFile) {
             visitFile((XmlFile) psiFile, new Consumer<ServiceConsumer>() {
