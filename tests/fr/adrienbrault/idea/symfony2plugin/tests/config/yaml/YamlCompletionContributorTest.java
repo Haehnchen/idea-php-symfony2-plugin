@@ -87,4 +87,41 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "FooBundle:Foo:foo"
         );
     }
+
+    public void testClassCompletion() {
+        assertCompletionContains("routing.yml", "" +
+            "services:\n" +
+            "    foo:\n" +
+            "       class: <caret>\n",
+            "FooController"
+        );
+
+        assertCompletionContains("routing.yml", "" +
+            "services:\n" +
+            "    foo:\n" +
+            "       class: \"<caret>\"\n",
+            "FooController"
+        );
+
+        assertCompletionContains("routing.yml", "" +
+            "services:\n" +
+            "    foo:\n" +
+            "       class: '<caret>'\n",
+            "FooController"
+        );
+
+        assertCompletionContains("routing.yml", "" +
+            "services:\n" +
+            "    foo:\n" +
+            "       factory_class: <caret>\n",
+            "FooController"
+        );
+
+        assertCompletionNotContains("routing.yml", "" +
+                "servicesa:\n" +
+                "    foo:\n" +
+                "       factory_class: <caret>\n",
+            "FooController"
+        );
+    }
 }

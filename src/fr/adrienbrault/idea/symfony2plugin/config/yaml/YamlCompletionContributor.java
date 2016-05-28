@@ -153,7 +153,13 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToOne"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\ManyToOne"));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getFilterOnPrevParent("manyToMany"), new DoctrineYamlAnnotationLookupBuilder("\\Doctrine\\ORM\\Mapping\\ManyToMany"));
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class"), new PhpClassAndParameterCompletionProvider());
+        extend(CompletionType.BASIC,
+            PlatformPatterns.and(
+                YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class"),
+                YamlElementPatternHelper.getThreeLevelKeyPattern("services")
+            ),
+            new PhpClassAndParameterCompletionProvider()
+        );
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_service", "parent"), new ServiceCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParameterClassPattern(), new PhpClassCompletionProvider());

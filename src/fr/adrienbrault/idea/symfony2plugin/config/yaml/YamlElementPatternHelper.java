@@ -340,6 +340,29 @@ public class YamlElementPatternHelper {
     }
 
     /**
+     * services:
+     *   foo:
+     *     class: '</caret>'
+     */
+    public static ElementPattern<PsiElement> getThreeLevelKeyPattern(String... tree) {
+        return PlatformPatterns.psiElement().withParent(
+            PlatformPatterns.psiElement(YAMLScalar.class).withParent(
+                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                    PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                            PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                                PlatformPatterns.psiElement(YAMLKeyValue.class).withName(PlatformPatterns
+                                    .string().oneOfIgnoreCase(tree)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    /**
      * simplified getFilterOnPrevParent :)
     * 
      * services:
