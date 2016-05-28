@@ -1,8 +1,10 @@
 #!/bin/bash
 
 ideaVersion="2016.1"
-if [ "$PHPSTORM_ENV" == "10" ]; then
-    ideaVersion="15.0.4"
+if [ "$PHPSTORM_ENV" == "2016.1" ]; then
+    ideaVersion="2016.1"
+elif [ "$PHPSTORM_ENV" == "2016.1.2" ]; then
+    ideaVersion="2016.1.2"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
     ideaVersion="143.870.1"  
 fi
@@ -58,6 +60,16 @@ if [ "$PHPSTORM_ENV" == "2016.1" ]; then
 
     #php
     download "https://plugins.jetbrains.com/files/6610/24752/php-145.258.2.zip"
+    unzip -qo $travisCache/php-145.258.2.zip -d ./plugins
+
+    #twig
+    download "https://plugins.jetbrains.com/files/7303/24757/twig-145.258.2.zip"
+    unzip -qo $travisCache/twig-145.258.2.zip -d ./plugins
+
+elif [ "$PHPSTORM_ENV" == "2016.1.2" ]; then
+
+    #php
+    download "https://plugins.jetbrains.com/files/6610/25793/php-145.970.40.zip"
     unzip -qo $travisCache/php-145.258.2.zip -d ./plugins
 
     #twig
