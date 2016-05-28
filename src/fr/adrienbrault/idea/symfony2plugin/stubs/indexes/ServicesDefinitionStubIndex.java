@@ -25,7 +25,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     private static int MAX_FILE_BYTE_SIZE = 5242880;
 
-    public static final ID<String, ServiceSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition_json");
+    public static final ID<String, ServiceSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static ObjectStreamDataExternalizer<ServiceSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
@@ -82,7 +82,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     /**

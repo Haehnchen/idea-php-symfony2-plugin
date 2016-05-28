@@ -85,7 +85,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     private class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementVisitor {

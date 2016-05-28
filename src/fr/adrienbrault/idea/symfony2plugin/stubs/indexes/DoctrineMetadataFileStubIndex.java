@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<String, DoctrineModelSerializable> {
 
-    public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata_json");
+    public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static ObjectStreamDataExternalizer<DoctrineModelSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
@@ -102,7 +102,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

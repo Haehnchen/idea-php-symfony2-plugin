@@ -175,7 +175,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, Se
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
 }

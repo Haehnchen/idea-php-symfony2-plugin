@@ -84,7 +84,7 @@ public class ServicesTagStubIndex extends FileBasedIndexExtension<String, Set<St
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
 }

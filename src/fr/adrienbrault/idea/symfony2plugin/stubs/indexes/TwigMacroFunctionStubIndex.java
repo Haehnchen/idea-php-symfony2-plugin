@@ -111,7 +111,7 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
 }

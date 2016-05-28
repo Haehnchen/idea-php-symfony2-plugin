@@ -107,7 +107,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
