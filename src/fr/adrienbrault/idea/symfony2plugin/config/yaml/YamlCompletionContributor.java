@@ -75,6 +75,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("factory_service", "<= 2.5");
         put("factory_method", "<= 2.5");
         put("autowire", "(bool) >= 2.8");
+        put("autowiring_types", ">= 2.8");
         put("deprecated", "(string) >= 2.8");
         put("decorates", null);
         put("decoration_inner_name", null);
@@ -155,7 +156,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC,
             PlatformPatterns.and(
-                YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class"),
+                YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class", "autowiring_types"),
                 YamlElementPatternHelper.getThreeLevelKeyPattern("services")
             ),
             new PhpClassAndParameterCompletionProvider()

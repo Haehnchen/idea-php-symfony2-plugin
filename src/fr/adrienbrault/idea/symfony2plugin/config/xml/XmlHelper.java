@@ -162,6 +162,23 @@ public class XmlHelper {
     }
 
     /**
+     * <autowiring-type>Foo\Class</autowiring-type>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getAutowiringTypePattern() {
+        return XmlPatterns
+            .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
+            .withParent(XmlPatterns
+                .xmlText()
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withName("autowiring-type")
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * <service class="%foo.class%">
      */
     public static XmlAttributeValuePattern getServiceIdPattern() {

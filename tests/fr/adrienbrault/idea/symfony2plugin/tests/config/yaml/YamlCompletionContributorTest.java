@@ -117,6 +117,13 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "FooController"
         );
 
+        assertCompletionContains("routing.yml", "" +
+                "services:\n" +
+                "    foo:\n" +
+                "       autowiring_types: <caret>\n",
+            "FooController"
+        );
+
         assertCompletionNotContains("routing.yml", "" +
                 "servicesa:\n" +
                 "    foo:\n" +

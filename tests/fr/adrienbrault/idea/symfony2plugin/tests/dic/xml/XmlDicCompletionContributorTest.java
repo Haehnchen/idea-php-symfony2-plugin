@@ -83,7 +83,19 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
                 "</container>"
             , "FooClass"
         );
+    }
 
+    public void testAutowiringType() {
+        assertCompletionContains("service.xml",  "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "    <service>\n" +
+                "       <autowiring-type><caret></autowiring-type>" +
+                "    </service>\n" +
+                "  </services>\n" +
+                "</container>"
+            , "FooClass"
+        );
     }
 
     public void testClassCompletionResult() {

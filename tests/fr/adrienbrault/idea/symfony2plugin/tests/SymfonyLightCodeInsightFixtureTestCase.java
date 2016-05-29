@@ -589,6 +589,33 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
     }
 
+    public void assertReferenceMatch(@NotNull FileType fileType, @NotNull String contents, @NotNull ElementPattern<?> pattern) {
+        myFixture.configureByText(fileType, contents);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        if(psiElement == null) {
+            fail("Fail to find element in caret");
+        }
+
+        for (PsiReference reference : psiElement.getReferences()) {
+            // single resolve; should also match first multi by design
+            PsiElement element = reference.resolve();
+            if (pattern.accepts(element)) {
+                return;
+            }
+
+            // multiResolve support
+            if(element instanceof PsiPolyVariantReference) {
+                for (ResolveResult resolveResult : ((PsiPolyVariantReference) element).multiResolve(true)) {
+                    if (pattern.accepts(resolveResult.getElement())) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        fail(String.format("Fail that '%s' match given pattern", psiElement.toString()));
+    }
+
     @NotNull
     private List<PsiElement> collectPsiElementsRecursive(@NotNull PsiElement psiElement) {
         final List<PsiElement> elements = new ArrayList<PsiElement>();

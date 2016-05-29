@@ -39,6 +39,28 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             new ServiceReferenceProvider()
         );
 
+        // <autowiring-type>Acme\TransformerInterface</autowiring-type>
+        registrar.registerReferenceProvider(
+            XmlHelper.getAutowiringTypePattern(),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement parent = psiElement.getParent();
+                    if(!(parent instanceof XmlText)) {
+                        return new PsiReference[0];
+                    }
+
+                    String value = ((XmlText) parent).getValue();
+                    return new PsiReference[]{ new PhpClassReference(psiElement, value) };
+                }
+            }
+        );
+
         // <service class="%foo.class%">
         // <service class="Class\Name">
         registrar.registerReferenceProvider(
