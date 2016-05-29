@@ -12,7 +12,9 @@ import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ContainerTagLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +33,7 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         completionResultSet.addAllElements(getTagLookupElements(completionParameters.getPosition().getProject()));
     }
 
-    public static Collection<LookupElement> getTagLookupElements(Project project) {
+    public static Collection<LookupElement> getTagLookupElements(@NotNull Project project) {
 
         Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
 
@@ -57,6 +59,23 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
                 }
             }
         }
+
+        // findTaggedServiceIds("foo") for ContainerBuilder
+        for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "findTaggedServiceIds", GlobalSearchScope.allScope(project))) {
+            Collection<String> parameter = call.getParameter();
+            if(parameter == null || parameter.size() == 0) {
+                continue;
+            }
+
+            for (String s : parameter) {
+                if(uniqueTags.contains(s)) {
+                    continue;
+                }
+
+                lookupElements.add(new ContainerTagLookupElement(s, true));
+            }
+        }
+
         return lookupElements;
     }
 
