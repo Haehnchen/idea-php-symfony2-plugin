@@ -7,6 +7,20 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.120
+* Don't report standalone yaml colon in mapping value @xabbuh #733
+* "request" service should only be visible inside supported Symfony version < 3.0
+* Inspection for deprecations should only be available with their corresponding Symfony versions #734
+* Drop IntelliJ platform api usage of CompletionProgressIndicator: "it's pretty private API, and current usages make it very hard to change things" #732
+* Add "shared" yaml completion for replacement of "scope" in Symfony 3.0</li>
+* Yaml class autocompletion should only complete inside services for OroCRM plugin #728
+* Add Intellij 2016.1.2 and eap channel environment for travis testing
+* Fix equals / hashCode violation for eap channel and next PhpStorm release on all indexes and globally force a reindex #737
+* Migrate all indexes to object serializable objects
+* Add support for new autowiringTypes container property #699
+* Extend container tag name completion with index of findTaggedServiceIds #740; fix private tags are not autocompleted #216
+* Fix private services completed in PHP scope
+
 ### 0.12.119
 * Add extension points to allow service collecting for external plugins
 * Add extension point to locate service declaration in file

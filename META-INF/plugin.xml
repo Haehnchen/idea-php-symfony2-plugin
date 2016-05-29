@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.119</version>
+    <version>0.12.120</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -10,7 +10,6 @@
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8">Donate</a>
 <br/>
 
-<br/><font color="red"><b>NEWS</b></font>: <b>Nightly release</b> for PhpStorm 2016.1 see <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/626">#626</a><br/>
 <h2>Install</h2>
 
 <ul>
@@ -108,6 +107,23 @@
 0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
+
+<br/>
+<h2>0.12.120</h2>
+<ul>
+    <li>Don't report standalone yaml colon in mapping value @xabbuh <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/733">#733</a></li>
+    <li>"request" service should only be visible inside supported Symfony version < 3.0</li>
+    <li>Inspection for deprecations should only be available with their corresponding Symfony versions <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/734">#734</a></li>
+    <li>Drop IntelliJ platform api usage of CompletionProgressIndicator: "it's pretty private API, and current usages make it very hard to change things" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/732">#732</a></li>
+    <li>Add "shared" yaml completion for replacement of "scope" in Symfony 3.0</li>
+    <li>Yaml class autocompletion should only complete inside services for OroCRM plugin <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/728">#728</a></li>
+    <li>Add Intellij 2016.1.2 and eap channel environment for travis testing</li>
+    <li>Fix equals / hashCode violation for eap channel and next PhpStorm release on all indexes and globally force a reindex <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/737">#737</a></li>
+    <li>Migrate all indexes to object serializable objects</li>
+    <li>Add support for new autowiringTypes container property <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/699">#699</a></li>
+    <li>Extend container tag name completion with index of findTaggedServiceIds <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/740">#740</a>; fix private tags are not autocompleted <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/216">#216</a></li>
+    <li>Fix private services completed in PHP scope</li>
+</ul>
 
 <br/>
 <h2>0.12.119</h2>
