@@ -37,17 +37,15 @@ public class YamlUnquotedColon extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            PsiElement yamlCompoundValue = element.getParent();
-
             // every array element implements this interface
             // check for inside "foo: <foo: foo>"
-            if(!(yamlCompoundValue instanceof YAMLCompoundValue) || yamlCompoundValue.getNode().getElementType() != YAMLElementTypes.COMPOUND_VALUE) {
+            if(!(element instanceof YAMLCompoundValue) || element.getNode().getElementType() != YAMLElementTypes.COMPOUND_VALUE) {
                 super.visitElement(element);
                 return;
             }
 
             // element need to be inside key value
-            PsiElement yamlKeyValue = yamlCompoundValue.getParent();
+            PsiElement yamlKeyValue = element.getParent();
             if(!(yamlKeyValue instanceof YAMLKeyValue)) {
                 super.visitElement(element);
                 return;

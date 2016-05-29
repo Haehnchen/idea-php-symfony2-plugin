@@ -18,6 +18,12 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
             "class: fo<caret>obar: fff",
             YamlUnquotedColon.MESSAGE
         );
+
+        assertLocalInspectionContains("foo.yml",
+            "services:\n" +
+            "   class: fo<caret>obar: fff\n",
+            YamlUnquotedColon.MESSAGE
+        );
     }
 
     public void testColonInUnquotedMappingFollowedBySpaceShouldNotDeprecatedOnWrongSymfonyVersion() {
