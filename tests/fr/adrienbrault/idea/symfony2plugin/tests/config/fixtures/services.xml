@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<container>
+    <services>
+        <service id="my.private.service" class="Foobar" public="false"/>
+        <service id="my.public.service" class="Foobar"/>
+    </services>
+</container>

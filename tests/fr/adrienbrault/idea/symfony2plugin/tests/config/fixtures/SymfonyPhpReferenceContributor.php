@@ -46,3 +46,11 @@ namespace Foo {
 
     class Car {}
 }
+
+namespace Symfony\Component\DependencyInjection
+{
+    interface ContainerInterface
+    {
+        public function get();
+    }
+}

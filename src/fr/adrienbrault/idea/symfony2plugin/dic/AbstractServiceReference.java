@@ -1,17 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBase<PsiElement> {
@@ -59,8 +58,14 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
             collector.addCollectorSource(ContainerCollectionResolver.Source.INDEX);
         }
 
+        Collection<ContainerService> values = collector.getServices().values();
+
+        if(!usePrivateServices) {
+            values = ContainerUtil.filter(values, service -> !service.isPrivate());
+        }
+
         results.addAll(
-            ServiceCompletionProvider.getLookupElements(null, collector.getServices().values()).getLookupElements()
+            ServiceCompletionProvider.getLookupElements(null, values).getLookupElements()
         );
 
         return results.toArray();

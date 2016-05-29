@@ -14,7 +14,8 @@ public class SymfonyPhpReferenceContributorTest extends SymfonyLightCodeInsightF
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("SymfonyPhpReferenceContributor.php"));
+        myFixture.copyFileToProject("SymfonyPhpReferenceContributor.php");
+        myFixture.copyFileToProject("services.xml");
     }
 
     public String getTestDataPath() {
@@ -47,5 +48,19 @@ public class SymfonyPhpReferenceContributorTest extends SymfonyLightCodeInsightF
             // migrate: @TODO: fr.adrienbrault.idea.symfony2plugin.doctrine.ModelFieldReference.multiResolve()
             // add navigation testing
         }
+    }
+
+    public void testThatPrivateServiceAreNotInCompletionListForContainerGet() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php" +
+                "/** @var $c \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$c->get('<caret>');",
+            "my.public.service"
+        );
+
+        assertCompletionNotContains(PhpFileType.INSTANCE, "<?php" +
+                "/** @var $c \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$c->get('<caret>');",
+            "my.private.service"
+        );
     }
 }
