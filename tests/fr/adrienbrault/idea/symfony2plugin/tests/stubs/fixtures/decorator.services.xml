@@ -1,0 +1,24 @@
+<container>
+
+    <services>
+
+        <service id="espend.my_first_foo"
+                 class="espend\MyFirstFoo">
+        </service>
+
+        <service id="espend.my_next_foo"
+                 class="espend\MyNextFoo"
+                 decorates="espend.my_first_foo"
+                 public="false">
+        </service>
+
+        <service id="espend.my_bar_customer_inner"
+                 class="espend\MyBarFoo"
+                 decorates="espend.my_next_foo"
+                 public="false"
+                 decoration-inner-name="espend.my_bar_customer_inner.inner_foo">
+        </service>
+
+    </services>
+
+</container>

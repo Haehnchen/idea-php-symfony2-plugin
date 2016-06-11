@@ -54,6 +54,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         );
 
         myFixture.copyFileToProject("ContainerBuilder.php");
+        myFixture.copyFileToProject("decorator.services.xml");
     }
 
     public String getTestDataPath() {
@@ -108,5 +109,22 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         ContainerParameter containerParameter = ContainerCollectionResolver.getParameters(getProject()).get("container.builder.parameter");
         assertNotNull(containerParameter);
         assertTrue(containerParameter.isWeak());
+    }
+
+    public void testThatDecoratedServiceProvidesInner() {
+        ContainerService service = ContainerCollectionResolver.getService(getProject(), "espend.my_next_foo.inner");
+        assertNotNull(service);
+
+        assertEquals("espend\\MyFirstFoo", service.getClassName());
+        assertEquals("espend.my_next_foo.inner", service.getName());
+
+        service = ContainerCollectionResolver.getService(getProject(), "espend.my_bar_customer_inner.inner_foo");
+        assertNotNull(service);
+
+        assertEquals("espend\\MyNextFoo", service.getClassName());
+        assertEquals("espend.my_bar_customer_inner.inner_foo", service.getName());
+
+        assertEquals(true, service.isPrivate());
+        assertEquals(true, service.isWeak());
     }
 }

@@ -10,6 +10,16 @@
         <service id="foo.xml_id.alias" alias="foo.xml_id" />
         <service id="foo.xml_id.UPPER" class="AppBundle\Controller\DefaultController"/>
         <service id="foo.xml_id.slash" class="\AppBundle\Controller\DefaultController"/>
+
+        <service id="espend.my_bar_foo"
+                 decorates="espend.my_next_foo">
+        </service>
+
+        <service id="espend.my_bar_customer_inner"
+                 decorates="espend.my_next_foo"
+                 decoration-inner-name="espend.my_bar_customer_inner.inner_foo">
+        </service>
+
     </services>
 
 </container>

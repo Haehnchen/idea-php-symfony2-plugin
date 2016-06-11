@@ -24,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class ContainerCollectionResolver {
 
@@ -175,7 +174,8 @@ public class ContainerCollectionResolver {
             if(this.getServices().containsKey(serviceName)) {
 
                 // service can be a parameter, resolve if necessary
-                String className = this.getServices().get(serviceName).getClassName();
+                ContainerService service = this.getServices().get(serviceName);
+                String className = service.getClassName();
                 if(className != null && className.startsWith("%") && className.endsWith("%")) {
                     return getParameterCollector().resolve(className);
                 } else {
@@ -203,6 +203,7 @@ public class ContainerCollectionResolver {
             if(this.sources.contains(Source.INDEX)) {
 
                 Collection<ServiceInterface> aliases = new ArrayList<ServiceInterface>();
+                Collection<ServiceInterface> decorated = new ArrayList<>();
 
                 // Extension points
                 ServiceCollectorParameter.Service parameter = null;
@@ -254,9 +255,13 @@ public class ContainerCollectionResolver {
                             continue;
                         }
 
-                        // reuse iteration for alias mapping
                         if(service.getAlias() != null) {
                             aliases.add(service);
+                        }
+
+                        // reuse iteration for alias mapping
+                        if(service.getDecorates() != null) {
+                            decorated.add(service);
                         }
 
                         // resolve class value, it can be null or a parameter
@@ -280,6 +285,26 @@ public class ContainerCollectionResolver {
                         }
 
                         this.services.put(service.getId(), this.services.get(alias));
+                    }
+                }
+
+                if(decorated.size() > 0) {
+                    for (ServiceInterface service : decorated) {
+                        String decorationInnerName = service.getDecorationInnerName();
+                        if(StringUtils.isBlank(decorationInnerName)) {
+                            decorationInnerName = service.getId() + ".inner";
+                        }
+
+                        ContainerService origin = this.services.get(service.getDecorates());
+                        if(origin == null) {
+                            continue;
+                        }
+
+                        // @TODO: migrate constructor to ServiceInterface and decorate
+                        ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), origin.isPrivate());
+                        origin.getClassNames().forEach(value::addClassName);
+
+                        this.services.put(decorationInnerName, value);
                     }
                 }
             }

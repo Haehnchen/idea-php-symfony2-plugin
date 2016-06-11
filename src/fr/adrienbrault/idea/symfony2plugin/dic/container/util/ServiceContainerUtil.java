@@ -85,7 +85,34 @@ public class ServiceContainerUtil {
             });
         }
 
+        // decorated services
+        services.addAll(getPseudoDecoratedServices(services));
+
         return services;
+    }
+
+    /**
+     * "espend.my_next_foo" > "espend.my_next_foo.inner" or custom inner name
+     */
+    @NotNull
+    private static Collection<ServiceSerializable> getPseudoDecoratedServices(@NotNull Collection<ServiceSerializable> services) {
+        Collection<ServiceSerializable> decoratedServices = new ArrayList<>();
+
+        for (ServiceSerializable service : services) {
+            String decorates = service.getDecorates();
+            if(decorates == null || StringUtils.isBlank(decorates)) {
+                continue;
+            }
+
+            String decorationInnerName = service.getDecorationInnerName();
+            if(StringUtils.isBlank(decorationInnerName)) {
+                decorationInnerName = service.getId() + ".inner";
+            }
+
+            decoratedServices.add(new SerializableService(decorationInnerName));
+        }
+
+        return decoratedServices;
     }
 
     @NotNull

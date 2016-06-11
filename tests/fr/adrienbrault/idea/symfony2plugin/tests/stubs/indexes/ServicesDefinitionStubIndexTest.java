@@ -60,6 +60,11 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.slash").getClassName());
     }
 
+    public void testThatDecoratedServiceProvidesOriginServiceAsInnerId() {
+        assertEquals("espend.my_bar_foo.inner", getFirstValue("espend.my_bar_foo.inner").getId());
+        assertEquals("espend.my_bar_customer_inner.inner_foo", getFirstValue("espend.my_bar_customer_inner.inner_foo").getId());
+    }
+
     private ServiceInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
