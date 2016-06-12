@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.resource;
 
-import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+
+import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -18,15 +18,7 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
-                "namespace Symfony\\Component\\HttpKernel\\Bundle{\n" +
-                "    interface Bundle {}\n" +
-                "}\n" +
-                "namespace FooBundle {\n" +
-                "    class FooBundle implements \\Symfony\\Component\\HttpKernel\\Bundle\\Bundle {}\n" +
-                "}"
-        );
-
+        myFixture.copyFileToProject("classes.php");
         myFixture.configureByText("target.xml", "" +
                 "<routes>\n" +
                 "    <import resource=\"@FooBundle/foo.xml\" />\n" +
@@ -34,14 +26,23 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         );
     }
 
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
+
     public void testGetFileResourceRefers() {
         PsiFile psiFile = myFixture.configureByText("foo.xml", "foo");
 
-        assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceRefers(getProject(), psiFile.getVirtualFile()), new Condition<VirtualFile>() {
-            @Override
-            public boolean value(VirtualFile virtualFile) {
-                return virtualFile.getName().equals("target.xml");
-            }
+        assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceRefers(getProject(), psiFile.getVirtualFile()), virtualFile -> {
+            return virtualFile.getName().equals("target.xml");
         }));
+    }
+
+    public void testGetFileResourceTargetsInBundleDirectory() {
+        for (String s : new String[]{"@FooBundle/Controller", "@FooBundle\\Controller", "@FooBundle/Controller/", "@FooBundle//Controller", "@FooBundle\\Controller\\"}) {
+            assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceTargetsInBundleDirectory(getProject(), s), psiElement ->
+                psiElement instanceof PhpClass && "\\FooBundle\\Controller\\FooController".equals(((PhpClass) psiElement).getFQN())
+            ));
+        }
     }
 }

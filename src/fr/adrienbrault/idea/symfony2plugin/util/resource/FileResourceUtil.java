@@ -15,11 +15,14 @@ import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -214,6 +217,36 @@ public class FileResourceUtil {
         }
 
         return Collections.singletonList(psiFile);
+    }
+
+    /**
+     * resource: "@AppBundle/Controller/"
+     */
+    @NotNull
+    public static Collection<PsiElement> getFileResourceTargetsInBundleDirectory(@NotNull Project project, @NotNull String content) {
+        // min validation "@FooBundle/foo.yml"
+        if(!content.startsWith("@")) {
+            return Collections.emptyList();
+        }
+
+        content = content.replace("/", "\\");
+        if(!content.contains("\\")) {
+            return Collections.emptyList();
+        }
+
+        String bundleName = content.substring(1, content.indexOf("\\"));
+
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getBundle(bundleName);
+        if(symfonyBundle == null) {
+            return Collections.emptyList();
+        }
+
+        // support double backslashes
+        content = content.replaceAll("\\\\+", "\\\\");
+        String namespaceName = "\\" + StringUtils.strip(content.substring(1), "\\");
+        return new ArrayList<>(PhpIndexUtil.getPhpClassInsideNamespace(
+            project, namespaceName
+        ));
     }
 
     /**

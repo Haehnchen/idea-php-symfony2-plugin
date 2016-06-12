@@ -183,6 +183,7 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         }
 
         results.addAll(FileResourceUtil.getFileResourceTargetsInBundleScope(psiElement.getProject(), text));
+        results.addAll(FileResourceUtil.getFileResourceTargetsInBundleDirectory(psiElement.getProject(), text));
     }
 
     private void attachResourceOnPathGoto(PsiElement psiElement, List<PsiElement> results) {
