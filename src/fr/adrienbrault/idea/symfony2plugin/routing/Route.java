@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,11 +25,11 @@ public class Route implements RouteInterface {
     private Set<String> pathCache;
 
     private HashSet<String> variables = new HashSet<String>();
-    private HashMap<String, String> defaults = new HashMap<String, String>();
-    private HashMap<String, String> requirements = new HashMap<String, String>();
+    private Map<String, String> defaults = new HashMap<String, String>();
+    private Map<String, String> requirements = new HashMap<String, String>();
     private List<Collection<String>> tokens = new ArrayList<Collection<String>>();
 
-    public Route(@NotNull String name, HashSet<String> variables, HashMap<String, String> defaults, HashMap<String, String> requirements, ArrayList<Collection<String>> tokens) {
+    public Route(@NotNull String name, @NotNull HashSet<String> variables, @NotNull Map<String, String> defaults, @NotNull Map<String, String> requirements, @NotNull List<Collection<String>> tokens) {
         this.name = name;
 
         this.variables = variables;
@@ -37,7 +38,10 @@ public class Route implements RouteInterface {
         this.tokens = tokens;
 
         if(defaults.containsKey("_controller")) {
-            this.controller = defaults.get("_controller").replace("\\\\", "\\");
+            String controller = defaults.get("_controller");
+            if(StringUtils.isNotBlank(controller)) {
+                this.controller = controller.replace("\\\\", "\\");
+            }
         }
     }
     public Route(@NotNull String name) {

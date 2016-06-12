@@ -122,6 +122,7 @@ public class PhpElementsUtil {
     /**
      * array('foo' => 'bar', 'foo1' => 'bar', 1 => 'foo')
      */
+    @NotNull
     static public HashMap<String, String> getArrayKeyValueMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
         HashMap<String, String> keys = new HashMap<String, String>();
 
@@ -136,7 +137,7 @@ public class PhpElementsUtil {
                     key = child.getText();
                 }
 
-                if(StringUtils.isBlank(key)) {
+                if(key == null || StringUtils.isBlank(key)) {
                     continue;
                 }
 
@@ -146,8 +147,11 @@ public class PhpElementsUtil {
                     value = ((StringLiteralExpression) arrayHashElement.getValue()).getContents();
                 }
 
-                keys.put(key, value);
+                if(value == null || StringUtils.isBlank(value)) {
+                    continue;
+                }
 
+                keys.put(key, value);
             }
         }
 
