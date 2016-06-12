@@ -15,6 +15,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     public void setUp() throws Exception {
         super.setUp();
 
+        myFixture.copyFileToProject("services.xml");
         myFixture.configureByText("config_foo.yml", "");
         myFixture.configureByFile("YamlCompletionContributor.php");
     }
@@ -129,6 +130,22 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "    foo:\n" +
                 "       factory_class: <caret>\n",
             "FooController"
+        );
+    }
+
+    public void testParentAndServiceClassCompletion() {
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo:\n" +
+                "       parent: <caret>\n",
+            "foo"
+        );
+
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo:\n" +
+                "       factory_service: <caret>\n",
+            "foo"
         );
     }
 }

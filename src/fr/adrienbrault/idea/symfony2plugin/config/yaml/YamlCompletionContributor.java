@@ -162,7 +162,11 @@ public class YamlCompletionContributor extends CompletionContributor {
             new PhpClassAndParameterCompletionProvider()
         );
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_service", "parent"), new ServiceCompletionProvider());
+        extend(CompletionType.BASIC, PlatformPatterns.and(
+            YamlElementPatternHelper.getSingleLineScalarKey("factory_service", "parent"),
+            YamlElementPatternHelper.getThreeLevelKeyPattern("services")
+        ), new ServiceCompletionProvider());
+
         extend(CompletionType.BASIC, YamlElementPatternHelper.getParameterClassPattern(), new PhpClassCompletionProvider());
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("targetEntity", "targetDocument"), new PhpEntityClassCompletionProvider());
