@@ -7,6 +7,13 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.121
+* Add support for decorator inner services #510
+* Fix NPE exception in RouteHelper #750
+* Fix NullPointerException in FormFieldResolver #747
+* Add navigation for controller annotation #748
+* Service parent key completion should only be valid inside service scope #744
+
 ### 0.12.120
 * Don't report standalone yaml colon in mapping value @xabbuh #733
 * "request" service should only be visible inside supported Symfony version < 3.0

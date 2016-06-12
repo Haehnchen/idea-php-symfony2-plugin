@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.120</version>
+    <version>0.12.121</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,15 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.121</h2>
+<ul>
+    <li>Add support for decorator inner services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/510">#510</a></li>
+    <li>Fix NPE exception in RouteHelper <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/750">#750</a></li>
+    <li>Fix NullPointerException in FormFieldResolver <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/747">#747</a></li>
+    <li>Add navigation for controller annotation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/748">#748</a></li>
+    <li>Service parent key completion should only be valid inside service scope <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/744">#744</a></li>
+</ul>
+
 <h2>0.12.120</h2>
 <ul>
     <li>Don't report standalone yaml colon in mapping value @xabbuh <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/733">#733</a></li>
