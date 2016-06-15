@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -60,10 +61,19 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         this.getRootPane().setDefaultButton(generateButton);
 
         this.closeButton.addActionListener(e -> {
-            setEnabled(false);
-            dispose();
+            onCancel();
         });
 
+        this.getRootPane().registerKeyboardAction(e ->
+            onCancel(),
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+        );
+    }
+
+    private void onCancel() {
+        setEnabled(false);
+        dispose();
     }
 
     private void createUIComponents() {
