@@ -85,10 +85,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         private ContainerCollectionResolver.ServiceCollector getServiceCollector() {
             if(this.serviceCollector == null) {
-                this.serviceCollector = new ContainerCollectionResolver.ServiceCollector(this.project);
-
-                this.serviceCollector.addCollectorSource(ContainerCollectionResolver.Source.COMPILER);
-                this.serviceCollector.addCollectorSource(ContainerCollectionResolver.Source.INDEX);
+                this.serviceCollector = ContainerCollectionResolver.ServiceCollector.create(this.project);
             }
 
             return this.serviceCollector;

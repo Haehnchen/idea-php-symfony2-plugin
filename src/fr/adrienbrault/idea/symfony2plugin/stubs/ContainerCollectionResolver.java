@@ -37,53 +37,34 @@ public class ContainerCollectionResolver {
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
     );
 
-    public static enum Source {
-        INDEX, COMPILER
+    public static Collection<String> getServiceNames(@NotNull Project project) {
+        return ServiceCollector.create(project).getNames();
     }
 
-    public static Collection<String> getServiceNames(Project project) {
-        return new ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX).getNames();
-    }
-
-    public static boolean hasServiceNames(Project project, String serviceName) {
+    public static boolean hasServiceNames(@NotNull Project project, @NotNull String serviceName) {
         // @TODO: we dont need a collection here; stop on first match
-        return new ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX).getNames().contains(serviceName);
+        return ServiceCollector.create(project).getNames().contains(serviceName);
     }
 
     @Nullable
-    public static ContainerService getService(Project project, String serviceName) {
-        Map<String, ContainerService> services = getServices(project, Source.COMPILER, Source.INDEX);
+    public static ContainerService getService(@NotNull Project project, @NotNull String serviceName) {
+        Map<String, ContainerService> services = getServices(project);
         return services.containsKey(serviceName) ? services.get(serviceName) : null;
     }
 
-    public static Map<String, ContainerService> getServices(Project project) {
-        return getServices(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
-    }
-
-    public static Map<String, ContainerService> getServices(Project project, Source... collectorSources) {
-        return new ServiceCollector(project, collectorSources).getServices();
+    public static Map<String, ContainerService> getServices(@NotNull Project project) {
+        return ServiceCollector.create(project).getServices();
     }
 
     @Nullable
-    public static String resolveService(Project project, String serviceName) {
-        return resolveService(project, serviceName, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
-    }
-
-    @Nullable
-    public static String resolveService(Project project, String serviceName, ContainerCollectionResolver.Source... collectorSources) {
-        return new ServiceCollector(project, collectorSources).resolve(serviceName);
-    }
-
-
-    private static GlobalSearchScope getSearchScope(Project project) {
-        return GlobalSearchScope.allScope(project);
+    public static String resolveService(@NotNull Project project, @NotNull String serviceName) {
+        return ServiceCollector.create(project).resolve(serviceName);
     }
 
     public static class LazyServiceCollector {
 
         private final Project project;
         private ServiceCollector serviceCollector;
-        private Source[] sources  = {Source.COMPILER, Source.INDEX};
         private ParameterCollector parameterCollector;
 
         public LazyServiceCollector(Project project) {
@@ -94,7 +75,7 @@ public class ContainerCollectionResolver {
         public ServiceCollector getCollector() {
 
             if(this.serviceCollector == null) {
-                this.serviceCollector = new ServiceCollector(project, sources);
+                this.serviceCollector = ServiceCollector.create(project);
             }
 
             return this.serviceCollector;
@@ -103,7 +84,7 @@ public class ContainerCollectionResolver {
         public ParameterCollector getParameterCollector() {
 
             if(this.parameterCollector == null) {
-                this.parameterCollector = new ParameterCollector(project, sources);
+                this.parameterCollector = ParameterCollector.create(project);
             }
 
             return this.parameterCollector;
@@ -119,8 +100,13 @@ public class ContainerCollectionResolver {
      * @return class name or unchanged item
      */
     @Nullable
-    public static String resolveParameter(Project project, String paramOrClassName) {
-        return resolveParameter(new ParameterCollector(project, Source.COMPILER, Source.INDEX), paramOrClassName);
+    public static String resolveParameter(@NotNull Project project, @NotNull String paramOrClassName) {
+        return resolveParameter(ParameterCollector.create(project), paramOrClassName);
+    }
+
+    @NotNull
+    public static Map<String, ContainerParameter> getParameters(@NotNull Project project) {
+        return ParameterCollector.create(project).getParameters();
     }
 
     @Nullable
@@ -128,40 +114,23 @@ public class ContainerCollectionResolver {
         return parameterCollector.resolve(paramOrClassName);
     }
 
-    public static Map<String, ContainerParameter> getParameters(Project project) {
-        return getParameters(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
-    }
-
-    public static Map<String, ContainerParameter> getParameters(Project project, ContainerCollectionResolver.Source... collectorSources) {
-        return new ParameterCollector(project, collectorSources).getParameters();
-    }
-
-    public static Set<String> getParameterNames(Project project) {
-        return getParameterNames(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
-    }
-
-    public static Set<String> getParameterNames(Project project, ContainerCollectionResolver.Source... collectorSources) {
-        return new ParameterCollector(project, collectorSources).getNames();
+    public static Set<String> getParameterNames(@NotNull Project project) {
+        return ParameterCollector.create(project).getNames();
     }
 
     public static class ServiceCollector {
 
-        private Set<Source> sources = new HashSet<Source>();
-        private Project project;
+        @NotNull
+        final private Project project;
+
+        @Nullable
         private ParameterCollector parameterCollector;
+
+        @Nullable
         private Map<String, ContainerService> services;
 
-        public ServiceCollector(Project project, Source... sources) {
-            this(project);
-            this.sources = new HashSet<Source>(Arrays.asList(sources));
-        }
-
-        public ServiceCollector(Project project) {
+        public ServiceCollector(@NotNull Project project) {
             this.project = project;
-        }
-
-        public void addCollectorSource(Source source) {
-            this.sources.add(source);
         }
 
         public Collection<ContainerService> collect() {
@@ -192,124 +161,128 @@ public class ContainerCollectionResolver {
                 return this.services;
             }
 
-            this.services = new TreeMap<String, ContainerService>(String.CASE_INSENSITIVE_ORDER);
+            this.services = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-            if(this.sources.contains(Source.COMPILER)) {
-                for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
-                    services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
-                }
+            // file system
+            for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
+                services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
             }
 
-            if(this.sources.contains(Source.INDEX)) {
+            Collection<ServiceInterface> aliases = new ArrayList<ServiceInterface>();
+            Collection<ServiceInterface> decorated = new ArrayList<>();
 
-                Collection<ServiceInterface> aliases = new ArrayList<ServiceInterface>();
-                Collection<ServiceInterface> decorated = new ArrayList<>();
-
-                // Extension points
-                ServiceCollectorParameter.Service parameter = null;
-                Collection<ServiceInterface> exps = new ArrayList<ServiceInterface>();
-                for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
-                    if(parameter == null) {
-                        parameter = new ServiceCollectorParameter.Service(project, exps);
-                    }
-
-                    collectorEx.collectServices(parameter);
+            // Extension points
+            ServiceCollectorParameter.Service parameter = null;
+            Collection<ServiceInterface> exps = new ArrayList<ServiceInterface>();
+            for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
+                if(parameter == null) {
+                    parameter = new ServiceCollectorParameter.Service(project, exps);
                 }
 
-                if(exps.size() > 0) {
-                    exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
+                collectorEx.collectServices(parameter);
+            }
+
+            if(exps.size() > 0) {
+                exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
+            }
+
+            for (Map.Entry<String, List<ServiceSerializable>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+
+                // dont work twice on service;
+                // @TODO: to need to optimize this to decorate as much service data as possible
+                String serviceName = entry.getKey();
+
+                // fake empty service, case which is not allowed by catch it
+                List<ServiceSerializable> services = entry.getValue();
+                if(services.size() == 0) {
+                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                    continue;
                 }
 
-                for (Map.Entry<String, List<ServiceSerializable>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+                for(ServiceInterface service: services) {
+                    String classValue = service.getClassName();
 
-                    // dont work twice on service;
-                    // @TODO: to need to optimize this to decorate as much service data as possible
-                    String serviceName = entry.getKey();
+                    // duplicate services
+                    if(this.services.containsKey(serviceName)) {
+                        if(classValue == null) {
+                            continue;
+                        }
 
-                    // fake empty service, case which is not allowed by catch it
-                    List<ServiceSerializable> services = entry.getValue();
-                    if(services.size() == 0) {
-                        this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                        String compiledClassName = this.services.get(serviceName).getClassName();
+                        if(classValue.equalsIgnoreCase(compiledClassName)) {
+                            continue;
+                        }
+
+                        String resolvedClassValue = getParameterCollector().resolve(classValue);
+                        if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
+                            this.services.get(serviceName).addClassName(resolvedClassValue);
+                        }
+
                         continue;
                     }
 
-                    for(ServiceInterface service: services) {
-                        String classValue = service.getClassName();
-
-                        // duplicate services
-                        if(this.services.containsKey(serviceName)) {
-                            if(classValue == null) {
-                                continue;
-                            }
-
-                            String compiledClassName = this.services.get(serviceName).getClassName();
-                            if(classValue.equalsIgnoreCase(compiledClassName)) {
-                                continue;
-                            }
-
-                            String resolvedClassValue = getParameterCollector().resolve(classValue);
-                            if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
-                                this.services.get(serviceName).addClassName(resolvedClassValue);
-                            }
-
-                            continue;
-                        }
-
-                        if(service.getAlias() != null) {
-                            aliases.add(service);
-                        }
-
-                        // reuse iteration for alias mapping
-                        if(service.getDecorates() != null) {
-                            decorated.add(service);
-                        }
-
-                        // resolve class value, it can be null or a parameter
-                        if(!StringUtils.isBlank(classValue)) {
-                            classValue = getParameterCollector().resolve(classValue);
-                        }
-
-                        // @TODO: legacy bridge; replace this with ServiceInterface
-                        this.services.put(serviceName, new ContainerService(service, classValue));
+                    if(service.getAlias() != null) {
+                        aliases.add(service);
                     }
-                }
 
-                // replace alias with main service
-                if(aliases.size() > 0) {
-                    for (ServiceInterface service : aliases) {
-
-                        // double check alias name
-                        String alias = service.getAlias();
-                        if(alias == null || StringUtils.isBlank(alias) || !this.services.containsKey(alias)) {
-                            continue;
-                        }
-
-                        this.services.put(service.getId(), this.services.get(alias));
+                    // reuse iteration for alias mapping
+                    if(service.getDecorates() != null) {
+                        decorated.add(service);
                     }
-                }
 
-                if(decorated.size() > 0) {
-                    for (ServiceInterface service : decorated) {
-                        String decorationInnerName = service.getDecorationInnerName();
-                        if(StringUtils.isBlank(decorationInnerName)) {
-                            decorationInnerName = service.getId() + ".inner";
-                        }
-
-                        ContainerService origin = this.services.get(service.getDecorates());
-                        if(origin == null) {
-                            continue;
-                        }
-
-                        // @TODO: migrate constructor to ServiceInterface and decorate
-                        ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), origin.isPrivate());
-                        origin.getClassNames().forEach(value::addClassName);
-
-                        this.services.put(decorationInnerName, value);
+                    // resolve class value, it can be null or a parameter
+                    if(!StringUtils.isBlank(classValue)) {
+                        classValue = getParameterCollector().resolve(classValue);
                     }
+
+                    // @TODO: legacy bridge; replace this with ServiceInterface
+                    this.services.put(serviceName, new ContainerService(service, classValue));
                 }
             }
 
+            // replace alias with main service
+            if(aliases.size() > 0) {
+                collectAliases(aliases);
+            }
+
+            if(decorated.size() > 0) {
+                collectDecorated(decorated);
+            }
+
             return this.services;
+        }
+
+        private void collectAliases(@NotNull Collection<ServiceInterface> aliases) {
+            for (ServiceInterface service : aliases) {
+
+                // double check alias name
+                String alias = service.getAlias();
+                if(alias == null || StringUtils.isBlank(alias) || !this.services.containsKey(alias)) {
+                    continue;
+                }
+
+                this.services.put(service.getId(), this.services.get(alias));
+            }
+        }
+
+        private void collectDecorated(@NotNull Collection<ServiceInterface> decorated) {
+            for (ServiceInterface service : decorated) {
+                String decorationInnerName = service.getDecorationInnerName();
+                if(StringUtils.isBlank(decorationInnerName)) {
+                    decorationInnerName = service.getId() + ".inner";
+                }
+
+                ContainerService origin = this.services.get(service.getDecorates());
+                if(origin == null) {
+                    continue;
+                }
+
+                // @TODO: migrate constructor to ServiceInterface and decorate
+                ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), origin.isPrivate());
+                origin.getClassNames().forEach(value::addClassName);
+
+                this.services.put(decorationInnerName, value);
+            }
         }
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
@@ -336,27 +309,23 @@ public class ContainerCollectionResolver {
 
             Set<String> serviceNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
-            if(this.sources.contains(Source.COMPILER)) {
-                // local filesystem
-                serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
-            }
+            // local filesystem
+            serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
 
-            if(this.sources.contains(Source.INDEX)) {
-
-                // Extension points
-                ServiceCollectorParameter.Id parameter = null;
-                for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
-                    if(parameter == null) {
-                        parameter = new ServiceCollectorParameter.Id(project, serviceNames);
-                    }
-
-                    collectorEx.collectIds(parameter);
+            // Extension points
+            ServiceCollectorParameter.Id parameter = null;
+            for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
+                if(parameter == null) {
+                    parameter = new ServiceCollectorParameter.Id(project, serviceNames);
                 }
 
-                serviceNames.addAll(
-                    FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
-                );
+                collectorEx.collectIds(parameter);
             }
+
+            // index
+            serviceNames.addAll(
+                FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
+            );
 
             return serviceNames;
 
@@ -364,32 +333,28 @@ public class ContainerCollectionResolver {
 
 
         private ParameterCollector getParameterCollector() {
-            return (this.parameterCollector != null) ? this.parameterCollector : (this.parameterCollector = new ParameterCollector(this.project, this.sources.toArray(new Source[this.sources.size()])));
+            return (this.parameterCollector != null) ? this.parameterCollector : (this.parameterCollector = ParameterCollector.create(this.project));
         }
 
         public static ServiceCollector create(@NotNull Project project) {
-            return new ContainerCollectionResolver.ServiceCollector(
-                project,
-                ContainerCollectionResolver.Source.COMPILER,
-                ContainerCollectionResolver.Source.INDEX
-            );
+            return new ContainerCollectionResolver.ServiceCollector(project);
         }
-
     }
 
     public static class ParameterCollector {
 
-        private Set<Source> sources = new HashSet<Source>();
+        @NotNull
         private Project project;
+
+        @Nullable
         private Map<String, ContainerParameter> containerParameterMap;
 
-        public ParameterCollector(Project project) {
+        public ParameterCollector(@NotNull Project project) {
             this.project = project;
         }
 
-        public ParameterCollector(Project project, Source... sources) {
-            this(project);
-            this.sources = new HashSet<Source>(Arrays.asList(sources));
+        public static ParameterCollector create(@NotNull Project project) {
+            return new ParameterCollector(project);
         }
 
         /**
@@ -431,51 +396,50 @@ public class ContainerCollectionResolver {
 
             this.containerParameterMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-            if(this.sources.contains(Source.COMPILER)) {
-                // local filesystem
-                for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
 
-                    // user input here; secure nullable values
-                    String key = Entry.getKey();
-                    if(key != null) {
-                        this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
-                    }
+            // local filesystem
+            for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
 
-                }
-            }
-
-            if(this.sources.contains(Source.INDEX)) {
-                for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, SERVICE_PARAMETER_INDEX, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
-                    String parameterName = entry.getKey();
-                    // just for secure
-                    if(parameterName == null) {
-                        continue;
-                    }
-
-                    // indexes is weak stuff, dont overwrite compiled ones
-                    if(!this.containerParameterMap.containsKey(parameterName)) {
-                        this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
-                    }
-                }
-
-                // setParameter("foo") for ContainerBuilder
-                for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
-                    Collection<String> parameters = call.getParameter();
-                    if(parameters == null || parameters.size() == 0) {
-                        continue;
-                    }
-
-                    for (String parameter : parameters) {
-                        if(this.containerParameterMap.containsKey(parameter)) {
-                           continue;
-                        }
-
-                        this.containerParameterMap.put(parameter, new ContainerParameter(parameter, true));
-                    }
-
+                // user input here; secure nullable values
+                String key = Entry.getKey();
+                if(key != null) {
+                    this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
                 }
 
             }
+
+            // index
+            for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, SERVICE_PARAMETER_INDEX, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
+                String parameterName = entry.getKey();
+                // just for secure
+                if(parameterName == null) {
+                    continue;
+                }
+
+                // indexes is weak stuff, dont overwrite compiled ones
+                if(!this.containerParameterMap.containsKey(parameterName)) {
+                    this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
+                }
+            }
+
+            // setParameter("foo") for ContainerBuilder
+            for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
+                Collection<String> parameters = call.getParameter();
+                if(parameters == null || parameters.size() == 0) {
+                    continue;
+                }
+
+                for (String parameter : parameters) {
+                    if(this.containerParameterMap.containsKey(parameter)) {
+                        continue;
+                    }
+
+                    this.containerParameterMap.put(parameter, new ContainerParameter(parameter, true));
+                }
+
+            }
+
+
 
             return this.containerParameterMap;
 
@@ -490,24 +454,22 @@ public class ContainerCollectionResolver {
 
             Set<String> parameterNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-            if(this.sources.contains(Source.COMPILER)) {
-                // local filesystem
-                parameterNames.addAll(ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().keySet());
-            }
+            // local filesystem
+            parameterNames.addAll(ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().keySet());
 
-            if(this.sources.contains(Source.INDEX)) {
-                parameterNames.addAll(
-                    FileIndexCaches.getIndexKeysCache(project, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY)
-                );
+            // index
+            parameterNames.addAll(
+                FileIndexCaches.getIndexKeysCache(project, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY)
+            );
 
-                // setParameter("foo") for ContainerBuilder
-                for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
-                    Collection<String> parameter = call.getParameter();
-                    if(parameter != null) {
-                        parameterNames.addAll(parameter);
-                    }
+            // setParameter("foo") for ContainerBuilder
+            for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
+                Collection<String> parameter = call.getParameter();
+                if(parameter != null) {
+                    parameterNames.addAll(parameter);
                 }
             }
+
 
             return parameterNames;
         }

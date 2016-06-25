@@ -6,15 +6,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class ServiceXmlReference extends AbstractServiceReference {
 
-    public ServiceXmlReference(@NotNull PsiElement element, String ServiceId) {
+    public ServiceXmlReference(@NotNull PsiElement element, String serviceId) {
         super(element);
-        serviceId = ServiceId;
+        this.serviceId = serviceId;
     }
 
-    public ServiceXmlReference(@NotNull PsiElement element, String ServiceId, boolean useIndexedServices) {
-        this(element, ServiceId);
-        this.useIndexedServices = useIndexedServices;
-    }
 
     @NotNull
     public Object[] getVariants() {

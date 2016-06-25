@@ -113,7 +113,7 @@ public class ServiceIndexUtil {
             return new PsiElement[0];
         }
 
-        Set<String> serviceNames = new ContainerCollectionResolver.ServiceCollector(phpClass.getProject(), ContainerCollectionResolver.Source.INDEX, ContainerCollectionResolver.Source.COMPILER).convertClassNameToServices(phpClassName);
+        Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
 
         if(serviceNames.size() == 0) {
             return new PsiElement[0];
@@ -138,7 +138,7 @@ public class ServiceIndexUtil {
             return null;
         }
 
-        Set<String> serviceNames = new ContainerCollectionResolver.ServiceCollector(phpClass.getProject(), ContainerCollectionResolver.Source.INDEX, ContainerCollectionResolver.Source.COMPILER).convertClassNameToServices(phpClassName);
+        Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
         if(serviceNames.size() == 0) {
             return null;
         }

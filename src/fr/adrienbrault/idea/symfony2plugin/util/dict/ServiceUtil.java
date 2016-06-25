@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -37,8 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class ServiceUtil {
 
@@ -296,7 +293,7 @@ public class ServiceUtil {
             return phpClasses;
         }
 
-        ContainerCollectionResolver.ServiceCollector collector = new ContainerCollectionResolver.ServiceCollector(project, ContainerCollectionResolver.Source.COMPILER, ContainerCollectionResolver.Source.INDEX);
+        ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver.ServiceCollector.create(project);
         for(String serviceName: taggedServices) {
             String resolvedService = collector.resolve(serviceName);
             if(resolvedService != null) {

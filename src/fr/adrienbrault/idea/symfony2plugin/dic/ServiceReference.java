@@ -11,14 +11,8 @@ public class ServiceReference extends AbstractServiceReference {
         this.serviceId = element.getContents();
     }
 
-    public ServiceReference(@NotNull StringLiteralExpression element, boolean useIndexedServices) {
+    public ServiceReference(@NotNull StringLiteralExpression element, boolean usePrivateServices) {
         this(element);
-        this.useIndexedServices = useIndexedServices;
-   }
-
-    public ServiceReference(@NotNull StringLiteralExpression element, boolean useIndexedServices, boolean usePrivateServices) {
-        this(element);
-        this.useIndexedServices = useIndexedServices;
         this.usePrivateServices = usePrivateServices;
     }
 

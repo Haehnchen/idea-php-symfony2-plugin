@@ -29,7 +29,7 @@ public class ClassServiceDefinitionTargetLazyValue extends NotNullLazyValue<Coll
     @Override
     protected Collection<? extends PsiElement> compute() {
 
-        Set<String> serviceNames = new ContainerCollectionResolver.ServiceCollector(project, ContainerCollectionResolver.Source.INDEX, ContainerCollectionResolver.Source.COMPILER).convertClassNameToServices(fqnClass);
+        Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(project).convertClassNameToServices(fqnClass);
         if(serviceNames.size() == 0) {
             return Collections.emptyList();
         }

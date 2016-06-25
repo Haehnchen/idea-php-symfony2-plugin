@@ -16,7 +16,6 @@ import java.util.List;
 abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     protected String serviceId;
-    protected boolean useIndexedServices = false;
     protected boolean usePrivateServices = true;
 
     public AbstractServiceReference(PsiElement psiElement) {
@@ -28,12 +27,8 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
 
-        ContainerCollectionResolver.ServiceCollector collector = new ContainerCollectionResolver.ServiceCollector(getElement().getProject());
-        collector.addCollectorSource(ContainerCollectionResolver.Source.COMPILER);
-
-        if(this.useIndexedServices) {
-            collector.addCollectorSource(ContainerCollectionResolver.Source.INDEX);
-        }
+        ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
+            .ServiceCollector.create(getElement().getProject());
 
         // Return the PsiElement for the class corresponding to the serviceId
         String serviceClass = collector.resolve(serviceId);
@@ -51,12 +46,8 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
 
         List<LookupElement> results = new ArrayList<LookupElement>();
 
-        ContainerCollectionResolver.ServiceCollector collector = new ContainerCollectionResolver.ServiceCollector(getElement().getProject());
-        collector.addCollectorSource(ContainerCollectionResolver.Source.COMPILER);
-
-        if(this.useIndexedServices) {
-            collector.addCollectorSource(ContainerCollectionResolver.Source.INDEX);
-        }
+        ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
+            .ServiceCollector.create(getElement().getProject());
 
         Collection<ContainerService> values = collector.getServices().values();
 

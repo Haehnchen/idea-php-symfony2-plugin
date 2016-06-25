@@ -78,6 +78,7 @@ public class ContainerService {
         return isPrivate;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
