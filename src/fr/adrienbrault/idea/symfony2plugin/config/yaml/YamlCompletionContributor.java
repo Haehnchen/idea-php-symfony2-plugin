@@ -93,6 +93,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("resource", "(string)");
         put("prefix", "(string)");
         put("schemes", "(array|string)");
+        put("host", "(string)");
     }});
 
     public YamlCompletionContributor() {
