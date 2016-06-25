@@ -11,7 +11,7 @@ Plugin url: https://plugins.jetbrains.com/plugin/7219
 Install
 ---------------------
 * Install the plugin by going to `Settings -> Plugins -> Browse repositories` and then search for `Symfony`.
-* Enabled it per project (File > Settings > Symfony2 Plugin )
+* Enabled it per project (File -> Settings -> Languages & Framework -> PHP -> Symfony)
 * Install [Php Annotation](http://plugins.jetbrains.com/plugin/7320) plugin to enjoy all the annotation stuff
 * Plugin needs a valid PhpStorm indexer, use "File > Invalidate Caches / Restart" if something crazy is going on
 

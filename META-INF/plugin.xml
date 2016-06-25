@@ -13,7 +13,7 @@
 <h2>Install</h2>
 
 <ul>
-    <li>Activate plugin per project in "File -> Settings -> Languages & Framework -> Symfony" or use auto configuration notification</li>
+    <li>Activate plugin per project in "File -> Settings -> Languages & Framework -> PHP -> Symfony" or use auto configuration notification</li>
     <li>(Optional) Configure a default project connection in "Remote Hosts Access / Remote Hosts" to enable support for remote files in plugin settings</li>
     <li>(Optional) Ignore Symfony "cache" directory because of duplicate classes "Settings -> Project -> Directories"</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
@@ -356,7 +356,7 @@
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
                              displayName="Symfony"
                              id="Symfony2.SettingsForm"
-                             groupId="language"
+                             parentId="reference.webide.settings.project.settings.php"
                              nonDefaultProject="true"
                 />
 
