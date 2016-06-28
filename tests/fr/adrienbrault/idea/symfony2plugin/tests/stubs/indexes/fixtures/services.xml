@@ -2,6 +2,16 @@
 
     <parameters>
         <parameter key="foo_xml_parameter">foo</parameter>
+        <parameter key="foo_xml_parameter_empty"/>
+        <parameter key="foo_xml_parameter_UPPER"/>
+
+        <parameter key="foo_xml_parameter_empty.collection" type="collection">
+           <parameter key="json">false</parameter>
+        </parameter>
+
+        <parameter key="foo_xml_parameter_empty.collection_invalid" type="collection_invalid">
+            <parameter key="json">false</parameter>
+        </parameter>
     </parameters>
 
     <services>

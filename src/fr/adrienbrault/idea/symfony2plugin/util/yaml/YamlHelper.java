@@ -106,7 +106,7 @@ public class YamlHelper {
     private static class YamlLocalServiceMap {
 
         public Map<String, String> getLocalParameterMap(PsiFile psiFile) {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
 
             for(YAMLKeyValue yamlParameterArray: getQualifiedKeyValuesInFile((YAMLFile) psiFile, "parameters")) {
                 String keyName = yamlParameterArray.getKeyText();
@@ -114,18 +114,20 @@ public class YamlHelper {
                     continue;
                 }
 
+                // extract parameter value
+                String textValue = null;
                 PsiElement value = yamlParameterArray.getValue();
-                if(value != null) {
-                    String valueText = value.getText();
-                    if(StringUtils.isNotBlank(valueText)) {
-                        map.put(keyName.toLowerCase(), PsiElementUtils.trimQuote(valueText));
+                if(value instanceof YAMLScalar) {
+                    String myTextValue = ((YAMLScalar) value).getTextValue();
+                    if(myTextValue.length() > 0 && myTextValue.length() < 150) {
+                        textValue = myTextValue;
                     }
-
                 }
+
+                map.put(keyName.toLowerCase(), textValue);
             }
 
             return map;
-
         }
 
         @Nullable

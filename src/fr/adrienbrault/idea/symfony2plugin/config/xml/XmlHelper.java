@@ -350,10 +350,17 @@ public class XmlHelper {
 
                                         String parameterValue = null;
 
-                                        XmlAttribute typeAttr = parameterTag.getAttribute("type");
-                                        if(typeAttr == null || !"collection".equals(typeAttr.getValue())) {
+                                        String typeAttr = parameterTag.getAttributeValue("type");
+
+                                        // get value of parameter if we have a text value
+                                        if(!"collection".equals(typeAttr) && parameterTag.getSubTags().length == 0) {
                                             XmlTagValue attrClass = parameterTag.getValue();
-                                            parameterValue = attrClass.getText();
+                                            String myParameterValue = attrClass.getText();
+
+                                            // dont index long values
+                                            if(myParameterValue.length() < 150) {
+                                                parameterValue = myParameterValue;
+                                            }
                                         }
 
                                         services.put(parameterName.toLowerCase(), parameterValue);

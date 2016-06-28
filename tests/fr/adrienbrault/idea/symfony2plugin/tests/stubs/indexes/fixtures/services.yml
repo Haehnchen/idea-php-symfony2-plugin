@@ -1,5 +1,11 @@
 parameters:
+    foo_yaml_parameter_empty:
     foo_yaml_parameter: "foo"
+    foo_yaml_parameter_UPPER: "foo"
+    foo_yaml_parameter_collection: ['aaaa']
+    foo_yaml_parameter_collection_sequence:
+      - foo
+      - goo
 
 services:
     foo.yml_id:

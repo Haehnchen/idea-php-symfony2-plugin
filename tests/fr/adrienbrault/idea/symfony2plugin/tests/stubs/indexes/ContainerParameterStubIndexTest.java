@@ -25,10 +25,41 @@ public class ContainerParameterStubIndexTest extends SymfonyLightCodeInsightFixt
     public void testThatParameterOfYamlFileIsInIndex() {
         assertIndexContains(ContainerParameterStubIndex.KEY, "foo_yaml_parameter");
         assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_yaml_parameter", "foo");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_upper", "foo");
+
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_empty");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_empty", "");
+    }
+
+    public void testThatParameterOfYamlInCollectionValueIsBlank() {
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_collection");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_collection", "");
+
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_collection_sequence");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_yaml_parameter_collection_sequence", "");
     }
 
     public void testThatParameterOfXmlFileIsInIndex() {
         assertIndexContains(ContainerParameterStubIndex.KEY, "foo_xml_parameter");
         assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_xml_parameter", "foo");
+    }
+
+    public void testThatParameteOfXmlWithoutValueIsIndexedWithBlankString() {
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_xml_parameter_empty");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_xml_parameter_empty", "");
+    }
+
+    public void testThatParameterOfXmlWithCollectionValueIsIndexedWithBlankString() {
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_xml_parameter_empty.collection");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_xml_parameter_empty.collection", "");
+    }
+
+    public void testThatParameterOfXmlConvertedToLowerCase() {
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_xml_parameter_upper");
+    }
+
+    public void testThatParameterOfXmlWithCollectionInvalidValueIsIndexedWithBlankString() {
+        assertIndexContains(ContainerParameterStubIndex.KEY, "foo_xml_parameter_empty.collection_invalid");
+        assertIndexContainsKeyWithValue(ContainerParameterStubIndex.KEY, "foo_xml_parameter_empty.collection_invalid", "");
     }
 }
