@@ -84,12 +84,12 @@ abstract public class SymfonyInstallerCommandExecutor {
                 }
 
                 catch (ExecutionException e) {
-                    onError(e.getMessage());
+                    SymfonyInstallerCommandExecutor.this.onError(e.getMessage());
                     return;
                 }
 
                 if(cancelledByUser) {
-                    onError("Checkout canceled");
+                    SymfonyInstallerCommandExecutor.this.onError("Checkout canceled");
                     return;
                 }
 
@@ -101,7 +101,7 @@ abstract public class SymfonyInstallerCommandExecutor {
                         message = "The unexpected happens...";
                     }
 
-                    onError(message);
+                    SymfonyInstallerCommandExecutor.this.onError(message);
                     return;
                 }
 
@@ -111,11 +111,11 @@ abstract public class SymfonyInstallerCommandExecutor {
                     FileUtil.copyDirContent(fromDir, new File(baseDir.getPath()));
                     FileUtil.delete(fromDir);
                 } catch (IOException e) {
-                    onError(e.getMessage());
+                    SymfonyInstallerCommandExecutor.this.onError(e.getMessage());
                     return;
                 }
 
-                onFinish(SymfonyInstallerUtil.extractSuccessMessage(output));
+                SymfonyInstallerCommandExecutor.this.onFinish(SymfonyInstallerUtil.extractSuccessMessage(output));
             }
         };
 
