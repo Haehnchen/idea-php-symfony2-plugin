@@ -7,7 +7,10 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -16,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -63,6 +67,10 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             psiElements.addAll(Arrays.asList((parameterGoToDeclaration(psiElement, psiText))));
         }
 
+        if(psiText.startsWith("!php/const:")) {
+            psiElements.addAll(constantGoto(psiElement, psiText));
+        }
+
         if(psiText.contains("\\")) {
             psiElements.addAll(classGoToDeclaration(psiElement, psiText)) ;
         }
@@ -78,7 +86,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
-    protected Collection<PsiElement> classGoToDeclaration(PsiElement psiElement, String className) {
+    private Collection<PsiElement> classGoToDeclaration(PsiElement psiElement, String className) {
 
         Collection<PsiElement> psiElements = new HashSet<PsiElement>();
 
@@ -104,7 +112,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return psiElements;
     }
 
-    protected PsiElement[] serviceGoToDeclaration(PsiElement psiElement, String serviceId) {
+    private PsiElement[] serviceGoToDeclaration(PsiElement psiElement, String serviceId) {
 
         serviceId = YamlHelper.trimSpecialSyntaxServiceName(serviceId).toLowerCase();
 
@@ -123,7 +131,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     }
 
-    protected PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
+    private PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
 
         if(!YamlHelper.isValidParameterName(psiParameterName)) {
             return new PsiElement[0];
@@ -133,8 +141,29 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return targets.toArray(new PsiElement[targets.size()]);
     }
 
-    protected List<PsiFile> templateGoto(PsiElement psiElement, String templateName) {
+    private List<PsiFile> templateGoto(PsiElement psiElement, String templateName) {
         return Arrays.asList(TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName));
+    }
+
+    private Collection<PsiElement> constantGoto(@NotNull PsiElement psiElement, @NotNull String tagName) {
+        String constantName = tagName.substring(11);
+
+        if(!constantName.contains(":")) {
+            return new ArrayList<>(PhpIndex.getInstance(psiElement.getProject()).getConstantsByFQN(constantName));
+        }
+
+        constantName = constantName.replaceAll(":+", ":");
+        String[] split = constantName.split(":");
+
+        Collection<PsiElement> psiElements = new ArrayList<>();
+        for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(psiElement.getProject(), split[0])) {
+            Field fieldByName = phpClass.findFieldByName(split[1], true);
+            if(fieldByName != null && fieldByName.isConstant()) {
+                psiElements.add(fieldByName);
+            }
+        }
+
+        return psiElements;
     }
 
     @Nullable

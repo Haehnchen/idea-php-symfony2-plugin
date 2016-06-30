@@ -18,7 +18,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.xml"));
+        myFixture.copyFileToProject("services.xml");
+        myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
     }
 
     public String getTestDataPath() {
@@ -69,6 +70,18 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         assertNavigationMatch(YAMLFileType.YML, "bar: \"@f<caret>oo\"", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: \"@?f<caret>oo=\"", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: \"@?f<caret>oo\"", getClassPattern());
+    }
+
+    public void testPhpConstantNavigation() {
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:\\YAML_<caret>FOO_BAR");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:YAML_<caret>FOO_BAR");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:Yaml\\Foo\\Bar::YAML_FOO_BAR<caret>_CLASS");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:Yaml\\Foo\\Bar::::YAML_FOO_BAR<caret>_CLASS");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:Yaml\\Foo\\Bar:YAML_FOO_BAR<caret>_CLASS");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:\\Yaml\\Foo\\Bar:YAML_FOO_BAR<caret>_CLASS");
+
+        assertNavigationMatch(YAMLFileType.YML, "bar: \"!php/const:\\YAML_<caret>FOO_BAR\"");
+        assertNavigationMatch(YAMLFileType.YML, "bar: '!php/const:\\YAML_<caret>FOO_BAR'");
     }
 
     public void testParameter() {
