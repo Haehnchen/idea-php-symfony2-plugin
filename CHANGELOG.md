@@ -7,6 +7,16 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.122
+* Service generator should close on escape key event
+* Fix nullable condition on service container builder #754
+* Fix yaml does not autocomplete route host option #756
+* Settings for the plugin may be better placed inside the PHP group, like other frameworks #735
+* EAP: Fix nullable value index for container parameter #737
+* Fix possible memory leaks in settings because of project reference
+* Add navigation for yaml constant "!php/const:" syntax
+* Internally: Dropped all container service source, just one collection now
+
 ### 0.12.121
 * Add support for decorator inner services #510
 * Fix NPE exception in RouteHelper #750

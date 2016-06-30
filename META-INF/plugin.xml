@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.121</version>
+    <version>0.12.122</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,18 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.122</h2>
+<ul>
+    <li>Service generator should close on escape key event</li>
+    <li>Fix nullable condition on service container builder <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/754">#754</a></li>
+    <li>Fix yaml does not autocomplete route host option <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/756">#756</a></li>
+    <li>Settings for the plugin may be better placed inside the PHP group, like other frameworks <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/735">#735</a></li>
+    <li>EAP: Fix nullable value index for container parameter <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/737">#737</a></li>
+    <li>Fix possible memory leaks in settings because of project reference</li>
+    <li>Add navigation for yaml constant "!php/const:" syntax</li>
+    <li>Internally: Dropped all container service source, just one collection now</li>
+</ul>
+
 <h2>0.12.121</h2>
 <ul>
     <li>Add support for decorator inner services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/510">#510</a></li>
