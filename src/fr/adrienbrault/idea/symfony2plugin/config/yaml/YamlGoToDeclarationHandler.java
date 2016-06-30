@@ -7,6 +7,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -21,7 +22,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
@@ -43,20 +43,26 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        // only string values like "foo", foo
-        if (!PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)
-            && !PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).withLanguage(YAMLLanguage.INSTANCE).accepts(psiElement)) {
+        List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
-            return new PsiElement[]{};
+        // yaml Plugin BC: "!php/const:" is a tag
+        IElementType elementType = psiElement.getNode().getElementType();
+        if(elementType == YAMLTokenTypes.TAG) {
+            String psiText = PsiElementUtils.getText(psiElement);
+            if(psiText != null && psiText.length() > 0 && psiText.startsWith("!php/const:")) {
+                psiElements.addAll(constantGoto(psiElement, psiText));
+            }
+        }
+
+        // only string values like "foo", foo
+        if (elementType != YAMLTokenTypes.TEXT && elementType != YAMLTokenTypes.SCALAR_DSTRING && elementType != YAMLTokenTypes.SCALAR_STRING) {
+            return psiElements.toArray(new PsiElement[psiElements.size()]);
         }
 
         String psiText = PsiElementUtils.getText(psiElement);
         if(null == psiText || psiText.length() == 0) {
-            return new PsiElement[]{};
+            return psiElements.toArray(new PsiElement[psiElements.size()]);
         }
-
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
 
         if(psiText.startsWith("@") && psiText.length() > 1) {
             psiElements.addAll(Arrays.asList((serviceGoToDeclaration(psiElement, psiText.substring(1)))));
