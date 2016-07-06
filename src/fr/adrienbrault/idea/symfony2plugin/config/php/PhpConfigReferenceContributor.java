@@ -36,6 +36,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findDefinition")
+            .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "removeDefinition")
         );
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
