@@ -3,11 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributorParameter;
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderAbstract;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
+import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderArguments;
+import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderInterface;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
@@ -25,7 +28,7 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ServiceToolboxProvider extends PhpToolboxProviderAbstract {
+public class ServiceToolboxProvider extends PhpToolboxProviderAbstract implements PhpToolboxTypeProviderInterface {
 
     @NotNull
     @Override
@@ -93,5 +96,18 @@ public class ServiceToolboxProvider extends PhpToolboxProviderAbstract {
                 };
             }
         };
+    }
+
+    @Nullable
+    @Override
+    public Collection<PhpNamedElement> resolveParameter(@NotNull PhpToolboxTypeProviderArguments arguments) {
+        PhpClass serviceClass = ServiceUtil.getServiceClass(arguments.getProject(), arguments.getParameter());
+        if(serviceClass == null) {
+            return null;
+        }
+
+        return new ArrayList<PhpNamedElement>(){{
+            add(serviceClass);
+        }};
     }
 }
