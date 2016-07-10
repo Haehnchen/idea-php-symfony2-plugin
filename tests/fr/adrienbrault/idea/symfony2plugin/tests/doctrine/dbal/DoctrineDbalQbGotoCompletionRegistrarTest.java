@@ -66,17 +66,6 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
-     */
-    public void testNotDBALTableNameCompletion() {
-        assertCompletionNotContains(PhpFileType.INSTANCE, "<?php" +
-                "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
-                "$foo->delete('<caret>');",
-            "cms_users"
-        );
-    }
-
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
     */
     public void testDBALConnectionTableNameCompletion() {
         for (String s : new String[]{"insert", "update"}) {
