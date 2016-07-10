@@ -193,6 +193,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "update")
             .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "insert")
             .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "from")
+            .withSignature("Doctrine\\DBAL\\Query\\QueryBuilder", "delete")
             .withSignature("Doctrine\\DBAL\\Connection", "insert")
             .withSignature("Doctrine\\DBAL\\Connection", "update")
             .match();

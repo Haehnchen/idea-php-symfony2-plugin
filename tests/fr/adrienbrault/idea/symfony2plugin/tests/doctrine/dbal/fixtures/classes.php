@@ -7,6 +7,7 @@ namespace Doctrine\DBAL\Query
         public function update();
         public function insert();
         public function from();
+        public function delete();
 
         public function innerJoin();
         public function leftJoin();

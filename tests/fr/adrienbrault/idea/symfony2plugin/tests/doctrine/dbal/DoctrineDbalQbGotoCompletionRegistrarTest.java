@@ -28,7 +28,7 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
      */
     public void testDBALTableNameCompletion() {
 
-        for (String s : new String[]{"update", "insert", "from"}) {
+        for (String s : new String[]{"update", "insert", "from", "delete"}) {
             assertCompletionContains(PhpFileType.INSTANCE, "<?php" +
                     "/** @var $foo \\Doctrine\\DBAL\\Query\\QueryBuilder */\n" +
                     "$foo->" + s + "('<caret>');",
