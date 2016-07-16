@@ -107,7 +107,7 @@ public class PhpTypeProviderUtil {
     @NotNull
     public static Collection<? extends PhpNamedElement> mergeSignatureResults(@NotNull Collection<? extends PhpNamedElement> phpNamedElements, final @NotNull PhpNamedElement phpNamed) {
 
-        Collection<PhpNamedElement> result = new ArrayList<PhpNamedElement>();
+        Collection<PhpNamedElement> result = new ArrayList<>();
         result.add(phpNamed);
 
         // invalidate state; we dont know what to do
@@ -162,7 +162,7 @@ public class PhpTypeProviderUtil {
             return phpIndex.getBySignature(signature, null, 0);
         }
 
-        Collection<PhpNamedElement> elements = new ArrayList<PhpNamedElement>();
+        Collection<PhpNamedElement> elements = new ArrayList<>();
         for (String s : signature.split("\\|")) {
             elements.addAll(phpIndex.getBySignature(s, null, 0));
         }

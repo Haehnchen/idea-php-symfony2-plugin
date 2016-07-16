@@ -74,7 +74,7 @@ public class DoctrineUtil {
             return null;
         }
 
-        Collection<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+        Collection<Pair<String, String>> pairs = new ArrayList<>();
 
         for (XmlTag xmlTag : (XmlTag[]) ArrayUtils.addAll(rootTag.findSubTags("document"), rootTag.findSubTags("entity"))) {
 
@@ -114,7 +114,7 @@ public class DoctrineUtil {
     @Nullable
     private static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PhpFile phpFile) {
 
-        final Collection<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+        final Collection<Pair<String, String>> pairs = new ArrayList<>();
 
         phpFile.acceptChildren(new AnnotationElementWalkingVisitor(new Processor<PhpDocTag>() {
             @Override
@@ -185,7 +185,7 @@ public class DoctrineUtil {
             return null;
         }
 
-        Collection<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+        Collection<Pair<String, String>> pairs = new ArrayList<>();
 
         for (YAMLKeyValue yamlKey : ((YAMLMapping) topLevelValue).getKeyValues()) {
             String keyText = yamlKey.getKeyText();

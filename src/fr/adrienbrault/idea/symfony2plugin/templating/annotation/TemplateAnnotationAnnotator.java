@@ -40,7 +40,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
         }
 
         String tagValue = phpDocAttrList.getText();
-        Collection<String> templateNames = new HashSet<String>();
+        Collection<String> templateNames = new HashSet<>();
 
         // @Template("FooBundle:Folder:foo.html.twig")
         // @Template("FooBundle:Folder:foo.html.twig", "asdas")

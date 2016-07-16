@@ -8,12 +8,12 @@ import java.util.*;
 
 public class QueryBuilderScopeContext {
 
-    final private Set<String> parameters = new HashSet<String>();
-    final private Set<String> selects = new HashSet<String>();
-    final private Map<String, String> tableMap = new HashMap<String, String>();
-    final private Map<String, QueryBuilderJoin> joinMap = new HashMap<String, QueryBuilderJoin>();
-    final private Map<String, List<QueryBuilderRelation>> relationMap = new HashMap<String, List<QueryBuilderRelation>>();
-    final private Map<String, QueryBuilderPropertyAlias> propertyAliasMap = new HashMap<String, QueryBuilderPropertyAlias>();
+    final private Set<String> parameters = new HashSet<>();
+    final private Set<String> selects = new HashSet<>();
+    final private Map<String, String> tableMap = new HashMap<>();
+    final private Map<String, QueryBuilderJoin> joinMap = new HashMap<>();
+    final private Map<String, List<QueryBuilderRelation>> relationMap = new HashMap<>();
+    final private Map<String, QueryBuilderPropertyAlias> propertyAliasMap = new HashMap<>();
 
     public void addParameter(String parameterName) {
         this.parameters.add(parameterName);

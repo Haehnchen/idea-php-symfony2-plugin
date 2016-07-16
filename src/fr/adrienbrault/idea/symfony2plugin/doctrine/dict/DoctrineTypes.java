@@ -12,7 +12,7 @@ final public class DoctrineTypes {
     }
 
     public static Map<Manager, String> getManagerInstanceMap() {
-        Map<Manager, String> managerMap = new HashMap<Manager, String>();
+        Map<Manager, String> managerMap = new HashMap<>();
         managerMap.put(Manager.ORM, "\\Doctrine\\ORM\\EntityManager");
         managerMap.put(Manager.MONGO_DB, "\\Doctrine\\ODM\\MongoDB\\DocumentManager");
         managerMap.put(Manager.COUCH_DB, "\\Doctrine\\ODM\\CouchDB\\DocumentManager");

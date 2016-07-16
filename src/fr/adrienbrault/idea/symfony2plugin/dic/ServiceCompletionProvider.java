@@ -57,7 +57,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
     public static LookupResult getLookupElements(@Nullable PsiElement element, @NotNull Collection<ContainerService> services) {
 
         // collect instance to highlight services
-        Collection<String> servicesForInstance = new HashSet<String>();
+        Collection<String> servicesForInstance = new HashSet<>();
 
         if(element != null) {
             for (ServiceSuggestionCollector collector : COLLECTORS) {

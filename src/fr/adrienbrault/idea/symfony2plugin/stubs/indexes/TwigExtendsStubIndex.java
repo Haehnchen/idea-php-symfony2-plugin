@@ -37,7 +37,7 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
             @NotNull
             @Override
             public Map<String, Void> map(@NotNull FileContent inputData) {
-                Map<String, Void> map = new THashMap<String, Void>();
+                Map<String, Void> map = new THashMap<>();
 
                 PsiFile psiFile = inputData.getPsiFile();
                 if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {

@@ -29,7 +29,7 @@ public class TwigToolboxProvider implements PhpToolboxProviderInterface {
     @NotNull
     @Override
     public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
-        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        Collection<PsiElement> psiElements = new HashSet<>();
         Collections.addAll(psiElements, TwigHelper.getTemplatePsiElements(parameter.getProject(), parameter.getContents()));
         return psiElements;
     }

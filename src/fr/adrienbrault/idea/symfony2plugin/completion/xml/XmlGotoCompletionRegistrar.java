@@ -55,7 +55,7 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> targets = new ArrayList<PsiElement>();
+            Collection<PsiElement> targets = new ArrayList<>();
 
             targets.addAll(FileResourceUtil.getFileResourceTargetsInBundleScope(element.getProject(), xmlAttributeValue));
             targets.addAll(FileResourceUtil.getFileResourceTargetsInBundleDirectory(element.getProject(), xmlAttributeValue));

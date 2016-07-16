@@ -45,7 +45,7 @@ public class ServiceBuilder {
 
     @Nullable
     public String build(OutputType outputType, String className, String serviceName) {
-        HashMap<String, ArrayList<MethodParameter.MethodModelParameter>> methods = new HashMap<String, ArrayList<MethodParameter.MethodModelParameter>>();
+        HashMap<String, ArrayList<MethodParameter.MethodModelParameter>> methods = new HashMap<>();
 
         for(MethodParameter.MethodModelParameter methodModelParameter: this.methodModelParameter) {
 
@@ -57,7 +57,7 @@ public class ServiceBuilder {
             if(methods.containsKey(methodModelParameter.getName())) {
                 methods.get(methodName).add(methodModelParameter);
             } else {
-                methods.put(methodName, new ArrayList<MethodParameter.MethodModelParameter>(Arrays.asList(methodModelParameter)));
+                methods.put(methodName, new ArrayList<>(Arrays.asList(methodModelParameter)));
             }
         }
 
@@ -75,7 +75,7 @@ public class ServiceBuilder {
     @Nullable
     private List<String> getParameters(List<MethodParameter.MethodModelParameter> methodModelParameters) {
         boolean hasCall = false;
-        ArrayList<String> methodCalls = new ArrayList<String>();
+        ArrayList<String> methodCalls = new ArrayList<>();
 
         // sort by indexes parameter
         Collections.sort(methodModelParameters, new Comparator<MethodParameter.MethodModelParameter>() {
@@ -242,7 +242,7 @@ public class ServiceBuilder {
     private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
 
         final String indent = "\t";
-        final List<String> lines = new ArrayList<String>();
+        final List<String> lines = new ArrayList<>();
 
         String classAsParameter = getClassAsParameter(className);
 
@@ -259,7 +259,7 @@ public class ServiceBuilder {
             methods.remove("__construct");
         }
 
-        List<String> calls = new ArrayList<String>();
+        List<String> calls = new ArrayList<>();
         for(Map.Entry<String, ArrayList<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
             List<String> parameters = getParameters(entry.getValue());
             if(parameters != null) {
@@ -292,7 +292,7 @@ public class ServiceBuilder {
             return;
         }
 
-        List<ServiceTag> serviceTags = new ArrayList<ServiceTag>();
+        List<ServiceTag> serviceTags = new ArrayList<>();
         for (String tag : ServiceUtil.getPhpClassServiceTags(phpClass)) {
             ServiceTag serviceTag = new ServiceTag(phpClass, tag);
             ServiceUtil.decorateServiceTag(serviceTag);
@@ -309,7 +309,7 @@ public class ServiceBuilder {
     private List<String> formatYamlService(List<String> parameters) {
 
         // append yaml syntax, more will follow...
-        List<String> yamlSyntaxParameters = new ArrayList<String>();
+        List<String> yamlSyntaxParameters = new ArrayList<>();
         for(String parameter: parameters) {
             yamlSyntaxParameters.add(String.format("'@%s'", parameter));
         }

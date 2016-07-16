@@ -9,7 +9,7 @@ public class StaticVariableCollector implements TwigFileVariableCollector {
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-        variables.put("app",  new HashSet<String>(Arrays.asList("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables")));
+        variables.put("app", new HashSet<>(Arrays.asList("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\GlobalVariables")));
     }
 
 }

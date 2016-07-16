@@ -158,7 +158,7 @@ public class PsiElementUtils {
     public static <T extends PsiElement> Collection<T> getNextSiblingOfTypes(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {
         if (sibling == null) return Collections.emptySet();
 
-        Collection<T> foo = new ArrayList<T>();
+        Collection<T> foo = new ArrayList<>();
         for (PsiElement child = sibling.getNextSibling(); child != null; child = child.getNextSibling()) {
             if (pattern.accepts(child)) {
                 //noinspection unchecked
@@ -207,7 +207,7 @@ public class PsiElementUtils {
     @NotNull
     public static <T extends PsiElement> Collection<T> getChildrenOfTypeAsList(@Nullable PsiElement element, ElementPattern<T> pattern) {
 
-        Collection<T> collection = new ArrayList<T>();
+        Collection<T> collection = new ArrayList<>();
 
         if (element == null) {
             return collection;
@@ -314,7 +314,7 @@ public class PsiElementUtils {
 
     public static <T extends PsiElement> List<T> getPrevSiblingsOfType(@Nullable PsiElement sibling, ElementPattern<T> pattern) {
 
-        List<T> elements = new ArrayList<T>();
+        List<T> elements = new ArrayList<>();
 
         if (sibling == null) return null;
         for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
@@ -342,7 +342,7 @@ public class PsiElementUtils {
     @NotNull
     public static Collection<PsiFile> convertVirtualFilesToPsiFiles(@NotNull Project project, @NotNull Collection<VirtualFile> files) {
 
-        Collection<PsiFile> psiFiles = new HashSet<PsiFile>();
+        Collection<PsiFile> psiFiles = new HashSet<>();
 
         PsiManager psiManager = null;
         for (VirtualFile file : files) {

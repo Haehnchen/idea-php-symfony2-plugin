@@ -61,11 +61,11 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         public Collection<LookupElement> getLookupElements() {
 
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            Collection<LookupElement> lookupElements = new ArrayList<>();
 
             Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(getElement().getProject());
             List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).withSelfBlocks(true).walk(getElement().getContainingFile());
-            List<String> uniqueList = new ArrayList<String>();
+            List<String> uniqueList = new ArrayList<>();
             for (TwigBlock block : blocks) {
                 if(!uniqueList.contains(block.getName())) {
                     uniqueList.add(block.getName());

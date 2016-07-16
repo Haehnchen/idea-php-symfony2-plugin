@@ -25,7 +25,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
+        List<ResolveResult> resolveResults = new ArrayList<>();
 
         ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
             .ServiceCollector.create(getElement().getProject());
@@ -44,7 +44,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
 
         ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
             .ServiceCollector.create(getElement().getProject());

@@ -26,7 +26,7 @@ import java.util.List;
 public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
 
     final static char TRIM_KEY = '\u0181';
-    private static final ExtensionPointName<MethodSignatureTypeProviderExtension> EXTENSIONS = new ExtensionPointName<MethodSignatureTypeProviderExtension>("fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension");
+    private static final ExtensionPointName<MethodSignatureTypeProviderExtension> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension");
 
     @Override
     public char getKey() {
@@ -41,7 +41,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        List<MethodSignatureSetting> signatures = new ArrayList<MethodSignatureSetting>();
+        List<MethodSignatureSetting> signatures = new ArrayList<>();
 
         // get user defined settings
         if(Settings.getInstance(e.getProject()).objectSignatureTypeProvider) {
@@ -105,7 +105,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
 
     private ArrayList<MethodSignatureSetting> getSignatureSetting(String methodName, List<MethodSignatureSetting> methodSignatureSettingList) {
 
-        ArrayList<MethodSignatureSetting> matchedSignatures = new ArrayList<MethodSignatureSetting>();
+        ArrayList<MethodSignatureSetting> matchedSignatures = new ArrayList<>();
 
         for(MethodSignatureSetting methodSignatureSetting: methodSignatureSettingList) {
             if(methodSignatureSetting.getMethodName().equals(methodName)) {
@@ -145,7 +145,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        ArrayList<PhpNamedElement> phpNamedElements = new ArrayList<>();
         phpNamedElements.add(phpNamedElement);
 
         PhpTypeSignatureInterface[] signatureTypeProviders = PhpTypeSignatureTypes.DEFAULT_PROVIDER;
@@ -167,7 +167,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider2 {
         }
 
         // not good but we need return any previous types: null clears all types
-        return new ArrayList<PhpNamedElement>(phpNamedElements);
+        return new ArrayList<>(phpNamedElements);
     }
 
 }

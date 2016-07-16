@@ -414,7 +414,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         if(endIndex > 0) {
 
             // unique list for equal underscore or camelize
-            Set<String> strings = new HashSet<String>();
+            Set<String> strings = new HashSet<>();
 
             strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length())));
             strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(strings.iterator().next(), true));

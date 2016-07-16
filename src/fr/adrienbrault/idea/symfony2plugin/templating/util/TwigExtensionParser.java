@@ -25,10 +25,10 @@ import java.util.*;
 
 public class TwigExtensionParser  {
 
-    private static final Key<CachedValue<Map<String, TwigExtension>>> FUNCTION_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_FUNCTION");
-    private static final Key<CachedValue<Map<String, TwigExtension>>> TEST_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_TEST");
-    private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_FILTERS");
-    private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<CachedValue<Map<String, TwigExtension>>>("TWIG_EXTENSIONS_OPERATORS");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FUNCTION_CACHE = new Key<>("TWIG_EXTENSIONS_FUNCTION");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> TEST_CACHE = new Key<>("TWIG_EXTENSIONS_TEST");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<>("TWIG_EXTENSIONS_FILTERS");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<>("TWIG_EXTENSIONS_OPERATORS");
 
     private Project project;
 
@@ -151,7 +151,7 @@ public class TwigExtensionParser  {
 
     private Collection<PhpClass> getTwigExtensionClasses() {
 
-        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        Collection<PhpClass> phpClasses = new ArrayList<>();
 
         // only the interface gave use all elements; service container dont hold all
         for(PhpClass phpClass : PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface")) {
@@ -168,7 +168,7 @@ public class TwigExtensionParser  {
     }
 
     private Map<String, TwigExtension> parseFilters(Collection<PhpClass> phpClasses) {
-        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        Map<String, TwigExtension> extensions = new HashMap<>();
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getFilters");
             if(method != null) {
@@ -180,7 +180,7 @@ public class TwigExtensionParser  {
     }
 
     private Map<String, TwigExtension> parseFunctions(Collection<PhpClass> phpClasses) {
-        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        Map<String, TwigExtension> extensions = new HashMap<>();
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getFunctions");
             if(method != null) {
@@ -192,7 +192,7 @@ public class TwigExtensionParser  {
     }
 
     private Map<String, TwigExtension> parseTests(Collection<PhpClass> phpClasses) {
-        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        Map<String, TwigExtension> extensions = new HashMap<>();
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getTests");
             if(method != null) {
@@ -204,7 +204,7 @@ public class TwigExtensionParser  {
     }
 
     private Map<String, TwigExtension> parseOperators(Collection<PhpClass> phpClasses) {
-        Map<String, TwigExtension> extensions = new HashMap<String, TwigExtension>();
+        Map<String, TwigExtension> extensions = new HashMap<>();
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getOperators");
             if(method != null) {
@@ -219,7 +219,7 @@ public class TwigExtensionParser  {
 
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<String, TwigExtension>();
+            return new HashMap<>();
         }
 
         method.acceptChildren(new TwigFunctionVisitor(method, filters, containingClass));
@@ -274,7 +274,7 @@ public class TwigExtensionParser  {
 
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<String, TwigExtension>();
+            return new HashMap<>();
         }
 
         method.acceptChildren(new TwigFilterVisitor(method, filters, containingClass));
@@ -286,7 +286,7 @@ public class TwigExtensionParser  {
 
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<String, TwigExtension>();
+            return new HashMap<>();
         }
 
         /*
@@ -343,7 +343,7 @@ public class TwigExtensionParser  {
 
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<String, TwigExtension>();
+            return new HashMap<>();
         }
 
         method.acceptChildren(new TwigSimpleTestVisitor(filters));

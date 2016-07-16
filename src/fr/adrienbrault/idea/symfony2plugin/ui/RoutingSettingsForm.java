@@ -48,9 +48,9 @@ public class RoutingSettingsForm implements Configurable {
     public RoutingSettingsForm(@NotNull Project project) {
 
         this.project = project;
-        this.tableView = new TableView<RoutingFile>();
+        this.tableView = new TableView<>();
 
-        this.modelList = new ListTableModel<RoutingFile>(
+        this.modelList = new ListTableModel<>(
             new UiPathColumnInfo.PathColumn(),
             new UiPathColumnInfo.TypeColumn(project)
         );
@@ -181,7 +181,7 @@ public class RoutingSettingsForm implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<RoutingFile> containerFiles = new ArrayList<RoutingFile>();
+        List<RoutingFile> containerFiles = new ArrayList<>();
 
         for(RoutingFile containerFile :this.tableView.getListTableModel().getItems()) {
             containerFiles.add(new RoutingFile(containerFile.getPath()));

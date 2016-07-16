@@ -29,7 +29,7 @@ public class DoctrineYamlAnnotationLookupBuilder extends CompletionProvider<Comp
 
     public static Set<String> getAnnotations(Project project, String className) {
 
-        HashSet<String> map = new HashSet<String>();
+        HashSet<String> map = new HashSet<>();
 
         PhpClass phpClass = PhpElementsUtil.getClass(project, className);
         if(phpClass == null) {

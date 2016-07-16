@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EntityNamesServiceParser extends AbstractServiceParser {
 
 
-    protected Map<String, String> entityNameMap = new ConcurrentHashMap<String, String>();
+    protected Map<String, String> entityNameMap = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {

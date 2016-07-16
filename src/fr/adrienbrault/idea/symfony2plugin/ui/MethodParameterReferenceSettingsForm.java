@@ -40,8 +40,8 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
     public MethodParameterReferenceSettingsForm(Project project) {
         this.project = project;
 
-        this.tableView = new TableView<MethodParameterSetting>();
-        this.modelList = new ListTableModel<MethodParameterSetting>(
+        this.tableView = new TableView<>();
+        this.modelList = new ListTableModel<>(
             new CallToColumn(),
             new MethodColumn(),
             new IndexColumn(),
@@ -134,7 +134,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+        List<MethodParameterSetting> methodParameterSettings = new ArrayList<>();
 
         for(MethodParameterSetting methodParameterSetting :this.tableView.getListTableModel().getItems()) {
             methodParameterSettings.add(methodParameterSetting);

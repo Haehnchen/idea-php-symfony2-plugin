@@ -226,7 +226,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @Override
         public Collection<LookupElement> getLookupElements() {
 
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            Collection<LookupElement> lookupElements = new ArrayList<>();
 
             if(options.contains(FormOption.EXTENSION)) {
                 lookupElements.addAll(FormOptionsUtil.getFormExtensionKeysLookupElements(getElement().getProject(), this.formType));
@@ -248,7 +248,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> targets = new ArrayList<PsiElement>();
+            Collection<PsiElement> targets = new ArrayList<>();
 
             if(options.contains(FormOption.EXTENSION)) {
                 targets.addAll(FormOptionsUtil.getFormExtensionsKeysTargets((StringLiteralExpression) element, this.formType));

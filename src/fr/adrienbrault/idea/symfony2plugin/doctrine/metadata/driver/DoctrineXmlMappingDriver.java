@@ -35,7 +35,7 @@ public class DoctrineXmlMappingDriver implements DoctrineMappingDriverInterface 
             return null;
         }
 
-        Collection<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
+        Collection<DoctrineModelField> fields = new ArrayList<>();
         DoctrineMetadataModel model = new DoctrineMetadataModel(fields);
 
         for (XmlTag xmlTag : rootTag.getSubTags()) {

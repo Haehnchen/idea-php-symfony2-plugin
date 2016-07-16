@@ -81,7 +81,7 @@ public class WebTestCaseGeneratorAction extends AbstractProjectDumbAwareAction {
             protected void run(@NotNull Result result) throws Throwable {
                 PsiElement file = null;
                 try {
-                    file = PhpBundleFileFactory.createBundleFile(phpClass, "web_test_case", className, new HashMap<String, String>());
+                    file = PhpBundleFileFactory.createBundleFile(phpClass, "web_test_case", className, new HashMap<>());
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
                 }

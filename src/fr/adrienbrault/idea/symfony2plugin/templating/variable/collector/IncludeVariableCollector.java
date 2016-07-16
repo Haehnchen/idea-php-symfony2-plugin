@@ -64,7 +64,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
     private void collectIncludeContextVars(IElementType iElementType, PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
 
         boolean addContextVar = true;
-        Map<String, String> varAliasMap = new HashMap<String, String>();
+        Map<String, String> varAliasMap = new HashMap<>();
 
         if(iElementType == TwigElementTypes.INCLUDE_TAG || iElementType == TwigElementTypes.EMBED_TAG) {
 
@@ -148,11 +148,11 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
             return getVariableAliasMap("{" + group + "}");
         }
 
-        return new HashMap<String, String>();
+        return new HashMap<>();
     }
 
     private static Map<String, String> getVariableAliasMap(String jsonLike) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
 
         String[] parts = jsonLike.replaceAll("^\\{|\\}$","").split("\"?(:|,)(?![^\\{]*\\})\"?");
 
@@ -171,12 +171,12 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     private Collection<VirtualFile> getImplements(TwigFile twigFile) {
 
-        final Set<VirtualFile> targets = new HashSet<VirtualFile>();
+        final Set<VirtualFile> targets = new HashSet<>();
 
         for(String templateName: TwigUtil.getTemplateName(twigFile)) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<String>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
                     targets.add(virtualFile);

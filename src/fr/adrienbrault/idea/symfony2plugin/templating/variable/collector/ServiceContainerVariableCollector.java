@@ -20,7 +20,7 @@ public class ServiceContainerVariableCollector implements TwigFileVariableCollec
             if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
                 String serviceClass = ServiceXmlParserFactory.getInstance(parameter.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(globalVariableEntry.getValue().getValue());
                 if (serviceClass != null) {
-                    variables.put(globalVariableEntry.getKey(),  new HashSet<String>(Arrays.asList(serviceClass)));
+                    variables.put(globalVariableEntry.getKey(), new HashSet<>(Arrays.asList(serviceClass)));
                 }
             }
         }

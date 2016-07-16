@@ -63,16 +63,16 @@ import java.util.*;
 
 public class RouteHelper {
 
-    private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<CachedValue<Map<String, Route>>>("SYMFONY:ROUTE_CACHE");
+    private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
 
-    public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<Project, Map<String, RoutesContainer>>();
+    public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<>();
 
-    private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<RoutingLoader>(
+    private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
     );
 
     public static LookupElement[] getRouteParameterLookupElements(Project project, String routeName) {
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
         Route route = RouteHelper.getRoute(project, routeName);
         if(route == null) {
@@ -105,7 +105,7 @@ public class RouteHelper {
 
     public static PsiElement[] getRouteParameterPsiElements(Project project, String routeName, String parameterName) {
 
-        List<PsiElement> results = new ArrayList<PsiElement>();
+        List<PsiElement> results = new ArrayList<>();
 
         for (PsiElement psiElement : RouteHelper.getMethods(project, routeName)) {
 
@@ -246,7 +246,7 @@ public class RouteHelper {
     }
 
     private static <E> ArrayList<E> makeCollection(Iterable<E> iter) {
-        ArrayList<E> list = new ArrayList<E>();
+        ArrayList<E> list = new ArrayList<>();
         for (E item : iter) {
             list.add(item);
         }
@@ -263,7 +263,7 @@ public class RouteHelper {
 
     public static Map<String, Route> getCompiledRoutes(@NotNull Project project) {
 
-        Set<String> files = new HashSet<String>();
+        Set<String> files = new HashSet<>();
 
         // old deprecated single file
         String pathToUrlGenerator = Settings.getInstance(project).pathToUrlGenerator;
@@ -301,7 +301,7 @@ public class RouteHelper {
             } else {
 
                 if(!COMPILED_CACHE.containsKey(project)) {
-                    COMPILED_CACHE.put(project, new HashMap<String, RoutesContainer>());
+                    COMPILED_CACHE.put(project, new HashMap<>());
                 }
 
                 Long routesLastModified = urlGeneratorFile.lastModified();
@@ -318,7 +318,7 @@ public class RouteHelper {
 
         }
 
-        Map<String, Route> routes = new HashMap<String, Route>();
+        Map<String, Route> routes = new HashMap<>();
         if(COMPILED_CACHE.containsKey(project)) {
             for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
                 routes.putAll(container.getRoutes());
@@ -373,7 +373,7 @@ public class RouteHelper {
     @NotNull
     public static Map<String, Route> getRoutesInsideUrlGeneratorFile(@NotNull PsiFile psiFile) {
 
-        Map<String, Route> routes = new HashMap<String, Route>();
+        Map<String, Route> routes = new HashMap<>();
 
         // heavy stuff here, to get nested routing array :)
         // list($variables, $defaults, $requirements, $tokens, $hostTokens)
@@ -461,22 +461,22 @@ public class RouteHelper {
     private static Route convertRouteConfig(String routeName, ArrayCreationExpression hashValue) {
         List<ArrayHashElement> hashElementCollection = makeCollection(hashValue.getHashElements());
 
-        HashSet<String> variables = new HashSet<String>();
+        HashSet<String> variables = new HashSet<>();
         if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression) {
             variables.addAll(PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(0).getValue()).values());
         }
 
-        HashMap<String, String> defaults = new HashMap<String, String>();
+        HashMap<String, String> defaults = new HashMap<>();
         if(hashElementCollection.size() >= 2 && hashElementCollection.get(1).getValue() instanceof ArrayCreationExpression) {
             defaults = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(1).getValue());
         }
 
-        HashMap<String, String>requirements = new HashMap<String, String>();
+        HashMap<String, String>requirements = new HashMap<>();
         if(hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression) {
             requirements = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(2).getValue());
         }
 
-        ArrayList<Collection<String>> tokens = new ArrayList<Collection<String>>();
+        ArrayList<Collection<String>> tokens = new ArrayList<>();
         if(hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression) {
             ArrayCreationExpression tokenArray = (ArrayCreationExpression) hashElementCollection.get(3).getValue();
             if(tokenArray != null) {
@@ -576,9 +576,9 @@ public class RouteHelper {
 
     public static VirtualFile[] getRouteDefinitionInsideFile(Project project, String... routeNames) {
 
-        final List<VirtualFile> virtualFiles = new ArrayList<VirtualFile> ();
+        final List<VirtualFile> virtualFiles = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
                 virtualFiles.add(virtualFile);
@@ -586,7 +586,7 @@ public class RouteHelper {
             }
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML, XmlFileType.INSTANCE));
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<String>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
                 virtualFiles.add(virtualFile);
@@ -600,7 +600,7 @@ public class RouteHelper {
 
     @NotNull
     public static Collection<StubIndexedRoute> getYamlRouteDefinitions(@NotNull YAMLDocument yamlDocument) {
-        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
+        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<>();
 
         for(YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues((YAMLFile) yamlDocument.getContainingFile())) {
 
@@ -660,7 +660,7 @@ public class RouteHelper {
             return Collections.emptyList();
         }
 
-        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<StubIndexedRoute>();
+        Collection<StubIndexedRoute> indexedRoutes = new ArrayList<>();
 
         /**
          * <routes>
@@ -782,7 +782,7 @@ public class RouteHelper {
     @Nullable
     public static List<Route> getRoutesOnControllerAction(@NotNull Method method) {
 
-        Set<String> routeNames = new HashSet<String>();
+        Set<String> routeNames = new HashSet<>();
 
         String methodRouteActionName = RouteHelper.convertMethodToRouteControllerName(method);
         if(methodRouteActionName != null) {
@@ -795,7 +795,7 @@ public class RouteHelper {
         }
 
         Map<String, Route> allRoutes = getAllRoutes(method.getProject());
-        List<Route> routes = new ArrayList<Route>();
+        List<Route> routes = new ArrayList<>();
 
         // resolve indexed routes
         if(routeNames.size() > 0) {
@@ -876,13 +876,13 @@ public class RouteHelper {
         String url = "";
 
         // copy list;
-        List<Collection<String>> tokens = new ArrayList<Collection<String>>(route.getTokens());
+        List<Collection<String>> tokens = new ArrayList<>(route.getTokens());
         Collections.reverse(tokens);
 
         for(Collection<String> token: tokens) {
 
             // copy, we are not allowed to mod list
-            List<String> list = new ArrayList<String>(token);
+            List<String> list = new ArrayList<>(token);
 
             if(list.size() >= 2 && list.get(1).equals("text")) {
                 url = url.concat(list.get(0));
@@ -901,9 +901,9 @@ public class RouteHelper {
 
         Map<String, Route> routes = RouteHelper.getCompiledRoutes(project);
 
-        final List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        final List<LookupElement> lookupElements = new ArrayList<>();
 
-        final Set<String> uniqueSet = new HashSet<String>();
+        final Set<String> uniqueSet = new HashSet<>();
         for (Route route : routes.values()) {
             lookupElements.add(new RouteLookupElement(route));
             uniqueSet.add(route.getName());
@@ -942,7 +942,7 @@ public class RouteHelper {
     @NotNull
     public static List<PsiElement> getRouteDefinitionTargets(Project project, String routeName) {
 
-        List<PsiElement> targets = new ArrayList<PsiElement>();
+        List<PsiElement> targets = new ArrayList<>();
         Collections.addAll(targets, RouteHelper.getMethods(project, routeName));
 
         PsiElement yamlKey = RouteHelper.getRouteNameTarget(project, routeName);
@@ -974,10 +974,10 @@ public class RouteHelper {
     @NotNull
     private static Map<String, Route> getAllRoutesProxy(@NotNull Project project) {
 
-        Map<String, Route> routes = new HashMap<String, Route>();
+        Map<String, Route> routes = new HashMap<>();
         routes.putAll(RouteHelper.getCompiledRoutes(project));
 
-        Set<String> uniqueKeySet = new HashSet<String>(routes.keySet());
+        Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
 
         SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueKeySet);
         FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);

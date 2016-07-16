@@ -20,7 +20,7 @@ public class PhpMethodVariableResolveUtil {
      */
     public static Map<String, PsiVariable> collectMethodVariables(Method method) {
 
-        Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
         List<PsiElement> psiElements = collectPossibleTemplateArrays(method);
         for(PsiElement templateVariablePsi: psiElements) {
@@ -50,7 +50,7 @@ public class PhpMethodVariableResolveUtil {
      */
     private static List<PsiElement> collectPossibleTemplateArrays(Method method) {
 
-        List<PsiElement> collectedTemplateVariables = new ArrayList<PsiElement>();
+        List<PsiElement> collectedTemplateVariables = new ArrayList<>();
 
         // Annotation controller
         // @TODO: check for phpdoc tag
@@ -89,7 +89,7 @@ public class PhpMethodVariableResolveUtil {
      */
     private static Map<String, PsiVariable> collectOnVariableReferences(SearchScope searchScope, Variable variable) {
 
-        final Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        final Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
         PhpPsiUtil.hasReferencesInSearchScope(searchScope, variable, new CommonProcessors.FindProcessor<PsiReference>() {
             @Override
@@ -122,13 +122,13 @@ public class PhpMethodVariableResolveUtil {
      */
     private static Map<String, PsiVariable> getTypesOnArrayIndex(ArrayAccessExpression arrayAccessExpression) {
 
-        Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
         ArrayIndex arrayIndex = arrayAccessExpression.getIndex();
         if(arrayIndex != null && arrayIndex.getValue() instanceof StringLiteralExpression) {
 
             String variableName = ((StringLiteralExpression) arrayIndex.getValue()).getContents();
-            Set<String> variableTypes = new HashSet<String>();
+            Set<String> variableTypes = new HashSet<>();
 
             PsiElement parent = arrayAccessExpression.getParent();
             if(parent instanceof AssignmentExpression) {
@@ -154,13 +154,13 @@ public class PhpMethodVariableResolveUtil {
      */
     public static Map<String, PsiVariable> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
 
-        Map<String, PsiVariable> collectedTypes = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             if(arrayHashElement.getKey() instanceof StringLiteralExpression) {
 
                 String variableName = ((StringLiteralExpression) arrayHashElement.getKey()).getContents();
-                Set<String> variableTypes = new HashSet<String>();
+                Set<String> variableTypes = new HashSet<>();
 
                 if(arrayHashElement.getValue() instanceof PhpTypedElement) {
                     variableTypes = ((PhpTypedElement) arrayHashElement.getValue()).getType().getTypes();

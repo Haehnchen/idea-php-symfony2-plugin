@@ -8,7 +8,7 @@ import java.util.Collections;
 
 public class ProfilerRequest {
 
-    private ArrayList<String> separatedLine = new ArrayList<String>();
+    private ArrayList<String> separatedLine = new ArrayList<>();
     private ProfilerIndex profilerIndex;
 
     public ProfilerRequest(String[] separatedLine, ProfilerIndex profilerIndex) {

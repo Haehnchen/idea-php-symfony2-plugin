@@ -53,7 +53,7 @@ public class ParameterServiceCollector {
     @NotNull
     private static Map<String, String> collect(Document document) {
 
-        Map<String, String> parameterMap = new ConcurrentHashMap<String, String>();
+        Map<String, String> parameterMap = new ConcurrentHashMap<>();
 
         Object nodeList;
         try {

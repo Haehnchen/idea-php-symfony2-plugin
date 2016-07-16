@@ -49,7 +49,7 @@ public class TranslationUtil {
     static public VirtualFile[] getDomainFilePsiElements(Project project, String domainName) {
 
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-        List<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+        List<VirtualFile> virtualFiles = new ArrayList<>();
 
         for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
             if(domain.getDomain().equals(domainName)) {
@@ -66,8 +66,8 @@ public class TranslationUtil {
     public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, final String domain) {
 
 
-        final List<PsiElement> psiFoundElements = new ArrayList<PsiElement>();
-        final List<VirtualFile> virtualFilesFound = new ArrayList<VirtualFile>();
+        final List<PsiElement> psiFoundElements = new ArrayList<>();
+        final List<VirtualFile> virtualFilesFound = new ArrayList<>();
 
         // @TODO: completely remove this? support translation paths from service compiler
         // search for available domain files
@@ -111,7 +111,7 @@ public class TranslationUtil {
             }
         };
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<String>(Arrays.asList(domain)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domain)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
 
@@ -173,13 +173,13 @@ public class TranslationUtil {
 
     public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
 
-        Set<String> keySet = new HashSet<String>();
+        Set<String> keySet = new HashSet<>();
         List<Set<String>> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
         for(Set<String> keys: test ){
             keySet.addAll(keys);
         }
 
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
         TranslationStringMap map = TranslationIndex.getInstance(project).getTranslationMap();
         Collection<String> domainMap = map.getDomainMap(domainName);
@@ -212,7 +212,7 @@ public class TranslationUtil {
     @NotNull
     public static List<LookupElement> getTranslationDomainLookupElements(Project project) {
 
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
         // domains on complied file
         TranslationStringMap map = TranslationIndex.getInstance(project).getTranslationMap();
@@ -236,8 +236,8 @@ public class TranslationUtil {
 
     public static List<PsiFile> getDomainPsiFiles(final Project project, String domainName) {
 
-        final List<PsiFile> results = new ArrayList<PsiFile>();
-        final List<VirtualFile> uniqueFileList = new ArrayList<VirtualFile>();
+        final List<PsiFile> results = new ArrayList<>();
+        final List<VirtualFile> uniqueFileList = new ArrayList<>();
 
         // get translation files from compiler
         for(VirtualFile virtualFile : TranslationUtil.getDomainFilePsiElements(project, domainName)) {
@@ -248,7 +248,7 @@ public class TranslationUtil {
             }
         }
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<String>(Arrays.asList(domainName)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domainName)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
 
@@ -272,7 +272,7 @@ public class TranslationUtil {
     @NotNull
     public static Set<String> getXliffTranslations(InputStream content) {
 
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
 
         Document document;
 

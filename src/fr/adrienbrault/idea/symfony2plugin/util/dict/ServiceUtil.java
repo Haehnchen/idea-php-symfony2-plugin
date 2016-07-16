@@ -152,7 +152,7 @@ public class ServiceUtil {
             parameterName = parameterName.substring(1, parameterName.length() - 1);
         }
 
-        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+        Collection<PsiElement> psiElements = new ArrayList<>();
 
         Collection<VirtualFile> fileCollection = FileBasedIndex.getInstance().getContainingFiles(ContainerParameterStubIndex.KEY, parameterName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
         for(VirtualFile virtualFile: fileCollection) {
@@ -168,7 +168,7 @@ public class ServiceUtil {
 
     public static Collection<PsiElement> getServiceClassTargets(@NotNull Project project, @Nullable String value) {
 
-        List<PsiElement> resolveResults = new ArrayList<PsiElement>();
+        List<PsiElement> resolveResults = new ArrayList<>();
 
         if(value == null || StringUtils.isBlank(value)) {
             return resolveResults;
@@ -200,7 +200,7 @@ public class ServiceUtil {
         FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
         ContainerCollectionResolver.ServiceCollector collector = null;
 
-        Set<String> matchedTags = new HashSet<String>();
+        Set<String> matchedTags = new HashSet<>();
         Set<String> result = projectUniqueKeysStrong.getResult();
         for (String serviceName : result) {
 
@@ -211,7 +211,7 @@ public class ServiceUtil {
             }
 
             // create unique tag list
-            Set<String> tags = new HashSet<String>();
+            Set<String> tags = new HashSet<>();
             for(Set<String> tagValue: values) {
                 tags.addAll(tagValue);
             }
@@ -250,7 +250,7 @@ public class ServiceUtil {
      */
     @NotNull
     private static Set<PhpClass> getSuperClasses(@NotNull PhpClass serviceClass) {
-        Set<PhpClass> phpClasses = new HashSet<PhpClass>();
+        Set<PhpClass> phpClasses = new HashSet<>();
         PhpClass superClass = serviceClass.getSuperClass();
 
         if(superClass != null)  {
@@ -268,7 +268,7 @@ public class ServiceUtil {
         SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
         FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
 
-        Set<String> service = new HashSet<String>();
+        Set<String> service = new HashSet<>();
 
         for(String serviceName: projectUniqueKeysStrong.getResult()) {
 
@@ -286,7 +286,7 @@ public class ServiceUtil {
 
     public static Collection<PhpClass> getTaggedClasses(@NotNull Project project, @NotNull String tagName) {
 
-        List<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        List<PhpClass> phpClasses = new ArrayList<>();
 
         Set<String> taggedServices = getTaggedServices(project, tagName);
         if(taggedServices.size() == 0) {
@@ -309,9 +309,9 @@ public class ServiceUtil {
 
     public static Collection<PhpClass> getTaggedClassesWithCompiled(Project project, String tagName) {
 
-        Set<String> uniqueClass = new HashSet<String>();
+        Set<String> uniqueClass = new HashSet<>();
 
-        Collection<PhpClass> taggedClasses = new ArrayList<PhpClass>();
+        Collection<PhpClass> taggedClasses = new ArrayList<>();
         for(PhpClass phpClass: getTaggedClasses(project, tagName)) {
             String presentableFQN = phpClass.getPresentableFQN();
             if(presentableFQN != null && !uniqueClass.contains(presentableFQN)) {
@@ -390,7 +390,7 @@ public class ServiceUtil {
     @NotNull
     public static Set<String> getPhpClassServiceTags(@NotNull PhpClass phpClass) {
 
-        Set<String> tags = new HashSet<String>();
+        Set<String> tags = new HashSet<>();
 
         for (Map.Entry<String, String> entry : TAG_INTERFACES.entrySet()) {
 
@@ -438,7 +438,7 @@ public class ServiceUtil {
 
         String fqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
 
-        Collection<ContainerService> instances = new ArrayList<ContainerService>();
+        Collection<ContainerService> instances = new ArrayList<>();
 
         for(ContainerService service: serviceMap) {
             if(service.getClassName() == null) {

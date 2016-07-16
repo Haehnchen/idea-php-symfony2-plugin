@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class TranslationIndex {
 
-    protected static Map<Project, TranslationIndex> instance = new HashMap<Project, TranslationIndex>();
+    protected static Map<Project, TranslationIndex> instance = new HashMap<>();
 
     protected Project project;
 

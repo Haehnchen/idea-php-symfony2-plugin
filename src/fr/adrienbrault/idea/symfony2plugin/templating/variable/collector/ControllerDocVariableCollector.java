@@ -50,7 +50,7 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
 
         Pattern pattern = Pattern.compile(DOC_PATTERN);
 
-        ArrayList<String> controller = new ArrayList<String>();
+        ArrayList<String> controller = new ArrayList<>();
 
         for(PsiComment psiComment: PsiTreeUtil.getChildrenOfTypeAsList(twigFile, PsiComment.class)) {
             Matcher matcher = pattern.matcher(psiComment.getText());

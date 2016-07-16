@@ -117,7 +117,7 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-            final Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            final Collection<LookupElement> lookupElements = new ArrayList<>();
 
             Collection<String> typeClassesByScopeWithAllFallback = DoctrineMetadataTypeUtil.getTypeClassesByScopeWithAllFallback(getElement());
             DoctrineMetadataTypeUtil.visitType(getProject(), typeClassesByScopeWithAllFallback, new Processor<Pair<PhpClass, String>>() {
@@ -147,7 +147,7 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
                 return Collections.emptyList();
             }
 
-            final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+            final Collection<PsiElement> psiElements = new ArrayList<>();
 
             DoctrineMetadataTypeUtil.visitType(getProject(), DoctrineMetadataTypeUtil.getTypeClassesByScopeWithAllFallback(element), new Processor<Pair<PhpClass, String>>() {
                 @Override
@@ -180,9 +180,9 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
                 return Collections.emptyList();
             }
 
-            Set<String> unique = new HashSet<String>();
+            Set<String> unique = new HashSet<>();
 
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            Collection<LookupElement> lookupElements = new ArrayList<>();
             for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(getProject(), modelNameInScope)) {
                 for (Field field : phpClass.getFields()) {
                     if(field.isConstant() || unique.contains(field.getName())) {
@@ -212,7 +212,7 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
                 return Collections.emptyList();
             }
 
-            final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+            final Collection<PsiElement> psiElements = new ArrayList<>();
 
             for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(getProject(), modelNameInScope)) {
                 psiElements.addAll(ContainerUtil.filter(phpClass.getFields(), new Condition<Field>() {

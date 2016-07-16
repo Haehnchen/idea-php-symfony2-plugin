@@ -17,11 +17,11 @@ import java.util.Collection;
 
 public class GotoCompletionUtil {
 
-    private static final ExtensionPointName<GotoCompletionRegistrar> EXTENSIONS = new ExtensionPointName<GotoCompletionRegistrar>("fr.adrienbrault.idea.symfony2plugin.extension.GotoCompletionRegistrar");
+    private static final ExtensionPointName<GotoCompletionRegistrar> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.GotoCompletionRegistrar");
 
     public static Collection<GotoCompletionContributor> getContributors(final PsiElement psiElement) {
 
-        final Collection<GotoCompletionContributor> contributors = new ArrayList<GotoCompletionContributor>();
+        final Collection<GotoCompletionContributor> contributors = new ArrayList<>();
 
         GotoCompletionRegistrarParameter registrar = new GotoCompletionRegistrarParameter() {
             @Override

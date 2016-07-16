@@ -23,7 +23,7 @@ public class StubIndexedRoute implements RouteInterface, Serializable{
     private String path = null;
 
     @NotNull
-    private Collection<String> methods = new HashSet<String>();
+    private Collection<String> methods = new HashSet<>();
 
     public StubIndexedRoute(@NotNull String name) {
         this.name = name;

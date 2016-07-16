@@ -35,7 +35,7 @@ import java.util.*;
 
 public class EventDispatcherSubscriberUtil {
 
-    private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> EVENT_SUBSCRIBERS = new Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>>("SYMFONY_EVENT_SUBSCRIBERS");
+    private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> EVENT_SUBSCRIBERS = new Key<>("SYMFONY_EVENT_SUBSCRIBERS");
     private static final Key<CachedValue<Set<String>>> EVENT_ANNOTATIONS = new Key<>("SYMFONY_EVENT_ANNOTATIONS");
 
     @NotNull
@@ -59,7 +59,7 @@ public class EventDispatcherSubscriberUtil {
     @NotNull
     private static Collection<EventDispatcherSubscribedEvent> getSubscribedEventsProxy(@NotNull Project project) {
 
-        Collection<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+        Collection<EventDispatcherSubscribedEvent> events = new ArrayList<>();
 
         // http://symfony.com/doc/current/components/event_dispatcher/introduction.html
         PhpIndex phpIndex = PhpIndex.getInstance(project);
@@ -153,10 +153,10 @@ public class EventDispatcherSubscriberUtil {
 
         // 'pre.foo' => [...]
         if(!(value instanceof ArrayCreationExpression)) {
-            return new ArrayList<PsiElement>(Collections.singletonList(value));
+            return new ArrayList<>(Collections.singletonList(value));
         }
 
-        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        Collection<PsiElement> psiElements = new HashSet<>();
 
         // 'pre.foo' => [<caret>]
         PsiElement firstChild = value.getFirstPsiChild();
@@ -187,7 +187,7 @@ public class EventDispatcherSubscriberUtil {
     @NotNull
     public static Collection<EventDispatcherSubscribedEvent> getSubscribedEvent(@NotNull Project project, @NotNull String eventName) {
 
-        List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+        List<EventDispatcherSubscribedEvent> events = new ArrayList<>();
 
         for(EventDispatcherSubscribedEvent event: getSubscribedEvents(project)) {
             if(event.getStringValue().equals(eventName)) {

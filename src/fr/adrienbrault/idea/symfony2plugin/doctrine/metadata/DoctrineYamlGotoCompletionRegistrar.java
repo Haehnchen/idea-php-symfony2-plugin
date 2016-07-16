@@ -58,7 +58,7 @@ public class DoctrineYamlGotoCompletionRegistrar implements GotoCompletionRegist
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> classes = new ArrayList<PsiElement>();
+            Collection<PsiElement> classes = new ArrayList<>();
             for (PhpClass phpClass : DoctrineMetadataUtil.getClassInsideScope(element, psiText)) {
                 classes.add(phpClass);
             }

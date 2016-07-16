@@ -27,7 +27,7 @@ public class ServiceSymbolContributor implements ChooseByNameContributor {
     @Override
     public NavigationItem[] getItemsByName(String serviceName, String s2, Project project, boolean b) {
 
-        List<NavigationItem> navigationItems = new ArrayList<NavigationItem>();
+        List<NavigationItem> navigationItems = new ArrayList<>();
 
         for(PsiElement psiElement: ServiceIndexUtil.findServiceDefinitions(project, serviceName)) {
             if(psiElement instanceof NavigationItem) {

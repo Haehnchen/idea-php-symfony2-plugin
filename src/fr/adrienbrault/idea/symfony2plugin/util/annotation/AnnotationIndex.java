@@ -6,7 +6,7 @@ public class AnnotationIndex {
 
     public static HashMap<String, AnnotationConfig> getControllerAnnotations() {
 
-        HashMap<String, AnnotationConfig> controllerAnnotations = new HashMap<String, AnnotationConfig>();
+        HashMap<String, AnnotationConfig> controllerAnnotations = new HashMap<>();
 
         controllerAnnotations.put("@Template", new AnnotationConfig("@Template", "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template"));
         controllerAnnotations.put("@Method", new AnnotationConfig("@Method", "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Method"));

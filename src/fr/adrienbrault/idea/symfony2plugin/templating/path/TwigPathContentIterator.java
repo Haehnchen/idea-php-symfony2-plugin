@@ -14,12 +14,12 @@ public class TwigPathContentIterator implements ContentIterator {
     private TwigPath twigPath;
     private Project project;
 
-    private Map<String, VirtualFile> results = new HashMap<String, VirtualFile>();
+    private Map<String, VirtualFile> results = new HashMap<>();
 
     private boolean withPhp = false;
     private boolean withTwig = true;
 
-    private Set<String> workedOn = new HashSet<String>();
+    private Set<String> workedOn = new HashSet<>();
 
     public TwigPathContentIterator(Project project, TwigPath twigPath) {
         this.twigPath = twigPath;

@@ -140,7 +140,7 @@ public class DoctrineMetadataUtil {
             return Collections.emptyList();
         }
 
-        Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
+        Set<VirtualFile> virtualFiles = new HashSet<>();
 
         for (String s : cache.getValue().get(repositoryClass)) {
             virtualFiles.addAll(
@@ -154,7 +154,7 @@ public class DoctrineMetadataUtil {
     @NotNull
     public static Collection<Pair<String, PsiElement>> getTables(@NotNull Project project) {
 
-        Collection<Pair<String, PsiElement>> pair = new ArrayList<Pair<String, PsiElement>>();
+        Collection<Pair<String, PsiElement>> pair = new ArrayList<>();
 
         for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
             for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {

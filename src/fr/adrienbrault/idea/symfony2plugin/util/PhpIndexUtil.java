@@ -30,7 +30,7 @@ public class PhpIndexUtil {
     @NotNull
     private static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull PhpIndex phpIndex, @NotNull String namespaceName, int maxDeep) {
 
-        final Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        final Collection<PhpClass> phpClasses = new ArrayList<>();
 
         if(maxDeep-- <= 0) {
             return phpClasses;

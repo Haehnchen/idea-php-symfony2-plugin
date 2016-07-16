@@ -26,7 +26,7 @@ public class FormClassConstantsLookupElement extends ClassConstantLookupElementA
     public void renderElement(LookupElementPresentation presentation) {
 
         // provides parent and string alias name
-        List<String> tailsText = new ArrayList<String>();
+        List<String> tailsText = new ArrayList<>();
 
         String getName = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
         if(getName != null) {

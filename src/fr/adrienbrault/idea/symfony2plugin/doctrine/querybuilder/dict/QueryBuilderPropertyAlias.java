@@ -12,7 +12,7 @@ public class QueryBuilderPropertyAlias {
 
     final private String alias;
     final private String fieldName;
-    final private Collection<PsiElement> psiTargets = new ArrayList<PsiElement>();
+    final private Collection<PsiElement> psiTargets = new ArrayList<>();
     private DoctrineModelField field;
 
     public QueryBuilderPropertyAlias(String alias, String fieldName, DoctrineModelField field) {

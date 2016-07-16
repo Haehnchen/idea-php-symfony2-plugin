@@ -36,8 +36,8 @@ public class ServiceMapParser {
     }
 
     public ServiceMap parse(Document document) {
-        Map<String, String> map = new HashMap<String, String>();
-        Map<String, String> publicMap = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
+        Map<String, String> publicMap = new HashMap<>();
 
         NodeList servicesNodes = document.getElementsByTagName("service");
         for (int i = 0; i < servicesNodes.getLength(); i++) {

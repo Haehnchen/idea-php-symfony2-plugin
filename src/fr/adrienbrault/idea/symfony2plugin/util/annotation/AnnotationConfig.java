@@ -8,7 +8,7 @@ public class AnnotationConfig {
 
     private String name;
     private String use;
-    private ArrayList<AnnotationValue> values = new ArrayList<AnnotationValue>();
+    private ArrayList<AnnotationValue> values = new ArrayList<>();
 
     public AnnotationConfig(String name, String use) {
         this.name = name;

@@ -19,7 +19,7 @@ public class ModelsControllerRelatedGotoCollector implements ControllerActionGot
     @Override
     public void collectGotoRelatedItems(ControllerActionGotoRelatedCollectorParameter parameter) {
 
-        List<PsiElement> uniqueTargets = new ArrayList<PsiElement>();
+        List<PsiElement> uniqueTargets = new ArrayList<>();
 
         for(PsiElement psiElement: parameter.getParameterLists()) {
             MethodMatcher.MethodMatchParameter matchedSignature = MethodMatcher.getMatchedSignatureWithDepth(psiElement, SymfonyPhpReferenceContributor.REPOSITORY_SIGNATURES);

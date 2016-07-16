@@ -76,7 +76,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
             String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(serviceKeyValue));
 
-            List<String> yamlSequences = new ArrayList<String>();
+            List<String> yamlSequences = new ArrayList<>();
             for (String item : phpClassServiceTags) {
                 ServiceTag serviceTag = new ServiceTag(resolvedClassDefinition, item);
                 ServiceUtil.decorateServiceTag(serviceTag);
@@ -102,7 +102,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
                 String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(argumentsKeyValue));
 
-                List<String> yamlSequences = new ArrayList<String>();
+                List<String> yamlSequences = new ArrayList<>();
                 for (String item : phpClassServiceTags) {
                     ServiceTag serviceTag = new ServiceTag(resolvedClassDefinition, item);
                     ServiceUtil.decorateServiceTag(serviceTag);

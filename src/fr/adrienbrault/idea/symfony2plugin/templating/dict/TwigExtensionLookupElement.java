@@ -43,7 +43,7 @@ public class TwigExtensionLookupElement extends LookupElement {
 
                 PhpNamedElement function = phpNamedElements.iterator().next();
                 if(function instanceof FunctionImpl) {
-                    List<Parameter> parameters = new LinkedList<Parameter>(Arrays.asList(((FunctionImpl) function).getParameters()));
+                    List<Parameter> parameters = new LinkedList<>(Arrays.asList(((FunctionImpl) function).getParameters()));
                     if(this.twigExtension.getOption("needs_context") != null && parameters.size() > 0) {
                         parameters.remove(0);
                     }

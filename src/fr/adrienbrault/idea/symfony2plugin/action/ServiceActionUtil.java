@@ -137,7 +137,7 @@ public class ServiceActionUtil {
 
     @NotNull
     public static Set<String> getPossibleServices(@NotNull PhpClass phpClass, @NotNull Map<String, ContainerService> serviceClasses) {
-        List<ContainerService> matchedContainer = new ArrayList<ContainerService>(ServiceUtil.getServiceSuggestionForPhpClass(phpClass, serviceClasses));
+        List<ContainerService> matchedContainer = new ArrayList<>(ServiceUtil.getServiceSuggestionForPhpClass(phpClass, serviceClasses));
         if(matchedContainer.size() == 0) {
             return Collections.emptySet();
         }
@@ -148,7 +148,7 @@ public class ServiceActionUtil {
         // lower priority of services like "doctrine.orm.default_entity_manager"
         Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityNameComparator());
 
-        Set<String> possibleServices = new LinkedHashSet<String>();
+        Set<String> possibleServices = new LinkedHashSet<>();
         for(ContainerService containerService: matchedContainer) {
             possibleServices.add(containerService.getName());
         }
@@ -159,7 +159,7 @@ public class ServiceActionUtil {
     @NotNull
     public static Collection<XmlTag> getXmlContainerServiceDefinition(PsiFile psiFile) {
 
-        Collection<XmlTag> xmlTags = new ArrayList<XmlTag>();
+        Collection<XmlTag> xmlTags = new ArrayList<>();
 
         for(XmlTag xmlTag: PsiTreeUtil.getChildrenOfTypeAsList(psiFile.getFirstChild(), XmlTag.class)) {
             if(xmlTag.getName().equals("container")) {
@@ -247,7 +247,7 @@ public class ServiceActionUtil {
     @NotNull
     public static Collection<ServiceYamlContainer> getYamlContainerServiceArguments(@NotNull YAMLFile yamlFile) {
 
-        Collection<ServiceYamlContainer> services = new ArrayList<ServiceYamlContainer>();
+        Collection<ServiceYamlContainer> services = new ArrayList<>();
 
         for(YAMLKeyValue yamlKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
             ServiceYamlContainer serviceYamlContainer = ServiceYamlContainer.create(yamlKeyValue);
@@ -285,7 +285,7 @@ public class ServiceActionUtil {
             return null;
         }
 
-        final List<String> args = new ArrayList<String>();
+        final List<String> args = new ArrayList<>();
 
         for (int i = serviceArguments; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
@@ -356,7 +356,7 @@ public class ServiceActionUtil {
             return null;
         }
 
-        final List<String> args = new ArrayList<String>();
+        final List<String> args = new ArrayList<>();
 
         for (int i = serviceArguments; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
@@ -395,14 +395,14 @@ public class ServiceActionUtil {
 
         Map<String, ContainerService> services = ContainerCollectionResolver.getServices(project);
 
-        Map<String, Set<String>> resolved = new LinkedHashMap<String, Set<String>>();
+        Map<String, Set<String>> resolved = new LinkedHashMap<>();
         for (String arg : args) {
             resolved.put(arg, ServiceActionUtil.getPossibleServices(project, arg, services));
         }
 
         // we got an unique service list, not need to provide ui
         if(isUniqueServiceMap(resolved)) {
-            List<String> items = new ArrayList<String>();
+            List<String> items = new ArrayList<>();
             for (Map.Entry<String, Set<String>> stringSetEntry : resolved.entrySet()) {
                 Set<String> value = stringSetEntry.getValue();
                 if(value.size() > 0 ) {

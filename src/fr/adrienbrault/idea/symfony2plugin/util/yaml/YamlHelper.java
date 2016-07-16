@@ -51,7 +51,7 @@ public class YamlHelper {
      * getChildren eg on YamlArray is empty, provide workaround
      */
     static public PsiElement[] getChildrenFix(PsiElement psiElement) {
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<>();
 
         PsiElement startElement = psiElement.getFirstChild();
         if(startElement == null) {
@@ -143,7 +143,7 @@ public class YamlHelper {
         @Nullable
         private PsiElement getYamlKeyPath(@NotNull PsiFile psiFile, final @NotNull String findServiceName, @NotNull String rootKey) {
 
-            final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+            final Collection<PsiElement> psiElements = new ArrayList<>();
 
             // @TODO: support case insensitive
             visitQualifiedKeyValuesInFile((YAMLFile) psiFile, rootKey, new Consumer<YAMLKeyValue>() {
@@ -166,7 +166,7 @@ public class YamlHelper {
 
     public static Set<String> getYamlCompoundValueKeyNames(YAMLCompoundValue yamlCompoundValue) {
 
-        Set<String> stringSet = new HashSet<String>();
+        Set<String> stringSet = new HashSet<>();
 
         List<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class);
 
@@ -247,7 +247,7 @@ public class YamlHelper {
             return null;
         }
 
-        Set<String> keySet = new HashSet<String>();
+        Set<String> keySet = new HashSet<>();
         for(YAMLKeyValue yamlKey: PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class)) {
             String fieldName = getYamlKeyName(yamlKey);
             if(fieldName != null) {
@@ -346,7 +346,7 @@ public class YamlHelper {
      * @param psiElement any PsiElement inside a key value
      */
     public static List<String> getParentArrayKeys(PsiElement psiElement) {
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<>();
 
         YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
         if(yamlKeyValue != null) {
@@ -383,8 +383,8 @@ public class YamlHelper {
      */
     public static void attachDuplicateKeyInspection(PsiElement keyContext, @NotNull ProblemsHolder holder) {
 
-        Map<String, PsiElement> psiElementMap = new HashMap<String, PsiElement>();
-        Set<PsiElement> yamlKeyValues = new HashSet<PsiElement>();
+        Map<String, PsiElement> psiElementMap = new HashMap<>();
+        Set<PsiElement> yamlKeyValues = new HashSet<>();
 
         Collection<YAMLKeyValue> collection = PsiTreeUtil.getChildrenOfTypeAsList(keyContext, YAMLKeyValue.class);
         for(YAMLKeyValue yamlKeyValue: collection) {
@@ -479,11 +479,11 @@ public class YamlHelper {
     @Nullable
     public static List<PsiElement> getYamlArrayOnSequenceOrArrayElements(@NotNull YAMLCompoundValue yamlCompoundValue) {
         if (yamlCompoundValue instanceof YAMLSequence) {
-            return new ArrayList<PsiElement>(((YAMLSequence) yamlCompoundValue).getItems());
+            return new ArrayList<>(((YAMLSequence) yamlCompoundValue).getItems());
         }
 
         if (yamlCompoundValue instanceof YAMLMapping) {
-            return new ArrayList<PsiElement>(((YAMLMapping) yamlCompoundValue).getKeyValues());
+            return new ArrayList<>(((YAMLMapping) yamlCompoundValue).getKeyValues());
         }
 
         return null;
@@ -554,7 +554,7 @@ public class YamlHelper {
             return null;
         }
 
-        Set<String> tags = new HashSet<String>();
+        Set<String> tags = new HashSet<>();
 
         for (YAMLSequenceItem yamlSequenceItem : ((YAMLSequence) tagsCompound).getItems()) {
 
@@ -607,7 +607,7 @@ public class YamlHelper {
     @NotNull
     private static Collection<YAMLKeyValue> getNextKeyValues(@NotNull YAMLKeyValue yamlKeyValue) {
 
-        final Collection<YAMLKeyValue> yamlKeyValues = new ArrayList<YAMLKeyValue>();
+        final Collection<YAMLKeyValue> yamlKeyValues = new ArrayList<>();
         visitNextKeyValues(yamlKeyValue, new Consumer<YAMLKeyValue>() {
             @Override
             public void consume(YAMLKeyValue yamlKeyValue) {

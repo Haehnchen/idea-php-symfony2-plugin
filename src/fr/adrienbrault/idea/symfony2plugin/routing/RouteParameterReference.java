@@ -25,7 +25,7 @@ public class RouteParameterReference extends PsiPolyVariantReferenceBase<PsiElem
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        List<ResolveResult> results = new ArrayList<>();
 
         for (PsiElement psiParameter : RouteHelper.getRouteParameterPsiElements(getElement().getProject(), this.routeName, parameterName)) {
             results.add(new PsiElementResolveResult(psiParameter));

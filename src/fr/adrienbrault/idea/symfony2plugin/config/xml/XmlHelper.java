@@ -320,7 +320,7 @@ public class XmlHelper {
 
     public static Map<String, String> getFileParameterMap(XmlFile psiFile) {
 
-        Map<String, String> services = new HashMap<String, String>();
+        Map<String, String> services = new HashMap<>();
 
         if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
             return services;

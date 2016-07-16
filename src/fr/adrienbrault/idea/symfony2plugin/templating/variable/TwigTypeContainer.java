@@ -37,7 +37,7 @@ public class TwigTypeContainer {
 
     public static Collection<TwigTypeContainer> fromCollection(Project project, List<PsiVariable> psiVariables) {
 
-        List<TwigTypeContainer> twigTypeContainerList = new ArrayList<TwigTypeContainer>();
+        List<TwigTypeContainer> twigTypeContainerList = new ArrayList<>();
 
         for(PsiVariable phpNamedElement :psiVariables) {
             Collection<PhpClass> phpClass = PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getTypes());

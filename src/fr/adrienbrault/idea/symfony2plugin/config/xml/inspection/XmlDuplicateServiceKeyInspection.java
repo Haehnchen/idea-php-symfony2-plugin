@@ -45,8 +45,8 @@ public class XmlDuplicateServiceKeyInspection extends LocalInspectionTool {
             return;
         }
 
-        Map<String, XmlAttribute> psiElementMap = new HashMap<String, XmlAttribute>();
-        Set<XmlAttribute> yamlKeyValues = new HashSet<XmlAttribute>();
+        Map<String, XmlAttribute> psiElementMap = new HashMap<>();
+        Set<XmlAttribute> yamlKeyValues = new HashSet<>();
 
         for(XmlTag xmlTag: PsiTreeUtil.getChildrenOfTypeAsList(psiFile.getFirstChild(), XmlTag.class)) {
             if(xmlTag.getName().equals("container")) {

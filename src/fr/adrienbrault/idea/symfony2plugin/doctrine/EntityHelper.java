@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  */
 public class EntityHelper {
 
-    public static final ExtensionPointName<DoctrineModelProvider> MODEL_POINT_NAME = new ExtensionPointName<DoctrineModelProvider>("fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider");
+    public static final ExtensionPointName<DoctrineModelProvider> MODEL_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider");
 
     final public static String[] ANNOTATION_FIELDS = new String[] {
         "\\Doctrine\\ORM\\Mapping\\Column",
@@ -53,7 +53,7 @@ public class EntityHelper {
         "\\Doctrine\\ORM\\Mapping\\ManyToMany",
     };
 
-    final public static Set<String> RELATIONS = new HashSet<String>(Arrays.asList("manytoone", "manytomany", "onetoone", "onetomany"));
+    final public static Set<String> RELATIONS = new HashSet<>(Arrays.asList("manytoone", "manytomany", "onetoone", "onetomany"));
 
     /**
      * Resolve shortcut and namespaces classes for current phpclass and attached modelname
@@ -134,7 +134,7 @@ public class EntityHelper {
 
     public static List<DoctrineModelField> getModelFieldsSet(YAMLKeyValue yamlKeyValue) {
 
-        List<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
+        List<DoctrineModelField> fields = new ArrayList<>();
 
         for(Map.Entry<String, YAMLKeyValue> entry: getYamlModelFieldKeyValues(yamlKeyValue).entrySet()) {
             List<DoctrineModelField> fieldSet = getYamlDoctrineFields(entry.getKey(), entry.getValue());
@@ -159,7 +159,7 @@ public class EntityHelper {
             return null;
         }
 
-        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+        List<DoctrineModelField> modelFields = new ArrayList<>();
         for(YAMLKeyValue yamlKey: PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class)) {
             String fieldName = YamlHelper.getYamlKeyName(yamlKey);
             if(fieldName != null) {
@@ -256,7 +256,7 @@ public class EntityHelper {
 
     @NotNull
     public static Map<String, YAMLKeyValue> getYamlModelFieldKeyValues(YAMLKeyValue yamlKeyValue) {
-        Map<String, YAMLKeyValue> keyValueCollection = new HashMap<String, YAMLKeyValue>();
+        Map<String, YAMLKeyValue> keyValueCollection = new HashMap<>();
 
         for(String fieldMap: new String[] { "id", "fields", "manyToOne", "oneToOne", "manyToMany", "oneToMany"}) {
             YAMLKeyValue targetYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, fieldMap, true);
@@ -271,7 +271,7 @@ public class EntityHelper {
     @NotNull
     public static PsiElement[] getModelFieldTargets(@NotNull PhpClass phpClass,@NotNull String fieldName) {
 
-        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+        Collection<PsiElement> psiElements = new ArrayList<>();
 
         String presentableFQN = phpClass.getPresentableFQN();
         if(presentableFQN != null) {
@@ -411,7 +411,7 @@ public class EntityHelper {
         }
 
         if(psiFile instanceof YAMLFile) {
-            List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+            List<DoctrineModelField> modelFields = new ArrayList<>();
 
             PsiElement yamlDocument = psiFile.getFirstChild();
             if(yamlDocument instanceof YAMLDocument) {
@@ -435,7 +435,7 @@ public class EntityHelper {
         }
 
         // provide fallback on annotations
-        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+        List<DoctrineModelField> modelFields = new ArrayList<>();
 
         PhpDocComment docComment = phpClass.getDocComment();
         if(docComment != null) {
@@ -458,7 +458,7 @@ public class EntityHelper {
     @NotNull
     public static List<DoctrineModelField> getEntityFields(@NotNull XmlFile psiFile) {
 
-        List<DoctrineModelField> modelFields = new ArrayList<DoctrineModelField>();
+        List<DoctrineModelField> modelFields = new ArrayList<>();
 
         XmlTag rootTag = psiFile.getRootTag();
         if(rootTag == null) {
@@ -530,7 +530,7 @@ public class EntityHelper {
         // some default bundle search path
         // Bundle/Resources/config/doctrine/Product.orm.yml
         // Bundle/Resources/config/doctrine/Product.mongodb.yml
-        List<String[]> managerConfigs = new ArrayList<String[]>();
+        List<String[]> managerConfigs = new ArrayList<>();
         managerConfigs.add(new String[] { "Entity", "orm"});
         managerConfigs.add(new String[] { "Document", "mongodb"});
 
@@ -592,14 +592,14 @@ public class EntityHelper {
         List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
 
         // collect entitymanager namespaces on bundle or container file
-        Map<String, String> em = new HashMap<String, String>();
+        Map<String, String> em = new HashMap<>();
         if(managerList.contains(DoctrineTypes.Manager.ORM)) {
             Map<String, String> entityNameMap = ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap();
             em.putAll(entityNameMap);
             em.putAll(EntityHelper.getWeakBundleNamespaces(project, entityNameMap, "Entity"));
         }
 
-        Map<String, String> odm = new HashMap<String, String>();
+        Map<String, String> odm = new HashMap<>();
         if(managerList.contains(DoctrineTypes.Manager.MONGO_DB) || managerList.contains(DoctrineTypes.Manager.COUCH_DB)) {
             Map<String, String> documentMap = ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap();
             odm.putAll(documentMap);
@@ -635,7 +635,7 @@ public class EntityHelper {
             return null;
         }
 
-        for(String typeString: PhpIndex.getInstance(methodReference.getProject()).completeType(methodReference.getProject(), ((PhpTypedElement) phpTypedElement).getType(), new HashSet<String>()).getTypes()) {
+        for(String typeString: PhpIndex.getInstance(methodReference.getProject()).completeType(methodReference.getProject(), ((PhpTypedElement) phpTypedElement).getType(), new HashSet<>()).getTypes()) {
             for(Map.Entry<DoctrineTypes.Manager, String> entry: DoctrineTypes.getManagerInstanceMap().entrySet()) {
                 if(PhpElementsUtil.isInstanceOf(methodReference.getProject(), typeString, entry.getValue())) {
                     return entry.getKey();
@@ -647,7 +647,7 @@ public class EntityHelper {
     }
 
     public static PsiElement[] getModelPsiTargets(Project project, @NotNull String entityName) {
-        List<PsiElement> results = new ArrayList<PsiElement>();
+        List<PsiElement> results = new ArrayList<>();
 
         PhpClass phpClass = EntityHelper.getEntityRepositoryClass(project, entityName);
         if(phpClass != null) {
@@ -755,7 +755,7 @@ public class EntityHelper {
             doctrineModels.add(new DoctrineModel(phpClass));
         }
 
-        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, new ArrayList<DoctrineModelProviderParameter.DoctrineModel>());
+        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, new ArrayList<>());
         for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
             for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
                 doctrineModels.add(new DoctrineModel(doctrineModel.getPhpClass(), doctrineModel.getName()));
@@ -779,7 +779,7 @@ public class EntityHelper {
 
         PhpClass repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), DoctrineTypes.REPOSITORY_INTERFACE);
 
-        Collection<DoctrineModel> models = new ArrayList<DoctrineModel>();
+        Collection<DoctrineModel> models = new ArrayList<>();
         for (Map.Entry<String, String> entry : shortcutNames.entrySet()) {
             for(PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, entry.getValue())) {
                 if(repositoryInterface != null && !isEntity(phpClass, repositoryInterface)) {
@@ -804,7 +804,7 @@ public class EntityHelper {
 
     public static Map<String, String> getWeakBundleNamespaces(Project project, Map<String, String> entityNameMap, String subFolder) {
 
-        Map<String, String> missingMap = new HashMap<String, String>();
+        Map<String, String> missingMap = new HashMap<>();
 
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(project).getBundles();
         for(SymfonyBundle symfonyBundle: symfonyBundles) {

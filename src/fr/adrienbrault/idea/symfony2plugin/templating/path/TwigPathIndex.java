@@ -7,7 +7,7 @@ public class TwigPathIndex {
 
     final public static String MAIN = "__main__";
 
-    private List<TwigPath> twigPaths = new ArrayList<TwigPath>();
+    private List<TwigPath> twigPaths = new ArrayList<>();
 
     public TwigPathIndex addPath(TwigPath twigPath) {
       this.twigPaths.add(twigPath);
@@ -19,7 +19,7 @@ public class TwigPathIndex {
     }
 
     public List<TwigPath> getNamespacePaths(String namespace) {
-        ArrayList<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        ArrayList<TwigPath> twigPaths = new ArrayList<>();
         for(TwigPath twigPath: this.getTwigPaths()) {
             if(twigPath.getNamespace().equals(namespace)) {
                 twigPaths.add(twigPath);

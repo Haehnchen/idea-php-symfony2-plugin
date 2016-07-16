@@ -19,7 +19,7 @@ public class ServiceRouteContainer  {
     private final Collection<Route> routes;
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-    private Map<String, PhpClass> serviceCache = new HashMap<String, PhpClass>();
+    private Map<String, PhpClass> serviceCache = new HashMap<>();
 
     private ServiceRouteContainer(@NotNull Collection<Route> routes) {
         this.routes = routes;
@@ -27,7 +27,7 @@ public class ServiceRouteContainer  {
 
     public Set<String> getServiceNames() {
 
-        Set<String> services = new HashSet<String>();
+        Set<String> services = new HashSet<>();
 
         for (Route route : this.routes) {
 
@@ -59,7 +59,7 @@ public class ServiceRouteContainer  {
             return Collections.emptyList();
         }
 
-        Collection<Route> routes = new ArrayList<Route>();
+        Collection<Route> routes = new ArrayList<>();
 
         for (Route route : this.routes) {
 
@@ -104,7 +104,7 @@ public class ServiceRouteContainer  {
     @NotNull
     public static ServiceRouteContainer build(@NotNull Map<String, Route> routes) {
 
-        Collection<Route> serviceRoutes = new ArrayList<Route>();
+        Collection<Route> serviceRoutes = new ArrayList<>();
 
         for (Route route : routes.values()) {
 

@@ -34,7 +34,7 @@ public class ServiceToolboxProvider extends PhpToolboxProviderAbstract implement
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
 
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
 
         Boolean aPrivate = parameter.getParameterBag().getParameterBool("private", false);
         Boolean aPublic = parameter.getParameterBag().getParameterBool("public", true);

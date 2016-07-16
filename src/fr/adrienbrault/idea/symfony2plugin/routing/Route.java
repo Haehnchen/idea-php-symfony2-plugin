@@ -24,10 +24,10 @@ public class Route implements RouteInterface {
     private String path;
     private Set<String> pathCache;
 
-    private HashSet<String> variables = new HashSet<String>();
-    private Map<String, String> defaults = new HashMap<String, String>();
-    private Map<String, String> requirements = new HashMap<String, String>();
-    private List<Collection<String>> tokens = new ArrayList<Collection<String>>();
+    private HashSet<String> variables = new HashSet<>();
+    private Map<String, String> defaults = new HashMap<>();
+    private Map<String, String> requirements = new HashMap<>();
+    private List<Collection<String>> tokens = new ArrayList<>();
 
     public Route(@NotNull String name, @NotNull HashSet<String> variables, @NotNull Map<String, String> defaults, @NotNull Map<String, String> requirements, @NotNull List<Collection<String>> tokens) {
         this.name = name;
@@ -83,7 +83,7 @@ public class Route implements RouteInterface {
 
         // possible fallback
         // /hello/{foo}/{foo1}/bar
-        Set<String> hashSet = new TreeSet<String>();
+        Set<String> hashSet = new TreeSet<>();
         Matcher matcher = Pattern.compile("\\{(\\w+)}").matcher(this.path);
         while(matcher.find()){
             hashSet.add(matcher.group(1));

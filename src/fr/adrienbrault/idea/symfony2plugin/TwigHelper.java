@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
  */
 public class TwigHelper {
 
-    private static final ExtensionPointName<TwigNamespaceExtension> EXTENSIONS = new ExtensionPointName<TwigNamespaceExtension>(
+    private static final ExtensionPointName<TwigNamespaceExtension> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
     );
 
@@ -65,8 +65,8 @@ public class TwigHelper {
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
-    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_TWIG = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_TWIG");
-    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_ALL = new Key<CachedValue<TemplateFileMap>>("TEMPLATE_CACHE_ALL");
+    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
+    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_ALL = new Key<>("TEMPLATE_CACHE_ALL");
 
     public static final String DOC_SEE_REGEX  = "\\{#[\\s]+@see[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
     public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "\\{#[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
@@ -125,7 +125,7 @@ public class TwigHelper {
     @NotNull
     private static TemplateFileMap getTemplateMapProxy(@NotNull Project project, boolean useTwig, boolean usePhp) {
 
-        List<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        List<TwigPath> twigPaths = new ArrayList<>();
         twigPaths.addAll(getTwigNamespaces(project));
 
         if(twigPaths.size() == 0) {
@@ -263,7 +263,7 @@ public class TwigHelper {
 
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
-        Collection<PsiFile> psiFiles = new HashSet<PsiFile>();
+        Collection<PsiFile> psiFiles = new HashSet<>();
 
         for (TwigPath twigPath : getTwigNamespaces(project)) {
 
@@ -347,7 +347,7 @@ public class TwigHelper {
             return Collections.emptyList();
         }
 
-        Collection<VirtualFile> files = new HashSet<VirtualFile>();
+        Collection<VirtualFile> files = new HashSet<>();
 
         String bundle = templatePath.substring(0, i + 6);
 
@@ -395,7 +395,7 @@ public class TwigHelper {
     }
 
     public static List<TwigPath> getTwigNamespaces(@NotNull Project project, boolean includeSettings) {
-        List<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        List<TwigPath> twigPaths = new ArrayList<>();
         PhpIndex phpIndex = PhpIndex.getInstance(project);
 
         TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
@@ -1387,7 +1387,7 @@ public class TwigHelper {
     public static Set<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
 
 
-        Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
+        Set<VirtualFile> virtualFiles = new HashSet<>();
 
         // {% javascripts [...] @jquery_js2'%}
         if(templateName.startsWith("@") && templateName.length() > 1) {
@@ -1470,9 +1470,9 @@ public class TwigHelper {
 
     public static Collection<PsiElement> getTwigMacroTargets(final Project project, final String name) {
 
-        final Collection<PsiElement> targets = new ArrayList<PsiElement>();
+        final Collection<PsiElement> targets = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<String>(Arrays.asList(name)), new Processor<VirtualFile>() {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Arrays.asList(name)), new Processor<VirtualFile>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
 
@@ -1501,7 +1501,7 @@ public class TwigHelper {
     public static Collection<LookupElement> getTwigLookupElements(Project project) {
         VirtualFile baseDir = project.getBaseDir();
 
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        Collection<LookupElement> lookupElements = new ArrayList<>();
 
         for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigFilesByName(project).entrySet()) {
             lookupElements.add(
@@ -1515,7 +1515,7 @@ public class TwigHelper {
     public static Collection<LookupElement> getAllTemplateLookupElements(Project project) {
         VirtualFile baseDir = project.getBaseDir();
 
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        Collection<LookupElement> lookupElements = new ArrayList<>();
 
         for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTemplateFilesByName(project).entrySet()) {
             lookupElements.add(
@@ -1537,7 +1537,7 @@ public class TwigHelper {
             return Collections.emptySet();
         }
 
-        Collection<String> strings = new LinkedHashSet<String>();
+        Collection<String> strings = new LinkedHashSet<>();
         PsiElement firstChild = twigTagWithFileReference.getFirstChild();
         if(firstChild == null) {
             return strings;
@@ -1611,7 +1611,7 @@ public class TwigHelper {
     @NotNull
     public static Collection<String> getTwigExtendsTagTemplates(@NotNull TwigExtendsTag twigExtendsTag) {
 
-        Collection<String> strings = new HashSet<String>();
+        Collection<String> strings = new HashSet<>();
         PsiElement firstChild = twigExtendsTag.getFirstChild();
         if(firstChild == null) {
             return strings;
@@ -1647,7 +1647,7 @@ public class TwigHelper {
      */
     private static Collection<String> getTernaryStrings(@NotNull PsiElement psiQuestion) {
 
-        Collection<String> strings = new TreeSet<String>();
+        Collection<String> strings = new TreeSet<>();
 
         // match ? "foo" :
         PsiElement questString = PsiElementUtils.getNextSiblingOfType(psiQuestion, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
@@ -1695,7 +1695,7 @@ public class TwigHelper {
     @NotNull
     public static Collection<TwigBlock> getBlocksInFile(@NotNull TwigFile twigFile) {
 
-        Collection<TwigBlock> block = new ArrayList<TwigBlock>();
+        Collection<TwigBlock> block = new ArrayList<>();
 
         PsiElementPattern.Capture<PsiElement> pattern = null;
 

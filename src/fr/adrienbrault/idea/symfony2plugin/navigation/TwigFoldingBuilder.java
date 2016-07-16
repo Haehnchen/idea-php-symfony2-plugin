@@ -35,7 +35,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             return new FoldingDescriptor[0];
         }
 
-        List<FoldingDescriptor> descriptors = new ArrayList<FoldingDescriptor>();
+        List<FoldingDescriptor> descriptors = new ArrayList<>();
 
         if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigRoute) {
             attachPathFoldingDescriptors(psiElement, descriptors);

@@ -14,9 +14,9 @@ import java.util.Map;
 class QueryBuilderRelationClassResolver {
 
     final private Project project;
-    final private Map<String, String> joins = new HashMap<String, String>();
+    final private Map<String, String> joins = new HashMap<>();
     final private Map<String, List<QueryBuilderRelation>> relationMap;
-    final private Map<String, QueryBuilderJoin> joinMap = new HashMap<String, QueryBuilderJoin>();
+    final private Map<String, QueryBuilderJoin> joinMap = new HashMap<>();
 
     public QueryBuilderRelationClassResolver(Project project, String aliasRoot, String aliasClass, Map<String, List<QueryBuilderRelation>> relationMap, Map<String, QueryBuilderJoin> joinMap) {
         this.project = project;

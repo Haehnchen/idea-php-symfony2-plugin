@@ -144,7 +144,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         @Override
         public Collection<LookupElement> getLookupElements() {
 
-            Set<String> aliasSet = new HashSet<String>();
+            Set<String> aliasSet = new HashSet<>();
             aliasSet.add(value);
             aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(value, true));
             String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(value);
@@ -160,7 +160,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
                     aliasSet.add(split[0].substring(0, 1) + split[1].substring(0, 1));
                 }
 
-                List<String> i = new ArrayList<String>();
+                List<String> i = new ArrayList<>();
                 for (String s : split) {
                     i.add(s.substring(0, 1));
                 }
@@ -172,7 +172,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
                 aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(this.fromAlias + "_" + value));
             }
 
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            Collection<LookupElement> lookupElements = new ArrayList<>();
             for (String s : aliasSet) {
                 lookupElements.add(LookupElementBuilder.create(s).withIcon(Symfony2Icons.DOCTRINE));
             }
@@ -222,7 +222,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-            Collection<LookupElement> elements = new ArrayList<LookupElement>();
+            Collection<LookupElement> elements = new ArrayList<>();
 
             for (Pair<String, PsiElement> pair : DoctrineMetadataUtil.getTables(getProject())) {
                 elements.add(LookupElementBuilder.create(pair.getFirst()).withIcon(Symfony2Icons.DOCTRINE));
@@ -239,7 +239,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+            Collection<PsiElement> psiElements = new ArrayList<>();
 
             for (Pair<String, PsiElement> pair : DoctrineMetadataUtil.getTables(getProject())) {
                 if(!contents.equals(pair.getFirst())) {
@@ -276,7 +276,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
                 return Collections.emptyList();
             }
 
-            Collection<LookupElement> elements = new ArrayList<LookupElement>();
+            Collection<LookupElement> elements = new ArrayList<>();
             for (DoctrineModelField field : model.getFields()) {
                 String column = field.getColumn();
 
@@ -307,7 +307,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> elements = new ArrayList<PsiElement>();
+            Collection<PsiElement> elements = new ArrayList<>();
             for (DoctrineModelField field : model.getFields()) {
                 if(contents.equals(field.getColumn()) || contents.equals(field.getName())) {
                     elements.addAll(field.getTargets());

@@ -40,8 +40,8 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
     public MethodSignatureTypeSettingsForm(Project project) {
         this.project = project;
 
-        this.tableView = new TableView<MethodSignatureSetting>();
-        this.modelList = new ListTableModel<MethodSignatureSetting>(
+        this.tableView = new TableView<>();
+        this.modelList = new ListTableModel<>(
             new CallToColumn(),
             new MethodColumn(),
             new IndexColumn(),
@@ -146,7 +146,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<MethodSignatureSetting> methodParameterSettings = new ArrayList<MethodSignatureSetting>();
+        List<MethodSignatureSetting> methodParameterSettings = new ArrayList<>();
 
         for(MethodSignatureSetting methodSignatureSetting :this.tableView.getListTableModel().getItems()) {
             methodParameterSettings.add(methodSignatureSetting);

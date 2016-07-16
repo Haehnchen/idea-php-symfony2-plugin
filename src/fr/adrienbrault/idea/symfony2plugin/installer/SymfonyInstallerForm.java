@@ -65,7 +65,7 @@ public class SymfonyInstallerForm {
     private void appendSymfonyVersions()
     {
 
-        comboVersions.setModel(new ListComboBoxModel<SymfonyInstallerVersion>(new ArrayList<SymfonyInstallerVersion>()));
+        comboVersions.setModel(new ListComboBoxModel<>(new ArrayList<>()));
 
         ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
             public void run() {
@@ -74,7 +74,7 @@ public class SymfonyInstallerForm {
                     UIUtil.invokeLaterIfNeeded(new Runnable() {
                         @Override
                         public void run() {
-                            comboVersions.setModel(new ListComboBoxModel<SymfonyInstallerVersion>(symfonyInstallerVersions1));
+                            comboVersions.setModel(new ListComboBoxModel<>(symfonyInstallerVersions1));
                         }
                     });
                 }

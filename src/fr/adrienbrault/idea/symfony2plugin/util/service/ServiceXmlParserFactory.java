@@ -12,15 +12,15 @@ import java.util.*;
 
 public class ServiceXmlParserFactory {
 
-    protected static Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<Project, Map<Class, ServiceXmlParserFactory>>();
+    protected static Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<>();
 
     protected Project project;
     protected ServiceParserInterface serviceParserInstance;
 
-    protected HashMap<String, Long> serviceFiles = new HashMap<String, Long>();
+    protected HashMap<String, Long> serviceFiles = new HashMap<>();
 
-    private Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<CompiledServiceBuilderFactory.Builder>();
-    private static final ExtensionPointName<CompiledServiceBuilderFactory> EXTENSIONS = new ExtensionPointName<CompiledServiceBuilderFactory>(
+    private Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<>();
+    private static final ExtensionPointName<CompiledServiceBuilderFactory> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"
     );
 
@@ -89,7 +89,7 @@ public class ServiceXmlParserFactory {
                 }
             }
 
-            this.serviceFiles = new HashMap<String, Long>();
+            this.serviceFiles = new HashMap<>();
             for(File settingsServiceFile: settingsServiceFiles) {
                 if(!settingsServiceFile.exists()) {
                     continue;
@@ -111,7 +111,7 @@ public class ServiceXmlParserFactory {
     }
 
     public void setCacheInvalid() {
-        this.serviceFiles = new HashMap<String, Long>();
+        this.serviceFiles = new HashMap<>();
     }
 
     synchronized public static <T extends ServiceParserInterface> T getInstance(Project project, Class<T> serviceParser){
@@ -119,7 +119,7 @@ public class ServiceXmlParserFactory {
         Map<Class, ServiceXmlParserFactory> projectInstance = instance.get(project);
 
         if(projectInstance == null) {
-            projectInstance = new HashMap<Class, ServiceXmlParserFactory>();
+            projectInstance = new HashMap<>();
             instance.put(project, projectInstance);
         }
 

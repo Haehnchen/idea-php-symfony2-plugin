@@ -29,7 +29,7 @@ public class ArrayDataExternalizer implements DataExternalizer<String[]> {
     }
 
     public synchronized String[] read(@NotNull DataInput in) throws IOException {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         int r = in.readInt();
         while (r > 0) {
             list.add(this.myStringEnumerator.read(in));

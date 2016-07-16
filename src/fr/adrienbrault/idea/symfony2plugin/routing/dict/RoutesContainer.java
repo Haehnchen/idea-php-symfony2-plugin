@@ -8,7 +8,7 @@ import java.util.Map;
 public class RoutesContainer {
 
     private final Long lastMod;
-    private Map<String, Route> routes = new HashMap<String, Route>();
+    private Map<String, Route> routes = new HashMap<>();
 
     public RoutesContainer(Long lastMod, Map<String, Route> routes) {
         this(lastMod);

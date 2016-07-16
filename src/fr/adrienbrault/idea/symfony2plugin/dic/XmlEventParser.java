@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlEventParser extends AbstractServiceParser {
 
-    protected Map<String, String> list = new ConcurrentHashMap<String, String>();
-    protected List<EventDispatcherSubscribedEvent> events = new ArrayList<EventDispatcherSubscribedEvent>();
+    protected Map<String, String> list = new ConcurrentHashMap<>();
+    protected List<EventDispatcherSubscribedEvent> events = new ArrayList<>();
 
     @Override
     public String getXPathFilter() {
@@ -50,7 +50,7 @@ public class XmlEventParser extends AbstractServiceParser {
 
     public List<EventDispatcherSubscribedEvent> getEventSubscribers(String name) {
 
-        ArrayList<EventDispatcherSubscribedEvent> subscribedEvents = new ArrayList<EventDispatcherSubscribedEvent>();
+        ArrayList<EventDispatcherSubscribedEvent> subscribedEvents = new ArrayList<>();
         for(EventDispatcherSubscribedEvent subscribedEvent: this.getEvents()) {
             if(subscribedEvent.getStringValue().equals(name)) {
                 subscribedEvents.add(subscribedEvent);

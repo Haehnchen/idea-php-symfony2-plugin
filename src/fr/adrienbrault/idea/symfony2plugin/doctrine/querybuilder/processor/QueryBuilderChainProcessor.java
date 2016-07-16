@@ -30,7 +30,7 @@ public class QueryBuilderChainProcessor {
         List<MethodReference> methodReferences = getMethodReferencesAfter(startMethodRef);
         Collections.reverse(methodReferences);
 
-        List<MethodReference> factoryReferences = new ArrayList<MethodReference>();
+        List<MethodReference> factoryReferences = new ArrayList<>();
         processUpChainingMethods(startMethodRef, methodReferences, factoryReferences, true);
 
         this.queryBuilderMethodReferences = methodReferences;
@@ -55,7 +55,7 @@ public class QueryBuilderChainProcessor {
     @NotNull
     public List<MethodReference> getMethodReferencesAfter(@NotNull MethodReference methodReference) {
 
-        List<MethodReference> methodReferences = new ArrayList<MethodReference>();
+        List<MethodReference> methodReferences = new ArrayList<>();
 
         PsiElement parent = methodReference;
         while (parent instanceof MethodReference) {

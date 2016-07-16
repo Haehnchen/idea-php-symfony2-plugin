@@ -29,7 +29,7 @@ public class TwigBlockParser {
     }
 
     public List<TwigBlock> walk(@Nullable PsiFile file) {
-        return this.walk(file, "self", new ArrayList<TwigBlock>(), 0);
+        return this.walk(file, "self", new ArrayList<>(), 0);
     }
 
     public List<TwigBlock> walk(@Nullable PsiFile file, String shortcutName, List<TwigBlock> current, int depth) {
@@ -55,7 +55,7 @@ public class TwigBlockParser {
             return current;
         }
 
-        final Map<VirtualFile, String> virtualFiles = new HashMap<VirtualFile, String>();
+        final Map<VirtualFile, String> virtualFiles = new HashMap<>();
 
         // {% extends 'foo' %}
         // find extend in self

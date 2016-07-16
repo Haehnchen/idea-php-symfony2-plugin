@@ -49,7 +49,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
 
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<>();
 
         if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
             return null;
@@ -128,7 +128,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
     private Collection<PsiElement> getConstantGoto(PsiElement psiElement) {
 
-        Collection<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
+        Collection<PsiElement> targetPsiElements = new ArrayList<>();
 
         String contents = psiElement.getText();
         if(StringUtils.isBlank(contents)) {
@@ -187,7 +187,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+        Collection<PsiElement> psiElements = new ArrayList<>();
 
         for(String pattern: new String[] {TwigHelper.DOC_SEE_REGEX, TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE}) {
             Matcher matcher = Pattern.compile(pattern).matcher(comment);
@@ -225,7 +225,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
     private PsiElement[] getTypeGoto(PsiElement psiElement) {
 
-        List<PsiElement> targetPsiElements = new ArrayList<PsiElement>();
+        List<PsiElement> targetPsiElements = new ArrayList<>();
 
         // class, class.method, class.method.method
         // click on first item is our class name

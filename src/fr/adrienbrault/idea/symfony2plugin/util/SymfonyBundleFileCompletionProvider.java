@@ -39,7 +39,7 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
         PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
 
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
-        List<BundleFile> bundleFiles = new ArrayList<BundleFile>();
+        List<BundleFile> bundleFiles = new ArrayList<>();
 
         for(SymfonyBundle symfonyBundle : symfonyBundleUtil.getBundles()) {
             for(String path: this.paths) {

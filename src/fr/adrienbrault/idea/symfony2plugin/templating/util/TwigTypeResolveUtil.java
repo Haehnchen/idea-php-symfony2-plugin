@@ -65,7 +65,7 @@ public class TwigTypeResolveUtil {
     };
 
     public static String[] formatPsiTypeName(PsiElement psiElement, boolean includeCurrent) {
-        ArrayList<String> strings = new ArrayList<String>(Arrays.asList(formatPsiTypeName(psiElement)));
+        ArrayList<String> strings = new ArrayList<>(Arrays.asList(formatPsiTypeName(psiElement)));
         strings.add(psiElement.getText());
         return strings.toArray(new String[strings.size()]);
     }
@@ -119,19 +119,19 @@ public class TwigTypeResolveUtil {
 
             Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
             for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
-                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<List<TwigTypeContainer>>(), rootVariables);
+                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<>(), rootVariables);
             }
 
             return twigTypeContainers;
         }
 
         Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
-        Collection<List<TwigTypeContainer>> previousElements = new ArrayList<List<TwigTypeContainer>> ();
-        previousElements.add(new ArrayList<TwigTypeContainer>(type));
+        Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
+        previousElements.add(new ArrayList<>(type));
 
         for (int i = 1; i <= typeName.length - 1; i++ ) {
             type = resolveTwigMethodName(type, typeName[i], previousElements);
-            previousElements.add(new ArrayList<TwigTypeContainer>(type));
+            previousElements.add(new ArrayList<>(type));
 
             // we can stop on empty list
             if(type.size() == 0) {
@@ -162,7 +162,7 @@ public class TwigTypeResolveUtil {
             }
         });
 
-        Map<String, String> variables = new HashMap<String, String>();
+        Map<String, String> variables = new HashMap<>();
         if(twigCompositeElement == null) {
             return variables;
         }
@@ -180,7 +180,7 @@ public class TwigTypeResolveUtil {
     }
 
     private static Map<String, String> getInlineCommentDocsVars(@NotNull PsiElement twigCompositeElement) {
-        Map<String, String> variables = new HashMap<String, String>();
+        Map<String, String> variables = new HashMap<>();
 
         // wtf in completion { | } root we have no comments in child context !?
         Pattern[] patterns = new Pattern[] {
@@ -210,10 +210,10 @@ public class TwigTypeResolveUtil {
     }
 
     private static Map<String, Set<String>> convertHashMapToTypeSet(Map<String, String> hashMap) {
-        Map<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> globalVars = new HashMap<>();
 
         for(final Map.Entry<String, String> entry: hashMap.entrySet()) {
-            globalVars.put(entry.getKey(), new HashSet<String>(Arrays.asList(entry.getValue())));
+            globalVars.put(entry.getKey(), new HashSet<>(Arrays.asList(entry.getValue())));
         }
 
         return globalVars;
@@ -221,14 +221,14 @@ public class TwigTypeResolveUtil {
 
     @NotNull
     public static Map<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement) {
-        return collectScopeVariables(psiElement, new HashSet<VirtualFile>());
+        return collectScopeVariables(psiElement, new HashSet<>());
     }
 
     @NotNull
     public static Map<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement, @NotNull Set<VirtualFile> visitedFiles) {
 
-        Map<String, Set<String>> globalVars = new HashMap<String, Set<String>>();
-        Map<String, PsiVariable> controllerVars = new HashMap<String, PsiVariable>();
+        Map<String, Set<String>> globalVars = new HashMap<>();
+        Map<String, PsiVariable> controllerVars = new HashMap<>();
 
         VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
         if(visitedFiles.contains(virtualFile)) {
@@ -341,8 +341,8 @@ public class TwigTypeResolveUtil {
         String scopeVariable = forScopeVariable.getText();
 
         // find array types; since they are phptypes they ends with []
-        Set<String> types = new HashSet<String>();
-        for(String arrayType: PhpIndex.getInstance(psiElement.getProject()).completeType(psiElement.getProject(), phpType, new HashSet<String>()).getTypes()) {
+        Set<String> types = new HashSet<>();
+        for(String arrayType: PhpIndex.getInstance(psiElement.getProject()).completeType(psiElement.getProject(), phpType, new HashSet<>()).getTypes()) {
             if(arrayType.endsWith("[]")) {
                 types.add(arrayType.substring(0, arrayType.length() -2));
             }
@@ -359,7 +359,7 @@ public class TwigTypeResolveUtil {
 
     private static List<PsiVariable> getRootVariableByName(PsiElement psiElement, String variableName) {
 
-        List<PsiVariable> phpNamedElements = new ArrayList<PsiVariable>();
+        List<PsiVariable> phpNamedElements = new ArrayList<>();
         for(Map.Entry<String, PsiVariable> variable : collectScopeVariables(psiElement).entrySet()) {
             if(variable.getKey().equals(variableName)) {
                 phpNamedElements.add(variable.getValue());
@@ -374,7 +374,7 @@ public class TwigTypeResolveUtil {
 
     private static Collection<TwigTypeContainer> resolveTwigMethodName(Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> twigTypeContainer) {
 
-        ArrayList<TwigTypeContainer> phpNamedElements = new ArrayList<TwigTypeContainer>();
+        ArrayList<TwigTypeContainer> phpNamedElements = new ArrayList<>();
 
         for(TwigTypeContainer phpNamedElement: previousElement) {
 
@@ -401,7 +401,7 @@ public class TwigTypeResolveUtil {
 
     private static Set<String> resolveTwigMethodName(Project project, Collection<String> previousElement, String typeName) {
 
-        Set<String> types = new HashSet<String>();
+        Set<String> types = new HashSet<>();
 
         for(String prevClass: previousElement) {
             for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, prevClass)) {
@@ -424,7 +424,7 @@ public class TwigTypeResolveUtil {
      */
     public static Collection<? extends PhpNamedElement> getTwigPhpNameTargets(PhpNamedElement phpNamedElement, String variableName) {
 
-        Collection<PhpNamedElement> targets = new ArrayList<PhpNamedElement>();
+        Collection<PhpNamedElement> targets = new ArrayList<>();
         if(phpNamedElement instanceof PhpClass) {
 
             for(Method method: ((PhpClass) phpNamedElement).getMethods()) {
@@ -459,7 +459,7 @@ public class TwigTypeResolveUtil {
         for (String type : types) {
             phpType.add(type);
         }
-        PhpType phpTypeFormatted = PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>());
+        PhpType phpTypeFormatted = PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<>());
 
         if(phpTypeFormatted.getTypes().size() > 0) {
             return StringUtils.join(phpTypeFormatted.getTypes(), "|");

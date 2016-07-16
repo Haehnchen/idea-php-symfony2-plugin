@@ -38,7 +38,7 @@ public class YamlCreateServiceArgumentsCallback implements ServiceActionUtil.Ins
             return;
         }
 
-        List<String> arrayList = new ArrayList<String>();
+        List<String> arrayList = new ArrayList<>();
         for (String item : items) {
             arrayList.add("'@" + (StringUtils.isNotBlank(item) ? item : "?") + "'");
         }

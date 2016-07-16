@@ -78,7 +78,7 @@ public class FileResourceUtil {
      */
     @NotNull
     private static Collection<PsiElement> getBundleLocateStringDefinitions(@NotNull Project project, final @NotNull String bundleFileName) {
-        final Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        final Collection<PsiElement> psiElements = new HashSet<>();
         for (VirtualFile refVirtualFile : getFileResourceRefers(project, bundleFileName)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(refVirtualFile);
             if(psiFile == null) {
@@ -139,7 +139,7 @@ public class FileResourceUtil {
             return null;
         }
 
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         names.add(bundleLocateName);
 
         // strip filename
@@ -182,7 +182,7 @@ public class FileResourceUtil {
         @NotNull
         @Override
         protected Collection<? extends PsiElement> compute() {
-            Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+            Collection<PsiElement> psiElements = new HashSet<>();
 
             for (String resource : this.resources) {
                 psiElements.addAll(getBundleLocateStringDefinitions(project, resource));

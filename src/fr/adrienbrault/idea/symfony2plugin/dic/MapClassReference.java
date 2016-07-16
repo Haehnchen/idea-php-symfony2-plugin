@@ -29,7 +29,7 @@ public class MapClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
+        List<ResolveResult> resolveResults = new ArrayList<>();
 
         for (Map.Entry<String, String> entry: this.variants.entrySet()) {
             PhpClass phpClass = PhpElementsUtil.getClassInterface(getElement().getProject(), entry.getValue());
@@ -46,7 +46,7 @@ public class MapClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
         for (Map.Entry<String, String> entry: this.variants.entrySet()) {
             PhpClass phpClass = PhpElementsUtil.getClassInterface(getElement().getProject(), entry.getValue());
             if(phpClass != null) {

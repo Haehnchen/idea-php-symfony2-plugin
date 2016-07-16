@@ -40,7 +40,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
                 return Collections.emptyMap();
             }
 
-            final Map<String, FileResource> items = new THashMap<String, FileResource>();
+            final Map<String, FileResource> items = new THashMap<>();
 
             FileResourceVisitorUtil.visitFile(psiFile, consumer ->
                 items.put(consumer.getResource(), consumer.createFileResource())

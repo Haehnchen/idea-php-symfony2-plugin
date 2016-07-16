@@ -10,7 +10,7 @@ public class MailCollector implements CollectorInterface {
 
     private ProfilerRequest profilerRequest;
 
-    private ArrayList<MailMessage> messages = new ArrayList<MailMessage>();
+    private ArrayList<MailMessage> messages = new ArrayList<>();
 
     synchronized public ArrayList<MailMessage> getMessages() {
 

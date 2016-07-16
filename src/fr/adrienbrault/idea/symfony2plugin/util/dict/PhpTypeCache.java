@@ -13,8 +13,8 @@ import java.util.Map;
  */
 public class PhpTypeCache {
 
-    private HashMap<Integer, PhpType> phpTypes = new HashMap<Integer, PhpType>();
-    private HashMap<Integer, Long> lastCacheHit = new HashMap<Integer, Long>();
+    private HashMap<Integer, PhpType> phpTypes = new HashMap<>();
+    private HashMap<Integer, Long> lastCacheHit = new HashMap<>();
     private long lastCacheHitCheckTime;
 
     public PhpTypeCache() {

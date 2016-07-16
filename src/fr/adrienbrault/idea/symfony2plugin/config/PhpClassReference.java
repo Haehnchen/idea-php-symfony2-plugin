@@ -53,7 +53,7 @@ public class PhpClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        List<ResolveResult> results = new ArrayList<>();
         PhpIndex phpIndex = PhpIndex.getInstance(getElement().getProject());
 
         if(this.useClasses) {
@@ -77,7 +77,7 @@ public class PhpClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
 
         // not break old calls to this
         // @TODO: check performance and migrate all custom completion to this method

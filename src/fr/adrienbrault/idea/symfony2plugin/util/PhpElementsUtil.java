@@ -42,7 +42,7 @@ public class PhpElementsUtil {
             fqnClassOrInterfaceName = "\\" + fqnClassOrInterfaceName;
         }
 
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        List<ResolveResult> results = new ArrayList<>();
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(fqnClassOrInterfaceName)) {
             results.add(new PsiElementResolveResult(phpClass));
         }
@@ -67,7 +67,7 @@ public class PhpElementsUtil {
      */
     @NotNull
     static public Map<String, PsiElement> getArrayCreationKeyMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
-        Map<String, PsiElement> keys = new HashMap<String, PsiElement>();
+        Map<String, PsiElement> keys = new HashMap<>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             PhpPsiElement child = arrayHashElement.getKey();
@@ -108,7 +108,7 @@ public class PhpElementsUtil {
             return Collections.emptyMap();
         }
 
-        Map<String, PsiElement> keys = new HashMap<String, PsiElement>();
+        Map<String, PsiElement> keys = new HashMap<>();
         for (PsiElement child : arrayValues) {
             String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
             if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
@@ -124,7 +124,7 @@ public class PhpElementsUtil {
      */
     @NotNull
     static public HashMap<String, String> getArrayKeyValueMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
-        HashMap<String, String> keys = new HashMap<String, String>();
+        HashMap<String, String> keys = new HashMap<>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             PhpPsiElement child = arrayHashElement.getKey();
@@ -211,7 +211,7 @@ public class PhpElementsUtil {
     static public PsiElement[] getClassInterfacePsiElements(Project project, String FQNClassOrInterfaceName) {
 
         // convert ResolveResult to PsiElement
-        List<PsiElement> results = new ArrayList<PsiElement>();
+        List<PsiElement> results = new ArrayList<>();
         for(ResolveResult result: getClassInterfaceResolveResult(project, FQNClassOrInterfaceName)) {
             results.add(result.getElement());
         }
@@ -410,7 +410,7 @@ public class PhpElementsUtil {
             return Collections.emptyList();
         }
 
-        final Set<String> values = new HashSet<String>();
+        final Set<String> values = new HashSet<>();
         method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {
@@ -505,7 +505,7 @@ public class PhpElementsUtil {
     }
 
     static public ArrayList<Method> getClassPublicMethod(PhpClass phpClass) {
-        ArrayList<Method> methods = new ArrayList<Method>();
+        ArrayList<Method> methods = new ArrayList<>();
 
         for(Method method: phpClass.getMethods()) {
             if(method.getAccess().isPublic() && !method.getName().startsWith("__")) {
@@ -627,7 +627,7 @@ public class PhpElementsUtil {
 
 
     public static Method[] getImplementedMethods(@NotNull Method method) {
-        ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<Method>());
+        ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<>());
         return items.toArray(new Method[items.size()]);
     }
 
@@ -767,9 +767,9 @@ public class PhpElementsUtil {
             phpType.add(type);
         }
 
-        List<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        List<PhpClass> phpClasses = new ArrayList<>();
 
-        for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>()).getTypes()) {
+        for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<>()).getTypes()) {
             if(typeName.startsWith("\\")) {
                 PhpClass phpClass = PhpElementsUtil.getClassInterface(project, typeName);
                 if(phpClass != null) {
@@ -788,9 +788,9 @@ public class PhpElementsUtil {
             phpType.add(type);
         }
 
-        ArrayList<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        ArrayList<PhpClass> phpClasses = new ArrayList<>();
 
-        for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<String>()).getTypes()) {
+        for(String typeName: PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<>()).getTypes()) {
             if(typeName.startsWith("\\")) {
 
                 // we clean array types \Foo[]
@@ -904,7 +904,7 @@ public class PhpElementsUtil {
 
     public static List<Variable> getVariableReferencesInScope(final Variable variable, final boolean includeSelf) {
 
-        final List<Variable> variables = new ArrayList<Variable>();
+        final List<Variable> variables = new ArrayList<>();
 
         Variable variableDecl = null;
         if(!variable.isDeclaration()) {
@@ -1046,7 +1046,7 @@ public class PhpElementsUtil {
 
     @NotNull
     public static Collection<PsiElement> collectMethodElementsWithParents(final @NotNull Method method, @NotNull final Processor<PsiElement> processor) {
-        Collection<PsiElement> elements = new HashSet<PsiElement>();
+        Collection<PsiElement> elements = new HashSet<>();
         collectMethodElementsWithParents(method, 3, elements, processor);
         return elements;
     }

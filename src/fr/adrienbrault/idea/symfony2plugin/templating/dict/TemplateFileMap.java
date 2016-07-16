@@ -13,14 +13,14 @@ import java.util.Set;
  */
 public class TemplateFileMap {
 
-    private final Map<String, Set<VirtualFile>> templateNames = new HashMap<String, Set<VirtualFile>>();
+    private final Map<String, Set<VirtualFile>> templateNames = new HashMap<>();
 
     public Map<String, Set<VirtualFile>> getTemplateNames() {
         return templateNames;
     }
 
     public Set<String> getNames(@NotNull VirtualFile virtualFile) {
-        Set<String> fileNames = new HashSet<String>();
+        Set<String> fileNames = new HashSet<>();
 
         for (Map.Entry<String, Set<VirtualFile>> entry : templateNames.entrySet()) {
             if(entry.getValue().contains(virtualFile)) {
@@ -34,7 +34,7 @@ public class TemplateFileMap {
     @Deprecated
     public Map<String, VirtualFile> getTemplates() {
 
-        Map<String, VirtualFile> templates = new HashMap<String, VirtualFile>();
+        Map<String, VirtualFile> templates = new HashMap<>();
 
         for (Map.Entry<String, Set<VirtualFile>> entry : templateNames.entrySet()) {
             templates.put(entry.getKey(), entry.getValue().iterator().next());
@@ -45,7 +45,7 @@ public class TemplateFileMap {
 
     public void put(@NotNull String namespace, @NotNull VirtualFile virtualFile) {
         if(!templateNames.containsKey(namespace)) {
-            templateNames.put(namespace, new HashSet<VirtualFile>());
+            templateNames.put(namespace, new HashSet<>());
         }
 
         templateNames.get(namespace).add(virtualFile);

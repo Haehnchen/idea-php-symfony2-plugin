@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
 
-    protected Map<String, String[]> namedAssets = new HashMap<String, String[]>();
+    protected Map<String, String[]> namedAssets = new HashMap<>();
 
     @Override
     public String getXPathFilter() {
@@ -33,7 +33,7 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
             if(key != null && StringUtils.isNotBlank(key)) {
 
 
-                Set<String> files = new HashSet<String>();
+                Set<String> files = new HashSet<>();
                 NodeList argument1 = node.getElementsByTagName("argument");
                 if(argument1.getLength() > 1) {
 

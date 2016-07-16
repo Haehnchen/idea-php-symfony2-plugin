@@ -21,8 +21,8 @@ public class TranslationStringMap {
     }
 
     public TranslationStringMap() {
-        this.domainMap = new ConcurrentHashMap<String, Set<String>>();
-        this.fileNames = new HashMap<String, Long>();
+        this.domainMap = new ConcurrentHashMap<>();
+        this.fileNames = new HashMap<>();
     }
 
     @Nullable
@@ -38,7 +38,7 @@ public class TranslationStringMap {
     public void addString(String domain, String stringId) {
 
         if(!domainMap.containsKey(domain)) {
-            domainMap.put(domain, new HashSet<String>());
+            domainMap.put(domain, new HashSet<>());
         }
 
         domainMap.get(domain).add(stringId);
@@ -51,7 +51,7 @@ public class TranslationStringMap {
     public void addDomain(String domain) {
 
         if(!domainMap.containsKey(domain)) {
-            domainMap.put(domain, new HashSet<String>());
+            domainMap.put(domain, new HashSet<>());
         }
 
     }

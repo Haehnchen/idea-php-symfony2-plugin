@@ -32,7 +32,7 @@ public class ControllerIndex {
 
     public List<ControllerAction> getActions() {
 
-        List<ControllerAction> actions = new ArrayList<ControllerAction>();
+        List<ControllerAction> actions = new ArrayList<>();
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
 
         for (SymfonyBundle symfonyBundle : symfonyBundleUtil.getBundles()) {
@@ -90,7 +90,7 @@ public class ControllerIndex {
 
         namespaceName += "Controller";
 
-        List<ControllerAction> actions = new ArrayList<ControllerAction>();
+        List<ControllerAction> actions = new ArrayList<>();
 
         for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(this.project, namespaceName)) {
 
@@ -140,7 +140,7 @@ public class ControllerIndex {
         // so we search for predefined service controller and use the public methods
         ContainerCollectionResolver.LazyServiceCollector collector = new ContainerCollectionResolver.LazyServiceCollector(project);
 
-        List<ControllerAction> actions = new ArrayList<ControllerAction>();
+        List<ControllerAction> actions = new ArrayList<>();
         for (String serviceName : ServiceRouteContainer.build(routes).getServiceNames()) {
 
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceName, collector);
@@ -181,7 +181,7 @@ public class ControllerIndex {
     }
 
     static public List<LookupElement> getControllerLookupElements(Project project) {
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
         ControllerIndex controllerIndex = new ControllerIndex(project);
         for(ControllerAction controllerAction: controllerIndex.getActions()) {

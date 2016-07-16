@@ -29,7 +29,7 @@ public class ModelFieldReference extends PsiPolyVariantReferenceBase<PsiElement>
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        List<ResolveResult> results = new ArrayList<>();
 
         for(PhpClass phpClass: phpClasses) {
             for(PsiElement psiElement: EntityHelper.getModelFieldTargets(phpClass, fieldName)) {
@@ -43,7 +43,7 @@ public class ModelFieldReference extends PsiPolyVariantReferenceBase<PsiElement>
     @NotNull
     @Override
     public Object[] getVariants() {
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
 
         for(PhpClass phpClass: phpClasses) {
             for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {

@@ -33,7 +33,7 @@ public class NewBundleControllerAction extends NewBundleFileActionAbstract {
 
                 PsiElement bundleFile = null;
                 try {
-                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "controller", "Controller\\" + finalClassName, new HashMap<String, String>());
+                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "controller", "Controller\\" + finalClassName, new HashMap<>());
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
                     return;

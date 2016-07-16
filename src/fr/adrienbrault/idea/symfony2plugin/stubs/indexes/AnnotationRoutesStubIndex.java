@@ -101,7 +101,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
     public static Map<String, String> getFileUseImports(PsiFile psiFile) {
 
         // search for use alias in local file
-        final Map<String, String> useImports = new HashMap<String, String>();
+        final Map<String, String> useImports = new HashMap<>();
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {

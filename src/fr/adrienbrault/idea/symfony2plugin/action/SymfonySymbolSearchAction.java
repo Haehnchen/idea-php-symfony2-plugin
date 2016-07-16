@@ -123,7 +123,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             if(this.lookupElements == null) {
                 List<LookupElement> modelLookupElements = EntityReference.getModelLookupElements(this.project);
 
-                this.lookupElements = new HashMap<String, LookupElement>();
+                this.lookupElements = new HashMap<>();
                 for(LookupElement lookupElement: modelLookupElements) {
                     this.lookupElements.put(lookupElement.getLookupString(), lookupElement);
                 }
@@ -203,7 +203,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 }
             }
 
-            Set<String> controllers = new HashSet<String>();
+            Set<String> controllers = new HashSet<>();
             if(getRoutes().containsKey(name)) {
                 String controllerName = getRoutes().get(name).getController();
                 if(controllerName != null) {

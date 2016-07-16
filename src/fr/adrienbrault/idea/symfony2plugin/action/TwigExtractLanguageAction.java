@@ -131,7 +131,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             translationText = psiElement.getText();
         }
 
-        final Set<String> domainNames = new TreeSet<String>();
+        final Set<String> domainNames = new TreeSet<>();
         for(LookupElement lookupElement: TranslationUtil.getTranslationDomainLookupElements(project)) {
             domainNames.add(lookupElement.getLookupString());
         }
@@ -173,7 +173,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
     private TreeMap<String, Integer> getPossibleDomainTreeMap(TwigFile psiFile, final Set<String> domainNames) {
 
-        final Map<String, Integer> found = new HashMap<String, Integer>();
+        final Map<String, Integer> found = new HashMap<>();
 
         // visit every trans or transchoice to get possible domain names
         PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
@@ -200,7 +200,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
         // sort in found integer value
         ValueComparator vc =  new ValueComparator(found);
-        TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(vc);
+        TreeMap<String, Integer> sortedMap = new TreeMap<>(vc);
         sortedMap.putAll(found);
 
         return sortedMap;

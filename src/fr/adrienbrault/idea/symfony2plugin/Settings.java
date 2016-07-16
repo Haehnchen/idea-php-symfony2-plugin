@@ -89,19 +89,19 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean dismissEnableNotification = false;
 
     @Nullable
-    public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<TwigNamespaceSetting>();
+    public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<>();
 
     @Nullable
-    public List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
+    public List<ContainerFile> containerFiles = new ArrayList<>();
 
     @Nullable
-    public List<RoutingFile> routingFiles = new ArrayList<RoutingFile>();
+    public List<RoutingFile> routingFiles = new ArrayList<>();
 
     @Nullable
-    public List<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+    public List<MethodParameterSetting> methodParameterSettings = new ArrayList<>();
 
     @Nullable
-    public List<MethodSignatureSetting> methodSignatureSettings = new ArrayList<MethodSignatureSetting>();
+    public List<MethodSignatureSetting> methodSignatureSettings = new ArrayList<>();
 
     public static Settings getInstance(Project project) {
         return ServiceManager.getService(project, Settings.class);

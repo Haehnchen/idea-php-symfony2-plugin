@@ -106,7 +106,7 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
         @Override
         public ResolveResult[] multiResolve(boolean b) {
 
-            Collection<PsiElement> targets = new ArrayList<PsiElement>();
+            Collection<PsiElement> targets = new ArrayList<>();
             for(DoctrineModelField field: doctrineModelField) {
                 if(this.content.equals(field.getColumn())) {
                     targets.addAll(field.getTargets());
@@ -120,7 +120,7 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
         @Override
         public Object[] getVariants() {
 
-            List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            List<LookupElement> lookupElements = new ArrayList<>();
             for(DoctrineModelField field: doctrineModelField) {
                 String column = field.getColumn();
                 if(column != null) {

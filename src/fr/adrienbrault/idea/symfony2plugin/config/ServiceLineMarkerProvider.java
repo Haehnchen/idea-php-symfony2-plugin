@@ -145,7 +145,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Collection<PsiFile> psiFiles = new ArrayList<PsiFile>();
+        Collection<PsiFile> psiFiles = new ArrayList<>();
         // @TODO: use DoctrineMetadataUtil, for single resolve; we have collecting overhead here
         for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(psiElement.getProject())) {
             PhpClass phpClass = doctrineModel.getPhpClass();
@@ -181,7 +181,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Collection<PsiFile> psiFiles = new ArrayList<PsiFile>();
+        Collection<PsiFile> psiFiles = new ArrayList<>();
         for (VirtualFile virtualFile : DoctrineMetadataUtil.findMetadataForRepositoryClass((PhpClass) phpClassContext)) {
             PsiFile file = PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile);
             if(file == null) {
@@ -250,7 +250,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        Collection<PhpClass> phpClasses = new ArrayList<>();
 
         // class in same namespace
         String className = ((PhpClass) phpClassContext).getFQN() + "Validator";
@@ -285,7 +285,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Collection<PhpClass> phpClasses = new ArrayList<PhpClass>(
+        Collection<PhpClass> phpClasses = new ArrayList<>(
             PhpElementsUtil.getClassesInterface(psiElement.getProject(), fqn.substring(0, fqn.length() - "Validator".length()))
         );
 

@@ -26,7 +26,7 @@ import java.util.List;
 
 public class MethodParameterReferenceContributor extends PsiReferenceContributor {
 
-    private static final ExtensionPointName<MethodParameterReferenceContributorExtension> EXTENSIONS = new ExtensionPointName<MethodParameterReferenceContributorExtension>("fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension");
+    private static final ExtensionPointName<MethodParameterReferenceContributorExtension> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension");
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
@@ -43,7 +43,7 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         return new PsiReference[0];
                     }
 
-                    List<MethodParameterSetting> configs = new ArrayList<MethodParameterSetting>();
+                    List<MethodParameterSetting> configs = new ArrayList<>();
 
                     configs.addAll(AssistantReferenceUtil.getMethodsParameterSettings(psiElement.getProject()));
                     configs.addAll(getInternalMethodParameterSetting());
@@ -60,10 +60,10 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
 
                     MethodReference method = (MethodReference) parameterList.getContext();
 
-                    List<PsiReference> psiReferences = new ArrayList<PsiReference>();
+                    List<PsiReference> psiReferences = new ArrayList<>();
 
                     // get config in method scope; so we can pipe them
-                    ArrayList<MethodParameterSetting> methodScopeConfigs = new ArrayList<MethodParameterSetting>();
+                    ArrayList<MethodParameterSetting> methodScopeConfigs = new ArrayList<>();
                     for (MethodParameterSetting config: configs) {
 
 
@@ -89,7 +89,7 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
 
 
                 private Collection<MethodParameterSetting> getInternalMethodParameterSetting() {
-                    Collection<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+                    Collection<MethodParameterSetting> methodParameterSettings = new ArrayList<>();
 
                     methodParameterSettings.add(new MethodParameterSetting(
                         "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface",
@@ -132,7 +132,7 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
 
                 private Collection<MethodParameterSetting> getExtensionMethodParameterSetting(Project project) {
 
-                    Collection<MethodParameterSetting> methodParameterSettings = new ArrayList<MethodParameterSetting>();
+                    Collection<MethodParameterSetting> methodParameterSettings = new ArrayList<>();
 
                     MethodParameterReferenceContributorExtension[] extensions = EXTENSIONS.getExtensions();
                     if(extensions.length == 0) {

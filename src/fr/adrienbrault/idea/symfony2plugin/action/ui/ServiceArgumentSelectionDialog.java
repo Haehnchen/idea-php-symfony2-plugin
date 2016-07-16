@@ -47,7 +47,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 setEnabled(false);
 
-                java.util.List<String> items = new ArrayList<String>();
+                java.util.List<String> items = new ArrayList<>();
 
                 for (ServiceParameter serviceParameter : modelList.getItems()) {
                     items.add(serviceParameter.getCurrentService());
@@ -77,7 +77,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
 
         mainPanel.setLayout(new GridLayout(0, 1));
 
-        this.modelList = new ListTableModel<ServiceParameter>(
+        this.modelList = new ListTableModel<>(
             new IconColumn(),
             new NamespaceColumn(),
             new ServiceColumn()
@@ -87,7 +87,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             this.modelList.addRow(new ServiceParameter(entry.getKey(), entry.getValue()));
         }
 
-        this.tableView = new TableView<ServiceParameter>();
+        this.tableView = new TableView<>();
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
         mainPanel.add(ToolbarDecorator.createDecorator(this.tableView)

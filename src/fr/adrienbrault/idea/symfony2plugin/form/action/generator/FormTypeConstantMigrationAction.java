@@ -59,7 +59,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
                 return;
             }
 
-            final Collection<StringLiteralExpression> formTypes = new ArrayList<StringLiteralExpression>();
+            final Collection<StringLiteralExpression> formTypes = new ArrayList<>();
             phpClass.acceptChildren(new FormTypeStringElementVisitor(formTypes));
 
             if(formTypes.size() == 0) {

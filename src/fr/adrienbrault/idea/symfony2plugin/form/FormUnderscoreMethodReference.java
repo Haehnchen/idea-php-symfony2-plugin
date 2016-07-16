@@ -35,7 +35,7 @@ public class FormUnderscoreMethodReference  extends PsiPolyVariantReferenceBase<
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+        Collection<PsiElement> psiElements = new ArrayList<>();
 
         String value = element.getContents();
         for(DoctrineModelField field: EntityHelper.getModelFields(this.phpClass)) {
@@ -58,9 +58,9 @@ public class FormUnderscoreMethodReference  extends PsiPolyVariantReferenceBase<
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
-        Set<String> strings = new HashSet<String>();
+        Set<String> strings = new HashSet<>();
         for(DoctrineModelField field: EntityHelper.getModelFields(this.phpClass)) {
             addCamelUnderscoreName(strings, org.apache.commons.lang.StringUtils.trim(field.getName()));
             lookupElements.add(new DoctrineModelFieldLookupElement(field).withBoldness(true));

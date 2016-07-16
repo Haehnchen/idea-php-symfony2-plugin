@@ -30,7 +30,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
             return new PsiElement[0];
         }
 
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<>();
 
         attachPropertyGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
         attachJoinGoto((StringLiteralExpression) psiElement.getContext(), psiElements);

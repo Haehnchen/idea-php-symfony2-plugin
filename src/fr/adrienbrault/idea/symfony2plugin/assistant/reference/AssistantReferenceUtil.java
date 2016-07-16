@@ -18,7 +18,7 @@ public class AssistantReferenceUtil {
 
     public static String[] getReferenceProvider(Project project) {
 
-        ArrayList<String> contributorAliases = new ArrayList<String>();
+        ArrayList<String> contributorAliases = new ArrayList<>();
         for(AssistantReferenceProvider referenceProvider: DefaultReferenceProvider.DEFAULT_PROVIDERS) {
             contributorAliases.add(referenceProvider.getAlias());
         }
@@ -28,7 +28,7 @@ public class AssistantReferenceUtil {
 
     public static String[] getContributorProvider(Project project) {
 
-        ArrayList<String> contributorAliases = new ArrayList<String>();
+        ArrayList<String> contributorAliases = new ArrayList<>();
         for(AssistantReferenceContributor assistantReferenceContributor : DefaultReferenceContributor.DEFAULT_CONTRIBUTORS) {
             contributorAliases.add(assistantReferenceContributor.getAlias());
         }
@@ -54,7 +54,7 @@ public class AssistantReferenceUtil {
         List<MethodParameterSetting> methodParameterSettings = Settings.getInstance(project).methodParameterSettings;
 
         if(methodParameterSettings == null) {
-            return new ArrayList<MethodParameterSetting>();
+            return new ArrayList<>();
         }
 
         return (ArrayList<MethodParameterSetting>) methodParameterSettings;

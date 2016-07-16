@@ -24,7 +24,7 @@ public class ServiceParameterToolboxProvider extends PhpToolboxProviderAbstract 
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
 
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
 
         for(Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(parameter.getProject()).entrySet()) {
             results.add(new ParameterLookupElement(entry.getValue()));

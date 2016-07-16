@@ -23,7 +23,7 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributor 
     @Override
     public String[] getNames(Project project, boolean b) {
 
-        Set<String> routeNames = new HashSet<String>();
+        Set<String> routeNames = new HashSet<>();
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
             routeNames.add(symfonyCommand.getName());
         }
@@ -35,7 +35,7 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributor 
     @Override
     public NavigationItem[] getItemsByName(String name, String s2, Project project, boolean b) {
 
-        List<NavigationItem> navigationItems = new ArrayList<NavigationItem>();
+        List<NavigationItem> navigationItems = new ArrayList<>();
 
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
             if(symfonyCommand.getName().equals(name)) {

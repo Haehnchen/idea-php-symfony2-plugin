@@ -31,7 +31,7 @@ public class TemplateReference extends PsiPolyVariantReferenceBase<PsiElement> {
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
         PsiElement[] psiElements = TwigHelper.getTemplatePsiElements(getElement().getProject(), templateName);
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        List<ResolveResult> results = new ArrayList<>();
 
         for (PsiElement psiElement : psiElements) {
             results.add(new PsiElementResolveResult(psiElement));

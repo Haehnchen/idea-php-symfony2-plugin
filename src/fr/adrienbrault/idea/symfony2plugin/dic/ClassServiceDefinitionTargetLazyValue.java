@@ -34,7 +34,7 @@ public class ClassServiceDefinitionTargetLazyValue extends NotNullLazyValue<Coll
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+        Collection<PsiElement> psiElements = new ArrayList<>();
         for(String serviceName: serviceNames) {
             psiElements.addAll(ServiceIndexUtil.findServiceDefinitions(project, serviceName));
         }

@@ -15,7 +15,7 @@ public class YamlPsiElementFactory {
 
     @NotNull
     public static PsiElement createYamlPsiFromText(Project p, final IElementType type, @NotNull String text) {
-        final Ref<PsiElement> ret = new Ref<PsiElement>();
+        final Ref<PsiElement> ret = new Ref<>();
         PsiFile dummyFile = createDummyFile(p, text);
         dummyFile.accept(new PsiRecursiveElementWalkingVisitor() {
             @Override

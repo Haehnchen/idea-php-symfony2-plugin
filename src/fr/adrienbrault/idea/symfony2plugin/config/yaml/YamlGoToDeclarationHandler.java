@@ -43,7 +43,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<>();
 
         // yaml Plugin BC: "!php/const:" is a tag
         IElementType elementType = psiElement.getNode().getElementType();
@@ -94,7 +94,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     private Collection<PsiElement> classGoToDeclaration(PsiElement psiElement, String className) {
 
-        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        Collection<PsiElement> psiElements = new HashSet<>();
 
         // Class::method
         // Class::FooAction

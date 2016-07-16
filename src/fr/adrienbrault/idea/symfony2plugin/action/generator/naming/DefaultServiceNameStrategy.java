@@ -41,7 +41,7 @@ public class DefaultServiceNameStrategy implements ServiceNameStrategyInterface 
                 }
             }
 
-            Collection<String> parts = new ArrayList<String>();
+            Collection<String> parts = new ArrayList<>();
             parts.add(StringUtils.join(Arrays.copyOfRange(split, 0, x), "_"));
 
             String[] bundleAfter = Arrays.copyOfRange(split, x, split.length);

@@ -54,7 +54,7 @@ public class FormFieldNameReference extends PsiReferenceBase<PsiElement> impleme
     public static LookupElement[] getFormLookups(Method method) {
 
         MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
         for(MethodReference methodReference: formBuilderTypes) {
             String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);

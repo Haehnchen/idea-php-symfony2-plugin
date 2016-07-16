@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class RoutingRemoteFileStorage implements RemoteFileStorageInterface<Map<String, Route>> {
 
-    private Map<String, Route> routeMap = new HashMap<String, Route>();
+    private Map<String, Route> routeMap = new HashMap<>();
 
     @NotNull
     @Override
@@ -34,7 +34,7 @@ public class RoutingRemoteFileStorage implements RemoteFileStorageInterface<Map<
 
     @Override
     public void build(@NotNull Project project, @NotNull Collection<FileObject> fileObjects) {
-        Map<String, Route> routeMap = new HashMap<String, Route>();
+        Map<String, Route> routeMap = new HashMap<>();
 
         for (FileObject file : fileObjects) {
 
@@ -64,6 +64,6 @@ public class RoutingRemoteFileStorage implements RemoteFileStorageInterface<Map<
 
     @Override
     public void clear() {
-        this.routeMap = new HashMap<String, Route>();
+        this.routeMap = new HashMap<>();
     }
 }

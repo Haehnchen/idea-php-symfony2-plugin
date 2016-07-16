@@ -10,7 +10,7 @@ public class TwigExtension {
 
     private String signature = null;
     private TwigExtensionParser.TwigExtensionType twigExtensionType = null;
-    private Map<String, String> options = new HashMap<String, String>();
+    private Map<String, String> options = new HashMap<>();
 
     public TwigExtension(TwigExtensionParser.TwigExtensionType twigExtensionType) {
         this.twigExtensionType = twigExtensionType;

@@ -20,8 +20,8 @@ public class ServiceMap {
     }
 
     public ServiceMap() {
-       this.map = new HashMap<String, String>();
-       this.publicMap = new HashMap<String, String>();
+       this.map = new HashMap<>();
+       this.publicMap = new HashMap<>();
     }
 
     public Map<String, String> getMap() {

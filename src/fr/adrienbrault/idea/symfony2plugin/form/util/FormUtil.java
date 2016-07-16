@@ -47,7 +47,7 @@ public class FormUtil {
 
     public static Collection<LookupElement> getFormTypeLookupElements(Project project) {
 
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        Collection<LookupElement> lookupElements = new ArrayList<>();
 
         FormUtil.FormTypeCollector collector = new FormUtil.FormTypeCollector(project).collect();
 
@@ -73,7 +73,7 @@ public class FormUtil {
 
     public static MethodReference[] getFormBuilderTypes(Method method) {
 
-        final List<MethodReference> methodReferences = new ArrayList<MethodReference>();
+        final List<MethodReference> methodReferences = new ArrayList<>();
 
         final Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
         PsiTreeUtil.collectElements(method, new PsiElementFilter() {
@@ -225,7 +225,7 @@ public class FormUtil {
     @NotNull
     public static Map<String, Set<String>> getTags(@NotNull YAMLFile yamlFile) {
 
-        Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> map = new HashMap<>();
         for(YAMLKeyValue yamlServiceKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
             String serviceName = yamlServiceKeyValue.getName();
             Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
@@ -239,7 +239,7 @@ public class FormUtil {
 
     public static Map<String, Set<String>> getTags(XmlFile psiFile) {
 
-        Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> map = new HashMap<>();
 
         XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);
         if(document == null) {
@@ -289,7 +289,7 @@ public class FormUtil {
 
     public static Set<String> getTags(XmlTag serviceTag) {
 
-        Set<String> tags = new HashSet<String>();
+        Set<String> tags = new HashSet<>();
 
         for(XmlTag serviceSubTag: serviceTag.getSubTags()) {
             if("tag".equals(serviceSubTag.getName())) {
@@ -310,7 +310,7 @@ public class FormUtil {
     @NotNull
     public static Map<String, FormTypeClass> getFormTypeClasses(@NotNull Project project) {
 
-        Map<String, FormTypeClass> map = new HashMap<String, FormTypeClass>();
+        Map<String, FormTypeClass> map = new HashMap<>();
 
         for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(ABSTRACT_FORM_INTERFACE)) {
             if(!isValidFormPhpClass(phpClass)) {
@@ -339,7 +339,7 @@ public class FormUtil {
 
         public FormTypeCollector(Project project) {
             this.project = project;
-            this.formTypesMap = new HashMap<String, FormTypeClass>();
+            this.formTypesMap = new HashMap<>();
         }
 
         public FormTypeCollector collect() {

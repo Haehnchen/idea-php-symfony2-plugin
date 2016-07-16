@@ -272,7 +272,7 @@ public class MethodMatcher {
         final protected PsiElement psiElement;
 
         public AbstractMethodParameterMatcher(PsiElement psiElement, int parameterIndex) {
-            this.signatures = new ArrayList<CallToSignature>();
+            this.signatures = new ArrayList<>();
             this.parameterIndex = parameterIndex;
             this.psiElement = psiElement;
         }

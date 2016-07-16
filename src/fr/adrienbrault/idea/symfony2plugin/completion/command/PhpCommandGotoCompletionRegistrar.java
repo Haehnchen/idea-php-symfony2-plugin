@@ -84,7 +84,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
         @Override
         public Collection<LookupElement> getLookupElements() {
 
-            Collection<LookupElement> elements = new ArrayList<LookupElement>();
+            Collection<LookupElement> elements = new ArrayList<>();
 
             Map<String, CommandArg> targets = getCommandConfigurationMap(phpClass, addMethod);
 
@@ -164,7 +164,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyMap();
             }
 
-            Map<String, CommandArg> targets = new HashMap<String, CommandArg>();
+            Map<String, CommandArg> targets = new HashMap<>();
 
             for (PsiElement element : psiElements) {
 

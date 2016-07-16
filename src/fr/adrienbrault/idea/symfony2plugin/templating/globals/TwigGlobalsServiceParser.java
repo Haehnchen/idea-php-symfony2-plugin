@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TwigGlobalsServiceParser extends AbstractServiceParser {
 
-    protected Map<String, TwigGlobalVariable> twigGlobals = new ConcurrentHashMap<String, TwigGlobalVariable>();
+    protected Map<String, TwigGlobalVariable> twigGlobals = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {

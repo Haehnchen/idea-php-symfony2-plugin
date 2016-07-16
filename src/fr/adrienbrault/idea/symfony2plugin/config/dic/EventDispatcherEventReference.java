@@ -29,7 +29,7 @@ public class EventDispatcherEventReference extends PsiPolyVariantReferenceBase<P
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
 
-        List<ResolveResult> resolveResults = new ArrayList<ResolveResult>();
+        List<ResolveResult> resolveResults = new ArrayList<>();
 
         for(PsiElement psiElement: EventDispatcherSubscriberUtil.getEventPsiElements(getElement().getProject(), this.eventName)) {
             resolveResults.add(new PsiElementResolveResult(psiElement));

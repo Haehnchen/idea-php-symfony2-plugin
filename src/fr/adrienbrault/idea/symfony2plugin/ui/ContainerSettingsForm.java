@@ -47,9 +47,9 @@ public class ContainerSettingsForm implements Configurable {
     public ContainerSettingsForm(@NotNull Project project) {
 
         this.project = project;
-        this.tableView = new TableView<ContainerFile>();
+        this.tableView = new TableView<>();
 
-        this.modelList = new ListTableModel<ContainerFile>(
+        this.modelList = new ListTableModel<>(
             new UiPathColumnInfo.PathColumn(),
             new UiPathColumnInfo.TypeColumn(project)
         );
@@ -174,7 +174,7 @@ public class ContainerSettingsForm implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
+        List<ContainerFile> containerFiles = new ArrayList<>();
 
         for(ContainerFile containerFile :this.tableView.getListTableModel().getItems()) {
             containerFiles.add(new ContainerFile(containerFile.getPath()));

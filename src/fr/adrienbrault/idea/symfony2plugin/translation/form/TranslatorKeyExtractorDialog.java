@@ -96,7 +96,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 
-        listTableModel = new ListTableModel<TranslationFileModel>(
+        listTableModel = new ListTableModel<>(
             new IconColumn(),
             new PathNameColumn(),
             new FileNameColumn(),
@@ -106,7 +106,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         comboBox1.setSelectedItem(defaultDomain);
         filterList(defaultDomain);
 
-        TableView<TranslationFileModel> tableView = new TableView<TranslationFileModel>();
+        TableView<TranslationFileModel> tableView = new TableView<>();
         tableView.setModelAndUpdateColumns(listTableModel);
 
         panelTableView.add(ToolbarDecorator.createDecorator(tableView)
@@ -128,7 +128,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
         // we only support yaml files right now
         // filter on PsiFile instance
-        Collection<PsiFile> domainPsiFilesYaml = new ArrayList<PsiFile>();
+        Collection<PsiFile> domainPsiFilesYaml = new ArrayList<>();
         for(PsiFile domainPsiFiles: TranslationUtil.getDomainPsiFiles(this.project, domainName)) {
             if(domainPsiFiles instanceof YAMLFile) {
                 domainPsiFilesYaml.add(domainPsiFiles);
@@ -148,7 +148,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         String text = textTranslationKey.getText();
 
         if(StringUtils.isNotBlank(text)) {
-            List<TranslationFileModel> psiFiles = new ArrayList<TranslationFileModel>();
+            List<TranslationFileModel> psiFiles = new ArrayList<>();
             for(TranslationFileModel translationFileModel: listTableModel.getItems()) {
                 if(translationFileModel.isEnabled()) {
                     psiFiles.add(translationFileModel);
@@ -276,7 +276,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(this.project);
         final SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(fileContext);
 
-        List<TranslationFileModel> psiFilesSorted = new ArrayList<TranslationFileModel>();
+        List<TranslationFileModel> psiFilesSorted = new ArrayList<>();
         for(PsiFile psiFile: psiFiles) {
             TranslationFileModel psiWeightList = new TranslationFileModel(psiFile);
 

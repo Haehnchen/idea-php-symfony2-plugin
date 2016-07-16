@@ -65,18 +65,18 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
             requests = requests.subList(0, 10);
         }
 
-        Collection<AnAction> templateActions = new ArrayList<AnAction>();
-        Map<String, Integer> templateActionsMap = new HashMap<String, Integer>();
+        Collection<AnAction> templateActions = new ArrayList<>();
+        Map<String, Integer> templateActionsMap = new HashMap<>();
 
-        Collection<AnAction> routeActions = new ArrayList<AnAction>();
-        Map<String, Integer> routeActionsMap = new HashMap<String, Integer>();
+        Collection<AnAction> routeActions = new ArrayList<>();
+        Map<String, Integer> routeActionsMap = new HashMap<>();
 
-        Collection<AnAction> controllerActions = new ArrayList<AnAction>();
-        Map<String, Integer> controllerActionsMap = new HashMap<String, Integer>();
+        Collection<AnAction> controllerActions = new ArrayList<>();
+        Map<String, Integer> controllerActionsMap = new HashMap<>();
 
-        Collection<AnAction> urlActions = new ArrayList<AnAction>();
+        Collection<AnAction> urlActions = new ArrayList<>();
 
-        Collection<AnAction> mailActions = new ArrayList<AnAction>();
+        Collection<AnAction> mailActions = new ArrayList<>();
 
         for(ProfilerRequest profilerRequest : requests) {
             DefaultDataCollector collector = profilerRequest.getCollector(DefaultDataCollector.class);

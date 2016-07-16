@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
-    private static final Key<CachedValue<Collection<TwigPath>>> CACHE = new Key<CachedValue<Collection<TwigPath>>>("TWIG_JSON_INDEX_CACHE");
+    private static final Key<CachedValue<Collection<TwigPath>>> CACHE = new Key<>("TWIG_JSON_INDEX_CACHE");
 
     @NotNull
     @Override
@@ -55,7 +55,7 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
     @NotNull
     private Collection<TwigPath> getNamespacesInner(@NotNull TwigNamespaceExtensionParameter parameter) {
 
-        Collection<TwigPath> twigPaths = new ArrayList<TwigPath>();
+        Collection<TwigPath> twigPaths = new ArrayList<>();
 
         for (final PsiFile psiFile : FilenameIndex.getFilesByName(parameter.getProject(), "ide-twig.json", GlobalSearchScope.allScope(parameter.getProject()))) {
             Collection<TwigPath> cachedValue = CachedValuesManager.getCachedValue(psiFile, new MyJsonCachedValueProvider(psiFile));
@@ -78,7 +78,7 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
         @Override
         public Result<Collection<TwigPath>> compute() {
 
-            Collection<TwigPath> twigPaths = new ArrayList<TwigPath>();
+            Collection<TwigPath> twigPaths = new ArrayList<>();
 
             String text = psiFile.getText();
             TwigConfigJson configJson = null;

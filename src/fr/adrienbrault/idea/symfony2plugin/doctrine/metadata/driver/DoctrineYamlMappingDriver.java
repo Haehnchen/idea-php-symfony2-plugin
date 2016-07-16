@@ -29,7 +29,7 @@ public class DoctrineYamlMappingDriver implements DoctrineMappingDriverInterface
             return null;
         }
 
-        Collection<DoctrineModelField> fields = new ArrayList<DoctrineModelField>();
+        Collection<DoctrineModelField> fields = new ArrayList<>();
         DoctrineMetadataModel model = new DoctrineMetadataModel(fields);
 
         for (YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues((YAMLFile) psiFile)) {

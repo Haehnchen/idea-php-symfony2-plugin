@@ -22,7 +22,7 @@ public class BundleFileToolboxTargetLocator implements PhpToolboxTargetLocator {
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> targets = new ArrayList<PsiElement>();
+        Collection<PsiElement> targets = new ArrayList<>();
         targets.addAll(FileResourceUtil.getFileResourceTargetsInBundleScope(parameter.getProject(), parameter.getTarget()));
         return targets;
     }

@@ -24,7 +24,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
     @Override
     public void collectGotoRelatedItems(ControllerActionGotoRelatedCollectorParameter parameter) {
 
-        Set<String> uniqueTemplates = new HashSet<String>();
+        Set<String> uniqueTemplates = new HashSet<>();
 
         // on @Template annotation
         PhpDocComment phpDocComment = parameter.getMethod().getDocComment();

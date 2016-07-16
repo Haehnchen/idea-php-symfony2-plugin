@@ -86,7 +86,7 @@ public class SymfonyInstallerUtil {
     @NotNull
     public static String[] getCreateProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath, @Nullable String commandLineOptions) {
 
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
 
         commands.add(phpPath);
         commands.add(installerPath);
@@ -113,10 +113,10 @@ public class SymfonyInstallerUtil {
 
         JsonObject jsonObject = new JsonParser().parse(jsonContent).getAsJsonObject();
 
-        List<SymfonyInstallerVersion> symfonyInstallerVersions = new ArrayList<SymfonyInstallerVersion>();
+        List<SymfonyInstallerVersion> symfonyInstallerVersions = new ArrayList<>();
 
         // prevent adding duplicate version on alias names
-        Set<String> aliasBranches = new HashSet<String>();
+        Set<String> aliasBranches = new HashSet<>();
 
         // get alias version, in most common order
         for(String s : new String[] {"latest", "lts"}) {
@@ -132,7 +132,7 @@ public class SymfonyInstallerUtil {
         }
 
 
-        List<SymfonyInstallerVersion> branches = new ArrayList<SymfonyInstallerVersion>();
+        List<SymfonyInstallerVersion> branches = new ArrayList<>();
         Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
         for (Map.Entry<String, JsonElement> entry : entries) {
             if(!entry.getKey().matches("^\\d+\\.\\d+$")) {
@@ -160,7 +160,7 @@ public class SymfonyInstallerUtil {
         symfonyInstallerVersions.addAll(branches);
 
         // we need reverse order for sorting them on version string
-        List<SymfonyInstallerVersion> installableVersions = new ArrayList<SymfonyInstallerVersion>();
+        List<SymfonyInstallerVersion> installableVersions = new ArrayList<>();
         for (JsonElement installable : jsonObject.getAsJsonArray("installable")) {
             installableVersions.add(new SymfonyInstallerVersion(installable.getAsString()));
         }

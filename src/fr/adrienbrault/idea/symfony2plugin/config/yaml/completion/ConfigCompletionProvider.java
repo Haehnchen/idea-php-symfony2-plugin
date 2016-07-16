@@ -305,7 +305,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
     @NotNull
     private Map<String, String> getNodeCommentVars(@Nullable Node node) {
-        Map<String, String> comments = new HashMap<String, String>();
+        Map<String, String> comments = new HashMap<>();
         
         if(node == null) return comments;
 

@@ -45,7 +45,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
             return new FoldingDescriptor[0];
         }
 
-        List<FoldingDescriptor> descriptors = new ArrayList<FoldingDescriptor>();
+        List<FoldingDescriptor> descriptors = new ArrayList<>();
 
         Collection<StringLiteralExpression> stringLiteralExpressiones = PsiTreeUtil.findChildrenOfType(psiElement, StringLiteralExpression.class);
         for(StringLiteralExpression stringLiteralExpression: stringLiteralExpressiones) {

@@ -22,7 +22,7 @@ import java.util.List;
 
 public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
-    private static final ExtensionPointName<ControllerActionGotoRelatedCollector> EP_NAME = new ExtensionPointName<ControllerActionGotoRelatedCollector>("fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector");
+    private static final ExtensionPointName<ControllerActionGotoRelatedCollector> EP_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector");
 
     @Nullable
     @Override
@@ -78,12 +78,12 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             return builder.createLineMarkerInfo(psiElement);
         }
 
-        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), Symfony2Icons.SYMFONY_LINE_MARKER, 6, new ConstantFunction("Related Files"), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<>(psiElement, psiElement.getTextOffset(), Symfony2Icons.SYMFONY_LINE_MARKER, 6, new ConstantFunction("Related Files"), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
     public static List<GotoRelatedItem> getGotoRelatedItems(Method method) {
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
 
         ControllerActionGotoRelatedCollectorParameter parameter = new ControllerActionGotoRelatedCollectorParameter(method, gotoRelatedItems);
         for(ControllerActionGotoRelatedCollector extension : EP_NAME.getExtensions()) {

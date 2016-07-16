@@ -39,7 +39,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         super(element);
         entityName = element.getContents();
 
-        this.doctrineManagers = new ArrayList<DoctrineTypes.Manager>();
+        this.doctrineManagers = new ArrayList<>();
         this.doctrineManagers.add(DoctrineTypes.Manager.ORM);
         this.doctrineManagers.add(DoctrineTypes.Manager.MONGO_DB);
         this.doctrineManagers.add(DoctrineTypes.Manager.COUCH_DB);
@@ -60,7 +60,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public Object[] getVariants() {
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
         results.addAll(getModelLookupElements(getElement().getProject(), this.useClassNameAsLookupString, this.doctrineManagers.toArray(new DoctrineTypes.Manager[this.doctrineManagers.size()])));
         return results.toArray();
     }
@@ -80,12 +80,12 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private static List<LookupElement> getModelLookupElements(Project project, boolean useClassNameAsLookupString, DoctrineTypes.Manager... managers) {
 
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
         List<DoctrineTypes.Manager> managerList = Arrays.asList(managers);
 
         if(managerList.contains(DoctrineTypes.Manager.ORM)) {
 
-            Map<String, String> entityNameMap = new HashMap<String, String>(
+            Map<String, String> entityNameMap = new HashMap<>(
                 ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap()
             );
 
@@ -97,7 +97,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
         if(managerList.contains(DoctrineTypes.Manager.MONGO_DB) || managerList.contains(DoctrineTypes.Manager.COUCH_DB)) {
 
-            Map<String, String> documentNameMap = new HashMap<String, String>(
+            Map<String, String> documentNameMap = new HashMap<>(
                 ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap()
             );
 
@@ -108,7 +108,7 @@ public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
         }
 
         // add custom doctrine classes
-        Collection<DoctrineModelProviderParameter.DoctrineModel> doctrineModels = new ArrayList<DoctrineModelProviderParameter.DoctrineModel>();
+        Collection<DoctrineModelProviderParameter.DoctrineModel> doctrineModels = new ArrayList<>();
         DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, doctrineModels);
         for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
             for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {

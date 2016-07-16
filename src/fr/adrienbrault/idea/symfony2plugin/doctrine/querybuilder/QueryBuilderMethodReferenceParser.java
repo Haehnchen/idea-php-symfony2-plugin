@@ -79,7 +79,7 @@ public class QueryBuilderMethodReferenceParser {
 
                 qb.addPropertyAlias(entry.getValue(), new QueryBuilderPropertyAlias(entry.getValue(), null, new DoctrineModelField(entry.getValue()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
 
-                List<QueryBuilderRelation> relationList = new ArrayList<QueryBuilderRelation>();
+                List<QueryBuilderRelation> relationList = new ArrayList<>();
 
                 //qb.addRelation(entry.getValue(), attachRelationFields(phpClass));
                 for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
@@ -183,7 +183,7 @@ public class QueryBuilderMethodReferenceParser {
 
     private Map<String, String> findRootDefinition(Collection<MethodReference> methodReferences) {
 
-        Map<String, String> roots = new HashMap<String, String>();
+        Map<String, String> roots = new HashMap<>();
 
         if(methodReferences.size() == 0) {
             return roots;
@@ -323,7 +323,7 @@ public class QueryBuilderMethodReferenceParser {
 
     public static List<QueryBuilderRelation> attachRelationFields(PhpClass phpClass) {
 
-        List<QueryBuilderRelation> relations = new ArrayList<QueryBuilderRelation>();
+        List<QueryBuilderRelation> relations = new ArrayList<>();
 
         for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
             if(field.getRelation() != null && field.getRelationType() != null) {

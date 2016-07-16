@@ -14,7 +14,7 @@ public class TwigMarcoParser {
      */
     public HashMap<String, String> getMacros(PsiFile file) {
 
-        HashMap<String, String> current = new HashMap<String, String>();
+        HashMap<String, String> current = new HashMap<>();
 
         Matcher matcherBlocks = Pattern.compile("\\{%[\\s+]*macro[\\s+]*(.*?)[\\s+]*\\((.*?)\\)").matcher(file.getText());
         while(matcherBlocks.find()){

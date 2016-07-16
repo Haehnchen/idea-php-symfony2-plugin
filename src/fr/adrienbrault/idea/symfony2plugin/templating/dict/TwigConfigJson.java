@@ -9,7 +9,7 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigConfigJson {
-    private Collection<TwigPathJson> namespaces = new ArrayList<TwigPathJson>();
+    private Collection<TwigPathJson> namespaces = new ArrayList<>();
 
     public Collection<TwigPathJson> getNamespaces() {
         return namespaces;

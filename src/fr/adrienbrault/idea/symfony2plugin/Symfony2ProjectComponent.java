@@ -33,7 +33,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public static String HELP_URL = "http://symfony2-plugin.espend.de/";
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
-    private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<ServiceContainerLoader>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
+    private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
 
     private Project project;
 
@@ -111,7 +111,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
     public List<File> getContainerFiles(boolean attachSetting) {
 
-        List<ContainerFile> containerFiles = new ArrayList<ContainerFile>();
+        List<ContainerFile> containerFiles = new ArrayList<>();
 
         ServiceContainerLoaderParameter containerLoaderExtensionParameter = new ServiceContainerLoaderParameter(project, containerFiles);
         for(ServiceContainerLoader loaderExtension : SERVICE_CONTAINER_POINT_NAME.getExtensions()) {
@@ -124,7 +124,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             }
         }
 
-        List<File> validFiles = new ArrayList<File>();
+        List<File> validFiles = new ArrayList<>();
         for(ContainerFile containerFile : containerFiles) {
             if(containerFile.exists(this.project)) {
                 validFiles.add(containerFile.getFile(this.project));

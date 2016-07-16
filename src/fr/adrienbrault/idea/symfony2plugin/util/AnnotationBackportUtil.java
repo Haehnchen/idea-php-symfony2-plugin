@@ -61,7 +61,7 @@ public class AnnotationBackportUtil {
     public static Map<String, String> getUseImportMap(PhpDocComment phpDocComment) {
 
         // search for use alias in local file
-        final Map<String, String> useImports = new HashMap<String, String>();
+        final Map<String, String> useImports = new HashMap<>();
 
         PhpNamespace phpNamespace = PsiTreeUtil.getParentOfType(phpDocComment, PhpNamespace.class);
         if(phpNamespace == null) {
@@ -101,7 +101,7 @@ public class AnnotationBackportUtil {
     public static Map<String, String> getUseImportMap(PsiFile psiFile) {
 
         // search for use alias in local file
-        final Map<String, String> useImports = new HashMap<String, String>();
+        final Map<String, String> useImports = new HashMap<>();
 
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
@@ -130,7 +130,7 @@ public class AnnotationBackportUtil {
     @NotNull
     public static Collection<PhpDocTag> filterValidDocTags(Collection<PhpDocTag> phpDocTags) {
 
-        Collection<PhpDocTag> filteredPhpDocTags = new ArrayList<PhpDocTag>();
+        Collection<PhpDocTag> filteredPhpDocTags = new ArrayList<>();
 
         for(PhpDocTag phpDocTag: phpDocTags) {
             if(!NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {

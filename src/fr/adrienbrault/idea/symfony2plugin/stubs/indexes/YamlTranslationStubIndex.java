@@ -65,7 +65,7 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, Se
                     return map;
                 }
 
-                final Set<String> translationKeySet = new HashSet<String>();
+                final Set<String> translationKeySet = new HashSet<>();
                 YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, new YamlTranslationCollector() {
                     @Override
                     public boolean collect(@NotNull String keyName, YAMLKeyValue yamlKeyValue) {

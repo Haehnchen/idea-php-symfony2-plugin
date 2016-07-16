@@ -624,7 +624,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 TwigHelper.getTwigFilesByName(parameters.getPosition().getProject())
             ).walk(parameters.getPosition().getContainingFile());
 
-            Set<String> uniqueList = new HashSet<String>();
+            Set<String> uniqueList = new HashSet<>();
             for (TwigBlock block : blocks) {
                 if(uniqueList.contains(block.getName())) {
                     continue;

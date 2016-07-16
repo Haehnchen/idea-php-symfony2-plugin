@@ -109,7 +109,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyList();
             }
 
-            final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+            final Collection<PsiElement> psiElements = new ArrayList<>();
 
             FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionVisitor() {
                 @Override
@@ -125,7 +125,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
         @NotNull
         public Collection<LookupElement> getLookupElements() {
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            Collection<LookupElement> lookupElements = new ArrayList<>();
             FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
             return lookupElements;
         }

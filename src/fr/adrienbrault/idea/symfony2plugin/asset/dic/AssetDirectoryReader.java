@@ -46,7 +46,7 @@ public class AssetDirectoryReader {
     }
 
     public List<AssetFile> getAssetFiles() {
-        final List<AssetFile> files = new ArrayList<AssetFile>();
+        final List<AssetFile> files = new ArrayList<>();
 
         final VirtualFile webDirectory = getProjectAssetRoot(project);
         if (null == webDirectory) {

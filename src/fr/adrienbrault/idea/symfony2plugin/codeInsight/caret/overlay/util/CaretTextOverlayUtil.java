@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CaretTextOverlayUtil {
 
-    private static final ExtensionPointName<CaretTextOverlay> EXTENSIONS = new ExtensionPointName<CaretTextOverlay>(
+    private static final ExtensionPointName<CaretTextOverlay> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.CaretTextOverlay"
     );
 

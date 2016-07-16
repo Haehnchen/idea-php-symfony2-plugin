@@ -31,7 +31,7 @@ public class YamlTranslationVistor {
     }
 
     private static void collectItems(YAMLKeyValue yamlKeyValue, YamlTranslationCollector translationCollector ) {
-        collectItems(new ArrayList<String>(), yamlKeyValue, translationCollector);
+        collectItems(new ArrayList<>(), yamlKeyValue, translationCollector);
     }
 
     private static boolean collectItems(List<String> levels, YAMLKeyValue yamlKeyValue, YamlTranslationCollector translationCollector) {
@@ -60,7 +60,7 @@ public class YamlTranslationVistor {
             if(lastChildElement instanceof YAMLMapping) {
 
                 // use copy of current level and pipe to children call
-                ArrayList<String> copyLevels = new ArrayList<String>(levels);
+                ArrayList<String> copyLevels = new ArrayList<>(levels);
                 copyLevels.add(keyText);
 
                 collectNextLevelElements((YAMLCompoundValue) childElements.get(0), copyLevels, translationCollector);
@@ -82,7 +82,7 @@ public class YamlTranslationVistor {
     }
 
     private static boolean callCollectCallback(List<String> levels, YAMLKeyValue yamlKeyValue, YamlTranslationCollector translationCollector, String keyText) {
-        ArrayList<String> copyLevels = new ArrayList<String>(levels);
+        ArrayList<String> copyLevels = new ArrayList<>(levels);
         copyLevels.add(keyText);
 
         return translationCollector.collect(StringUtils.join(copyLevels, "."), yamlKeyValue);

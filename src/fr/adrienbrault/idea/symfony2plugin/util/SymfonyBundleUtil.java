@@ -30,7 +30,7 @@ public class SymfonyBundleUtil {
 
     protected void loadBundles() {
 
-        this.symfonyBundles = new HashMap<String, SymfonyBundle>();
+        this.symfonyBundles = new HashMap<>();
         Collection<PhpClass> phpClasses = this.phpIndex.getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
 
         for (PhpClass phpClass : phpClasses) {
@@ -45,7 +45,7 @@ public class SymfonyBundleUtil {
 
     public Map<String, SymfonyBundle> getParentBundles() {
 
-        Map<String, SymfonyBundle> bundles = new HashMap<String, SymfonyBundle>();
+        Map<String, SymfonyBundle> bundles = new HashMap<>();
 
         for (Map.Entry<String, SymfonyBundle> entry : this.symfonyBundles.entrySet()) {
             if(entry.getValue().getParentBundleName() != null) {

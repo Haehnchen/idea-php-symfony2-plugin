@@ -110,7 +110,7 @@ public class FormFieldResolver implements TwigTypeResolver {
     public static List<TwigTypeContainer> getTwigTypeContainer(Method method) {
 
         MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
-        List<TwigTypeContainer> twigTypeContainers = new ArrayList<TwigTypeContainer>();
+        List<TwigTypeContainer> twigTypeContainers = new ArrayList<>();
 
         for(MethodReference methodReference: formBuilderTypes) {
 

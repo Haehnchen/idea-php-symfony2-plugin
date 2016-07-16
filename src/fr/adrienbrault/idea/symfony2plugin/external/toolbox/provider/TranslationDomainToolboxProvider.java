@@ -37,7 +37,7 @@ public class TranslationDomainToolboxProvider extends PhpToolboxProviderAbstract
     @Override
     public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
 
-        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        Collection<PsiElement> psiElements = new HashSet<>();
         for (PsiFile psiFile : TranslationUtil.getDomainPsiFiles(parameter.getProject(), parameter.getContents())) {
             psiElements.add(psiFile);
         }

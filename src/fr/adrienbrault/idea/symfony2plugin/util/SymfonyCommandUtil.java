@@ -22,7 +22,7 @@ public class SymfonyCommandUtil {
     @NotNull
     public static Collection<SymfonyCommand> getCommands(@NotNull Project project) {
 
-        Collection<SymfonyCommand> symfonyCommands = new ArrayList<SymfonyCommand>();
+        Collection<SymfonyCommand> symfonyCommands = new ArrayList<>();
 
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Command\\Command")) {
 

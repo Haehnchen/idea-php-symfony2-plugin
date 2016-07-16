@@ -24,7 +24,7 @@ public class CodeUtil {
         }
 
         // collection method names and sort them, to get method matching before
-        List<String> methods = new ArrayList<String>();
+        List<String> methods = new ArrayList<>();
         methods.add(methodName);
         for (Method method: ownMethods) {
             methods.add(method.getName());

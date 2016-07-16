@@ -107,7 +107,7 @@ public class TwigUtil {
         // Also replace "Matcher" with annotation psi elements; now possible
         // Wait for "annotation plugin" update; to not implement whole stuff here again?
 
-        Map<String, PsiElement> templateFiles = new HashMap<String, PsiElement>();
+        Map<String, PsiElement> templateFiles = new HashMap<>();
 
         // find template name on annotation parameter
         // @Template("templatename")
@@ -250,7 +250,7 @@ public class TwigUtil {
 
     public static List<TwigMacro> getImportedMacros(@NotNull PsiFile psiFile) {
 
-        List<TwigMacro> macros = new ArrayList<TwigMacro>();
+        List<TwigMacro> macros = new ArrayList<>();
 
         PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
             @Override
@@ -287,7 +287,7 @@ public class TwigUtil {
 
     public static List<TwigMacro> getImportedMacrosNamespaces(@NotNull PsiFile psiFile) {
 
-        List<TwigMacro> macros = new ArrayList<TwigMacro>();
+        List<TwigMacro> macros = new ArrayList<>();
 
         String str = psiFile.getText();
 
@@ -323,7 +323,7 @@ public class TwigUtil {
 
     public static ArrayList<TwigSet> getSetDeclaration(PsiFile psiFile) {
 
-        ArrayList<TwigSet> sets = new ArrayList<TwigSet>();
+        ArrayList<TwigSet> sets = new ArrayList<>();
         String str = psiFile.getText();
 
         // {% set foo = 'foo' %}
@@ -378,7 +378,7 @@ public class TwigUtil {
 
     public static Map<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
 
-        Map<String, PsiVariable> vars = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> vars = new HashMap<>();
 
         PsiFile psiFile = psiElement.getContainingFile();
         if(!(psiFile instanceof TwigFile)) {
@@ -392,7 +392,7 @@ public class TwigUtil {
 
         final Set<Method> methods = getTwigFileMethodUsageOnIndex((TwigFile) psiFile);
 
-        Map<String, PsiVariable> stringPsiVariableHashMap = new HashMap<String, PsiVariable>();
+        Map<String, PsiVariable> stringPsiVariableHashMap = new HashMap<>();
         for(Method methodIndex : methods) {
             stringPsiVariableHashMap.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
         }
@@ -409,11 +409,11 @@ public class TwigUtil {
             return Collections.emptySet();
         }
 
-        final Set<VirtualFile> virtualFiles = new HashSet<VirtualFile>();
+        final Set<VirtualFile> virtualFiles = new HashSet<>();
 
         // find virtual files
         for(String key: keys) {
-            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<>(Arrays.asList(key)), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
                     virtualFiles.add(virtualFile);
@@ -422,7 +422,7 @@ public class TwigUtil {
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), PhpFileType.INSTANCE));
         }
 
-        final Set<Method> methods = new HashSet<Method>();
+        final Set<Method> methods = new HashSet<>();
 
         for(VirtualFile virtualFile : virtualFiles) {
 
@@ -496,7 +496,7 @@ public class TwigUtil {
 
         VirtualFile currentFile = psiElement.getContainingFile().getVirtualFile();
 
-        List<String> templateNames = new ArrayList<String>();
+        List<String> templateNames = new ArrayList<>();
         for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
             if(entry.getValue().equals(currentFile)) {
                 templateNames.add(entry.getKey());
@@ -693,7 +693,7 @@ public class TwigUtil {
     public static Collection<String> getCreateAbleTemplatePaths(@NotNull Project project, @NotNull String templateName) {
         templateName = TwigHelper.normalizeTemplateName(templateName);
 
-        Collection<String> paths = new HashSet<String>();
+        Collection<String> paths = new HashSet<>();
 
         for (TwigPath twigPath : TwigHelper.getTwigNamespaces(project)) {
             if(!twigPath.isEnabled()) {

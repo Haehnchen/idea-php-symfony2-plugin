@@ -29,7 +29,7 @@ public class ConstraintPropertyReference extends PsiPolyVariantReferenceBase<Psi
     @Override
     public ResolveResult[] multiResolve(boolean b) {
 
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<>();
 
         String content = ((StringLiteralExpression) getElement()).getContents();
         for(Field field: constraintPhpClass.getFields()) {
@@ -46,7 +46,7 @@ public class ConstraintPropertyReference extends PsiPolyVariantReferenceBase<Psi
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
 
         for(Field field: constraintPhpClass.getFields()) {
             if(!field.isConstant() && field.getModifier().isPublic()) {

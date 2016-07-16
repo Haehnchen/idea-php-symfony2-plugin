@@ -46,7 +46,7 @@ public class ServiceIndexUtil {
 
     public static List<PsiElement> findServiceDefinitions(@NotNull Project project, @NotNull String serviceName) {
 
-        List<PsiElement> items = new ArrayList<PsiElement>();
+        List<PsiElement> items = new ArrayList<>();
 
         VirtualFile[] twigVirtualFiles = ServiceIndexUtil.findServiceDefinitionFiles(project, serviceName);
 
@@ -83,7 +83,7 @@ public class ServiceIndexUtil {
 
     public static List<PsiElement> findParameterDefinitions(@NotNull PsiFile psiFile, @NotNull String parameterName) {
 
-        List<PsiElement> items = new ArrayList<PsiElement>();
+        List<PsiElement> items = new ArrayList<>();
 
         if(psiFile instanceof YAMLFile) {
             PsiElement servicePsiElement = YamlHelper.getLocalParameterMap(psiFile, parameterName);
@@ -119,7 +119,7 @@ public class ServiceIndexUtil {
             return new PsiElement[0];
         }
 
-        List<PsiElement> psiElements = new ArrayList<PsiElement>();
+        List<PsiElement> psiElements = new ArrayList<>();
         for(String serviceName: serviceNames) {
             psiElements.addAll(findServiceDefinitions(phpClass.getProject(), serviceName));
         }

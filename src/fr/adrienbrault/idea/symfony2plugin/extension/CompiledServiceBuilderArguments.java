@@ -13,7 +13,7 @@ import java.util.Collection;
 public class CompiledServiceBuilderArguments {
 
     @NotNull
-    final private Collection<InputStream> streams = new ArrayList<InputStream>();
+    final private Collection<InputStream> streams = new ArrayList<>();
 
     @NotNull
     private final Project project;

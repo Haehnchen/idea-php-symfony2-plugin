@@ -63,7 +63,7 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
             return new Object[0];
         }
 
-        List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        List<LookupElement> lookupElements = new ArrayList<>();
         for(Method publicMethod: PhpElementsUtil.getClassPublicMethod(phpClass)) {
             lookupElements.add(new PhpLookupElement(publicMethod));
         }

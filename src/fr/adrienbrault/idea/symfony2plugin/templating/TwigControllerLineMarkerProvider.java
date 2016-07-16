@@ -97,7 +97,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        Set<Method> methods = new HashSet<Method>();
+        Set<Method> methods = new HashSet<>();
         Method method = TwigUtil.findTwigFileController(twigFile);
         if(method != null) {
             methods.add(method);
@@ -120,11 +120,11 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
         TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
 
-        final Collection<PsiFile> targets = new ArrayList<PsiFile>();
+        final Collection<PsiFile> targets = new ArrayList<>();
         for(String templateName: TwigUtil.getTemplateName(twigFile.getVirtualFile(), files)) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<String>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
                     PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
@@ -144,7 +144,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         }
 
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: targets) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
@@ -156,7 +156,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
     @Nullable
     private LineMarkerInfo attachOverwrites(@NotNull TwigFile twigFile) {
 
-        Collection<PsiFile> targets = new ArrayList<PsiFile>();
+        Collection<PsiFile> targets = new ArrayList<>();
 
         TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
 
@@ -172,7 +172,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: targets) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
                 blockTag,
@@ -192,11 +192,11 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
         TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
 
-        final Collection<PsiFile> targets = new ArrayList<PsiFile>();
+        final Collection<PsiFile> targets = new ArrayList<>();
         for(String templateName: files.getNames(twigFile.getVirtualFile())) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<String>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
                     PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
@@ -215,7 +215,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: targets) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
@@ -238,7 +238,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        return new LineMarkerInfo<PsiElement>(lineMarkerTarget, lineMarkerTarget.getTextOffset(), icon, 6, new ConstantFunction<PsiElement, String>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<>(lineMarkerTarget, lineMarkerTarget.getTextOffset(), icon, 6, new ConstantFunction<>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
     @Nullable
@@ -251,7 +251,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
         TemplateFileMap files = getTemplateFilesByName(psiElement.getProject());
 
-        List<PsiFile> twigChild = new ArrayList<PsiFile>();
+        List<PsiFile> twigChild = new ArrayList<>();
         getTwigChildList(files.getTemplates(), psiFile, twigChild, 8);
 
         if(twigChild.size() == 0) {
@@ -260,7 +260,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
         final String blockName = psiElement.getText();
 
-        List<PsiElement> blockTargets = new ArrayList<PsiElement>();
+        List<PsiElement> blockTargets = new ArrayList<>();
         for(PsiFile psiFile1: twigChild) {
 
             blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, new PsiElementFilter() {
@@ -276,7 +276,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: blockTargets) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
@@ -293,7 +293,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<GotoRelatedItem>();
+        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: blocks) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(getTemplateFilesByName(psiElement.getProject()).getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
@@ -307,7 +307,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        return new LineMarkerInfo<PsiElement>(psiElement, psiElement.getTextOffset(), PhpIcons.OVERRIDES, 6, new ConstantFunction<PsiElement, String>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<>(psiElement, psiElement.getTextOffset(), PhpIcons.OVERRIDES, 6, new ConstantFunction<>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
     }
 
     @Nullable
@@ -323,14 +323,14 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         }
 
         // use set here, we have multiple shortcut on one file, but only one is required
-        final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<VirtualFile>();
+        final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<>();
 
         for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
 
             // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
             if(entry.getValue().equals(psiFile.getVirtualFile())) {
                 String key = entry.getKey();
-                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Arrays.asList(key)), new Processor<VirtualFile>() {
                     @Override
                     public boolean process(VirtualFile virtualFile) {
                         virtualFiles.add(virtualFile);

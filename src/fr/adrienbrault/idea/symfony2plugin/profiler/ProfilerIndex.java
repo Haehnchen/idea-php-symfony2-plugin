@@ -18,7 +18,7 @@ public class ProfilerIndex {
     }
 
     public ArrayList<ProfilerRequest> getRequests() {
-        ArrayList<ProfilerRequest> list = new ArrayList<ProfilerRequest>();
+        ArrayList<ProfilerRequest> list = new ArrayList<>();
 
         String trennzeichen = ",";
 

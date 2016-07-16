@@ -35,9 +35,9 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
 
     public static Collection<LookupElement> getTagLookupElements(@NotNull Project project) {
 
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        Collection<LookupElement> lookupElements = new ArrayList<>();
 
-        Set<String> uniqueTags = new HashSet<String>();
+        Set<String> uniqueTags = new HashSet<>();
 
         XmlTagParser xmlEventParser = ServiceXmlParserFactory.getInstance(project, XmlTagParser.class);
         for(String tag: xmlEventParser.get()) {

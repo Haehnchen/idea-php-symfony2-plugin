@@ -171,7 +171,7 @@ public class Symfony2InterfacesUtil {
 
         // try multiResolve if class exists twice in project
         if(psiReference instanceof PsiPolyVariantReference) {
-            Collection<Method> methods = new HashSet<Method>();
+            Collection<Method> methods = new HashSet<>();
             for(ResolveResult resolveResult : ((PsiPolyVariantReference) psiReference).multiResolve(false)) {
                 PsiElement element = resolveResult.getElement();
                 if(element instanceof Method) {
@@ -277,7 +277,7 @@ public class Symfony2InterfacesUtil {
     }
 
     private List<Method> getCallToSignatureInterfaceMethods(PsiElement e, Collection<MethodMatcher.CallToSignature> signatures) {
-        List<Method> methods = new ArrayList<Method>();
+        List<Method> methods = new ArrayList<>();
         for(MethodMatcher.CallToSignature signature: signatures) {
             Method method = getInterfaceMethod(e.getProject(), signature.getInstance(), signature.getMethod());
             if(method != null) {
@@ -288,7 +288,7 @@ public class Symfony2InterfacesUtil {
     }
 
     public static Collection<MethodMatcher.CallToSignature> getFormBuilderInterface() {
-        Collection<MethodMatcher.CallToSignature> signatures = new ArrayList<MethodMatcher.CallToSignature>();
+        Collection<MethodMatcher.CallToSignature> signatures = new ArrayList<>();
 
         signatures.add(new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "add"));
         signatures.add(new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "create"));

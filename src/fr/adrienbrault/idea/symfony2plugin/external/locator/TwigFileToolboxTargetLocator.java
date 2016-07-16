@@ -22,7 +22,7 @@ public class TwigFileToolboxTargetLocator implements PhpToolboxTargetLocator {
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new HashSet<PsiElement>();
+        Collection<PsiElement> psiElements = new HashSet<>();
         Collections.addAll(psiElements, TwigHelper.getTemplatePsiElements(parameter.getProject(), target));
         return psiElements;
     }

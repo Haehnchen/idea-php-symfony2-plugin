@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class ServiceTag {
 
-    private final HashMap<String, String> attributes = new HashMap<String, String>();
+    private final HashMap<String, String> attributes = new HashMap<>();
 
     @NotNull
     private final PhpClass phpClass;
@@ -48,7 +48,7 @@ public class ServiceTag {
     @NotNull
     public String toXmlString() {
 
-        List<String> options = new ArrayList<String>();
+        List<String> options = new ArrayList<>();
         for (Map.Entry<String, String> entry : this.getAttributes().entrySet()) {
             options.add(String.format("%s=\"%s\"", entry.getKey(), entry.getValue()));
         }
@@ -59,7 +59,7 @@ public class ServiceTag {
     @NotNull
     public String toYamlString() {
 
-        List<String> attrs = new ArrayList<String>();
+        List<String> attrs = new ArrayList<>();
         attrs.add(String.format("name: %s", this.getTagName()));
 
         for (Map.Entry<String, String> entry : this.getAttributes().entrySet()) {

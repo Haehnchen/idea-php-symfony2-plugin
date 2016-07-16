@@ -28,7 +28,7 @@ public class TranslationReference extends PsiPolyVariantReferenceBase<PsiElement
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> results = new ArrayList<ResolveResult>();
+        List<ResolveResult> results = new ArrayList<>();
         PsiElement[] psiElements = TranslationUtil.getTranslationPsiElements(this.element.getProject(), this.element.getContents(), this.domainName);
 
         for (PsiElement psiElement : psiElements) {

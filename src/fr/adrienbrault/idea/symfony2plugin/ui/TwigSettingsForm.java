@@ -56,7 +56,7 @@ public class TwigSettingsForm implements Configurable {
             return;
         }
 
-        List<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
+        List<TwigPath> sortableLookupItems = new ArrayList<>();
         sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, includeSettings));
         Collections.sort(sortableLookupItems);
 
@@ -82,8 +82,8 @@ public class TwigSettingsForm implements Configurable {
     @Override
     public JComponent createComponent() {
 
-        this.tableView = new TableView<TwigPath>();
-        this.modelList = new ListTableModel<TwigPath>(
+        this.tableView = new TableView<>();
+        this.modelList = new ListTableModel<>(
             new NamespaceColumn(),
             new PathColumn(project),
             new TypeColumn(),
@@ -108,7 +108,7 @@ public class TwigSettingsForm implements Configurable {
                 super.mouseClicked(e);
                 TwigSettingsForm.this.resetList();
 
-                List<TwigPath> sortableLookupItems = new ArrayList<TwigPath>();
+                List<TwigPath> sortableLookupItems = new ArrayList<>();
                 sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(TwigSettingsForm.this.project, false));
                 Collections.sort(sortableLookupItems);
 
@@ -186,7 +186,7 @@ public class TwigSettingsForm implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<TwigNamespaceSetting> twigPaths = new ArrayList<TwigNamespaceSetting>();
+        List<TwigNamespaceSetting> twigPaths = new ArrayList<>();
 
         for(TwigPath twigPath :this.tableView.getListTableModel().getItems()) {
             // only custom and disabled path need to save

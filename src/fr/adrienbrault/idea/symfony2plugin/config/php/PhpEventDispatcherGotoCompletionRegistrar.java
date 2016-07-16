@@ -86,7 +86,7 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
         @Override
         public Collection<LookupElement> getLookupElements() {
 
-            Collection<LookupElement> elements = new ArrayList<LookupElement>();
+            Collection<LookupElement> elements = new ArrayList<>();
 
             for(Method method: phpClass.getMethods()) {
                 if(method.getAccess().isPublic()) {
@@ -116,7 +116,7 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
 
             Method method = phpClass.findMethodByName(contents);
             if(method != null) {
-                return new ArrayList<PsiElement>(Arrays.asList(method));
+                return new ArrayList<>(Arrays.asList(method));
             }
 
             return Collections.emptyList();

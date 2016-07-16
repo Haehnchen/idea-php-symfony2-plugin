@@ -25,7 +25,7 @@ public class GotoHandler implements GotoDeclarationHandler {
             return new PsiElement[0];
         }
 
-        Collection<PsiElement> psiTargets = new ArrayList<PsiElement>();
+        Collection<PsiElement> psiTargets = new ArrayList<>();
         for(GotoCompletionContributor contributor: GotoCompletionUtil.getContributors(psiElement)) {
             GotoCompletionProviderInterface formReferenceCompletionContributor = contributor.getProvider(psiElement);
             if(formReferenceCompletionContributor != null) {

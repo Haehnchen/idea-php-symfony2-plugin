@@ -12,7 +12,7 @@ public class CommandUtil {
 
     public static Map<String, String> getCommandHelper(@NotNull Project project) {
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Helper\\HelperInterface")) {
             String helperName = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
             if(helperName != null) {

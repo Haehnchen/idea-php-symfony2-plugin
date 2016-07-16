@@ -34,7 +34,7 @@ public class ServiceTagFactory {
     @Nullable
     private static Collection<ServiceTagInterface> create(@NotNull final String serviceId, @NotNull YAMLKeyValue yamlHash) {
 
-        final Collection<ServiceTagInterface> tags = new ArrayList<ServiceTagInterface>();
+        final Collection<ServiceTagInterface> tags = new ArrayList<>();
 
         YamlHelper.visitTagsOnServiceDefinition(yamlHash, new YamlTagVisitor() {
             @Override
@@ -59,7 +59,7 @@ public class ServiceTagFactory {
     @Nullable
     private static Collection<ServiceTagInterface> create(@NotNull String serviceId, @NotNull XmlTag xmlTag) {
 
-        final Collection<ServiceTagInterface> tags = new ArrayList<ServiceTagInterface>();
+        final Collection<ServiceTagInterface> tags = new ArrayList<>();
 
         for (XmlTag tag : xmlTag.findSubTags("tag")) {
 

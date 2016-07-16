@@ -53,7 +53,7 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
             if(yamlArguments != null && yamlArguments.size() > 0) {
                 appendEndOffset = yamlArguments.get(yamlArguments.size() - 1).getTextRange().getEndOffset();
 
-                List<String> arrayList = new ArrayList<String>();
+                List<String> arrayList = new ArrayList<>();
                 for (String item : items) {
                     arrayList.add(String.format("'@%s'", StringUtils.isNotBlank(item) ? item : "?"));
                 }
@@ -68,7 +68,7 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
             String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(yamlCompoundValue));
             String eol = TranslationInsertUtil.findEol(yamlKeyValue);
 
-            List<String> yamlSequences = new ArrayList<String>();
+            List<String> yamlSequences = new ArrayList<>();
             for (String item : items) {
                 // should be faster then YamlPsiElementFactory.createFromText
                 yamlSequences.add(indent + String.format("- '@%s'", StringUtils.isNotBlank(item) ? item : "?"));
