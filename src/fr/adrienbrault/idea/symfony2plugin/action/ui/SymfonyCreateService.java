@@ -108,14 +108,9 @@ public class SymfonyCreateService extends JDialog {
         setContentPane(panel1);
         setModal(true);
 
-        this.classCompletionPanelWrapper = new ClassCompletionPanelWrapper(project, panelFoo, new Consumer<String>() {
-            @Override
-            public void consume(String s) {
-                update();
-            }
-        });
+        this.classCompletionPanelWrapper = new ClassCompletionPanelWrapper(project, panelFoo, s -> update());
 
-        this.modelList = new ListTableModel<MethodParameter.MethodModelParameter>(
+        this.modelList = new ListTableModel<>(
             new IconColumn(),
             new NamespaceColumn(),
             new ParameterIndexColumn(),
@@ -129,8 +124,7 @@ public class SymfonyCreateService extends JDialog {
             radioButtonOutYaml.setSelected(true);
         }
 
-
-        this.tableView = new TableView<MethodParameter.MethodModelParameter>();
+        this.tableView = new TableView<>();
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
         tableViewPanel.add(ToolbarDecorator.createDecorator(this.tableView)
@@ -143,71 +137,39 @@ public class SymfonyCreateService extends JDialog {
 
         this.serviceClass = ContainerCollectionResolver.getServices(project);
 
-        this.serviceSetComplete = new TreeSet<String>();
+        this.serviceSetComplete = new TreeSet<>();
         serviceSetComplete.add("");
         serviceSetComplete.addAll(this.serviceClass.keySet());
 
         //update();
 
-        this.modelList.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                generateServiceDefinition();
-            }
+        this.modelList.addTableModelListener(e -> generateServiceDefinition());
 
+        this.generateButton.addActionListener(e -> update());
+
+
+        this.closeButton.addActionListener(e -> {
+            setEnabled(false);
+            dispose();
         });
 
-        this.generateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                update();
+        this.buttonCopy.addActionListener(e -> {
+            if(StringUtils.isBlank(textAreaOutput.getText())) {
+                return;
             }
+
+            StringSelection stringSelection = new StringSelection(textAreaOutput.getText());
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard ();
+            clipboard.setContents(stringSelection, null);
         });
 
-
-        this.closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setEnabled(false);
-                dispose();
-            }
-        });
-
-        this.buttonCopy.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(StringUtils.isBlank(textAreaOutput.getText())) {
-                    return;
-                }
-
-                StringSelection stringSelection = new StringSelection(textAreaOutput.getText());
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard ();
-                clipboard.setContents(stringSelection, null);
-            }
-        });
-
-        this.buttonSettings.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SymfonyJavascriptServiceNameForm.create(SymfonyCreateService.this, project, classCompletionPanelWrapper.getClassName());
-            }
-        });
+        this.buttonSettings.addActionListener(e -> SymfonyJavascriptServiceNameForm.create(SymfonyCreateService.this, project, classCompletionPanelWrapper.getClassName()));
 
         initClassName();
 
-        radioButtonOutXml.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                generateServiceDefinition();
-            }
-        });
+        radioButtonOutXml.addChangeListener(e -> generateServiceDefinition());
 
-        radioButtonOutYaml.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                generateServiceDefinition();
-            }
-        });
+        radioButtonOutYaml.addChangeListener(e -> generateServiceDefinition());
 
         textFieldServiceName.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -227,9 +189,7 @@ public class SymfonyCreateService extends JDialog {
         });
 
         // exit on "esc" key
-        this.getRootPane().registerKeyboardAction(e -> {
-            dispose();
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+        this.getRootPane().registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         // insert
         if(this.psiFile instanceof XmlFile || this.psiFile instanceof YAMLFile) {
@@ -358,12 +318,7 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private void update() {
-        ApplicationManager.getApplication().runReadAction(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                updateTask();
-            }
-        }));
+        ApplicationManager.getApplication().runReadAction(new Thread(this::updateTask));
     }
 
     private void updateTask() {
@@ -386,7 +341,7 @@ public class SymfonyCreateService extends JDialog {
 
         textFieldServiceName.setText(generateServiceName(className));
 
-        List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<MethodParameter.MethodModelParameter>();
+        List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
 
         for(Method method: phpClass.getMethods()) {
             if(method.getModifier().isPublic()) {
@@ -405,16 +360,13 @@ public class SymfonyCreateService extends JDialog {
             method.getName();
         }
 
-        Collections.sort(modelParameters, new Comparator<MethodParameter.MethodModelParameter>() {
-            @Override
-            public int compare(MethodParameter.MethodModelParameter o1, MethodParameter.MethodModelParameter o2) {
-                int i = o1.getName().compareTo(o2.getName());
-                if (i != 0) {
-                    return i;
-                }
-
-                return Integer.valueOf(o1.getIndex()).compareTo(o2.getIndex());
+        Collections.sort(modelParameters, (o1, o2) -> {
+            int i = o1.getName().compareTo(o2.getName());
+            if (i != 0) {
+                return i;
             }
+
+            return Integer.valueOf(o1.getIndex()).compareTo(o2.getIndex());
         });
 
         while(this.modelList.getRowCount() > 0) {
