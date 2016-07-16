@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -29,7 +30,13 @@ public class DefaultServiceNameStrategy implements ServiceNameStrategyInterface 
             int x = -1;
             for (int i = 0; i < split.length; i++) {
                 if (split[i].endsWith("Bundle")) {
-                    split[i] = split[i].substring(0, split[i].length() - "Bundle".length());
+
+                    // bundle this our namespace switch:
+                    // but dont add on "\Bundle\" only namespace
+                    if(split[i].length() > "bundle".length()) {
+                        split[i] = split[i].substring(0, split[i].length() - "bundle".length());
+                    }
+
                     x = i + 1;
                 }
             }
@@ -52,14 +59,11 @@ public class DefaultServiceNameStrategy implements ServiceNameStrategyInterface 
         return formatParts(Arrays.asList(split));
     }
 
-    private String formatParts(Collection<String> parts) {
-
-        Collection<String> partString = new ArrayList<String>();
-        for (String s : parts) {
-            partString.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(s));
-        }
+    private String formatParts(@NotNull Collection<String> parts) {
+        Collection<String> partString = parts.stream()
+            .map(fr.adrienbrault.idea.symfony2plugin.util.StringUtils::underscore)
+            .collect(Collectors.toCollection(ArrayList::new));
 
         return StringUtils.join(partString, ".");
     }
-
 }
