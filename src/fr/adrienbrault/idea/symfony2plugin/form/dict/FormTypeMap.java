@@ -19,7 +19,7 @@ public class FormTypeMap {
     }
 
     public FormTypeMap() {
-        this.map = new HashMap<String, String>();
+        this.map = new HashMap<>();
     }
 
     public Map<String, String> getMap() {

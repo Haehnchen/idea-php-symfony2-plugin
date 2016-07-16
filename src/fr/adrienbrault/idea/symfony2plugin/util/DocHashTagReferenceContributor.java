@@ -43,7 +43,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
 
                     ArrayList<PhpDocParamTag> phpDocParamTags = docTagHashing.getPhpDocParamTags();
 
-                    ArrayList<PsiReference> psiReferences = new ArrayList<PsiReference>();
+                    ArrayList<PsiReference> psiReferences = new ArrayList<>();
 
                     int i = 0;
                     for(PhpDocParamTag phpDocParamTag: phpDocParamTags) {
@@ -145,7 +145,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
         private PsiElement psiElement;
         private ArrayList<PhpDocParamTag> phpDocParamTags;
 
-        private ArrayList<Parameter[]> parameters = new ArrayList<Parameter[]>();
+        private ArrayList<Parameter[]> parameters = new ArrayList<>();
         private ParameterList parameterList;
 
         public DocTagHashing(PsiElement psiElement) {
@@ -198,7 +198,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                 return false;
             }
 
-            this.phpDocParamTags = new ArrayList<PhpDocParamTag>();
+            this.phpDocParamTags = new ArrayList<>();
             Method[] implementedMethods = PhpElementsUtil.getImplementedMethods(method);
 
             for(Method implementedMethod: implementedMethods) {

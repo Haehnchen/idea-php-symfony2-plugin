@@ -47,7 +47,7 @@ public class FormOptionsUtil {
             }
         });
 
-        Collection<FormClass> extendedTypeClasses = new ArrayList<FormClass>();
+        Collection<FormClass> extendedTypeClasses = new ArrayList<>();
         for(PhpClass phpClass: getFormTypeExtensionClassNames(project)) {
             String formExtendedType = FormUtil.getFormExtendedType(phpClass);
             if(formExtendedType != null && formTypeNamesList.contains(formExtendedType)) {
@@ -61,7 +61,7 @@ public class FormOptionsUtil {
     @NotNull
     private static Set<PhpClass> getFormTypeExtensionClassNames(@NotNull Project project) {
 
-        Set<PhpClass> phpClasses = new HashSet<PhpClass>();
+        Set<PhpClass> phpClasses = new HashSet<>();
 
         // @TODO: should be same as interface?
         for (String s : ServiceXmlParserFactory.getInstance(project, FormExtensionServiceParser.class).getFormExtensions().keySet()) {
@@ -86,7 +86,7 @@ public class FormOptionsUtil {
     public static Map<String, FormOption> getFormExtensionKeys(@NotNull Project project, @NotNull String... formTypeNames) {
 
         Collection<FormClass> typeClasses = FormOptionsUtil.getExtendedTypeClasses(project, formTypeNames);
-        Map<String, FormOption> extensionClassMap = new HashMap<String, FormOption>();
+        Map<String, FormOption> extensionClassMap = new HashMap<>();
 
         for(FormClass extensionClass: typeClasses) {
             extensionClassMap.putAll(getDefaultOptions(project, extensionClass.getPhpClass(), extensionClass));
@@ -101,10 +101,10 @@ public class FormOptionsUtil {
      */
     public static Set<String> getFormViewVars(Project project, String... formTypeNames) {
 
-        Set<String> stringSet = new HashSet<String>();
+        Set<String> stringSet = new HashSet<>();
 
-        Set<String> uniqueClass = new HashSet<String>();
-        List<PhpClass> phpClasses = new ArrayList<PhpClass>();
+        Set<String> uniqueClass = new HashSet<>();
+        List<PhpClass> phpClasses = new ArrayList<>();
 
         // attach core form phpclass
         // @TODO: add formtype itself
@@ -202,9 +202,9 @@ public class FormOptionsUtil {
 
     @Deprecated
     public static Map<String, String> getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName) {
-        final Map<String, String> items = new HashMap<String, String>();
+        final Map<String, String> items = new HashMap<>();
 
-        getFormDefaultKeys(project, formTypeName, new HashMap<String, String>(), new FormUtil.FormTypeCollector(project).collect(), 0, new FormOptionVisitor() {
+        getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, new FormOptionVisitor() {
             @Override
             public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
                 String presentableFQN = formClass.getPhpClass().getPresentableFQN();
@@ -218,7 +218,7 @@ public class FormOptionsUtil {
     }
 
     public static void visitFormOptions(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
-        visitFormOptions(project, formTypeName, new HashMap<String, String>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
+        visitFormOptions(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
     }
 
     private static Map<String, String> visitFormOptions(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
@@ -245,7 +245,7 @@ public class FormOptionsUtil {
     }
 
     public static void getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
-        getFormDefaultKeys(project, formTypeName, new HashMap<String, String>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
+        getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
     }
 
     private static Map<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
@@ -270,7 +270,7 @@ public class FormOptionsUtil {
 
     @NotNull
     private static Map<String, FormOption> getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass) {
-        final Map<String, FormOption> options = new HashMap<String, FormOption>();
+        final Map<String, FormOption> options = new HashMap<>();
 
         getDefaultOptions(project, phpClass, formClass, new FormOptionVisitor() {
             @Override
@@ -389,7 +389,7 @@ public class FormOptionsUtil {
     }
 
     public static Collection<LookupElement> getFormExtensionKeysLookupElements(Project project, String... formTypes) {
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        Collection<LookupElement> lookupElements = new ArrayList<>();
 
         for(FormOption formOption: FormOptionsUtil.getFormExtensionKeys(project, formTypes).values()) {
             lookupElements.add(FormOptionsUtil.getOptionLookupElement(formOption));
@@ -407,7 +407,7 @@ public class FormOptionsUtil {
             return Collections.emptySet();
         }
 
-        final Collection<PsiElement> psiElements = new ArrayList<PsiElement>();
+        final Collection<PsiElement> psiElements = new ArrayList<>();
 
         FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType, new FormOptionVisitor() {
             @Override
@@ -423,7 +423,7 @@ public class FormOptionsUtil {
 
     @NotNull
     public static Collection<LookupElement> getDefaultOptionLookupElements(@NotNull Project project, @NotNull String formType) {
-        Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+        Collection<LookupElement> lookupElements = new ArrayList<>();
         FormOptionsUtil.getFormDefaultKeys(project, formType, new FormOptionLookupVisitor(lookupElements));
         return lookupElements;
     }

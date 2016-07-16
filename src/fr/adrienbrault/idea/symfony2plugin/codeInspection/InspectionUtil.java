@@ -54,7 +54,7 @@ public class InspectionUtil {
                         if(vars.size() > 0) {
 
                             // add dollar char for vars
-                            List<String> varsDollar = new ArrayList<String>();
+                            List<String> varsDollar = new ArrayList<>();
                             for(String var: vars) {
                                 varsDollar.add("$" + var);
                             }

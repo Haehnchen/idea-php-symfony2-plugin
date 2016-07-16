@@ -28,10 +28,10 @@ import java.util.*;
 public class ContainerCollectionResolver {
 
     private static final Key<CachedValue<Map<String, List<ServiceSerializable>>>> SERVICE_CONTAINER_INDEX = new Key<>("SYMFONY_SERVICE_CONTAINER_INDEX");
-    private static final Key<CachedValue<Map<String, List<String>>>> SERVICE_PARAMETER_INDEX = new Key<CachedValue<Map<String, List<String>>>>("SERVICE_PARAMETER_INDEX");
+    private static final Key<CachedValue<Map<String, List<String>>>> SERVICE_PARAMETER_INDEX = new Key<>("SERVICE_PARAMETER_INDEX");
 
-    private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
-    private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<CachedValue<Set<String>>>("SERVICE_PARAMETER_INDEX_NAMES");
+    private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
+    private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<>("SERVICE_PARAMETER_INDEX_NAMES");
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
@@ -168,12 +168,12 @@ public class ContainerCollectionResolver {
                 services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
             }
 
-            Collection<ServiceInterface> aliases = new ArrayList<ServiceInterface>();
+            Collection<ServiceInterface> aliases = new ArrayList<>();
             Collection<ServiceInterface> decorated = new ArrayList<>();
 
             // Extension points
             ServiceCollectorParameter.Service parameter = null;
-            Collection<ServiceInterface> exps = new ArrayList<ServiceInterface>();
+            Collection<ServiceInterface> exps = new ArrayList<>();
             for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
                 if(parameter == null) {
                     parameter = new ServiceCollectorParameter.Service(project, exps);
@@ -307,7 +307,7 @@ public class ContainerCollectionResolver {
 
         private Set<String> getNames() {
 
-            Set<String> serviceNames = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+            Set<String> serviceNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
             // local filesystem
             serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());

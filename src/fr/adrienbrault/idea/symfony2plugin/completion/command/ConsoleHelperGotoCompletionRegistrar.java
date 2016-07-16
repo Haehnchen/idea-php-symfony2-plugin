@@ -62,7 +62,7 @@ public class ConsoleHelperGotoCompletionRegistrar implements GotoCompletionRegis
         @Override
         public Collection<LookupElement> getLookupElements() {
 
-            Collection<LookupElement> lookupElements = new ArrayList<LookupElement>();
+            Collection<LookupElement> lookupElements = new ArrayList<>();
 
             for (Map.Entry<String, String> entry : CommandUtil.getCommandHelper(getProject()).entrySet()) {
                 lookupElements.add(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true));
@@ -90,7 +90,7 @@ public class ConsoleHelperGotoCompletionRegistrar implements GotoCompletionRegis
                 return Collections.emptyList();
             }
 
-            return new HashSet<PsiElement>(PhpElementsUtil.getClassesInterface(getProject(), commandHelper.get(value)));
+            return new HashSet<>(PhpElementsUtil.getClassesInterface(getProject(), commandHelper.get(value)));
         }
     }
 }

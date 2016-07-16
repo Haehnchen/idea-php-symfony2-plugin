@@ -63,7 +63,7 @@ public class DoctrineStaticTypeLookupBuilder {
 
     public ArrayList<LookupElement> ListToAnnotationsElements(List<String> items) {
 
-        ArrayList<LookupElement> lookups = new ArrayList<LookupElement>();
+        ArrayList<LookupElement> lookups = new ArrayList<>();
 
         for (String item : items) {
             if(item.startsWith("@")) {
@@ -79,7 +79,7 @@ public class DoctrineStaticTypeLookupBuilder {
 
     public ArrayList<LookupElement> ListToYmlElements(List<String> items) {
 
-        ArrayList<LookupElement> lookups = new ArrayList<LookupElement>();
+        ArrayList<LookupElement> lookups = new ArrayList<>();
 
         for (String answer : items) {
             lookups.add(new DoctrineTypeLookup(answer));

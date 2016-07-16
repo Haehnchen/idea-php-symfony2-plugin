@@ -46,7 +46,7 @@ public class DoctrineRepositoryLookupElement extends LookupElement {
     }
 
     public static Collection<DoctrineRepositoryLookupElement> create(@NotNull Collection<PhpClass> phpClasses) {
-        Collection<DoctrineRepositoryLookupElement> elements = new ArrayList<DoctrineRepositoryLookupElement>();
+        Collection<DoctrineRepositoryLookupElement> elements = new ArrayList<>();
         for(PhpClass phpClass: phpClasses) {
             String presentableFQN = phpClass.getPresentableFQN();
             if(presentableFQN == null) {

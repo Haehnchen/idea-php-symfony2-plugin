@@ -13,7 +13,7 @@ public class FormOption {
     private final FormClass formClass;
 
     @NotNull
-    private final Collection<FormOptionEnum> optionEnum = new HashSet<FormOptionEnum>();
+    private final Collection<FormOptionEnum> optionEnum = new HashSet<>();
 
     public FormOption(@NotNull String option, @NotNull FormClass formClass) {
         this.option = option;

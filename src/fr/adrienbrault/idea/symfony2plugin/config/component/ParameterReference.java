@@ -35,7 +35,7 @@ public class ParameterReference  extends PsiPolyVariantReferenceBase<PsiElement>
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> results = new ArrayList<LookupElement>();
+        List<LookupElement> results = new ArrayList<>();
 
         for(Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getElement().getProject()).entrySet()) {
             results.add(new ParameterLookupElement(entry.getValue()));

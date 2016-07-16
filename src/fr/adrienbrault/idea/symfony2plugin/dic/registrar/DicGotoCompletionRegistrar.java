@@ -68,7 +68,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-            Collection<LookupElement> results = new ArrayList<LookupElement>();
+            Collection<LookupElement> results = new ArrayList<>();
 
             for(Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getElement().getProject()).entrySet()) {
                 results.add(new ParameterLookupElement(entry.getValue()));
