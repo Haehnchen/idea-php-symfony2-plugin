@@ -68,6 +68,11 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return;
         }
 
+        Editor editor = event.getData(PlatformDataKeys.EDITOR);
+        if(editor == null) {
+            return;
+        }
+
         PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
         if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
             return;
@@ -87,13 +92,12 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
         }
 
-        Editor editor = event.getData(CommonDataKeys.EDITOR);
         if(phpClass == null) {
-            SymfonyCreateService.create(project, psiFile, editor);
+            SymfonyCreateService.create(editor.getComponent(), project, psiFile, editor);
             return;
         }
 
-        SymfonyCreateService.create(project, psiFile, phpClass, editor);
+        SymfonyCreateService.create(editor.getComponent(), project, psiFile, phpClass, editor);
     }
 }
 

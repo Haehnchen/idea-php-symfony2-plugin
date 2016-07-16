@@ -28,7 +28,9 @@ public class ServiceGenerateAction extends CodeInsightAction {
     }
 
     public static void invokeServiceGenerator(@NotNull Project project, @NotNull PsiFile file, @NotNull PhpClass phpClass, @Nullable Editor editor) {
-        SymfonyCreateService.create(project, file, phpClass, editor);
+        if(editor != null) {
+            SymfonyCreateService.create(editor.getComponent(), project, file, phpClass, editor);
+        }
     }
 
     @Override
@@ -104,7 +106,7 @@ public class ServiceGenerateAction extends CodeInsightAction {
             return false;
         }
 
-        SymfonyCreateService.create(project, file, editor);
+        SymfonyCreateService.create(editor.getComponent(), project, file, editor);
 
         return true;
     }
