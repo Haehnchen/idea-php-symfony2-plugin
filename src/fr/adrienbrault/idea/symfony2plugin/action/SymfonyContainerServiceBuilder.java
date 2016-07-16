@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -69,9 +68,7 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return;
         }
 
-        // only since phpstorm 7.1; PlatformDataKeys.PSI_FILE
-        Object psiFile = event.getData(DataKey.create("psi.File"));
-
+        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
         if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
             return;
         }
@@ -82,7 +79,7 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             if("ProjectViewPopup".equals(event.getPlace())) {
                 phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
             } else {
-                Object psiElement = event.getData(DataKey.create("psi.Element"));
+                PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
                 if(psiElement instanceof PhpClass) {
                     phpClass = (PhpClass) psiElement;
                 }
@@ -91,16 +88,13 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         }
 
         Editor editor = event.getData(CommonDataKeys.EDITOR);
-
-
         if(phpClass == null) {
-            SymfonyCreateService.create(project, (PsiFile) psiFile, editor);
+            SymfonyCreateService.create(project, psiFile, editor);
             return;
         }
 
-        SymfonyCreateService.create(project, (PsiFile) psiFile, phpClass, editor);
+        SymfonyCreateService.create(project, psiFile, phpClass, editor);
     }
-
 }
 
 

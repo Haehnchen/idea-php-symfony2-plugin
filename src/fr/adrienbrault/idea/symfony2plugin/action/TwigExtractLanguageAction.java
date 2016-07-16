@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.action;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -51,9 +50,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             return;
         }
 
-        // only since phpstorm 7.1; PlatformDataKeys.PSI_FILE
-        Object psiFile = event.getData(DataKey.create("psi.File"));
-
+        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
         if(!(psiFile instanceof TwigFile)) {
             this.setStatus(event, false);
             return;
@@ -68,9 +65,9 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         // find valid PsiElement context, because only html text is a valid extractor action
         PsiElement psiElement;
         if(editor.getSelectionModel().hasSelection()) {
-            psiElement = ((PsiFile) psiFile).findElementAt(editor.getSelectionModel().getSelectionStart());
+            psiElement = psiFile.findElementAt(editor.getSelectionModel().getSelectionStart());
         } else {
-            psiElement = ((PsiFile) psiFile).findElementAt(editor.getCaretModel().getOffset());
+            psiElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
         }
 
         if(psiElement == null) {
@@ -100,7 +97,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             return;
         }
 
-        Object psiFile = event.getData(DataKey.create("psi.File"));
+        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
         if(!(psiFile instanceof TwigFile)) {
             return;
         }
@@ -116,7 +113,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         } else {
 
             // use dont selected text, so find common PsiElement
-            PsiElement psiElement = ((TwigFile) psiFile).findElementAt(editor.getCaretModel().getOffset());
+            PsiElement psiElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
             if(psiElement == null) {
                 return;
             }
@@ -138,7 +135,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
         // get default domain on twig tag
         // also pipe it to insert handler; to append it as parameter
-        String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain((TwigFile) psiFile);
+        String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain(psiFile);
         if(defaultDomain == null) {
             defaultDomain = "messages";
         }
@@ -160,7 +157,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         final int finalStartOffset = startOffset;
         final int finalEndOffset = endOffset;
         final String finalTranslationText = translationText;
-        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(project, (PsiFile) psiFile, domainNames, defaultKey, reselectedDomain, new MyOnOkCallback(project, editor, finalDefaultDomain, finalStartOffset, finalEndOffset, finalTranslationText));
+        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(project, psiFile, domainNames, defaultKey, reselectedDomain, new MyOnOkCallback(project, editor, finalDefaultDomain, finalStartOffset, finalEndOffset, finalTranslationText));
 
         extractorDialog.setTitle("Symfony: Extract Translation Key");
         extractorDialog.setMinimumSize(new Dimension(600, 200));
