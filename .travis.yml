@@ -13,6 +13,7 @@ before_script:
 env:
   - PHPSTORM_ENV=2016.1
   - PHPSTORM_ENV=2016.1.2
+  - PHPSTORM_ENV=2016.2
   - PHPSTORM_ENV=eap
 
 matrix:
