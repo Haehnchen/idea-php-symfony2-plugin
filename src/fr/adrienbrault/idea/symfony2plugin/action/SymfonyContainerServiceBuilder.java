@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.jetbrains.php.lang.psi.PhpFile;
@@ -23,8 +24,6 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         super("Create Service", "Generate a new Service definition from class name", Symfony2Icons.SYMFONY);
     }
 
-
-
     public void update(AnActionEvent event) {
         Project project = event.getData(PlatformDataKeys.PROJECT);
 
@@ -33,9 +32,7 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return;
         }
 
-        // only since phpstorm 7.1; PlatformDataKeys.PSI_FILE
-        Object psiFile = event.getData(DataKey.create("psi.File"));
-
+        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
         if(psiFile instanceof PhpFile) {
 
             if("ProjectViewPopup".equals(event.getPlace())) {
@@ -45,7 +42,7 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
                 }
 
             } else {
-                Object psiElement = event.getData(DataKey.create("psi.Element"));
+                PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
                 if(!(psiElement instanceof PhpClass)) {
                     this.setStatus(event, false);
                 }
