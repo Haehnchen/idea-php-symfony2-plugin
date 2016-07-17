@@ -19,7 +19,6 @@ import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -60,6 +59,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RouteHelper {
 
@@ -514,38 +514,27 @@ public class RouteHelper {
      * Foo\Bar::methodAction
      */
     @Nullable
-    public static String convertMethodToRouteControllerName(@NotNull Method method) {
-
+    private static String convertMethodToRouteControllerName(@NotNull Method method) {
         PhpClass phpClass = method.getContainingClass();
         if(phpClass == null) {
             return null;
         }
 
-        String className = phpClass.getPresentableFQN();
-        if(className == null) {
-            return null;
-        }
-
-        return (className.startsWith("\\") ? className.substring(1) : className) + "::" + method.getName();
-
+        return StringUtils.stripStart(phpClass.getFQN(), "\\") + "::" + method.getName();
     }
 
     /**
      * FooBundle:Bar::method
+     * FooBundle:Bar\\Foo::method
      */
     @Nullable
     public static String convertMethodToRouteShortcutControllerName(@NotNull Method method) {
-
         PhpClass phpClass = method.getContainingClass();
         if(phpClass == null) {
             return null;
         }
 
-        String className = phpClass.getPresentableFQN();
-        if(className == null) {
-            return null;
-        }
-
+        String className = StringUtils.stripStart(phpClass.getFQN(), "\\");
         int bundlePos = className.lastIndexOf("Bundle\\");
         if(bundlePos == -1) {
             return null;
@@ -555,16 +544,20 @@ public class RouteHelper {
         if(symfonyBundle == null) {
             return null;
         }
+
         String name = method.getName();
         String methodName = name.substring(0, name.length() - "Action".length());
 
-        String relative = symfonyBundle.getRelative(phpClass.getContainingFile().getVirtualFile(), true);
-        if(relative == null) {
+        // try to to find relative class name
+        String controllerClass = className.toLowerCase();
+        String bundleClass = StringUtils.stripStart(symfonyBundle.getNamespaceName(), "\\").toLowerCase();
+        if(!controllerClass.startsWith(bundleClass)) {
             return null;
         }
 
-        if(relative.startsWith("Controller/")) {
-            relative = relative.substring("Controller/".length());
+        String relative = StringUtils.stripStart(phpClass.getFQN(), "\\").substring(bundleClass.length());
+        if(relative.startsWith("Controller\\")) {
+            relative = relative.substring("Controller\\".length());
         }
 
         if(relative.endsWith("Controller")) {
@@ -578,20 +571,14 @@ public class RouteHelper {
 
         final List<VirtualFile> virtualFiles = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
-            @Override
-            public boolean process(VirtualFile virtualFile) {
-                virtualFiles.add(virtualFile);
-                return true;
-            }
+        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), virtualFile -> {
+            virtualFiles.add(virtualFile);
+            return true;
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML, XmlFileType.INSTANCE));
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), new Processor<VirtualFile>() {
-            @Override
-            public boolean process(VirtualFile virtualFile) {
-                virtualFiles.add(virtualFile);
-                return true;
-            }
+        FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), virtualFile -> {
+            virtualFiles.add(virtualFile);
+            return true;
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE));
 
         return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
@@ -641,7 +628,7 @@ public class RouteHelper {
 
             String controller = getYamlController(yamlKeyValue);
             if(controller != null) {
-                route.setController(controller);
+                route.setController(normalizeRouteController(controller));
             }
 
             indexedRoutes.add(route);
@@ -702,7 +689,7 @@ public class RouteHelper {
                                         if(keyValue != null && "_controller".equals(keyValue)) {
                                             String actionName = subTag.getValue().getTrimmedText();
                                             if(StringUtils.isNotBlank(actionName)) {
-                                                e.setController(actionName);
+                                                e.setController(normalizeRouteController(actionName));
                                             }
                                         }
                                     }
@@ -779,39 +766,28 @@ public class RouteHelper {
         return !shortcutName.contains("::") && shortcutName.contains(":") && !shortcutName.contains("\\") && shortcutName.split(":").length == 2;
     }
 
-    @Nullable
+    @NotNull
     public static List<Route> getRoutesOnControllerAction(@NotNull Method method) {
-
         Set<String> routeNames = new HashSet<>();
 
-        String methodRouteActionName = RouteHelper.convertMethodToRouteControllerName(method);
-        if(methodRouteActionName != null) {
-            routeNames.add(methodRouteActionName);
-        }
-
-        String shortcutName = RouteHelper.convertMethodToRouteShortcutControllerName(method);
-        if(shortcutName != null) {
-            routeNames.add(shortcutName);
-        }
+        ContainerUtil.addIfNotNull(routeNames, RouteHelper.convertMethodToRouteControllerName(method));
+        ContainerUtil.addIfNotNull(routeNames, RouteHelper.convertMethodToRouteShortcutControllerName(method));
 
         Map<String, Route> allRoutes = getAllRoutes(method.getProject());
         List<Route> routes = new ArrayList<>();
 
         // resolve indexed routes
         if(routeNames.size() > 0) {
-            for(Map.Entry<String, Route> routeEntry: allRoutes.entrySet()) {
-                String controller = routeEntry.getValue().getController();
-                if(controller != null && routeNames.contains(controller)) {
-                    routes.add(routeEntry.getValue());
-                }
-            }
+            routes.addAll(allRoutes.values().stream()
+                .filter(route -> route.getController() != null && routeNames.contains(route.getController()))
+                .collect(Collectors.toList())
+            );
         }
 
         // search for services
-        Collection<Route> methodMatch = ServiceRouteContainer.build(allRoutes).getMethodMatches(method);
-        if(methodMatch.size() > 0) {
-            routes.addAll(methodMatch);
-        }
+        routes.addAll(
+            ServiceRouteContainer.build(allRoutes).getMethodMatches(method)
+        );
 
         return routes;
     }
@@ -1010,4 +986,8 @@ public class RouteHelper {
         return routes;
     }
 
+    @NotNull
+    private static String normalizeRouteController(@NotNull String string) {
+        return string.replace("/", "\\");
+    }
 }

@@ -24,6 +24,10 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
             "    path: /\n" +
             "    defaults: { _controller: foo_controller }" +
             "\n" +
+            "foo_yaml_controller_normalized:\n" +
+            "    path: /\n" +
+            "    defaults: { _controller: FooBundle:Foo/Foo:index }" +
+            "\n" +
             "foo_yaml_path_only:\n" +
             "    path: /\n" +
             "foo_yaml_invalid:\n" +
@@ -35,6 +39,9 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
             "  <route id=\"foo_xml_pattern\" pattern=\"/blog/{slug}\" methods=\"GET|POST\"/>\n" +
             "  <route id=\"foo_xml_path\" path=\"/blog/{slug}\">\n" +
             "    <default key=\"_controller\">Foo</default>\n" +
+            "  </route>\n" +
+            "  <route id=\"foo_controller_normalized\" path=\"/blog/{slug}\">\n" +
+            "    <default key=\"_controller\">FooBundle:Foo/Foo:index</default>\n" +
             "  </route>\n" +
             "  <route id=\"foo_xml_id_only\"/>\n" +
             "</routes>"
@@ -74,6 +81,19 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_xml_pattern",
             value -> "foo_xml_pattern".equalsIgnoreCase(value.getName()) && value.getMethods().contains("get") && value.getMethods().contains("post")
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     */
+    public void testRouteSlashesNormalized() {
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_yaml_controller_normalized",
+            value -> "FooBundle:Foo\\Foo:index".equalsIgnoreCase(value.getController())
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_controller_normalized",
+            value -> "FooBundle:Foo\\Foo:index".equalsIgnoreCase(value.getController())
         );
     }
 }

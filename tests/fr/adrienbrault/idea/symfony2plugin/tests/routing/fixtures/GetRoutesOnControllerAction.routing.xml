@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<routes>
+    <route id="xml_route_subfolder_backslash" path="/blog/{slug}">
+        <default key="_controller">FooBarFooBundle:SubFolder\FooBar:foo</default>
+    </route>
+
+    <route id="xml_route_subfolder_slash" path="/blog/{slug}">
+        <default key="_controller">FooBarFooBundle:SubFolder/FooBar:foo</default>
+    </route>
+
+    <route id="xml_route_subfolder_class_syntax" path="/blog/{slug}">
+        <default key="_controller">FooBar\FooBundle\Controller\SubFolder\FooBarController::fooAction</default>
+    </route>
+
+    <route id="xml_route_as_service" path="/hello">
+        <default key="_controller">foo.bar_controller:indexAction</default>
+    </route>
+
+</routes>

@@ -7,6 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -47,20 +48,15 @@ public class ServiceRouteContainer  {
     }
 
     @NotNull
-    public Collection<Route> getMethodMatches(Method method) {
-
+    public Collection<Route> getMethodMatches(@NotNull Method method) {
         PhpClass originClass = method.getContainingClass();
         if(originClass == null) {
             return Collections.emptyList();
         }
 
-        String classFqn = originClass.getPresentableFQN();
-        if(classFqn == null) {
-            return Collections.emptyList();
-        }
+        String classFqn = StringUtils.stripStart(originClass.getFQN(), "\\");
 
         Collection<Route> routes = new ArrayList<>();
-
         for (Route route : this.routes) {
 
             String serviceRoute = route.getController();

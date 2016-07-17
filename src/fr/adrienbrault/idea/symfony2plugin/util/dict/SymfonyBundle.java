@@ -8,24 +8,29 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopes;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SymfonyBundle {
 
-    protected PhpClass phpClass;
+    @NotNull
+    final private PhpClass phpClass;
 
-    public SymfonyBundle(PhpClass phpClass) {
+    public SymfonyBundle(@NotNull PhpClass phpClass) {
         this.phpClass = phpClass;
     }
 
+    @NotNull
     public PhpClass getPhpClass() {
         return this.phpClass;
     }
 
+    @NotNull
     public String getNamespaceName() {
         return this.phpClass.getNamespaceName();
     }
 
+    @NotNull
     public String getName() {
         return this.phpClass.getName();
     }

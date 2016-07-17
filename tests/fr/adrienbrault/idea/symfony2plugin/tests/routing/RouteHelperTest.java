@@ -7,10 +7,14 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
@@ -226,6 +230,87 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("Lol\\ApiBundle\\Controller\\UsersController::getInfoAction", routes.get("api_users_getInfo").getController());
         assertNull(routes.get("ru__RG__page"));
         assertNull(routes.get("_assetic_91dd2a8"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#convertMethodToRouteShortcutControllerName
+     */
+    public void testConvertMethodToRouteShortcutControllerName() {
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("GetRoutesOnControllerAction.php"));
+
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace FooBar\\FooBundle\\Controller" +
+            "{\n" +
+            "  class FooBarController\n" +
+            "  {\n" +
+            "     function fooAction() {}\n" +
+            "  }\n" +
+            "}"
+        );
+
+        Method fooAction = phpClass.findMethodByName("fooAction");
+        assertNotNull(fooAction);
+
+        assertEquals("FooBarFooBundle:FooBar:foo", RouteHelper.convertMethodToRouteShortcutControllerName(fooAction));
+
+        phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace FooBar\\FooBundle\\Controller\\SubFolder" +
+            "{\n" +
+            "  class SubController\n" +
+            "  {\n" +
+            "     function fooAction() {}\n" +
+            "  }\n" +
+            "}"
+        );
+
+        fooAction = phpClass.findMethodByName("fooAction");
+        assertNotNull(fooAction);
+
+        assertEquals("FooBarFooBundle:SubFolder\\Sub:foo", RouteHelper.convertMethodToRouteShortcutControllerName(fooAction));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesOnControllerAction
+     */
+    public void testGetRoutesOnControllerAction() {
+        myFixture.copyFileToProject("GetRoutesOnControllerAction.php");
+        myFixture.copyFileToProject("GetRoutesOnControllerAction.routing.xml");
+        myFixture.copyFileToProject("GetRoutesOnControllerAction.services.xml");
+
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace FooBar\\FooBundle\\Controller\\SubFolder" +
+            "{\n" +
+            "  class FooBarController\n" +
+            "  {\n" +
+            "     function fooAction() {}\n" +
+            "  }\n" +
+            "}"
+        );
+
+        Method fooAction = phpClass.findMethodByName("fooAction");
+        assertNotNull(fooAction);
+
+        List<Route> routesOnControllerAction = RouteHelper.getRoutesOnControllerAction(fooAction);
+
+        assertNotNull(ContainerUtil.find(routesOnControllerAction, route ->
+            "xml_route_subfolder_backslash".equals(route.getName())
+        ));
+
+        assertNotNull(ContainerUtil.find(routesOnControllerAction, route ->
+            "xml_route_subfolder_slash".equals(route.getName())
+        ));
+
+        assertNotNull(ContainerUtil.find(routesOnControllerAction, route ->
+            "xml_route_subfolder_class_syntax".equals(route.getName())
+        ));
+
+        // controller as service
+        Method indexAction = PhpElementsUtil.getClassMethod(getProject(), "Service\\Controller\\FooController", "indexAction");
+        assertNotNull(indexAction);
+
+        assertNotNull(ContainerUtil.find(RouteHelper.getRoutesOnControllerAction(indexAction), route ->
+            "xml_route_as_service".equals(route.getName())
+        ));
     }
 
     /**

@@ -14,15 +14,10 @@ public class RouteControllerRelatedGotoCollector implements ControllerActionGoto
 
     @Override
     public void collectGotoRelatedItems(ControllerActionGotoRelatedCollectorParameter parameter) {
-
-        // find routes
-        List<Route> routes = RouteHelper.getRoutesOnControllerAction(parameter.getMethod());
-        if(routes != null) {
-            for(Route route: routes) {
-                PsiElement routeTarget = RouteHelper.getRouteNameTarget(parameter.getProject(), route.getName());
-                if(routeTarget != null) {
-                    parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(routeTarget, route.getName()).withIcon(Symfony2Icons.ROUTE, Symfony2Icons.ROUTE_LINE_MARKER));
-                }
+        for(Route route: RouteHelper.getRoutesOnControllerAction(parameter.getMethod())) {
+            PsiElement routeTarget = RouteHelper.getRouteNameTarget(parameter.getProject(), route.getName());
+            if(routeTarget != null) {
+                parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(routeTarget, route.getName()).withIcon(Symfony2Icons.ROUTE, Symfony2Icons.ROUTE_LINE_MARKER));
             }
         }
     }

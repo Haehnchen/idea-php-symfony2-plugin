@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container>
+    <services>
+        <service id="foo.bar_controller" class="Service\Controller\FooController"/>
+    </services>
+</container>
