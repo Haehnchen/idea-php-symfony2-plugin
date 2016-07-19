@@ -65,11 +65,21 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         this.closeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setEnabled(false);
-                dispose();
+                onCancel();
             }
         });
 
+        this.getRootPane().registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+    }
+
+    private void onCancel() {
+        setEnabled(false);
+        dispose();
     }
 
     private void createUIComponents() {
