@@ -3,10 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -149,14 +151,18 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     public static PsiElement[] getBlockGoTo(@NotNull PsiElement psiElement) {
-
-        PsiFile containingFile = psiElement.getContainingFile();
-        if(containingFile == null) {
+        String blockName = psiElement.getText();
+        if(StringUtils.isBlank(blockName)) {
             return new PsiElement[0];
         }
 
-        String blockName = psiElement.getText();
-        return getBlockNameGoTo(containingFile, blockName);
+        Collection<PsiElement> psiElements = new HashSet<>();
+        Pair<PsiFile[], Boolean> scopedFile = TwigHelper.findScopedFile(psiElement);
+        for (PsiFile psiFile : scopedFile.getFirst()) {
+            ContainerUtil.addAll(psiElements, getBlockNameGoTo(psiFile, blockName, scopedFile.getSecond()));
+        }
+
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
     @NotNull
@@ -164,6 +170,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return getBlockNameGoTo(psiFile, blockName, false);
     }
 
+    @NotNull
     public static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
         Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
         List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).withSelfBlocks(withSelfBlocks).walk(psiFile);

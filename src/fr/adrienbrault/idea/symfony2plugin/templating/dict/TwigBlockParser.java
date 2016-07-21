@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -26,6 +27,14 @@ public class TwigBlockParser {
 
     public TwigBlockParser(Map<String, VirtualFile> twigFilesByName) {
         this.twigFilesByName = twigFilesByName;
+    }
+
+    public List<TwigBlock> visit(@NotNull PsiFile[] file) {
+        List<TwigBlock> blocks = new ArrayList<>();
+        for (PsiFile psiFile : file) {
+            blocks.addAll(this.walk(psiFile, psiFile.getName(), new ArrayList<>(), 0));
+        }
+        return blocks;
     }
 
     public List<TwigBlock> walk(@Nullable PsiFile file) {

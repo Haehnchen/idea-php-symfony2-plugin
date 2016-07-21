@@ -3,17 +3,21 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -38,6 +42,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -604,10 +609,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
     }
 
-    class BlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+    private class BlockCompletionProvider extends CompletionProvider<CompletionParameters> {
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-
-            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
                 return;
             }
 
@@ -620,9 +625,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionResultSet myResultSet = resultSet.withPrefixMatcher(blockNamePrefix);
 
             // collect blocks in all related files
-            List<TwigBlock> blocks = new TwigBlockParser(
-                TwigHelper.getTwigFilesByName(parameters.getPosition().getProject())
-            ).walk(parameters.getPosition().getContainingFile());
+            Pair<PsiFile[], Boolean> scopedContext = TwigHelper.findScopedFile(position);
+
+            List<TwigBlock> blocks = new TwigBlockParser(TwigHelper.getTwigFilesByName(position.getProject()))
+                .withSelfBlocks(scopedContext.getSecond())
+                .visit(scopedContext.getFirst());
 
             Set<String> uniqueList = new HashSet<>();
             for (TwigBlock block : blocks) {

@@ -5,18 +5,15 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see com.jetbrains.twig.completion.TwigCompletionContributor
+ * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
  */
 public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
-
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
@@ -24,31 +21,40 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void testBlockCompletion() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
 
-        try {
-            createDummyFiles(
-                "app/Resources/views/block.html.twig"
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // build pseudo file with block
-        final VirtualFile relativeFile = VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/views/block.html.twig".split("/"));
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    relativeFile.setBinaryContent("{% block foo %}{% endblock %}".getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                relativeFile.refresh(false, false);
-            }
-        });
+        createWorkaroundFile("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block <caret> %}", "foo");
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block \"<caret>\" %}", "foo");
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block '<caret>' %}", "foo");
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "" +
+                "{% extends '::block.html.twig' %}\n" +
+                "{% embed '::foobar.html.twig' %}\n" +
+                "   {% block '<caret>' %}\n" +
+                "{% endembed %}\n",
+            "foo"
+        );
+    }
+
+    public void testBlockCompletionForEmbed() {
+        if(System.getenv("PHPSTORM_ENV") != null) return;
+
+        createWorkaroundFile("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% embed '::embed.html.twig' %}\n" +
+                "   {% block '<caret>' %}\n" +
+                "{% endembed %}\n",
+            "foo_embed"
+        );
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "" +
+                "{% block content %}{% endblock %}" +
+                "{% embed '::embed.html.twig' %}\n" +
+                "   {% block '<caret>' %}" +
+                "{% endembed %}",
+            "content"
+        );
     }
 
     public void testThatInlineVarProvidesClassCompletion() {
@@ -57,5 +63,25 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
 
     public void testThatInlineVarProvidesClassCompletionDeprecated() {
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar Date<caret> #}", "DateTime");
+    }
+
+    private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
+
+        try {
+            createDummyFiles(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // build pseudo file with block
+        final VirtualFile relativeFile = VfsUtil.findRelativeFile(getProject().getBaseDir(), file.split("/"));
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            try {
+                relativeFile.setBinaryContent(content.getBytes());
+            } catch (IOException e2) {
+                e2.printStackTrace();
+            }
+            relativeFile.refresh(false, false);
+        });
     }
 }

@@ -3,7 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -16,6 +18,7 @@ import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.TwigFile;
@@ -35,11 +38,13 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateFileMap;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -1767,5 +1772,48 @@ public class TwigHelper {
         public Result<TemplateFileMap> compute() {
             return Result.create(getTemplateMapProxy(project, true, true), PsiModificationTracker.MODIFICATION_COUNT);
         }
+    }
+
+    /**
+     * Find block scope "embed" with self search or file context with foreign extends search
+     *
+     * {% embed "template.twig" %}{% block <caret> %}
+     * {% block <caret> %}
+     */
+    @NotNull
+    public static Pair<PsiFile[], Boolean> findScopedFile(@NotNull PsiElement psiElement) {
+
+        // {% embed "template.twig" %}{% block <caret> %}
+        PsiElement firstParent = PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> psiElement1 instanceof PsiFile || (
+            psiElement1 instanceof TwigCompositeElement &&
+                psiElement1.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT
+        ));
+
+        // {% embed "template.twig" %}
+        if(firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
+            PsiElement embedTag = firstParent.getFirstChild();
+            if(embedTag.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
+                PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), new Condition<PsiElement>() {
+                    @Override
+                    public boolean value(PsiElement psiElement) {
+                        return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement);
+                    }
+                });
+
+                if(fileReference != null && TwigUtil.isValidTemplateString(fileReference)) {
+                    String text = fileReference.getText();
+                    if(StringUtils.isNotBlank(text)) {
+                        return Pair.create(
+                            TwigHelper.getTemplatePsiElements(psiElement.getProject(), text),
+                            true
+                        );
+                    }
+                }
+            }
+
+            return Pair.create(new PsiFile[] {}, true);
+        }
+
+        return Pair.create(new PsiFile[] {psiElement.getContainingFile()}, false);
     }
 }
