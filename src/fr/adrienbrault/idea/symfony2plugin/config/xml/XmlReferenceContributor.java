@@ -294,7 +294,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             // @TODO: on implement multiple service resolve; we can make it nicer here
             // self add on compiler parameter, in this case we dont have a target;
             // to not get ide warnings
-            if(serviceClassTargets.size() == 0 && value.startsWith("%") && value.endsWith("%") && ContainerCollectionResolver.getParameterNames(getElement().getProject()).contains(value.substring(1, value.length() - 1))) {
+            if(serviceClassTargets.size() == 0 && value.startsWith("%") && value.endsWith("%") && value.length() > 2 && ContainerCollectionResolver.getParameterNames(getElement().getProject()).contains(StringUtils.strip(value, "%"))) {
                 serviceClassTargets.add(getElement());
             }
 
