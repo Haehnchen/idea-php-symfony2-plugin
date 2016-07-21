@@ -25,9 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
-
 
 public class PhpTemplateAnnotator implements Annotator {
 
@@ -107,12 +105,7 @@ public class PhpTemplateAnnotator implements Annotator {
                         return;
                     }
 
-                    TemplateCreationSelectionDialog.create(templatePaths, new TemplateCreationSelectionDialog.Callback() {
-                        @Override
-                        public void ok(@NotNull String selected) {
-                            createFile(selected);
-                        }
-                    });
+                    TemplateCreationSelectionDialog.create(editor, templatePaths, this::createFile);
                 }
 
                 private void createFile(@NotNull  String relativePath) {

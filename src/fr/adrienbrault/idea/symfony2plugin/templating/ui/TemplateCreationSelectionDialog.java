@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.ui;
 
+import com.intellij.openapi.editor.Editor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
@@ -104,14 +105,14 @@ public class TemplateCreationSelectionDialog extends JDialog {
         }
     }
 
-    public static void create(@NotNull final Collection<String> pathsCollection, @NotNull final Callback callback) {
+    public static void create(@NotNull Editor editor, @NotNull final Collection<String> pathsCollection, @NotNull final Callback callback) {
         TemplateCreationSelectionDialog templateCreationSelectionDialog = new TemplateCreationSelectionDialog(pathsCollection, callback);
         Dimension dim = new Dimension();
         dim.setSize(600, 300);
         templateCreationSelectionDialog.setMinimumSize(dim);
         templateCreationSelectionDialog.setTitle("Twig: Select file to create");
         templateCreationSelectionDialog.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
-        templateCreationSelectionDialog.setLocationRelativeTo(null);
+        templateCreationSelectionDialog.setLocationRelativeTo(editor.getComponent());
         templateCreationSelectionDialog.setVisible(true);
     }
 }
