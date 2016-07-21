@@ -162,7 +162,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         extractorDialog.setTitle("Symfony: Extract Translation Key");
         extractorDialog.setMinimumSize(new Dimension(600, 200));
         extractorDialog.pack();
-        extractorDialog.setLocationRelativeTo(null);
+        extractorDialog.setLocationRelativeTo(editor.getComponent());
         extractorDialog.setVisible(true);
         extractorDialog.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
 
