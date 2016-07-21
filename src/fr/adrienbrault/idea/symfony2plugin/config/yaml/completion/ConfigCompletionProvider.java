@@ -75,11 +75,8 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         }
 
         // normalize for xml
-        items = ContainerUtil.map(items, new Function<String, String>() {
-            @Override
-            public String fun(String s) {
-                return s.replace('_', '-');
-            }
+        items = ContainerUtil.map(items, s -> {
+            return s.replace('_', '-');
         });
 
         // reverse to get top most item first

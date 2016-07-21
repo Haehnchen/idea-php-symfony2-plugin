@@ -12,10 +12,7 @@ import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,21 +27,13 @@ public class SymfonyInstallerForm {
 
     public SymfonyInstallerForm() {
 
-        checkBoxDemo.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                boolean state = e.getStateChange() != ItemEvent.SELECTED;
-                buttonRefresh.setEnabled(state);
-                comboVersions.setEnabled(state);
-            }
+        checkBoxDemo.addItemListener(e -> {
+            boolean state = e.getStateChange() != ItemEvent.SELECTED;
+            buttonRefresh.setEnabled(state);
+            comboVersions.setEnabled(state);
         });
 
-        buttonRefresh.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                appendSymfonyVersions();
-            }
-        });
+        buttonRefresh.addActionListener(e -> appendSymfonyVersions());
 
         // @TODO: use com.intellij.util.ui.ReloadableComboBoxPanel in Phpstorm9 api level
         comboVersions.setRenderer(new ListCellRenderer());
@@ -67,17 +56,10 @@ public class SymfonyInstallerForm {
 
         comboVersions.setModel(new ListComboBoxModel<>(new ArrayList<>()));
 
-        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-            public void run() {
-                final List<SymfonyInstallerVersion> symfonyInstallerVersions1 = getVersions();
-                if (symfonyInstallerVersions1 != null) {
-                    UIUtil.invokeLaterIfNeeded(new Runnable() {
-                        @Override
-                        public void run() {
-                            comboVersions.setModel(new ListComboBoxModel<>(symfonyInstallerVersions1));
-                        }
-                    });
-                }
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            final List<SymfonyInstallerVersion> symfonyInstallerVersions1 = getVersions();
+            if (symfonyInstallerVersions1 != null) {
+                UIUtil.invokeLaterIfNeeded(() -> comboVersions.setModel(new ListComboBoxModel<>(symfonyInstallerVersions1)));
             }
         });
 

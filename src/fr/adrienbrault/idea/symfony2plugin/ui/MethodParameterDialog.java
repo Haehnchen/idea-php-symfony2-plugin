@@ -46,17 +46,9 @@ public class MethodParameterDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         this.textCallTo.getDocument().addDocumentListener(new ChangeDocumentListener());
         this.textMethodName.getDocument().addDocumentListener(new ChangeDocumentListener());
@@ -70,19 +62,12 @@ public class MethodParameterDialog extends JDialog {
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        comboContributor.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                AssistantReferenceContributor assistantReferenceContributor = AssistantReferenceUtil.getContributorProviderByName(MethodParameterDialog.this.project, (String) e.getItem());
-                if(assistantReferenceContributor != null) {
-                    MethodParameterDialog.this.textContributorData.setEnabled(assistantReferenceContributor.supportData());
-                }
+        comboContributor.addItemListener(e -> {
+            AssistantReferenceContributor assistantReferenceContributor = AssistantReferenceUtil.getContributorProviderByName(MethodParameterDialog.this.project, (String) e.getItem());
+            if(assistantReferenceContributor != null) {
+                MethodParameterDialog.this.textContributorData.setEnabled(assistantReferenceContributor.supportData());
             }
         });
 

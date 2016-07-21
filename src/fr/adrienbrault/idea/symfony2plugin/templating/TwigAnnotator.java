@@ -6,7 +6,6 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.Processor;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -95,20 +94,16 @@ public class TwigAnnotator implements Annotator {
 
         // @TODO: move to pattern, dont allow nested filters: eg "'form.tab.profile'|trans|desc('Interchange')"
         final PsiElement[] psiElementTrans = new PsiElement[1];
-        PsiElementUtils.getPrevSiblingOnCallback(psiElement, new Processor<PsiElement>() {
-            @Override
-            public boolean process(PsiElement psiElement) {
-
-                if(psiElement.getNode().getElementType() == TwigTokenTypes.FILTER) {
-                    return false;
-                } else {
-                    if(PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")).accepts(psiElement)) {
-                        psiElementTrans[0] = psiElement;
-                    }
+        PsiElementUtils.getPrevSiblingOnCallback(psiElement, psiElement1 -> {
+            if(psiElement1.getNode().getElementType() == TwigTokenTypes.FILTER) {
+                return false;
+            } else {
+                if(PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")).accepts(psiElement1)) {
+                    psiElementTrans[0] = psiElement1;
                 }
-
-                return true;
             }
+
+            return true;
         });
 
         //PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));

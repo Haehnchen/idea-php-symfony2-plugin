@@ -101,11 +101,8 @@ public class RouteSettingDeprecatedInspection extends LocalInspectionTool {
      * XmlToken: "'"
      */
     private PsiElement findAttributeValueToken(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull final String attributeText) {
-        return ContainerUtil.find(xmlAttributeValue.getChildren(), new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                return psiElement instanceof XmlToken && attributeText.equals(psiElement.getText());
-            }
-        });
+        return ContainerUtil.find(xmlAttributeValue.getChildren(), psiElement ->
+            psiElement instanceof XmlToken && attributeText.equals(psiElement.getText())
+        );
     }
 }

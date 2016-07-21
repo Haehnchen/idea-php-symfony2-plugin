@@ -74,13 +74,10 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
 
         }
 
-        ServiceUtil.insertTagWithPopupDecision(editor, phpServiceTags, new Consumer<String>() {
-            @Override
-            public void consume(String tag) {
-                ServiceTag serviceTag = new ServiceTag(phpClassFromXmlTag, tag);
-                ServiceUtil.decorateServiceTag(serviceTag);
-                xmlTag.addSubTag(XmlElementFactory.getInstance(project).createTagFromText(serviceTag.toXmlString()), false);
-            }
+        ServiceUtil.insertTagWithPopupDecision(editor, phpServiceTags, tag -> {
+            ServiceTag serviceTag = new ServiceTag(phpClassFromXmlTag, tag);
+            ServiceUtil.decorateServiceTag(serviceTag);
+            xmlTag.addSubTag(XmlElementFactory.getInstance(project).createTagFromText(serviceTag.toXmlString()), false);
         });
     }
 

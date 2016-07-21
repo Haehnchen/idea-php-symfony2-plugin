@@ -6,7 +6,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
@@ -76,22 +75,19 @@ public class FormUtil {
         final List<MethodReference> methodReferences = new ArrayList<>();
 
         final Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-        PsiTreeUtil.collectElements(method, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
+        PsiTreeUtil.collectElements(method, psiElement -> {
 
-                if (psiElement instanceof MethodReference) {
-                    String methodName = ((MethodReference) psiElement).getName();
-                    if (methodName != null && (methodName.equals("add") || methodName.equals("create"))) {
-                        if(symfony2InterfacesUtil.isFormBuilderFormTypeCall(psiElement)) {
-                            methodReferences.add((MethodReference) psiElement);
-                            return true;
-                        }
+            if (psiElement instanceof MethodReference) {
+                String methodName = ((MethodReference) psiElement).getName();
+                if (methodName != null && (methodName.equals("add") || methodName.equals("create"))) {
+                    if(symfony2InterfacesUtil.isFormBuilderFormTypeCall(psiElement)) {
+                        methodReferences.add((MethodReference) psiElement);
+                        return true;
                     }
                 }
-
-                return false;
             }
+
+            return false;
         });
 
         return methodReferences.toArray(new MethodReference[methodReferences.size()]);

@@ -85,12 +85,9 @@ public class FileResourceUtil {
                 continue;
             }
 
-            FileResourceVisitorUtil.visitFile(psiFile, new Consumer<FileResourceVisitorUtil.FileResourceConsumer>() {
-                @Override
-                public void consume(FileResourceVisitorUtil.FileResourceConsumer consumer) {
-                    if (bundleFileName.equals(consumer.getResource())) {
-                        psiElements.add(consumer.getPsiElement());
-                    }
+            FileResourceVisitorUtil.visitFile(psiFile, consumer -> {
+                if (bundleFileName.equals(consumer.getResource())) {
+                    psiElements.add(consumer.getPsiElement());
                 }
             });
         }

@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiElementFilter;
@@ -35,44 +34,38 @@ public class TwigMacroFromStubIndex extends FileBasedIndexExtension<String, Void
     @NotNull
     @Override
     public DataIndexer<String, Void, FileContent> getIndexer() {
-        return new DataIndexer<String, Void, FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, Void> map(@NotNull FileContent inputData) {
+        return inputData -> {
+            final Map<String, Void> map = new THashMap<>();
 
-                final Map<String, Void> map = new THashMap<>();
-
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                    return map;
-                }
-
-                if(!(psiFile instanceof TwigFile)) {
-                    return map;
-                }
-
-                PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-                    @Override
-                    public boolean isAccepted(PsiElement psiElement) {
-
-                        // {% include %}
-                        if(psiElement instanceof TwigTagWithFileReference) {
-                            PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("from"));
-                            if(fromTag != null) {
-                                String templateName = fromTag.getText();
-                                if(!StringUtils.isBlank(templateName)) {
-                                    map.put(templateName, null);
-                                }
-                            }
-                        }
-
-                        return false;
-                    }
-                });
-
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
                 return map;
             }
 
+            if(!(psiFile instanceof TwigFile)) {
+                return map;
+            }
+
+            PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
+                @Override
+                public boolean isAccepted(PsiElement psiElement) {
+
+                    // {% include %}
+                    if(psiElement instanceof TwigTagWithFileReference) {
+                        PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("from"));
+                        if(fromTag != null) {
+                            String templateName = fromTag.getText();
+                            if(!StringUtils.isBlank(templateName)) {
+                                map.put(templateName, null);
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+            });
+
+            return map;
         };
 
     }
@@ -92,12 +85,7 @@ public class TwigMacroFromStubIndex extends FileBasedIndexExtension<String, Void
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == TwigFileType.INSTANCE;
-            }
-        };
+        return file -> file.getFileType() == TwigFileType.INSTANCE;
     }
 
     @Override

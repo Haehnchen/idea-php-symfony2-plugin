@@ -506,17 +506,12 @@ public class ServiceUtil {
 
         JBPopupFactory.getInstance().createListPopupBuilder(list)
             .setTitle("Symfony: Tag Suggestion")
-            .setItemChoosenCallback(new Runnable() {
+            .setItemChoosenCallback(() -> new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
                 @Override
-                public void run() {
-                    new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
-                        @Override
-                        protected void run() {
-                            consumer.consume((String) list.getSelectedValue());
-                        }
-                    }.execute();
+                protected void run() {
+                    consumer.consume((String) list.getSelectedValue());
                 }
-            })
+            }.execute())
             .createPopup()
             .showInBestPositionFor(editor);
     }

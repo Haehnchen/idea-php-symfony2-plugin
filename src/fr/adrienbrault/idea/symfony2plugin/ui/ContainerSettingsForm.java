@@ -6,16 +6,13 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnActionButton;
-import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
-import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
@@ -26,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -56,12 +51,9 @@ public class ContainerSettingsForm implements Configurable {
 
         this.fillContainerList();
 
-        this.modelList.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                ContainerSettingsForm.this.changed = true;
-            }
-        });
+        this.modelList.addTableModelListener(e ->
+            ContainerSettingsForm.this.changed = true
+        );
 
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
@@ -115,29 +107,23 @@ public class ContainerSettingsForm implements Configurable {
             }
         });
 
-        tablePanel.setEditAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                ContainerFile containerFile = ContainerSettingsForm.this.tableView.getSelectedObject();
-                if(containerFile != null) {
-                    String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
-                    if(uri != null) {
-                        containerFile.setPath(uri);
-                        ContainerSettingsForm.this.changed = true;
-                    }
-
+        tablePanel.setEditAction(anActionButton -> {
+            ContainerFile containerFile = ContainerSettingsForm.this.tableView.getSelectedObject();
+            if(containerFile != null) {
+                String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
+                if(uri != null) {
+                    containerFile.setPath(uri);
+                    ContainerSettingsForm.this.changed = true;
                 }
+
             }
         });
 
-        tablePanel.setAddAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
-                if(uri != null) {
-                    ContainerSettingsForm.this.tableView.getListTableModel().addRow(new ContainerFile(uri));
-                    ContainerSettingsForm.this.changed = true;
-                }
+        tablePanel.setAddAction(anActionButton -> {
+            String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
+            if(uri != null) {
+                ContainerSettingsForm.this.tableView.getListTableModel().addRow(new ContainerFile(uri));
+                ContainerSettingsForm.this.changed = true;
             }
         });
 

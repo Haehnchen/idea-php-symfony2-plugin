@@ -48,12 +48,7 @@ public class WebDeploymentProjectComponent implements ProjectComponent {
         if(Settings.getInstance(project).remoteDevFileScheduler) {
             Symfony2ProjectComponent.getLogger().info("Starting Symfony webDeployment background scheduler");
 
-            DumbService.getInstance(project).smartInvokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    new Timer().schedule(new MyTimerTask(), 1000, 300000);
-                }
-            });
+            DumbService.getInstance(project).smartInvokeLater(() -> new Timer().schedule(new MyTimerTask(), 1000, 300000));
         }
     }
 
@@ -71,18 +66,13 @@ public class WebDeploymentProjectComponent implements ProjectComponent {
                 return;
             }
 
-            DumbService.getInstance(project).smartInvokeLater(new Runnable() {
+            DumbService.getInstance(project).smartInvokeLater(() -> new Task.Backgroundable(project, "Symfony: Remote File Download", false) {
                 @Override
-                public void run() {
-                    new Task.Backgroundable(project, "Symfony: Remote File Download", false) {
-                        @Override
-                        public void run(@NotNull ProgressIndicator indicator) {
-                            Symfony2ProjectComponent.getLogger().info("Running background webDeployment dev download");
-                            RemoteWebServerUtil.collectRemoteFiles(project);
-                        }
-                    }.queue();
+                public void run(@NotNull ProgressIndicator indicator) {
+                    Symfony2ProjectComponent.getLogger().info("Running background webDeployment dev download");
+                    RemoteWebServerUtil.collectRemoteFiles(project);
                 }
-            });
+            }.queue());
         }
     }
 }

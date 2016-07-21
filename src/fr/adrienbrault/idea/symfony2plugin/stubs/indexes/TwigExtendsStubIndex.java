@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiElementFilter;
@@ -33,41 +32,36 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
     @NotNull
     @Override
     public DataIndexer<String, Void, FileContent> getIndexer() {
-        return new DataIndexer<String, Void, FileContent>() {
-            @NotNull
-            @Override
-            public Map<String, Void> map(@NotNull FileContent inputData) {
-                Map<String, Void> map = new THashMap<>();
+        return inputData -> {
+            Map<String, Void> map = new THashMap<>();
 
-                PsiFile psiFile = inputData.getPsiFile();
-                if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                    return map;
-                }
-
-                if(!(psiFile instanceof TwigFile)) {
-                    return map;
-                }
-
-                PsiElement[] twigExtendsTags = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-                    @Override
-                    public boolean isAccepted(PsiElement psiElement) {
-                        return psiElement instanceof TwigExtendsTag;
-                    }
-                });
-
-                if(twigExtendsTags.length == 0) {
-                    return map;
-                }
-
-                for(PsiElement twigExtendsTag: twigExtendsTags) {
-                    for (String s : TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) twigExtendsTag)) {
-                        map.put(s, null);
-                    }
-                }
-
+            PsiFile psiFile = inputData.getPsiFile();
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
                 return map;
             }
 
+            if(!(psiFile instanceof TwigFile)) {
+                return map;
+            }
+
+            PsiElement[] twigExtendsTags = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
+                @Override
+                public boolean isAccepted(PsiElement psiElement) {
+                    return psiElement instanceof TwigExtendsTag;
+                }
+            });
+
+            if(twigExtendsTags.length == 0) {
+                return map;
+            }
+
+            for(PsiElement twigExtendsTag: twigExtendsTags) {
+                for (String s : TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) twigExtendsTag)) {
+                    map.put(s, null);
+                }
+            }
+
+            return map;
         };
 
     }
@@ -87,12 +81,7 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return new FileBasedIndex.InputFilter() {
-            @Override
-            public boolean acceptInput(@NotNull VirtualFile file) {
-                return file.getFileType() == TwigFileType.INSTANCE;
-            }
-        };
+        return file -> file.getFileType() == TwigFileType.INSTANCE;
     }
 
     @Override

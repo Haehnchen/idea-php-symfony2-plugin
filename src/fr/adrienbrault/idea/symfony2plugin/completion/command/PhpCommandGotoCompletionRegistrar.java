@@ -9,7 +9,6 @@ import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -34,34 +33,28 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
     @Override
     public void register(GotoCompletionRegistrarParameter registrar) {
 
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement context = psiElement.getContext();
-                if (!(context instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-                for(String s : new String[] {"Option", "Argument"}) {
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
-                            .withSignature("Symfony\\Component\\Console\\Input\\InputInterface", "get" + s)
-                            .withSignature("Symfony\\Component\\Console\\Input\\InputInterface", "has" + s)
-                            .match();
-
-                    if(methodMatchParameter != null) {
-                        PhpClass phpClass = PsiTreeUtil.getParentOfType(methodMatchParameter.getMethodReference(), PhpClass.class);
-                        if(phpClass != null) {
-                            return new CommandGotoCompletionProvider(phpClass, s);
-                        }
-
-                    }
-                }
-
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement context = psiElement.getContext();
+            if (!(context instanceof StringLiteralExpression)) {
                 return null;
             }
 
+            for(String s : new String[] {"Option", "Argument"}) {
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
+                        .withSignature("Symfony\\Component\\Console\\Input\\InputInterface", "get" + s)
+                        .withSignature("Symfony\\Component\\Console\\Input\\InputInterface", "has" + s)
+                        .match();
+
+                if(methodMatchParameter != null) {
+                    PhpClass phpClass = PsiTreeUtil.getParentOfType(methodMatchParameter.getMethodReference(), PhpClass.class);
+                    if(phpClass != null) {
+                        return new CommandGotoCompletionProvider(phpClass, s);
+                    }
+
+                }
+            }
+
+            return null;
         });
 
     }

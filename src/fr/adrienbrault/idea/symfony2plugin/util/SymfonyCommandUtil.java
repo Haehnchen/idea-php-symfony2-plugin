@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -35,12 +34,9 @@ public class SymfonyCommandUtil {
                 continue;
             }
 
-            PsiElement[] psiElements = PsiTreeUtil.collectElements(method, new PsiElementFilter() {
-                @Override
-                public boolean isAccepted(PsiElement psiElement) {
-                    return psiElement instanceof MethodReference && "setName".equals(((MethodReference) psiElement).getName());
-                }
-            });
+            PsiElement[] psiElements = PsiTreeUtil.collectElements(method, psiElement ->
+                psiElement instanceof MethodReference && "setName".equals(((MethodReference) psiElement).getName())
+            );
 
             for (PsiElement psiElement : psiElements) {
 

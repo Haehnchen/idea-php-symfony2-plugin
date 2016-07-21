@@ -16,18 +16,12 @@ public class ServiceSuggestDialog {
 
         JBPopupFactory.getInstance().createListPopupBuilder(list)
             .setTitle("Symfony: Service Suggestion")
-            .setItemChoosenCallback(new Runnable() {
+            .setItemChoosenCallback(() -> new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
                 @Override
-                public void run() {
-                    new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
-                        @Override
-                        protected void run() {
-                            callback.insert((String) list.getSelectedValue());
-                        }
-                    }.execute();
-
+                protected void run() {
+                    callback.insert((String) list.getSelectedValue());
                 }
-            })
+            }.execute())
             .createPopup()
             .showInBestPositionFor(editor);
     }

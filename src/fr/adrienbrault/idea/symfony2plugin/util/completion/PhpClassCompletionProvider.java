@@ -52,12 +52,9 @@ public class PhpClassCompletionProvider extends CompletionProvider<CompletionPar
 
         // Foo\|Bar
         // Foo|\Bar
-        PhpElementsUtil.visitNamespaceClassForCompletion(psiElement, parameters.getOffset(), new PhpElementsUtil.ClassForCompletionVisitor() {
-            @Override
-            public void visit(PhpClass phpClass, String presentableFQN, String prefix) {
-                resultSet.addElement(LookupElementBuilder.create(prefix + presentableFQN).withIcon(phpClass.getIcon()));
-            }
-        });
+        PhpElementsUtil.visitNamespaceClassForCompletion(psiElement, parameters.getOffset(), (phpClass, presentableFQN, prefix) ->
+            resultSet.addElement(LookupElementBuilder.create(prefix + presentableFQN).withIcon(phpClass.getIcon()))
+        );
 
         PhpIndex phpIndex = PhpIndex.getInstance(psiElement.getProject());
         for (String className : phpIndex.getAllClassNames(resultSet.getPrefixMatcher())) {

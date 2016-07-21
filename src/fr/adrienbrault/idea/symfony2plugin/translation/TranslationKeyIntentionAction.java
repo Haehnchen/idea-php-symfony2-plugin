@@ -70,11 +70,8 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
             return;
         }
 
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                TranslationInsertUtil.invokeTranslation(editor, keyName, keyName, (YAMLFile) psiFile, true);
-            }
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            TranslationInsertUtil.invokeTranslation(editor, keyName, keyName, (YAMLFile) psiFile, true);
         });
     }
 

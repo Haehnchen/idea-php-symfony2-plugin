@@ -149,17 +149,13 @@ public class TwigTypeResolveUtil {
      * "@var foo \Foo"
      */
     private static Map<String, String> findInlineStatementVariableDocBlock(PsiElement psiInsideBlock, final IElementType parentStatement) {
-
-        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                if (psiElement instanceof TwigCompositeElement) {
-                    if (PlatformPatterns.psiElement(parentStatement).accepts(psiElement)) {
-                        return true;
-                    }
+        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, psiElement -> {
+            if (psiElement instanceof TwigCompositeElement) {
+                if (PlatformPatterns.psiElement(parentStatement).accepts(psiElement)) {
+                    return true;
                 }
-                return false;
             }
+            return false;
         });
 
         Map<String, String> variables = new HashMap<>();
@@ -283,17 +279,13 @@ public class TwigTypeResolveUtil {
     }
 
     private static void collectForArrayScopeVariables(PsiElement psiElement, Map<String, PsiVariable> globalVars) {
-
-        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                if (psiElement instanceof TwigCompositeElement) {
-                    if (PlatformPatterns.psiElement(TwigElementTypes.FOR_STATEMENT).accepts(psiElement)) {
-                        return true;
-                    }
+        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> {
+            if (psiElement1 instanceof TwigCompositeElement) {
+                if (PlatformPatterns.psiElement(TwigElementTypes.FOR_STATEMENT).accepts(psiElement1)) {
+                    return true;
                 }
-                return false;
             }
+            return false;
         });
 
         if(!(twigCompositeElement instanceof TwigCompositeElement)) {

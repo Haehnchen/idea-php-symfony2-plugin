@@ -148,12 +148,9 @@ public class SymfonyInstallerUtil {
             branches.add(new SymfonyInstallerVersion(asString, String.format("%s (%s)", entry.getKey(), asString)));
         }
 
-        Collections.sort(branches, new Comparator<SymfonyInstallerVersion>() {
-            @Override
-            public int compare(SymfonyInstallerVersion o1, SymfonyInstallerVersion o2) {
-                return o1.getVersion().compareTo(o2.getVersion());
-            }
-        });
+        Collections.sort(branches, (o1, o2) ->
+            o1.getVersion().compareTo(o2.getVersion())
+        );
 
         Collections.reverse(branches);
 

@@ -23,9 +23,7 @@ public class XmlServiceParser extends AbstractServiceParser {
             ServiceMap serviceMap1 = new ServiceMapParser().parse(file);
             this.serviceMap.getMap().putAll(serviceMap1.getMap());
             this.serviceMap.getPublicMap().putAll(serviceMap1.getPublicMap());
-        } catch (SAXException ignored) {
-        } catch (IOException ignored) {
-        } catch (ParserConfigurationException ignored) {
+        } catch (SAXException | IOException | ParserConfigurationException ignored) {
         }
     }
 

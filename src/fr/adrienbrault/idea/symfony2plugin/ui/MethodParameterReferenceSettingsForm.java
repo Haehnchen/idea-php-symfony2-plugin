@@ -53,12 +53,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
         this.attachItems();
 
         this.tableView.setModelAndUpdateColumns(this.modelList);
-        this.tableView.getModel().addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                MethodParameterReferenceSettingsForm.this.changed = true;
-            }
-        });
+        this.tableView.getModel().addTableModelListener(e -> MethodParameterReferenceSettingsForm.this.changed = true);
 
         buttonHelp.addMouseListener(new MouseAdapter() {
             @Override
@@ -104,20 +99,13 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
             }
         });
 
-        tablePanel.setEditAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                MethodParameterReferenceSettingsForm.this.openTwigPathDialog(MethodParameterReferenceSettingsForm.this.tableView.getSelectedObject());
-            }
-        });
+        tablePanel.setEditAction(anActionButton ->
+            MethodParameterReferenceSettingsForm.this.openTwigPathDialog(MethodParameterReferenceSettingsForm.this.tableView.getSelectedObject())
+        );
 
-
-        tablePanel.setAddAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                MethodParameterReferenceSettingsForm.this.openTwigPathDialog(null);
-            }
-        });
+        tablePanel.setAddAction(anActionButton ->
+            MethodParameterReferenceSettingsForm.this.openTwigPathDialog(null)
+        );
 
         tablePanel.disableUpAction();
         tablePanel.disableDownAction();

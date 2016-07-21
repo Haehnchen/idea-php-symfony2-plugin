@@ -225,18 +225,15 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
 
     public void update(final Project project) {
         this.project = project;
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if ((project == null) || project.isDisposed()) {
-                    return;
-                }
-
-                if (!isDisposed() && myStatusBar != null) {
-                    myStatusBar.updateWidget(ID());
-                }
-
+        ApplicationManager.getApplication().invokeLater(() -> {
+            if ((project == null) || project.isDisposed()) {
+                return;
             }
+
+            if (!isDisposed() && myStatusBar != null) {
+                myStatusBar.updateWidget(ID());
+            }
+
         });
     }
 

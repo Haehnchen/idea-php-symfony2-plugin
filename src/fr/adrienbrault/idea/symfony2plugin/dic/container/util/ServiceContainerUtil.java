@@ -39,49 +39,43 @@ public class ServiceContainerUtil {
         final Collection<ServiceSerializable> services = new ArrayList<>();
 
         if(psiFile instanceof XmlFile) {
-            visitFile((XmlFile) psiFile, new Consumer<ServiceConsumer>() {
-                @Override
-                public void consume(ServiceConsumer serviceConsumer) {
-                    SerializableService serializableService = createService(serviceConsumer);
-                    serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration-inner-name"));
-                    serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
+            visitFile((XmlFile) psiFile, serviceConsumer -> {
+                SerializableService serializableService = createService(serviceConsumer);
+                serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration-inner-name"));
+                serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
 
-                    services.add(serializableService);
-                }
+                services.add(serializableService);
             });
         }
 
         if(psiFile instanceof YAMLFile) {
-            visitFile((YAMLFile) psiFile, new Consumer<ServiceConsumer>() {
-                @Override
-                public void consume(ServiceConsumer serviceConsumer) {
+            visitFile((YAMLFile) psiFile, serviceConsumer -> {
 
-                    // alias inline "foo: @bar"
-                    PsiElement yamlKeyValue = serviceConsumer.attributes().getPsiElement();
-                    if(yamlKeyValue instanceof YAMLKeyValue) {
-                        PsiElement value = ((YAMLKeyValue) yamlKeyValue).getValue();
-                        if(value instanceof YAMLScalar) {
-                            String valueText = ((YAMLScalar) value).getTextValue();
-                            if(StringUtils.isNotBlank(valueText) && valueText.startsWith("@")) {
-                                services.add(new SerializableService(serviceConsumer.getServiceId()).setAlias(valueText.substring(1)));
-                                return;
-                            }
+                // alias inline "foo: @bar"
+                PsiElement yamlKeyValue = serviceConsumer.attributes().getPsiElement();
+                if(yamlKeyValue instanceof YAMLKeyValue) {
+                    PsiElement value = ((YAMLKeyValue) yamlKeyValue).getValue();
+                    if(value instanceof YAMLScalar) {
+                        String valueText = ((YAMLScalar) value).getTextValue();
+                        if(StringUtils.isNotBlank(valueText) && valueText.startsWith("@")) {
+                            services.add(new SerializableService(serviceConsumer.getServiceId()).setAlias(valueText.substring(1)));
+                            return;
                         }
                     }
-
-                    SerializableService serializableService = createService(serviceConsumer);
-                    serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration_inner_name"));
-
-                    // catch: deprecated: ~
-                    String string = serviceConsumer.attributes().getString("deprecated");
-                    if("~".equals(string)) {
-                        serializableService.setIsDeprecated(true);
-                    } else {
-                        serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
-                    }
-
-                    services.add(serializableService);
                 }
+
+                SerializableService serializableService = createService(serviceConsumer);
+                serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration_inner_name"));
+
+                // catch: deprecated: ~
+                String string = serviceConsumer.attributes().getString("deprecated");
+                if("~".equals(string)) {
+                    serializableService.setIsDeprecated(true);
+                } else {
+                    serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
+                }
+
+                services.add(serializableService);
             });
         }
 

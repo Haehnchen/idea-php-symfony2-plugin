@@ -32,23 +32,17 @@ public class ConsoleHelperGotoCompletionRegistrar implements GotoCompletionRegis
 
     @Override
     public void register(GotoCompletionRegistrarParameter registrar) {
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement context = psiElement.getContext();
-                if (!(context instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-                if (MethodMatcher.getMatchedSignatureWithDepth(context, CONSOLE_HELP_SET) == null) {
-                    return null;
-                }
-
-                return new MyGotoCompletionProvider(psiElement);
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement context = psiElement.getContext();
+            if (!(context instanceof StringLiteralExpression)) {
+                return null;
             }
 
+            if (MethodMatcher.getMatchedSignatureWithDepth(context, CONSOLE_HELP_SET) == null) {
+                return null;
+            }
+
+            return new MyGotoCompletionProvider(psiElement);
         });
     }
 

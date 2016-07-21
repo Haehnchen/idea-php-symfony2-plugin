@@ -59,12 +59,7 @@ public class ClassCompletionPanelWrapper {
                     return;
                 }
 
-                addUpdateRequest(250, new Runnable() {
-                    @Override
-                    public void run() {
-                        consumer.consume(field.getText());
-                    }
-                });
+                addUpdateRequest(250, () -> consumer.consume(field.getText()));
             }
         });
 
@@ -78,25 +73,20 @@ public class ClassCompletionPanelWrapper {
     }
 
     private Disposable getDisposable() {
-        return new Disposable() {
-            @Override
-            public void dispose() {
-                myDisposed = true;
-                myAlarm.cancelAllRequests();
-            }
+        return () -> {
+            myDisposed = true;
+            myAlarm.cancelAllRequests();
         };
     }
 
     private void addUpdateRequest(final int delay, @NotNull final Runnable runnable)
     {
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run() {
-                if (myDisposed) {
-                    return;
-                }
-                myAlarm.cancelAllRequests();
-                myAlarm.addRequest(runnable, delay);
+        SwingUtilities.invokeLater(() -> {
+            if (myDisposed) {
+                return;
             }
+            myAlarm.cancelAllRequests();
+            myAlarm.addRequest(runnable, delay);
         });
     }
 

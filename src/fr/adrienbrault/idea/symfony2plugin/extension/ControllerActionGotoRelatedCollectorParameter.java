@@ -47,12 +47,9 @@ public class ControllerActionGotoRelatedCollectorParameter {
             return parameterLists;
         }
 
-        return parameterLists = PsiTreeUtil.collectElements(method, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
-                return psiElement.getParent() instanceof ParameterList;
-            }
-        });
+        return parameterLists = PsiTreeUtil.collectElements(method, psiElement ->
+            psiElement.getParent() instanceof ParameterList
+        );
 
     }
 

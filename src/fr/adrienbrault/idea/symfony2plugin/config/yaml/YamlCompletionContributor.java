@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -444,19 +443,16 @@ public class YamlCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            PsiElement psiElement = PsiTreeUtil.findFirstParent(position, new Condition<PsiElement>() {
-                @Override
-                public boolean value(PsiElement psiElement) {
+            PsiElement psiElement = PsiTreeUtil.findFirstParent(position, psiElement1 -> {
 
-                    if (psiElement instanceof YAMLKeyValue) {
-                        String s = ((YAMLKeyValue) psiElement).getKeyText().toLowerCase();
-                        if ("joinTable".equalsIgnoreCase(s)) {
-                            return true;
-                        }
+                if (psiElement1 instanceof YAMLKeyValue) {
+                    String s = ((YAMLKeyValue) psiElement1).getKeyText().toLowerCase();
+                    if ("joinTable".equalsIgnoreCase(s)) {
+                        return true;
                     }
-
-                    return false;
                 }
+
+                return false;
             });
 
             if(psiElement == null) {

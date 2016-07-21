@@ -2,18 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.type;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Pair;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -28,7 +22,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
@@ -43,54 +36,36 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
 
         // <field type="string" />
         registrar.register(
-            XmlPatterns.psiElement().withParent(DoctrineMetadataPattern.getFieldType()), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-                return new MyTypeGotoCompletionProvider(psiElement) {
-                    @Nullable
-                    @Override
-                    protected String getElementText(@NotNull PsiElement element) {
-                        return GotoCompletionUtil.getXmlAttributeValue(element);
-                    }
-                };
-            }
-        });
+            XmlPatterns.psiElement().withParent(DoctrineMetadataPattern.getFieldType()), psiElement -> new MyTypeGotoCompletionProvider(psiElement) {
+                @Nullable
+                @Override
+                protected String getElementText(@NotNull PsiElement element) {
+                    return GotoCompletionUtil.getXmlAttributeValue(element);
+                }
+            });
 
         // yml files
         registrar.register(
-            YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), new GotoCompletionContributor() {
+            YamlElementPatternHelper.getOrmSingleLineScalarKey("type"), psiElement -> new MyTypeGotoCompletionProvider(psiElement) {
                 @Nullable
                 @Override
-                public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-                    return new MyTypeGotoCompletionProvider(psiElement) {
-                        @Nullable
-                        @Override
-                        protected String getElementText(@NotNull PsiElement element) {
-                            String text = PsiElementUtils.trimQuote(element.getText());
-                            if(StringUtils.isBlank(text)) {
-                                return null;
-                            }
-                            return text;
-                        }
-                    };
+                protected String getElementText(@NotNull PsiElement element) {
+                    String text = PsiElementUtils.trimQuote(element.getText());
+                    if(StringUtils.isBlank(text)) {
+                        return null;
+                    }
+                    return text;
                 }
             }
         );
 
         // <field name="id" />
         registrar.register(
-            XmlPatterns.psiElement().withParent(XmlPatterns.or(DoctrineMetadataPattern.getFieldName(), DoctrineMetadataPattern.getFieldNameRelation())), new GotoCompletionContributor() {
+            XmlPatterns.psiElement().withParent(XmlPatterns.or(DoctrineMetadataPattern.getFieldName(), DoctrineMetadataPattern.getFieldNameRelation())), psiElement -> new MyFieldNameGotoCompletionProvider(psiElement) {
                 @Nullable
                 @Override
-                public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-                    return new MyFieldNameGotoCompletionProvider(psiElement) {
-                        @Nullable
-                        @Override
-                        protected String getElementText(@NotNull PsiElement element) {
-                            return GotoCompletionUtil.getXmlAttributeValue(element);
-                        }
-                    };
+                protected String getElementText(@NotNull PsiElement element) {
+                    return GotoCompletionUtil.getXmlAttributeValue(element);
                 }
             }
         );
@@ -98,13 +73,7 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
         // fields:
         //   i<caret>d: []
         registrar.register(
-            DoctrineMetadataPattern.getYamlFieldName(), new GotoCompletionContributor() {
-                @Nullable
-                @Override
-                public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-                    return new MyYamlFieldNameGotoCompletionProvider(psiElement);
-                }
-            }
+            DoctrineMetadataPattern.getYamlFieldName(), MyYamlFieldNameGotoCompletionProvider::new
         );
     }
 
@@ -120,16 +89,13 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
             final Collection<LookupElement> lookupElements = new ArrayList<>();
 
             Collection<String> typeClassesByScopeWithAllFallback = DoctrineMetadataTypeUtil.getTypeClassesByScopeWithAllFallback(getElement());
-            DoctrineMetadataTypeUtil.visitType(getProject(), typeClassesByScopeWithAllFallback, new Processor<Pair<PhpClass, String>>() {
-                @Override
-                public boolean process(Pair<PhpClass, String> pair) {
-                    lookupElements.add(
-                        LookupElementBuilder.create(pair.getSecond())
-                            .withIcon(Symfony2Icons.DOCTRINE)
-                            .withTypeText(pair.getSecond(), true)
-                    );
-                    return true;
-                }
+            DoctrineMetadataTypeUtil.visitType(getProject(), typeClassesByScopeWithAllFallback, pair -> {
+                lookupElements.add(
+                    LookupElementBuilder.create(pair.getSecond())
+                        .withIcon(Symfony2Icons.DOCTRINE)
+                        .withTypeText(pair.getSecond(), true)
+                );
+                return true;
             });
 
             if(typeClassesByScopeWithAllFallback.contains(DoctrineMetadataTypeUtil.DBAL_TYPE)) {
@@ -149,14 +115,11 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
 
             final Collection<PsiElement> psiElements = new ArrayList<>();
 
-            DoctrineMetadataTypeUtil.visitType(getProject(), DoctrineMetadataTypeUtil.getTypeClassesByScopeWithAllFallback(element), new Processor<Pair<PhpClass, String>>() {
-                @Override
-                public boolean process(Pair<PhpClass, String> pair) {
-                    if (pair.getSecond().equalsIgnoreCase(value)) {
-                        psiElements.add(pair.getFirst());
-                    }
-                    return true;
+            DoctrineMetadataTypeUtil.visitType(getProject(), DoctrineMetadataTypeUtil.getTypeClassesByScopeWithAllFallback(element), pair -> {
+                if (pair.getSecond().equalsIgnoreCase(value)) {
+                    psiElements.add(pair.getFirst());
                 }
+                return true;
             });
 
             return psiElements;
@@ -215,12 +178,9 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
             final Collection<PsiElement> psiElements = new ArrayList<>();
 
             for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(getProject(), modelNameInScope)) {
-                psiElements.addAll(ContainerUtil.filter(phpClass.getFields(), new Condition<Field>() {
-                    @Override
-                    public boolean value(Field field) {
-                        return !field.isConstant() && elementText.equals(field.getName());
-                    }
-                }));
+                psiElements.addAll(ContainerUtil.filter(phpClass.getFields(), field ->
+                    !field.isConstant() && elementText.equals(field.getName()))
+                );
             }
 
             return psiElements;

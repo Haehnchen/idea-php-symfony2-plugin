@@ -90,10 +90,8 @@ public class RemoteWebServerUtil {
 
             fileStorage.clear();
 
-            ApplicationManager.getApplication().runReadAction(new Runnable() {
-                public void run() {
-                    fileStorage.build(project, contents);
-                }
+            ApplicationManager.getApplication().runReadAction(() -> {
+                fileStorage.build(project, contents);
             });
         }
 

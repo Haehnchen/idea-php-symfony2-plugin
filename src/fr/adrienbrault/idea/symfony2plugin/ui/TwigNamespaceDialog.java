@@ -50,17 +50,9 @@ public class TwigNamespaceDialog extends JDialog {
         this.namespacePath.getTextField().getDocument().addDocumentListener(new ChangeDocumentListener());
         this.name.getDocument().addDocumentListener(new ChangeDocumentListener());
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         namespacePath.getButton().addMouseListener(createPathButtonMouseListener(namespacePath.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
@@ -71,11 +63,7 @@ public class TwigNamespaceDialog extends JDialog {
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void setOkState() {

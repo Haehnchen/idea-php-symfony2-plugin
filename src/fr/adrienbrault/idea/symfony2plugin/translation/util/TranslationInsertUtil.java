@@ -7,7 +7,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -20,26 +19,22 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 public class TranslationInsertUtil {
 
     public static void invokeTranslation(@NotNull final Editor editor, @NotNull final String keyName, @NotNull final String translation, @NotNull final YAMLFile yamlFile, final boolean openFile) {
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-
-            @Override
-            public void run() {
-                final String[] keys = keyName.split("\\.");
-                if(YamlHelper.insertKeyIntoFile(yamlFile, "'" + translation + "'", keys) == null) {
-                    HintManager.getInstance().showErrorHint(editor, "Error adding key");
-                    return;
-                }
-
-                if(!openFile) {
-                    return;
-                }
-
-                PsiDocumentManager manager = PsiDocumentManager.getInstance(yamlFile.getProject());
-
-                // navigate to new psi element
-                // @TODO: jump into quote value
-                manager.commitAndRunReadAction(new MyKeyNavigationRunnable(yamlFile, keys));
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            final String[] keys = keyName.split("\\.");
+            if(YamlHelper.insertKeyIntoFile(yamlFile, "'" + translation + "'", keys) == null) {
+                HintManager.getInstance().showErrorHint(editor, "Error adding key");
+                return;
             }
+
+            if(!openFile) {
+                return;
+            }
+
+            PsiDocumentManager manager = PsiDocumentManager.getInstance(yamlFile.getProject());
+
+            // navigate to new psi element
+            // @TODO: jump into quote value
+            manager.commitAndRunReadAction(new MyKeyNavigationRunnable(yamlFile, keys));
         });
     }
 
@@ -56,12 +51,9 @@ public class TranslationInsertUtil {
             }
         }
 
-        PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement element) {
-                return PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(element);
-            }
-        });
+        PsiElement[] indentPsiElements = PsiTreeUtil.collectElements(psiElement.getContainingFile(), element ->
+            PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(element)
+        );
 
         if(indentPsiElements.length > 0) {
             return indentPsiElements[0].getText();

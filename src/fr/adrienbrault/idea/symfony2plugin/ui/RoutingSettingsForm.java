@@ -1,23 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnActionButton;
-import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
-import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
@@ -28,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -57,12 +50,7 @@ public class RoutingSettingsForm implements Configurable {
 
         this.initList();
 
-        this.modelList.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                RoutingSettingsForm.this.changed = true;
-            }
-        });
+        this.modelList.addTableModelListener(e -> RoutingSettingsForm.this.changed = true);
 
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
@@ -116,35 +104,29 @@ public class RoutingSettingsForm implements Configurable {
             }
         });
 
-        tablePanel.setEditAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                RoutingFile containerFile = RoutingSettingsForm.this.tableView.getSelectedObject();
-                if(containerFile == null) {
-                    return;
-                }
-
-                String uri = UiSettingsUtil.getPathDialog(project, PhpFileType.INSTANCE);
-                if(uri == null) {
-                    return;
-                }
-
-                containerFile.setPath(uri);
-                RoutingSettingsForm.this.changed = true;
+        tablePanel.setEditAction(anActionButton -> {
+            RoutingFile containerFile = RoutingSettingsForm.this.tableView.getSelectedObject();
+            if(containerFile == null) {
+                return;
             }
+
+            String uri = UiSettingsUtil.getPathDialog(project, PhpFileType.INSTANCE);
+            if(uri == null) {
+                return;
+            }
+
+            containerFile.setPath(uri);
+            RoutingSettingsForm.this.changed = true;
         });
 
-        tablePanel.setAddAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                String uri = UiSettingsUtil.getPathDialog(project, PhpFileType.INSTANCE);
-                if(uri == null) {
-                    return;
-                }
-
-                RoutingSettingsForm.this.tableView.getListTableModel().addRow(new RoutingFile(uri));
-                RoutingSettingsForm.this.changed = true;
+        tablePanel.setAddAction(anActionButton -> {
+            String uri = UiSettingsUtil.getPathDialog(project, PhpFileType.INSTANCE);
+            if(uri == null) {
+                return;
             }
+
+            RoutingSettingsForm.this.tableView.getListTableModel().addRow(new RoutingFile(uri));
+            RoutingSettingsForm.this.changed = true;
         });
 
         if(WebDeploymentUtil.isEnabled(project)) {

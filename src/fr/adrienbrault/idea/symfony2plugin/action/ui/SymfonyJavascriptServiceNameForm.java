@@ -10,7 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.script.ScriptException;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class SymfonyJavascriptServiceNameForm extends JDialog {
     @NotNull
@@ -36,17 +38,9 @@ public class SymfonyJavascriptServiceNameForm extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onSave();
-            }
-        });
+        buttonOK.addActionListener(e -> onSave());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -56,47 +50,34 @@ public class SymfonyJavascriptServiceNameForm extends JDialog {
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        buttonTest.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-
-                try {
-                    Object eval = JavascriptServiceNameStrategy.run(project, textClass.getText(), textJavascript.getText());
-                    if(!(eval instanceof String)) {
-                        textResult.setText("Error: invalid string response");
-                        return;
-                    }
-
-                    textResult.setText((String) eval);
-                } catch (ScriptException e1) {
-                    textResult.setText("Error: " + e1.getMessage());
+        buttonTest.addActionListener(e -> {
+            try {
+                Object eval = JavascriptServiceNameStrategy.run(project, textClass.getText(), textJavascript.getText());
+                if(!(eval instanceof String)) {
+                    textResult.setText("Error: invalid string response");
+                    return;
                 }
 
+                textResult.setText((String) eval);
+            } catch (ScriptException e1) {
+                textResult.setText("Error: " + e1.getMessage());
             }
+
         });
 
-        buttonExample.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                textJavascript.setText("" +
-                    "var className = args.className;\n" +
-                    "var projectName = args.projectName;\n" +
-                    "var projectBasePath = args.projectBasePath;\n" +
-                    "var defaultNaming = args.defaultNaming;\n" +
-                    "\n" +
-                    "// nullable\n" +
-                    "var relativePath = args.relativePath;\n" +
-                    "var absolutePath = args.absolutePath;\n" +
-                    "\n" +
-                    "return className.replace(/\\\\/g, '.').toLowerCase();");
-            }
-        });
+        buttonExample.addActionListener(e -> textJavascript.setText("" +
+            "var className = args.className;\n" +
+            "var projectName = args.projectName;\n" +
+            "var projectBasePath = args.projectBasePath;\n" +
+            "var defaultNaming = args.defaultNaming;\n" +
+            "\n" +
+            "// nullable\n" +
+            "var relativePath = args.relativePath;\n" +
+            "var absolutePath = args.absolutePath;\n" +
+            "\n" +
+            "return className.replace(/\\\\/g, '.').toLowerCase();"));
 
         String jsText = Settings.getInstance(project).serviceJsNameStrategy;
         if(StringUtils.isNotBlank(jsText)) {

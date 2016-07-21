@@ -25,13 +25,7 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
         // <import resource="config_foo.xml"/>
         registrar.register(
-            XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()), new GotoCompletionContributor() {
-                @Nullable
-                @Override
-                public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-                    return new ImportResourceGotoCompletionProvider(psiElement);
-                }
-            }
+            XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()), ImportResourceGotoCompletionProvider::new
         );
     }
 

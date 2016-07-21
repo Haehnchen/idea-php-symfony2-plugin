@@ -31,12 +31,9 @@ public class BundleClassGeneratorUtil {
                 continue;
             }
 
-            PhpClass aClass = PhpPsiUtil.findClass((PhpFile) psiFile, new Condition<PhpClass>() {
-                @Override
-                public boolean value(PhpClass phpClass) {
-                    return PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface");
-                }
-            });
+            PhpClass aClass = PhpPsiUtil.findClass((PhpFile) psiFile, phpClass ->
+                PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface")
+            );
 
             if(aClass != null) {
                 return aClass;

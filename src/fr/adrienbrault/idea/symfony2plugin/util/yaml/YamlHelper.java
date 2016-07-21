@@ -146,12 +146,9 @@ public class YamlHelper {
             final Collection<PsiElement> psiElements = new ArrayList<>();
 
             // @TODO: support case insensitive
-            visitQualifiedKeyValuesInFile((YAMLFile) psiFile, rootKey, new Consumer<YAMLKeyValue>() {
-                @Override
-                public void consume(YAMLKeyValue yamlKeyValue) {
-                    if(findServiceName.equals(yamlKeyValue.getKeyText())) {
-                        psiElements.add(yamlKeyValue);
-                    }
+            visitQualifiedKeyValuesInFile((YAMLFile) psiFile, rootKey, yamlKeyValue -> {
+                if(findServiceName.equals(yamlKeyValue.getKeyText())) {
+                    psiElements.add(yamlKeyValue);
                 }
             });
 
@@ -608,12 +605,7 @@ public class YamlHelper {
     private static Collection<YAMLKeyValue> getNextKeyValues(@NotNull YAMLKeyValue yamlKeyValue) {
 
         final Collection<YAMLKeyValue> yamlKeyValues = new ArrayList<>();
-        visitNextKeyValues(yamlKeyValue, new Consumer<YAMLKeyValue>() {
-            @Override
-            public void consume(YAMLKeyValue yamlKeyValue) {
-                yamlKeyValues.add(yamlKeyValue);
-            }
-        });
+        visitNextKeyValues(yamlKeyValue, yamlKeyValues::add);
 
         return yamlKeyValues;
     }
@@ -803,39 +795,28 @@ public class YamlHelper {
     public static PsiElement insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @NotNull YAMLKeyValue yamlKeyValue, @NotNull String... keys) {
         String keyText = yamlKeyValue.getKeyText();
 
-        return insertKeyIntoFile(yamlFile, new KeyInsertValueFormatter() {
-            @Nullable
-            @Override
-            public String format(@Nullable YAMLMapping yamlMapping, @NotNull String chainedKey) {
+        return insertKeyIntoFile(yamlFile, (yamlMapping, chainedKey) -> {
+            String text = yamlKeyValue.getText();
 
-                String text = yamlKeyValue.getText();
+            final String previousIndent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentInThisLine(yamlMapping));
 
-                final String previousIndent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentInThisLine(yamlMapping));
+            // split content of array value object;
+            // drop first item as getValueText() removes our key indent
+            String[] remove = (String[]) ArrayUtils.remove(text.split("\\r?\\n"), 0);
 
-                // split content of array value object;
-                // drop first item as getValueText() removes our key indent
-                String[] remove = (String[]) ArrayUtils.remove(text.split("\\r?\\n"), 0);
+            List<String> map = ContainerUtil.map(remove, new Function<String, String>() {
+                @Override
+                public String fun(String s) {
+                    return previousIndent + s;
+                }
+            });
 
-                List<String> map = ContainerUtil.map(remove, new Function<String, String>() {
-                    @Override
-                    public String fun(String s) {
-                        return previousIndent + s;
-                    }
-                });
-
-                return "\n" + StringUtils.strip(StringUtils.join(map, "\n"), "\n");
-            }
+            return "\n" + StringUtils.strip(StringUtils.join(map, "\n"), "\n");
         }, (String[]) ArrayUtils.add(keys, keyText));
     }
 
     public static PsiElement insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {
-        return insertKeyIntoFile(yamlFile, new KeyInsertValueFormatter() {
-            @Nullable
-            @Override
-            public String format(@NotNull YAMLMapping yamlMapping, @NotNull String chainedKey) {
-                return " " + value;
-            }
-        }, keys);
+        return insertKeyIntoFile(yamlFile, (yamlMapping, chainedKey) -> " " + value, keys);
     }
 
     /**

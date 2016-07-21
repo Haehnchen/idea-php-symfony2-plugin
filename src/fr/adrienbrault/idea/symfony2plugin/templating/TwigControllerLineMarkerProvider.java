@@ -124,17 +124,14 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         for(String templateName: TwigUtil.getTemplateName(twigFile.getVirtualFile(), files)) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
-                @Override
-                public boolean process(VirtualFile virtualFile) {
-                    PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), virtualFile -> {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
-                    if(psiFile != null) {
-                        targets.add(psiFile);
-                    }
-
-                    return true;
+                if(psiFile != null) {
+                    targets.add(psiFile);
                 }
+
+                return true;
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
 
         }
@@ -196,17 +193,14 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         for(String templateName: files.getNames(twigFile.getVirtualFile())) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
-                @Override
-                public boolean process(VirtualFile virtualFile) {
-                    PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), virtualFile -> {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
-                    if(psiFile != null) {
-                        targets.add(psiFile);
-                    }
-
-                    return true;
+                if(psiFile != null) {
+                    targets.add(psiFile);
                 }
+
+                return true;
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
 
         }
@@ -263,12 +257,9 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
         List<PsiElement> blockTargets = new ArrayList<>();
         for(PsiFile psiFile1: twigChild) {
 
-            blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, new PsiElementFilter() {
-                @Override
-                public boolean isAccepted(PsiElement psiElement) {
-                    return TwigHelper.getBlockTagPattern().accepts(psiElement) && blockName.equals(psiElement.getText());
-                }
-            })));
+            blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, psiElement1 ->
+                TwigHelper.getBlockTagPattern().accepts(psiElement1) && blockName.equals(psiElement1.getText())))
+            );
 
         }
 
@@ -330,12 +321,9 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
             // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
             if(entry.getValue().equals(psiFile.getVirtualFile())) {
                 String key = entry.getKey();
-                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Arrays.asList(key)), new Processor<VirtualFile>() {
-                    @Override
-                    public boolean process(VirtualFile virtualFile) {
-                        virtualFiles.add(virtualFile);
-                        return true;
-                    }
+                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Arrays.asList(key)), virtualFile -> {
+                    virtualFiles.add(virtualFile);
+                    return true;
                 }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
 
             }

@@ -46,8 +46,7 @@ public class ProfilerRequest {
         try {
             factory = classFactory.newInstance();
             factory.setProfilerRequest(this);
-        } catch (InstantiationException ignored) {
-        } catch (IllegalAccessException ignored) {
+        } catch (InstantiationException | IllegalAccessException ignored) {
         }
 
         return factory;

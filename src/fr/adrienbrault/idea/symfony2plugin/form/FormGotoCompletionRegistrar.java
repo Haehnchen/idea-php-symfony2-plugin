@@ -39,54 +39,43 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
     public void register(GotoCompletionRegistrarParameter registrar) {
 
         // FormBuilderInterface:add("", "type")
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement parent = psiElement.getParent();
-                if(parent == null) {
-                    return null;
-                }
-
-                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
-                    .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
-                    .match();
-
-                if(methodMatchParameter == null) {
-                    return null;
-                }
-
-                return new FormBuilderAddGotoCompletionProvider(parent);
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(parent == null) {
+                return null;
             }
+
+            MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
+                .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
+                .match();
+
+            if(methodMatchParameter == null) {
+                return null;
+            }
+
+            return new FormBuilderAddGotoCompletionProvider(parent);
         });
 
         /**
          * $options lookup
          * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
          */
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement parent = psiElement.getParent();
-                if(!(parent instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 3)
-                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
-                    .match();
-
-                if(methodMatchParameter == null) {
-                    return null;
-                }
-
-                return getFormProvider((StringLiteralExpression) parent, methodMatchParameter.getParameters()[1]);
-
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)) {
+                return null;
             }
+
+            MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 3)
+                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
+                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                .match();
+
+            if(methodMatchParameter == null) {
+                return null;
+            }
+
+            return getFormProvider((StringLiteralExpression) parent, methodMatchParameter.getParameters()[1]);
 
         });
 
@@ -95,59 +84,46 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
          * $this->createForm(new FormType(), $entity, array('<foo_key>' => ''));
          * $this->createForm('foo', $entity, array('<foo_key>'));
          */
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-
-                // @TODO: migrate to completion provider, because of performance
-                PsiElement parent = psiElement.getParent();
-                if(!(parent instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 2)
-                    .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
-                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
-                    .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
-                    .match();
-
-                if(methodMatchParameter == null) {
-                    return null;
-                }
-
-                return getFormProvider((StringLiteralExpression) parent, methodMatchParameter.getParameters()[0]);
-
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            // @TODO: migrate to completion provider, because of performance
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)) {
+                return null;
             }
+
+            MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 2)
+                .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
+                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
+                .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
+                .match();
+
+            if(methodMatchParameter == null) {
+                return null;
+            }
+
+            return getFormProvider((StringLiteralExpression) parent, methodMatchParameter.getParameters()[0]);
 
         });
 
         /**
          * FormTypeInterface::getParent
          */
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement parent = psiElement.getParent();
-                if(!(parent instanceof StringLiteralExpression)  || !PhpElementsUtil.getMethodReturnPattern().accepts(parent)) {
-                    return null;
-                }
-
-                Method method = PsiTreeUtil.getParentOfType(psiElement, Method.class);
-                if(method == null) {
-                    return null;
-                }
-
-                if(!new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
-                    return null;
-                }
-
-                return new FormBuilderAddGotoCompletionProvider(parent);
-
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)  || !PhpElementsUtil.getMethodReturnPattern().accepts(parent)) {
+                return null;
             }
+
+            Method method = PsiTreeUtil.getParentOfType(psiElement, Method.class);
+            if(method == null) {
+                return null;
+            }
+
+            if(!new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
+                return null;
+            }
+
+            return new FormBuilderAddGotoCompletionProvider(parent);
 
         });
 
@@ -156,28 +132,22 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
          * $type lookup
          * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
          */
-        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement parent = psiElement.getParent();
-                if(!(parent instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
-                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                    .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
-                    .match();
-
-                if(methodMatchParameter == null) {
-                    return null;
-                }
-
-                return new FormBuilderAddGotoCompletionProvider(parent);
-
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)) {
+                return null;
             }
+
+            MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
+                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
+                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                .match();
+
+            if(methodMatchParameter == null) {
+                return null;
+            }
+
+            return new FormBuilderAddGotoCompletionProvider(parent);
 
         });
 
@@ -187,24 +157,19 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
          *    'translation_domain => '<caret>',
          * ]);
          */
-        registrar.register(PhpPsiMatcher.ArrayValueWithKeyAndMethod.pattern().withLanguage(PhpLanguage.INSTANCE), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                PsiElement parent = psiElement.getParent();
-                if(!(parent instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-
-                PhpPsiMatcher.ArrayValueWithKeyAndMethod.Result result = PhpPsiMatcher.match(parent, CHOICE_TRANSLATION_DOMAIN_MATCHER);
-                if(result == null) {
-                    return null;
-                }
-
-                return new TranslationDomainGotoCompletionProvider(psiElement);
+        registrar.register(PhpPsiMatcher.ArrayValueWithKeyAndMethod.pattern().withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)) {
+                return null;
             }
+
+
+            PhpPsiMatcher.ArrayValueWithKeyAndMethod.Result result = PhpPsiMatcher.match(parent, CHOICE_TRANSLATION_DOMAIN_MATCHER);
+            if(result == null) {
+                return null;
+            }
+
+            return new TranslationDomainGotoCompletionProvider(psiElement);
         });
     }
 

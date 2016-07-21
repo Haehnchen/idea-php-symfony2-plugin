@@ -78,12 +78,7 @@ public class ServiceBuilder {
         ArrayList<String> methodCalls = new ArrayList<>();
 
         // sort by indexes parameter
-        Collections.sort(methodModelParameters, new Comparator<MethodParameter.MethodModelParameter>() {
-            @Override
-            public int compare(MethodParameter.MethodModelParameter o1, MethodParameter.MethodModelParameter o2) {
-                return ((Integer) o1.getIndex()).compareTo(o2.getIndex());
-            }
-        });
+        Collections.sort(methodModelParameters, (o1, o2) -> ((Integer) o1.getIndex()).compareTo(o2.getIndex()));
 
         for(MethodParameter.MethodModelParameter methodModelParameter: methodModelParameters) {
 
@@ -191,28 +186,22 @@ public class ServiceBuilder {
             }
         }
 
-        serviceTagCallback(className, new TagCallbackInterface() {
-            @Override
-            public void onTags(@NotNull List<ServiceTag> serviceTags) {
+        serviceTagCallback(className, serviceTags -> {
 
-                for (ServiceTag serviceTag : serviceTags) {
-                    try {
-                        // convert string to node
-                        Element node = DocumentBuilderFactory
-                            .newInstance()
-                            .newDocumentBuilder()
-                            .parse(new ByteArrayInputStream(serviceTag.toXmlString().getBytes()))
-                            .getDocumentElement();
+            for (ServiceTag serviceTag : serviceTags) {
+                try {
+                    // convert string to node
+                    Element node = DocumentBuilderFactory
+                        .newInstance()
+                        .newDocumentBuilder()
+                        .parse(new ByteArrayInputStream(serviceTag.toXmlString().getBytes()))
+                        .getDocumentElement();
 
-                        rootElement.appendChild(doc.importNode(node, true));
+                    rootElement.appendChild(doc.importNode(node, true));
 
-                    } catch (SAXException ignored) {
-                    } catch (IOException ignored) {
-                    } catch (ParserConfigurationException ignored) {
-                    }
+                } catch (SAXException | IOException | ParserConfigurationException ignored) {
                 }
             }
-
         });
 
 
@@ -272,13 +261,10 @@ public class ServiceBuilder {
             lines.addAll(calls);
         }
 
-        serviceTagCallback(className, new TagCallbackInterface() {
-            @Override
-            public void onTags(@NotNull List<ServiceTag> serviceTags) {
-                lines.add(indent + "tags:");
-                for (ServiceTag serviceTag : serviceTags) {
-                    lines.add(indent + indent + serviceTag.toYamlString());
-                }
+        serviceTagCallback(className, serviceTags -> {
+            lines.add(indent + "tags:");
+            for (ServiceTag serviceTag : serviceTags) {
+                lines.add(indent + indent + serviceTag.toYamlString());
             }
         });
 

@@ -71,13 +71,10 @@ public class CaretTextOverlayListener implements CaretListener {
     }
 
     private void invokeUiComponent(final @NotNull Editor editor, final @NotNull PsiElement psiElement, final @NotNull CaretTextOverlayElement overlayElement) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                CaretOverlayComponent component = new CaretOverlayComponent(editor, overlayElement.getText(), psiElement.getTextOffset(), psiElement.getLanguage());
-                editor.getContentComponent().add(component);
-                component.setSize(((EditorEx) editor).getScrollPane().getViewport().getViewSize());
-            }
+        SwingUtilities.invokeLater(() -> {
+            CaretOverlayComponent component = new CaretOverlayComponent(editor, overlayElement.getText(), psiElement.getTextOffset(), psiElement.getLanguage());
+            editor.getContentComponent().add(component);
+            component.setSize(((EditorEx) editor).getScrollPane().getViewport().getViewSize());
         });
     }
 

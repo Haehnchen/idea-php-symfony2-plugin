@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -40,11 +39,8 @@ public class FormOptionsUtil {
     public static Collection<FormClass> getExtendedTypeClasses(@NotNull Project project, @NotNull String... formTypeNames) {
 
         // strip "\"
-        List<String> formTypeNamesList = ContainerUtil.map(Arrays.asList(formTypeNames), new Function<String, String>() {
-            @Override
-            public String fun(String s) {
-                return StringUtils.stripStart(s, "\\");
-            }
+        List<String> formTypeNamesList = ContainerUtil.map(Arrays.asList(formTypeNames), s -> {
+            return StringUtils.stripStart(s, "\\");
         });
 
         Collection<FormClass> extendedTypeClasses = new ArrayList<>();
@@ -204,13 +200,10 @@ public class FormOptionsUtil {
     public static Map<String, String> getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName) {
         final Map<String, String> items = new HashMap<>();
 
-        getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, new FormOptionVisitor() {
-            @Override
-            public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                String presentableFQN = formClass.getPhpClass().getPresentableFQN();
-                if(presentableFQN != null) {
-                    items.put(option, presentableFQN);
-                }
+        getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, (psiElement, option, formClass, optionEnum) -> {
+            String presentableFQN = formClass.getPhpClass().getPresentableFQN();
+            if(presentableFQN != null) {
+                items.put(option, presentableFQN);
             }
         });
 
@@ -272,15 +265,12 @@ public class FormOptionsUtil {
     private static Map<String, FormOption> getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass) {
         final Map<String, FormOption> options = new HashMap<>();
 
-        getDefaultOptions(project, phpClass, formClass, new FormOptionVisitor() {
-            @Override
-            public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                // append REQUIRED, if we already know this value
-                if(options.containsKey(option)) {
-                    options.get(option).addOptionEnum(optionEnum);
-                } else {
-                    options.put(option, new FormOption(option, formClass, optionEnum));
-                }
+        getDefaultOptions(project, phpClass, formClass, (psiElement, option, formClass1, optionEnum) -> {
+            // append REQUIRED, if we already know this value
+            if(options.containsKey(option)) {
+                options.get(option).addOptionEnum(optionEnum);
+            } else {
+                options.put(option, new FormOption(option, formClass1, optionEnum));
             }
         });
 
@@ -409,12 +399,9 @@ public class FormOptionsUtil {
 
         final Collection<PsiElement> psiElements = new ArrayList<>();
 
-        FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType, new FormOptionVisitor() {
-            @Override
-            public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                if(option.equals(value)) {
-                    psiElements.add(psiElement);
-                }
+        FormOptionsUtil.getFormDefaultKeys(element.getProject(), formType, (psiElement, option, formClass, optionEnum) -> {
+            if(option.equals(value)) {
+                psiElements.add(psiElement);
             }
         });
 

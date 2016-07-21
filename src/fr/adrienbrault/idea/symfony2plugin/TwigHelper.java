@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -17,7 +16,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
@@ -1477,27 +1475,23 @@ public class TwigHelper {
 
         final Collection<PsiElement> targets = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Arrays.asList(name)), new Processor<VirtualFile>() {
-            @Override
-            public boolean process(VirtualFile virtualFile) {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Arrays.asList(name)), virtualFile -> {
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if (psiFile != null) {
+                PsiTreeUtil.processElements(psiFile, new PsiElementProcessor() {
+                    public boolean execute(@NotNull PsiElement psiElement) {
 
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if (psiFile != null) {
-                    PsiTreeUtil.processElements(psiFile, new PsiElementProcessor() {
-                        public boolean execute(@NotNull PsiElement psiElement) {
-
-                            if (getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
-                                targets.add(psiElement);
-                            }
-
-                            return true;
-
+                        if (getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
+                            targets.add(psiElement);
                         }
-                    });
-                }
 
-                return true;
+                        return true;
+
+                    }
+                });
             }
+
+            return true;
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
 
         return targets;
@@ -1793,11 +1787,8 @@ public class TwigHelper {
         if(firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
             PsiElement embedTag = firstParent.getFirstChild();
             if(embedTag.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
-                PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), new Condition<PsiElement>() {
-                    @Override
-                    public boolean value(PsiElement psiElement) {
-                        return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement);
-                    }
+                PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), psiElement12 -> {
+                    return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement12);
                 });
 
                 if(fileReference != null && TwigUtil.isValidTemplateString(fileReference)) {

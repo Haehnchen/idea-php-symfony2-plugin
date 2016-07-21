@@ -39,38 +39,34 @@ public class InspectionUtil {
 
         final Project project = shortcutReturn.getPhpClass().getProject();
         final String finalActionName = actionName;
-        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(shortcutReturn.getPhpClass(), actionName, new CreateMethodQuickFix.InsertStringInterface() {
-            @NotNull
-            @Override
-            public StringBuilder getStringBuilder() {
+        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(shortcutReturn.getPhpClass(), actionName, () -> {
 
-                // attach route parameter inside method
-                String parameters = "";
-                String routeName = lazyControllerNameResolve.getRouteName();
-                if(routeName != null) {
-                    Route route = RouteHelper.getRoute(project, routeName);
-                    if(route != null) {
-                        Set<String> vars = route.getVariables();
-                        if(vars.size() > 0) {
+            // attach route parameter inside method
+            String parameters = "";
+            String routeName = lazyControllerNameResolve.getRouteName();
+            if(routeName != null) {
+                Route route = RouteHelper.getRoute(project, routeName);
+                if(route != null) {
+                    Set<String> vars = route.getVariables();
+                    if(vars.size() > 0) {
 
-                            // add dollar char for vars
-                            List<String> varsDollar = new ArrayList<>();
-                            for(String var: vars) {
-                                varsDollar.add("$" + var);
-                            }
-
-                            parameters = StringUtils.join(varsDollar, ", ");
+                        // add dollar char for vars
+                        List<String> varsDollar = new ArrayList<>();
+                        for(String var: vars) {
+                            varsDollar.add("$" + var);
                         }
+
+                        parameters = StringUtils.join(varsDollar, ", ");
                     }
                 }
-
-                return new StringBuilder()
-                    .append("public function ")
-                    .append(finalActionName)
-                    .append("(")
-                    .append(parameters)
-                    .append(")\n {\n}\n\n");
             }
+
+            return new StringBuilder()
+                .append("public function ")
+                .append(finalActionName)
+                .append("(")
+                .append(parameters)
+                .append(")\n {\n}\n\n");
         }));
 
     }

@@ -24,17 +24,12 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
     public void register(GotoCompletionRegistrarParameter registrar) {
 
         // {{ block('foo_block') }}
-        registrar.register(TwigHelper.getPrintBlockFunctionPattern("block"), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
-                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
-                    return null;
-                }
-
-                return new BlockFunctionReferenceCompletionProvider(psiElement);
+        registrar.register(TwigHelper.getPrintBlockFunctionPattern("block"), psiElement -> {
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return null;
             }
+
+            return new BlockFunctionReferenceCompletionProvider(psiElement);
         });
     }
 

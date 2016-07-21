@@ -246,29 +246,23 @@ public class AnnotationBackportUtil {
         String[] fqn = org.apache.commons.lang.StringUtils.strip(containingClass.getFQN(), "\\").split("\\\\");
 
         // remove empty and controller only namespace
-        List<String> filter = ContainerUtil.filter(fqn, new Condition<String>() {
-            @Override
-            public boolean value(String s) {
-                return org.apache.commons.lang.StringUtils.isNotBlank(s) && !"controller".equalsIgnoreCase(s);
-            }
-        });
+        List<String> filter = ContainerUtil.filter(fqn, s ->
+            org.apache.commons.lang.StringUtils.isNotBlank(s) && !"controller".equalsIgnoreCase(s)
+        );
 
         if(filter.size() == 0) {
             return null;
         }
 
-        return org.apache.commons.lang.StringUtils.join(ContainerUtil.map(filter, new Function<String, String>() {
-            @Override
-            public String fun(String s) {
-                String content = s.toLowerCase();
-                if (content.endsWith("bundle") && !content.equalsIgnoreCase("bundle")) {
-                    return content.substring(0, content.length() - "bundle".length());
-                }
-                if (content.endsWith("controller") && !content.equalsIgnoreCase("controller")) {
-                    return content.substring(0, content.length() - "controller".length());
-                }
-                return content;
+        return org.apache.commons.lang.StringUtils.join(ContainerUtil.map(filter, s -> {
+            String content = s.toLowerCase();
+            if (content.endsWith("bundle") && !content.equalsIgnoreCase("bundle")) {
+                return content.substring(0, content.length() - "bundle".length());
             }
+            if (content.endsWith("controller") && !content.equalsIgnoreCase("controller")) {
+                return content.substring(0, content.length() - "controller".length());
+            }
+            return content;
         }), "_") + "_" + name.toLowerCase();
     }
 

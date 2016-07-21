@@ -28,13 +28,7 @@ public class DoctrineYamlGotoCompletionRegistrar implements GotoCompletionRegist
     public void register(GotoCompletionRegistrarParameter registrar) {
         registrar.register(PlatformPatterns.or(
             YamlElementPatternHelper.getOrmSingleLineScalarKey("repositoryClass")
-        ), new GotoCompletionContributor() {
-            @Nullable
-            @Override
-            public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-                return new ClassGotoCompletionProvider(psiElement);
-            }
-        });
+        ), ClassGotoCompletionProvider::new);
     }
 
     private static class ClassGotoCompletionProvider extends GotoCompletionProvider {

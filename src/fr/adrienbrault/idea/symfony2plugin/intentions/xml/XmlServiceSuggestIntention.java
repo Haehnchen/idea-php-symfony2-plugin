@@ -97,11 +97,8 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
         public void insert(@NotNull String selected) {
 
             // set type="service" for lazy devs
-            if(ContainerUtil.find(argumentTag.getAttributes(), new Condition<XmlAttribute>() {
-                @Override
-                public boolean value(XmlAttribute xmlAttribute) {
-                    return "type".equals(xmlAttribute.getName());
-                }
+            if(ContainerUtil.find(argumentTag.getAttributes(), xmlAttribute -> {
+                return "type".equals(xmlAttribute.getName());
             }) == null) {
                 argumentTag.setAttribute("type", "service");
             };

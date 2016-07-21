@@ -38,13 +38,10 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
 
         CachedValue<Collection<TwigPath>> cache = parameter.getProject().getUserData(CACHE);
         if (cache == null) {
-            cache = CachedValuesManager.getManager(parameter.getProject()).createCachedValue(new CachedValueProvider<Collection<TwigPath>>() {
-                @Nullable
-                @Override
-                public Result<Collection<TwigPath>> compute() {
-                    return Result.create(getNamespacesInner(parameter), PsiModificationTracker.MODIFICATION_COUNT);
-                }
-            }, false);
+            cache = CachedValuesManager.getManager(parameter.getProject()).createCachedValue(() ->
+                CachedValueProvider.Result.create(getNamespacesInner(parameter), PsiModificationTracker.MODIFICATION_COUNT),
+                false
+            );
 
             parameter.getProject().putUserData(CACHE, cache);
         }
@@ -84,9 +81,7 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
             TwigConfigJson configJson = null;
             try {
                 configJson = new Gson().fromJson(text, TwigConfigJson.class);
-            } catch (JsonSyntaxException ignored) {
-            } catch (JsonIOException ignored) {
-            } catch (IllegalStateException ignored) {
+            } catch (JsonSyntaxException | JsonIOException | IllegalStateException ignored) {
             }
 
             if(configJson == null) {

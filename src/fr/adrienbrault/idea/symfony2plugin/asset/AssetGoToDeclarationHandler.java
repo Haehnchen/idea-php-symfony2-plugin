@@ -63,12 +63,13 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
                 continue;
             }
 
-            if (tag.equals("stylesheets")) {
-                return TwigHelper.CSS_FILES_EXTENSIONS;
-            } else if (tag.equals("javascripts")) {
-                return TwigHelper.JS_FILES_EXTENSIONS;
-            } else {
-                return null;
+            switch (tag) {
+                case "stylesheets":
+                    return TwigHelper.CSS_FILES_EXTENSIONS;
+                case "javascripts":
+                    return TwigHelper.JS_FILES_EXTENSIONS;
+                default:
+                    return null;
             }
         }
 

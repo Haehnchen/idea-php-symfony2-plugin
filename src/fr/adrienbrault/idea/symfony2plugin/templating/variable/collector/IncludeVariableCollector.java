@@ -9,7 +9,6 @@ import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
@@ -176,12 +175,9 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         for(String templateName: TwigUtil.getTemplateName(twigFile)) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), new Processor<VirtualFile>() {
-                @Override
-                public boolean process(VirtualFile virtualFile) {
-                    targets.add(virtualFile);
-                    return true;
-                }
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), virtualFile -> {
+                targets.add(virtualFile);
+                return true;
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
 
         }

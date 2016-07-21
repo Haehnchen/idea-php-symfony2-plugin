@@ -10,12 +10,14 @@ public enum FormOptionEnum {
 
     public static FormOptionEnum getEnum(@NotNull String s) {
 
-        if("setDefault".equals(s)) {
-            return DEFAULT;
-        } else if("setRequired".equals(s)) {
-            return REQUIRED;
-        } else if("setDefined".equals(s) || "setOptional".equals(s)) {
-            return DEFINED;
+        switch (s) {
+            case "setDefault":
+                return DEFAULT;
+            case "setRequired":
+                return REQUIRED;
+            case "setDefined":
+            case "setOptional":
+                return DEFINED;
         }
 
         return UNKNOWN;

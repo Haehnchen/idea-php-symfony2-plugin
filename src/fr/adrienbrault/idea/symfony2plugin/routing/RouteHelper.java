@@ -934,13 +934,10 @@ public class RouteHelper {
 
         CachedValue<Map<String, Route>> cache = project.getUserData(ROUTE_CACHE);
         if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, Route>>() {
-                @Nullable
-                @Override
-                public Result<Map<String, Route>> compute() {
-                    return Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT);
-                }
-            }, false);
+            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                CachedValueProvider.Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
+                false
+            );
             project.putUserData(ROUTE_CACHE, cache);
         }
 

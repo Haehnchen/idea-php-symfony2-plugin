@@ -8,7 +8,6 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import gnu.trove.THashMap;
@@ -16,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,12 +64,9 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, Se
                 }
 
                 final Set<String> translationKeySet = new HashSet<>();
-                YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, new YamlTranslationCollector() {
-                    @Override
-                    public boolean collect(@NotNull String keyName, YAMLKeyValue yamlKeyValue) {
-                        translationKeySet.add(keyName);
-                        return true;
-                    }
+                YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, (keyName, yamlKeyValue) -> {
+                    translationKeySet.add(keyName);
+                    return true;
                 });
 
                 if(translationKeySet.size() == 0) {

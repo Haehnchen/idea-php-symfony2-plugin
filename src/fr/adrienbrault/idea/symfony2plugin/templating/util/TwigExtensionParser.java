@@ -83,13 +83,10 @@ public class TwigExtensionParser  {
 
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FILTERS_CACHE);
             if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
-                    @Nullable
-                    @Override
-                    public Result<Map<String, TwigExtension>> compute() {
-                        return Result.create(parseFilters(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
-                    }
-                }, false);
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                    CachedValueProvider.Result.create(parseFilters(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
 
                 project.putUserData(FILTERS_CACHE, cache);
             }
@@ -100,13 +97,10 @@ public class TwigExtensionParser  {
 
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FUNCTION_CACHE);
             if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
-                    @Nullable
-                    @Override
-                    public Result<Map<String, TwigExtension>> compute() {
-                        return Result.create(parseFunctions(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
-                    }
-                }, false);
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                    CachedValueProvider.Result.create(parseFunctions(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
 
                 project.putUserData(FUNCTION_CACHE, cache);
             }
@@ -117,13 +111,10 @@ public class TwigExtensionParser  {
 
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(TEST_CACHE);
             if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
-                    @Nullable
-                    @Override
-                    public Result<Map<String, TwigExtension>> compute() {
-                        return Result.create(parseTests(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
-                    }
-                }, false);
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                    CachedValueProvider.Result.create(parseTests(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
 
                 project.putUserData(TEST_CACHE, cache);
             }
@@ -134,13 +125,10 @@ public class TwigExtensionParser  {
 
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(OPERATORS_CACHE);
             if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Map<String, TwigExtension>>() {
-                    @Nullable
-                    @Override
-                    public Result<Map<String, TwigExtension>> compute() {
-                        return Result.create(parseOperators(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT);
-                    }
-                }, false);
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                    CachedValueProvider.Result.create(parseOperators(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
 
                 project.putUserData(OPERATORS_CACHE, cache);
             }

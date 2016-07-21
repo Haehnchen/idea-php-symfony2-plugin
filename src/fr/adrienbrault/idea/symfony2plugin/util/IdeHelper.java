@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -21,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.event.HyperlinkEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -36,9 +34,7 @@ public class IdeHelper {
                 try {
                     java.net.URI uri = new java.net.URI(url);
                     desktop.browse(uri);
-                } catch (URISyntaxException ignored) {
-                } catch (IOException ignored) {
-
+                } catch (URISyntaxException | IOException ignored) {
                 }
             }
         }
@@ -136,27 +132,23 @@ public class IdeHelper {
 
     public static void notifyEnableMessage(final Project project) {
 
-        Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, new NotificationListener() {
-            @Override
-            public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+        Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, (notification1, event) -> {
 
-                // handle html click events
-                if("config".equals(event.getDescription())) {
+            // handle html click events
+            if("config".equals(event.getDescription())) {
 
-                    // open settings dialog and show panel
-                    SettingsForm.show(project);
-                } else if("enable".equals(event.getDescription())) {
-                    enablePluginAndConfigure(project);
-                    Notifications.Bus.notify(new Notification("Symfony Plugin", "Symfony Plugin", "Plugin enabled", NotificationType.INFORMATION), project);
-                } else if("dismiss".equals(event.getDescription())) {
+                // open settings dialog and show panel
+                SettingsForm.show(project);
+            } else if("enable".equals(event.getDescription())) {
+                enablePluginAndConfigure(project);
+                Notifications.Bus.notify(new Notification("Symfony Plugin", "Symfony Plugin", "Plugin enabled", NotificationType.INFORMATION), project);
+            } else if("dismiss".equals(event.getDescription())) {
 
-                    // use dont want to show notification again
-                    Settings.getInstance(project).dismissEnableNotification = true;
-                }
-
-                notification.expire();
+                // use dont want to show notification again
+                Settings.getInstance(project).dismissEnableNotification = true;
             }
 
+            notification1.expire();
         });
 
         Notifications.Bus.notify(notification, project);

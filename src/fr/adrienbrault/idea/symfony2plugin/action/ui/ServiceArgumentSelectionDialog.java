@@ -14,9 +14,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 public class ServiceArgumentSelectionDialog extends JDialog {
 
@@ -42,32 +42,26 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         setContentPane(panel1);
         setModal(true);
 
-        generateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setEnabled(false);
+        generateButton.addActionListener(e -> {
+            setEnabled(false);
 
-                java.util.List<String> items = new ArrayList<>();
+            java.util.List<String> items = new ArrayList<>();
 
-                for (ServiceParameter serviceParameter : modelList.getItems()) {
-                    items.add(serviceParameter.getCurrentService());
-                }
-
-                callback.onOk(items);
-
-                dispose();
+            for (ServiceParameter serviceParameter : modelList.getItems()) {
+                items.add(serviceParameter.getCurrentService());
             }
+
+            callback.onOk(items);
+
+            dispose();
         });
 
         generateButton.requestFocusInWindow();
         this.getRootPane().setDefaultButton(generateButton);
 
-        this.closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setEnabled(false);
-                dispose();
-            }
+        this.closeButton.addActionListener(e -> {
+            setEnabled(false);
+            dispose();
         });
 
     }

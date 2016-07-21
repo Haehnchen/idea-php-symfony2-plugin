@@ -9,7 +9,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -252,12 +251,9 @@ public class TwigUtil {
 
         List<TwigMacro> macros = new ArrayList<>();
 
-        PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement paramPsiElement) {
-                return PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG).accepts(paramPsiElement);
-            }
-        });
+        PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, paramPsiElement ->
+            PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG).accepts(paramPsiElement)
+        );
 
         for(PsiElement psiImportTag: importPsiElements) {
             String regex = "\\{%\\s?from\\s?(_self|['\"].*['\"])\\s?import\\s?(.*?)\\s?%}";
@@ -413,12 +409,9 @@ public class TwigUtil {
 
         // find virtual files
         for(String key: keys) {
-            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<>(Arrays.asList(key)), new Processor<VirtualFile>() {
-                @Override
-                public boolean process(VirtualFile virtualFile) {
-                    virtualFiles.add(virtualFile);
-                    return true;
-                }
+            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<>(Arrays.asList(key)), virtualFile -> {
+                virtualFiles.add(virtualFile);
+                return true;
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), PhpFileType.INSTANCE));
         }
 

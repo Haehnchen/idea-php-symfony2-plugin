@@ -241,41 +241,37 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        holder.registerProblem(psiElement, "Missing Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(phpClass, methodName, new CreateMethodQuickFix.InsertStringInterface() {
-            @NotNull
-            @Override
-            public StringBuilder getStringBuilder() {
+        holder.registerProblem(psiElement, "Missing Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(phpClass, methodName, () -> {
 
-                String taggedEventMethodParameter = null;
-                String eventName = getEventName(psiElement);
-                if(eventName != null) {
-                    taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(psiElement.getProject(), eventName);
-                    if(taggedEventMethodParameter != null) {
-                        String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
-                        if(qualifiedName != null && !qualifiedName.equals(taggedEventMethodParameter.substring(1))) {
-                            taggedEventMethodParameter = qualifiedName;
-                        }
-                    }
-
-                }
-
-                String parameter = "";
+            String taggedEventMethodParameter = null;
+            String eventName = getEventName(psiElement);
+            if(eventName != null) {
+                taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(psiElement.getProject(), eventName);
                 if(taggedEventMethodParameter != null) {
-                    String s = PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
-                    if(s != null) {
-                        taggedEventMethodParameter = s;
+                    String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
+                    if(qualifiedName != null && !qualifiedName.equals(taggedEventMethodParameter.substring(1))) {
+                        taggedEventMethodParameter = qualifiedName;
                     }
-
-                    parameter = taggedEventMethodParameter + " $event";
                 }
 
-                return new StringBuilder()
-                    .append("public function ")
-                    .append(methodName)
-                    .append("(")
-                    .append(parameter)
-                    .append(")\n {\n}\n\n");
             }
+
+            String parameter = "";
+            if(taggedEventMethodParameter != null) {
+                String s = PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
+                if(s != null) {
+                    taggedEventMethodParameter = s;
+                }
+
+                parameter = taggedEventMethodParameter + " $event";
+            }
+
+            return new StringBuilder()
+                .append("public function ")
+                .append(methodName)
+                .append("(")
+                .append(parameter)
+                .append(")\n {\n}\n\n");
         }));
     }
 

@@ -95,46 +95,39 @@ public class TranslationUtil {
         }
 
         // collect on index
-        final YamlTranslationCollector translationCollector = new YamlTranslationCollector() {
-            @Override
-            public boolean collect(@NotNull String keyName, YAMLKeyValue yamlKeyValue) {
-                if (keyName.equals(translationKey)) {
+        final YamlTranslationCollector translationCollector = (keyName, yamlKeyValue) -> {
+            if (keyName.equals(translationKey)) {
 
-                    // multiline "line values" are not resolve properly on psiElements use key as fallback target
-                    PsiElement valuePsiElement = yamlKeyValue.getValue();
-                    psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
+                // multiline "line values" are not resolve properly on psiElements use key as fallback target
+                PsiElement valuePsiElement = yamlKeyValue.getValue();
+                psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
 
-                    return false;
-                }
-
-                return true;
+                return false;
             }
+
+            return true;
         };
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domain)), new Processor<VirtualFile>() {
-            @Override
-            public boolean process(VirtualFile virtualFile) {
-
-                // prevent duplicate targets and dont walk same file twice
-                if(virtualFilesFound.contains(virtualFile)) {
-                    return true;
-                }
-
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile instanceof YAMLFile) {
-                    YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
-                } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
-                    // xlf are plain text because not supported by jetbrains
-                    // for now we can only set file target
-                    for(Set<String> string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
-                        if(string.contains(translationKey)) {
-                            psiFoundElements.add(psiFile);
-                        }
-                    }
-                }
-
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domain)), virtualFile -> {
+            // prevent duplicate targets and dont walk same file twice
+            if(virtualFilesFound.contains(virtualFile)) {
                 return true;
             }
+
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile instanceof YAMLFile) {
+                YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
+            } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
+                // xlf are plain text because not supported by jetbrains
+                // for now we can only set file target
+                for(Set<String> string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
+                    if(string.contains(translationKey)) {
+                        psiFoundElements.add(psiFile);
+                    }
+                }
+            }
+
+            return true;
         }, GlobalSearchScope.allScope(project));
 
 
@@ -248,22 +241,18 @@ public class TranslationUtil {
             }
         }
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domainName)), new Processor<VirtualFile>() {
-            @Override
-            public boolean process(VirtualFile virtualFile) {
-
-                if(uniqueFileList.contains(virtualFile)) {
-                    return true;
-                }
-
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile != null) {
-                    uniqueFileList.add(virtualFile);
-                    results.add(psiFile);
-                }
-
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domainName)), virtualFile -> {
+            if(uniqueFileList.contains(virtualFile)) {
                 return true;
             }
+
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile != null) {
+                uniqueFileList.add(virtualFile);
+                results.add(psiFile);
+            }
+
+            return true;
         }, PhpIndex.getInstance(project).getSearchScope());
 
         return results;

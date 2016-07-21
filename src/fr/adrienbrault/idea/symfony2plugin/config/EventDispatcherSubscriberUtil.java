@@ -43,13 +43,9 @@ public class EventDispatcherSubscriberUtil {
 
         CachedValue<Collection<EventDispatcherSubscribedEvent>> cache = project.getUserData(EVENT_SUBSCRIBERS);
         if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(new CachedValueProvider<Collection<EventDispatcherSubscribedEvent>>() {
-                @Nullable
-                @Override
-                public Result<Collection<EventDispatcherSubscribedEvent>> compute() {
-                    return Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.MODIFICATION_COUNT);
-                }
-            }, false);
+            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                CachedValueProvider.Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.MODIFICATION_COUNT), false
+            );
             project.putUserData(EVENT_SUBSCRIBERS, cache);
         }
 

@@ -71,8 +71,7 @@ public class ServiceXmlParserFactory {
         try {
             this.serviceParserInstance = serviceParser.newInstance();
             Symfony2ProjectComponent.getLogger().info("new instance: " + serviceParser.getName());
-        } catch (InstantiationException ignored) {
-        } catch (IllegalAccessException ignored) {
+        } catch (InstantiationException | IllegalAccessException ignored) {
         }
 
         if (this.serviceParserInstance != null) {

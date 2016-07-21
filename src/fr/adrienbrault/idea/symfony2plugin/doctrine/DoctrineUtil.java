@@ -116,27 +116,23 @@ public class DoctrineUtil {
 
         final Collection<Pair<String, String>> pairs = new ArrayList<>();
 
-        phpFile.acceptChildren(new AnnotationElementWalkingVisitor(new Processor<PhpDocTag>() {
-            @Override
-            public boolean process(PhpDocTag phpDocTag) {
-
-                PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
-                if (phpDocComment == null) {
-                    return false;
-                }
-
-                PhpPsiElement phpClass = phpDocComment.getNextPsiSibling();
-                if (!(phpClass instanceof PhpClass)) {
-                    return false;
-                }
-
-                String presentableFQN = ((PhpClass) phpClass).getPresentableFQN();
-                if (StringUtils.isNotBlank(presentableFQN)) {
-                    pairs.add(Pair.create(presentableFQN, getAnnotationRepositoryClass(phpDocTag)));
-                }
-
+        phpFile.acceptChildren(new AnnotationElementWalkingVisitor(phpDocTag -> {
+            PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+            if (phpDocComment == null) {
                 return false;
             }
+
+            PhpPsiElement phpClass = phpDocComment.getNextPsiSibling();
+            if (!(phpClass instanceof PhpClass)) {
+                return false;
+            }
+
+            String presentableFQN = ((PhpClass) phpClass).getPresentableFQN();
+            if (StringUtils.isNotBlank(presentableFQN)) {
+                pairs.add(Pair.create(presentableFQN, getAnnotationRepositoryClass(phpDocTag)));
+            }
+
+            return false;
         }, MODEL_CLASS_ANNOTATION));
 
         return pairs;

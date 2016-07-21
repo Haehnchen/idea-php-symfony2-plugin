@@ -110,12 +110,9 @@ public class ServiceActionUtil {
 
         final PsiFile file = factory.createFileFromText(fileName, fileType, content);
 
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                CodeStyleManager.getInstance(project).reformat(file);
-                initialBaseDir.add(file);
-            }
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            CodeStyleManager.getInstance(project).reformat(file);
+            initialBaseDir.add(file);
         });
 
         PsiFile psiFile = initialBaseDir.findFile(fileName);
@@ -417,12 +414,7 @@ public class ServiceActionUtil {
             return;
         }
 
-        ServiceArgumentSelectionDialog.createDialog(project, resolved, new ServiceArgumentSelectionDialog.Callback() {
-            @Override
-            public void onOk(List<String> items) {
-                callback.insert(items);
-            }
-        });
+        ServiceArgumentSelectionDialog.createDialog(project, resolved, callback::insert);
     }
 
     public static boolean isUniqueServiceMap(Map<String, Set<String>> resolvedServices) {

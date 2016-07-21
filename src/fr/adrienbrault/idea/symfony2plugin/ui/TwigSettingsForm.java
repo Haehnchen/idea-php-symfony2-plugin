@@ -1,19 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.AnActionButtonRunnable;
-import com.intellij.ui.AnActionButtonUpdater;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
@@ -22,11 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -95,12 +86,7 @@ public class TwigSettingsForm implements Configurable {
 
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
-        this.modelList.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                TwigSettingsForm.this.changed = true;
-            }
-        });
+        this.modelList.addTableModelListener(e -> TwigSettingsForm.this.changed = true);
 
         resetToDefault.addMouseListener(new MouseAdapter() {
             @Override
@@ -133,35 +119,19 @@ public class TwigSettingsForm implements Configurable {
             }
         });
 
-        tablePanel.setEditAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-                TwigSettingsForm.this.openTwigPathDialog(TwigSettingsForm.this.tableView.getSelectedObject());
-            }
+        tablePanel.setEditAction(anActionButton -> TwigSettingsForm.this.openTwigPathDialog(TwigSettingsForm.this.tableView.getSelectedObject()));
+
+
+        tablePanel.setAddAction(anActionButton -> TwigSettingsForm.this.openTwigPathDialog(null));
+
+        tablePanel.setEditActionUpdater(e -> {
+            TwigPath twigPath = TwigSettingsForm.this.tableView.getSelectedObject();
+            return twigPath != null && twigPath.isCustomPath();
         });
 
-
-        tablePanel.setAddAction(new AnActionButtonRunnable() {
-            @Override
-            public void run(AnActionButton anActionButton) {
-               TwigSettingsForm.this.openTwigPathDialog(null);
-            }
-        });
-
-        tablePanel.setEditActionUpdater(new AnActionButtonUpdater() {
-            @Override
-            public boolean isEnabled(AnActionEvent e) {
-                TwigPath twigPath = TwigSettingsForm.this.tableView.getSelectedObject();
-                return twigPath != null && twigPath.isCustomPath();
-            }
-        });
-
-        tablePanel.setRemoveActionUpdater(new AnActionButtonUpdater() {
-            @Override
-            public boolean isEnabled(AnActionEvent e) {
-                TwigPath twigPath = TwigSettingsForm.this.tableView.getSelectedObject();
-                return twigPath != null && twigPath.isCustomPath();
-            }
+        tablePanel.setRemoveActionUpdater(e -> {
+            TwigPath twigPath = TwigSettingsForm.this.tableView.getSelectedObject();
+            return twigPath != null && twigPath.isCustomPath();
         });
 
         tablePanel.disableUpAction();
@@ -169,12 +139,7 @@ public class TwigSettingsForm implements Configurable {
 
         this.panelTableView.add(tablePanel.createPanel());
 
-        buttonJsonExample.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TwigJsonExampleDialog.open(TwigSettingsForm.this.panel1);
-            }
-        });
+        buttonJsonExample.addActionListener(e -> TwigJsonExampleDialog.open(TwigSettingsForm.this.panel1));
 
         return this.panel1;
     }

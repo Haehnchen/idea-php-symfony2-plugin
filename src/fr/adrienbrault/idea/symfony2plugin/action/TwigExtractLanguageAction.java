@@ -13,7 +13,6 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.twig.TwigFile;
@@ -173,26 +172,22 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         final Map<String, Integer> found = new HashMap<>();
 
         // visit every trans or transchoice to get possible domain names
-        PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
-
-                if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
-                    PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
-                    if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-                        String text = psiElement.getText();
-                        if (StringUtils.isNotBlank(text) && domainNames.contains(text)) {
-                            if (found.containsKey(text)) {
-                                found.put(text, found.get(text) + 1);
-                            } else {
-                                found.put(text, 1);
-                            }
+        PsiTreeUtil.collectElements(psiFile, psiElement -> {
+            if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+                PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+                if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+                    String text = psiElement.getText();
+                    if (StringUtils.isNotBlank(text) && domainNames.contains(text)) {
+                        if (found.containsKey(text)) {
+                            found.put(text, found.get(text) + 1);
+                        } else {
+                            found.put(text, 1);
                         }
                     }
                 }
-
-                return false;
             }
+
+            return false;
         });
 
         // sort in found integer value

@@ -111,12 +111,9 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
             final Collection<PsiElement> psiElements = new ArrayList<>();
 
-            FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionVisitor() {
-                @Override
-                public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                    if (option.equals(value)) {
-                        psiElements.add(psiElement);
-                    }
+            FormOptionsUtil.visitFormOptions(getProject(), formType, (psiElement1, option, formClass, optionEnum) -> {
+                if (option.equals(value)) {
+                    psiElements.add(psiElement1);
                 }
             });
 

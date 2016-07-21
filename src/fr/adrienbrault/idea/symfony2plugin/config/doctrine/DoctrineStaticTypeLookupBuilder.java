@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationMethodInsertHandler;
@@ -25,12 +24,7 @@ public class DoctrineStaticTypeLookupBuilder {
 
         List<String> strings = Arrays.asList("id", "string", "integer", "smallint", "bigint", "boolean", "decimal", "date", "time", "datetime", "text", "array", "float");
 
-        Collection<String> lookupStrings = ContainerUtil.map(lookupElements, new Function<LookupElement, String>() {
-            @Override
-            public String fun(LookupElement lookupElement) {
-                return lookupElement.getLookupString();
-            }
-        });
+        Collection<String> lookupStrings = ContainerUtil.map(lookupElements, LookupElement::getLookupString);
 
         for (String string : strings) {
             if(!lookupStrings.contains(string)) {

@@ -2,12 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.CommonProcessors;
 import com.intellij.util.Processor;
@@ -97,12 +95,9 @@ public class PhpElementsUtil {
     @NotNull
     static public Map<String, PsiElement> getArrayValuesAsMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
 
-        List<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                return psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE;
-            }
-        });
+        List<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, psiElement ->
+            psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+        );
 
         if(arrayValues == null) {
             return Collections.emptyMap();
@@ -861,13 +856,9 @@ public class PhpElementsUtil {
         }
 
         final String tempVariableName = parameters[parameterIndex].getName();
-        return PsiTreeUtil.collectElements(method.getLastChild(), new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement element) {
-                return element instanceof Variable && tempVariableName.equals(((Variable) element).getName());
-            }
-        });
-
+        return PsiTreeUtil.collectElements(method.getLastChild(), element ->
+            element instanceof Variable && tempVariableName.equals(((Variable) element).getName())
+        );
     }
 
 

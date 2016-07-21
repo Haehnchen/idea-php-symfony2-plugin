@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.codeInsight.utils;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -23,12 +22,9 @@ public class GotoCompletionUtil {
 
         final Collection<GotoCompletionContributor> contributors = new ArrayList<>();
 
-        GotoCompletionRegistrarParameter registrar = new GotoCompletionRegistrarParameter() {
-            @Override
-            public void register(@NotNull ElementPattern<? extends PsiElement> pattern, GotoCompletionContributor contributor) {
-                if(pattern.accepts(psiElement)) {
-                    contributors.add(contributor);
-                }
+        GotoCompletionRegistrarParameter registrar = (pattern, contributor) -> {
+            if(pattern.accepts(psiElement)) {
+                contributors.add(contributor);
             }
         };
 

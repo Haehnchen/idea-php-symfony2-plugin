@@ -4,7 +4,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -16,7 +15,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,27 +31,23 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         // getParameter('FOO')
         registrar.register(
-            XmlPatterns.psiElement().withParent(PhpElementsUtil.methodWithFirstStringPattern()), new GotoCompletionContributor() {
-                @Nullable
-                @Override
-                public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+            XmlPatterns.psiElement().withParent(PhpElementsUtil.methodWithFirstStringPattern()), psiElement -> {
 
-                    PsiElement context = psiElement.getContext();
-                    if (!(context instanceof StringLiteralExpression)) {
-                        return null;
-                    }
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
-                        .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter")
-                        .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter")
-                        .match();
-
-                    if(methodMatchParameter == null) {
-                        return null;
-                    }
-
-                    return new ParameterContributor((StringLiteralExpression) context);
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
                 }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
+                    .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter")
+                    .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter")
+                    .match();
+
+                if(methodMatchParameter == null) {
+                    return null;
+                }
+
+                return new ParameterContributor((StringLiteralExpression) context);
             }
         );
 
