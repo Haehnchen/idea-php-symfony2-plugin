@@ -42,7 +42,7 @@ public class DoctrineModel {
             return className;
         }
 
-        if(doctrineNamespace != null && className != null && className.length() > doctrineNamespace.length()) {
+        if(doctrineNamespace != null && className.length() > doctrineNamespace.length()) {
             className = className.substring(doctrineNamespace.length());
             return doctrineShortcut + ':'  + className;
         }

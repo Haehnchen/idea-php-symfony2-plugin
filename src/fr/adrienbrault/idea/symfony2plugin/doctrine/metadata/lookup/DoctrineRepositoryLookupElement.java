@@ -5,6 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -34,11 +35,7 @@ public class DoctrineRepositoryLookupElement extends LookupElement {
     @NotNull
     @Override
     public String getLookupString() {
-        String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN == null) {
-            return phpClass.getName();
-        }
-        return presentableFQN;
+        return StringUtils.stripStart(phpClass.getPresentableFQN(), "\\");
     }
 
     public static DoctrineRepositoryLookupElement create(@NotNull PhpClass phpClass) {
@@ -48,11 +45,6 @@ public class DoctrineRepositoryLookupElement extends LookupElement {
     public static Collection<DoctrineRepositoryLookupElement> create(@NotNull Collection<PhpClass> phpClasses) {
         Collection<DoctrineRepositoryLookupElement> elements = new ArrayList<>();
         for(PhpClass phpClass: phpClasses) {
-            String presentableFQN = phpClass.getPresentableFQN();
-            if(presentableFQN == null) {
-                continue;
-            }
-
             elements.add(DoctrineRepositoryLookupElement.create(phpClass));
         }
 

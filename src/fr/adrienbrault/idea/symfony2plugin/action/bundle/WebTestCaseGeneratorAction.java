@@ -62,7 +62,7 @@ public class WebTestCaseGeneratorAction extends AbstractProjectDumbAwareAction {
             return;
         }
 
-        PhpClass aClass = PhpPsiUtil.findClass((PhpFile) data, Conditions.<PhpClass>alwaysTrue());
+        PhpClass aClass = PhpPsiUtil.findClass((PhpFile) data, Conditions.alwaysTrue());
         if(aClass == null) {
             return;
         }

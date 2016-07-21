@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,8 +46,7 @@ public class DoctrineEntityLookupElement extends LookupElement {
     public String getLookupString() {
 
         if(this.useClassNameAsLookupString) {
-            String className = this.className.getPresentableFQN();
-            return className == null ? "" : className;
+            return StringUtils.stripStart(this.className.getPresentableFQN(), "\\");
         }
 
         return entityName;

@@ -119,7 +119,7 @@ public class SettingsForm implements Configurable {
             }
         });
 
-        return (JComponent) panel1;
+        return panel1;
     }
 
     @Override

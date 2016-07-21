@@ -16,10 +16,7 @@ public class CommandUtil {
         for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Helper\\HelperInterface")) {
             String helperName = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
             if(helperName != null) {
-                String presentableFQN = phpClass.getPresentableFQN();
-                if(presentableFQN != null) {
-                    map.put(helperName, presentableFQN);
-                }
+                map.put(helperName, phpClass.getPresentableFQN());
             }
         }
 

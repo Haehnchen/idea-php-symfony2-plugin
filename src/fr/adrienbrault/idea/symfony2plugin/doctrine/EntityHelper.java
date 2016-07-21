@@ -96,10 +96,6 @@ public class EntityHelper {
         }
 
         String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN == null) {
-            return null;
-        }
-
         PhpClass classRepository = DoctrineMetadataUtil.getClassRepository(project, presentableFQN);
         if(classRepository != null) {
             return classRepository;
@@ -178,7 +174,7 @@ public class EntityHelper {
         if("fields".equals(keyName) || "id".equals(keyName)) {
 
             YAMLKeyValue yamlType = YamlHelper.getYamlKeyValue(yamlKeyValue, "type");
-            if(yamlType != null && yamlType.getValueText() != null) {
+            if(yamlType != null) {
                 doctrineModelField.setTypeName(yamlType.getValueText());
             }
 
@@ -194,10 +190,7 @@ public class EntityHelper {
             YAMLKeyValue targetEntity = YamlHelper.getYamlKeyValue(yamlKeyValue, "targetEntity");
             if(targetEntity != null) {
                 doctrineModelField.setRelationType(keyName);
-                String value = targetEntity.getValueText();
-                if(value != null) {
-                    doctrineModelField.setRelation(getOrmClass(yamlKeyValue.getContainingFile(), value));
-                }
+                doctrineModelField.setRelation(getOrmClass(yamlKeyValue.getContainingFile(), targetEntity.getValueText()));
             }
         }
 
@@ -273,14 +266,11 @@ public class EntityHelper {
 
         Collection<PsiElement> psiElements = new ArrayList<>();
 
-        String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN != null) {
-            DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), presentableFQN);
-            if(modelFields != null) {
-                for (DoctrineModelField field : modelFields.getFields()) {
-                    if(field.getName().equals(fieldName) && field.getTargets().size() > 0) {
-                        return field.getTargets().toArray(new PsiElement[psiElements.size()]);
-                    }
+        DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), phpClass.getPresentableFQN());
+        if(modelFields != null) {
+            for (DoctrineModelField field : modelFields.getFields()) {
+                if(field.getName().equals(fieldName) && field.getTargets().size() > 0) {
+                    return field.getTargets().toArray(new PsiElement[psiElements.size()]);
                 }
             }
         }
@@ -356,13 +346,11 @@ public class EntityHelper {
 
         // new code
         String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN != null) {
-            Collection<VirtualFile> metadataFiles = DoctrineMetadataUtil.findMetadataFiles(phpClass.getProject(), presentableFQN);
-            if(metadataFiles.size() > 0) {
-                PsiFile file = PsiManager.getInstance(phpClass.getProject()).findFile(metadataFiles.iterator().next());
-                if(file != null) {
-                    return file;
-                }
+        Collection<VirtualFile> metadataFiles = DoctrineMetadataUtil.findMetadataFiles(phpClass.getProject(), presentableFQN);
+        if(metadataFiles.size() > 0) {
+            PsiFile file = PsiManager.getInstance(phpClass.getProject()).findFile(metadataFiles.iterator().next());
+            if(file != null) {
+                return file;
             }
         }
 
@@ -370,15 +358,11 @@ public class EntityHelper {
         SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
         if(symfonyBundle != null) {
             for(String modelShortcut: new String[] {"orm", "mongodb", "couchdb"}) {
-                String fqn = presentableFQN;
-
                 String className = phpClass.getName();
 
-                if(fqn != null) {
-                    int n = fqn.indexOf("\\Entity\\");
-                    if(n > 0) {
-                        className = fqn.substring(n + 8).replace("\\", ".");
-                    }
+                int n = presentableFQN.indexOf("\\Entity\\");
+                if(n > 0) {
+                    className = presentableFQN.substring(n + 8).replace("\\", ".");
                 }
 
                 PsiFile entityMetadataFile = getEntityMetadataFile(phpClass.getProject(), symfonyBundle, className, modelShortcut);

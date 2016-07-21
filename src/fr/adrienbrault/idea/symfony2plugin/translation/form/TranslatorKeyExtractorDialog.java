@@ -139,7 +139,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
         // only one domain; fine preselect it
         if(this.listTableModel.getRowCount() == 1) {
-            ((TranslationFileModel) this.listTableModel.getItem(0)).setEnabled(true);
+            this.listTableModel.getItem(0).setEnabled(true);
         }
 
     }

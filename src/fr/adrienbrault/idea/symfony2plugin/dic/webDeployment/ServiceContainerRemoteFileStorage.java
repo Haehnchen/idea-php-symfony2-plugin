@@ -23,7 +23,7 @@ import java.util.Collections;
 public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInterface<ServiceParameterStorage> {
 
     private ServiceParameterStorage storage = new ServiceParameterStorage(
-        Collections.<InputStream>emptyList()
+        Collections.emptyList()
     );
 
     @NotNull
@@ -65,7 +65,7 @@ public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInter
     @Override
     public void clear() {
         storage = new ServiceParameterStorage(
-            Collections.<InputStream>emptyList()
+            Collections.emptyList()
         );
     }
 

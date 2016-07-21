@@ -99,10 +99,6 @@ public class ControllerIndex {
             }
 
             String presentableFQN = phpClass.getPresentableFQN();
-            if(presentableFQN == null) {
-                continue;
-            }
-
             if(!presentableFQN.startsWith("\\")) {
                 presentableFQN = "\\" + presentableFQN;
             }
