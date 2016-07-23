@@ -1778,10 +1778,7 @@ public class TwigHelper {
     public static Pair<PsiFile[], Boolean> findScopedFile(@NotNull PsiElement psiElement) {
 
         // {% embed "template.twig" %}{% block <caret> %}
-        PsiElement firstParent = PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> psiElement1 instanceof PsiFile || (
-            psiElement1 instanceof TwigCompositeElement &&
-                psiElement1.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT
-        ));
+        PsiElement firstParent = TwigUtil.getTransDefaultDomainScope(psiElement);
 
         // {% embed "template.twig" %}
         if(firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {

@@ -155,13 +155,17 @@ public class TwigUtil {
      *
      * "{% trans_default_domain "validators" %}"
      *
-     * @param psiFile twig file
+     * @param position current scope to search for: Twig file or embed scope
      * @return file translation domain
      */
     @Nullable
-    public static String getTwigFileTransDefaultDomain(@NotNull PsiFile psiFile) {
+    public static String getTransDefaultDomainOnScope(@NotNull PsiElement position) {
+        PsiElement scope = getTransDefaultDomainScope(position);
+        if(scope == null) {
+            return null;
+        }
 
-        for (PsiElement psiElement : psiFile.getChildren()) {
+        for (PsiElement psiElement : scope.getChildren()) {
 
             // filter parent trans_default_domain, it should be in file context
             if(psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
@@ -191,16 +195,31 @@ public class TwigUtil {
     }
 
     /**
+     * File Scope:
+     * {% trans_default_domain "foo" %}
+     *
+     * Embed:
+     * {embed 'foo.html.twig'}{% trans_default_domain "foo" %}{% endembed %}
+     */
+    @Nullable
+    public static PsiElement getTransDefaultDomainScope(@NotNull PsiElement psiElement) {
+        return PsiTreeUtil.findFirstParent(psiElement, psiElement1 ->
+            psiElement1 instanceof PsiFile ||
+            (psiElement1 instanceof TwigCompositeElement && psiElement1.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT)
+        );
+    }
+
+    /**
      * need a twig translation print block and search for default domain on parameter or trans_default_domain
      *
      * @param psiElement some print block like that 'a'|trans
      * @return matched domain or "messages" fallback
      */
     @NotNull
-    public static String getPsiElementTranslationDomain(PsiElement psiElement) {
+    public static String getPsiElementTranslationDomain(@NotNull PsiElement psiElement) {
         String domain = getDomainTrans(psiElement);
         if(domain == null) {
-            domain = getTwigFileTransDefaultDomain(psiElement.getContainingFile());
+            domain = getTransDefaultDomainOnScope(psiElement);
         }
 
         return domain == null ? "messages" : domain;

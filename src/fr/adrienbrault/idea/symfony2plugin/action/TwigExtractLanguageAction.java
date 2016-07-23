@@ -134,7 +134,14 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
         // get default domain on twig tag
         // also pipe it to insert handler; to append it as parameter
-        String defaultDomain = TwigUtil.getTwigFileTransDefaultDomain(psiFile);
+
+        // scope to search translaion domain
+        PsiElement transDefaultScope = psiFile.findElementAt(editor.getCaretModel().getOffset());
+        if(transDefaultScope == null) {
+            transDefaultScope = psiFile;
+        }
+
+        String defaultDomain = TwigUtil.getTransDefaultDomainOnScope(transDefaultScope);
         if(defaultDomain == null) {
             defaultDomain = "messages";
         }

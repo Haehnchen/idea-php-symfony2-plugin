@@ -95,4 +95,28 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% foo from \"<caret>\" %}", "interchange");
     }
 
+    public void testTranslationCompletionForEmbedTransDefaultDomainScope() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% trans_default_domain 'interchange' %}\n" +
+                "{% embed 'foo.html.twig' %}\n" +
+                "   {{ '<caret>'|trans }}\n" +
+                "{% endembed %}\n",
+            "yaml_weak.symfony.great"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% embed 'foo.html.twig' %}\n" +
+                "   {{ '<caret>'|trans }}\n" +
+                "{% endembed %}\n",
+            "yaml_weak.symfony.great"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% embed 'foo.html.twig' %}\n" +
+                "   {% trans_default_domain 'interchange' %}" +
+                "   {{ '<caret>'|trans }}\n" +
+                "{% endembed %}\n",
+            "xlf_weak.symfony.great"
+        );
+    }
 }

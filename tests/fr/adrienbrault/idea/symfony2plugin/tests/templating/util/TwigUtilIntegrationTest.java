@@ -2,14 +2,13 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.tree.IElementType;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -120,6 +119,35 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
         assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "FooBundle:Bar:Foo\\dummy.html.twig"), "src/res/Bar/Foo/dummy.html.twig");
 
         assertContainsElements(TwigUtil.getCreateAbleTemplatePaths(getProject(), "@FooBundle/Bar/dummy.html.twig"), "src/res/Bar/dummy.html.twig");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     */
+    public void testGetTwigFileTransDefaultDomainForFileScope() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "{% trans_default_domain \"foo\" %}{{ <caret> }}");
+        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
+
+        assertNotNull(psiElement);
+        assertEquals("foo", TwigUtil.getTransDefaultDomainOnScope(psiElement));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     */
+    public void testGetTwigFileTransDefaultDomainForEmbedScope() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+            "{% trans_default_domain \"foo\" %}\n" +
+            "{% embed 'default/e.html.twig' %}\n" +
+            "  {% trans_default_domain \"foobar\" %}\n" +
+            "  {{ <caret> }}\n" +
+            "{% endembed %}\n"
+        );
+
+        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
+
+        assertNotNull(psiElement);
+        assertEquals("foobar", TwigUtil.getTransDefaultDomainOnScope(psiElement));
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {
