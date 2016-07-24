@@ -119,4 +119,18 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
             "xlf_weak.symfony.great"
         );
     }
+
+    public void testTransDefaultDomainCompletionShouldQuotedStringValue() {
+        assertCompletionResultEquals(
+            TwigFileType.INSTANCE,
+            "{% trans_default_domain interchang<caret> %}",
+            "{% trans_default_domain 'interchange' %}"
+        );
+
+        assertCompletionResultEquals(
+            TwigFileType.INSTANCE,
+            "{% trans_default_domain 'interchang<caret>' %}",
+            "{% trans_default_domain 'interchange' %}"
+        );
+    }
 }
