@@ -250,7 +250,14 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                 if(taggedEventMethodParameter != null) {
                     String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
                     if(qualifiedName != null && !qualifiedName.equals(taggedEventMethodParameter.substring(1))) {
+                        // class already imported
                         taggedEventMethodParameter = qualifiedName;
+                    } else {
+                        // force insert of class import
+                        String s = PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
+                        if(s != null) {
+                            taggedEventMethodParameter = s;
+                        }
                     }
                 }
 
@@ -258,11 +265,6 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
             String parameter = "";
             if(taggedEventMethodParameter != null) {
-                String s = PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
-                if(s != null) {
-                    taggedEventMethodParameter = s;
-                }
-
                 parameter = taggedEventMethodParameter + " $event";
             }
 

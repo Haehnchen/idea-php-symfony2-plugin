@@ -45,18 +45,22 @@ public class CreateMethodQuickFix implements LocalQuickFix {
     @Override
     public void applyFix(final @NotNull Project project, @NotNull ProblemDescriptor problemDescriptor) {
 
+
         final Method methodCreated = PhpCodeUtil.createMethodFromTemplate(phpClass, project, this.stringInterface.getStringBuilder().toString());
         if(methodCreated == null) {
             return;
         }
 
-        final int insertPos = CodeUtil.getMethodInsertPosition(phpClass, functionName);
-        if(insertPos == -1) {
+        final Editor editor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, phpClass.getContainingFile().getVirtualFile()), true);;
+        if(editor == null) {
             return;
         }
 
-        final Editor editor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, phpClass.getContainingFile().getVirtualFile()), true);;
-        if(editor == null) {
+        PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument());
+        PsiDocumentManager.getInstance(project).commitDocument(editor.getDocument());
+
+        final int insertPos = CodeUtil.getMethodInsertPosition(phpClass, functionName);
+        if(insertPos == -1) {
             return;
         }
 
