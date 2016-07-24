@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.122</version>
+    <version>0.12.123</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,22 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.123</h2>
+<ul>
+    <li>Autocomplete service ids for ContainerBuilder::removeDefinition, removeAlias <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/761">#761</a></li>
+    <li>Add service resolving for tool box provider and provide tests</li>
+    <li>Add doctrine dbal querybuilder "delete" references</li>
+    <li>Strip "\Bundle\" only namespaces in default service naming strategy</li>
+    <li>Fix route reference not showing in controller that is in a sub namespace on slashes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/763">#763</a></li>
+    <li>Add references for Twig blocks in embed tag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/361">#361</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/513">#513</a></li>
+    <li>Fix npe in xml parameter attribute values <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/766">#766</a></li>
+    <li>Dialog of template creation dialog, translation key extractor, service generator should be relative to editor component</li>
+    <li>Made ServiceArgumentSelectionDialog closable on ESC <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/751">#751</a> @kstenschke</li>
+    <li>Support trans_default_domain in embed <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/660">#660</a></li>
+    <li>Let `trans_default_domain` autocomplete put quotes around domain <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/526">#526</a></li>
+    <li>Fix Document block for EventSubscriber method creation in PhpStorm >= 2016.1 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/745">#745</a></li>
+</ul>
+
 <h2>0.12.122</h2>
 <ul>
     <li>Service generator should close on escape key event</li>

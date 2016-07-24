@@ -2,10 +2,24 @@ Changelog
 =========
 
 ### Version names
-0.12.x: PhpStorm 2016.1
+0.12.x: PhpStorm 2016.1+
 0.11.x: PhpStorm 8, 9, 10 (no support)
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
+
+### 0.12.123
+* Autocomplete service ids for ContainerBuilder::removeDefinition, removeAlias #761
+* Add service resolving for tool box provider and provide tests
+* Add doctrine dbal querybuilder "delete" references
+* Strip "\Bundle\" only namespaces in default service naming strategy
+* Fix route reference not showing in controller that is in a sub namespace on slashes #763
+* Add references for Twig blocks in embed tag #361, #513
+* Fix npe in xml parameter attribute values #766
+* Dialog of template creation dialog, translation key extractor, service generator should be relative to editor component
+* Made ServiceArgumentSelectionDialog closable on ESC #751 @kstenschke
+* Support trans_default_domain in embed #660
+* Let `trans_default_domain` autocomplete put quotes around domain #526
+* Fix Document block for EventSubscriber method creation in PhpStorm >= 2016.1 #745
 
 ### 0.12.122
 * Service generator should close on escape key event
