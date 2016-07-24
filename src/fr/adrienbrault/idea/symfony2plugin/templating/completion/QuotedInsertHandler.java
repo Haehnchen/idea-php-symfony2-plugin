@@ -21,13 +21,15 @@ class QuotedInsertHandler implements InsertHandler<LookupElement> {
 
     @Override
     public void handleInsert(InsertionContext context, LookupElement lookupElement) {
-        if(ResourceFileInsertHandler.isStringBeforeCaret(context.getEditor(), context, "'")) {
+        if(ResourceFileInsertHandler.isStringBeforeCaret(context.getEditor(), context, "'") ||
+           ResourceFileInsertHandler.isStringBeforeCaret(context.getEditor(), context, "\""))
+        {
             return;
         }
 
         int startOffset = context.getStartOffset();
-        context.getDocument().insertString(startOffset, "'");
-        context.getDocument().insertString(startOffset + lookupElement.getLookupString().length() + 1, "'");
+        context.getDocument().insertString(startOffset, "\"");
+        context.getDocument().insertString(startOffset + lookupElement.getLookupString().length() + 1, "\"");
 
         // move to end
         context.getEditor().getCaretModel().moveCaretRelatively(1, 0, false, false, true);

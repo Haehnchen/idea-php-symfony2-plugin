@@ -124,13 +124,19 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
         assertCompletionResultEquals(
             TwigFileType.INSTANCE,
             "{% trans_default_domain interchang<caret> %}",
-            "{% trans_default_domain 'interchange' %}"
+            "{% trans_default_domain \"interchange\" %}"
         );
 
         assertCompletionResultEquals(
             TwigFileType.INSTANCE,
             "{% trans_default_domain 'interchang<caret>' %}",
             "{% trans_default_domain 'interchange' %}"
+        );
+
+        assertCompletionResultEquals(
+            TwigFileType.INSTANCE,
+            "{% trans_default_domain \"interchang<caret>\" %}",
+            "{% trans_default_domain \"interchange\" %}"
         );
     }
 }
