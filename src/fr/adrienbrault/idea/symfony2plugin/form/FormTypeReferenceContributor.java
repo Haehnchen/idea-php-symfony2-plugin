@@ -233,7 +233,8 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     if(PhpElementsUtil.getCompletableArrayCreationElement(psiElement) != null) {
                         return new PsiReference[]{
                             new FormExtensionKeyReference((StringLiteralExpression) psiElement),
-                            new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "form")
+                            new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "form"),
+                            new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"),
                         };
                     }
 

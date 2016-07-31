@@ -110,6 +110,24 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                     ));
 
                     methodParameterSettings.add(new MethodParameterSetting(
+                        "\\Symfony\\Component\\OptionsResolver\\OptionsResolver",
+                        "setDefaults",
+                        0,
+                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.TRANSLATION_DOMAIN,
+                        DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE,
+                        "translation_domain"
+                    ));
+
+                    methodParameterSettings.add(new MethodParameterSetting(
+                        "\\Symfony\\Component\\OptionsResolver\\OptionsResolver",
+                        "setDefaults",
+                        0,
+                        DefaultReferenceProvider.DEFAULT_PROVIDER_ENUM.CLASS,
+                        DefaultReferenceContributor.DEFAULT_CONTRIBUTORS_ENUM.ARRAY_VALUE,
+                        "data_class"
+                    ));
+
+                    methodParameterSettings.add(new MethodParameterSetting(
                         "\\Symfony\\Component\\Form\\FormBuilderInterface",
                         "add",
                         2,
