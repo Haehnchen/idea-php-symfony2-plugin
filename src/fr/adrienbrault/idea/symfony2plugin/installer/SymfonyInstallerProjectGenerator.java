@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PlatformUtils;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
@@ -28,18 +27,16 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
     @NotNull
     @Override
     public String getName() {
-        return "Symfony Installer";
+        return "Symfony";
     }
 
     @Override
     public String getDescription() {
-        return "Symfony Installer";
+        return "Create a new Symfony project by using the external \"Symfony Installer\". A local PHP interpreter is required.";
     }
 
     @Override
     public void generateProject(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
-
-
         final File baseDirFile = new File(baseDir.getPath());
         final File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
 
