@@ -5,6 +5,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
@@ -32,6 +35,12 @@ public class ContainerCollectionResolver {
 
     private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
     private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<>("SERVICE_PARAMETER_INDEX_NAMES");
+
+    private static final Key<CachedValue<Map<String, ContainerService>>> CONTAINER_SERVICES = new Key<>("CONTAINER_SERVICES");
+    private static final Key<CachedValue<Set<String>>> CONTAINER_SERVICE_NAMES = new Key<>("CONTAINER_SERVICE_NAMES");
+
+    private static final Key<CachedValue<Map<String, ContainerParameter>>> CONTAINER_PARAMETERS = new Key<>("CONTAINER_PARAMETERS");
+    private static final Key<CachedValue<Set<String>>> CONTAINER_PARAMETER_NAMES = new Key<>("CONTAINER_PARAMETER_NAMES");
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
@@ -155,17 +164,34 @@ public class ContainerCollectionResolver {
             return null;
         }
 
+        /**
+         * Main container is stateless so cache possible
+         */
+        @NotNull
         public Map<String, ContainerService> getServices() {
-
             if(this.services != null) {
                 return this.services;
             }
 
-            this.services = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            CachedValue<Map<String, ContainerService>> cache = project.getUserData(CONTAINER_SERVICES);
+            if (cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                        CachedValueProvider.Result.create(getServicesDecorated(), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
+                project.putUserData(CONTAINER_SERVICES, cache);
+            }
+
+            return this.services = cache.getValue();
+        }
+
+        @NotNull
+        private Map<String, ContainerService> getServicesDecorated() {
+            Map<String, ContainerService> serviceMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             // file system
             for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
-                services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
+                serviceMap.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
             }
 
             Collection<ServiceInterface> aliases = new ArrayList<>();
@@ -183,7 +209,7 @@ public class ContainerCollectionResolver {
             }
 
             if(exps.size() > 0) {
-                exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
+                exps.forEach(service -> serviceMap.put(service.getId(), new ContainerService(service, null)));
             }
 
             for (Map.Entry<String, List<ServiceSerializable>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
@@ -195,7 +221,7 @@ public class ContainerCollectionResolver {
                 // fake empty service, case which is not allowed by catch it
                 List<ServiceSerializable> services = entry.getValue();
                 if(services.size() == 0) {
-                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                    serviceMap.put(serviceName, new ContainerService(serviceName, null, true));
                     continue;
                 }
 
@@ -203,19 +229,19 @@ public class ContainerCollectionResolver {
                     String classValue = service.getClassName();
 
                     // duplicate services
-                    if(this.services.containsKey(serviceName)) {
+                    if(serviceMap.containsKey(serviceName)) {
                         if(classValue == null) {
                             continue;
                         }
 
-                        String compiledClassName = this.services.get(serviceName).getClassName();
+                        String compiledClassName = serviceMap.get(serviceName).getClassName();
                         if(classValue.equalsIgnoreCase(compiledClassName)) {
                             continue;
                         }
 
                         String resolvedClassValue = getParameterCollector().resolve(classValue);
                         if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
-                            this.services.get(serviceName).addClassName(resolvedClassValue);
+                            serviceMap.get(serviceName).addClassName(resolvedClassValue);
                         }
 
                         continue;
@@ -236,43 +262,43 @@ public class ContainerCollectionResolver {
                     }
 
                     // @TODO: legacy bridge; replace this with ServiceInterface
-                    this.services.put(serviceName, new ContainerService(service, classValue));
+                    serviceMap.put(serviceName, new ContainerService(service, classValue));
                 }
             }
 
             // replace alias with main service
             if(aliases.size() > 0) {
-                collectAliases(aliases);
+                collectAliases(serviceMap, aliases);
             }
 
             if(decorated.size() > 0) {
-                collectDecorated(decorated);
+                collectDecorated(serviceMap, decorated);
             }
 
-            return this.services;
+            return serviceMap;
         }
 
-        private void collectAliases(@NotNull Collection<ServiceInterface> aliases) {
+        private void collectAliases(@NotNull Map<String, ContainerService> services, @NotNull Collection<ServiceInterface> aliases) {
             for (ServiceInterface service : aliases) {
 
                 // double check alias name
                 String alias = service.getAlias();
-                if(alias == null || StringUtils.isBlank(alias) || !this.services.containsKey(alias)) {
+                if(alias == null || StringUtils.isBlank(alias) || !services.containsKey(alias)) {
                     continue;
                 }
 
-                this.services.put(service.getId(), this.services.get(alias));
+                services.put(service.getId(), services.get(alias));
             }
         }
 
-        private void collectDecorated(@NotNull Collection<ServiceInterface> decorated) {
+        private void collectDecorated(@NotNull Map<String, ContainerService> services, @NotNull Collection<ServiceInterface> decorated) {
             for (ServiceInterface service : decorated) {
                 String decorationInnerName = service.getDecorationInnerName();
                 if(StringUtils.isBlank(decorationInnerName)) {
                     decorationInnerName = service.getId() + ".inner";
                 }
 
-                ContainerService origin = this.services.get(service.getDecorates());
+                ContainerService origin = services.get(service.getDecorates());
                 if(origin == null) {
                     continue;
                 }
@@ -281,7 +307,7 @@ public class ContainerCollectionResolver {
                 ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), origin.isPrivate());
                 origin.getClassNames().forEach(value::addClassName);
 
-                this.services.put(decorationInnerName, value);
+                services.put(decorationInnerName, value);
             }
         }
 
@@ -305,8 +331,22 @@ public class ContainerCollectionResolver {
             return serviceNames;
         }
 
+        @NotNull
         private Set<String> getNames() {
+            CachedValue<Set<String>> cache = project.getUserData(CONTAINER_SERVICE_NAMES);
+            if (cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                        CachedValueProvider.Result.create(getNamesDecorated(), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
+                project.putUserData(CONTAINER_SERVICE_NAMES, cache);
+            }
 
+            return cache.getValue();
+        }
+
+        @NotNull
+        private Set<String> getNamesDecorated() {
             Set<String> serviceNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
             // local filesystem
@@ -328,9 +368,7 @@ public class ContainerCollectionResolver {
             );
 
             return serviceNames;
-
         }
-
 
         private ParameterCollector getParameterCollector() {
             return (this.parameterCollector != null) ? this.parameterCollector : (this.parameterCollector = ParameterCollector.create(this.project));
@@ -364,14 +402,12 @@ public class ContainerCollectionResolver {
          */
         @Nullable
         private String resolve(@Nullable String paramOrClassName) {
-
             if(paramOrClassName == null) {
                 return null;
             }
 
             // strip "%" to get the parameter name
             if(paramOrClassName.length() > 1 && paramOrClassName.startsWith("%") && paramOrClassName.endsWith("%")) {
-
                 paramOrClassName = paramOrClassName.substring(1, paramOrClassName.length() - 1);
 
                 // parameter is always lower see #179
@@ -387,38 +423,50 @@ public class ContainerCollectionResolver {
             return paramOrClassName;
         }
 
-
+        @NotNull
         private Map<String, ContainerParameter> getParameters() {
-
             if(this.containerParameterMap != null) {
                 return this.containerParameterMap;
             }
 
-            this.containerParameterMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            CachedValue<Map<String, ContainerParameter>> cache = project.getUserData(CONTAINER_PARAMETERS);
+            if (cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                        CachedValueProvider.Result.create(getParametersDecorated(), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
+                project.putUserData(CONTAINER_PARAMETERS, cache);
+            }
 
+            return this.containerParameterMap = cache.getValue();
+        }
+
+        @NotNull
+        private Map<String, ContainerParameter> getParametersDecorated() {
+            Map<String, ContainerParameter> parametersTree = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             // local filesystem
             for(Map.Entry<String, String> Entry: ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().entrySet()) {
-
                 // user input here; secure nullable values
                 String key = Entry.getKey();
-                if(key != null) {
-                    this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
-                }
 
+                if(key != null) {
+                    parametersTree.put(key, new ContainerParameter(key, Entry.getValue()));
+                }
             }
 
             // index
             for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, SERVICE_PARAMETER_INDEX, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
                 String parameterName = entry.getKey();
+
                 // just for secure
                 if(parameterName == null) {
                     continue;
                 }
 
                 // indexes is weak stuff, dont overwrite compiled ones
-                if(!this.containerParameterMap.containsKey(parameterName)) {
-                    this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
+                if(!parametersTree.containsKey(parameterName)) {
+                    parametersTree.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
                 }
             }
 
@@ -430,28 +478,39 @@ public class ContainerCollectionResolver {
                 }
 
                 for (String parameter : parameters) {
-                    if(this.containerParameterMap.containsKey(parameter)) {
+                    if(parametersTree.containsKey(parameter)) {
                         continue;
                     }
 
-                    this.containerParameterMap.put(parameter, new ContainerParameter(parameter, true));
+                    parametersTree.put(parameter, new ContainerParameter(parameter, true));
                 }
-
             }
 
-
-
-            return this.containerParameterMap;
-
+            return parametersTree;
         }
 
+        @NotNull
         private Set<String> getNames() {
-
             // use overall map if already generated
             if(this.containerParameterMap != null) {
                 return this.containerParameterMap.keySet();
             }
 
+            CachedValue<Set<String>> cache = project.getUserData(CONTAINER_PARAMETER_NAMES);
+            if (cache == null) {
+                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                        CachedValueProvider.Result.create(getNamesDecorated(), PsiModificationTracker.MODIFICATION_COUNT),
+                    false
+                );
+
+                project.putUserData(CONTAINER_PARAMETER_NAMES, cache);
+            }
+
+            return cache.getValue();
+        }
+
+        @NotNull
+        private Set<String> getNamesDecorated() {
             Set<String> parameterNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
             // local filesystem
@@ -470,10 +529,7 @@ public class ContainerCollectionResolver {
                 }
             }
 
-
             return parameterNames;
         }
-
     }
-
 }
