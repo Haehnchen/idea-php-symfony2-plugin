@@ -354,28 +354,31 @@ public class FormOptionsUtil {
     }
 
     @NotNull
-    public static Collection<PsiElement> getFormExtensionsKeysTargets(StringLiteralExpression psiElement, String... formTypes) {
-        Map<String, FormOption> test = FormOptionsUtil.getFormExtensionKeys(psiElement.getProject(), formTypes);
+    public static Collection<PsiElement> getFormExtensionsKeysTargets(@NotNull StringLiteralExpression psiElement, String... formTypes) {
+        Map<String, FormOption> extensionKeys = FormOptionsUtil.getFormExtensionKeys(psiElement.getProject(), formTypes);
         String value = psiElement.getContents();
 
-        if(!test.containsKey(value)) {
+        if(!extensionKeys.containsKey(value)) {
             return Collections.emptyList();
         }
 
-        // @TODO: use core method find method
-        String className = test.get(value).getFormClass().getPhpClass().getPresentableFQN();
+        Collection<PsiElement> psiElements = new HashSet<>();
+        PhpClass phpClass = extensionKeys.get(value).getFormClass().getPhpClass();
 
-        PsiElement[] psiElements = PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), "#M#C\\" + className + ".setDefaultOptions");
-        if(psiElements.length == 0) {
-            return Collections.emptyList();
+        // Symfony <= 2.7 and > 2.7 api level search
+        for (String methodName : new String[]{"setDefaultOptions", "configureOptions"}) {
+            Method method = phpClass.findMethodByName(methodName);
+            if(method == null) {
+                continue;
+            }
+
+             ContainerUtil.addIfNotNull(
+                 psiElements,
+                 PhpElementsUtil.findArrayKeyValueInsideReference(method, "setDefaults", value)
+             );
         }
 
-        PsiElement keyValue = PhpElementsUtil.findArrayKeyValueInsideReference(psiElements[0], "setDefaults", value);
-        if(keyValue != null) {
-            return Arrays.asList(keyValue);
-        }
-
-        return Collections.emptyList();
+        return psiElements;
     }
 
     public static Collection<LookupElement> getFormExtensionKeysLookupElements(Project project, String... formTypes) {

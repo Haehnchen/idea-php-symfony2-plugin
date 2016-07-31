@@ -16,16 +16,15 @@ import java.util.Collection;
 public class FormExtensionKeyReference extends PsiReferenceBase<PsiElement> implements PsiReference {
 
     private StringLiteralExpression element;
-    private String[] formTypes = new String[] { "form" };
+
+    private String[] formTypes = new String[] {
+        "form",
+        "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType",
+    };
 
     public FormExtensionKeyReference(@NotNull StringLiteralExpression element) {
         super(element);
         this.element = element;
-    }
-
-    public FormExtensionKeyReference(@NotNull StringLiteralExpression element, String... formTypes) {
-        this(element);
-        this.formTypes = formTypes;
     }
 
     @Nullable

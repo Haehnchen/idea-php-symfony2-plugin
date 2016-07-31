@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.tests.form.util;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClassEnum;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
@@ -12,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -77,12 +80,9 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         final Set<String> options = new HashSet<String>();
 
-        FormOptionsUtil.visitFormOptions(getProject(), "foo", new FormOptionVisitor() {
-            @Override
-            public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                options.add(option);
-            }
-        });
+        FormOptionsUtil.visitFormOptions(getProject(), "foo", (psiElement, option, formClass, optionEnum) ->
+            options.add(option)
+        );
 
         assertContainsElements(options, "MyType", "BarTypeParent", "BarTypeExtension");
     }
@@ -101,4 +101,12 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertContainsElements(optionsClass, "BarType");
     }
 
+    /**
+     * @see FormOptionsUtil#getFormExtensionKeys
+     */
+    public void testGetFormExtensionsKeysTargets() {
+        StringLiteralExpression contents = PhpPsiElementFactory.createFromText(getProject(), StringLiteralExpression.class, "<?php 'BarType';");
+        Collection<PsiElement> formExtensionsKeysTargets = FormOptionsUtil.getFormExtensionsKeysTargets(contents, "Options\\Bar\\Foobar");
+        assertTrue(formExtensionsKeysTargets.size() > 0);
+    }
 }

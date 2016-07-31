@@ -189,7 +189,8 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
-        // FormBuilderInterface::add('underscore_method')
+        // TODO: migrate to FormGotoCompletionRegistrar for better performance as lazy condition
+        // $resolver->setDefaults(['csrf_protection<caret>' => 'foobar']);
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class),
             new PsiReferenceProvider() {
@@ -210,8 +211,11 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     MethodReference method = (MethodReference) parameterList.getContext();
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isCallTo(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults")) {
+
+                    // Symfony 2 and 3 BC fix
+                    if(!(PhpElementsUtil.isMethodReferenceInstanceOf(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults") ||
+                         PhpElementsUtil.isMethodReferenceInstanceOf(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolver", "setDefaults"))
+                       ) {
                         return new PsiReference[0];
                     }
 
