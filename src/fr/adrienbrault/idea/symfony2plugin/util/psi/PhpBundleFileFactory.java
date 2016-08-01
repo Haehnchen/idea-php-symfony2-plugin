@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.psi;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -20,7 +21,7 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import com.jetbrains.php.refactoring.PhpNameUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -38,19 +39,17 @@ public class PhpBundleFileFactory {
 
     @Nullable
     public static PsiElement invokeCreateCompilerPass(@NotNull PhpClass bundleClass, @Nullable Editor editor) {
-
-        String s = JOptionPane.showInputDialog("Class name for CompilerPass (no namespace needed): ");
-        if(StringUtils.isBlank(s)) {
+        String className = Messages.showInputDialog("Class name for CompilerPass (no namespace needed): ", "New File", Symfony2Icons.SYMFONY);
+        if(StringUtils.isBlank(className)) {
             return null;
         }
 
-        if(!PhpNameUtil.isValidClassName(s)) {
-            JOptionPane.showMessageDialog(null, "Invalid class name");
-            return null;
+        if(!PhpNameUtil.isValidClassName(className)) {
+            Messages.showMessageDialog(bundleClass.getProject(), "Invalid class name", "Error", Symfony2Icons.SYMFONY);
         }
 
         try {
-            return PhpBundleFileFactory.createCompilerPass(bundleClass, s);
+            return PhpBundleFileFactory.createCompilerPass(bundleClass, className);
         } catch (Exception e) {
             if(editor != null) {
                 HintManager.getInstance().showErrorHint(editor, "Error:" + e.getMessage());
