@@ -1,18 +1,24 @@
 package fr.adrienbrault.idea.symfony2plugin.completion.xml;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlToken;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,10 +28,16 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
     @Override
     public void register(GotoCompletionRegistrarParameter registrar) {
-
         // <import resource="config_foo.xml"/>
         registrar.register(
-            XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()), ImportResourceGotoCompletionProvider::new
+            XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()),
+            ImportResourceGotoCompletionProvider::new
+        );
+
+        // <service id="<caret>" class="MyFoo\Foo\Apple"/>
+        registrar.register(
+            XmlPatterns.psiElement().withParent(XmlHelper.getServiceIdNamePattern()),
+            ServiceIdCompletionProvider::new
         );
     }
 
@@ -60,6 +72,46 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
             }
 
             return targets;
+        }
+    }
+
+    private static class ServiceIdCompletionProvider extends GotoCompletionProvider {
+        private ServiceIdCompletionProvider(PsiElement element) {
+            super(element);
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // find class name of service tag
+            PsiElement xmlToken = this.getElement();
+            if(xmlToken instanceof XmlToken) {
+                PsiElement xmlAttrValue = xmlToken.getParent();
+                if(xmlAttrValue instanceof XmlAttributeValue) {
+                    PsiElement xmlAttribute = xmlAttrValue.getParent();
+                    if(xmlAttribute instanceof XmlAttribute) {
+                        PsiElement xmlTag = xmlAttribute.getParent();
+                        if(xmlTag instanceof XmlTag) {
+                            String aClass = ((XmlTag) xmlTag).getAttributeValue("class");
+                            if(aClass != null && StringUtils.isNotBlank(aClass)) {
+                                lookupElements.add(LookupElementBuilder.create(
+                                    ServiceUtil.getServiceNameForClass(getProject(), aClass)).withIcon(Symfony2Icons.SERVICE)
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            return lookupElements;
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            return Collections.emptyList();
         }
     }
 }

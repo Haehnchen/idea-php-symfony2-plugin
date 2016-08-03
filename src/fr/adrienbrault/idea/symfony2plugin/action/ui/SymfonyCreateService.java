@@ -14,20 +14,16 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
-import com.intellij.util.Consumer;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyInterface;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.ClassCompletionPanelWrapper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
@@ -37,15 +33,14 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.*;
@@ -97,11 +92,6 @@ public class SymfonyCreateService extends JDialog {
         this.psiFile = psiFile;
         this.editor = editor;
     }
-
-    private static ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
-        new JavascriptServiceNameStrategy(),
-        new DefaultServiceNameStrategy(),
-    };
 
     public void init() {
 
@@ -339,7 +329,7 @@ public class SymfonyCreateService extends JDialog {
             return;
         }
 
-        textFieldServiceName.setText(generateServiceName(className));
+        textFieldServiceName.setText(ServiceUtil.getServiceNameForClass(project, className));
 
         List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
 
@@ -562,25 +552,6 @@ public class SymfonyCreateService extends JDialog {
 
             return (o1.isWeak() ? 1 : -1);
         }
-    }
-
-    @NotNull
-    private String generateServiceName(@NotNull String className) {
-
-        // normalize
-        if(className.startsWith("\\")) {
-            className = className.substring(1);
-        }
-
-        ServiceNameStrategyParameter parameter = new ServiceNameStrategyParameter(project, className);
-        for (ServiceNameStrategyInterface nameStrategy : NAME_STRATEGIES) {
-            String serviceName = nameStrategy.getServiceName(parameter);
-            if(serviceName != null && StringUtils.isNotBlank(serviceName)) {
-                return serviceName;
-            }
-        }
-
-        return className.toLowerCase().replace("\\", "_");
     }
 
     private static SymfonyCreateService prepare(@NotNull Component component, @NotNull SymfonyCreateService service) {

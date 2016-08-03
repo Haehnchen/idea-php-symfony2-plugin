@@ -22,4 +22,24 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             "config_foo.xml"
         );
     }
+
+    public void testIdInsideServiceTagShouldCompleteWithClassName() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<services><service id=\"<caret>\" class=\"MyFoo\\Foo\\Apple\"/></services>",
+            "my_foo.foo.apple"
+        );
+
+        assertCompletionNotContains(
+            XmlFileType.INSTANCE,
+            "<service id=\"<caret>\" class=\"MyFoo\\Foo\\Apple\"/>",
+            "my_foo.foo.apple"
+        );
+
+        assertCompletionNotContains(
+            XmlFileType.INSTANCE,
+            "<service id=\"<caret>\"/>",
+            "my_foo.foo.apple"
+        );
+    }
 }

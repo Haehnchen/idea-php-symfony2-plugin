@@ -19,6 +19,10 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyInterface;
+import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
@@ -38,7 +42,10 @@ import org.jetbrains.yaml.YAMLFileType;
 import java.util.*;
 
 public class ServiceUtil {
-
+    private static ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
+        new JavascriptServiceNameStrategy(),
+        new DefaultServiceNameStrategy(),
+    };
 
     public static final Map<String , String> TAG_INTERFACES = new HashMap<String , String>() {{
         put("assetic.asset", "\\Assetic\\Filter\\FilterInterface");
@@ -526,4 +533,18 @@ public class ServiceUtil {
         return ServiceUtil.getServiceSuggestionForPhpClass(phpClass, services);
     }
 
+    @NotNull
+    public static String getServiceNameForClass(@NotNull Project project, @NotNull String className) {
+        className = StringUtils.stripStart(className, "\\");
+
+        ServiceNameStrategyParameter parameter = new ServiceNameStrategyParameter(project, className);
+        for (ServiceNameStrategyInterface nameStrategy : NAME_STRATEGIES) {
+            String serviceName = nameStrategy.getServiceName(parameter);
+            if(serviceName != null && StringUtils.isNotBlank(serviceName)) {
+                return serviceName;
+            }
+        }
+
+        return className.toLowerCase().replace("\\", "_");
+    }
 }
