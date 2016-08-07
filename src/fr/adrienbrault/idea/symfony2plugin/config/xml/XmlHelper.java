@@ -92,6 +92,25 @@ public class XmlHelper {
     }
 
     /**
+     * Possible service id completion on not ready type="service" argument
+     *
+     * <service><argument id="service_container" /></service>
+     */
+    public static XmlAttributeValuePattern getArgumentServiceIdForArgumentPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("id")
+                .withParent(XmlPatterns
+                    .xmlTag().withParent(XmlPatterns
+                        .xmlTag().withName("service"))
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * <service id="service_container" />
      */
     public static XmlAttributeValuePattern getServiceIdNamePattern() {

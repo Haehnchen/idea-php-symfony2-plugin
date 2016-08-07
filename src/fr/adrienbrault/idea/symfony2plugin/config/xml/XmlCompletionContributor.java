@@ -41,8 +41,9 @@ public class XmlCompletionContributor extends CompletionContributor {
         // <factory service="<caret>" />
         extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
             XmlHelper.getArgumentServiceIdPattern(),
-            XmlHelper.getFactoryServiceCompletionPattern())
-        ), new ServiceCompletionProvider());
+            XmlHelper.getFactoryServiceCompletionPattern(),
+            XmlHelper.getArgumentServiceIdForArgumentPattern()
+        )), new ServiceCompletionProvider());
 
         extend(CompletionType.BASIC, XmlHelper.getTagAttributePattern("tag", "alias").inside(XmlHelper.getInsideTagPattern("services")), new FormAliasParametersCompletionProvider());
         extend(CompletionType.BASIC, XmlHelper.getArgumentValuePattern(), new ArgumentParameterCompletionProvider());

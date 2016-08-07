@@ -1,10 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.xml;
 
-import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.psi.xml.XmlFile;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -33,8 +31,10 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
         return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
+    /**
+     * @see XmlCompletionContributor
+     */
     public void testServiceCompletion() {
-
         assertCompletionContains("service.xml",  "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                 "<container>\n" +
                 "  <services>\n" +
@@ -61,7 +61,29 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
                 "</container>"
             , "data_collector.router"
         );
+    }
 
+    /**
+     * @see XmlCompletionContributor
+     */
+    public void testServiceCompletionForArgumentsWithInvalidTypeAttributeBuWithValidParentServiceTag() {
+        assertCompletionContains("service.xml",  "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "      <service><argument type=\"foobar\" id=\"<caret>\"/></service>\n" +
+                "  </services>\n" +
+                "</container>"
+            , "data_collector.router"
+        );
+
+        assertCompletionContains("service.xml",  "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "  <services>\n" +
+                "      <service><argument id=\"<caret>\"/></service>\n" +
+                "  </services>\n" +
+                "</container>"
+            , "data_collector.router"
+        );
     }
 
     public void testClassCompletion() {
