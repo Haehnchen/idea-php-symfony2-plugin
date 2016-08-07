@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.123</version>
+    <version>0.12.124</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,17 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.124</h2>
+<ul>
+    <li>Fix form "csrf_protection" was not found because of Symfony 3.0 interface drop</li>
+    <li>Add static "FormType" fallback and visit method "setDefaultOptions", "configureOptions" for extension key</li>
+    <li>Support translation_domain and default keys for form OptionsResolver implementation</li>
+    <li>Rename "Symfony Installer" to "Symfony" in new project dialog</li>
+    <li>Use IntelliJ DialogWrapper for dialog boxes of file templates</li>
+    <li>Add service id completion for xml attribute value on class attribute</li>
+    <li>Add completion for service id arguments without type attribute but valid service parent</li>
+</ul>
+
 <h2>0.12.123</h2>
 <ul>
     <li>Autocomplete service ids for ContainerBuilder::removeDefinition, removeAlias <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/761">#761</a></li>

@@ -7,6 +7,15 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.124
+* Fix form "csrf_protection" was not found because of Symfony 3.0 interface drop
+* Add static "FormType" fallback and visit method "setDefaultOptions", "configureOptions" for extension key
+* Support translation_domain and default keys for form OptionsResolver implementation
+* Rename "Symfony Installer" to "Symfony" in new project dialog
+* Use IntelliJ DialogWrapper for dialog boxes of file templates
+* Add service id completion for xml attribute value on class attribute
+* Add completion for service id arguments without type attribute but valid service parent
+
 ### 0.12.123
 * Autocomplete service ids for ContainerBuilder::removeDefinition, removeAlias #761
 * Add service resolving for tool box provider and provide tests
