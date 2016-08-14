@@ -126,9 +126,11 @@ public class YamlTranslationStubIndex extends FileBasedIndexExtension<String, Se
             }
 
             @Nullable
-            private String getDomainName(String fileName) {
+            private String getDomainName(@NotNull String fileName) {
+                // foo.fr.yml
+                // dont index fr.yml
                 int domainSplit = fileName.indexOf(".");
-                if(domainSplit < 0) {
+                if(domainSplit <= 2) {
                     return null;
                 }
 

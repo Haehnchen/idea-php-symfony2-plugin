@@ -24,6 +24,7 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf"));
 
         myFixture.copyFileToProject("apple.de.yml", "Resources/translations/apple.de.yml");
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
@@ -66,6 +67,10 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
 
         assertIndexContains(YamlTranslationStubIndex.KEY, "car");
         assertContainsElements(getDomainKeys("car"), "foo_yaml.symfony.great");
+    }
+
+    public void testThatEmptyXliffDomainShouldNotIndexAsLanguageKey() {
+        assertIndexNotContains(YamlTranslationStubIndex.KEY, "fr");
     }
 
     @NotNull
