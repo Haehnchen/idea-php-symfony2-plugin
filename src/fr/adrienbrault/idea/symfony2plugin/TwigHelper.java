@@ -46,6 +46,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLUtil;
+import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
@@ -1803,5 +1805,49 @@ public class TwigHelper {
         }
 
         return Pair.create(new PsiFile[] {psiElement.getContainingFile()}, false);
+    }
+
+    /**
+     * Collects Twig path in given yaml configuration
+     *
+     * twig:
+     *  paths:
+     *   "%kernel.root_dir%/../src/vendor/bundle/Resources/views": core
+     */
+    @NotNull
+    public static Collection<Pair<String, String>> getTwigPathFromYamlConfig(@NotNull YAMLFile yamlFile) {
+        YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInFile(yamlFile, "twig", "paths");
+        if(yamlKeyValue == null) {
+            return Collections.emptyList();
+        }
+
+        YAMLValue value = yamlKeyValue.getValue();
+        if(!(value instanceof YAMLMapping)) {
+            return Collections.emptyList();
+        }
+
+        Collection<Pair<String, String>> pair = new ArrayList<>();
+
+        for (YAMLPsiElement element : value.getYAMLElements()) {
+            if(!(element instanceof YAMLKeyValue)) {
+                continue;
+            }
+
+            String keyText = ((YAMLKeyValue) element).getKeyText();
+            if(StringUtils.isBlank(keyText)) {
+                continue;
+            }
+
+            String valueText = ((YAMLKeyValue) element).getValueText();
+
+            // normalize null value
+            if(valueText.equals("~")) {
+                valueText = "";
+            }
+
+            pair.add(Pair.create(valueText, keyText));
+        }
+
+        return pair;
     }
 }

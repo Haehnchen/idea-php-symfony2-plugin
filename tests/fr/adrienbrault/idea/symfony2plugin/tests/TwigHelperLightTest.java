@@ -1,8 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementFactory;
@@ -11,8 +15,11 @@ import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.*;
 
@@ -122,6 +129,45 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testIncludeTagNonAllowedTags() {
         assertSize(0, getIncludeTemplates("{% from 'foo.html.twig' %}", TwigElementTypes.IMPORT_TAG));
         assertSize(0, getIncludeTemplates("{% import 'foo.html.twig' %}", TwigElementTypes.IMPORT_TAG));
+    }
+
+    /**
+     * @see TwigHelper#getTwigPathFromYamlConfig
+     */
+    public void testGetTwigPathFromYamlConfig() {
+        String content = "twig:\n" +
+            "    paths:\n" +
+            "        \"%kernel.root_dir%/../src/views\": core\n" +
+            "        \"%kernel.root_dir%/../src/views2\": 'core2'\n" +
+            "        \"%kernel.root_dir%/../src/views3\": \"core3\"\n" +
+            "        \"%kernel.root_dir%/../src/views4\": ~\n" +
+            "        \"%kernel.root_dir%/../src/views5\": \n"
+            ;
+
+        YAMLFile fileFromText = (YAMLFile) PsiFileFactory.getInstance(getProject())
+            .createFileFromText("DUMMY__." + YAMLFileType.YML.getDefaultExtension(), YAMLFileType.YML, content, System.currentTimeMillis(), false);
+
+        Collection<Pair<String, String>> map = TwigHelper.getTwigPathFromYamlConfig(fileFromText);
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("core") && pair.getSecond().equals("%kernel.root_dir%/../src/views")
+        ));
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("core2") && pair.getSecond().equals("%kernel.root_dir%/../src/views2")
+        ));
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("core3") && pair.getSecond().equals("%kernel.root_dir%/../src/views3")
+        ));
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("") && pair.getSecond().equals("%kernel.root_dir%/../src/views4")
+        ));
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("") && pair.getSecond().equals("%kernel.root_dir%/../src/views5")
+        ));
     }
 
     /**
