@@ -5,6 +5,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
@@ -12,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventRefere
 import fr.adrienbrault.idea.symfony2plugin.config.xml.provider.ServiceReferenceProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -65,22 +67,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         // <service class="Class\Name">
         registrar.registerReferenceProvider(
             XmlHelper.getServiceIdPattern(),
-
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof XmlAttributeValue)) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{ new ServiceIdReference(
-                        (XmlAttributeValue) psiElement)
-                    };
-
-                }
-            }
+            new ClassPsiReferenceProvider()
         );
 
         // <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
@@ -173,12 +160,25 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             new FactoryClassMethodReferenceProvider()
         );
 
+        // <factory class="AppBundle\Trivago\ConfigFactory"/>
+        registrar.registerReferenceProvider(
+            XmlHelper.getTagAttributePattern("factory", "class")
+                .inFile(XmlHelper.getXmlFilePattern()),
+            new ClassPsiReferenceProvider()
+        );
+
+        // <factory class="AppBundle\Trivago\ConfigFactory" method="create"/>
+        registrar.registerReferenceProvider(
+            XmlHelper.getTagAttributePattern("factory", "method")
+                .inFile(XmlHelper.getXmlFilePattern()),
+            new FactoryMethodPsiReferenceProvider()
+        );
+
         registrar.registerReferenceProvider(
 
             XmlHelper.getParameterWithClassEndingPattern()
                 .inside(XmlHelper.getInsideTagPattern("parameters"))
                 .inFile(XmlHelper.getXmlFilePattern()
-
             ),
             new PsiReferenceProvider() {
 
@@ -223,11 +223,24 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
     }
 
+    private static class ClassPsiReferenceProvider extends PsiReferenceProvider {
+        @NotNull
+        @Override
+        public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+            if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof XmlAttributeValue)) {
+                return new PsiReference[0];
+            }
+
+            return new PsiReference[]{ new ServiceIdReference(
+                (XmlAttributeValue) psiElement)
+            };
+        }
+    }
+
     private class FactoryClassMethodReferenceProvider extends PsiReferenceProvider {
         @NotNull
         @Override
         public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext context) {
-
             if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return new PsiReference[0];
             }
@@ -309,4 +322,58 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
     }
 
+    /**
+     * <factory class="FooBar" method="cre<caret>ate"/>
+     */
+    private class FactoryMethodPsiReferenceProvider extends PsiReferenceProvider {
+        @NotNull
+        @Override
+        public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+            if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof XmlAttributeValue)) {
+                return new PsiReference[0];
+            }
+
+            return new PsiReference[]{
+                new MyFactoryMethodReference((XmlAttributeValue) psiElement),
+            };
+        }
+
+        private class MyFactoryMethodReference extends PsiPolyVariantReferenceBase<XmlAttributeValue> {
+            MyFactoryMethodReference(XmlAttributeValue psiElement) {
+                super(psiElement);
+            }
+
+            @NotNull
+            @Override
+            public ResolveResult[] multiResolve(boolean b) {
+                String method = getElement().getValue();
+                if(StringUtils.isBlank(method)) {
+                    return new ResolveResult[0];
+                }
+
+                XmlTag parentOfType = PsiTreeUtil.getParentOfType(getElement(), XmlTag.class);
+                if(parentOfType == null) {
+                    return new ResolveResult[0];
+                }
+
+                String aClass = parentOfType.getAttributeValue("class");
+                if(aClass == null || StringUtils.isBlank(aClass)) {
+                    return new ResolveResult[0];
+                }
+
+                Method classMethod = PhpElementsUtil.getClassMethod(getElement().getProject(), aClass, method);
+                if(classMethod == null) {
+                    return new ResolveResult[0];
+                }
+
+                return PsiElementResolveResult.createResults(classMethod);
+            }
+
+            @NotNull
+            @Override
+            public Object[] getVariants() {
+                return new Object[0];
+            }
+        }
+    }
 }

@@ -589,6 +589,21 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
     }
 
+    public void assertReferenceMatchOnParent(@NotNull FileType fileType, @NotNull String contents, @NotNull ElementPattern<?> pattern) {
+        myFixture.configureByText(fileType, contents);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        if(psiElement == null) {
+            fail("Fail to find element in caret");
+        }
+
+        PsiElement parent = psiElement.getParent();
+        if(parent == null) {
+            fail("Fail to find parent element in caret");
+        }
+
+        assertReferences(pattern, parent);
+    }
+
     public void assertReferenceMatch(@NotNull FileType fileType, @NotNull String contents, @NotNull ElementPattern<?> pattern) {
         myFixture.configureByText(fileType, contents);
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
@@ -596,6 +611,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             fail("Fail to find element in caret");
         }
 
+        assertReferences(pattern, psiElement);
+    }
+
+    private void assertReferences(@NotNull ElementPattern<?> pattern, PsiElement psiElement) {
         for (PsiReference reference : psiElement.getReferences()) {
             // single resolve; should also match first multi by design
             PsiElement element = reference.resolve();
