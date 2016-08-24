@@ -39,7 +39,7 @@ public class ConstraintPropertyReference extends PsiPolyVariantReferenceBase<Psi
             }
         }
 
-        return PhpResolveResult.create(psiElements);
+        return PhpResolveResult.createResults(psiElements);
     }
 
     @NotNull

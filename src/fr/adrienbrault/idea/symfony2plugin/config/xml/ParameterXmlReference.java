@@ -23,7 +23,7 @@ public class ParameterXmlReference extends PsiPolyVariantReferenceBase<PsiElemen
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        return PhpResolveResult.create(ServiceUtil.getServiceClassTargets(getElement().getProject(), this.parameterName));
+        return PhpResolveResult.createResults(ServiceUtil.getServiceClassTargets(getElement().getProject(), this.parameterName));
     }
 
     @NotNull
