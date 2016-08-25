@@ -7,6 +7,14 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.125
+* Dont index translations files without domain prefix
+* Add twig path configuration parser of yaml files #654
+* Support xml factory method and class tag #778
+* Api migration for upcoming PhpStorm 2016.3 eap #782
+* Smarter default namespace detection for default Domain of translations extraction dialog for injected html #776
+* Add support for "twig.paths" as "add path" Twig namespaces #654
+
 ### 0.12.124
 * Fix form "csrf_protection" was not found because of Symfony 3.0 interface drop
 * Add static "FormType" fallback and visit method "setDefaultOptions", "configureOptions" for extension key

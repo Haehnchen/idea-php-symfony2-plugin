@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.124</version>
+    <version>0.12.125</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,16 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.125</h2>
+<ul>
+    <li>Dont index translations files without domain prefix</li>
+    <li>Add twig path configuration parser of yaml files #654</li>
+    <li>Support xml factory method and class tag #778</li>
+    <li>Api migration for upcoming PhpStorm 2016.3 eap #782</li>
+    <li>Smarter default namespace detection for default Domain of translations extraction dialog for injected html #776</li>
+    <li>Add support for "twig.paths" as "add path" Twig namespaces #654</li>
+</ul>
+
 <h2>0.12.124</h2>
 <ul>
     <li>Fix form "csrf_protection" was not found because of Symfony 3.0 interface drop</li>
