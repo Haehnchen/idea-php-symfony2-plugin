@@ -106,13 +106,15 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
         int startOffset;
         int endOffset;
+        int caretOffset = editor.getCaretModel().getOffset();
+
         if(translationText != null) {
             startOffset = editor.getSelectionModel().getSelectionStart();
             endOffset = editor.getSelectionModel().getSelectionEnd();
         } else {
 
             // use dont selected text, so find common PsiElement
-            PsiElement psiElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
+            PsiElement psiElement = psiFile.findElementAt(caretOffset);
             if(psiElement == null) {
                 return;
             }
@@ -135,13 +137,13 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         // get default domain on twig tag
         // also pipe it to insert handler; to append it as parameter
 
-        // scope to search translaion domain
-        PsiElement transDefaultScope = psiFile.findElementAt(editor.getCaretModel().getOffset());
+        // scope to search translation domain
+        PsiElement transDefaultScope = psiFile.findElementAt(caretOffset);
         if(transDefaultScope == null) {
             transDefaultScope = psiFile;
         }
 
-        String defaultDomain = TwigUtil.getTransDefaultDomainOnScope(transDefaultScope);
+        String defaultDomain = TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(transDefaultScope, caretOffset);
         if(defaultDomain == null) {
             defaultDomain = "messages";
         }

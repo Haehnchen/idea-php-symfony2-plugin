@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -192,6 +193,42 @@ public class TwigUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Search Twig element to find use trans_default_domain and returns given string parameter
+     */
+    @Nullable
+    public static String getTransDefaultDomainOnScopeOrInjectedElement(@NotNull PsiElement position, int caretOffset) {
+        if(position.getContainingFile().getContainingFile() == TwigFileType.INSTANCE) {
+            return getTransDefaultDomainOnScope(position);
+        }
+
+        PsiElement element = getInjectedTwigElement(position.getContainingFile(), caretOffset);
+        if(element != null) {
+            return getTransDefaultDomainOnScope(element);
+        }
+
+        return null;
+    }
+
+    /**
+     * Html in Twig is injected trx to find an real Twig element
+     * TODO: there must be some nicer solution
+     *
+     * {% block %}<html/>{% endblock %}
+     */
+    @Nullable
+    public static PsiElement getInjectedTwigElement(@NotNull PsiFile psiFile, int caretOffset) {
+        PsiElement elementAt;
+
+        int limit = 20;
+        do {
+            caretOffset = caretOffset - 5;
+            elementAt = psiFile.findElementAt(caretOffset);
+        } while (limit-- > 0 && caretOffset > 0 && elementAt != null && elementAt.getContainingFile().getFileType() != TwigFileType.INSTANCE);
+
+        return elementAt;
     }
 
     /**

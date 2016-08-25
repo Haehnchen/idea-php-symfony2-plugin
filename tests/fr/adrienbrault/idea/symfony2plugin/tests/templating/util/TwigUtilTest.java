@@ -4,12 +4,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class TwigUtilTest extends Assert {
-
     @Test
     public void testGetFoldingTemplateName() {
-
         assertEquals("Foo:edit", TwigUtil.getFoldingTemplateName("FooBundle:edit.html.twig"));
         assertEquals("Foo:edit", TwigUtil.getFoldingTemplateName("FooBundle:edit.html.php"));
         assertEquals("Bundle:", TwigUtil.getFoldingTemplateName("Bundle:.html.twig"));
@@ -17,8 +14,5 @@ public class TwigUtilTest extends Assert {
         assertNull(TwigUtil.getFoldingTemplateName("FooBundle:edit.foo.twig"));
         assertNull(TwigUtil.getFoldingTemplateName(""));
         assertNull(TwigUtil.getFoldingTemplateName(null));
-
-
     }
-
 }

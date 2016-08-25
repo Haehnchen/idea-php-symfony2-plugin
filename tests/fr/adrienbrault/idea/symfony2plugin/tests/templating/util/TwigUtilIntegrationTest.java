@@ -150,6 +150,55 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
         assertEquals("foobar", TwigUtil.getTransDefaultDomainOnScope(psiElement));
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getInjectedTwigElement
+     */
+    public void testGetTransDefaultDomainOnInjectedElement() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+            "{% trans_default_domain \"foo\" %}\n" +
+            "<a href=\"#\">FOO<caret>BAR</a>"
+        );
+
+        assertTrue(
+            TwigUtil.getInjectedTwigElement(psiFile, myFixture.getCaretOffset()).getContainingFile().getFileType() == TwigFileType.INSTANCE
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScopeOrInjectedElement
+     */
+    public void testGetTransDefaultDomainOnScopeOrInjectedElement() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+            "{% trans_default_domain \"foo\" %}\n" +
+            "<a href=\"#\">FOO<caret>BAR</a>"
+        );
+
+        assertEquals("foo", TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(psiFile, myFixture.getCaretOffset()));
+
+        psiFile = myFixture.configureByText("foo.html.twig", "" +
+            "{% trans_default_domain \"foo\" %}\n" +
+            "{% embed 'default/e.html.twig' %}\n" +
+            "  {% trans_default_domain \"foobar\" %}\n" +
+            "  <ht<caret>ml>\n" +
+            "{% endembed %}\n"
+        );
+
+        assertEquals("foobar", TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(psiFile, myFixture.getCaretOffset()));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getInjectedTwigElement
+     */
+    public void testGetTransDefaultDomainOnInjectedElementWithInvalidOversizesCaretOffset() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "<a href=\"#\">FOO<caret>BAR</a>");
+
+        assertTrue(
+            TwigUtil.getInjectedTwigElement(psiFile, 3).getContainingFile().getFileType() == TwigFileType.INSTANCE
+        );
+
+        assertNull(TwigUtil.getInjectedTwigElement(psiFile, 300000));
+    }
+
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {
         PsiElement psiElement = TwigElementFactory.createPsiElement(getProject(), content, type);
         if(psiElement == null) {
