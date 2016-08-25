@@ -141,7 +141,9 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
             "        \"%kernel.root_dir%/../src/views2\": 'core2'\n" +
             "        \"%kernel.root_dir%/../src/views3\": \"core3\"\n" +
             "        \"%kernel.root_dir%/../src/views4\": ~\n" +
-            "        \"%kernel.root_dir%/../src/views5\": \n"
+            "        \"%kernel.root_dir%/../src/views5\": \n" +
+            "        \"%kernel.root_dir%/..//src/views\": core8\n" +
+            "        \"%kernel.root_dir%/..\\src/views\": core9\n"
             ;
 
         YAMLFile fileFromText = (YAMLFile) PsiFileFactory.getInstance(getProject())
@@ -167,6 +169,14 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertNotNull(ContainerUtil.find(map, pair ->
             pair.getFirst().equals("") && pair.getSecond().equals("%kernel.root_dir%/../src/views5")
+        ));
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("core8") && pair.getSecond().equals("%kernel.root_dir%/../src/views")
+        ));
+
+        assertNotNull(ContainerUtil.find(map, pair ->
+            pair.getFirst().equals("core9") && pair.getSecond().equals("%kernel.root_dir%/../src/views")
         ));
     }
 

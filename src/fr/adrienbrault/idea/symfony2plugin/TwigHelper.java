@@ -399,6 +399,7 @@ public class TwigHelper {
        return getTwigNamespaces(project, true);
     }
 
+    @NotNull
     public static List<TwigPath> getTwigNamespaces(@NotNull Project project, boolean includeSettings) {
         List<TwigPath> twigPaths = new ArrayList<>();
         PhpIndex phpIndex = PhpIndex.getInstance(project);
@@ -1838,6 +1839,8 @@ public class TwigHelper {
                 continue;
             }
 
+            keyText = keyText.replace("\\", "/").replaceAll("/+", "/");
+
             String valueText = ((YAMLKeyValue) element).getValueText();
 
             // normalize null value
@@ -1849,5 +1852,42 @@ public class TwigHelper {
         }
 
         return pair;
+    }
+
+    /**
+     * Replaces parameters and relative replaces strings
+     *
+     * "%kernel.root_dir%/../src/vendor/bundle/Resources/views": core
+     * "%kernel.root_dir%" => "/app/../src/vendor/bundle/Resources/views"
+     */
+    @NotNull
+    public static Collection<Pair<String, String>> getTwigPathFromYamlConfigResolved(@NotNull YAMLFile yamlFile) {
+        VirtualFile baseDir = yamlFile.getProject().getBaseDir();
+
+        VirtualFile appDir = VfsUtil.findRelativeFile(baseDir, "app");
+        if(appDir == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<Pair<String, String>> paths = new ArrayList<>();
+
+        for (Pair<String, String> pair : getTwigPathFromYamlConfig(yamlFile)) {
+            String second = pair.getSecond();
+            if(!second.startsWith("%kernel.root_dir%")) {
+                continue;
+            }
+
+            String path = StringUtils.stripStart(second.substring("%kernel.root_dir%".length()), "/");
+
+            VirtualFile relativeFile = VfsUtil.findRelativeFile(appDir, path.split("/"));
+            if(relativeFile != null) {
+                String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
+                if(relativePath != null) {
+                    paths.add(Pair.create(pair.getFirst(), relativePath));
+                }
+            }
+        }
+
+        return paths;
     }
 }
