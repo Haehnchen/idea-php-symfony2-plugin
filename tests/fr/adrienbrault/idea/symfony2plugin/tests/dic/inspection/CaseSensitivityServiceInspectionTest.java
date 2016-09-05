@@ -2,11 +2,21 @@ package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.io.File;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.dic.inspection.CaseSensitivityServiceInspection
  */
 public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
+    public void setUp() throws Exception {
+        super.setUp();
+        myFixture.copyFileToProject("classes.php");
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
 
     public void testCaseSensitivityForXmlFiles() {
         assertLocalInspectionContains("service.xml",
@@ -88,6 +98,20 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
         assertLocalInspectionNotContains("service.yml", "services:\n" +
                 "    foo_a:\n" +
                 "        arguments: [@f<caret>o]",
+            "Symfony: lowercase letters for service and parameter"
+        );
+    }
+
+    public void testCaseSensitivityForServicePhpFiles() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "/** @var $c \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$c->get('@f<caret>oO');\n",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "/** @var $c \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$c->get('<caret>');\n",
             "Symfony: lowercase letters for service and parameter"
         );
     }

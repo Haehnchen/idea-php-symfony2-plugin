@@ -9,9 +9,9 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -21,7 +21,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -90,10 +89,16 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement element) {
+                PsiElement parent = element.getParent();
+                if(!(parent instanceof StringLiteralExpression)) {
+                    super.visitElement(element);
+                    return;
+                }
+
                 MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element);
                 if (methodReference != null && new Symfony2InterfacesUtil().isContainerGetCall(methodReference)) {
-                    String serviceName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
-                    if(serviceName != null && !serviceName.equals(serviceName.toLowerCase())) {
+                    String serviceName = ((StringLiteralExpression) parent).getContents();
+                    if(StringUtils.isNotBlank(serviceName) && !serviceName.equals(serviceName.toLowerCase())) {
                         holder.registerProblem(element, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);
                     }
                 }
