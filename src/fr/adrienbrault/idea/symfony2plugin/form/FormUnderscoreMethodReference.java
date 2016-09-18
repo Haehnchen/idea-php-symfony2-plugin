@@ -29,9 +29,14 @@ public class FormUnderscoreMethodReference extends PsiPolyVariantReferenceBase<S
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
+        String contents = getElement().getContents();
+        if(org.apache.commons.lang.StringUtils.isBlank(contents)) {
+            return new ResolveResult[0];
+        }
+
         Collection<PsiElement> psiElements = new ArrayList<>();
 
-        Set<String> methods = getCamelizeAndUnderscoreString(getElement().getContents());
+        Set<String> methods = getCamelizeAndUnderscoreString(contents);
 
         // provide setter fallback for non model class or or unknown methods
         for (String value : methods) {
