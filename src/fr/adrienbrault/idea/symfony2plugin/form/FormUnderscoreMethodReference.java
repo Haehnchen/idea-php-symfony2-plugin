@@ -8,48 +8,44 @@ import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormUnderscoreMethodReference  extends PsiPolyVariantReferenceBase<PsiElement> {
-
-    private StringLiteralExpression element;
+public class FormUnderscoreMethodReference extends PsiPolyVariantReferenceBase<StringLiteralExpression> {
+    @NotNull
     private PhpClass phpClass;
 
-    public FormUnderscoreMethodReference(@NotNull StringLiteralExpression element, PhpClass phpClass) {
+    public FormUnderscoreMethodReference(@NotNull StringLiteralExpression element, @NotNull PhpClass phpClass) {
         super(element);
-        this.element = element;
         this.phpClass = phpClass;
     }
 
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-
         Collection<PsiElement> psiElements = new ArrayList<>();
 
-        String value = element.getContents();
-        for(DoctrineModelField field: EntityHelper.getModelFields(this.phpClass)) {
-            if(value.equals(field.getName())) {
-                psiElements.addAll(field.getTargets());
+        Set<String> methods = getCamelizeAndUnderscoreString(getElement().getContents());
+
+        // provide setter fallback for non model class or or unknown methods
+        for (String value : methods) {
+            Method method = phpClass.findMethodByName("set" + value);
+            if (method != null) {
+                psiElements.add(method);
             }
         }
 
-        // provide setter fallback for non model class or or unknown methods
-        String methodCamel = StringUtils.camelize(element.getContents());
-        Method method = phpClass.findMethodByName("set" + methodCamel);
-        if (method != null) {
-            psiElements.add(method);
-        }
+        // property path
+        psiElements.addAll(this.phpClass.getFields().stream()
+            .filter(field -> !field.isConstant() && field.getModifier().isPublic() && methods.contains(field.getName()))
+            .collect(Collectors.toList())
+        );
 
         return PsiElementResolveResult.createResults(psiElements);
     }
@@ -57,37 +53,39 @@ public class FormUnderscoreMethodReference  extends PsiPolyVariantReferenceBase<
     @NotNull
     @Override
     public Object[] getVariants() {
-
-        List<LookupElement> lookupElements = new ArrayList<>();
-
-        Set<String> strings = new HashSet<>();
-        for(DoctrineModelField field: EntityHelper.getModelFields(this.phpClass)) {
-            addCamelUnderscoreName(strings, org.apache.commons.lang.StringUtils.trim(field.getName()));
-            lookupElements.add(new DoctrineModelFieldLookupElement(field).withBoldness(true));
-        }
+        Collection<LookupElement> lookupElements = new ArrayList<>();
 
         // provide setter fallback for non model class or unknown methods
         for(Method method: this.phpClass.getMethods()) {
             String name = method.getName();
             if(name.length() > 3 && name.startsWith("set")) {
-                name = name.substring(3);
-                if(!isCamelUnderscoreEqual(strings, name)) {
-                    // @TODO: should we really stay this underscore way?
-                    lookupElements.add(new PhpUnderscoreMethodLookupElement(method));
-                }
+                lookupElements.add(new PhpFormPropertyMethodLookupElement(method, StringUtils.lcfirst(name.substring(3))));
             }
         }
+
+        // Symfony\Component\PropertyAccess\PropertyAccessor::getWriteAccessInfo
+        // property: public $foobar
+        lookupElements.addAll(this.phpClass.getFields().stream()
+            .filter(field -> !field.isConstant() && field.getModifier().isPublic())
+            .map(field -> new PhpFormPropertyMethodLookupElement(field, field.getName()))
+            .collect(Collectors.toList())
+        );
 
         return lookupElements.toArray();
     }
 
-    private boolean isCamelUnderscoreEqual(Set<String> strings, String string) {
-        return strings.contains(string) || strings.contains(StringUtils.camelize(string)) || strings.contains(StringUtils.underscore(string));
-    }
+    @NotNull
+    private Set<String> getCamelizeAndUnderscoreString(@NotNull String string) {
+        TreeSet<String> strings = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-    private void addCamelUnderscoreName(Set<String> strings, String string) {
-        strings.add(StringUtils.camelize(string));
-        strings.add(StringUtils.underscore(string));
-    }
+        string = StringUtils.lcfirst(string);
 
+        strings.addAll(Arrays.asList(
+            StringUtils.underscore(string),
+            StringUtils.camelize(string),
+            string
+        ));
+
+        return strings;
+    }
 }

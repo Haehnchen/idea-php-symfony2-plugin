@@ -76,3 +76,15 @@ namespace Form\FormType {
         }
     }
 }
+
+namespace Form\DataClass
+{
+    class Model {
+        public $var;
+        public $varBar;
+        
+        public function setFooBar()
+        {
+        }
+    }
+}

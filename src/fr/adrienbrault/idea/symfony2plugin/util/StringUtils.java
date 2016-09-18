@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import org.jetbrains.annotations.NotNull;
+
 public class StringUtils {
 
     public static String camelize(String input) {
@@ -31,6 +33,12 @@ public class StringUtils {
             return chaine;
         }
         return chaine.substring(0, 1).toUpperCase() + chaine.substring(1);
+    }
+
+    @NotNull
+    public static String lcfirst(@NotNull String input){
+        return Character.toLowerCase(input.charAt(0)) +
+            (input.length() > 1 ? input.substring(1) : "");
     }
 
     /**
