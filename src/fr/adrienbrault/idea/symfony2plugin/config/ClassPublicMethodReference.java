@@ -8,7 +8,6 @@ import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -22,22 +21,15 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     private String className;
     private String method;
 
-    public ClassPublicMethodReference(@NotNull PsiElement element, String className) {
+    public ClassPublicMethodReference(@NotNull PsiElement element, @NotNull String className) {
         super(element);
         this.className = className;
         this.method = PsiElementUtils.trimQuote(element.getText());
     }
 
-    public ClassPublicMethodReference(@NotNull StringLiteralExpression element, String className) {
-        super(element);
-        this.className = className;
-        this.method = element.getContents();
-    }
-
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getElement().getProject(), this.className);
         if(phpClass == null) {
             return new ResolveResult[0];
@@ -48,14 +40,12 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
             return new ResolveResult[0];
         }
 
-        return new ResolveResult[] {
-          new PsiElementResolveResult(targetMethod)
-        };
-
+        return PsiElementResolveResult.createResults(targetMethod);
     }
 
     @NotNull
     @Override
+    @Deprecated
     public Object[] getVariants() {
 
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getElement().getProject(), this.className);

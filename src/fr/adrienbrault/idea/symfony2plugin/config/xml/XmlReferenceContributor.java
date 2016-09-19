@@ -2,10 +2,13 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.*;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import com.intellij.util.ProcessingContext;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
@@ -19,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -153,13 +157,6 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             new ClassMethodReferenceProvider()
         );
 
-        registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("factory", "method")
-                .inside(XmlHelper.getInsideTagPattern("services"))
-                .inFile(XmlHelper.getXmlFilePattern()),
-            new FactoryClassMethodReferenceProvider()
-        );
-
         // <factory class="AppBundle\Trivago\ConfigFactory"/>
         registrar.registerReferenceProvider(
             XmlHelper.getTagAttributePattern("factory", "class")
@@ -168,10 +165,15 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         );
 
         // <factory class="AppBundle\Trivago\ConfigFactory" method="create"/>
+        // <factory service="foo" method="create"/>
         registrar.registerReferenceProvider(
             XmlHelper.getTagAttributePattern("factory", "method")
+                .inside(XmlHelper.getInsideTagPattern("services"))
                 .inFile(XmlHelper.getXmlFilePattern()),
-            new FactoryMethodPsiReferenceProvider()
+            new ChainPsiReferenceProvider(
+                new FactoryClassMethodPsiReferenceProvider(),
+                new FactoryServiceMethodPsiReferenceProvider()
+            )
         );
 
         registrar.registerReferenceProvider(
@@ -237,30 +239,35 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         }
     }
 
-    private class FactoryClassMethodReferenceProvider extends PsiReferenceProvider {
+    /**
+     * <factory service="foo" method="create"/>
+     */
+    private class FactoryServiceMethodPsiReferenceProvider extends PsiReferenceProvider {
         @NotNull
         @Override
         public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext context) {
-            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof XmlAttributeValue)) {
                 return new PsiReference[0];
             }
 
-            XmlTag callXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
-            if(callXmlTag == null) {
+            String method = ((XmlAttributeValue) psiElement).getValue();
+            if(StringUtils.isBlank(method)) {
                 return new PsiReference[0];
             }
 
-            XmlAttribute aClass = callXmlTag.getAttribute("service");
-            if(aClass == null) {
+            PhpClass phpClass = XmlHelper.getPhpClassForServiceFactory((XmlAttributeValue) psiElement);
+            if(phpClass == null) {
                 return new PsiReference[0];
             }
 
-            String value = aClass.getValue();
-            if(StringUtils.isBlank(value)) {
+            Method targetMethod = phpClass.findMethodByName(method);
+            if(targetMethod == null) {
                 return new PsiReference[0];
             }
 
-            return new PsiReference[] { new ClassPublicMethodReference(psiElement, value)};
+            return new PsiReference[] {
+                new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), targetMethod.getName()),
+            };
         }
     }
 
@@ -325,7 +332,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
     /**
      * <factory class="FooBar" method="cre<caret>ate"/>
      */
-    private class FactoryMethodPsiReferenceProvider extends PsiReferenceProvider {
+    private class FactoryClassMethodPsiReferenceProvider extends PsiReferenceProvider {
         @NotNull
         @Override
         public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
@@ -333,47 +340,76 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 return new PsiReference[0];
             }
 
+            String method = ((XmlAttributeValue) psiElement).getValue();
+            if(StringUtils.isBlank(method)) {
+                return new PsiReference[0];
+            }
+
+            PhpClass phpClass = XmlHelper.getPhpClassForClassFactory((XmlAttributeValue) psiElement);
+            if(phpClass == null) {
+                return new PsiReference[0];
+            }
+
+            Method classMethod = phpClass.findMethodByName(method);
+            if(classMethod == null) {
+                return new PsiReference[0];
+            }
+
             return new PsiReference[]{
-                new MyFactoryMethodReference((XmlAttributeValue) psiElement),
+                new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), classMethod.getName()),
             };
         }
+    }
 
-        private class MyFactoryMethodReference extends PsiPolyVariantReferenceBase<XmlAttributeValue> {
-            MyFactoryMethodReference(XmlAttributeValue psiElement) {
-                super(psiElement);
+    private class ChainPsiReferenceProvider extends PsiReferenceProvider {
+        @NotNull
+        private final PsiReferenceProvider[] psiReferenceProviders;
+
+        ChainPsiReferenceProvider(@NotNull PsiReferenceProvider... psiReferenceProviders) {
+            this.psiReferenceProviders = psiReferenceProviders;
+        }
+
+        @NotNull
+        @Override
+        public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+            Collection<PsiReference> psiReferences = new ArrayList<>();
+
+            for (PsiReferenceProvider provider : this.psiReferenceProviders) {
+                ContainerUtil.addAll(psiReferences, provider.getReferencesByElement(psiElement, processingContext));
             }
 
-            @NotNull
-            @Override
-            public ResolveResult[] multiResolve(boolean b) {
-                String method = getElement().getValue();
-                if(StringUtils.isBlank(method)) {
-                    return new ResolveResult[0];
-                }
+            return psiReferences.toArray(new PsiReference[psiReferences.size()]);
+        }
+    }
 
-                XmlTag parentOfType = PsiTreeUtil.getParentOfType(getElement(), XmlTag.class);
-                if(parentOfType == null) {
-                    return new ResolveResult[0];
-                }
+    private class ClassMethodStringPsiReference extends PsiPolyVariantReferenceBase<PsiElement> {
+        @NotNull
+        private final String aClass;
 
-                String aClass = parentOfType.getAttributeValue("class");
-                if(aClass == null || StringUtils.isBlank(aClass)) {
-                    return new ResolveResult[0];
-                }
+        @NotNull
+        private final String method;
 
-                Method classMethod = PhpElementsUtil.getClassMethod(getElement().getProject(), aClass, method);
-                if(classMethod == null) {
-                    return new ResolveResult[0];
-                }
+        ClassMethodStringPsiReference(@NotNull PsiElement psiElement, @NotNull String aClass, @NotNull String method) {
+            super(psiElement);
+            this.aClass = aClass;
+            this.method = method;
+        }
 
-                return PsiElementResolveResult.createResults(classMethod);
+        @NotNull
+        @Override
+        public ResolveResult[] multiResolve(boolean b) {
+            Method classMethod = PhpElementsUtil.getClassMethod(getElement().getProject(), aClass, method);
+            if(classMethod == null) {
+                return new ResolveResult[0];
             }
 
-            @NotNull
-            @Override
-            public Object[] getVariants() {
-                return new Object[0];
-            }
+            return PsiElementResolveResult.createResults(classMethod);
+        }
+
+        @NotNull
+        @Override
+        public Object[] getVariants() {
+            return new Object[0];
         }
     }
 }

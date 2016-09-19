@@ -6,7 +6,11 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -426,4 +430,44 @@ public class XmlHelper {
         return null;
     }
 
+
+    @Nullable
+    public static PhpClass getPhpClassForClassFactory(@NotNull XmlAttributeValue xmlAttributeValue) {
+        String method = xmlAttributeValue.getValue();
+        if(StringUtils.isBlank(method)) {
+            return null;
+        }
+
+        XmlTag parentOfType = PsiTreeUtil.getParentOfType(xmlAttributeValue, XmlTag.class);
+        if(parentOfType == null) {
+            return null;
+        }
+
+        String aClass = parentOfType.getAttributeValue("class");
+        if(aClass == null || StringUtils.isBlank(aClass)) {
+            return null;
+        }
+
+        return PhpElementsUtil.getClass(xmlAttributeValue.getProject(), aClass);
+    }
+
+    @Nullable
+    public static PhpClass getPhpClassForServiceFactory(@NotNull XmlAttributeValue xmlAttributeValue) {
+        String method = xmlAttributeValue.getValue();
+        if(StringUtils.isBlank(method)) {
+            return null;
+        }
+
+        XmlTag callXmlTag = PsiTreeUtil.getParentOfType(xmlAttributeValue, XmlTag.class);
+        if(callXmlTag == null) {
+            return null;
+        }
+
+        String service = callXmlTag.getAttributeValue("service");
+        if(StringUtils.isBlank(service)) {
+            return null;
+        }
+
+        return ServiceUtil.getResolvedClassDefinition(xmlAttributeValue.getProject(), service);
+    }
 }

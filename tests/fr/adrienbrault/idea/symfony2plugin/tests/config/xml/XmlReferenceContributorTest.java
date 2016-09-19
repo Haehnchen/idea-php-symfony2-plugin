@@ -17,6 +17,7 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("XmlReferenceContributor.php");
+        myFixture.copyFileToProject("services.xml");
     }
 
     public String getTestDataPath() {
@@ -51,13 +52,27 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
         );
     }
 
-    public void testThatFactoryMethodAttributeProvidesReference() {
+    public void testThatFactoryMethodAttributeProvidesReferenceForClass() {
         assertReferenceMatchOnParent(XmlFileType.INSTANCE, "" +
                 "<?xml version=\"1.0\"?>\n" +
                 "<container>\n" +
                 "    <services>\n" +
                 "        <service>\n" +
                 "            <factory class=\"Foo\\Bar\" method=\"cr<caret>eate\"/>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement(Method.class).withName("create")
+        );
+    }
+
+    public void testThatFactoryMethodAttributeProvidesReferenceForService() {
+        assertReferenceMatchOnParent(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service>\n" +
+                "            <factory service=\"foo.bar_factory\" method=\"cr<caret>eate\"/>\n" +
                 "        </service>\n" +
                 "    </services>\n" +
                 "</container>\n",

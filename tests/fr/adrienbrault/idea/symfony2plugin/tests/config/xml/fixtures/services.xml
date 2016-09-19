@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<container>
+    <services>
+        <service id="foo.bar_factory" class="Foo\Bar"/>
+    </services>
+</container>
