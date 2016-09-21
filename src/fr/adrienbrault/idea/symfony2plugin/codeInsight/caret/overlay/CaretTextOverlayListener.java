@@ -13,29 +13,37 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.component.CaretOverlayComponent;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.util.CaretTextOverlayUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class CaretTextOverlayListener implements CaretListener {
 
-    private Timer timer = null;
     private int startDelayMs = 250;
 
     private final Object lock = new Object();
 
+    private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> schedule;
+
     @Override
     public void caretPositionChanged(final CaretEvent caretEvent) {
+        synchronized (lock) {
+            if(schedule != null) {
+                schedule.cancel(true);
+                schedule = null;
+            }
+        }
 
-        this.clear();
         final Editor editor = caretEvent.getEditor();
         removeOverlays(editor);
 
@@ -49,14 +57,9 @@ public class CaretTextOverlayListener implements CaretListener {
         }
 
         synchronized (lock) {
-            this.timer = new Timer();
-            this.timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    ApplicationManager.getApplication().runReadAction(new MyPsiElementRunnable(project, caretEvent, editor));
-                    timer = null;
-                }
-            }, startDelayMs);
+            schedule = executor.schedule(() -> {
+                ApplicationManager.getApplication().runReadAction(new MyPsiElementRunnable(project, caretEvent, editor));
+            }, startDelayMs, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -88,12 +91,8 @@ public class CaretTextOverlayListener implements CaretListener {
 
     synchronized public void clear() {
         synchronized (lock) {
-            if(timer == null) {
-                return;
-            }
-
-            timer.cancel();
-            timer = null;
+            executor.shutdownNow();
+            schedule = null;
         }
     }
 
