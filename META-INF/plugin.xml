@@ -350,6 +350,8 @@
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigControllerLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.YamlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.XmlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.XmlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.YamlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider"/>
 
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>

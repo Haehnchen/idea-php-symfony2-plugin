@@ -3,17 +3,23 @@ package fr.adrienbrault.idea.symfony2plugin.stubs;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
@@ -26,6 +32,8 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.util.*;
 
 public class ServiceIndexUtil {
+
+    private static final Key<CachedValue<Map<String, Collection<ContainerService>>>> SERVICE_DECORATION_CACHE = new Key<>("SERVICE_DECORATION");
 
     private static final ExtensionPointName<ServiceDefinitionLocator> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"
@@ -147,10 +155,81 @@ public class ServiceIndexUtil {
     }
 
     /**
+     * Lazy values for linemarker
+     */
+    @Nullable
+    public static NotNullLazyValue<Collection<? extends PsiElement>> getServiceIdDefinitionLazyValue(@NotNull Project project, @NotNull Collection<String> ids) {
+        return new MyServiceIdLazyValue(project, ids);
+    }
+
+    /**
      * So support only some file types, so we can filter them and xml and yaml for now
      */
     public static GlobalSearchScope getRestrictedFileTypesScope(@NotNull Project project) {
         return GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML);
     }
 
+    @NotNull
+    public static Map<String, Collection<ContainerService>> getDecoratedServices(@NotNull Project project) {
+        CachedValue<Map<String, Collection<ContainerService>>> cache = project.getUserData(SERVICE_DECORATION_CACHE);
+
+        if (cache == null) {
+            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                CachedValueProvider.Result.create(getDecoratedServicesInner(project), PsiModificationTracker.MODIFICATION_COUNT)
+            , false);
+
+            project.putUserData(SERVICE_DECORATION_CACHE, cache);
+        }
+
+        return cache.getValue();
+    }
+
+    @NotNull
+    private static Map<String, Collection<ContainerService>> getDecoratedServicesInner(@NotNull Project project) {
+        Map<String, Collection<ContainerService>> services = new HashMap<>();
+
+        for (ContainerService containerService : ContainerCollectionResolver.getServices(project).values()) {
+            if(containerService.getService() == null) {
+                continue;
+            }
+
+            String decorates = containerService.getService().getDecorates();
+            if(decorates == null) {
+                continue;
+            }
+
+            if(!services.containsKey(decorates)) {
+                services.put(decorates, new ArrayList<>());
+            }
+
+            services.get(decorates).add(containerService);
+        }
+
+        return services;
+    }
+
+    private static class MyServiceIdLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+        @NotNull
+        private final Project project;
+
+        @NotNull
+        private final Collection<String> ids;
+
+        MyServiceIdLazyValue(@NotNull Project project, @NotNull Collection<String> ids) {
+            this.project = project;
+            this.ids = ids;
+        }
+
+        @NotNull
+        @Override
+        protected Collection<? extends PsiElement> compute() {
+            Collection<PsiElement> psiElements = new HashSet<>();
+
+            for (String id : new HashSet<>(this.ids)) {
+                psiElements.addAll(findServiceDefinitions(this.project, id));
+            }
+
+            return psiElements;
+        }
+    }
 }

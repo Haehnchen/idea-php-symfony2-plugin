@@ -651,4 +651,15 @@ public class YamlElementPatternHelper {
                  )
              );
     }
+
+    /**
+     * services:
+     *   i<caret>d: []
+     */
+    public static PsiElementPattern.Capture<YAMLKeyValue> getServiceIdKeyValuePattern() {
+        return PlatformPatterns.psiElement(YAMLKeyValue.class)
+            .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                .withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).withName("services"))
+            );
+    }
 }

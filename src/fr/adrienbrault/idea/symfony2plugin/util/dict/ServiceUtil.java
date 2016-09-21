@@ -1,11 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
 import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -13,8 +15,10 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.Consumer;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -546,5 +550,21 @@ public class ServiceUtil {
         }
 
         return className.toLowerCase().replace("\\", "_");
+    }
+
+    @Nullable
+    public static NavigationGutterIconBuilder<PsiElement> getLineMarkerForDecoratedServiceId(@NotNull Project project, @NotNull Map<String, Collection<ContainerService>> decorated, @NotNull String id) {
+        if(!decorated.containsKey(id)) {
+            return null;
+        }
+
+        NotNullLazyValue<Collection<? extends PsiElement>> lazy = ServiceIndexUtil.getServiceIdDefinitionLazyValue(
+            project,
+            ContainerUtil.map(decorated.get(id), ContainerService::getName)
+        );
+
+        return NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
+            .setTargets(lazy)
+            .setTooltipText("Navigate to decoration");
     }
 }
