@@ -93,7 +93,6 @@ public class CaretTextOverlayListener implements CaretListener {
             }
 
             timer.cancel();
-            timer.purge();
             timer = null;
         }
     }
