@@ -56,4 +56,8 @@ public class YamlPsiElementFactory {
         return PsiFileFactory.getInstance(p).createFileFromText("DUMMY__." + YAMLFileType.YML.getDefaultExtension(), YAMLFileType.YML, fileText, System.currentTimeMillis(), false);
     }
 
+    @NotNull
+    public static PsiFile createDummyFile(@NotNull Project project, @NotNull String filename, @NotNull String content) {
+        return PsiFileFactory.getInstance(project).createFileFromText(filename, YAMLFileType.YML, content, System.currentTimeMillis(), false);
+    }
 }

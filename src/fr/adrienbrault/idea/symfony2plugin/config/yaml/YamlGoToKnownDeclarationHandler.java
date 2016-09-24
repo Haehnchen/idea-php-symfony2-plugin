@@ -12,6 +12,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -19,12 +20,14 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -87,7 +90,26 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getArrayMethodGoto(psiElement, results);
         }
 
+        // config.yml: "as<caret>setic": ~
+        if(PlatformPatterns.psiElement().inFile(YamlElementPatternHelper.getConfigFileNamePattern()).accepts(psiElement)) {
+            this.visitConfigKey(psiElement, results);
+        }
+
         return results.toArray(new PsiElement[results.size()]);
+    }
+
+    private void visitConfigKey(@NotNull PsiElement psiElement, @NotNull Collection<PsiElement> results) {
+        PsiElement parent = psiElement.getParent();
+        if(!(parent instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        String keyText = ((YAMLKeyValue) parent).getKeyText();
+        if(StringUtils.isBlank(keyText)) {
+            return;
+        }
+
+        results.addAll(ConfigUtil.getTreeSignatureTargets(psiElement.getProject(), keyText));
     }
 
     private void getArrayMethodGoto(PsiElement psiElement, List<PsiElement> results) {

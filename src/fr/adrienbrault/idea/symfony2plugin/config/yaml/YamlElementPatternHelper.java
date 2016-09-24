@@ -550,8 +550,17 @@ public class YamlElementPatternHelper {
             PlatformPatterns.psiElement(YAMLKeyValue.class)
         )).inFile(
             // not should fire this in all yaml files
-            PlatformPatterns.psiFile().withName(PlatformPatterns.string().matches("[security|config].*\\.yml"))
+            getConfigFileNamePattern()
         );
+    }
+
+    /**
+     * config.yml, config_dev.yml,
+     * security.yml, security_dev.yml
+     */
+    @NotNull
+    public static PsiFilePattern.Capture<PsiFile> getConfigFileNamePattern() {
+        return PlatformPatterns.psiFile().withName(PlatformPatterns.string().matches("(security|config).*\\.yml"));
     }
 
     /**
@@ -661,5 +670,19 @@ public class YamlElementPatternHelper {
             .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
                 .withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).withName("services"))
             );
+    }
+
+    /**
+     * PsiFile / Document:
+     *   serv<caret>ices: ~
+     */
+    public static PsiElementPattern.Capture<PsiElement> getRootConfigKeyPattern() {
+        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
+            PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                    PlatformPatterns.psiElement(YAMLDocument.class)
+                )
+            )
+        ).inFile(getConfigFileNamePattern());
     }
 }
