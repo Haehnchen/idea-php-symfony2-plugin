@@ -10,11 +10,15 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.HashMap;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
@@ -27,9 +31,13 @@ import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 
 import java.util.*;
 
@@ -288,6 +296,63 @@ public class EventDispatcherSubscriberUtil {
         }
 
         return results.values();
+    }
+
+
+    /**
+     * XML: <tag event=""fooBar/>
+     * YML: - event: 'foobar'
+     * PHP: ['foo' => 'method']
+     */
+    @Nullable
+    public static String getEventNameFromScope(@NotNull PsiElement psiElement) {
+        // xml service
+        if(psiElement.getContainingFile() instanceof XmlFile) {
+            XmlTag xmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+            if(xmlTag == null) {
+                return null;
+            }
+
+            XmlAttribute event = xmlTag.getAttribute("event");
+            if(event == null) {
+                return null;
+            }
+
+            String value = event.getValue();
+            if(StringUtils.isBlank(value)) {
+                return null;
+            }
+
+            return value;
+        } else if(psiElement.getContainingFile() instanceof YAMLFile) {
+            // yaml services
+            YAMLMapping yamlHash = PsiTreeUtil.getParentOfType(psiElement, YAMLMapping.class);
+            if(yamlHash != null) {
+                YAMLKeyValue event = YamlHelper.getYamlKeyValue(yamlHash, "event");
+                if(event != null) {
+                    PsiElement value = event.getValue();
+                    if(value != null ) {
+                        String text = value.getText();
+                        if(StringUtils.isNotBlank(text)) {
+                            return text;
+                        }
+                    }
+                }
+            }
+        } else if(psiElement.getContainingFile() instanceof PhpFile) {
+            ArrayHashElement arrayHashElement = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
+            if(arrayHashElement != null) {
+                PhpPsiElement key = arrayHashElement.getKey();
+                if (key != null) {
+                    String stringValue = PhpElementsUtil.getStringValue(key);
+                    if(StringUtils.isNotBlank(stringValue)) {
+                        return stringValue;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }
 

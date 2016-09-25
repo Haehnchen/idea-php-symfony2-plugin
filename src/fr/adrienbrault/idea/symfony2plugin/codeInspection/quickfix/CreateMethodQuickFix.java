@@ -9,7 +9,7 @@ import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.jetbrains.php.lang.PhpCodeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -18,17 +18,20 @@ import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class CreateMethodQuickFix implements LocalQuickFix {
+    @NotNull
+    private SmartPsiElementPointer<PhpClass> smartPhpClass;
 
-    private final PhpClass phpClass;
+    @NotNull
     private final String functionName;
+
+    @NotNull
     private final InsertStringInterface stringInterface;
 
-    public CreateMethodQuickFix(PhpClass phpClass, String functionName, InsertStringInterface stringInterface) {
-        this.phpClass = phpClass;
+    public CreateMethodQuickFix(@NotNull PhpClass phpClass, @NotNull String functionName, @NotNull InsertStringInterface stringInterface) {
+        this.smartPhpClass = SmartPointerManager.getInstance(phpClass.getProject()).createSmartPsiElementPointer(phpClass);
         this.functionName = functionName;
         this.stringInterface = stringInterface;
     }
-
 
     @NotNull
     @Override
@@ -44,9 +47,15 @@ public class CreateMethodQuickFix implements LocalQuickFix {
 
     @Override
     public void applyFix(final @NotNull Project project, @NotNull ProblemDescriptor problemDescriptor) {
+        PhpClass phpClass = smartPhpClass.getElement();
+        if(phpClass == null) {
+            return;
+        }
 
+        final Method methodCreated = PhpCodeUtil.createMethodFromTemplate(
+            phpClass, project, this.stringInterface.getStringBuilder(problemDescriptor, phpClass, functionName).toString()
+        );
 
-        final Method methodCreated = PhpCodeUtil.createMethodFromTemplate(phpClass, project, this.stringInterface.getStringBuilder().toString());
         if(methodCreated == null) {
             return;
         }
@@ -67,14 +76,12 @@ public class CreateMethodQuickFix implements LocalQuickFix {
         new WriteCommandAction(project) {
             @Override
             protected void run(@NotNull Result result) throws Throwable {
-
                 StringBuffer textBuf = new StringBuffer();
                 textBuf.append("\n");
                 textBuf.append(methodCreated.getText());
 
                 editor.getDocument().insertString(insertPos, textBuf);
                 final int endPos = insertPos + textBuf.length();
-
 
                 CodeStyleManager.getInstance(project).reformatText(phpClass.getContainingFile(), insertPos, endPos);
                 PsiDocumentManager.getInstance(project).commitDocument(editor.getDocument());
@@ -84,21 +91,17 @@ public class CreateMethodQuickFix implements LocalQuickFix {
                     editor.getCaretModel().moveToOffset(insertedMethod.getTextRange().getStartOffset());
                     editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
                 }
-
             }
 
             @Override
             public String getGroupID() {
                 return "Create Method";
             }
-
         }.execute();
-
     }
 
-    public static interface InsertStringInterface {
+    public interface InsertStringInterface {
         @NotNull
-        public StringBuilder getStringBuilder();
+        StringBuilder getStringBuilder(@NotNull ProblemDescriptor problemDescriptor, @NotNull PhpClass phpClass, @NotNull String functionName);
     }
-
 }

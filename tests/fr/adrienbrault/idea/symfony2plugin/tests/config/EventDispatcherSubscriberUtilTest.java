@@ -3,11 +3,15 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.io.File;
 import java.util.Collection;
@@ -124,5 +128,15 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
         ContainerUtil.find(eventNameLookupElements, lookupElement ->
             lookupElement.getLookupString().equals("kernel.exception.yml")
         );
+    }
+
+    /**
+     * @see EventDispatcherSubscriberUtil#getEventNameFromScope
+     */
+    public void testGetEventNameFromScope() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php ['foo' => 'foo<caret>bar']");
+        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
+
+        assertEquals("foo", EventDispatcherSubscriberUtil.getEventNameFromScope(psiElement));
     }
 }

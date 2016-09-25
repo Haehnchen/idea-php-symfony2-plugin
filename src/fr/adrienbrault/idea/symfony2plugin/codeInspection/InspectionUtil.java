@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.codeInspection;
 
+import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -39,7 +41,7 @@ public class InspectionUtil {
 
         final Project project = shortcutReturn.getPhpClass().getProject();
         final String finalActionName = actionName;
-        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(shortcutReturn.getPhpClass(), actionName, () -> {
+        holder.registerProblem(psiElement, "Create Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(shortcutReturn.getPhpClass(), actionName, (@NotNull ProblemDescriptor problemDescriptor, @NotNull PhpClass phpClass, @NotNull String functionName) -> {
 
             // attach route parameter inside method
             String parameters = "";

@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.patterns.PlatformPatterns;
@@ -10,14 +11,16 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpReturn;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
+import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -102,64 +105,6 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
     }
 
-    @Nullable
-    private String getEventName(PsiElement psiElement) {
-
-        // xml service
-        if(psiElement.getContainingFile() instanceof XmlFile) {
-
-            XmlTag xmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
-            if(xmlTag == null) {
-                return null;
-            }
-
-            XmlAttribute event = xmlTag.getAttribute("event");
-            if(event == null) {
-                return null;
-            }
-
-            String value = event.getValue();
-            if(StringUtils.isBlank(value)) {
-                return null;
-            }
-
-            return value;
-
-        } else if(psiElement.getContainingFile() instanceof YAMLFile) {
-
-            // yaml services
-            YAMLMapping yamlHash = PsiTreeUtil.getParentOfType(psiElement, YAMLMapping.class);
-            if(yamlHash != null) {
-                YAMLKeyValue event = YamlHelper.getYamlKeyValue(yamlHash, "event");
-                if(event != null) {
-                    PsiElement value = event.getValue();
-                    if(value != null ) {
-                        String text = value.getText();
-                        if(StringUtils.isNotBlank(text)) {
-                            return text;
-                        }
-                    }
-                }
-            }
-
-        } else if(psiElement.getContainingFile() instanceof PhpFile) {
-
-            ArrayHashElement arrayHashElement = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
-            if(arrayHashElement != null) {
-                PhpPsiElement key = arrayHashElement.getKey();
-                if (key != null) {
-                    String stringValue = PhpElementsUtil.getStringValue(key);
-                    if(StringUtils.isNotBlank(stringValue)) {
-                        return stringValue;
-                    }
-                }
-            }
-
-        }
-
-        return null;
-    }
-
     private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector collector) {
 
         String methodName = PsiElementUtils.trimQuote(psiElement.getText());
@@ -230,8 +175,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, collector));
     }
 
-    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable final PhpClass phpClass) {
-
+    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable PhpClass phpClass) {
         if(phpClass == null) {
             return;
         }
@@ -241,27 +185,19 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        holder.registerProblem(psiElement, "Missing Method", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CreateMethodQuickFix(phpClass, methodName, () -> {
+        holder.registerProblem(
+            psiElement,
+            "Missing Method",
+            ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+            new CreateMethodQuickFix(phpClass, methodName, new MyCreateMethodQuickFix())
+        );
+    }
 
-            String taggedEventMethodParameter = null;
-            String eventName = getEventName(psiElement);
-            if(eventName != null) {
-                taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(psiElement.getProject(), eventName);
-                if(taggedEventMethodParameter != null) {
-                    String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
-                    if(qualifiedName != null && !qualifiedName.equals(taggedEventMethodParameter.substring(1))) {
-                        // class already imported
-                        taggedEventMethodParameter = qualifiedName;
-                    } else {
-                        // force insert of class import
-                        String s = PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
-                        if(s != null) {
-                            taggedEventMethodParameter = s;
-                        }
-                    }
-                }
-
-            }
+    private static class MyCreateMethodQuickFix implements CreateMethodQuickFix.InsertStringInterface {
+        @NotNull
+        @Override
+        public StringBuilder getStringBuilder(@NotNull ProblemDescriptor problemDescriptor, @NotNull PhpClass phpClass, @NotNull String functionName) {
+            String taggedEventMethodParameter = getEventTypeHint(problemDescriptor, phpClass);
 
             String parameter = "";
             if(taggedEventMethodParameter != null) {
@@ -270,11 +206,32 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
             return new StringBuilder()
                 .append("public function ")
-                .append(methodName)
+                .append(functionName)
                 .append("(")
                 .append(parameter)
                 .append(")\n {\n}\n\n");
-        }));
+        }
+
+        @Nullable
+        private String getEventTypeHint(@NotNull ProblemDescriptor problemDescriptor, @NotNull PhpClass phpClass) {
+            String eventName = EventDispatcherSubscriberUtil.getEventNameFromScope(problemDescriptor.getPsiElement());
+            if (eventName == null) {
+                return null;
+            }
+
+            String taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(problemDescriptor.getPsiElement().getProject(), eventName);
+            if (taggedEventMethodParameter == null) {
+                return null;
+            }
+
+            String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
+            if (qualifiedName != null && !qualifiedName.equals(StringUtils.stripStart(taggedEventMethodParameter, "\\"))) {
+                // class already imported
+                return qualifiedName;
+            }
+
+            return PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
+        }
     }
 
     private String getServiceName(PsiElement psiElement) {
