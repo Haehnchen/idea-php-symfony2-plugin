@@ -7,6 +7,15 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+## 0.12.126
+* Fix empty PSI elements should not be passed to createDescriptor in container case sensitivity inspection #788
+* Support public property for form field mapping and dropping custom Doctrine field mapping its part of PropertyAccess component #786
+* Fix "Cannot resolve symbol" for factory service regression and drop deprecated getVariant references for factory method completion #791
+* Add linemarker provider for decorated services with lazy definition navigation
+* Replace timer for caret listener with executor and future pattern #785
+* Add linemarker for config tree builder root definition in [security,config]*.yml files and provide navigation for key itself #793
+* Fix subscriber method creation type hint class was not imported and fix possible memory leak because of PsiElement references
+
 ### 0.12.125
 * Dont index translations files without domain prefix
 * Add twig path configuration parser of yaml files #654

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.125</version>
+    <version>0.12.126</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,14 +109,25 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.126</h2>
+<ul>
+    <li>Fix empty PSI elements should not be passed to createDescriptor in container case sensitivity inspection <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/788">#788</a></li>
+    <li>Support public property for form field mapping and dropping custom Doctrine field mapping its part of PropertyAccess component <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/786">#786</a></li>
+    <li>Fix "Cannot resolve symbol" for factory service regression and drop deprecated getVariant references for factory method completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/791">#791</a></li>
+    <li>Add linemarker provider for decorated services with lazy definition navigation</li>
+    <li>Replace timer for caret listener with executor and future pattern <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/785">#785</a></li>
+    <li>Add linemarker for config tree builder root definition in [security,config]*.yml files and provide navigation for key itself <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/793">#793</a></li>
+    <li>Fix subscriber method creation type hint class was not imported and fix possible memory leak because of PsiElement references</li>
+</ul>
+
 <h2>0.12.125</h2>
 <ul>
     <li>Dont index translations files without domain prefix</li>
-    <li>Add twig path configuration parser of yaml files #654</li>
-    <li>Support xml factory method and class tag #778</li>
-    <li>Api migration for upcoming PhpStorm 2016.3 eap #782</li>
-    <li>Smarter default namespace detection for default Domain of translations extraction dialog for injected html #776</li>
-    <li>Add support for "twig.paths" as "add path" Twig namespaces #654</li>
+    <li>Add twig path configuration parser of yaml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/654">#654</a></li>
+    <li>Support xml factory method and class tag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/778">#778</a></li>
+    <li>Api migration for upcoming PhpStorm 2016.3 eap <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/782">#782</a></li>
+    <li>Smarter default namespace detection for default Domain of translations extraction dialog for injected html <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/776">#776</a></li>
+    <li>Add support for "twig.paths" as "add path" Twig namespaces <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/654">#654</a></li>
 </ul>
 
 <h2>0.12.124</h2>
