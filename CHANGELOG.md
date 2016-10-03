@@ -7,6 +7,12 @@ Changelog
 0.10.x: PhpStorm 7 (no support)
 0.9.x: PhpStorm 6 (no support)
 
+## 0.12.127
+* Profiler should support http urls as data source #798
+* Profiler in now configurable in plugins settings #798
+* Fix app_dev.php urls in profiler #540, #522
+* Add xml completion, navigation and linemarker for Doctrine 2.5 "Embeddables" #471
+
 ## 0.12.126
 * Fix empty PSI elements should not be passed to createDescriptor in container case sensitivity inspection #788
 * Support public property for form field mapping and dropping custom Doctrine field mapping its part of PropertyAccess component #786
