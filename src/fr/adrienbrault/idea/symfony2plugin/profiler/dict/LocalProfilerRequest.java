@@ -50,6 +50,10 @@ public class LocalProfilerRequest implements ProfilerRequestInterface {
 
     @Override
     public int getStatusCode() {
+        if(this.separatedLine.size() <= 6) {
+            return 0;
+        }
+
         try {
             return Integer.valueOf(this.separatedLine.get(6));
         } catch (NumberFormatException e) {

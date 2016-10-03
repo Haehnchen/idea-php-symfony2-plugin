@@ -53,8 +53,11 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
 
         // build thread callable collection
         lines.stream().filter(StringUtils::isNotBlank).forEachOrdered(line -> {
+
+            // we need at least this information for a valid line:
+            // "18e6b8,127.0.0.1,GET,http://127.0.0.1:8000/foobar"
             String[] split = line.split(",");
-            if (split.length < 6) {
+            if (split.length <= 4) {
                 return;
             }
 
