@@ -121,4 +121,12 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
             "DateTime"
         );
     }
+
+    public void testEmbeddableNameShouldCompleteClass() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><embeddable name=\"<caret>\"/></doctrine-mapping>",
+            "DateTime"
+        );
+    }
 }

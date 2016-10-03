@@ -47,6 +47,13 @@ public class DoctrineMetadataLineMarkerProviderTest extends SymfonyLightCodeInsi
         );
     }
 
+    public void testEmbeddableClassLineMarker() {
+        assertLineMarker(
+            createXmlFile("<doctrine-mapping><embeddable name=\"Datetime\"/></doctrine-mapping>"),
+            new LineMarker.ToolTipEqualsAssert("Navigate to class")
+        );
+    }
+
     public void testTargetDocumentLineMarkerInSameNamespace() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace Entity{\n" +

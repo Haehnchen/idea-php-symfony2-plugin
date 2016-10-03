@@ -18,8 +18,14 @@ public class DoctrineXmlCompletionContributor extends CompletionContributor {
     public DoctrineXmlCompletionContributor() {
 
         // <entity name="Class\Name"/>
-        // <document name="Class\Name"/>,
-        extend(CompletionType.BASIC, XmlPatterns.psiElement().withParent(PlatformPatterns.or(DoctrineMetadataPattern.getXmlModelClass(), DoctrineMetadataPattern.getXmlTargetEntityClass(), DoctrineMetadataPattern.getXmlTargetDocumentClass())), new CompletionProvider<CompletionParameters>() {
+        // <document name="Class\Name"/>
+        // <embeddable name="Class\Name"/>
+        extend(CompletionType.BASIC, XmlPatterns.psiElement().withParent(PlatformPatterns.or(
+            DoctrineMetadataPattern.getXmlModelClass(),
+            DoctrineMetadataPattern.getXmlTargetEntityClass(),
+            DoctrineMetadataPattern.getXmlTargetDocumentClass(),
+            DoctrineMetadataPattern.getEmbeddableNameClassPattern()
+        )), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
 

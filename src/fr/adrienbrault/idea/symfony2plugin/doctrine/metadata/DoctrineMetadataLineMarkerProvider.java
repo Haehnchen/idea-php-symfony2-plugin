@@ -45,7 +45,7 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
         }
 
         for(PsiElement psiElement: psiElements) {
-            if(psiElement instanceof XmlAttributeValue && (DoctrineMetadataPattern.getXmlTargetDocumentClass().accepts(psiElement) || DoctrineMetadataPattern.getXmlTargetEntityClass().accepts(psiElement))) {
+            if(psiElement instanceof XmlAttributeValue && (DoctrineMetadataPattern.getXmlTargetDocumentClass().accepts(psiElement) || DoctrineMetadataPattern.getXmlTargetEntityClass().accepts(psiElement) || DoctrineMetadataPattern.getEmbeddableNameClassPattern().accepts(psiElement))) {
                 attachXmlRelationMarker((XmlAttributeValue) psiElement, results);
             }
         }

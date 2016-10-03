@@ -116,4 +116,12 @@ public class DoctrineXmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsi
             );
         }
     }
+
+    public void testEmbeddedNameNavigation() {
+        assertNavigationMatch(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><embedded name=\"Foo\\Bar\\Ns<caret>\\Bar\"/></doctrine-mapping>",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
 }

@@ -41,6 +41,20 @@ public class DoctrineMetadataPattern {
             );
     }
 
+    public static XmlAttributeValuePattern getEmbeddableNameClassPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("name")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("embeddable")
+                    .withParent(XmlPatterns
+                        .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                    )
+                )
+            );
+    }
+
     /**
      * <doctrine-mapping|doctrine-*-mapping>
      *   <document repository-class="Class\Name"/>

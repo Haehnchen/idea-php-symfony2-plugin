@@ -29,7 +29,8 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
             DoctrineMetadataPattern.getXmlModelClass(),
             DoctrineMetadataPattern.getXmlRepositoryClass(),
             DoctrineMetadataPattern.getXmlTargetDocumentClass(),
-            DoctrineMetadataPattern.getXmlTargetEntityClass()
+            DoctrineMetadataPattern.getXmlTargetEntityClass(),
+            DoctrineMetadataPattern.getEmbeddableNameClassPattern()
         )), ClassGotoCompletionProvider::new);
     }
 
