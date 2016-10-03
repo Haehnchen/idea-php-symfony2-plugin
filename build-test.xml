@@ -110,6 +110,7 @@
                 <include name="**/*.json"/>
                 <include name="**/*.xlf"/>
                 <include name="**/*.xliff"/>
+                <include name="**/*.html"/>
             </patternset>            
 
             <copy toDir="@{dest}">

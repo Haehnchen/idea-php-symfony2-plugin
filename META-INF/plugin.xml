@@ -285,6 +285,13 @@
                              nonDefaultProject="true"
         />
 
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.profiler.ui.ProfilerSettingsDialog"
+                             displayName="Profiler"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony.ProfilerSettingsForm"
+                             nonDefaultProject="true"
+        />
+
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>

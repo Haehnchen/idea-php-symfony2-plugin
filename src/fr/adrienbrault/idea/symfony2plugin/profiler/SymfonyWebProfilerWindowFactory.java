@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
@@ -16,7 +17,7 @@ public class SymfonyWebProfilerWindowFactory implements ToolWindowFactory, Condi
     private static final Icon TOOLWINDOW_ICON = Symfony2Icons.SYMFONY_TOOL_WINDOW;
 
     @Override
-    public void createToolWindowContent(Project project, ToolWindow toolWindow) {
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         SymfonyWebProfilerPane symfony2SearchPane = new SymfonyWebProfilerPane(project);
         setUpContent((ToolWindowEx)toolWindow, symfony2SearchPane);
         toolWindow.setIcon(TOOLWINDOW_ICON);
@@ -30,5 +31,4 @@ public class SymfonyWebProfilerWindowFactory implements ToolWindowFactory, Condi
     public boolean value(Project project) {
         return Symfony2ProjectComponent.isEnabled(project);
     }
-
 }

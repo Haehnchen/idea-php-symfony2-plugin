@@ -1,28 +1,38 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.dict;
+package fr.adrienbrault.idea.symfony2plugin.profiler.collector;
 
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
+import org.intellij.lang.annotations.RegExp;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MailCollector implements CollectorInterface {
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
+public class LocalMailCollector implements MailCollectorInterface {
 
-    private ProfilerRequest profilerRequest;
+    @NotNull
+    private final String contents;
 
-    private ArrayList<MailMessage> messages = new ArrayList<>();
+    public LocalMailCollector(@NotNull String contents) {
+        this.contents = contents;
+    }
 
-    synchronized public ArrayList<MailMessage> getMessages() {
-
-        String content = this.profilerRequest.getContent();
-        if(content == null) {
-            return this.messages;
+    @NotNull
+    public Collection<MailMessage> getMessages() {
+        String messages = this.findTwice(this.contents, "MessageDataCollector\":(\\d+):");
+        if(messages == null) {
+            return Collections.emptyList();
         }
-
-        String messages = this.findTwice(content, "MessageDataCollector\":(\\d+):");
 
         Matcher matcher = Pattern.compile("\"\\x00Swift_Mime_SimpleMimeEntity\\x00_body\";s:(\\d+):\"", Pattern.MULTILINE).matcher(messages);
 
+        Collection<MailMessage> mails = new ArrayList<>();
         while(matcher.find()){
             String domain = matcher.group(1);
             //String array_strings = matcher.group(2);
@@ -31,7 +41,7 @@ public class MailCollector implements CollectorInterface {
             int end = start + Integer.parseInt(domain);
 
             //System.out.println(content.substring(start, end));
-            this.messages.add(new MailMessage(messages.substring(start, end), "aa", "aa"));
+            mails.add(new MailMessage(messages.substring(start, end), "aa", "aa"));
 
             //Matcher match_strings = Pattern.compile("'(.*?)'\\s=>\\s'.*?'", Pattern.MULTILINE).matcher(array_strings);
             //while(match_strings.find()){
@@ -40,29 +50,21 @@ public class MailCollector implements CollectorInterface {
 
         }
 
-        return this.messages;
+        return mails;
     }
 
     @Nullable
-    protected String findTwice(String content, String regular) {
+    private String findTwice(@NotNull String content, @RegExp String regular) {
         Matcher matcher = Pattern.compile(regular, Pattern.MULTILINE).matcher(content);
-        while(matcher.find()){
+        if(matcher.find()){
             String domain = matcher.group(1);
-            //String array_strings = matcher.group(2);
 
             int start = matcher.end();
             int end = start + Integer.parseInt(domain);
 
             return content.substring(start, end);
-
         }
 
         return null;
-
-    }
-
-    @Override
-    public void setProfilerRequest(ProfilerRequest profilerRequest) {
-        this.profilerRequest = profilerRequest;
     }
 }

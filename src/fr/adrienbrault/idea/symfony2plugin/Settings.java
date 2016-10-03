@@ -88,6 +88,13 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public boolean dismissEnableNotification = false;
 
+    public boolean profilerLocalEnabled = false;
+    public String profilerLocalUrl = "http://127.0.0.1:8000";
+    public String profilerCsvPath;
+
+    public boolean profilerHttpEnabled = false;
+    public String profilerHttpUrl = "http://127.0.0.1:8000";
+
     @Nullable
     public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<>();
 
@@ -102,6 +109,7 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     @Nullable
     public List<MethodSignatureSetting> methodSignatureSettings = new ArrayList<>();
+    ;
 
     public static Settings getInstance(Project project) {
         return ServiceManager.getService(project, Settings.class);

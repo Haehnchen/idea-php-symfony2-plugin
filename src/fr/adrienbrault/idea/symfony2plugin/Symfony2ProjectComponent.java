@@ -18,7 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import fr.adrienbrault.idea.symfony2plugin.widget.SymfonyProfilerWidget;
+import fr.adrienbrault.idea.symfony2plugin.profiler.widget.SymfonyProfilerWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.widget.action;
+package fr.adrienbrault.idea.symfony2plugin.profiler.widget.action;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -8,17 +8,18 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
+import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import icons.TwigIcons;
-import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -38,14 +39,12 @@ public class SymfonyProfilerWidgetActions {
 
         @Override
         public void actionPerformed(AnActionEvent e) {
-
             List<PsiFile> psiFiles = Arrays.asList(TwigHelper.getTemplatePsiElements(project, templateName));
 
             // @TODO: multiple targets?
             if(psiFiles.size() > 0) {
                 IdeHelper.navigateToPsiElement(psiFiles.get(0));
             }
-
         }
     }
 
@@ -92,32 +91,26 @@ public class SymfonyProfilerWidgetActions {
 
     public static class UrlAction extends AnAction {
 
-        private ProfilerRequest profilerRequest;
-        private Project project;
-        private URL url;
+        @NotNull
+        private final ProfilerIndexInterface profilerIndex;
+
+        @NotNull
+        private final ProfilerRequestInterface profilerRequest;
+
         private String panel;
 
-        public UrlAction(Project project, ProfilerRequest profilerRequest, String statusCode) {
+        public UrlAction(@NotNull ProfilerIndexInterface profilerIndex, @NotNull ProfilerRequestInterface profilerRequest) {
             super(String.format("(%s) %s", profilerRequest.getHash(), profilerRequest.getUrl()), "Open Url", Symfony2Icons.PROFILER_LINK);
+            this.profilerIndex = profilerIndex;
             this.profilerRequest = profilerRequest;
-            this.project = project;
-
-
-            try {
-                this.url = new URL(profilerRequest.getUrl());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                return;
-            }
 
             Presentation presentation = getTemplatePresentation();
-            presentation.setText(String.format("(%s) %s", statusCode == null ? "n/a" : statusCode, StringUtils.abbreviate(this.url.getPath(), 35)));
-
+            presentation.setText(ProfilerUtil.formatProfilerRow(profilerRequest));
         }
 
-        public UrlAction withPanel(String panel) {
+        public UrlAction(@NotNull ProfilerIndexInterface profilerIndex, @NotNull ProfilerRequestInterface profilerRequest, @NotNull String panel) {
+            this(profilerIndex, profilerRequest);
             this.panel = panel;
-            return this;
         }
 
         public UrlAction withIcon(Icon icon) {
@@ -128,34 +121,21 @@ public class SymfonyProfilerWidgetActions {
 
         @Override
         public void actionPerformed(AnActionEvent event) {
-
-            if(this.url == null) {
+            String urlForRequest = profilerIndex.getUrlForRequest(profilerRequest);
+            if(urlForRequest == null) {
                 return;
             }
 
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-
-                String portValue = "";
-                int port = url.getPort();
-                if(port != -1 && port != 80) {
-                    portValue = ":" + port;
-                }
-
-                String urlProfiler = url.getProtocol() + "://" + url.getHost() + portValue + "/_profiler/" + profilerRequest.getHash();
-                if(panel != null) {
-                    urlProfiler = urlProfiler + "?panel=" + panel;
-                }
-
-                try {
-                    desktop.browse(new URL(urlProfiler).toURI());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            if (desktop == null || !desktop.isSupported(Desktop.Action.BROWSE)) {
+                return;
             }
 
+            try {
+                desktop.browse(new URL(urlForRequest).toURI());
+            } catch (Exception ignored) {
+            }
         }
     }
-
 }
 

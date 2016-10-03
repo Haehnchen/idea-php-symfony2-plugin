@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.widget;
+package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
 
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -14,33 +14,27 @@ import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
 import com.intellij.util.Consumer;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndex;
-import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerUtil;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.DefaultDataCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequest;
-import fr.adrienbrault.idea.symfony2plugin.widget.action.SymfonyProfilerWidgetActions;
+import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
+import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfilerWidgetActions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.*;
 
 public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBarWidget.MultipleTextValuesPresentation,  StatusBarWidget.Multiframe {
-
-    private Project project;
-
     public static String ID = "symfony2.profiler";
 
     public SymfonyProfilerWidget(@NotNull Project project) {
         super(project);
-        this.project = project;
     }
 
     @Override
     public StatusBarWidget copy() {
-        return new SymfonyProfilerWidget(this.project);
+        return new SymfonyProfilerWidget(getProject());
     }
 
     private enum ProfilerTarget {
@@ -48,22 +42,15 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     }
 
     //constructs the actions for the widget popup
-    public ActionGroup getActions(){
-
+    public DefaultActionGroup getActions(){
         DefaultActionGroup actionGroup = new DefaultActionGroup(null, false);
-        File profilerCsv = ProfilerUtil.findProfilerCsv(project);
-        if(profilerCsv == null) {
+
+        ProfilerIndexInterface index = ProfilerFactoryUtil.createIndex(getProject());
+        if(index == null) {
             return actionGroup;
         }
 
-        ProfilerIndex profilerIndex = new ProfilerIndex(profilerCsv);
-
-        List<ProfilerRequest> requests = profilerIndex.getRequests();
-        Collections.reverse(requests);
-
-        if(requests.size() > 10) {
-            requests = requests.subList(0, 10);
-        }
+        List<ProfilerRequestInterface> requests = index.getRequests();
 
         Collection<AnAction> templateActions = new ArrayList<>();
         Map<String, Integer> templateActionsMap = new HashMap<>();
@@ -75,29 +62,23 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         Map<String, Integer> controllerActionsMap = new HashMap<>();
 
         Collection<AnAction> urlActions = new ArrayList<>();
-
         Collection<AnAction> mailActions = new ArrayList<>();
 
-        for(ProfilerRequest profilerRequest : requests) {
-            DefaultDataCollector collector = profilerRequest.getCollector(DefaultDataCollector.class);
+        for(ProfilerRequestInterface profilerRequest : requests) {
+            urlActions.add(new SymfonyProfilerWidgetActions.UrlAction(index, profilerRequest));
 
-            String statusCode = collector.getStatusCode();
-            urlActions.add(new SymfonyProfilerWidgetActions.UrlAction(this.project, profilerRequest, statusCode));
-
-            // regular expression fails on current version (because of multiple mailer)
-            // ArrayList<MailMessage> messages = profilerRequest.getCollector(MailCollector.class).getMessages();
-
-            // @TODO: use collector
-            String content = profilerRequest.getContent();
-            if(content != null && content.contains("Swift_Mime_Headers_MailboxHeader")) {
-                mailActions.add(new SymfonyProfilerWidgetActions.UrlAction(this.project, profilerRequest, statusCode).withPanel("swiftmailer").withIcon(Symfony2Icons.MAIL));
+            DefaultDataCollectorInterface collector = profilerRequest.getCollector(DefaultDataCollectorInterface.class);
+            if(collector != null) {
+                attachProfileItem(templateActions, templateActionsMap, collector.getTemplate(), ProfilerTarget.TEMPLATE);
+                attachProfileItem(routeActions, routeActionsMap, collector.getRoute(), ProfilerTarget.ROUTE);
+                attachProfileItem(controllerActions, controllerActionsMap, collector.getController(), ProfilerTarget.CONTROLLER);
             }
 
-            attachProfileItem(templateActions, templateActionsMap, collector.getTemplate(), ProfilerTarget.TEMPLATE);
-            attachProfileItem(routeActions, routeActionsMap, collector.getRoute(), ProfilerTarget.ROUTE);
-            attachProfileItem(controllerActions, controllerActionsMap, collector.getController(), ProfilerTarget.CONTROLLER);
-
-
+            // @TODO: use collector
+            //String content = profilerRequest.getContent();
+            //if(content != null && content.contains("Swift_Mime_Headers_MailboxHeader")) {
+            //    mailActions.add(new SymfonyProfilerWidgetActions.UrlAction(getProject(), profilerRequest, statusCode).withPanel("swiftmailer").withIcon(Symfony2Icons.MAIL));
+            //}
         }
 
         // routes
@@ -134,7 +115,6 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     }
 
     private void attachProfileItem(Collection<AnAction> controllerActions, Map<String, Integer> controllerActionsMap, @Nullable String collectString, ProfilerTarget profilerTarget) {
-
         if(collectString == null) {
             return;
         }
@@ -145,30 +125,24 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
             controllerActionsMap.put(collectString, 0);
 
             if(profilerTarget == ProfilerTarget.CONTROLLER) {
-                controllerActions.add(new SymfonyProfilerWidgetActions.MethodAction(project, collectString));
+                controllerActions.add(new SymfonyProfilerWidgetActions.MethodAction(getProject(), collectString));
             }
 
             if(profilerTarget == ProfilerTarget.ROUTE) {
-                controllerActions.add(new SymfonyProfilerWidgetActions.RouteAction(project, collectString));
+                controllerActions.add(new SymfonyProfilerWidgetActions.RouteAction(getProject(), collectString));
             }
 
             if(profilerTarget == ProfilerTarget.TEMPLATE) {
-                controllerActions.add(new SymfonyProfilerWidgetActions.TemplateAction(project, collectString));
+                controllerActions.add(new SymfonyProfilerWidgetActions.TemplateAction(getProject(), collectString));
             }
-
         }
     }
 
     @Nullable
     @Override
     public ListPopup getPopupStep() {
-
         ActionGroup popupGroup = getActions();
-        ListPopup listPopup = new PopupFactoryImpl.ActionGroupPopup("Symfony Profiler", popupGroup, SimpleDataContext.getProjectContext(project), false, false, false, true, null, -1, null, null);
-
-        return listPopup;
-
-
+        return new PopupFactoryImpl.ActionGroupPopup("Symfony Profiler", popupGroup, SimpleDataContext.getProjectContext(getProject()), false, false, false, true, null, -1, null, null);
     }
 
     @Nullable
@@ -180,7 +154,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     @NotNull
     @Override
     public String getMaxValue() {
-        return null;
+        return "";
     }
 
     @NotNull
@@ -207,7 +181,6 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         return null;
     }
 
-
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
         update(event.getManager().getProject());
@@ -224,18 +197,14 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     }
 
     public void update(final Project project) {
-        this.project = project;
         ApplicationManager.getApplication().invokeLater(() -> {
-            if ((project == null) || project.isDisposed()) {
+            if ((getProject() == null) || getProject().isDisposed()) {
                 return;
             }
 
             if (!isDisposed() && myStatusBar != null) {
                 myStatusBar.updateWidget(ID());
             }
-
         });
     }
-
-
 }
