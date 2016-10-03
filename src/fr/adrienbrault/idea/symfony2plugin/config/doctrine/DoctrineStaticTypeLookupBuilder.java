@@ -38,7 +38,7 @@ public class DoctrineStaticTypeLookupBuilder {
     }
 
     public ArrayList<LookupElement> getRootItems() {
-        return ListToElements(Arrays.asList("type", "table", "fields", "manyToOne", "manyToMany", "oneToOne", "oneToMany", "indexes", "id", "lifecycleCallbacks", "repositoryClass", "inheritanceType", "discriminatorColumn", "uniqueConstraints"));
+        return ListToElements(Arrays.asList("type", "table", "fields", "embedded", "manyToOne", "manyToMany", "oneToOne", "oneToMany", "indexes", "id", "lifecycleCallbacks", "repositoryClass", "inheritanceType", "discriminatorColumn", "uniqueConstraints"));
     }
 
     public static enum InsertHandler {
