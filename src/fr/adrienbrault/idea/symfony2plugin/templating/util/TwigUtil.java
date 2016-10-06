@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -27,6 +26,8 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFromStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
@@ -768,5 +769,74 @@ public class TwigUtil {
         }
 
         return paths;
+    }
+
+    /**
+     * Find files which implements then given file
+     */
+    @NotNull
+    public static Collection<PsiFile> getImplementationsForExtendsTag(@NotNull TwigFile twigFile, @NotNull TemplateFileMap files) {
+        final Collection<PsiFile> targets = new ArrayList<>();
+        for(String templateName: files.getNames(twigFile.getVirtualFile())) {
+
+            final Project project = twigFile.getProject();
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+
+                if(psiFile != null) {
+                    targets.add(psiFile);
+                }
+
+                return true;
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
+
+        }
+
+        return targets;
+    }
+
+    /**
+     * Collects all files that include, extends, ... a given files
+     */
+    @NotNull
+    public static Collection<PsiFile> getTemplateFileReferences(@NotNull final PsiFile psiFile, @NotNull TemplateFileMap files) {
+        List<PsiFile> twigChild = new ArrayList<>();
+        getTemplateFileReferences(files.getTemplates(), psiFile, twigChild, 8);
+        return twigChild;
+    }
+
+    private static void getTemplateFileReferences(@NotNull Map<String, VirtualFile> files, @NotNull final PsiFile psiFile, @NotNull final List<PsiFile> twigChild, int depth) {
+        if(depth <= 0) {
+            return;
+        }
+
+        // use set here, we have multiple shortcut on one file, but only one is required
+        final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<>();
+
+        for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
+
+            // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
+            if(entry.getValue().equals(psiFile.getVirtualFile())) {
+                String key = entry.getKey();
+                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
+                    virtualFiles.add(virtualFile);
+                    return true;
+                }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
+
+            }
+
+        }
+
+        // finally resolve virtual file to twig files
+        for(VirtualFile virtualFile: virtualFiles) {
+
+            PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
+            if(resolvedPsiFile != null) {
+                twigChild.add(resolvedPsiFile);
+                getTemplateFileReferences(files, resolvedPsiFile, twigChild, --depth);
+            }
+
+        }
+
     }
 }

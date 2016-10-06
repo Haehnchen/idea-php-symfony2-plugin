@@ -6,15 +6,12 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
-import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -24,9 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFromStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateFileMap;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
@@ -35,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
@@ -186,33 +182,19 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo attachFromIncludes(TwigFile twigFile) {
-
         TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
 
-        final Collection<PsiFile> targets = new ArrayList<>();
-        for(String templateName: files.getNames(twigFile.getVirtualFile())) {
-
-            final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), virtualFile -> {
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-
-                if(psiFile != null) {
-                    targets.add(psiFile);
-                }
-
-                return true;
-            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
-
-        }
-
+        final Collection<PsiFile> targets = TwigUtil.getImplementationsForExtendsTag(twigFile, files);
         if(targets.size() == 0) {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
-        for(PsiElement blockTag: targets) {
-            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
-        }
+        List<GotoRelatedItem> gotoRelatedItems = targets.stream().map(blockTag ->
+            new RelatedPopupGotoLineMarker
+                .PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true))
+                .withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER))
+            .collect(Collectors.toList()
+        );
 
         return getRelatedPopover("Implementations", "Impl: ", twigFile, gotoRelatedItems);
     }
@@ -237,7 +219,6 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo attachBlockImplements(final PsiElement psiElement) {
-
         PsiFile psiFile = psiElement.getContainingFile();
         if(psiFile == null) {
             return null;
@@ -245,9 +226,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
         TemplateFileMap files = getTemplateFilesByName(psiElement.getProject());
 
-        List<PsiFile> twigChild = new ArrayList<>();
-        getTwigChildList(files.getTemplates(), psiFile, twigChild, 8);
-
+        Collection<PsiFile> twigChild = TwigUtil.getTemplateFileReferences(psiFile, files);
         if(twigChild.size() == 0) {
             return null;
         }
@@ -306,41 +285,4 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
     }
-
-    private static void getTwigChildList(@NotNull Map<String, VirtualFile> files, @NotNull final PsiFile psiFile, @NotNull final List<PsiFile> twigChild, int depth) {
-
-        if(depth <= 0) {
-            return;
-        }
-
-        // use set here, we have multiple shortcut on one file, but only one is required
-        final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<>();
-
-        for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
-
-            // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
-            if(entry.getValue().equals(psiFile.getVirtualFile())) {
-                String key = entry.getKey();
-                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Arrays.asList(key)), virtualFile -> {
-                    virtualFiles.add(virtualFile);
-                    return true;
-                }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
-
-            }
-
-        }
-
-        // finally resolve virtual file to twig files
-        for(VirtualFile virtualFile: virtualFiles) {
-
-            PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
-            if(resolvedPsiFile != null) {
-                twigChild.add(resolvedPsiFile);
-                getTwigChildList(files, resolvedPsiFile, twigChild, --depth);
-            }
-
-        }
-
-    }
-
 }
