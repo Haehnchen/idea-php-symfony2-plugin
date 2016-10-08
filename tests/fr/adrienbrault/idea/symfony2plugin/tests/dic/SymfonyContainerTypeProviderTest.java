@@ -42,7 +42,7 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
             PlatformPatterns.psiElement(Method.class).withName("format")
         );
 
-        assertPhpReferenceSignatureEquals(PhpFileType.INSTANCE,
+        assertPhpReferenceSignatureContains(PhpFileType.INSTANCE,
             "<?php" +
                 "/** @var $container \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
                 "$container->get('foo')->for<caret>mat()",

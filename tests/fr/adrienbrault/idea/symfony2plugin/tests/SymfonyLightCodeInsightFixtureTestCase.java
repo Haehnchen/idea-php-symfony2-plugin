@@ -344,15 +344,26 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     }
 
     public void assertPhpReferenceSignatureEquals(LanguageFileType languageFileType, String configureByText, String typeSignature) {
+        PsiElement psiElement = assertGetPhpReference(languageFileType, configureByText);
+        assertEquals(typeSignature, ((PhpReference) psiElement).getSignature());
+    }
+
+    public void assertPhpReferenceSignatureContains(LanguageFileType languageFileType, String configureByText, String typeSignature) {
+        PsiElement psiElement = assertGetPhpReference(languageFileType, configureByText);
+        assertTrue(((PhpReference) psiElement).getSignature().contains(typeSignature));
+    }
+
+    @NotNull
+    private PsiElement assertGetPhpReference(LanguageFileType languageFileType, String configureByText) {
         myFixture.configureByText(languageFileType, configureByText);
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
 
         psiElement = PsiTreeUtil.getParentOfType(psiElement, PhpReference.class);
-        if (!(psiElement instanceof PhpReference)) {
+        if (psiElement == null) {
             fail("Element is not PhpReference.");
         }
 
-        assertEquals(typeSignature, ((PhpReference) psiElement).getSignature());
+        return psiElement;
     }
 
     public void assertCompletionResultEquals(String filename, String complete, String result) {

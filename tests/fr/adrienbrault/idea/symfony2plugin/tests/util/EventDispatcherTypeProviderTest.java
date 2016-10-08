@@ -27,7 +27,7 @@ public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixt
      * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
      */
     public void testEventDispatcherTypeSignature() {
-        assertPhpReferenceSignatureEquals(PhpFileType.INSTANCE,
+        assertPhpReferenceSignatureContains(PhpFileType.INSTANCE,
             "<?php" +
                 "/** @var $d \\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface $d */\n" +
                 "$d->dispatch('foo', new \\FooEvent())->on<caret>Foo();",
@@ -71,7 +71,7 @@ public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixt
      * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
      */
     public void testEventDispatcherTypeSignatureNotSupported() {
-        assertPhpReferenceSignatureEquals(PhpFileType.INSTANCE,
+        assertPhpReferenceSignatureContains(PhpFileType.INSTANCE,
             "<?php" +
                 "/** @var $d \\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface $d */\n" +
                 "$d->dispatch('foo', 'foo')->on<caret>Foo();",
