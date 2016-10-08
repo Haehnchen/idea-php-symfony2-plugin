@@ -72,12 +72,6 @@ public class PhpTypeProviderUtil {
             if(parameter.endsWith(".class")) {
                 return parameter.substring(4, parameter.length() - 6);
             }
-
-            // PhpStorm8: #K#C\Class\Foo.
-            // workaround since signature has empty type
-            if(parameter.endsWith(".")) {
-                return parameter.substring(4, parameter.length() - 1);
-            }
         }
 
         // #K#C\Class\Foo.property
