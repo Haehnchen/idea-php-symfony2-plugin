@@ -174,17 +174,9 @@ public class TwigHelper {
             if(twigPath.isEnabled()) {
                 VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
                 if(virtualDirectoryFile != null) {
-
-                    final TwigPathContentIterator twigPathContentIterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
-                    VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new VirtualFileVisitor() {
-                        @Override
-                        public boolean visitFile(@NotNull VirtualFile virtualFile) {
-                            twigPathContentIterator.processFile(virtualFile);
-                            return super.visitFile(virtualFile);
-                        }
-                    });
-
-                    container.putAll(twigPathContentIterator.getResults());
+                    final TwigPathContentIterator iterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
+                    VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new MyLimitedVirtualFileVisitor(iterator, 5, 150));
+                    container.putAll(iterator.getResults());
                 }
             }
 
@@ -851,7 +843,7 @@ public class TwigHelper {
     public static ElementPattern<PsiElement> getTranslationTokenTagFromPattern() {
         //noinspection unchecked
 
-        // we need to use withText check, because twig tags dont have children to search for tag name
+        // we need to use withText check, because twig tags dont have childrenAllowToVisit to search for tag name
         return PlatformPatterns.or(
             PlatformPatterns
                 .psiElement(TwigTokenTypes.IDENTIFIER)
@@ -1898,5 +1890,31 @@ public class TwigHelper {
         }
 
         return paths;
+    }
+
+    private static class MyLimitedVirtualFileVisitor extends VirtualFileVisitor {
+        @NotNull
+        private final TwigPathContentIterator twigPathContentIterator;
+        private int childrenAllowToVisit = 150;
+
+        MyLimitedVirtualFileVisitor(@NotNull TwigPathContentIterator twigPathContentIterator, int maxDepth, int maxDirs) {
+            super(VirtualFileVisitor.limit(maxDepth));
+            this.twigPathContentIterator = twigPathContentIterator;
+            this.childrenAllowToVisit = maxDirs;
+        }
+
+        @Override
+        public boolean visitFile(@NotNull VirtualFile virtualFile) {
+            // per path directory limit
+            if(virtualFile.isDirectory()) {
+                if(childrenAllowToVisit-- <= 0) {
+                    return false;
+                }
+            }
+
+            twigPathContentIterator.processFile(virtualFile);
+
+            return super.visitFile(virtualFile);
+        }
     }
 }

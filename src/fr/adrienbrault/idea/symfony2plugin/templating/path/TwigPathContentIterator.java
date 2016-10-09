@@ -1,35 +1,33 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class TwigPathContentIterator implements ContentIterator {
+public class TwigPathContentIterator {
 
-    private TwigPath twigPath;
-    private Project project;
+    private final TwigPath twigPath;
 
+    @NotNull
+    private final Project project;
+
+    @NotNull
     private Map<String, VirtualFile> results = new HashMap<>();
 
     private boolean withPhp = false;
     private boolean withTwig = true;
 
+    @NotNull
     private Set<String> workedOn = new HashSet<>();
 
-    public TwigPathContentIterator(Project project, TwigPath twigPath) {
+    public TwigPathContentIterator(@NotNull Project project, @NotNull TwigPath twigPath) {
         this.twigPath = twigPath;
         this.project = project;
-    }
-
-    public void processCollection(Collection<VirtualFile> virtualFiles) {
-        for(VirtualFile virtualFile: virtualFiles) {
-            processFile(virtualFile);
-        }
     }
 
     public boolean processFile(VirtualFile virtualFile) {
@@ -57,8 +55,8 @@ public class TwigPathContentIterator implements ContentIterator {
             return true;
         }
 
-        String templateDirectory = null; // xxx:XXX:xxx
-        String templateFile = null; // xxx:xxx:XXX
+        String templateDirectory; // xxx:XXX:xxx
+        String templateFile; // xxx:xxx:XXX
 
         if (templatePath.contains("/")) {
             int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
@@ -118,6 +116,7 @@ public class TwigPathContentIterator implements ContentIterator {
         return this;
     }
 
+    @NotNull
     public Map<String, VirtualFile> getResults() {
         return results;
     }
