@@ -429,28 +429,19 @@ public class TwigUtil {
         return getTemplateName(twigFile.getVirtualFile(), TwigHelper.getTemplateMap(twigFile.getProject(), true, false));
     }
 
-    public static Map<String, PsiVariable> collectControllerTemplateVariables(PsiElement psiElement) {
-
+    public static Map<String, PsiVariable> collectControllerTemplateVariables(@NotNull TwigFile twigFile) {
         Map<String, PsiVariable> vars = new HashMap<>();
 
-        PsiFile psiFile = psiElement.getContainingFile();
-        if(!(psiFile instanceof TwigFile)) {
-            return vars;
-        }
-
-        Method method = findTwigFileController((TwigFile) psiFile);
+        Method method = findTwigFileController(twigFile);
         if(method != null) {
-            return PhpMethodVariableResolveUtil.collectMethodVariables(method);
+            vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method));
         }
 
-        final Set<Method> methods = getTwigFileMethodUsageOnIndex((TwigFile) psiFile);
-
-        Map<String, PsiVariable> stringPsiVariableHashMap = new HashMap<>();
-        for(Method methodIndex : methods) {
-            stringPsiVariableHashMap.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
+        for(Method methodIndex : getTwigFileMethodUsageOnIndex(twigFile)) {
+            vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
         }
 
-        return stringPsiVariableHashMap;
+        return vars;
 
     }
 
@@ -466,7 +457,7 @@ public class TwigUtil {
 
         // find virtual files
         for(String key: keys) {
-            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<>(Arrays.asList(key)), virtualFile -> {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
                 virtualFiles.add(virtualFile);
                 return true;
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), PhpFileType.INSTANCE));

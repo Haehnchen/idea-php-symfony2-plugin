@@ -25,20 +25,17 @@ public class PhpMethodVariableResolveUtil {
         List<PsiElement> psiElements = collectPossibleTemplateArrays(method);
         for(PsiElement templateVariablePsi: psiElements) {
 
-            // "return array(...)" we dont need any parsing
             if(templateVariablePsi instanceof ArrayCreationExpression) {
+                // "return array(...)" we dont need any parsing
                 collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) templateVariablePsi));
-            }
 
-            // we need variable declaration line so resolve it and search for references which attach other values to array
-            if(templateVariablePsi instanceof Variable) {
-
+            } else if(templateVariablePsi instanceof Variable) {
+                // we need variable declaration line so resolve it and search for references which attach other values to array
                 // find definition and search for references on it
                 PsiElement resolvedVariable = ((Variable) templateVariablePsi).resolve();
                 if(resolvedVariable instanceof Variable) {
                     collectedTypes.putAll(collectOnVariableReferences(method.getUseScope(), (Variable) resolvedVariable));
                 }
-
             }
         }
 

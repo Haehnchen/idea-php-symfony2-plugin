@@ -21,7 +21,7 @@ public class FileDocVariableCollector implements TwigFileVariableCollector {
         HashMap<String, Set<String>> globalVars = new HashMap<>();
 
         for(final Map.Entry<String, String> entry: hashMap.entrySet()) {
-            globalVars.put(entry.getKey(), new HashSet<>(Arrays.asList(entry.getValue())));
+            globalVars.put(entry.getKey(), new HashSet<>(Collections.singletonList(entry.getValue())));
         }
 
         return globalVars;

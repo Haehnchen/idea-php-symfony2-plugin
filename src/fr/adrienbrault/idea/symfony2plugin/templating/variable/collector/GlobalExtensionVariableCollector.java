@@ -8,15 +8,12 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableReso
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 public class GlobalExtensionVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
-
-
     @Override
     public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
 
@@ -33,7 +30,6 @@ public class GlobalExtensionVariableCollector implements TwigFileVariableCollect
                         if(returnPsiElement instanceof ArrayCreationExpression) {
                             variables.putAll(PhpMethodVariableResolveUtil.getTypesOnArrayHash((ArrayCreationExpression) returnPsiElement));
                         }
-
                     }
                 }
             }
@@ -42,7 +38,5 @@ public class GlobalExtensionVariableCollector implements TwigFileVariableCollect
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-
     }
-
 }

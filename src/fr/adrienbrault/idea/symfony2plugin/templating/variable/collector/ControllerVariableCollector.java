@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
 
+import com.intellij.psi.PsiFile;
+import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
@@ -12,12 +14,15 @@ public class ControllerVariableCollector implements TwigFileVariableCollector, T
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-        //variables.putAll(TwigUtil.collectControllerTemplateVariables(parameter.getElement()));
     }
 
     @Override
     public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
-        variables.putAll(TwigUtil.collectControllerTemplateVariables(parameter.getElement()));
-    }
+        PsiFile psiFile = parameter.getElement().getContainingFile();
+        if(!(psiFile instanceof TwigFile)) {
+            return;
+        }
 
+        variables.putAll(TwigUtil.collectControllerTemplateVariables((TwigFile) psiFile));
+    }
 }
