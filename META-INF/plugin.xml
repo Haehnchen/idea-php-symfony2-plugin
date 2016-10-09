@@ -604,6 +604,9 @@
 
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.JsonFileIndexTwigNamespaces"/>
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ConfigAddPathTwigNamespaces"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ContainerTwigNamespaceExtension"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.BundleTwigNamespaceExtension"/>
 
         <ServiceCollector implementation="fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector"/>
 

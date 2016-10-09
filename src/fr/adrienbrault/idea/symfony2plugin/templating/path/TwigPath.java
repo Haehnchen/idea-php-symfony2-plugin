@@ -3,34 +3,40 @@ package fr.adrienbrault.idea.symfony2plugin.templating.path;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.text.Collator;
 
 public class TwigPath implements Comparable<TwigPath> {
-
+    @NotNull
     private String path;
+
+    @NotNull
     private String namespace = TwigPathIndex.MAIN;
+
+    @NotNull
+    private TwigPathIndex.NamespaceType namespaceType = TwigPathIndex.NamespaceType.ADD_PATH;
+
     private boolean enabled = true;
     private boolean customPath = false;
 
+    @NotNull
     public TwigPathIndex.NamespaceType getNamespaceType() {
         return namespaceType;
     }
 
-    private TwigPathIndex.NamespaceType namespaceType = TwigPathIndex.NamespaceType.ADD_PATH;
-
-    public TwigPath(String path) {
+    public TwigPath(@NotNull String path) {
         this.path = path;
     }
 
-    public TwigPath(String path, String namespace) {
+    public TwigPath(@NotNull String path, @NotNull String namespace) {
         this.path = path;
         this.namespace = namespace;
     }
 
-    public TwigPath(String path, String namespace, TwigPathIndex.NamespaceType namespaceType, boolean customPath) {
+    public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigPathIndex.NamespaceType namespaceType, boolean customPath) {
         this(path, namespace, namespaceType);
         this.customPath = customPath;
     }
@@ -47,11 +53,12 @@ public class TwigPath implements Comparable<TwigPath> {
         return twigPath;
     }
 
-    public TwigPath(String path, String namespace, TwigPathIndex.NamespaceType namespaceType) {
+    public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigPathIndex.NamespaceType namespaceType) {
         this(path, namespace);
         this.namespaceType = namespaceType;
     }
 
+    @NotNull
     public String getNamespace() {
         return namespace;
     }
@@ -85,6 +92,7 @@ public class TwigPath implements Comparable<TwigPath> {
         return VfsUtil.findRelativeFile(relativePath, project.getBaseDir());
     }
 
+    @NotNull
     public String getPath() {
         return path;
     }
@@ -111,7 +119,7 @@ public class TwigPath implements Comparable<TwigPath> {
     }
 
     @Override
-    public int compareTo(TwigPath twigPath) {
+    public int compareTo(@NotNull TwigPath twigPath) {
         Collator collator = Collator.getInstance();
         collator.setStrength(Collator.SECONDARY);
         return collator.compare(this.getNamespace(), twigPath.getNamespace());

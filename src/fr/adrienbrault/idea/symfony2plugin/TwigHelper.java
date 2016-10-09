@@ -18,7 +18,6 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
@@ -34,7 +33,10 @@ import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateFileMap;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -402,24 +404,6 @@ public class TwigHelper {
     @NotNull
     public static List<TwigPath> getTwigNamespaces(@NotNull Project project, boolean includeSettings) {
         List<TwigPath> twigPaths = new ArrayList<>();
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-
-        TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
-        twigPaths.addAll(twigPathServiceParser.getTwigPathIndex().getTwigPaths());
-
-        String appDirectoryName = Settings.getInstance(project).directoryToApp + "/Resources/views";
-        VirtualFile globalDirectory = VfsUtil.findRelativeFile(project.getBaseDir(), appDirectoryName.split("/"));
-        if(globalDirectory != null) {
-            twigPaths.add(new TwigPath(globalDirectory.getPath(), TwigPathIndex.MAIN, TwigPathIndex.NamespaceType.BUNDLE));
-        }
-
-        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(phpIndex).getBundles();
-        for (SymfonyBundle bundle : symfonyBundles) {
-            PsiDirectory views = bundle.getSubDirectory("Resources", "views");
-            if(views != null) {
-                twigPaths.add(new TwigPath(views.getVirtualFile().getPath(), bundle.getName(), TwigPathIndex.NamespaceType.BUNDLE));
-            }
-        }
 
         // load extension
         TwigNamespaceExtensionParameter parameter = new TwigNamespaceExtensionParameter(project);
@@ -427,12 +411,15 @@ public class TwigHelper {
             twigPaths.addAll(namespaceExtension.getNamespaces(parameter));
         }
 
+        // disable namespace explicitly disabled by user
         for(TwigPath twigPath: twigPaths) {
             TwigNamespaceSetting twigNamespaceSetting = findManagedTwigNamespace(project, twigPath);
             if(twigNamespaceSetting != null) {
                 twigPath.setEnabled(false);
             }
         }
+
+        twigPaths = getUniqueTwigTemplatesList(twigPaths);
 
         if(!includeSettings) {
             return twigPaths;
@@ -443,7 +430,6 @@ public class TwigHelper {
             for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
                 if(twigNamespaceSetting.isCustom()) {
                     twigPaths.add(new TwigPath(twigNamespaceSetting.getPath(), twigNamespaceSetting.getNamespace(), twigNamespaceSetting.getNamespaceType(), true).setEnabled(twigNamespaceSetting.isEnabled()));
-
                 }
             }
         }
@@ -451,6 +437,29 @@ public class TwigHelper {
         return twigPaths;
     }
 
+    /**
+     * Build a unique path + namespace + type list
+     * normalize also windows linux path
+     */
+    @NotNull
+    public static List<TwigPath> getUniqueTwigTemplatesList(@NotNull Collection<TwigPath> origin) {
+        List<TwigPath> twigPaths = new ArrayList<>();
+
+        Set<String> hashes = new HashSet<>();
+        for (TwigPath twigPath : origin) {
+            // normalize hash; for same path element
+            // TODO: move to path object itself
+            String hash = twigPath.getNamespaceType() + twigPath.getNamespace() + twigPath.getPath().replace("\\", "/");
+            if(hashes.contains(hash)) {
+                continue;
+            }
+
+            twigPaths.add(twigPath);
+            hashes.add(hash);
+        }
+
+        return twigPaths;
+    }
 
     @Nullable
     public static String getTwigMethodString(@Nullable PsiElement transPsiElement) {

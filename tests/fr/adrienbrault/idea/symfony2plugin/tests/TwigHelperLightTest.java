@@ -15,6 +15,8 @@ import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -197,6 +199,31 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
                 myFixture.getFile().findElementAt(myFixture.getCaretOffset()))
             );
         }
+    }
+
+    /**
+     * @see TwigHelper#getUniqueTwigTemplatesList
+     */
+    public void testGetUniqueTwigTemplatesList() {
+        assertSize(1, TwigHelper.getUniqueTwigTemplatesList(Arrays.asList(
+            new TwigPath("path/", "path"),
+            new TwigPath("path\\", "path")
+        )));
+
+        assertSize(1, TwigHelper.getUniqueTwigTemplatesList(Arrays.asList(
+            new TwigPath("path", "path"),
+            new TwigPath("path", "path")
+        )));
+
+        assertSize(2, TwigHelper.getUniqueTwigTemplatesList(Arrays.asList(
+            new TwigPath("path/a", "path"),
+            new TwigPath("foobar", "path")
+        )));
+
+        assertSize(2, TwigHelper.getUniqueTwigTemplatesList(Arrays.asList(
+            new TwigPath("path", "path", TwigPathIndex.NamespaceType.BUNDLE),
+            new TwigPath("path", "path")
+        )));
     }
 
     private void assertEqual(Collection<String> c, String... values) {
