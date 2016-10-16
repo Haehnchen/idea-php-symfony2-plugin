@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.127</version>
+    <version>0.12.128</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,14 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.12.128</h2>
+<ul>
+    <li>Decouple Twig namespace loading and provide more default namespace which work without a compiled container <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/784">#784</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/654">#654</a></li>
+    <li>Add recursive and directory limit for per Twig path visitor <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/800">#800</a></li>
+    <li>Add icon provider for Twig template files for extends and implementations</li>
+    <li>Dropping PhpStorm8 type class constant api workaround</li>
+</ul>
 
 <h2>0.12.127</h2>
 <ul>
