@@ -2,10 +2,10 @@ Changelog
 =========
 
 ### Version names
-0.12.x: PhpStorm 2016.1+
-0.11.x: PhpStorm 8, 9, 10 (no support)
-0.10.x: PhpStorm 7 (no support)
-0.9.x: PhpStorm 6 (no support)
+* 0.12.x: PhpStorm 2016.1+
+* 0.11.x: PhpStorm 8, 9, 10 (no support)
+* 0.10.x: PhpStorm 7 (no support)
+* 0.9.x: PhpStorm 6 (no support)
 
 ## 0.12.128
 * Decouple Twig namespace loading and provide more default namespace which work without a compiled container [#784](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/784) [#654](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/654)
