@@ -7,19 +7,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 0.12.128
+### 0.12.128
 * Decouple Twig namespace loading and provide more default namespace which work without a compiled container [#784](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/784) [#654](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/654)
 * Add recursive and directory limit for per Twig path visitor [#800](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/800)
 * Add icon provider for Twig template files for extends and implementations
 * Dropping PhpStorm8 type class constant api workaround
 
-## 0.12.127
+### 0.12.127
 * Profiler should support http urls as data source [#798](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/798)
 * Profiler in now configurable in plugins settings [#798](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/798)
 * Fix app_dev.php urls in profiler [#540](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/540), [#522](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/522)
 * Add xml completion, navigation and linemarker for Doctrine 2.5 "Embeddables" [#471](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/471)
 
-## 0.12.126
+### 0.12.126
 * Fix empty PSI elements should not be passed to createDescriptor in container case sensitivity inspection [#788](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/788)
 * Support public property for form field mapping and dropping custom Doctrine field mapping its part of PropertyAccess component [#786](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/786)
 * Fix "Cannot resolve symbol" for factory service regression and drop deprecated getVariant references for factory method completion [#791](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/791)
