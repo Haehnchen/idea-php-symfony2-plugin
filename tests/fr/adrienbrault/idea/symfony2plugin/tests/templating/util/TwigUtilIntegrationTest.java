@@ -1,10 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
@@ -14,6 +18,9 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -197,6 +204,17 @@ public class TwigUtilIntegrationTest extends SymfonyLightCodeInsightFixtureTestC
         );
 
         assertNull(TwigUtil.getInjectedTwigElement(psiFile, 300000));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTwigFileMethodUsageOnIndex
+     */
+    public void testGetTwigFileMethodUsageOnIndex() {
+        myFixture.copyFileToProject("GetTwigFileMethodUsageOnIndex.php");
+        Set<Function> methods = TwigUtil.getTwigFileMethodUsageOnIndex(getProject(), Collections.singletonList("car.html.twig"));
+
+        assertNotNull(ContainerUtil.find(methods, method -> method.getFQN().equals("\\Template\\Bar\\MyTemplate.fooAction")));
+        assertNotNull(ContainerUtil.find(methods, method -> method.getFQN().equals("\\foo")));
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

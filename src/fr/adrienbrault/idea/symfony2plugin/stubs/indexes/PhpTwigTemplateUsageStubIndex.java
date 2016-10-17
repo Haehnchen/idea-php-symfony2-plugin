@@ -3,29 +3,34 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import gnu.trove.THashMap;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<String, Void> {
+public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<String, TemplateUsage> {
 
-    public static final ID<String, Void> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_php_usage");
+    public static final ID<String, TemplateUsage> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_php_usage");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static int MAX_FILE_BYTE_SIZE = 2097152;
+    private static ObjectStreamDataExternalizer<TemplateUsage> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     public static Set<String> RENDER_METHODS = new HashSet<String>() {{
         add("render");
@@ -35,38 +40,41 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
     @NotNull
     @Override
-    public ID<String, Void> getName() {
+    public ID<String, TemplateUsage> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, Void, FileContent> getIndexer() {
-        return new DataIndexer<String, Void, FileContent>() {
+    public DataIndexer<String, TemplateUsage, FileContent> getIndexer() {
+        return new DataIndexer<String, TemplateUsage, FileContent>() {
             @NotNull
             @Override
-            public Map<String, Void> map(@NotNull FileContent inputData) {
-                final Map<String, Void> map = new THashMap<>();
-
+            public Map<String, TemplateUsage> map(@NotNull FileContent inputData) {
                 PsiFile psiFile = inputData.getPsiFile();
                 if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                    return map;
+                    return Collections.emptyMap();
                 }
 
                 if(!(inputData.getPsiFile() instanceof PhpFile) && isValidForIndex(inputData)) {
-                    return map;
+                    return Collections.emptyMap();
                 }
 
+                Map<String, Set<String>> items = new HashMap<>();
+
                 psiFile.accept(new PsiRecursiveElementWalkingVisitor() {
+
                     @Override
                     public void visitElement(PsiElement element) {
                         if(element instanceof MethodReference) {
                             visitMethodReference((MethodReference) element);
+                        } else if(element instanceof PhpDocTag) {
+                            visitPhpDocTag((PhpDocTag) element);
                         }
                         super.visitElement(element);
                     }
 
-                    public void visitMethodReference(MethodReference methodReference) {
+                    private void visitMethodReference(@NotNull MethodReference methodReference) {
                         String methodName = methodReference.getName();
                         if(!RENDER_METHODS.contains(methodName)) {
                             return;
@@ -82,11 +90,59 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                             return;
                         }
 
-                        map.put(TwigHelper.normalizeTemplateName(contents), null);
+                        Function parentOfType = PsiTreeUtil.getParentOfType(methodReference, Function.class);
+                        if(parentOfType == null) {
+                            return;
+                        }
 
+                        addTemplateWithScope(contents, StringUtils.stripStart(parentOfType.getFQN(), "\\"));
                     }
 
+                    /**
+                     * "@Template("foobar.html.twig")"
+                     * "@Template(template="foobar.html.twig")"
+                     */
+                    private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
+                        // "@var" and user non related tags dont need an action
+                        if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                            return;
+                        }
+
+                        // init scope imports
+                        Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
+                        if(fileImports.size() == 0) {
+                            return;
+                        }
+
+                        String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, fileImports);
+                        if(!"Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template".equals(StringUtils.stripStart(annotationFqnName, "\\"))) {
+                            return;
+                        }
+
+                        String template = AnnotationBackportUtil.getDefaultOrPropertyContents(phpDocTag, "template");
+                        if(template != null && template.endsWith(".html.twig")) {
+                            Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
+                            if(methodScope != null) {
+                                addTemplateWithScope(template, StringUtils.stripStart(methodScope.getFQN(), "\\"));
+                            }
+                        }
+                    }
+
+                    private void addTemplateWithScope(@NotNull String contents, @NotNull String fqn) {
+                        String s = TwigHelper.normalizeTemplateName(contents);
+                        if(!items.containsKey(s)) {
+                            items.put(s, new HashSet<>());
+                        }
+
+                        items.get(s).add(fqn);
+                    }
                 });
+
+                Map<String, TemplateUsage> map = new HashMap<>();
+
+                items.entrySet().forEach(entry ->
+                    map.put(entry.getKey(), new TemplateUsage(entry.getKey(), entry.getValue()))
+                );
 
                 return map;
             }
@@ -101,8 +157,8 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
     @NotNull
     @Override
-    public DataExternalizer<Void> getValueExternalizer() {
-        return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
+    public DataExternalizer<TemplateUsage> getValueExternalizer() {
+        return EXTERNALIZER;
     }
 
     @NotNull
@@ -119,7 +175,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     public static boolean isValidForIndex(FileContent inputData) {

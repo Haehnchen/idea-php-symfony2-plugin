@@ -1,19 +1,26 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.util.Condition;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
+import com.jetbrains.php.lang.documentation.phpdoc.lexer.PhpDocTokenTypes;
+import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import org.apache.commons.lang.*;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,17 +65,32 @@ public class AnnotationBackportUtil {
 
     }
 
-    public static Map<String, String> getUseImportMap(PhpDocComment phpDocComment) {
+    @NotNull
+    public static Map<String, String> getUseImportMap(@NotNull PhpDocTag phpDocTag) {
+        PhpDocComment phpDoc = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
+        if(phpDoc == null) {
+            return Collections.emptyMap();
+        }
+
+        return getUseImportMap(phpDoc);
+    }
+
+    @NotNull
+    public static Map<String, String> getUseImportMap(@NotNull PhpDocComment phpDocComment) {
 
         // search for use alias in local file
         final Map<String, String> useImports = new HashMap<>();
 
-        PhpNamespace phpNamespace = PsiTreeUtil.getParentOfType(phpDocComment, PhpNamespace.class);
-        if(phpNamespace == null) {
+        PsiElement scope = PsiTreeUtil.getParentOfType(phpDocComment, PhpNamespace.class);
+        if(scope == null) {
+            scope = PsiTreeUtil.getParentOfType(phpDocComment, GroupStatement.class);
+        }
+
+        if(scope == null) {
             return useImports;
         }
 
-        phpNamespace.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+        scope.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {
                 if (element instanceof PhpUse) {
@@ -84,44 +106,7 @@ public class AnnotationBackportUtil {
                 } else {
                     useImports.put(phpUse.getName(), phpUse.getFQN());
                 }
-
             }
-
-        });
-
-        return useImports;
-    }
-
-    /**
-     * Collect file use imports and resolve alias with their class name
-     *
-     * @param psiFile file to search
-     * @return map with class names as key and fqn on value
-     */
-    public static Map<String, String> getUseImportMap(PsiFile psiFile) {
-
-        // search for use alias in local file
-        final Map<String, String> useImports = new HashMap<>();
-
-        psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if (element instanceof PhpUse) {
-                    visitUse((PhpUse) element);
-                }
-                super.visitElement(element);
-            }
-
-            private void visitUse(PhpUse phpUse) {
-                String alias = phpUse.getAliasName();
-                if (alias != null) {
-                    useImports.put(alias, phpUse.getFQN());
-                } else {
-                    useImports.put(phpUse.getName(), phpUse.getFQN());
-                }
-
-            }
-
         });
 
         return useImports;
@@ -281,4 +266,57 @@ public class AnnotationBackportUtil {
         return (Method) method;
     }
 
+    /**
+     * "@Template("foobar.html.twig")"
+     * "@Template(template="foobar.html.twig")"
+     */
+    @Nullable
+    public static String getDefaultOrPropertyContents(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
+        PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
+        if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
+            return null;
+        }
+
+        String contents = null;
+        PsiElement lParen = attributeList.getFirstChild();
+        if(lParen == null) {
+            return null;
+        }
+
+        PsiElement defaultValue = lParen.getNextSibling();
+        if(defaultValue instanceof StringLiteralExpression) {
+            // @Template("foobar.html.twig")
+            contents = ((StringLiteralExpression) defaultValue).getContents();
+        } else {
+            // @Template(template="foobar.html.twig")
+            PsiElement psiProperty = ContainerUtil.find(attributeList.getChildren(), psiElement ->
+                getPropertyIdentifierValue(property).accepts(psiElement)
+            );
+
+            if(psiProperty instanceof StringLiteralExpression) {
+                contents = ((StringLiteralExpression) psiProperty).getContents();
+            }
+        }
+
+        if(StringUtils.isNotBlank(contents)) {
+            return contents;
+        }
+
+        return contents;
+    }
+
+    /**
+     * matches "@Callback(propertyName="<value>")"
+     */
+    private static PsiElementPattern.Capture<StringLiteralExpression> getPropertyIdentifierValue(String propertyName) {
+        return PlatformPatterns.psiElement(StringLiteralExpression.class)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(PhpDocTokenTypes.DOC_TEXT).withText("=")
+                ),
+                PlatformPatterns.psiElement(PhpDocTokenTypes.DOC_IDENTIFIER).withText(propertyName)
+            )
+            .withParent(PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+    }
 }

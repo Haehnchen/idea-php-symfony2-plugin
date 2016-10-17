@@ -18,7 +18,7 @@ public class PhpMethodVariableResolveUtil {
     /**
      * search for twig template variable on common use cases
      */
-    public static Map<String, PsiVariable> collectMethodVariables(Method method) {
+    public static Map<String, PsiVariable> collectMethodVariables(Function method) {
 
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
@@ -45,7 +45,7 @@ public class PhpMethodVariableResolveUtil {
     /**
      *  search for possible variables which are possible accessible inside rendered twig template
      */
-    private static List<PsiElement> collectPossibleTemplateArrays(Method method) {
+    private static List<PsiElement> collectPossibleTemplateArrays(Function method) {
 
         List<PsiElement> collectedTemplateVariables = new ArrayList<>();
 

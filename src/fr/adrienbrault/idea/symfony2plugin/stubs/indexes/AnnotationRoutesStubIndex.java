@@ -98,37 +98,9 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
         return 10;
     }
 
-    public static Map<String, String> getFileUseImports(PsiFile psiFile) {
-
-        // search for use alias in local file
-        final Map<String, String> useImports = new HashMap<>();
-        psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if(element instanceof PhpUse) {
-                    visitUse((PhpUse) element);
-                }
-                super.visitElement(element);
-            }
-
-            private void visitUse(PhpUse phpUse) {
-                String alias = phpUse.getAliasName();
-                if(alias != null) {
-                    useImports.put(alias, phpUse.getFQN());
-                } else {
-                    useImports.put(phpUse.getName(), phpUse.getFQN());
-                }
-
-            }
-
-        });
-
-        return useImports;
-    }
-
     @Nullable
     public static String getClassNameReference(PhpDocTag phpDocTag) {
-        return getClassNameReference(phpDocTag, getFileUseImports(phpDocTag.getContainingFile()));
+        return getClassNameReference(phpDocTag, AnnotationBackportUtil.getUseImportMap(phpDocTag));
     }
 
     @Nullable
@@ -194,7 +166,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
 
             // init file imports
             if(this.fileImports == null) {
-                this.fileImports = getFileUseImports(phpDocTag.getContainingFile());
+                this.fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
             }
 
             if(this.fileImports.size() == 0) {

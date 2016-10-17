@@ -11,12 +11,15 @@ import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -25,6 +28,7 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFromStubIndex;
@@ -437,7 +441,7 @@ public class TwigUtil {
             vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method));
         }
 
-        for(Method methodIndex : getTwigFileMethodUsageOnIndex(twigFile)) {
+        for(Function methodIndex : getTwigFileMethodUsageOnIndex(twigFile)) {
             vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
         }
 
@@ -445,51 +449,51 @@ public class TwigUtil {
 
     }
 
+    /**
+     * Collect function variables scopes for given Twig file
+     */
     @NotNull
-    public static Set<Method> getTwigFileMethodUsageOnIndex(@NotNull TwigFile psiFile) {
+    public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull TwigFile psiFile) {
+        return getTwigFileMethodUsageOnIndex(psiFile.getProject(), TwigUtil.getTemplateName(psiFile));
+    }
 
-        final Set<String> keys = TwigUtil.getTemplateName(psiFile);
+    /**
+     * Collect function scopes to search for Twig variable of given template names: "foo.html.twig"
+     */
+    @NotNull
+    public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull Project project, @NotNull Collection<String> keys) {
         if(keys.size() == 0) {
             return Collections.emptySet();
         }
 
-        final Set<VirtualFile> virtualFiles = new HashSet<>();
-
-        // find virtual files
+        final Set<String> fqn = new HashSet<>();
         for(String key: keys) {
-            FileBasedIndexImpl.getInstance().getFilesWithKey(PhpTwigTemplateUsageStubIndex.KEY, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
-                virtualFiles.add(virtualFile);
-                return true;
-            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), PhpFileType.INSTANCE));
+            for (TemplateUsage usage : FileBasedIndex.getInstance().getValues(PhpTwigTemplateUsageStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                fqn.addAll(usage.getScopes());
+            }
         }
 
-        final Set<Method> methods = new HashSet<>();
+        final Set<Function> methods = new HashSet<>();
 
-        for(VirtualFile virtualFile : virtualFiles) {
-
-            PsiFile psiTemplate = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
-            if(psiTemplate == null) {
+        for (String s : fqn) {
+            // function: "\foo"
+            if(!s.contains(".")) {
+                methods.addAll(PhpIndex.getInstance(project).getFunctionsByFQN("\\" + s));
                 continue;
             }
 
-            psiTemplate.accept(new PsiRecursiveElementWalkingVisitor() {
-                @Override
-                public void visitElement(PsiElement element) {
-                    if(element instanceof StringLiteralExpression && element.getParent() instanceof ParameterList && element.getParent().getParent() instanceof MethodReference && keys.contains(((StringLiteralExpression) element).getContents())) {
+            // classes: "\foo.action"
+            String[] split = s.split("\\.");
+            if(split.length != 2) {
+                continue;
+            }
 
-                        PsiElement methodReference = element.getParent().getParent();
-                        if(methodReference instanceof MethodReference && PhpTwigTemplateUsageStubIndex.RENDER_METHODS.contains(((MethodReference) methodReference).getName())) {
-                            Method method = PsiTreeUtil.getParentOfType(element, Method.class);
-                            if(method != null) {
-                                methods.add(method);
-                            }
-                        }
-                    }
+            Method method = PhpElementsUtil.getClassMethod(project, split[0], split[1]);
+            if(method == null) {
+                continue;
+            }
 
-                    super.visitElement(element);
-                }
-            });
-
+            methods.add(method);
         }
 
         return methods;

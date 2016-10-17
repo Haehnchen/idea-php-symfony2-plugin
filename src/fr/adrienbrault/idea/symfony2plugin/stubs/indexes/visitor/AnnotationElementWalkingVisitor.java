@@ -12,10 +12,11 @@ import java.util.Map;
 
 public class AnnotationElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
 
+    @NotNull
     private final Processor<PhpDocTag> phpDocTagProcessor;
+
     @NotNull
     private final String[] annotations;
-    private Map<String, String> fileImports;
 
     public AnnotationElementWalkingVisitor(@NotNull Processor<PhpDocTag> phpDocTagProcessor, @NotNull String... annotations) {
         this.phpDocTagProcessor = phpDocTagProcessor;
@@ -30,23 +31,19 @@ public class AnnotationElementWalkingVisitor extends PsiRecursiveElementWalkingV
         super.visitElement(element);
     }
 
-    private void visitPhpDocTag(PhpDocTag phpDocTag) {
+    private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
 
         // "@var" and user non related tags dont need an action
         if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
             return;
         }
 
-        // init file imports
-        if(this.fileImports == null) {
-            this.fileImports = AnnotationRoutesStubIndex.getFileUseImports(phpDocTag.getContainingFile());
-        }
-
-        if(this.fileImports.size() == 0) {
+        Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
+        if(fileImports.size() == 0) {
             return;
         }
 
-        String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, this.fileImports);
+        String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, fileImports);
         for (String annotation : annotations) {
             if(annotation.equals(annotationFqnName)) {
                 this.phpDocTagProcessor.process(phpDocTag);

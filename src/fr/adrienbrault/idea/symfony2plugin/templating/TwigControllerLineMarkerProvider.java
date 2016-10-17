@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIcons;
+import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
@@ -93,7 +94,7 @@ public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
 
     private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        Set<Method> methods = new HashSet<>();
+        Set<Function> methods = new HashSet<>();
         Method method = TwigUtil.findTwigFileController(twigFile);
         if(method != null) {
             methods.add(method);
