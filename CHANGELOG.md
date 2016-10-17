@@ -7,6 +7,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.129
+* Fix navigation for bundle files on linux based system, increase path limit for child path iteration [#803](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/803)
+
 ### 0.12.128
 * Decouple Twig namespace loading and provide more default namespace which work without a compiled container [#784](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/784) [#654](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/654)
 * Add recursive and directory limit for per Twig path visitor [#800](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/800)
