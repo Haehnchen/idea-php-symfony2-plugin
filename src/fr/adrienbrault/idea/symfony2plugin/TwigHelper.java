@@ -1895,7 +1895,7 @@ public class TwigHelper {
     private static class MyLimitedVirtualFileVisitor extends VirtualFileVisitor {
         @NotNull
         private final TwigPathContentIterator twigPathContentIterator;
-        private int childrenAllowToVisit = 150;
+        private int childrenAllowToVisit = 1000;
 
         MyLimitedVirtualFileVisitor(@NotNull TwigPathContentIterator twigPathContentIterator, int maxDepth, int maxDirs) {
             super(VirtualFileVisitor.limit(maxDepth));

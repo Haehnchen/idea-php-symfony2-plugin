@@ -33,11 +33,11 @@ public class BundleTwigNamespaceExtensionTest extends SymfonyLightCodeInsightFix
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
         assertNotNull(ContainerUtil.find(namespaces, twigPath ->
-            "FooBundle".equals(twigPath.getNamespace()) && "src/Resources/views".equals(twigPath.getPath()))
+            "FooBundle".equals(twigPath.getNamespace()) && "/src/Resources/views".equals(twigPath.getPath()))
         );
 
         assertNotNull(ContainerUtil.find(namespaces, twigPath ->
-            "Foo".equals(twigPath.getNamespace()) && "src/Resources/views".equals(twigPath.getPath()))
+            "Foo".equals(twigPath.getNamespace()) && "/src/Resources/views".equals(twigPath.getPath()))
         );
     }
 }

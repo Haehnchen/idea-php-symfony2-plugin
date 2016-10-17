@@ -31,8 +31,8 @@ public class BundleTwigNamespaceExtension implements TwigNamespaceExtension {
                 continue;
             }
 
-            // strip starting backslash to force relative path
-            String path = StringUtils.stripStart(views.getVirtualFile().getPath(), "/");
+            // @TODO: use relative path and make os independent
+            String path = views.getVirtualFile().getPath();
 
             String bundleName = bundle.getName();
 
