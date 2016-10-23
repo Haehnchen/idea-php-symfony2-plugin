@@ -6,9 +6,9 @@ if [ "$PHPSTORM_ENV" == "2016.1" ]; then
 elif [ "$PHPSTORM_ENV" == "2016.1.2" ]; then
     ideaVersion="2016.1.4"
 elif [ "$PHPSTORM_ENV" == "2016.2" ]; then
-    ideaVersion="2016.2"
+    ideaVersion="2016.2.5"
 elif [ "$PHPSTORM_ENV" == "2016.2.1" ]; then
-    ideaVersion="2016.2.4"
+    ideaVersion="2016.2.5"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
     ideaVersion="163.5644.15"
 fi
