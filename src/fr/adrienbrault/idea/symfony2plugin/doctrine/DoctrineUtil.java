@@ -127,10 +127,7 @@ public class DoctrineUtil {
                 return false;
             }
 
-            String presentableFQN = ((PhpClass) phpClass).getPresentableFQN();
-            if (StringUtils.isNotBlank(presentableFQN)) {
-                pairs.add(Pair.create(presentableFQN, getAnnotationRepositoryClass(phpDocTag)));
-            }
+            pairs.add(Pair.create(((PhpClass) phpClass).getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag)));
 
             return false;
         }, MODEL_CLASS_ANNOTATION));

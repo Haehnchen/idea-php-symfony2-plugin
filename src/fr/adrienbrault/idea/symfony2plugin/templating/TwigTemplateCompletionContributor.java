@@ -391,7 +391,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     if(parts.length >= 1) {
                         PhpClass phpClass = PhpElementsUtil.getClassInterface(position.getProject(), parts[0]);
-                        if(phpClass != null && phpClass.getPresentableFQN() != null) {
+                        if(phpClass != null) {
                             for(Field field: phpClass.getFields()) {
                                 if(field.isConstant()) {
                                     resultSet.addElement(LookupElementBuilder.create(phpClass.getPresentableFQN() + "::" + field.getName()).withIcon(PhpIcons.CONSTANT));

@@ -325,7 +325,7 @@ public class ServiceUtil {
         Collection<PhpClass> taggedClasses = new ArrayList<>();
         for(PhpClass phpClass: getTaggedClasses(project, tagName)) {
             String presentableFQN = phpClass.getPresentableFQN();
-            if(presentableFQN != null && !uniqueClass.contains(presentableFQN)) {
+            if(!uniqueClass.contains(presentableFQN)) {
                 uniqueClass.add(presentableFQN);
                 taggedClasses.add(phpClass);
             }

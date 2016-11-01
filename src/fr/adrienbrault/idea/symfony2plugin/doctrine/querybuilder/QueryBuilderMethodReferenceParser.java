@@ -247,12 +247,10 @@ public class QueryBuilderMethodReferenceParser {
             if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
                 for(DoctrineModel model: EntityHelper.getModelClasses(project)) {
                     String className = model.getPhpClass().getPresentableFQN();
-                    if(className != null) {
-                        PhpClass resolvedRepoName = EntityHelper.getEntityRepositoryClass(project, className);
-                        if(PhpElementsUtil.isEqualClassName(resolvedRepoName, phpClass.getPresentableFQN())) {
-                            roots.put(className, rootAlias);
-                            return roots;
-                        }
+                    PhpClass resolvedRepoName = EntityHelper.getEntityRepositoryClass(project, className);
+                    if(PhpElementsUtil.isEqualClassName(resolvedRepoName, phpClass.getPresentableFQN())) {
+                        roots.put(className, rootAlias);
+                        return roots;
                     }
                 }
             }
@@ -274,7 +272,7 @@ public class QueryBuilderMethodReferenceParser {
                             parameter = PhpTypeProviderUtil.getResolvedParameter(PhpIndex.getInstance(project), parameter);
                             if(parameter != null) {
                                 PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
-                                if(phpClass != null && phpClass.getPresentableFQN() != null) {
+                                if(phpClass != null) {
                                     roots.put(phpClass.getPresentableFQN(), rootAlias);
                                     return roots;
                                 }

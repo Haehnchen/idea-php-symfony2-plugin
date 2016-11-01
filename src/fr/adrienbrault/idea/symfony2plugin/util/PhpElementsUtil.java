@@ -578,10 +578,6 @@ public class PhpElementsUtil {
         }
 
         String className = phpClass.getPresentableFQN();
-        if(className == null) {
-            return null;
-        }
-
         for (String s : callTo) {
             // @TODO: replace signature
             PsiElement arrayKeyValueInsideSignature = PhpElementsUtil.getArrayKeyValueInsideSignaturePsi(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + s, methodName, keyName);
@@ -976,7 +972,7 @@ public class PhpElementsUtil {
         // search classes in current namespace and child namespaces
         for(PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(psiElement.getProject(), namespace)) {
             String presentableFQN = phpClass.getPresentableFQN();
-            if(presentableFQN != null && fr.adrienbrault.idea.symfony2plugin.util.StringUtils.startWithEqualClassname(presentableFQN, beforeCursor)) {
+            if(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.startWithEqualClassname(presentableFQN, beforeCursor)) {
                 visitor.visit(phpClass, presentableFQN, prefix);
             }
 
@@ -1091,10 +1087,6 @@ public class PhpElementsUtil {
         }
 
         String fqn = phpClass.getPresentableFQN();
-        if(fqn == null) {
-            return false;
-        }
-
         return fqn.contains("\\Test\\") || fqn.contains("\\Tests\\");
     }
 

@@ -273,10 +273,6 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         }
 
         String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN == null) {
-            presentableFQN = "form";
-        }
-
         return new FormOptionsGotoCompletionProvider(psiElement, presentableFQN, FormOption.EXTENSION, FormOption.DEFAULT_OPTIONS);
     }
 }

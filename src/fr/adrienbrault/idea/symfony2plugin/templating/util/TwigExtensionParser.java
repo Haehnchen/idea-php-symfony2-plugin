@@ -471,10 +471,7 @@ public class TwigExtensionParser  {
                                 if(parameters[0] instanceof Variable && "this".equals(((Variable) parameters[0]).getName())) {
                                     String methodName = PhpElementsUtil.getStringValue(parameters[1]);
                                     if(methodName != null) {
-                                        String presentableFQN = containingClass.getPresentableFQN();
-                                        if(presentableFQN != null) {
-                                            signature = String.format("#M#C\\%s.%s", presentableFQN, methodName);
-                                        }
+                                        signature = String.format("#M#C\\%s.%s", containingClass.getPresentableFQN(), methodName);
                                     }
 
                                 }
@@ -568,10 +565,7 @@ public class TwigExtensionParser  {
                                 if(parameters[0] instanceof Variable && "this".equals(((Variable) parameters[0]).getName())) {
                                     String methodName = PhpElementsUtil.getStringValue(parameters[1]);
                                     if(methodName != null) {
-                                        String presentableFQN = containingClass.getPresentableFQN();
-                                        if(presentableFQN != null) {
-                                            signature = String.format("#M#C\\%s.%s", presentableFQN, methodName);
-                                        }
+                                        signature = String.format("#M#C\\%s.%s", containingClass.getPresentableFQN(), methodName);
                                     }
 
                                 }

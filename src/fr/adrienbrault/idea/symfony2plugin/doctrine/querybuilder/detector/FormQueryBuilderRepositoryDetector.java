@@ -50,7 +50,7 @@ public class FormQueryBuilderRepositoryDetector implements QueryBuilderRepositor
 
                                 // finally we found our class key
                                 PhpClass phpClass = EntityHelper.resolveShortcutName(parameter.getProject(), aClass);
-                                if(phpClass != null && phpClass.getPresentableFQN() != null) {
+                                if(phpClass != null) {
                                     return phpClass.getPresentableFQN();
                                 }
 

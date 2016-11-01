@@ -95,9 +95,6 @@ public class EventDispatcherSubscriberUtil {
         }
 
         String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN == null) {
-            return;
-        }
 
         Iterable<ArrayHashElement> arrayHashElements = ((ArrayCreationExpression) array).getHashElements();
         for(ArrayHashElement arrayHashElement: arrayHashElements) {

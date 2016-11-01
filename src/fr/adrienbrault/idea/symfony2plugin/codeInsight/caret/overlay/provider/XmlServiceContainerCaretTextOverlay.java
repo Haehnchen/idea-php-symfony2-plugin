@@ -106,12 +106,7 @@ public class XmlServiceContainerCaretTextOverlay implements CaretTextOverlay {
             return null;
         }
 
-        final String service = serviceClass.getPresentableFQN();
-        if(service == null) {
-            return null;
-        }
-
-        return new CaretTextOverlayElement(service);
+        return new CaretTextOverlayElement(serviceClass.getPresentableFQN());
     }
 
     private CaretTextOverlayElement getParameterValueOverlay(@NotNull XmlText psiElement, @NotNull CaretTextOverlayArguments args) {

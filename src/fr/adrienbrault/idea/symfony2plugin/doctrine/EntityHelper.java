@@ -381,11 +381,9 @@ public class EntityHelper {
 
         // new code
         String presentableFQN = phpClass.getPresentableFQN();
-        if(presentableFQN != null) {
-            DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), presentableFQN);
-            if(modelFields != null) {
-                return modelFields.getFields();
-            }
+        DoctrineMetadataModel fields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), presentableFQN);
+        if(fields != null) {
+            return fields.getFields();
         }
 
         // @TODO: old deprecated code

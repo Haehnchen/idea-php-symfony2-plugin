@@ -117,10 +117,6 @@ public class ServiceIndexUtil {
         }
 
         String phpClassName = phpClass.getPresentableFQN();
-        if(phpClassName == null) {
-            return new PsiElement[0];
-        }
-
         Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
 
         if(serviceNames.size() == 0) {
@@ -142,10 +138,6 @@ public class ServiceIndexUtil {
         }
 
         String phpClassName = phpClass.getPresentableFQN();
-        if(phpClassName == null) {
-            return null;
-        }
-
         Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
         if(serviceNames.size() == 0) {
             return null;

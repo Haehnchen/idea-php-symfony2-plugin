@@ -202,9 +202,7 @@ public class FormOptionsUtil {
 
         getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, (psiElement, option, formClass, optionEnum) -> {
             String presentableFQN = formClass.getPhpClass().getPresentableFQN();
-            if(presentableFQN != null) {
-                items.put(option, presentableFQN);
-            }
+            items.put(option, presentableFQN);
         });
 
         return items;
@@ -341,7 +339,7 @@ public class FormOptionsUtil {
     public static LookupElement getOptionLookupElement(FormOption formOption) {
 
         String typeText = formOption.getFormClass().getPhpClass().getPresentableFQN();
-        if(typeText != null && typeText.lastIndexOf("\\") != -1) {
+        if(typeText.lastIndexOf("\\") != -1) {
             typeText = typeText.substring(typeText.lastIndexOf("\\") + 1);
             if(typeText.endsWith("Extension")) {
                 typeText = typeText.substring(0, typeText.length() - 9);

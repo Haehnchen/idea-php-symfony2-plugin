@@ -441,10 +441,9 @@ public class TwigTypeResolveUtil {
 
     public static String getTypeDisplayName(Project project, Set<String> types) {
 
-        for(PhpClass phpClass: PhpElementsUtil.getClassFromPhpTypeSet(project, types)) {
-            if(phpClass.getPresentableFQN() != null) {
-                return phpClass.getPresentableFQN();
-            }
+        Collection<PhpClass> classFromPhpTypeSet = PhpElementsUtil.getClassFromPhpTypeSet(project, types);
+        if(classFromPhpTypeSet.size() > 0) {
+            return classFromPhpTypeSet.iterator().next().getPresentableFQN();
         }
 
         PhpType phpType = new PhpType();
