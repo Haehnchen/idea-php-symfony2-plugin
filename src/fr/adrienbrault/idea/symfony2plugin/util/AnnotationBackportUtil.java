@@ -81,25 +81,13 @@ public class AnnotationBackportUtil {
         // search for use alias in local file
         final Map<String, String> useImports = new HashMap<>();
 
-        PsiElement scope = PsiTreeUtil.getParentOfType(phpDocComment, PhpNamespace.class);
-        if(scope == null) {
-            scope = PsiTreeUtil.getParentOfType(phpDocComment, GroupStatement.class);
-        }
-
+        PhpPsiElement scope = PhpCodeInsightUtil.findScopeForUseOperator(phpDocComment);
         if(scope == null) {
             return useImports;
         }
 
-        scope.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if (element instanceof PhpUse) {
-                    visitUse((PhpUse) element);
-                }
-                super.visitElement(element);
-            }
-
-            private void visitUse(PhpUse phpUse) {
+        for (PhpUseList phpUseList : PhpCodeInsightUtil.collectImports(scope)) {
+            for (PhpUse phpUse : phpUseList.getDeclarations()) {
                 String alias = phpUse.getAliasName();
                 if (alias != null) {
                     useImports.put(alias, phpUse.getFQN());
@@ -107,7 +95,7 @@ public class AnnotationBackportUtil {
                     useImports.put(phpUse.getName(), phpUse.getFQN());
                 }
             }
-        });
+        }
 
         return useImports;
     }

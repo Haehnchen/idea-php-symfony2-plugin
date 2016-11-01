@@ -825,25 +825,12 @@ public class PhpElementsUtil {
     }
 
     public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String compareClassName) {
-
         if(phpClass == null || compareClassName == null) {
             return false;
         }
 
-        String phpClassName = phpClass.getPresentableFQN();
-        if(phpClassName == null) {
-            return false;
-        }
-
-        if(phpClassName.startsWith("\\")) {
-            phpClassName = phpClassName.substring(1);
-        }
-
-        if(compareClassName.startsWith("\\")) {
-            compareClassName = compareClassName.substring(1);
-        }
-
-        return phpClassName.equals(compareClassName);
+        return StringUtils.stripStart(phpClass.getPresentableFQN(), "\\")
+            .equals(StringUtils.stripStart(compareClassName, "\\"));
     }
 
     @Nullable
