@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.129</version>
+    <version>0.12.130</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -109,6 +109,15 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+add template annotation usage indexer and add scope to reduce element visiting, also supporting function for scopes #773, #800
+
+<h2>0.12.130</h2>
+<ul>
+    <li>Add indexer for template usages in annotations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/773">#773</a></li>
+    <li>Add scope for template index to reduce variable extraction and improve performance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/800">#800</a></li>
+    <li>Template usages now also support function scope</li>
+</ul>
 
 <h2>0.12.129</h2>
 <ul>

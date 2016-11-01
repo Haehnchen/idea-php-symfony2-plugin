@@ -7,6 +7,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.130
+* Add indexer for template usages in annotations [#773](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/773)
+* Add scope for template index to reduce variable extraction and improve performance [#800](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/800)
+* Template usages now also support function scope
+
 ### 0.12.129
 * Fix navigation for bundle files on linux based system, increase path limit for child path iteration [#803](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/803)
 
