@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.impl.file.PsiDirectoryFactory;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpCodeEditUtil;
@@ -46,6 +47,7 @@ public class PhpBundleFileFactory {
 
         if(!PhpNameUtil.isValidClassName(className)) {
             Messages.showMessageDialog(bundleClass.getProject(), "Invalid class name", "Error", Symfony2Icons.SYMFONY);
+            return null;
         }
 
         try {
@@ -162,6 +164,19 @@ public class PhpBundleFileFactory {
 
         String replace = fileTemplateContent.replace("{{ ns }}", ns.startsWith("\\") ? ns.substring(1) : ns).replace("{{ class }}", className);
         PsiFile fileFromText = PsiFileFactory.getInstance(project).createFileFromText(className + ".php", PhpFileType.INSTANCE, replace);
+
+        PhpClass childOfType = PsiTreeUtil.findChildOfType(fileFromText, PhpClass.class);
+
+        Method process = childOfType.findMethodByName("process");
+
+        insertUseIfNecessary(
+            PhpCodeInsightUtil.findScopeForUseOperator(fileFromText),
+            "\\Symfony\\Component\\DependencyInjection\\Compiler\\PriorityTaggedServiceTrait"
+        );
+
+        PhpUseList phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(project, PhpUseList.class, "<?php use PriorityTaggedServiceTrait;\n");
+        childOfType.addBefore(phpPsiFromText, process);
+
         CodeStyleManager.getInstance(project).reformat(fileFromText);
 
         return PsiDirectoryFactory.getInstance(project).createDirectory(compilerDirectory).add(fileFromText);
