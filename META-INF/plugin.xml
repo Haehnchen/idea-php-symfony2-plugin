@@ -323,7 +323,9 @@ add template annotation usage indexer and add scope to reduce element visiting, 
                              nonDefaultProject="true"
         />
 
+        <!--
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigFileIconProvider" />
+        -->
 
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
