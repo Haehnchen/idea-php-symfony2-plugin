@@ -18,7 +18,7 @@ class {{ class }} extends AbstractType
 
     }
 
-    public function getName()
+    public function getBlockPrefix()
     {
         return '{{ name }}';
     }
