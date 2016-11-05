@@ -4,8 +4,11 @@ import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.ParentPathPatternCondition;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLLanguage;
@@ -17,6 +20,13 @@ import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlElementPatternHelper {
+
+    /**
+     * "@foo", '@foo', @foo
+     */
+    private static final ElementTypePatternCondition SCALAR_ELEMENT_TYPES = new ElementTypePatternCondition(
+        YAMLTokenTypes.TEXT, YAMLTokenTypes.SCALAR_STRING, YAMLTokenTypes.SCALAR_DSTRING
+    );
 
     /**
      * auto complete on
@@ -434,84 +444,27 @@ public class YamlElementPatternHelper {
     }
 
     /**
-     * find common services
+     * find common services: @foo, "@foo", '@foo'
      */
     public static ElementPattern<PsiElement> getServiceDefinition() {
-
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .withText(
-                    StandardPatterns.string().startsWith("@")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE)
-            ,
-            // @TODO: cleanup on PhpStorm8 support only
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .withText(
-                    StandardPatterns.string().startsWith("'@")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .withText(
-                    StandardPatterns.string().startsWith("\"@")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
-                .withText(
-                    StandardPatterns.string().startsWith("'@")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
-                .withText(
-                    StandardPatterns.string().startsWith("\"@")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE)
-        );
+        return PlatformPatterns
+            .psiElement().with(SCALAR_ELEMENT_TYPES)
+            .withParent(
+                PlatformPatterns.psiElement(YAMLScalar.class).with(new YAMLScalarValueStartsWithPatternCondition("@"))
+            )
+            .withLanguage(YAMLLanguage.INSTANCE);
     }
 
     /**
-     * find common service parameter
+     * find common service parameter: %foo%, %foo%, %foo%
      */
     public static ElementPattern<PsiElement> getServiceParameterDefinition() {
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.TEXT)
-                .withText(
-                    StandardPatterns.string().startsWith("%")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE)
-            ,
-            // @TODO: cleanup on PhpStorm8 support only
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .withText(
-                    StandardPatterns.string().startsWith("'%")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_STRING)
-                .withText(
-                    StandardPatterns.string().startsWith("\"%")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
-                .withText(
-                    StandardPatterns.string().startsWith("'%")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(YAMLTokenTypes.SCALAR_DSTRING)
-                .withText(
-                    StandardPatterns.string().startsWith("\"%")
-                )
-                .withLanguage(YAMLLanguage.INSTANCE)
-        );
+        return PlatformPatterns
+            .psiElement().with(SCALAR_ELEMENT_TYPES)
+            .withParent(
+                PlatformPatterns.psiElement(YAMLScalar.class).with(new YAMLScalarValueStartsWithPatternCondition("%"))
+            )
+            .withLanguage(YAMLLanguage.INSTANCE);
     }
 
     private static ElementPattern<? extends PsiFile> getOrmFilePattern() {
@@ -684,5 +637,37 @@ public class YamlElementPatternHelper {
                 )
             )
         ).inFile(getConfigFileNamePattern());
+    }
+
+    /**
+     * Match elements types
+     */
+    private static class ElementTypePatternCondition extends PatternCondition<PsiElement> {
+        private final IElementType[] elementType;
+
+        ElementTypePatternCondition(IElementType... elementType) {
+            super("IElementType matcher");
+            this.elementType = elementType;
+        }
+
+        @Override
+        public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+            return ArrayUtils.contains(elementType, psiElement.getNode().getElementType());
+        }
+    }
+
+    private static class YAMLScalarValueStartsWithPatternCondition extends PatternCondition<YAMLScalar> {
+            @NotNull
+        private final String value;
+
+        YAMLScalarValueStartsWithPatternCondition(@NotNull String value) {
+            super("YAMLScalar startsWith");
+            this.value = value;
+        }
+
+        @Override
+        public boolean accepts(@NotNull YAMLScalar yamlScalar, ProcessingContext processingContext) {
+            return StringUtils.startsWith(yamlScalar.getTextValue(), value);
+        }
     }
 }

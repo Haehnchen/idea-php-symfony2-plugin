@@ -101,6 +101,34 @@ public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixture
         );
     }
 
+    public void testGetServiceDefinition() {
+        String[] strings = {
+            "@f<caret>oo",
+            "'@f<caret>oo'",
+            "\"@f<caret>oo\"",
+        };
+
+        for (String s : strings) {
+            assertTrue(YamlElementPatternHelper.getServiceDefinition().accepts(createCaretElement(
+                "argument: " + s, "foo.orm.yml"
+            )));
+        }
+    }
+
+    public void testGetServiceParameterDefinition() {
+        String[] strings = {
+            "%fo<caret>o%",
+            "'%fo<caret>o%'",
+            "\"%fo<caret>o%\"",
+        };
+
+        for (String s : strings) {
+            assertTrue(YamlElementPatternHelper.getServiceParameterDefinition().accepts(createCaretElement(
+                "argument: " + s, "foo.orm.yml"
+            )));
+        }
+    }
+
     public void testGetSuperParentArrayKey() {
         assertTrue(YamlElementPatternHelper.getSuperParentArrayKey("services").accepts(createCaretElement(
             "services:\n" +
