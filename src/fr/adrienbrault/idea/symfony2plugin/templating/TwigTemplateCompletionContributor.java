@@ -384,28 +384,21 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
                     }
 
-
                     int foo = parameters.getOffset() - position.getTextRange().getStartOffset();
                     String before = position.getText().substring(0, foo);
                     String[] parts = before.split("::");
 
                     if(parts.length >= 1) {
-                        PhpClass phpClass = PhpElementsUtil.getClassInterface(position.getProject(), parts[0]);
+                        PhpClass phpClass = PhpElementsUtil.getClassInterface(position.getProject(), parts[0].replace("\\\\", "\\"));
                         if(phpClass != null) {
-                            for(Field field: phpClass.getFields()) {
-                                if(field.isConstant()) {
-                                    resultSet.addElement(LookupElementBuilder.create(phpClass.getPresentableFQN() + "::" + field.getName()).withIcon(PhpIcons.CONSTANT));
-                                }
-                            }
+                            phpClass.getFields().stream().filter(Field::isConstant).forEach(field ->
+                                resultSet.addElement(LookupElementBuilder.create(phpClass.getPresentableFQN().replace("\\", "\\\\") + "::" + field.getName()).withIcon(PhpIcons.CONSTANT))
+                            );
                         }
                     }
-
                 }
             }
-
         );
-
-
     }
 
     private static class FilterCompletionProvider extends CompletionProvider<CompletionParameters> {

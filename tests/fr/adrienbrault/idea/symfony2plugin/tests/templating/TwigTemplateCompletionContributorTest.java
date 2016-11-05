@@ -7,6 +7,7 @@ import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -14,6 +15,15 @@ import java.io.IOException;
  * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
  */
 public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    public void setUp() throws Exception {
+        super.setUp();
+        myFixture.copyFileToProject("classes.php");
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
@@ -63,6 +73,10 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
 
     public void testThatInlineVarProvidesClassCompletionDeprecated() {
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar Date<caret> #}", "DateTime");
+    }
+
+    public void testThatConstantProvidesCompletionForClassAndDefine() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
     }
 
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
