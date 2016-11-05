@@ -33,8 +33,10 @@ import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TwigControllerLineMarkerProvider implements LineMarkerProvider {
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
+public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     private TemplateFileMap templateMapCache = null;
 
