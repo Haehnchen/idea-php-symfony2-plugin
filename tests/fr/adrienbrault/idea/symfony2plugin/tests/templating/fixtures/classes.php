@@ -1,5 +1,10 @@
 <?php
 
+namespace
+{
+    define('CONST_FOO', 'CONST_FOO');
+}
+
 namespace Symfony\Component\HttpKernel\Bundle
 {
     interface Bundle {}

@@ -108,7 +108,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         }
 
         // constant('Post::PUBLISHED')
-        if(TwigHelper.getPrintBlockFunctionPattern("constant").accepts(psiElement)) {
+        if(TwigHelper.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement)) {
             psiElements.addAll(this.getConstantGoto(psiElement));
         }
 
@@ -147,7 +147,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             return targetPsiElements;
         }
 
-        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), parts[0]);
+        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), parts[0].replace("\\\\", "\\"));
         if(phpClass == null) {
             return targetPsiElements;
         }

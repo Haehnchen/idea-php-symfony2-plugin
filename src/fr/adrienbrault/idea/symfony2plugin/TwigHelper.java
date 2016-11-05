@@ -562,7 +562,9 @@ public class TwigHelper {
             .withParent(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
-                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG),
+                    PlatformPatterns.psiElement(TwigElementTypes.IF_TAG),
+                    PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
                 )
             )
             .afterLeafSkipping(

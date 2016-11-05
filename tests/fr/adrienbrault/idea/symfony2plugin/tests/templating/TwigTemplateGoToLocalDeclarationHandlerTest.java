@@ -1,13 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.util.regex.Matcher;
+import java.io.File;
 import java.util.regex.Pattern;
 
 /**
@@ -18,6 +19,11 @@ public class TwigTemplateGoToLocalDeclarationHandlerTest extends SymfonyLightCod
 
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("classes.php");
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     public void testGetVarClassGoto() {
@@ -44,5 +50,15 @@ public class TwigTemplateGoToLocalDeclarationHandlerTest extends SymfonyLightCod
             assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + " #}").find());
             assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + "#}").find());
         }
+    }
+
+    public void testThatConstantProvidesNavigation() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') }}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\\\Foo\\\\ConstantBar\\\\Foo::F<caret>OO') }}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
+
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% set foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
+
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('CONST<caret>_FOO') }}", PlatformPatterns.psiElement());
     }
 }

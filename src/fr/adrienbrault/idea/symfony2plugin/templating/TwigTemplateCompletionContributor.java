@@ -368,7 +368,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {% constant('FOO') %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getPrintBlockFunctionPattern("constant"),
+            TwigHelper.getPrintBlockOrTagFunctionPattern("constant"),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            ProcessingContext context,

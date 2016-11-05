@@ -120,7 +120,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
     private void attachConstantFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
         // find path calls in file
         PsiElement[] constantReferences = PsiTreeUtil.collectElements(psiElement, psiElement1 ->
-            TwigHelper.getPrintBlockFunctionPattern("constant").accepts(psiElement1)
+            TwigHelper.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement1)
         );
 
         if(constantReferences.length == 0) {
