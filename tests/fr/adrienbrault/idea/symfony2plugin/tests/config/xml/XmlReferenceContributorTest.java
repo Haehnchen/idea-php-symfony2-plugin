@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -77,6 +78,32 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
                 "    </services>\n" +
                 "</container>\n",
             PlatformPatterns.psiElement(Method.class).withName("create")
+        );
+    }
+
+    public void testThatArgumentConstantProvidesReferences() {
+        assertReferenceMatch(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service>\n" +
+                "            <argument type=\"constant\">Foo\\Bar::FO<caret>O</argument>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement(Field.class).withName("FOO")
+        );
+
+        assertReferenceMatch(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service>\n" +
+                "            <argument type=\"constant\">CONS<caret>T_FOO</argument>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement()
         );
     }
 }

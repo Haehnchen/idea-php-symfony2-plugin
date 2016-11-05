@@ -116,6 +116,32 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             }
         );
 
+        // <argument type="constant">Foobar\Foo</argument>
+        registrar.registerReferenceProvider(
+            XmlHelper.getArgumentValueWithTypePattern("constant"),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    PsiElement parent = psiElement.getParent();
+                    if(!(parent instanceof XmlText)) {
+                        return new PsiReference[0];
+                    }
+
+                    String text = parent.getText();
+                    if(StringUtils.isBlank(text)) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new ConstantXmlReference(((XmlText) parent)) };
+                }
+            }
+        );
+
         // <tag name="kernel.event_subscriber" />
         registrar.registerReferenceProvider(
             XmlHelper.getTagAttributePattern("tag", "name")

@@ -185,6 +185,24 @@ public class XmlHelper {
     }
 
     /**
+     * <argument type="constant">Foo\Bar::CONST</argument>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getArgumentValueWithTypePattern(@NotNull String type) {
+        return XmlPatterns
+            .psiElement(XmlTokenType.XML_DATA_CHARACTERS)
+            .withParent(XmlPatterns
+                .xmlText()
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withName("argument")
+                    .withAttributeValue("type", type)
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * <autowiring-type>Foo\Class</autowiring-type>
      */
     public static PsiElementPattern.Capture<PsiElement> getAutowiringTypePattern() {
