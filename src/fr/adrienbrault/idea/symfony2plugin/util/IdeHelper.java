@@ -116,20 +116,6 @@ public class IdeHelper {
         }
     }
 
-    /**
-     * pre phpstorm 7.1 dont support getStatusBar in this way
-     */
-    public static boolean supportsStatusBar() {
-        try {
-            WindowManager.getInstance().getClass().getMethod("getStatusBar", Project.class);
-            StatusBar.class.getMethod("getWidget", String.class);
-            
-            return true;
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
-    }
-
     public static void notifyEnableMessage(final Project project) {
 
         Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, (notification1, event) -> {

@@ -109,13 +109,6 @@ public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixture
             "       car: foo\n"
         )));
 
-        // @TODO: PhpStorm <= 9 drop
-        int baselineVersion = ApplicationInfo.getInstance().getBuild().getBaselineVersion();
-        if(baselineVersion < 143) {
-            System.out.println("Skipping testGetSuperParentArrayKey for wrong baseline version");
-            return;
-        }
-
         assertTrue(YamlElementPatternHelper.getSuperParentArrayKey("services").accepts(createCaretElement(
             "services:\n" +
                 "   foo:\n" +

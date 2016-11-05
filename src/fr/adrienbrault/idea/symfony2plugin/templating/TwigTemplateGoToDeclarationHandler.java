@@ -100,7 +100,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return domainPsiFiles.toArray(new PsiElement[domainPsiFiles.size()]);
         }
 
-        if(TwigHelper.getAutocompletableFilterPattern().accepts(psiElement)) {
+        if(TwigHelper.getFilterPattern().accepts(psiElement)) {
             return getFilterGoTo(psiElement);
         }
 

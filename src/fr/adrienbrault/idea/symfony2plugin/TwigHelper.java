@@ -1073,16 +1073,6 @@ public class TwigHelper {
                 .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static ElementPattern<PsiElement> getAutocompletableFilterPattern() {
-        return
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.IDENTIFIER)
-                .afterLeaf(
-                    PlatformPatterns.psiElement(TwigTokenTypes.FILTER)
-                )
-                .withLanguage(TwigLanguage.INSTANCE);
-    }
-
     public static ElementPattern<PsiElement> getAutocompletableAssetTag(String tagName) {
         // @TODO: withChild is not working so we are filtering on text
 
@@ -1173,6 +1163,22 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
                 ),
                 PlatformPatterns.psiElement(TwigTokenTypes.IN)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {{ 'test'|<caret> }}
+     */
+    public static ElementPattern<PsiElement> getFilterPattern() {
+        //noinspection unchecked
+        return PlatformPatterns.psiElement()
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }

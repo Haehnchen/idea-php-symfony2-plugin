@@ -15,7 +15,6 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -173,18 +172,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
         );
 
-        // workaround for blocked twig filter completion in pre PhpStorm8 (WI-19022)
-        extend(
-            CompletionType.SMART,
-            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE)),
-            new FilterCompletionProvider()
-        );
-
-        // PhpStorm8 (since Twig plugin 136.1770.) allows twig filter completion without hack
-        // @TODO: use twig FILTER pattern if we have a working eap
+        // {{ 'test'|<caret> }}
         extend(
             CompletionType.BASIC,
-            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE)),
+            TwigHelper.getFilterPattern(),
             new FilterCompletionProvider()
         );
 
