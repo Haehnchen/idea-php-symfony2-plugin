@@ -68,7 +68,7 @@ public class TwigHelper {
 
     public static String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
     public static String[] JS_FILES_EXTENSIONS = new String[] { "js", "dart", "coffee" };
-    public static String[] IMG_FILES_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "gif" };
+    public static String[] IMG_FILES_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "gif", "svg"};
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
