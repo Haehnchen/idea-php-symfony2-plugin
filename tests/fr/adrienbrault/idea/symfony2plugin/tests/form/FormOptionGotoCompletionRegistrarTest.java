@@ -15,6 +15,7 @@ public class FormOptionGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
 
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("FormOptionGotoCompletionRegistrar.php");
     }
 

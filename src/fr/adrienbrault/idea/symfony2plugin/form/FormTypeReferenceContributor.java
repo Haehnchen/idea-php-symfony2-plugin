@@ -83,11 +83,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline") || keyString.equals("placeholder")) {
 
                             // translation_domain in current array block
-                            String translationDomain = PhpElementsUtil.getArrayHashValue(arrayCreation, "translation_domain");
-                            if(translationDomain == null) {
-                                translationDomain = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "translation_domain");
-                            }
-
+                            String translationDomain = FormOptionsUtil.getTranslationFromScope(arrayCreation);
                             if(translationDomain == null) {
                                 translationDomain = "messages";
                             }

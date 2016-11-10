@@ -4,20 +4,22 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationDomainGotoCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpMethodReferenceCall;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpPsiMatcher;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +30,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+  */
 public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
     private static final PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher CHOICE_TRANSLATION_DOMAIN_MATCHER = new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
@@ -151,7 +156,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         });
 
-        /**
+        /*
          * $builder->add('foo', null, [
          *    'choice_translation_domain => '<caret>',
          *    'translation_domain => '<caret>',
@@ -170,6 +175,52 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             return new TranslationDomainGotoCompletionProvider(psiElement);
+        });
+
+        /*
+         * $builder->add('foo', null, [
+         *    'choice_translation_domain => 'foobar',
+         *    'choices => [
+         *      '<caret>' => '<caret>',
+         *    ],
+         * ]);
+         */
+        registrar.register(PlatformPatterns.psiElement(), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)) {
+                return null;
+            }
+
+            // Symfony 2.x: choices as value
+            PsiElement choicesArrayValue1 = parent.getParent();
+            if(choicesArrayValue1.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+                PsiElement parent1 = choicesArrayValue1.getParent();
+                if(parent1 instanceof ArrayHashElement) {
+                    PsiElement choices = parent1.getParent();
+                    if(choices instanceof ArrayCreationExpression) {
+                        return createTranslationGotoCompletionWithLabelSwitch(psiElement, (ArrayCreationExpression) choices, arrayCreationExpression -> {
+                            // <= 2.7 always choices are values
+                            PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreationExpression, "choices_as_values");
+                            if(value == null) {
+                                return SymfonyUtil.isVersionLessThenEquals(arrayCreationExpression.getProject(), "2.7");
+                            }
+
+                            return !(value instanceof ConstantReference && "false".equalsIgnoreCase(value.getName()));
+                        });
+                    }
+                }
+            }
+
+            // Symfony 3.x: choices as key
+            ArrayCreationExpression choices = PhpElementsUtil.getCompletableArrayCreationElement(parent);
+            if(choices != null) {
+                return createTranslationGotoCompletionWithLabelSwitch(psiElement, choices, arrayCreationExpression -> {
+                    PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreationExpression, "choices_as_values");
+                    return !(value instanceof ConstantReference && "false".equalsIgnoreCase(value.getName()));
+                });
+            }
+
+            return null;
         });
     }
 
@@ -274,5 +325,77 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         String presentableFQN = phpClass.getPresentableFQN();
         return new FormOptionsGotoCompletionProvider(psiElement, presentableFQN, FormOption.EXTENSION, FormOption.DEFAULT_OPTIONS);
+    }
+
+    @Nullable
+    private GotoCompletionProvider createTranslationGotoCompletionWithLabelSwitch(@NotNull PsiElement origin, @NotNull ArrayCreationExpression choices, Processor<ArrayCreationExpression> processor) {
+        PsiElement choicesArrayValue = choices.getParent();
+        if(choicesArrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+            PsiElement choicesValueHash = choicesArrayValue.getParent();
+            if(choicesValueHash instanceof ArrayHashElement) {
+                PhpPsiElement transKey = ((ArrayHashElement) choicesValueHash).getKey();
+                String stringValue = PhpElementsUtil.getStringValue(transKey);
+
+                if("choices".equals(stringValue)) {
+                    PsiElement choicesKey = transKey.getParent();
+                    if(choicesKey.getNode().getElementType() == PhpElementTypes.ARRAY_KEY) {
+                        PsiElement formOptionsHash = choicesKey.getParent();
+                        if(formOptionsHash instanceof ArrayHashElement) {
+                            PsiElement arrayCreation = formOptionsHash.getParent();
+                            if(arrayCreation instanceof ArrayCreationExpression) {
+                                if(processor.process((ArrayCreationExpression) arrayCreation)) {
+                                    return createTranslationGotoCompletion(origin, arrayCreation);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private GotoCompletionProvider createTranslationGotoCompletion(@NotNull PsiElement psiElement, @NotNull PsiElement arrayCreation) {
+        int parameterIndexValue = PsiElementUtils.getParameterIndexValue(arrayCreation);
+        if(parameterIndexValue != 2) {
+            return null;
+        }
+
+        PsiElement parameterList = arrayCreation.getParent();
+        if(parameterList instanceof ParameterList) {
+            PsiElement methodReference = parameterList.getParent();
+            if(methodReference instanceof MethodReference) {
+                if(PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, "\\Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
+                    PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, "\\Symfony\\Component\\Form\\FormBuilderInterface", "create")
+                    ) {
+                    return new TranslationGotoCompletionProvider(psiElement, extractTranslationDomainFromScope((ArrayCreationExpression) arrayCreation));
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @NotNull
+    private String extractTranslationDomainFromScope(@NotNull ArrayCreationExpression arrayCreation) {
+        String domain = "messages";
+        PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreation, "choice_translation_domain");
+
+        if(value instanceof StringLiteralExpression) {
+            String contents = PhpElementsUtil.getStringValue(value);
+            if(contents != null) {
+                domain = contents;
+            }
+        } else {
+            // translation_domain in current array block
+            String translationDomain = FormOptionsUtil.getTranslationFromScope(arrayCreation);
+            if(translationDomain != null) {
+                domain = translationDomain;
+            }
+        }
+
+        return domain;
     }
 }

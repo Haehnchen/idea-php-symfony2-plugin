@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -416,4 +417,15 @@ public class FormOptionsUtil {
         return lookupElements;
     }
 
+    @Nullable
+    public static String getTranslationFromScope(@NotNull ArrayCreationExpression arrayCreation) {
+        // translation_domain in current array block
+        String translationDomain = PhpElementsUtil.getArrayHashValue(arrayCreation, "translation_domain");
+        if(translationDomain == null) {
+            // find on default options inside FormType
+            translationDomain = PhpElementsUtil.getArrayKeyValueInsideSignature(arrayCreation, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "translation_domain");
+        }
+
+        return translationDomain;
+    }
 }

@@ -3,6 +3,7 @@
 namespace Symfony\Component\Form {
     interface FormTypeInterface {
         public function setDefaultOptions(OptionsResolverInterface $resolver);
+        public function configureOptions(OptionsResolver $resolver);
         public function getName();
     }
     interface FormBuilderInterface {
