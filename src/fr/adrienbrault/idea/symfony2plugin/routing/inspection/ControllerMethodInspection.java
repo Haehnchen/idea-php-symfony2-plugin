@@ -67,7 +67,7 @@ public class ControllerMethodInspection extends LocalInspectionTool {
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {
-                if(XmlHelper.getRouteConfigControllerPattern().accepts(element)) {
+                if(XmlHelper.getRouteDefaultWithKeyAttributePattern("_controller").accepts(element)) {
                     String text = PsiElementUtils.trimQuote(element.getText());
                     if(StringUtils.isNotBlank(text)) {
                         InspectionUtil.inspectController(element, text, holder, new XmlLazyRouteName(element));

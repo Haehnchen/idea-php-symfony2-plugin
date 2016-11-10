@@ -14,7 +14,7 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(PsiReferenceRegistrar registrar) {
 
         registrar.registerReferenceProvider(
-            XmlHelper.getRouteConfigControllerPattern(),
+            XmlHelper.getRouteDefaultWithKeyAttributePattern("_controller"),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override

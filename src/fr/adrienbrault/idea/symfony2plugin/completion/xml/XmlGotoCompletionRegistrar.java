@@ -18,6 +18,8 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
@@ -52,6 +54,18 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                 .inside(XmlHelper.getInsideTagPattern("services"))
                 .inFile(XmlHelper.getXmlFilePattern())),
             ServiceFactoryMethodCompletionProvider::new
+        );
+
+        // <default key="route">sonata_admin_dashboard</default>
+        registrar.register(
+            XmlHelper.getRouteDefaultWithKeyAttributePattern("route"),
+            RouteGotoCompletionProvider::new
+        );
+
+        // <default key="template">foobar.html.twig</default>
+        registrar.register(
+            XmlHelper.getRouteDefaultWithKeyAttributePattern("template"),
+            TemplateGotoCompletionRegistrar::new
         );
     }
 
