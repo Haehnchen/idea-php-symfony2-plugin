@@ -1234,17 +1234,26 @@ public class PhpElementsUtil {
      * Resolves MethodReference and compare containing class against implementations instances
      */
     public static boolean isMethodReferenceInstanceOf(@NotNull MethodReference methodReference, @NotNull String expectedClassName) {
-        PsiElement resolve = methodReference.resolve();
-        if(!(resolve instanceof Method)) {
-            return false;
+        for (ResolveResult resolveResult : methodReference.multiResolve(false)) {
+            PsiElement resolve = resolveResult.getElement();
+
+            if(!(resolve instanceof Method)) {
+                continue;
+            }
+
+            PhpClass containingClass = ((Method) resolve).getContainingClass();
+            if(containingClass == null) {
+                continue;
+            }
+
+            if(!PhpElementsUtil.isInstanceOf(containingClass, expectedClassName)) {
+                continue;
+            }
+
+            return true;
         }
 
-        PhpClass containingClass = ((Method) resolve).getContainingClass();
-        if(containingClass == null) {
-            return false;
-        }
-
-        return PhpElementsUtil.isInstanceOf(containingClass, expectedClassName);
+        return false;
     }
 
     /**
@@ -1255,17 +1264,7 @@ public class PhpElementsUtil {
             return false;
         }
 
-        PsiElement resolve = methodReference.resolve();
-        if(!(resolve instanceof Method)) {
-            return false;
-        }
-
-        PhpClass containingClass = ((Method) resolve).getContainingClass();
-        if(containingClass == null) {
-            return false;
-        }
-
-        return PhpElementsUtil.isInstanceOf(containingClass, expectedClassName);
+        return isMethodReferenceInstanceOf(methodReference, expectedClassName);
     }
 
     public static void replaceElementWithClassConstant(@NotNull PhpClass phpClass, @NotNull PsiElement originElement) throws Exception{
