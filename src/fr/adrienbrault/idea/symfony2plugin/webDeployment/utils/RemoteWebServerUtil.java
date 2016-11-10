@@ -6,6 +6,8 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.plugins.webDeployment.ConnectionOwnerFactory;
+import com.jetbrains.plugins.webDeployment.PublishUtils;
+import com.jetbrains.plugins.webDeployment.config.Deployable;
 import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
@@ -65,9 +67,10 @@ public class RemoteWebServerUtil {
             return;
         }
 
+        Deployable deployable = Deployable.create(defaultServer);
         RemoteConnection connection;
         try {
-            connection = RemoteConnectionManager.getInstance().openConnection(ConnectionOwnerFactory.createConnectionOwner(project), "foo", defaultServer, FileTransferConfig.Origin.Default, null, null);
+            connection = RemoteConnectionManager.getInstance().openConnection(ConnectionOwnerFactory.createConnectionOwner(project), "foo", deployable, FileTransferConfig.Origin.Default, null, null);
         } catch (FileSystemException e) {
             return;
         }
@@ -79,7 +82,7 @@ public class RemoteWebServerUtil {
 
                 FileObject file;
                 try {
-                    file = defaultServer.findFile(connection.getFileSystem(), new WebServerConfig.RemotePath((String) s));
+                    file = PublishUtils.findFile(connection.getFileSystem(), new WebServerConfig.RemotePath((String) s), deployable);
                 } catch (FileSystemException e) {
                     continue;
                 }
