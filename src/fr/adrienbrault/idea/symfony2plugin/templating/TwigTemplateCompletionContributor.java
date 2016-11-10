@@ -454,6 +454,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }
 
+            // add special tag ending, provide a static list. there no suitable safe way to extract them
+            // search able via: "return $token->test(array('end"
+            for (String s : new String[]{"endtranschoice", "endtrans"}) {
+                resultSet.addElement(LookupElementBuilder.create(s).withIcon(Symfony2Icons.SYMFONY));
+            }
         }
     }
 
