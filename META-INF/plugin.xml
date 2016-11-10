@@ -625,6 +625,7 @@ add template annotation usage indexer and add scope to reduce element visiting, 
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineYamlGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.xml.XmlGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.dic.registrar.DicGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlGotoCompletionRegistrar"/>
 
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.JsonFileIndexTwigNamespaces"/>
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ConfigAddPathTwigNamespaces"/>

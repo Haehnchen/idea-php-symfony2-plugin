@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.completion.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.patterns.PlatformPatterns;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -16,6 +17,7 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         super.setUp();
         myFixture.configureByText("config_foo.xml", "<foo/>");
         myFixture.copyFileToProject("services.xml");
+        myFixture.copyFileToProject("routes.xml");
         myFixture.copyFileToProject("XmlGotoCompletionRegistrar.php");
     }
 
@@ -76,6 +78,44 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
                 "    </services>\n" +
                 "</container>\n",
             "create"
+        );
+    }
+
+    public void testThatRouteInsideRouteDefaultKeyCompletedAndNavigable() {
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "    <route id=\"root\" path=\"/wp-admin\">\n" +
+                "        <default key=\"route\"><caret></default>\n" +
+                "    </route>",
+            "foo_route"
+        );
+
+        assertNavigationMatch(XmlFileType.INSTANCE, "" +
+                "    <route id=\"root\" path=\"/wp-admin\">\n" +
+                "        <default key=\"route\">foo_<caret>route</default>\n" +
+                "    </route>"
+        );
+    }
+
+    public void testThatTemplateInsideRouteDefaultKeyCompletedAndNavigable() {
+        if(System.getenv("PHPSTORM_ENV") != null) return;
+
+        try {
+            createDummyFiles("app/Resources/views/foo.html.twig");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "    <route id=\"root\" path=\"/wp-admin\">\n" +
+                "        <default key=\"template\"><caret></default>\n" +
+                "    </route>",
+            "foo.html.twig"
+        );
+
+        assertNavigationMatch(XmlFileType.INSTANCE, "" +
+            "    <route id=\"root\" path=\"/wp-admin\">\n" +
+            "        <default key=\"template\">foo.ht<caret>ml.twig</default>\n" +
+            "    </route>"
         );
     }
 }
