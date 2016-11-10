@@ -80,7 +80,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         String keyString = key.getContents();
 
                         // @TODO: how to handle custom bundle fields like help_block
-                        if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline")) {
+                        if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline") || keyString.equals("placeholder")) {
 
                             // translation_domain in current array block
                             String translationDomain = PhpElementsUtil.getArrayHashValue(arrayCreation, "translation_domain");
