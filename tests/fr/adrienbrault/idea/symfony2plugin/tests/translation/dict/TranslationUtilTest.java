@@ -94,4 +94,26 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             psiElement instanceof XmlTag && "foo".equals(((XmlTag) psiElement).getValue().getText()))
         );
     }
+
+    public void testGetTargetForXlfAsXmlFileInVersion20Shortcut() {
+        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(XMLLanguage.INSTANCE, "" +
+            "<xliff xmlns=\"urn:oasis:names:tc:xliff:document:2.0\" version=\"2.0\"\n" +
+            " srcLang=\"en-US\" trgLang=\"ja-JP\">\n" +
+            " <file id=\"f1\" original=\"Graphic Example.psd\">\n" +
+            "  <skeleton href=\"Graphic Example.psd.skl\"/>\n" +
+            "  <unit id=\"1\">\n" +
+            "   <segment>\n" +
+            "    <source>foo</source>\n" +
+            "   </segment>\n" +
+            "  </unit>\n" +
+            " </file>\n" +
+            "</xliff>"
+        );
+
+        Collection<PsiElement> files = TranslationUtil.getTargetForXlfAsXmlFile((XmlFile) fileFromText, "foo");
+
+        assertNotNull(ContainerUtil.find(files, psiElement ->
+            psiElement instanceof XmlTag && "foo".equals(((XmlTag) psiElement).getValue().getText()))
+        );
+    }
 }

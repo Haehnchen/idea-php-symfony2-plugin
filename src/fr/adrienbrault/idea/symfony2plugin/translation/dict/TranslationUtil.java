@@ -140,9 +140,10 @@ public class TranslationUtil {
 
     /**
      * Find targets for xlf files if registered as XML
-
+     *
      * 1.2 xliff -> file -> body -> trans-unit -> source
      * 2.0 xliff -> file -> group -> unit -> segment -> source
+     * 2.0 xliff -> file -> unit -> segment -> source
      */
     @NotNull
     public static Collection<PsiElement> getTargetForXlfAsXmlFile(@NotNull XmlFile xmlFile, @NotNull String key) {
@@ -178,6 +179,13 @@ public class TranslationUtil {
                     for (XmlTag segment : unit.findSubTags("segment")) {
                         consumer.consume(segment);
                     }
+                }
+            }
+
+            // version="2.0" shortcut
+            for (XmlTag unit : file.findSubTags("unit")) {
+                for (XmlTag segment : unit.findSubTags("segment")) {
+                    consumer.consume(segment);
                 }
             }
         }
