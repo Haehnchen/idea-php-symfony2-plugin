@@ -9,7 +9,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Processor;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -43,6 +45,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TranslationUtil {
 
@@ -108,7 +111,7 @@ public class TranslationUtil {
             return true;
         };
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domain)), virtualFile -> {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
             // prevent duplicate targets and dont walk same file twice
             if(virtualFilesFound.contains(virtualFile)) {
                 return true;
@@ -117,21 +120,69 @@ public class TranslationUtil {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
             if(psiFile instanceof YAMLFile) {
                 YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
-            } else if("xlf".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null) {
+            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension())) && psiFile instanceof XmlFile) {
+                // fine: xlf registered as XML file. try to find source value
+                psiFoundElements.addAll(getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));
+            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null)) {
                 // xlf are plain text because not supported by jetbrains
                 // for now we can only set file target
-                for(Set<String> string: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Arrays.asList(virtualFile)))) {
-                    if(string.contains(translationKey)) {
-                        psiFoundElements.add(psiFile);
-                    }
-                }
+                psiFoundElements.addAll(
+                    FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile)))
+                    .stream().filter(string -> string.contains(translationKey)).map(string -> psiFile).collect(Collectors.toList())
+                );
             }
 
             return true;
         }, GlobalSearchScope.allScope(project));
 
-
         return psiFoundElements.toArray(new PsiElement[psiFoundElements.size()]);
+    }
+
+    /**
+     * Find targets for xlf files if registered as XML
+
+     * 1.2 xliff -> file -> body -> trans-unit -> source
+     * 2.0 xliff -> file -> group -> unit -> segment -> source
+     */
+    @NotNull
+    public static Collection<PsiElement> getTargetForXlfAsXmlFile(@NotNull XmlFile xmlFile, @NotNull String key) {
+        XmlTag rootTag = xmlFile.getRootTag();
+        if(rootTag == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> psiElements = new ArrayList<>();
+
+        // find source key
+        Consumer<XmlTag> consumer = xmlTag -> {
+            XmlTag source = xmlTag.findFirstSubTag("source");
+            if (source != null) {
+                String text = source.getValue().getText();
+                if (key.equalsIgnoreCase(text)) {
+                    psiElements.add(source);
+                }
+            }
+        };
+
+        for (XmlTag file : rootTag.findSubTags("file")) {
+            // version="1.2"
+            for (XmlTag body : file.findSubTags("body")) {
+                for (XmlTag transUnit : body.findSubTags("trans-unit")) {
+                    consumer.consume(transUnit);
+                  }
+            }
+
+            // version="2.0"
+            for (XmlTag group : file.findSubTags("group")) {
+                for (XmlTag unit : group.findSubTags("unit")) {
+                    for (XmlTag segment : unit.findSubTags("segment")) {
+                        consumer.consume(segment);
+                    }
+                }
+            }
+        }
+
+        return psiElements;
     }
 
     public static boolean hasDomain(Project project, String domainName) {
