@@ -7,6 +7,20 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.131
+* Disable Twig icon provider; performance issue? [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809)
+* Support new IF_TAG, SET_TAG tokens for Twig function pattern and fix Twig class constant usages
+* Twig class constant string need to be slash escaped
+* Add references for 'argument type="constant"' inside container services
+* Drop some old PhpStorm / Intellij api workarounds
+* Drop all Yaml scalar value workarounds for service and parameter pattern
+* Fix no autocomplete for SVG assets [#753](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/753)
+* Add form placeholder options to translatable value
+* Provide route name completion in routes using the RedirectController [#386](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/386), also support template names for TemplateController
+* Add {% endtrans %} and {% endtranschoice %} to autocomplete in Twig templates [#599](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/599)
+* Add XLIFF navigation and translation generation if "*.xlf" / "*.xliff" extension is defined as XmlFile [#479](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/479), [#712](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/712)
+* Add PHP validator translation references for constraint message, ExecutionContextInterface and ConstraintViolationBuilderInterface
+
 ### 0.12.130
 * Add indexer for template usages in annotations [#773](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/773)
 * Add scope for template index to reduce variable extraction and improve performance [#800](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/800)

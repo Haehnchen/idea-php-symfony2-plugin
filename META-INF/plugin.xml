@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.130</version>
+    <version>0.12.131</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -105,8 +105,21 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
-
-add template annotation usage indexer and add scope to reduce element visiting, also supporting function for scopes #773, #800
+<h2>0.12.131</h2>
+<ul>
+    <li>Disable Twig icon provider; performance issue? <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809">#809</a></li>
+    <li>Support new IF_TAG, SET_TAG tokens for Twig function pattern and fix Twig class constant usages</li>
+    <li>Twig class constant string need to be slash escaped</li>
+    <li>Add references for 'argument type="constant"' inside container services</li>
+    <li>Drop some old PhpStorm / Intellij api workarounds</li>
+    <li>Drop all Yaml scalar value workarounds for service and parameter pattern</li>
+    <li>Fix no autocomplete for SVG assets <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/753">#753</a></li>
+    <li>Add form placeholder options to translatable value</li>
+    <li>Provide route name completion in routes using the RedirectController <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/386">#386</a>, also support template names for TemplateController</li>
+    <li>Add {% endtrans %} and {% endtranschoice %} to autocomplete in Twig templates <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/599">#599</a></li>
+    <li>Add XLIFF navigation and translation generation if "*.xlf" / "*.xliff" extension is defined as XmlFile <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/479">#479</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/712">#712</a></li>
+    <li>Add PHP validator translation references for constraint message, ExecutionContextInterface and ConstraintViolationBuilderInterface</li>
+</ul>
 
 <h2>0.12.130</h2>
 <ul>
