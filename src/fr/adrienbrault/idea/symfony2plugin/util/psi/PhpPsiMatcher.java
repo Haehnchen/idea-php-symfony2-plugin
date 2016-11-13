@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.psi;
 
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.matcher.ArrayValueWithKeyAndMethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.matcher.ArrayValueWithKeyAndNewExpressionMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,5 +16,14 @@ public class PhpPsiMatcher {
         return ArrayValueWithKeyAndMethod.match(psiElement, matcher);
     }
 
+    /**
+     * new Foo(['message' => '<caret>'])
+     */
+    @Nullable
+    public static ArrayValueWithKeyAndNewExpressionMatcher.Result match(@NotNull PsiElement psiElement, @NotNull ArrayValueWithKeyAndNewExpressionMatcher.Matcher matcher) {
+        return ArrayValueWithKeyAndNewExpression.match(psiElement, matcher);
+    }
+
     final public static class ArrayValueWithKeyAndMethod extends ArrayValueWithKeyAndMethodMatcher {}
+    final public static class ArrayValueWithKeyAndNewExpression extends ArrayValueWithKeyAndNewExpressionMatcher {}
 }
