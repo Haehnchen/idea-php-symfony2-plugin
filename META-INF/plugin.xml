@@ -18,11 +18,7 @@
     <li>(Optional) Ignore Symfony "cache" directory because of duplicate classes "Settings -> Project -> Directories"</li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
     <li>(Optional) Install <a href="http://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
-</ul>
-
-<h2>Open Api Issues</h2>
-<ul>
-    <li>Bug for all php types on clean cache <a href="http://youtrack.jetbrains.com/issue/WI-23727">WI-23727</a>; our issue <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/287">#287</a>: doctrine repository+entity, twig, ...</li>
+    <li>(Optional) To support <b>XLIFF translations</b> add "*.xlf" / "*.xliff" to XML "Editor" -> "File Types"</li>
 </ul>
 
 <h2>Features:</h2>

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation.form;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TranslatorKeyExtractorDialog extends JDialog {
 
@@ -116,12 +118,9 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
         // we only support yaml files right now
         // filter on PsiFile instance
-        Collection<PsiFile> domainPsiFilesYaml = new ArrayList<>();
-        for(PsiFile domainPsiFiles: TranslationUtil.getDomainPsiFiles(this.project, domainName)) {
-            if(domainPsiFiles instanceof YAMLFile) {
-                domainPsiFilesYaml.add(domainPsiFiles);
-            }
-        }
+        Collection<PsiFile> domainPsiFilesYaml = TranslationUtil.getDomainPsiFiles(this.project, domainName).stream()
+            .filter(domainPsiFile -> domainPsiFile instanceof YAMLFile || TranslationUtil.isSupportedXlfFile(domainPsiFile))
+            .collect(Collectors.toCollection(ArrayList::new));
 
         this.listTableModel.addRows(this.getFormattedFileModelList(domainPsiFilesYaml));
 

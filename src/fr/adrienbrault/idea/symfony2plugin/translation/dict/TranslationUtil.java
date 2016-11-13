@@ -118,12 +118,16 @@ public class TranslationUtil {
             }
 
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+            if(psiFile == null) {
+                return true;
+            }
+
             if(psiFile instanceof YAMLFile) {
                 YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
-            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension())) && psiFile instanceof XmlFile) {
+            } else if(isSupportedXlfFile(psiFile)) {
                 // fine: xlf registered as XML file. try to find source value
                 psiFoundElements.addAll(getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));
-            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()) && psiFile != null)) {
+            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()))) {
                 // xlf are plain text because not supported by jetbrains
                 // for now we can only set file target
                 psiFoundElements.addAll(
@@ -300,7 +304,7 @@ public class TranslationUtil {
             }
         }
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Arrays.asList(domainName)), virtualFile -> {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domainName)), virtualFile -> {
             if(uniqueFileList.contains(virtualFile)) {
                 return true;
             }
@@ -344,6 +348,15 @@ public class TranslationUtil {
         }
 
         return set;
+    }
+
+    public static boolean isSupportedXlfFile(@NotNull PsiFile psiFile) {
+        if(!(psiFile instanceof XmlFile)) {
+            return false;
+        }
+
+        String extension = psiFile.getVirtualFile().getExtension();
+        return "xlf".equalsIgnoreCase(extension) || "xliff".equalsIgnoreCase(extension);
     }
 
     private static void visitNodes(@NotNull String xpath, @NotNull Set<String> set, @NotNull Document document) {

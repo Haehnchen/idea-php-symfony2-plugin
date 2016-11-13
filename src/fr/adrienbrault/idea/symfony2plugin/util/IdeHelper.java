@@ -155,22 +155,6 @@ public class IdeHelper {
         if (descriptor != null) {
             descriptor.navigate(true);
         }
-
-        /*
-        Project project = psiElement.getProject();
-        PsiElement navElement = psiElement.getNavigationElement();
-        navElement = TargetElementUtilBase.getInstance().getGotoDeclarationTarget(psiElement, navElement);
-        if (navElement instanceof Navigatable) {
-            if (((Navigatable)navElement).canNavigate()) {
-                ((Navigatable)navElement).navigate(true);
-            }
-        }  else if (navElement != null) {
-            int navOffset = navElement.getTextOffset();
-            VirtualFile virtualFile = PsiUtilCore.getVirtualFile(navElement);
-            if (virtualFile != null) {
-                new OpenFileDescriptor(project, virtualFile, navOffset).navigate(true);
-            }
-        }*/
     }
 
 }

@@ -3,8 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.action;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.application.Result;
-import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
@@ -15,6 +15,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTokenType;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -26,20 +27,20 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtractorDialog;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TwigExtractLanguageAction extends DumbAwareAction {
 
     public TwigExtractLanguageAction() {
         super("Extract Translation", "Extract Translation Key", Symfony2Icons.SYMFONY);
     }
-
 
     public void update(AnActionEvent event) {
         Project project = event.getData(PlatformDataKeys.PROJECT);
@@ -129,10 +130,9 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             translationText = psiElement.getText();
         }
 
-        final Set<String> domainNames = new TreeSet<>();
-        for(LookupElement lookupElement: TranslationUtil.getTranslationDomainLookupElements(project)) {
-            domainNames.add(lookupElement.getLookupString());
-        }
+        final Set<String> domainNames = TranslationUtil.getTranslationDomainLookupElements(project).stream()
+            .map(LookupElement::getLookupString)
+            .collect(Collectors.toCollection(TreeSet::new));
 
         // get default domain on twig tag
         // also pipe it to insert handler; to append it as parameter
@@ -215,7 +215,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         private final int finalEndOffset;
         private final String finalTranslationText;
 
-        public MyOnOkCallback(Project project, Editor editor, String finalDefaultDomain, int finalStartOffset, int finalEndOffset, String finalTranslationText) {
+        MyOnOkCallback(Project project, Editor editor, String finalDefaultDomain, int finalStartOffset, int finalEndOffset, String finalTranslationText) {
             this.project = project;
             this.editor = editor;
             this.finalDefaultDomain = finalDefaultDomain;
@@ -226,37 +226,39 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
         @Override
         public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
-
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument());
 
-            new WriteCommandAction(project) {
-                @Override
-                protected void run(Result result) throws Throwable {
-                    String insertString;
+            // insert Twig trans key
+            CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication().runWriteAction(() -> {
+                String insertString;
 
-                    // check for file context domain
-                    if(finalDefaultDomain.equals(domain)) {
-                        insertString = String.format("{{ '%s'|trans }}", keyName);
-                    } else {
-                        insertString = String.format("{{ '%s'|trans({}, '%s') }}", keyName, domain);
-                    }
-
-                    editor.getDocument().replaceString(finalStartOffset, finalEndOffset, insertString);
-                    editor.getCaretModel().moveToOffset(finalEndOffset);
+                // check for file context domain
+                if(finalDefaultDomain.equals(domain)) {
+                    insertString = String.format("{{ '%s'|trans }}", keyName);
+                } else {
+                    insertString = String.format("{{ '%s'|trans({}, '%s') }}", keyName, domain);
                 }
 
-                @Override
-                public String getGroupID() {
-                    return "Translation Extraction";
-                }
-            }.execute();
+                editor.getDocument().replaceString(finalStartOffset, finalEndOffset, insertString);
+                editor.getCaretModel().moveToOffset(finalEndOffset);
+            }), "Twig Translation Insert " + keyName, null);
+
+            Collection<PsiElement> targets = new ArrayList<>();
 
             // so finally insert it; first file can be a navigation target
             for(TranslationFileModel transPsiFile: files) {
-                TranslationInsertUtil.invokeTranslation(editor, keyName, finalTranslationText, (YAMLFile) transPsiFile.getPsiFile(), navigateTo);
-                navigateTo = false;
+                PsiFile psiFile = transPsiFile.getPsiFile();
+
+                CommandProcessor.getInstance().executeCommand(psiFile.getProject(), () -> ApplicationManager.getApplication().runWriteAction(() -> {
+                    ContainerUtil.addIfNotNull(targets, TranslationInsertUtil.invokeTranslation(psiFile, keyName, finalTranslationText));
+                }), "Translation Insert " + psiFile.getName(), null);
             }
 
+            if(navigateTo && targets.size() > 0) {
+                PsiDocumentManager.getInstance(project).commitAndRunReadAction(() ->
+                    IdeHelper.navigateToPsiElement(targets.iterator().next())
+                );
+            }
         }
     }
 }
