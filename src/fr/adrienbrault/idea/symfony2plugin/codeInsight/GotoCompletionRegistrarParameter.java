@@ -5,5 +5,5 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
 public interface GotoCompletionRegistrarParameter {
-    public void register(@NotNull ElementPattern<? extends PsiElement> pattern, GotoCompletionContributor contributor);
+    void register(@NotNull ElementPattern<? extends PsiElement> pattern, GotoCompletionContributor contributor);
 }

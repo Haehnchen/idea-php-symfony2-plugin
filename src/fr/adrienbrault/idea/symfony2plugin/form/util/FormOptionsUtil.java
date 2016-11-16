@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,7 +29,21 @@ import java.util.*;
 public class FormOptionsUtil {
 
     public static final String EXTENDED_TYPE_METHOD = "getExtendedType";
-    public static final String[] FORM_OPTION_METHODS = new String[]{"setDefaultOptions", "configureOptions"};
+
+    /**
+     * Symfony2 / 3 Form setting options per FormType via method
+     */
+    public static final String[] FORM_OPTION_METHODS = {
+        "setDefaultOptions", "configureOptions"
+    };
+
+    /**
+     * Methods which provides possible form options on first parameter
+     */
+    private static final String[] OPTIONS_VIA_METHOD_PARAMETER = {
+        "setRequired", "setOptional", "setDefined", "setDefault",
+        "setAllowedValues", "addAllowedValues", "setAllowedTypes", "addAllowedTypes"
+    };
 
     /**
      * Find form extensions extends given form type
@@ -278,7 +293,7 @@ public class FormOptionsUtil {
 
     private static void getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor) {
 
-        for(String methodName: new String[] {"setDefaultOptions", "configureOptions"}) {
+        for(String methodName: FORM_OPTION_METHODS) {
 
             Method method = phpClass.findMethodByName(methodName);
             if(method == null) {
@@ -298,7 +313,7 @@ public class FormOptionsUtil {
 
                 } else {
                     // ->setRequired(['test', 'test2'])
-                    for(String currentMethod: new String[] {"setRequired", "setOptional", "setDefined"}) {
+                    for(String currentMethod: OPTIONS_VIA_METHOD_PARAMETER) {
                         if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, currentMethod)) {
                             PsiElement[] parameters = methodReference.getParameters();
                             if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
@@ -365,7 +380,7 @@ public class FormOptionsUtil {
         PhpClass phpClass = extensionKeys.get(value).getFormClass().getPhpClass();
 
         // Symfony <= 2.7 and > 2.7 api level search
-        for (String methodName : new String[]{"setDefaultOptions", "configureOptions"}) {
+        for (String methodName : FORM_OPTION_METHODS) {
             Method method = phpClass.findMethodByName(methodName);
             if(method == null) {
                 continue;
@@ -381,13 +396,9 @@ public class FormOptionsUtil {
     }
 
     public static Collection<LookupElement> getFormExtensionKeysLookupElements(Project project, String... formTypes) {
-        Collection<LookupElement> lookupElements = new ArrayList<>();
-
-        for(FormOption formOption: FormOptionsUtil.getFormExtensionKeys(project, formTypes).values()) {
-            lookupElements.add(FormOptionsUtil.getOptionLookupElement(formOption));
-        }
-
-        return lookupElements;
+        return FormOptionsUtil.getFormExtensionKeys(project, formTypes).values().stream()
+            .map(FormOptionsUtil::getOptionLookupElement)
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Deprecated

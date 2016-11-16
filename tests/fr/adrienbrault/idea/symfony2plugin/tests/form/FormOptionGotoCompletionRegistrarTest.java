@@ -64,4 +64,18 @@ public class FormOptionGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
             );
         }
     }
+
+    public void testFormReferenceCompletionProviderForDefaultOptionsParameter() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "/** @var $resolver \\Symfony\\Component\\OptionsResolver\\OptionsResolver */\n" +
+                "$resolver->setDefault('<caret>')",
+            "configure_options"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "/** @var $resolver \\Symfony\\Component\\OptionsResolver\\OptionsResolver */\n" +
+                "$resolver->setDefault('configure_<caret>options')",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

@@ -11,12 +11,12 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
-import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
+import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionTargetVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -29,16 +29,33 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistrar {
+    /**
+     * Symfony 2 / 3 switch
+     */
+    private static final String[] DEFAULT_FORM = {
+        "form",
+        "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"
+    };
 
     public void register(GotoCompletionRegistrarParameter registrar) {
-        registrar.register(PlatformPatterns.psiElement().withLanguage(PhpLanguage.INSTANCE), new FormOptionBuilderCompletionContributor());
+        registrar.register(
+            PlatformPatterns.psiElement().withLanguage(PhpLanguage.INSTANCE),
+            new FormOptionBuilderCompletionContributor()
+        );
+
+        /*
+         * eg "$resolver->setDefault('<caret>')"
+         */
+        registrar.register(
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.methodWithFirstStringPattern()),
+            new OptionDefaultCompletionContributor()
+        );
     }
 
     private static class FormOptionBuilderCompletionContributor implements GotoCompletionContributor {
         @Nullable
         @Override
         public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }
@@ -60,7 +77,6 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             return null;
-
         }
 
         @Nullable
@@ -84,14 +100,13 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
             return new FormReferenceCompletionProvider(psiElement, formTypeName);
         }
-
     }
 
     private static class FormReferenceCompletionProvider extends GotoCompletionProvider {
 
         private final String formType;
 
-        public FormReferenceCompletionProvider(@NotNull PsiElement element, @NotNull String formType) {
+        FormReferenceCompletionProvider(@NotNull PsiElement element, @NotNull String formType) {
             super(element);
             this.formType = formType;
         }
@@ -110,13 +125,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             final Collection<PsiElement> psiElements = new ArrayList<>();
-
-            FormOptionsUtil.visitFormOptions(getProject(), formType, (psiElement1, option, formClass, optionEnum) -> {
-                if (option.equals(value)) {
-                    psiElements.add(psiElement1);
-                }
-            });
-
+            FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionTargetVisitor(value, psiElements));
             return psiElements;
         }
 
@@ -126,6 +135,78 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
             return lookupElements;
         }
+    }
 
+    /*
+     * eg "$resolver->setDefault('<caret>')"
+     */
+    private static class FormOptionGotoCompletionProvider extends GotoCompletionProvider {
+        FormOptionGotoCompletionProvider(PsiElement psiElement) {
+            super(psiElement);
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+            Collection<LookupElement> elements = new ArrayList<>();
+
+            for (String formType : DEFAULT_FORM) {
+                FormOptionsUtil.visitFormOptions(
+                    getElement().getProject(), formType, new FormOptionLookupVisitor(elements)
+                );
+            }
+
+            return elements;
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            String contents = GotoCompletionUtil.getTextValueForElement(element);
+            if(contents == null) {
+                return Collections.emptyList();
+            }
+
+            Collection<PsiElement> elements = new ArrayList<>();
+            for (String formType : DEFAULT_FORM) {
+                FormOptionsUtil.visitFormOptions(
+                    getElement().getProject(), formType, new FormOptionTargetVisitor(contents, elements)
+                );
+            }
+
+            return elements;
+        }
+    }
+
+    private static class OptionDefaultCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+            PsiElement context = psiElement.getContext();
+            if (!(context instanceof StringLiteralExpression)) {
+                return null;
+            }
+
+            MethodMatcher.StringParameterRecursiveMatcher matcher = new MethodMatcher.StringParameterRecursiveMatcher(context, 0);
+
+            String[] methods = new String[] {
+                "setDefault", "hasDefault", "isRequired", "isMissing",
+                "setAllowedValues", "addAllowedValues", "setAllowedTypes", "addAllowedTypes"
+            };
+
+            // @TODO: drop too many classes, add PhpMatcher
+            for (String method : methods) {
+                matcher.withSignature("Symfony\\Component\\OptionsResolver\\OptionsResolver", method);
+
+                // BC: Symfony < 3
+                matcher.withSignature("Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", method);
+            }
+
+            if (matcher.match() == null) {
+                return null;
+            }
+
+            return new FormOptionGotoCompletionProvider(psiElement);
+        }
     }
 }

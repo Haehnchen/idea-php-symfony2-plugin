@@ -89,3 +89,18 @@ namespace Form\DataClass
         }
     }
 }
+
+namespace Symfony\Component\OptionsResolver
+{
+    class OptionsResolver
+    {
+        public function setDefault($option, $value) {}
+        public function hasDefault($option) {}
+        public function isRequired($option) {}
+        public function isMissing($option) {}
+        public function setAllowedValues($option) {}
+        public function addAllowedValues($option) {}
+        public function setAllowedTypes($option) {}
+        public function addAllowedTypes($option) {}
+    }
+}
