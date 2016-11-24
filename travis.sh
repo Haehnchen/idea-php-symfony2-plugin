@@ -9,6 +9,10 @@ elif [ "$PHPSTORM_ENV" == "2016.2" ]; then
     ideaVersion="2016.2.5"
 elif [ "$PHPSTORM_ENV" == "2016.2.1" ]; then
     ideaVersion="2016.2.5"
+elif [ "$PHPSTORM_ENV" == "2016.3" ]; then
+    ideaVersion="2016.3"
+elif [ "$PHPSTORM_ENV" == "2016.3.1" ]; then
+    ideaVersion="163.9166.20"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
     ideaVersion="163.5644.15"
 fi
@@ -99,6 +103,29 @@ elif [ "$PHPSTORM_ENV" == "2016.2.1" ]; then
     #twig
     download "https://plugins.jetbrains.com/files/7303/27028/twig-162.1121.34.zip"
     unzip -qo $travisCache/twig-162.1121.34.zip -d ./plugins
+
+elif [ "$PHPSTORM_ENV" == "2016.3" ]; then
+
+    #php
+    #download "https://plugins.jetbrains.com/files/6610/30482/php-163.7743.54.zip"
+    #unzip -qo $travisCache/php-163.7743.54.zip -d ./plugins
+
+    download "http://phpstorm.espend.de/files/proxy/phpstorm-2016.3/php.zip"
+    unzip -qo $travisCache/php.zip -d ./plugins
+
+    #twig
+    download "https://plugins.jetbrains.com/files/7303/29512/twig-163.6110.10.zip"
+    unzip -qo $travisCache/twig-163.6110.10.zip -d ./plugins
+
+elif [ "$PHPSTORM_ENV" == "2016.3.1" ]; then
+
+    #php
+    download "https://plugins.jetbrains.com/files/6610/30922/php-163.9735.4.zip"
+    unzip -qo $travisCache/php-163.9735.4.zip -d ./plugins
+
+    #twig
+    download "https://plugins.jetbrains.com/files/7303/30911/twig-163.9735.4.zip"
+    unzip -qo $travisCache/twig-163.9735.4.zip -d ./plugins
 
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
 
