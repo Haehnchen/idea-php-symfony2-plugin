@@ -176,7 +176,7 @@
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="145.0"/>
+    <idea-version since-build="163.8703"/>
 
     <extensions defaultExtensionNs="com.intellij">
 
