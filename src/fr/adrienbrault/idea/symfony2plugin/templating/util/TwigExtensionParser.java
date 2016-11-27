@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TwigExtensionParser  {
 
@@ -30,6 +31,7 @@ public class TwigExtensionParser  {
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<>("TWIG_EXTENSIONS_FILTERS");
     private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<>("TWIG_EXTENSIONS_OPERATORS");
 
+    @NotNull
     private Project project;
 
     private Map<String, TwigExtension> functions;
@@ -41,6 +43,7 @@ public class TwigExtensionParser  {
         this.project = project;
     }
 
+    @NotNull
     public Map<String, TwigExtension> getFunctions() {
         if(functions == null) {
             this.parseElementType(TwigElementType.METHOD);
@@ -48,6 +51,7 @@ public class TwigExtensionParser  {
         return functions;
     }
 
+    @NotNull
     public Map<String, TwigExtension> getFilters() {
         if(filters == null) {
             this.parseElementType(TwigElementType.FILTER);
@@ -55,6 +59,7 @@ public class TwigExtensionParser  {
         return filters;
     }
 
+    @NotNull
     public Map<String, TwigExtension> getSimpleTest() {
         if(simpleTest == null) {
             this.parseElementType(TwigElementType.SIMPLE_TEST);
@@ -62,6 +67,7 @@ public class TwigExtensionParser  {
         return simpleTest;
     }
 
+    @NotNull
     public Map<String, TwigExtension> getOperators() {
         if(operators == null) {
             this.parseElementType(TwigElementType.OPERATOR);
@@ -69,7 +75,7 @@ public class TwigExtensionParser  {
         return operators;
     }
 
-    public enum TwigElementType {
+    private enum TwigElementType {
         FILTER, METHOD, SIMPLE_TEST, OPERATOR
     }
 
@@ -77,7 +83,7 @@ public class TwigExtensionParser  {
         FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST, OPERATOR
     }
 
-    private void parseElementType(TwigElementType type) {
+    private void parseElementType(@NotNull TwigElementType type) {
 
         if(type.equals(TwigElementType.FILTER)) {
 
@@ -137,26 +143,23 @@ public class TwigExtensionParser  {
         }
     }
 
+    @NotNull
     private Collection<PhpClass> getTwigExtensionClasses() {
-
         Collection<PhpClass> phpClasses = new ArrayList<>();
 
         // only the interface gave use all elements; service container dont hold all
-        for(PhpClass phpClass : PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface")) {
-
-            // dont add unit tests classes
-            if(PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
-                continue;
-            }
-
-            phpClasses.add(phpClass);
-        }
+        // dont add unit tests classes
+        phpClasses.addAll(PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface").stream()
+            .filter(phpClass -> !PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile()))
+            .collect(Collectors.toList()));
 
         return phpClasses;
     }
 
-    private Map<String, TwigExtension> parseFilters(Collection<PhpClass> phpClasses) {
+    @NotNull
+    private Map<String, TwigExtension> parseFilters(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
+
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getFilters");
             if(method != null) {
@@ -167,8 +170,10 @@ public class TwigExtensionParser  {
         return extensions;
     }
 
-    private Map<String, TwigExtension> parseFunctions(Collection<PhpClass> phpClasses) {
+    @NotNull
+    private Map<String, TwigExtension> parseFunctions(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
+
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getFunctions");
             if(method != null) {
@@ -179,8 +184,10 @@ public class TwigExtensionParser  {
         return extensions;
     }
 
-    private Map<String, TwigExtension> parseTests(Collection<PhpClass> phpClasses) {
+    @NotNull
+    private Map<String, TwigExtension> parseTests(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
+
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getTests");
             if(method != null) {
@@ -191,8 +198,10 @@ public class TwigExtensionParser  {
         return extensions;
     }
 
-    private Map<String, TwigExtension> parseOperators(Collection<PhpClass> phpClasses) {
+    @NotNull
+    private Map<String, TwigExtension> parseOperators(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
+
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getOperators");
             if(method != null) {
@@ -203,17 +212,13 @@ public class TwigExtensionParser  {
         return extensions;
     }
 
-    protected Map<String, TwigExtension> parseFunctions(final Method method, final Map<String, TwigExtension> filters) {
-
+    private void parseFunctions(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<>();
+            return;
         }
 
         method.acceptChildren(new TwigFunctionVisitor(method, filters, containingClass));
-
-        return filters;
-
     }
 
     /**
@@ -221,7 +226,6 @@ public class TwigExtensionParser  {
      */
     @Nullable
     private static String getCallableSignature(PsiElement psiElement, Method method) {
-
         // array($this, 'getUrl')
         if(psiElement instanceof ArrayCreationExpression) {
             List<PsiElement> arrayValues = (List<PsiElement>) PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE));
@@ -237,7 +241,6 @@ public class TwigExtensionParser  {
                     }
                 }
             }
-
         } else {
             String funcTargetName = PhpElementsUtil.getStringValue(psiElement);
             if(funcTargetName != null) {
@@ -257,24 +260,19 @@ public class TwigExtensionParser  {
         return null;
     }
 
-    protected Map<String, TwigExtension> parseFilter(Method method, Map<String, TwigExtension> filters) {
-
-
+    private void parseFilter(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<>();
+            return;
         }
 
         method.acceptChildren(new TwigFilterVisitor(method, filters, containingClass));
-
-        return filters;
-
     }
-    protected Map<String, TwigExtension> parseOperators(Method method, Map<String, TwigExtension> filters) {
 
+    private void parseOperators(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<>();
+            return;
         }
 
         /*
@@ -297,7 +295,7 @@ public class TwigExtensionParser  {
 
                 // twig core returns nested array with 2 items array creation elements
                 List<PsiElement> arrayValues = PhpPsiUtil.getChildren(firstPsiChild, new PsiElementTypCondition());
-                if(arrayValues != null && arrayValues.size() > 0) {
+                if(arrayValues.size() > 0) {
                     for (PsiElement psiElement : arrayValues) {
 
                         // double check for non crazy syntax
@@ -321,27 +319,19 @@ public class TwigExtensionParser  {
                 }
             }
         }
-
-        return filters;
-
     }
 
-    protected Map<String, TwigExtension> parseSimpleTest(Method method, Map<String, TwigExtension> filters) {
-
-
+    private void parseSimpleTest(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
-            return new HashMap<>();
+            return;
         }
 
         method.acceptChildren(new TwigSimpleTestVisitor(filters));
-
-        return filters;
-
     }
 
-    public static Icon getIcon(TwigExtensionType twigExtensionType) {
-
+    @NotNull
+    public static Icon getIcon(@NotNull TwigExtensionType twigExtensionType) {
         if(twigExtensionType == TwigExtensionType.FUNCTION_NODE) {
             return PhpIcons.CLASS_INITIALIZER;
         }
@@ -385,25 +375,31 @@ public class TwigExtensionParser  {
     }
 
     private static class TwigFilterVisitor extends PsiRecursiveElementWalkingVisitor {
+        @NotNull
         private final Method method;
+
+        @NotNull
         private final Map<String, TwigExtension> filters;
+
+        @NotNull
         private final PhpClass containingClass;
 
-        public TwigFilterVisitor(Method method, Map<String, TwigExtension> filters, PhpClass containingClass) {
+        TwigFilterVisitor(@NotNull Method method, @NotNull Map<String, TwigExtension> filters, @NotNull PhpClass containingClass) {
             this.method = method;
             this.filters = filters;
             this.containingClass = containingClass;
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             if(element instanceof NewExpression) {
                 this.visitNewExpression((NewExpression) element);
             }
+
             super.visitElement(element);
         }
 
-        private void visitNewExpression(NewExpression element) {
+        private void visitNewExpression(@NotNull NewExpression element) {
 
             // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
             if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFilter")) {
@@ -425,7 +421,6 @@ public class TwigExtensionParser  {
 
                         filters.put(funcName, twigExtension);
                     }
-
                 }
 
                 return;
@@ -481,9 +476,7 @@ public class TwigExtensionParser  {
                         }
                     }
                 }
-
             }
-
         }
     }
 
@@ -503,11 +496,16 @@ public class TwigExtensionParser  {
     }
 
     private static class TwigFunctionVisitor extends PsiRecursiveElementWalkingVisitor {
+        @NotNull
         private final Method method;
+
+        @NotNull
         private final Map<String, TwigExtension> filters;
+
+        @NotNull
         private final PhpClass containingClass;
 
-        public TwigFunctionVisitor(Method method, Map<String, TwigExtension> filters, PhpClass containingClass) {
+        TwigFunctionVisitor(@NotNull Method method, @NotNull Map<String, TwigExtension> filters, @NotNull PhpClass containingClass) {
             this.method = method;
             this.filters = filters;
             this.containingClass = containingClass;
@@ -521,7 +519,7 @@ public class TwigExtensionParser  {
             super.visitElement(element);
         }
 
-        private void visitNewExpression(NewExpression element) {
+        private void visitNewExpression(@NotNull NewExpression element) {
 
             // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
             if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFunction")) {
@@ -541,9 +539,7 @@ public class TwigExtensionParser  {
                         }
 
                         filters.put(funcName, twigExtension);
-
                     }
-
                 }
 
                 return;
@@ -594,30 +590,23 @@ public class TwigExtensionParser  {
                             if(parameters.length > 0) {
                                 String className = PhpElementsUtil.getStringValue(parameters[0]);
                                 if(className != null) {
-
-                                    if(className.startsWith("\\")) {
-                                        className = className.substring(1);
-                                    }
-
-                                    signature = String.format("#M#C\\%s.%s", className, "compile");
+                                    signature = String.format("#M#C\\%s.%s", StringUtils.stripStart(className, "\\"), "compile");
                                 }
-
                             }
 
                             filters.put(funcName, new TwigExtension(TwigExtensionType.FUNCTION_NODE, signature));
                         }
                     }
                 }
-
             }
-
         }
     }
 
     private static class TwigSimpleTestVisitor extends PsiRecursiveElementWalkingVisitor {
+        @NotNull
         private final Map<String, TwigExtension> filters;
 
-        public TwigSimpleTestVisitor(Map<String, TwigExtension> filters) {
+        TwigSimpleTestVisitor(@NotNull Map<String, TwigExtension> filters) {
             this.filters = filters;
         }
 
@@ -629,7 +618,7 @@ public class TwigExtensionParser  {
             super.visitElement(element);
         }
 
-        private void visitNewExpression(NewExpression element) {
+        private void visitNewExpression(@NotNull NewExpression element) {
 
             // new Twig_SimpleTest('even', null, array('node_class' => 'Twig_Node_Expression_Test_Even')),
             if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleTest")) {
