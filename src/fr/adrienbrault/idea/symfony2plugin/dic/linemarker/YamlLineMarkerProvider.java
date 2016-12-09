@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,21 +39,24 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        for (PsiElement psiElement : psiElements) {
-            // services -> service_name
-            if(psiElement instanceof YAMLKeyValue && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement)) {
-                visitServiceId((YAMLKeyValue) psiElement, result);
-            }
-        }
+        // services -> service_name
+        psiElements.stream()
+            .filter(psiElement -> psiElement instanceof YAMLKeyValue && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement))
+            .forEach(psiElement -> visitServiceId((YAMLKeyValue) psiElement, result));
 
         decoratedServiceCache = null;
     }
-
 
     private void visitServiceId(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result) {
         String id = yamlKeyValue.getKeyText();
         if(StringUtils.isBlank(id)) {
             return;
+        }
+
+        // decorates: @foobar
+        String decorates = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates");
+        if(StringUtils.isNotBlank(decorates)) {
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(yamlKeyValue, decorates, result));
         }
 
         if(this.decoratedServiceCache == null) {

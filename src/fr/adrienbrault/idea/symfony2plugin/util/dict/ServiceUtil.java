@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
+import com.intellij.codeInsight.daemon.LineMarkerInfo;
+import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -566,5 +568,16 @@ public class ServiceUtil {
         return NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
             .setTargets(lazy)
             .setTooltipText("Navigate to decoration");
+    }
+
+    /**
+     *  <service id="foo_bar_main" decorates="app.mailer"/>
+     */
+    @NotNull
+    public static RelatedItemLineMarkerInfo<PsiElement> getLineMarkerForDecoratesServiceId(@NotNull PsiElement psiElement, @NotNull String decorates, @NotNull Collection<LineMarkerInfo> result) {
+        return NavigationGutterIconBuilder.create(PhpIcons.OVERRIDEN)
+            .setTargets(ServiceIndexUtil.getServiceIdDefinitionLazyValue(psiElement.getProject(), Collections.singletonList(decorates)))
+            .setTooltipText("Navigate to decorated service")
+            .createLineMarkerInfo(psiElement);
     }
 }

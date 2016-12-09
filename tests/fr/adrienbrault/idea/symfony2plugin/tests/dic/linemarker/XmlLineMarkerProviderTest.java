@@ -34,6 +34,18 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         );
     }
 
+    public void testThatDecoratesProvidesOverwriteMarker() {
+        assertLineMarker(createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "       <service id=\"foo_bar_main\" decorates=\"app.mailer\"/>\n" +
+                "    </services>\n" +
+                "</container>"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to decorated service")
+        );
+    }
+
     @NotNull
     private PsiElement createXmlFile(@NotNull String content) {
         return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + XmlFileType.INSTANCE.getDefaultExtension(), XmlFileType.INSTANCE, content);

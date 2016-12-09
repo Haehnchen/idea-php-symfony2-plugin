@@ -2,5 +2,6 @@
 <container>
     <services>
         <service id="app.decorating_mailer" decorates="foo_bar_main"/>
+        <service id="app.mailer"/>
     </services>
 </container>

@@ -59,6 +59,12 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        // <service id="foo" decorates=foobar" />
+        String decorates = xmlTag.getAttributeValue("decorates");
+        if(StringUtils.isNotBlank(decorates)) {
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(xmlTag, decorates, result));
+        }
+
         if(this.decoratedServiceCache == null) {
             this.decoratedServiceCache = ServiceIndexUtil.getDecoratedServices(xmlTag.getProject());
         }

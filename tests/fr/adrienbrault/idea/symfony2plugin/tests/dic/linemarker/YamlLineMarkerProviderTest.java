@@ -33,6 +33,17 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testThatDecoratesProvidesOverwriteMarker() {
+        assertLineMarker(createYamlFile("" +
+                "services:\n" +
+                "\n" +
+                "    foo_bar_main:\n" +
+                "        decorates: app.mailer\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to decorated service")
+        );
+    }
+
     @NotNull
     private PsiElement createYamlFile(@NotNull String content) {
         return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + YAMLFileType.YML.getDefaultExtension(), YAMLFileType.YML, content);
