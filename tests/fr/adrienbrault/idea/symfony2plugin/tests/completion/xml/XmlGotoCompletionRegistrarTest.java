@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.completion.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -116,6 +117,40 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             "    <route id=\"root\" path=\"/wp-admin\">\n" +
             "        <default key=\"template\">foo.ht<caret>ml.twig</default>\n" +
             "    </route>"
+        );
+    }
+
+    public void testThatDecoratesServiceTagProvidesReferences() {
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service class=\"Foo\\Foobar\" decorates=\"<caret>\"/>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            "service_container"
+        );
+
+        assertNavigationMatch(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service class=\"Foo\\Foobar\" decorates=\"foo.bar_<caret>factory\"/>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testThatDecoratesPrioritizeLookupElementOnInstance() {
+        assertCompletionLookupContainsPresentableItem(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service class=\"Foo\\Foobar\" decorates=\"<caret>\"/>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            lookupElement -> "foo.bar_factory".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold() && lookupElement.isItemTextBold()
         );
     }
 }

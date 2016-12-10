@@ -10,6 +10,8 @@ import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderInterface;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderInterfaceEx;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,6 +29,7 @@ public class CompletionContributor extends com.intellij.codeInsight.completion.C
                     return;
                 }
 
+                GotoCompletionProviderLookupArguments arguments = null;
                 Collection<GotoCompletionContributor> contributors = GotoCompletionUtil.getContributors(psiElement);
                 for(GotoCompletionContributor contributor: contributors) {
                     GotoCompletionProviderInterface formReferenceCompletionContributor = contributor.getProvider(psiElement);
@@ -35,10 +38,17 @@ public class CompletionContributor extends com.intellij.codeInsight.completion.C
                             formReferenceCompletionContributor.getLookupElements()
                         );
                     }
-                }
 
+                    // extension to provide full argument pipes
+                    if(formReferenceCompletionContributor instanceof GotoCompletionProviderInterfaceEx) {
+                        if(arguments == null) {
+                            arguments = new GotoCompletionProviderLookupArguments(completionParameters, processingContext, completionResultSet);
+                        }
+
+                        ((GotoCompletionProviderInterfaceEx) formReferenceCompletionContributor).getLookupElements(arguments);
+                    }
+                }
             }
         });
     }
-
 }

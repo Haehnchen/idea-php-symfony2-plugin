@@ -37,10 +37,14 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
 
         PsiElement element = parameters.getPosition();
 
-        LookupResult result = getLookupElements(
+        PrioritizedLookupResult result = getLookupElements(
             element, ContainerCollectionResolver.getServices(element.getProject()).values()
         );
 
+        addPrioritizedServiceLookupElements(parameters, resultSet, result);
+    }
+
+    public static void addPrioritizedServiceLookupElements(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet, @NotNull PrioritizedLookupResult result) {
         // move known elements to top
         if(result.getTopStrings().size() > 0) {
             CompletionSorter completionSorter = CompletionService.getCompletionService()
@@ -54,7 +58,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
     }
 
     @NotNull
-    public static LookupResult getLookupElements(@Nullable PsiElement element, @NotNull Collection<ContainerService> services) {
+    public static PrioritizedLookupResult getLookupElements(@Nullable PsiElement element, @NotNull Collection<ContainerService> services) {
 
         // collect instance to highlight services
         Collection<String> servicesForInstance = new HashSet<>();
@@ -70,10 +74,10 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
                 service -> new ServiceStringLookupElement(service, servicesForInstance.contains(service.getName())))
             .collect(Collectors.toList());
 
-        return new LookupResult(collect, servicesForInstance);
+        return new PrioritizedLookupResult(collect, servicesForInstance);
     }
 
-    public static class LookupResult {
+    public static class PrioritizedLookupResult {
 
         @NotNull
         private final Collection<LookupElement> lookupElements;
@@ -81,7 +85,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         @NotNull
         private final Collection<String> topStrings;
 
-        public LookupResult(@NotNull Collection<LookupElement> lookupElements, @NotNull Collection<String> topStrings) {
+        public PrioritizedLookupResult(@NotNull Collection<LookupElement> lookupElements, @NotNull Collection<String> topStrings) {
             this.lookupElements = lookupElements;
             this.topStrings = topStrings;
         }

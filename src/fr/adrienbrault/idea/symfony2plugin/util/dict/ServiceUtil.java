@@ -262,7 +262,7 @@ public class ServiceUtil {
      * Get "extends" and implements on class level
      */
     @NotNull
-    private static Set<PhpClass> getSuperClasses(@NotNull PhpClass serviceClass) {
+    public static Set<PhpClass> getSuperClasses(@NotNull PhpClass serviceClass) {
         Set<PhpClass> phpClasses = new HashSet<>();
         PhpClass superClass = serviceClass.getSuperClass();
 

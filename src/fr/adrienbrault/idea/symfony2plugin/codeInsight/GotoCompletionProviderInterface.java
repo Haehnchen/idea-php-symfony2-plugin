@@ -7,11 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 
 public interface GotoCompletionProviderInterface {
-
     @NotNull
     Collection<LookupElement> getLookupElements();
 
     @NotNull
     Collection<PsiElement> getPsiTargets(PsiElement element);
-
 }

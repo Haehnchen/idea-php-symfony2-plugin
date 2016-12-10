@@ -5,6 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
@@ -17,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfony2plugin.completion.DecoratedServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
@@ -25,6 +27,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,6 +69,14 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         registrar.register(
             XmlHelper.getRouteDefaultWithKeyAttributePattern("template"),
             TemplateGotoCompletionRegistrar::new
+        );
+
+        // <service decorates="<caret>"/>
+        registrar.register(
+            XmlPatterns.psiElement().withParent(XmlHelper.getTagAttributePattern("service", "decorates")
+                .inside(XmlHelper.getInsideTagPattern("services"))
+                .inFile(XmlHelper.getXmlFilePattern())),
+            MyDecoratedServiceCompletionProvider::new
         );
     }
 
@@ -177,6 +188,37 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
             return Collections.emptyList();
+        }
+    }
+
+    private static class MyDecoratedServiceCompletionProvider extends DecoratedServiceCompletionProvider {
+        MyDecoratedServiceCompletionProvider(PsiElement psiElement) {
+            super(psiElement);
+        }
+
+        @Nullable
+        @Override
+        public String findClassForElement(@NotNull PsiElement psiElement) {
+            XmlTag parentOfType = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+            if (parentOfType != null) {
+                String aClass = parentOfType.getAttributeValue("class");
+                if (StringUtils.isNotBlank(aClass)) {
+                    return aClass;
+                }
+            }
+
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public String findIdForElement(@NotNull PsiElement psiElement) {
+            XmlTag parentOfType = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+            if(parentOfType == null) {
+                return null;
+            }
+
+            return parentOfType.getAttributeValue("id");
         }
     }
 }
