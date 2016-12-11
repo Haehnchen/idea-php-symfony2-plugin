@@ -34,7 +34,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     public void testTwigExtensionFilterNavigation() {
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>doctrine_minify_query }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::minifyQuery");
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>doctrine_pretty_query }}", "SqlFormatter::format");
-        assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>json_decode }}", "json_decode");
+        assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>json_decode }}", "my_json_decode");
     }
 
     public void testTwigExtensionLookupElementPresentable() {
@@ -45,7 +45,6 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "contextAndEnvironment", "()");
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "contextWithoutEnvironment", "()");
     }
-
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TagTokenParserCompletionProvider
@@ -103,7 +102,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
      */
     public void testFunctionExtension() {
         assertNavigationContains(TwigFileType.INSTANCE, "{{ foo<caret>bar() }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::foobar");
-        assertNavigationContains(TwigFileType.INSTANCE, "{{ json_<caret>bar() }}", "json_decode");
+        assertNavigationContains(TwigFileType.INSTANCE, "{{ json_<caret>bar() }}", "my_json_decode");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ <caret> }}", "foobar");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ fooba<caret> }}", "{{ foobar }}");

@@ -6,9 +6,9 @@
     </parameters>
 
     <services>
-        <service id="foo" class="DateTime"/>
-        <service id="foo.bar_foo" class="DateTime"/>
-        <service id="foo.bar-foo" class="DateTime"/>
+        <service id="foo" class="MyDateTime"/>
+        <service id="foo.bar_foo" class="MyDateTime"/>
+        <service id="foo.bar-foo" class="MyDateTime"/>
     </services>
 
 </container>

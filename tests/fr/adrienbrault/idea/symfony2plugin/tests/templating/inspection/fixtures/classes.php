@@ -1,4 +1,10 @@
 <?php
+namespace
+{
+    interface ArrayAccess {}
+    interface Iterator {}
+    class ArrayIterator implements Iterator, ArrayAccess {}
+}
 
 namespace Foo
 {

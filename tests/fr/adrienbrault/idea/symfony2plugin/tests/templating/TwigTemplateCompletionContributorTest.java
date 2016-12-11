@@ -68,11 +68,11 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testThatInlineVarProvidesClassCompletion() {
-        assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar Date<caret> #}", "DateTime");
+        assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar <caret> #}", "DateTime");
     }
 
     public void testThatInlineVarProvidesClassCompletionDeprecated() {
-        assertCompletionContains(TwigFileType.INSTANCE, "{# bar Date<caret> #}", "DateTime");
+        assertCompletionContains(TwigFileType.INSTANCE, "{# bar <caret> #}", "DateTime");
     }
 
     public void testThatConstantProvidesCompletionForClassAndDefine() {

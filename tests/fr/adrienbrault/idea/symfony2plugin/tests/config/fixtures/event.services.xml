@@ -5,7 +5,7 @@
 
     <services>
         <service id="app.exception_listener"
-                 class="DateTime">
+                 class="MyDateTime">
 
             <tag name="kernel.event_listener" event="kernel.exception.xml" />
         </service>

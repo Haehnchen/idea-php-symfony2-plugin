@@ -1,5 +1,12 @@
 <?php
 
+namespace
+{
+    class MyDateTime
+    {
+    }
+}
+
 namespace Foo
 {
     class Bar

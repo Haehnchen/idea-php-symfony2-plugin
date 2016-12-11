@@ -36,33 +36,37 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatAllParametersAreGiven() {
-        assertLocalInspectionIsEmpty(
+        assertLocalInspectionNotContains(
             "services.xml",
-            createContainer("<serv<caret>ice class=\"Foo\\Bar\"><argument>foo</argument><argument>foo</argument></service>")
+            createContainer("<serv<caret>ice class=\"Foo\\Bar\"><argument>foo</argument><argument>foo</argument></service>"),
+            "Missing argument"
         );
     }
 
     public void testThatAllParametersAreGivenWithLastOneOptional() {
-        assertLocalInspectionIsEmpty(
+        assertLocalInspectionNotContains(
             "services.xml",
-            createContainer("<serv<caret>ice class=\"Foo\\Apple\"><argument>foo</argument></service>")
+            createContainer("<serv<caret>ice class=\"Foo\\Apple\"><argument>foo</argument></service>"),
+            "Missing argument"
         );
     }
 
     public void testThatNotSupportServiceAttributeNotProvidesInspection() {
         for (String s : ServiceActionUtil.INVALID_ARGUMENT_ATTRIBUTES) {
-            assertLocalInspectionIsEmpty(
+            assertLocalInspectionNotContains(
                 "services.xml",
-                createContainer("<serv<caret>ice " + s +"=\"foo\" class=\"Foo\\Bar\"/>")
+                createContainer("<serv<caret>ice " + s +"=\"foo\" class=\"Foo\\Bar\"/>"),
+                "Missing argument"
             );
         }
     }
 
     public void testThatFactoryServiceOfSymfony26NotProvidesInspection() {
         for (String s : ServiceActionUtil.INVALID_ARGUMENT_ATTRIBUTES) {
-            assertLocalInspectionIsEmpty(
+            assertLocalInspectionNotContains(
                 "services.xml",
-                createContainer("<serv<caret>ice " + s +"=\"foo\" class=\"Foo\\Bar\"><factory/></service>")
+                createContainer("<serv<caret>ice " + s +"=\"foo\" class=\"Foo\\Bar\"><factory/></service>"),
+                "Missing argument"
             );
         }
     }

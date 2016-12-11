@@ -1,4 +1,8 @@
 <?php
+namespace
+{
+    class MyDateTime {}
+}
 
 namespace Doctrine\Common\Persistence {
     interface ObjectRepository{};

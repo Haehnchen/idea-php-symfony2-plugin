@@ -33,7 +33,7 @@ public class FormTypeReferenceContributorTest extends SymfonyLightCodeInsightFix
                 "    public function setDefaultOptions(OptionsResolverInterface $resolver)\n" +
                 "    {\n" +
                 "        $resolver->setDefaults(array(\n" +
-                "            'data_class' => \"DateTime\",\n" +
+                "            'data_class' => \"MyDateTime\",\n" +
                 "        ));\n" +
                 "    }\n" +
                 "}",
@@ -50,7 +50,7 @@ public class FormTypeReferenceContributorTest extends SymfonyLightCodeInsightFix
                 "    public function setDefaultOptions(OptionsResolverInterface $resolver)\n" +
                 "    {\n" +
                 "        $resolver->setDefaults(array(\n" +
-                "            'data_class' => DateTime::class,\n" +
+                "            'data_class' => MyDateTime::class,\n" +
                 "        ));\n" +
                 "    }\n" +
                 "}",
@@ -61,7 +61,7 @@ public class FormTypeReferenceContributorTest extends SymfonyLightCodeInsightFix
                 "\n" +
                 "class FormType\n" +
                 "{\n" +
-                "    protected $foo = 'DateTime';\n" +
+                "    protected $foo = 'MyDateTime';\n" +
                 "    public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
                 "        $builder->add('<caret>');\n" +
                 "    }\n" +

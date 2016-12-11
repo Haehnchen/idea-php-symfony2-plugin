@@ -5,11 +5,11 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
                                http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="datetime_service" class="DateTime">
+        <service id="datetime_service" class="MyDateTime">
             <tag name="foo_datetime" />
         </service>
 
-        <service id="iterator_service" class="Iterator">
+        <service id="iterator_service" class="MyIterator">
             <tag name="foo_iterator" />
         </service>
 

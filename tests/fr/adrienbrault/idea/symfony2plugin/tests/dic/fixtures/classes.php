@@ -1,5 +1,13 @@
 <?php
 
+namespace
+{
+    class MyDateTime
+    {
+        public function format() {}
+    }
+}
+
 namespace Symfony\Component\DependencyInjection {
     interface ContainerInterface {
         function get($name);

@@ -27,29 +27,29 @@ public class DoctrineMetadataLineMarkerProviderTest extends SymfonyLightCodeInsi
 
     public void testTargetDocumentLineMarker() {
         assertLineMarker(
-            createXmlFile("<doctrine-mapping><document><reference-one target-document=\"Datetime\"/></document></doctrine-mapping>"),
+            createXmlFile("<doctrine-mapping><document><reference-one target-document=\"MyDateTime\"/></document></doctrine-mapping>"),
             new LineMarker.ToolTipEqualsAssert("Navigate to class")
         );
 
         assertLineMarker(
-            createXmlFile("<doctrine-mapping><entity><one-to-many target-entity=\"Datetime\"/></entity></doctrine-mapping>"),
+            createXmlFile("<doctrine-mapping><entity><one-to-many target-entity=\"MyDateTime\"/></entity></doctrine-mapping>"),
             new LineMarker.ToolTipEqualsAssert("Navigate to class")
         );
 
         assertLineMarker(
-            createXmlFile("<doctrine-mapping><embedded-document><reference-one target-document=\"Datetime\"/></embedded-document></doctrine-mapping>"),
+            createXmlFile("<doctrine-mapping><embedded-document><reference-one target-document=\"MyDateTime\"/></embedded-document></doctrine-mapping>"),
             new LineMarker.ToolTipEqualsAssert("Navigate to class")
         );
 
         assertLineMarker(
-            createXmlFile("<doctrine-mapping><embedded><reference-one target-document=\"Datetime\"/></embedded></doctrine-mapping>"),
+            createXmlFile("<doctrine-mapping><embedded><reference-one target-document=\"MyDateTime\"/></embedded></doctrine-mapping>"),
             new LineMarker.ToolTipEqualsAssert("Navigate to class")
         );
     }
 
     public void testEmbeddableClassLineMarker() {
         assertLineMarker(
-            createXmlFile("<doctrine-mapping><embeddable name=\"Datetime\"/></doctrine-mapping>"),
+            createXmlFile("<doctrine-mapping><embeddable name=\"MyDateTime\"/></doctrine-mapping>"),
             new LineMarker.ToolTipEqualsAssert("Navigate to class")
         );
     }

@@ -21,6 +21,5 @@ env:
 
 matrix:
   allow_failures:
-    - env: PHPSTORM_ENV=2016.3
     - env: PHPSTORM_ENV=2016.3.1
     - env: PHPSTORM_ENV=eap

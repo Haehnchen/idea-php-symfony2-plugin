@@ -1,6 +1,8 @@
 <?php
 
 namespace{
+    function my_json_decode() {}
+
     interface Twig_ExtensionInterface {}
     interface Twig_Environment {}
     abstract class Twig_Extension implements Twig_ExtensionInterface {}
@@ -31,7 +33,7 @@ class DoctrineExtension extends \Twig_Extension
             new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format'),
             new \Twig_SimpleFilter('contextAndEnvironment', array($this, 'minifyQuery'), array('needs_context' => true, 'needs_environment' => true)),
             new \Twig_SimpleFilter('contextWithoutEnvironment', array($this, 'minifyQuery'), array('needs_environment' => true)),
-            new \Twig_SimpleFilter('json_decode', 'json_decode'),
+            new \Twig_SimpleFilter('json_decode', 'my_json_decode'),
         );
     }
 
@@ -39,7 +41,7 @@ class DoctrineExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleFunction('foobar', array($this, 'foobar')),
-            new \Twig_SimpleFunction('json_bar', 'json_decode'),
+            new \Twig_SimpleFunction('json_bar', 'my_json_decode'),
         );
     }
 

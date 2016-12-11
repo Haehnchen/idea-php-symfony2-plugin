@@ -38,21 +38,21 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
 
     public void testThatAllParametersAreGivenWithLastOneOptional() {
         for (String s : new String[]{"@foo", "'@foo'", "\"@foo\""}) {
-            assertLocalInspectionIsEmpty("services.yml", String.format("services:\n" +
+            assertLocalInspectionNotContains("services.yml", String.format("services:\n" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Apple\n" +
                 "    arguments: [%s]"
-            , s));
+            , s), "Missing argument");
         }
     }
 
     public void testThatNotSupportServiceAttributeNotProvidesInspection() {
         for (String invalidKey : YamlServiceArgumentInspection.INVALID_KEYS) {
-            assertLocalInspectionIsEmpty("services.yml", String.format("services:\n" +
+            assertLocalInspectionNotContains("services.yml", String.format("services:\n" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Bar\n" +
                 "    %s: ~"
-            , invalidKey));
+            , invalidKey), "Missing argument");
         }
     }
 

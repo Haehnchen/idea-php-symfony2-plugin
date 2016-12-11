@@ -24,13 +24,13 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mapping><entity name=\"<caret>\"/></doctrine-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
 
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-foo-mapping><entity name=\"<caret>\"/></doctrine-foo-mapping>>",
-            "DateTime"
+            "MyDateTime"
         );
     }
 
@@ -38,19 +38,19 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mapping><document name=\"<caret>\"/></doctrine-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
 
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mongo-mapping><document name=\"<caret>\"/></doctrine-mongo-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
 
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-foo-mapping><document name=\"<caret>\"/></doctrine-foo-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
     }
 
@@ -58,13 +58,13 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mongo-mapping><embedded-document name=\"<caret>\"/></doctrine-mongo-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
 
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-foo-mapping><embedded name=\"<caret>\"/></doctrine-foo-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
     }
 
@@ -72,13 +72,13 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionNotContains(
             XmlFileType.INSTANCE,
             "<doctrine1-foo-mapping><document name=\"<caret>\"/></doctrine1-foo-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
 
         assertCompletionNotContains(
             XmlFileType.INSTANCE,
             "<doctrine1-mapping><document name=\"<caret>\"/></doctrine1-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
     }
 
@@ -112,13 +112,13 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mapping><document><reference-one target-document=\"<caret>\"/></document></doctrine-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
 
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mapping><entity><one-to-many target-entity=\"<caret>\"/></entity></doctrine-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
     }
 
@@ -126,7 +126,7 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionContains(
             XmlFileType.INSTANCE,
             "<doctrine-mapping><embeddable name=\"<caret>\"/></doctrine-mapping>",
-            "DateTime"
+            "MyDateTime"
         );
     }
 }

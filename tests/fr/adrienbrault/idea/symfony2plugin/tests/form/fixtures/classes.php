@@ -1,5 +1,13 @@
 <?php
 
+namespace
+{
+    class MyDateTime
+    {
+        public function setTimestamp() {}
+    }
+}
+
 namespace Symfony\Component\Form {
     interface FormTypeInterface {
         public function setDefaultOptions(OptionsResolverInterface $resolver);

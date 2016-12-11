@@ -100,7 +100,7 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
         Collection<PsiElement> elements = EventDispatcherSubscriberUtil.getEventPsiElements(getProject(), "kernel.exception.xml");
 
         assertNotNull(
-            ContainerUtil.find(elements, psiElement -> psiElement instanceof PhpClass && ((PhpClass) psiElement).getFQN().contains("DateTime"))
+            ContainerUtil.find(elements, psiElement -> psiElement instanceof PhpClass && ((PhpClass) psiElement).getFQN().contains("MyDateTime"))
         );
     }
 

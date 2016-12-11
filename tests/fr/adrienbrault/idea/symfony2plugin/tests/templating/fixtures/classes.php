@@ -1,8 +1,14 @@
 <?php
 
+
 namespace
 {
     define('CONST_FOO', 'CONST_FOO');
+
+    class DateTime
+    {
+        public function format() {}
+    }
 }
 
 namespace Symfony\Component\HttpKernel\Bundle

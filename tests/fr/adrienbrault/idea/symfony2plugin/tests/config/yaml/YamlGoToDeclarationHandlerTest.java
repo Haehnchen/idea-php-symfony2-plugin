@@ -18,6 +18,7 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
 
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("services.xml");
         myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
     }
