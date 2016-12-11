@@ -7,6 +7,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+### 0.12.132
+* Support more OptionsResolver options method parameter for references [#821](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/821)
+* Add decorates linemarker for yaml and xml container files
+* Service ids should be autocompleted for decorates [#834](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/834)
+* Add PhpStorm 2016.3 / 2016.3.1 travis environment
+
 ### 0.12.131
 * Disable Twig icon provider; performance issue? [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809)
 * Support new IF_TAG, SET_TAG tokens for Twig function pattern and fix Twig class constant usages

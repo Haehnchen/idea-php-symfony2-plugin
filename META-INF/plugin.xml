@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.131</version>
+    <version>0.12.132</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -105,6 +105,14 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.132</h2>
+<ul>
+    <li>Support more OptionsResolver options method parameter for references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/821">#821</a></li>
+    <li>Add decorates linemarker for yaml and xml container files</li>
+    <li>Service ids should be autocompleted for decorates <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/834">#834</a></li>
+    <li>Add PhpStorm 2016.3 / 2016.3.1 travis environment</li>
+</ul>
+
 <h2>0.12.131</h2>
 <ul>
     <li>Disable Twig icon provider; performance issue? <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809">#809</a></li>
