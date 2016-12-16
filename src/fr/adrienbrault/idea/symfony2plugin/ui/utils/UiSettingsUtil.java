@@ -6,7 +6,7 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.plugins.webDeployment.config.Deployable;
 import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
@@ -60,7 +60,7 @@ public class UiSettingsUtil {
         }
 
         String rootPath = server.getFileTransferConfig().getRootFolder();
-        ServerBrowserDialog d = new ServerBrowserDialog(project, server, String.format("Remote file: %s", server.getName()), false, FileTransferConfig.Origin.Default, new WebServerConfig.RemotePath(rootPath));
+        ServerBrowserDialog d = new ServerBrowserDialog(project, Deployable.create(server), String.format("Remote file: %s", server.getName()), false, FileTransferConfig.Origin.Default, new WebServerConfig.RemotePath(rootPath));
         d.show();
         if (!d.isOK()) {
             return;
