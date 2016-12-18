@@ -6,6 +6,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FunctionInsertHandler implements InsertHandler<LookupElement> {
 
     private static final FunctionInsertHandler instance = new FunctionInsertHandler();

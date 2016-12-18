@@ -5,6 +5,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ContainerTagLookupElement extends LookupElement {
 
     final private String tag;

@@ -14,6 +14,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ModelsControllerRelatedGotoCollector implements ControllerActionGotoRelatedCollector {
 
     @Override

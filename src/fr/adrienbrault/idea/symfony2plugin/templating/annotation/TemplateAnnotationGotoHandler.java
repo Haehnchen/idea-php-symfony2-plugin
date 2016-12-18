@@ -7,6 +7,9 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TemplateAnnotationGotoHandler implements PhpAnnotationDocTagGotoHandler {
     @Override
     public void getGotoDeclarationTargets(AnnotationDocTagGotoHandlerParameter parameter) {

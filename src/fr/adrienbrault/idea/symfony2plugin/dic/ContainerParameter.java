@@ -1,12 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ContainerParameter {
 
     final private String name;

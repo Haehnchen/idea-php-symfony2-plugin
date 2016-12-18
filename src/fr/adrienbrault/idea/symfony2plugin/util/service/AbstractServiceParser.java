@@ -12,6 +12,9 @@ import javax.xml.xpath.*;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 abstract public class AbstractServiceParser  implements ServiceParserInterface {
 
     @Nullable
@@ -23,11 +26,7 @@ abstract public class AbstractServiceParser  implements ServiceParserInterface {
         try {
             DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
             document = documentBuilder.parse(file);
-        } catch (ParserConfigurationException e) {
-            return null;
-        } catch (SAXException e) {
-            return null;
-        } catch (IOException e) {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             return null;
         }
 

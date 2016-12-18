@@ -6,6 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DoctrineModelProviderParameter {
 
     final private Collection<DoctrineModel> doctrineModels;

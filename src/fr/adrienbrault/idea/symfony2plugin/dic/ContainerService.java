@@ -7,6 +7,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ContainerService {
 
     @Nullable

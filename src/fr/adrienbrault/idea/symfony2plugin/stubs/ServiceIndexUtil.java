@@ -31,6 +31,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceIndexUtil {
 
     private static final Key<CachedValue<Map<String, Collection<ContainerService>>>> SERVICE_DECORATION_CACHE = new Key<>("SERVICE_DECORATION");

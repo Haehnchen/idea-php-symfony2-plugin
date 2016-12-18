@@ -24,6 +24,9 @@ import org.jetbrains.yaml.YAMLFileType;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpRouteInspection extends LocalInspectionTool {
 
     @NotNull

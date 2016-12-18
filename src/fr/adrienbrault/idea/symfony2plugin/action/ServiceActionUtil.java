@@ -38,6 +38,9 @@ import org.jetbrains.yaml.psi.*;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceActionUtil {
 
     /**

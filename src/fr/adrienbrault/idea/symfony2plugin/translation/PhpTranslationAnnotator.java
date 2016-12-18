@@ -20,7 +20,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.List;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpTranslationAnnotator implements Annotator {
 
     @Override

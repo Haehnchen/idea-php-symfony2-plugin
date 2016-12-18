@@ -5,8 +5,8 @@ import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
 import java.util.Comparator;
 
 /**
-* Created by daniel on 17.05.14.
-*/
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PsiWeightListComparator implements Comparator<TranslationFileModel> {
     @Override
     public int compare(TranslationFileModel o1, TranslationFileModel o2) {

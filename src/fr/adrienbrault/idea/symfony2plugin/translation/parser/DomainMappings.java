@@ -5,12 +5,14 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DomainMappings extends AbstractServiceParser {
 
     protected List<DomainFileMap> domainFileMaps = new CopyOnWriteArrayList<>();

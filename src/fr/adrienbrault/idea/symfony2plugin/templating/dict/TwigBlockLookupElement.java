@@ -5,6 +5,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigBlockLookupElement extends LookupElement {
 
     private TwigBlock twigBlock;

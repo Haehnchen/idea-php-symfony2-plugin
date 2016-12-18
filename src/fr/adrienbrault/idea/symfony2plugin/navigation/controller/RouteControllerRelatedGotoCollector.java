@@ -8,8 +8,9 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelated
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 
-import java.util.List;
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RouteControllerRelatedGotoCollector implements ControllerActionGotoRelatedCollector {
 
     @Override

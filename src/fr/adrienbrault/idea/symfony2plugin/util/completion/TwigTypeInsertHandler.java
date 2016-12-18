@@ -9,6 +9,9 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigTypeInsertHandler implements InsertHandler<LookupElement> {
 
     private static final TwigTypeInsertHandler instance = new TwigTypeInsertHandler();

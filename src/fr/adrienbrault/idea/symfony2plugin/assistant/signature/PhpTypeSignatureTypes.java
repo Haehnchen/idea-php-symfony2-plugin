@@ -13,6 +13,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpTypeSignatureTypes {
 
     public static PhpTypeSignatureInterface[] DEFAULT_PROVIDER = new PhpTypeSignatureInterface[] {

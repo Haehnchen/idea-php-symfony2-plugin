@@ -18,6 +18,9 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.function.Function;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TranslationInsertUtil {
     @Nullable
     public static PsiElement invokeTranslation(@NotNull final PsiFile psiFile, @NotNull final String keyName, @NotNull final String translation) {

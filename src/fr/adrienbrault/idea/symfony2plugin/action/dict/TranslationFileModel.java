@@ -5,6 +5,9 @@ import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TranslationFileModel {
 
     final private PsiFile psiFile;

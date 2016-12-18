@@ -16,6 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigFileIconProvider extends com.intellij.ide.IconProvider {
     @Nullable
     @Override

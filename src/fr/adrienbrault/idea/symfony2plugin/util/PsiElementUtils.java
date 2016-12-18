@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
-
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;

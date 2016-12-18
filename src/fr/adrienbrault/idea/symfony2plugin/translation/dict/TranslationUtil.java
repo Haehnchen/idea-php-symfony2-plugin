@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.dict;
 
-
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -47,6 +46,9 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TranslationUtil {
 
     static public VirtualFile[] getDomainFilePsiElements(Project project, String domainName) {

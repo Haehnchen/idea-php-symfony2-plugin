@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RouteSymbolContributor implements ChooseByNameContributor {
 
     @NotNull

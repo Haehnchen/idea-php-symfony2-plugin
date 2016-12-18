@@ -6,6 +6,9 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonySymbolSearchModel extends ContributorsBasedGotoByModel {
 
     public SymfonySymbolSearchModel(@NotNull Project project, @NotNull ChooseByNameContributor[] contributors) {

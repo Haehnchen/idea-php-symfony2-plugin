@@ -17,6 +17,9 @@ import org.jetbrains.yaml.YAMLFileType;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpRouteMissingInspection extends AbstractPhpRouteInspection {
 
     protected void annotateRouteName(PsiElement target, @NotNull ProblemsHolder holder, final String routeName) {

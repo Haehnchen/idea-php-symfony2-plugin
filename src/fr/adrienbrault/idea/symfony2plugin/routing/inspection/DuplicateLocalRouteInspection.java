@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLValue;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DuplicateLocalRouteInspection extends LocalInspectionTool {
 
     @NotNull

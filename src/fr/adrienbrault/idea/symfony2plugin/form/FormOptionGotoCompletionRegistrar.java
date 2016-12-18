@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistrar {
     /**
      * Symfony 2 / 3 switch

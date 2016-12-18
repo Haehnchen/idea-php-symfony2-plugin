@@ -3,13 +3,19 @@ package fr.adrienbrault.idea.symfony2plugin.util.service;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory;
 import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderArguments;
+import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceXmlParserFactory {
 
     protected static Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<>();

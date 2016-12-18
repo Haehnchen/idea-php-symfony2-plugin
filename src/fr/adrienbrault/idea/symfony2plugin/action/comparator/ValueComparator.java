@@ -3,6 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.action.comparator;
 import java.util.Comparator;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ValueComparator implements Comparator<String> {
 
     Map<String, Integer> base;

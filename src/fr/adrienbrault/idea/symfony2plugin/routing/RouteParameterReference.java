@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RouteParameterReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private String routeName;

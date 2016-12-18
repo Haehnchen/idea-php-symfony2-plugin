@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigPathFunctionInsertHandler implements InsertHandler<RouteLookupElement> {
 
     private static final TwigPathFunctionInsertHandler instance = new TwigPathFunctionInsertHandler();

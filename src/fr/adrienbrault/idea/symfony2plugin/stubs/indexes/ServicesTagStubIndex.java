@@ -18,7 +18,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.util.Map;
 import java.util.Set;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServicesTagStubIndex extends FileBasedIndexExtension<String, Set<String>> {
 
     public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_tags");

@@ -20,6 +20,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class XmlDuplicateServiceKeyInspection extends LocalInspectionTool {
 
     @NotNull

@@ -19,6 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigBlockParser {
 
     private boolean withSelfBlock = false;

@@ -4,6 +4,9 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSe
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public interface MethodSignatureTypeProviderExtension {
-    public Collection<MethodSignatureSetting> getSignatures(MethodSignatureTypeProviderParameter parameter);
+    Collection<MethodSignatureSetting> getSignatures(MethodSignatureTypeProviderParameter parameter);
 }

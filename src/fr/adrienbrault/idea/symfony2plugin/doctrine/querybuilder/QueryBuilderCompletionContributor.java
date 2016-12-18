@@ -27,6 +27,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class QueryBuilderCompletionContributor extends CompletionContributor {
 
     private static MethodMatcher.CallToSignature[] JOINS = new MethodMatcher.CallToSignature[] {

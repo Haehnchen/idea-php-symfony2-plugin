@@ -3,6 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating.path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigPathIndex {
 
     final public static String MAIN = "__main__";

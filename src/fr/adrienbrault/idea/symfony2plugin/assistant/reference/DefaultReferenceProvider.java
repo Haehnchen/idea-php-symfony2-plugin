@@ -14,6 +14,9 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReferenc
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DefaultReferenceProvider {
 
     public static AssistantReferenceProvider[] DEFAULT_PROVIDERS = new AssistantReferenceProvider[] {

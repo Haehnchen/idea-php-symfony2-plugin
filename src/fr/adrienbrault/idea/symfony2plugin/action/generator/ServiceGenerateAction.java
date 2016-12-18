@@ -19,6 +19,9 @@ import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceGenerateAction extends CodeInsightAction {
 
     @Override

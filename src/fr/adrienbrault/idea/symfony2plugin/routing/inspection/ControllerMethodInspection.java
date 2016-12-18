@@ -22,6 +22,9 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ControllerMethodInspection extends LocalInspectionTool {
 
     @NotNull

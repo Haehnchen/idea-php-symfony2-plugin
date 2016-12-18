@@ -6,6 +6,9 @@ import com.intellij.psi.PsiElement;
 
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigFileVariableCollectorParameter {
 
     private final PsiElement psiElement;

@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class XmlTagParser extends AbstractServiceParser {
 
     protected Set<String> list = new HashSet<>();

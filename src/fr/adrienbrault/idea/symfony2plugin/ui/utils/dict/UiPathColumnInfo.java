@@ -6,6 +6,9 @@ import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class UiPathColumnInfo {
 
     public static class PathColumn extends ColumnInfo<UiFilePathInterface, String> {

@@ -11,6 +11,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 abstract public class AbstractPhpRouteInspection extends LocalInspectionTool {
 
     @Override

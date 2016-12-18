@@ -4,6 +4,9 @@ import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.intellij.util.indexing.ID;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class IndexUtil {
 
     public static void forceReindex() {

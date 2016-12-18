@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.util.HashMap;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class NewBundleControllerAction extends NewBundleFileActionAbstract {
 
     public NewBundleControllerAction() {

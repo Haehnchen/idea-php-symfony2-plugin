@@ -6,6 +6,9 @@ import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DefaultReferenceContributor {
 
     // @TODO: dynamic adding

@@ -12,6 +12,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyWebProfilerWindowFactory implements ToolWindowFactory, Condition<Project>, DumbAware {
 
     private static final Icon TOOLWINDOW_ICON = Symfony2Icons.SYMFONY_TOOL_WINDOW;

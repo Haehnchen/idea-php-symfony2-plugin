@@ -16,6 +16,9 @@ import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyInstallerForm {
 
     private JComboBox comboVersions;

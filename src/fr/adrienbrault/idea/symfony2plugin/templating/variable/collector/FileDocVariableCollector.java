@@ -7,6 +7,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FileDocVariableCollector implements TwigFileVariableCollector {
 
     @Override

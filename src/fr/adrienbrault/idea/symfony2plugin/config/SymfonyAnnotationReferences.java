@@ -10,6 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyAnnotationReferences implements PhpAnnotationReferenceProvider {
     @Nullable
     @Override

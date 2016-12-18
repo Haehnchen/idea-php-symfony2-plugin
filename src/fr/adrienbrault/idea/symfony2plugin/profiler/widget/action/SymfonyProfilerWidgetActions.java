@@ -24,6 +24,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyProfilerWidgetActions {
 
     public static class TemplateAction extends AnAction {

@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class QueryBuilderChainProcessor {
 
     private static final String DOCTRINE_ORM_QUERY_BUILDER = "\\Doctrine\\ORM\\QueryBuilder";

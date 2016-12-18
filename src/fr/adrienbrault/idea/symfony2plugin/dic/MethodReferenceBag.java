@@ -4,6 +4,9 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class MethodReferenceBag {
 
     final private ParameterList parameterList;

@@ -32,6 +32,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpElementsUtil {
     static public List<ResolveResult> getClassInterfaceResolveResult(Project project, String fqnClassOrInterfaceName) {
 

@@ -6,6 +6,9 @@ import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class XmlDuplicateParameterKeyInspection extends XmlDuplicateServiceKeyInspection {
 
     @NotNull

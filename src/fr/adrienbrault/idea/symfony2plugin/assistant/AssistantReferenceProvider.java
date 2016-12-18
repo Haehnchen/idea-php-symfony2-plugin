@@ -7,12 +7,15 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSe
 
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public interface AssistantReferenceProvider {
-    public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter);
-    public String getAlias();
-    public String getDocBlockParamAlias();
+    PsiReference getPsiReference(AssistantReferenceProviderParameter parameter);
+    String getAlias();
+    String getDocBlockParamAlias();
 
-    public class AssistantReferenceProviderParameter {
+    class AssistantReferenceProviderParameter {
 
         private StringLiteralExpression psiElement;
         private MethodParameterSetting methodParameterSetting;

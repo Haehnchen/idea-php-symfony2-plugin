@@ -14,6 +14,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class YamlDuplicateServiceKeyInspection extends LocalInspectionTool {
 
     @NotNull

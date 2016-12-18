@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandler {
 
     @Nullable

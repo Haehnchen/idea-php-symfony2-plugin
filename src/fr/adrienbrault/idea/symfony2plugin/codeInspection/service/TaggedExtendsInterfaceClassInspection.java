@@ -29,7 +29,9 @@ import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.Set;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
     @NotNull

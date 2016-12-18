@@ -3,13 +3,15 @@ package fr.adrienbrault.idea.symfony2plugin.extension;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ControllerActionGotoRelatedCollectorParameter {
 
     private final Collection<GotoRelatedItem> relatedItems;

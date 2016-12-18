@@ -34,6 +34,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
     @Override

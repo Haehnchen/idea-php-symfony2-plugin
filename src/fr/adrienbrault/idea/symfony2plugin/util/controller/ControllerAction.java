@@ -1,8 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.util.controller;
 
-
 import com.jetbrains.php.lang.psi.elements.Method;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ControllerAction {
 
     String shortcutName;

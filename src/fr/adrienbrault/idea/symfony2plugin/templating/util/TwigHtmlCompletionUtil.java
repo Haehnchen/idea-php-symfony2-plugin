@@ -6,6 +6,9 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigHtmlCompletionUtil {
 
     // html inside twig: href=""

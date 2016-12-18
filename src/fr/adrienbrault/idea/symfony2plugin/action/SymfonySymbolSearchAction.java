@@ -28,7 +28,6 @@ import fr.adrienbrault.idea.symfony2plugin.action.model.SymfonySymbolSearchModel
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.navigation.NavigationItemEx;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -44,7 +43,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonySymbolSearchAction extends GotoActionBase {
 
     @Override

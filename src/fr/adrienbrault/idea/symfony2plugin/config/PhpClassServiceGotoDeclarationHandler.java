@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.config;
 
-
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
@@ -11,6 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpClassServiceGotoDeclarationHandler implements GotoDeclarationHandler {
 
     @Nullable

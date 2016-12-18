@@ -13,6 +13,9 @@ import com.intellij.util.IncorrectOperationException;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TranslationKeyIntentionAction extends BaseIntentionAction {
     @NotNull
     private PsiFile psiFile;

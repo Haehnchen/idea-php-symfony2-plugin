@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.config;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -41,6 +40,9 @@ import org.jetbrains.yaml.psi.YAMLMapping;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class EventDispatcherSubscriberUtil {
 
     private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> EVENT_SUBSCRIBERS = new Key<>("SYMFONY_EVENT_SUBSCRIBERS");

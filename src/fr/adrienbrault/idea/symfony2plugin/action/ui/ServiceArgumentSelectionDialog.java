@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceArgumentSelectionDialog extends JDialog {
 
     private final Project project;

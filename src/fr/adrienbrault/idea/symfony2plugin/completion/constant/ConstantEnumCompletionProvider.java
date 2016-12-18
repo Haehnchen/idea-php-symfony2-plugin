@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.completion.constant;
 
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ConstantEnumCompletionProvider {
 
     private MethodMatcher.CallToSignature callToSignature;

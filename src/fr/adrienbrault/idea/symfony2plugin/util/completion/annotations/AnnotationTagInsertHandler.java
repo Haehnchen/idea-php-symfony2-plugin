@@ -7,6 +7,9 @@ import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.annotation.AnnotationIndex;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AnnotationTagInsertHandler implements InsertHandler<LookupElement> {
 
     private static final AnnotationTagInsertHandler instance = new AnnotationTagInsertHandler();

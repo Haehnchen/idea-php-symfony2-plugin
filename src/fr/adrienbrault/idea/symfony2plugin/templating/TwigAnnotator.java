@@ -6,7 +6,6 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.xml.XmlFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -27,7 +26,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.util.List;
 import java.util.Set;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigAnnotator implements Annotator {
 
     @Override

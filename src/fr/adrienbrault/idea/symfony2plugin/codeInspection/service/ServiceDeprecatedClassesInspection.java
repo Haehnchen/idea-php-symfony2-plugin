@@ -30,7 +30,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
 
     @NotNull

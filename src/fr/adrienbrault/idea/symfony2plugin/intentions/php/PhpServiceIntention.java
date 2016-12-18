@@ -10,9 +10,11 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpServiceIntention extends PsiElementBaseIntentionAction {
 
     @Override

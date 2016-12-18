@@ -36,6 +36,9 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigExtractLanguageAction extends DumbAwareAction {
 
     public TwigExtractLanguageAction() {

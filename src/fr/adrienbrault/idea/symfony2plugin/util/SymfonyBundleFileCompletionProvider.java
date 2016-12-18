@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
-
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -21,6 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyBundleFileCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     private String[] paths;

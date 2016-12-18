@@ -33,7 +33,9 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FormUtil {
 
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";

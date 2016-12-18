@@ -12,6 +12,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TranslationIndex {
 
     protected static Map<Project, TranslationIndex> instance = new HashMap<>();

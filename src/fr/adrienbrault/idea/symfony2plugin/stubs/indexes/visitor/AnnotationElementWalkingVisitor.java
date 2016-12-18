@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AnnotationElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
 
     @NotNull

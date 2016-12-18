@@ -4,6 +4,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 @Tag("twig_namespace")
 public class TwigNamespaceSetting {
 

@@ -33,6 +33,9 @@ import org.jetbrains.yaml.psi.*;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class YamlAnnotator implements Annotator {
 
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;

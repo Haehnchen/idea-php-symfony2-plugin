@@ -6,6 +6,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ParameterPercentWrapInsertHandler implements InsertHandler<LookupElement> {
 
     private static final ParameterPercentWrapInsertHandler instance = new ParameterPercentWrapInsertHandler();

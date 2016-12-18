@@ -7,6 +7,9 @@ import com.intellij.openapi.util.TextRange;
 import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpReferenceTrimBackslashInsertHandler implements InsertHandler<LookupElement> {
 
     private static final PhpReferenceTrimBackslashInsertHandler instance = new PhpReferenceTrimBackslashInsertHandler();

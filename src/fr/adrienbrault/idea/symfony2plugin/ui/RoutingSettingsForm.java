@@ -28,6 +28,9 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RoutingSettingsForm implements Configurable {
 
     private JPanel panel1;

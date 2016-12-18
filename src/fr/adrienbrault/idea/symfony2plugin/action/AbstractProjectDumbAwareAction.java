@@ -8,6 +8,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 
 import javax.swing.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 abstract public class AbstractProjectDumbAwareAction extends DumbAwareAction {
 
     public AbstractProjectDumbAwareAction(String text, String description, Icon phpFile) {

@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
-
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -26,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotationReferenceProvider {
 
     @Nullable

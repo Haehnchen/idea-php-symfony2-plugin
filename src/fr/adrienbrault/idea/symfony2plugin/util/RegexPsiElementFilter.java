@@ -6,6 +6,9 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiElementFilter;
 import org.intellij.lang.annotations.RegExp;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public  class RegexPsiElementFilter implements PsiElementFilter {
 
     private Class aClass;

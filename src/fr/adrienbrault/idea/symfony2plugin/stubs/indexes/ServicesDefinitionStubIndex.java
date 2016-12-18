@@ -20,7 +20,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, ServiceSerializable> {
 
     private static int MAX_FILE_BYTE_SIZE = 5242880;

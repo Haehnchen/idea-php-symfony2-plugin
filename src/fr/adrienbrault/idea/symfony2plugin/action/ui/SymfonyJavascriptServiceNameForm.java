@@ -14,6 +14,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyJavascriptServiceNameForm extends JDialog {
     @NotNull
     private final Project project;

@@ -3,8 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict;
 import org.jetbrains.annotations.Nullable;
 
 /**
-* Created by daniel on 27.04.14.
-*/
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class QueryBuilderRelation {
 
     private final String fieldName;

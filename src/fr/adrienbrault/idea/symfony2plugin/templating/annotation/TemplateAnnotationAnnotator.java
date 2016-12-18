@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
@@ -22,6 +21,9 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator {
 
     @Override

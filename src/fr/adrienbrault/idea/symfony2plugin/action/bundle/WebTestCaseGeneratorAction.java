@@ -1,9 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.action.bundle;
 
-import com.intellij.ide.IdeView;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -25,6 +23,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.util.HashMap;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class WebTestCaseGeneratorAction extends AbstractProjectDumbAwareAction {
 
     public WebTestCaseGeneratorAction() {

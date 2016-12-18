@@ -5,6 +5,9 @@ import com.intellij.util.xmlb.annotations.Tag;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 @Tag("method_signature_settings")
 public class MethodSignatureSetting {
 

@@ -5,6 +5,9 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RoutesContainer {
 
     private final Long lastMod;

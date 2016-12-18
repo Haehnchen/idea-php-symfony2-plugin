@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.asset.provider;
 
-
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -16,6 +15,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServ
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AssetCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     protected AssetDirectoryReader assetParser;

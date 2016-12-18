@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml.provider;
 
-
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
@@ -10,6 +9,9 @@ import fr.adrienbrault.idea.symfony2plugin.config.xml.ServiceXmlReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceReferenceProvider extends PsiReferenceProvider {
 
     @NotNull

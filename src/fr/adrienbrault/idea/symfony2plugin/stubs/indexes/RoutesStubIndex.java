@@ -21,6 +21,9 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexedRoute> {
 
     public static final ID<String, StubIndexedRoute> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes_object");

@@ -24,6 +24,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class MethodParameterReferenceContributor extends PsiReferenceContributor {
 
     private static final ExtensionPointName<MethodParameterReferenceContributorExtension> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension");

@@ -46,6 +46,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyCreateService extends JDialog {
 
     private JPanel panel1;

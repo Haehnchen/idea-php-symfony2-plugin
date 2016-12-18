@@ -9,6 +9,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.text.Collator;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigPath implements Comparable<TwigPath> {
     @NotNull
     private String path;

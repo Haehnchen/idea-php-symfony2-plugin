@@ -25,7 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpFoldingBuilder extends FoldingBuilderEx {
 
     @NotNull

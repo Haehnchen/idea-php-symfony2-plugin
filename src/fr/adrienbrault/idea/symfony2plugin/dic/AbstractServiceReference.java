@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     protected String serviceId;

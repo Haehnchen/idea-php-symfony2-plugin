@@ -3,6 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.dict;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 final public class DoctrineTypes {
 
     public static final String REPOSITORY_INTERFACE = "\\Doctrine\\Common\\Persistence\\ObjectRepository";

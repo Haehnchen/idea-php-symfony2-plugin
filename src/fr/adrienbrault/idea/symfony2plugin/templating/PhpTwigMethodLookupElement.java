@@ -9,6 +9,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TwigTypeInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpTwigMethodLookupElement extends PhpLookupElement {
 
     @Override

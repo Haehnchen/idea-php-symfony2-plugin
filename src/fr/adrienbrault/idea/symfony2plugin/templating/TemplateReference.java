@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import org.jetbrains.annotations.NotNull;

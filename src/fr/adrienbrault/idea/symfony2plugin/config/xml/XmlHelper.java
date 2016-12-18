@@ -16,6 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class XmlHelper {
     public static PsiElementPattern.Capture<PsiElement> getTagPattern(String... tags) {
         return XmlPatterns

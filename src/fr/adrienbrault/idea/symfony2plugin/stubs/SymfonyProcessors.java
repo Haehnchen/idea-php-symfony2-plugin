@@ -11,6 +11,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SymfonyProcessors {
 
     public static class CollectProjectUniqueKeys implements Processor<String> {

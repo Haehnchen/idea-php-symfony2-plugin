@@ -17,6 +17,9 @@ import org.jetbrains.yaml.YAMLFileType;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FileResourcesIndex extends FileBasedIndexExtension<String, FileResource> {
 
     private static int MAX_FILE_BYTE_SIZE = 1048576;

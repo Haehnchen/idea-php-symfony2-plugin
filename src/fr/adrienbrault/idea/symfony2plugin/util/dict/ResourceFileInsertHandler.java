@@ -6,7 +6,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.NotNull;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ResourceFileInsertHandler implements InsertHandler<LookupElement> {
 
     private static final ResourceFileInsertHandler instance = new ResourceFileInsertHandler();

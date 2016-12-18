@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**

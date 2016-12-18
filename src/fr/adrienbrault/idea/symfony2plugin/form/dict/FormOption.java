@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.form.dict;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.HashSet;
 

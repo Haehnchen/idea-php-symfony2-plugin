@@ -1,17 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.collector;
 
-
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class YamlTranslationVistor {
 
     public static void collectFileTranslations(YAMLFile yamlFile, YamlTranslationCollector translationCollector) {

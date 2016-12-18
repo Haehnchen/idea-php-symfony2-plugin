@@ -19,6 +19,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class Symfony2WebProfilerForm {
     private JPanel panel1;
     private JTabbedPane tabbedPane1;

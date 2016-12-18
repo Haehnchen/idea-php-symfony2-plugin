@@ -16,6 +16,9 @@ import org.jetbrains.yaml.psi.YAMLScalar;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class GotoCompletionUtil {
 
     private static final ExtensionPointName<GotoCompletionRegistrar> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.GotoCompletionRegistrar");

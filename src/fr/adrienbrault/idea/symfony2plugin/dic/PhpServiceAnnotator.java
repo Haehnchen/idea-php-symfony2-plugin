@@ -12,7 +12,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpServiceAnnotator implements Annotator {
 
     @Override

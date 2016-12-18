@@ -20,7 +20,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DocHashTagReferenceContributor extends PsiReferenceContributor {
 
     @Override

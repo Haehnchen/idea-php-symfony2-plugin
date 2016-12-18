@@ -6,6 +6,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class LocalDefaultDataCollector implements DefaultDataCollectorInterface {
     @Nullable
     private final String contents;

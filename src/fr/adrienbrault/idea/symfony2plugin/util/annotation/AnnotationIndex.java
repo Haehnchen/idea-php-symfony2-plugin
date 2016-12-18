@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.util.annotation;
 
 import java.util.HashMap;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AnnotationIndex {
 
     public static HashMap<String, AnnotationConfig> getControllerAnnotations() {

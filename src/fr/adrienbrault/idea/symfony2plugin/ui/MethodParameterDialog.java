@@ -11,8 +11,14 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class MethodParameterDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;

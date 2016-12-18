@@ -13,6 +13,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpMethodVariableResolveUtil {
 
     /**

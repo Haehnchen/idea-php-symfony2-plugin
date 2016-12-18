@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Matcher;

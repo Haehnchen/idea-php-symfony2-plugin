@@ -4,11 +4,13 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FormExtensionServiceParser extends AbstractServiceParser {
 
     protected Map<String, String> formExtensions = new ConcurrentHashMap<>();

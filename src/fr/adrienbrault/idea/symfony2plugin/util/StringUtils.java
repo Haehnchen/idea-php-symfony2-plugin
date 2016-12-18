@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class StringUtils {
 
     public static String camelize(String input) {

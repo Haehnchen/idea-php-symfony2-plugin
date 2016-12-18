@@ -4,6 +4,9 @@ import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
 import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 @Tag("method_parameter_settings")
 public class MethodParameterSetting {
 

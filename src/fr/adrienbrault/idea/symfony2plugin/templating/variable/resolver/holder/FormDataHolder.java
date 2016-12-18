@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder;
 
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FormDataHolder {
 
     private PhpClass phpClass;

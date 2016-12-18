@@ -3,6 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigMacro {
 
     private String name;

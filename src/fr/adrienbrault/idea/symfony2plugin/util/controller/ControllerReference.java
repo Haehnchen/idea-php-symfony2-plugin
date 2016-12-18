@@ -9,6 +9,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ControllerReference extends PsiReferenceBase<PsiElement> implements PsiReference {
 
     private StringLiteralExpression element;

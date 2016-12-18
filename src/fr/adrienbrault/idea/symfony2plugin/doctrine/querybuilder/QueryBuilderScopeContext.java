@@ -6,6 +6,9 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuild
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class QueryBuilderScopeContext {
 
     final private Set<String> parameters = new HashSet<>();

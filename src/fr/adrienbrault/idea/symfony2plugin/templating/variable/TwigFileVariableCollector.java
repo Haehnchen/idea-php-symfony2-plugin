@@ -5,12 +5,15 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public interface TwigFileVariableCollector {
 
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables);
+    void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables);
 
-    public interface TwigFileVariableCollectorExt {
-        public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables);
+    interface TwigFileVariableCollectorExt {
+        void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables);
     }
 
 }

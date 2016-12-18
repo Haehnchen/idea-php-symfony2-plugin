@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.navigation.GotoRelatedItem;
@@ -13,6 +12,9 @@ import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class RelatedPopupGotoLineMarker {
 
     public static class NavigationHandler implements GutterIconNavigationHandler<PsiElement> {

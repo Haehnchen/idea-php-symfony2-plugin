@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public abstract class WebServerFileDialogExtensionCallback implements UiSettingsUtil.WebServerFileDialogCallback {
 
     final private String fileExtension;

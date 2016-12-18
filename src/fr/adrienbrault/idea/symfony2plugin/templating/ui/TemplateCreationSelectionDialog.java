@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TemplateCreationSelectionDialog extends JDialog {
 
     @NotNull

@@ -17,6 +17,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class CompletionContributor extends com.intellij.codeInsight.completion.CompletionContributor {
 
     public CompletionContributor() {

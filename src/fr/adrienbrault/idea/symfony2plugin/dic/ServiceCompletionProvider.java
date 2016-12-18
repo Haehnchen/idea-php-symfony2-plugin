@@ -21,6 +21,9 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     private static ServiceSuggestionCollector[] COLLECTORS = new ServiceSuggestionCollector[] {

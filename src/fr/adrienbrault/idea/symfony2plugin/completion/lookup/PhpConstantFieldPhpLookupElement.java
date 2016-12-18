@@ -7,6 +7,9 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationUseImporter;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpConstantFieldPhpLookupElement extends PhpLookupElement {
 
     final private PhpClass phpClass;

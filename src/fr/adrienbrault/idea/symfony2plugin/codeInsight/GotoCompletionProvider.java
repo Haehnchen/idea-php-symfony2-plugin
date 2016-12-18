@@ -4,6 +4,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public abstract class GotoCompletionProvider implements GotoCompletionProviderInterfaceEx {
     @NotNull
     private final PsiElement element;

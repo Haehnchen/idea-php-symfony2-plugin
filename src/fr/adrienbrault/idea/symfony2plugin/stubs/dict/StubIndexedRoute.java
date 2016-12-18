@@ -11,6 +11,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class StubIndexedRoute implements RouteInterface, Serializable{
 
     @NotNull

@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public interface GotoCompletionProviderInterface {
     @NotNull
     Collection<LookupElement> getLookupElements();

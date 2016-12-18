@@ -15,6 +15,9 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
 
     private ArrayList<Call> oneOfCall = new ArrayList<>();

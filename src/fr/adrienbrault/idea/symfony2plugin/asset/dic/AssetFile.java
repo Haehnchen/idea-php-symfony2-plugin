@@ -3,6 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.asset.dic;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AssetFile {
 
     VirtualFile assetFile;

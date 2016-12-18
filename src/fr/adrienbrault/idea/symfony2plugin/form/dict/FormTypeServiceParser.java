@@ -6,6 +6,9 @@ import org.w3c.dom.NodeList;
 
 import java.io.InputStream;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class FormTypeServiceParser extends AbstractServiceParser {
 
     protected FormTypeMap formTypeMap = new FormTypeMap();

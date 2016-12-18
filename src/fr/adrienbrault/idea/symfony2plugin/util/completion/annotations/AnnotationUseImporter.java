@@ -8,6 +8,9 @@ import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.psi.PhpCodeEditUtil;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AnnotationUseImporter {
 
     public static void insertUse(InsertionContext context, String fqnAnnotation) {

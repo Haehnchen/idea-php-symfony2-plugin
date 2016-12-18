@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public abstract class AbstractUiFilePath implements UiFilePathInterface {
 
     protected String path;

@@ -8,6 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceSuggestDialog {
 
     public static void create(final @NotNull Editor editor, @NotNull Collection<String> services, final @NotNull Callback callback) {

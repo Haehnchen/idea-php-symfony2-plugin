@@ -23,6 +23,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class SettingsForm implements Configurable {
 
     private Project project;

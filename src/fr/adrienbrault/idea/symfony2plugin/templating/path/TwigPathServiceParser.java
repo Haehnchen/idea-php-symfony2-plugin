@@ -6,6 +6,9 @@ import org.w3c.dom.NodeList;
 
 import java.io.InputStream;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigPathServiceParser extends AbstractServiceParser {
 
     protected TwigPathIndex twigPathIndex = new TwigPathIndex();

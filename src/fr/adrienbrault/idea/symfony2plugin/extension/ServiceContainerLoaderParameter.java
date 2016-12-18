@@ -5,6 +5,9 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 
 import java.util.Collection;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceContainerLoaderParameter {
 
     private Collection<ContainerFile> containerFiles;

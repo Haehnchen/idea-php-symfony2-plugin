@@ -24,6 +24,9 @@ import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigExtensionParser  {
 
     private static final Key<CachedValue<Map<String, TwigExtension>>> FUNCTION_CACHE = new Key<>("TWIG_EXTENSIONS_FUNCTION");

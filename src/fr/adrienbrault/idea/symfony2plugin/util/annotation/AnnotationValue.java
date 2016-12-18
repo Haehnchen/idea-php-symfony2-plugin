@@ -1,5 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.util.annotation;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class AnnotationValue {
 
     private String name;

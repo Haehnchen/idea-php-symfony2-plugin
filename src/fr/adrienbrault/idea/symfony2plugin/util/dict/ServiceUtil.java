@@ -47,6 +47,9 @@ import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceUtil {
     private static ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
         new JavascriptServiceNameStrategy(),

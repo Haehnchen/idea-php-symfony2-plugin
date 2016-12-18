@@ -7,6 +7,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DoctrineTypeLookup extends LookupElement {
 
     private String name;

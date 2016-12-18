@@ -13,7 +13,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpGotoRelatedProvider extends GotoRelatedProvider {
 
     @NotNull

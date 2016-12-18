@@ -17,6 +17,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class DoctrineYamlAnnotationLookupBuilder extends CompletionProvider<CompletionParameters> {
 
     private final String annotationClassName;

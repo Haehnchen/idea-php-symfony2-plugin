@@ -36,6 +36,9 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class EventMethodCallInspection extends LocalInspectionTool {
 
     @NotNull

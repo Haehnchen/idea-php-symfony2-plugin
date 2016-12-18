@@ -7,6 +7,9 @@ import org.apache.commons.lang.StringUtils;
 import java.io.Serializable;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class MethodParameter implements Serializable {
     static class MethodModelParameter {
 

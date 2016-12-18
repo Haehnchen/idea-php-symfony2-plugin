@@ -7,8 +7,14 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class TwigPathContentIterator {
 
     private final TwigPath twigPath;

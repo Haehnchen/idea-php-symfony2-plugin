@@ -13,6 +13,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class GlobalExtensionVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
     @Override
     public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
