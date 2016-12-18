@@ -201,11 +201,6 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                 }
 
                 private PhpClass getClassArrayCreationParameter(PsiElement psiElement, int parameterIndex, String instance) {
-
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
-                        return null;
-                    }
-
                     ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
                     if (arrayCreationExpression != null) {
 
@@ -239,10 +234,6 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     return null;
                 }
             }
-
-
         );
-
     }
-
 }

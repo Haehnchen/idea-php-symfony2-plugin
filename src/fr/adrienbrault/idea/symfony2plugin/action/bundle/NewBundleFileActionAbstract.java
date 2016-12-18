@@ -7,6 +7,7 @@ import com.intellij.psi.PsiDirectory;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.AbstractProjectDumbAwareAction;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,7 @@ abstract public class NewBundleFileActionAbstract extends AbstractProjectDumbAwa
 
     public void update(AnActionEvent event) {
         Project project = getEventProject(event);
-        if(project == null) {
+        if(project == null || !Symfony2ProjectComponent.isEnabled(project)) {
             this.setStatus(event, false);
             return;
         }

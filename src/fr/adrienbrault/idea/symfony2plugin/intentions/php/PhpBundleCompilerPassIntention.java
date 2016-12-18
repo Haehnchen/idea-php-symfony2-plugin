@@ -8,6 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +34,9 @@ public class PhpBundleCompilerPassIntention extends PsiElementBaseIntentionActio
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return false;
+        }
 
         if(!(psiElement.getContainingFile() instanceof PhpFile)) {
             return false;

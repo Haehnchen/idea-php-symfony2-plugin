@@ -7,6 +7,7 @@ import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributo
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -22,12 +24,20 @@ public class ControllerToolboxProvider implements PhpToolboxProviderInterface {
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return ControllerIndex.getControllerLookupElements(parameter.getProject());
     }
 
     @NotNull
     @Override
     public Collection<PsiElement> getPsiTargets(final @NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return new ArrayList<PsiElement>() {{
             add(ControllerIndex.getControllerMethod(parameter.getProject(), parameter.getContents()));
         }};

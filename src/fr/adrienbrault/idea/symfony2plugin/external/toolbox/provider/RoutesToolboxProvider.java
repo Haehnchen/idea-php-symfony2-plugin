@@ -7,12 +7,14 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderAbstract;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -21,6 +23,10 @@ public class RoutesToolboxProvider extends PhpToolboxProviderAbstract {
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return RouteHelper.getRoutesLookupElements(parameter.getProject());
     }
 
@@ -28,6 +34,10 @@ public class RoutesToolboxProvider extends PhpToolboxProviderAbstract {
     @NotNull
     @Override
     public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return RouteHelper.getRouteDefinitionTargets(
             parameter.getProject(),
             parameter.getContents()

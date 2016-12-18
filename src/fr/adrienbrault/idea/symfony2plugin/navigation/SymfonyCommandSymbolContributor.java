@@ -5,6 +5,7 @@ import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ArrayUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,9 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributor 
     @NotNull
     @Override
     public String[] getNames(Project project, boolean b) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return new String[0];
+        }
 
         Set<String> routeNames = new HashSet<>();
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
@@ -34,6 +38,9 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributor 
     @NotNull
     @Override
     public NavigationItem[] getItemsByName(String name, String s2, Project project, boolean b) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return new NavigationItem[0];
+        }
 
         List<NavigationItem> navigationItems = new ArrayList<>();
 

@@ -24,7 +24,9 @@ public class ServiceGenerateAction extends CodeInsightAction {
     @Override
     public void update(AnActionEvent event) {
         super.update(event);
-        event.getPresentation().setVisible(Symfony2ProjectComponent.isEnabled(event.getProject()));
+        boolean enabled = Symfony2ProjectComponent.isEnabled(event.getProject());
+        event.getPresentation().setVisible(enabled);
+        event.getPresentation().setEnabled(enabled);
     }
 
     public static void invokeServiceGenerator(@NotNull Project project, @NotNull PsiFile file, @NotNull PhpClass phpClass, @Nullable Editor editor) {

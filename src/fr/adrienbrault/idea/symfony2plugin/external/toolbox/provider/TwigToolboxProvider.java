@@ -6,6 +6,7 @@ import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributo
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
@@ -23,12 +24,20 @@ public class TwigToolboxProvider implements PhpToolboxProviderInterface {
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return TwigHelper.getAllTemplateLookupElements(parameter.getProject());
     }
 
     @NotNull
     @Override
     public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         Collection<PsiElement> psiElements = new HashSet<>();
         Collections.addAll(psiElements, TwigHelper.getTemplatePsiElements(parameter.getProject(), parameter.getContents()));
         return psiElements;

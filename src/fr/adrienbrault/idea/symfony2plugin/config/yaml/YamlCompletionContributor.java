@@ -242,6 +242,10 @@ public class YamlCompletionContributor extends CompletionContributor {
         protected void addCompletions(@NotNull CompletionParameters completionParameters, final ProcessingContext processingContext, @NotNull final CompletionResultSet completionResultSet) {
 
             PsiFile originalFile = completionParameters.getOriginalFile();
+            if(!Symfony2ProjectComponent.isEnabled(originalFile)) {
+                return;
+            }
+
             final PsiDirectory containingDirectory = originalFile.getContainingDirectory();
             if (containingDirectory == null) {
                 return;

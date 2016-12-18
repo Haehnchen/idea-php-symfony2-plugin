@@ -7,6 +7,7 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderAbstract;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -23,6 +24,9 @@ public class ServiceParameterToolboxProvider extends PhpToolboxProviderAbstract 
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
 
         List<LookupElement> results = new ArrayList<>();
 
@@ -36,6 +40,10 @@ public class ServiceParameterToolboxProvider extends PhpToolboxProviderAbstract 
     @NotNull
     @Override
     public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return Collections.emptyList();
     }
 

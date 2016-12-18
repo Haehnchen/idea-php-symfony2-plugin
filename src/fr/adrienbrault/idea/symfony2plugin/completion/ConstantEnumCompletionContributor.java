@@ -9,6 +9,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.completion.constant.ConstantEnumCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.completion.constant.EnumConstantFilter;
 import fr.adrienbrault.idea.symfony2plugin.completion.lookup.PhpConstantFieldPhpLookupElement;
@@ -47,9 +48,8 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null || !(psiElement.getParent() instanceof MethodReference)) {
+                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getParent() instanceof MethodReference)) {
                     return;
                 }
 
@@ -72,7 +72,7 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null) {
+                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -104,7 +104,7 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null) {
+                if(psiElement == null|| !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -139,7 +139,7 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getPosition().getOriginalElement();
-                if(!(psiElement.getParent() instanceof StringLiteralExpression)) {
+                if(!(psiElement.getParent() instanceof StringLiteralExpression) || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -162,7 +162,7 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getPosition().getOriginalElement();
-                if(!(psiElement.getParent() instanceof StringLiteralExpression)) {
+                if(!(psiElement.getParent() instanceof StringLiteralExpression) || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 

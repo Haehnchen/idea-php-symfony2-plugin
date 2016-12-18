@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,9 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
     @NotNull
     @Override
     public String[] getNames(Project project, boolean b) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return new String[0];
+        }
 
         Set<String> routeNames = new HashSet<>();
 
@@ -32,6 +36,9 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
     @NotNull
     @Override
     public NavigationItem[] getItemsByName(String routeName, String s2, Project project, boolean b) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return new NavigationItem[0];
+        }
 
         List<NavigationItem> navigationItems = new ArrayList<>();
 

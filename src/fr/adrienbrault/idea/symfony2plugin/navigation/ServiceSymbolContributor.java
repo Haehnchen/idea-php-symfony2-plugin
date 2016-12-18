@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +20,10 @@ public class ServiceSymbolContributor implements ChooseByNameContributor {
     @NotNull
     @Override
     public String[] getNames(Project project, boolean b) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return new String[0];
+        }
+
         Collection<String> services = ContainerCollectionResolver.getServiceNames(project);
         return ArrayUtil.toStringArray(services);
     }
@@ -26,6 +31,9 @@ public class ServiceSymbolContributor implements ChooseByNameContributor {
     @NotNull
     @Override
     public NavigationItem[] getItemsByName(String serviceName, String s2, Project project, boolean b) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return new NavigationItem[0];
+        }
 
         List<NavigationItem> navigationItems = new ArrayList<>();
 

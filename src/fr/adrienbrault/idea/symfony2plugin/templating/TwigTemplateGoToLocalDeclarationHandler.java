@@ -48,12 +48,11 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
-
-        List<PsiElement> psiElements = new ArrayList<>();
-
         if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
             return null;
         }
+
+        List<PsiElement> psiElements = new ArrayList<>();
 
         // {{ goto_me() }}
         if (TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)) {

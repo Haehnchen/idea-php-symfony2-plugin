@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.external.locator;
 import com.intellij.psi.PsiElement;
 import de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator;
 import de.espend.idea.php.toolbox.navigation.locator.TargetLocatorParameter;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,6 +18,10 @@ public class BundleFileToolboxTargetLocator implements PhpToolboxTargetLocator {
     @NotNull
     @Override
     public Collection<PsiElement> getTargets(@NotNull TargetLocatorParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         String target = parameter.getTarget();
         if(!target.startsWith("@")) {
             return Collections.emptyList();

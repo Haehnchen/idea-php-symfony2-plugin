@@ -9,6 +9,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.AbstractProjectDumbAwareAction;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,7 @@ public class NewBundleCompilerPass extends AbstractProjectDumbAwareAction {
 
     public void update(AnActionEvent event) {
         Project project = getEventProject(event);
-        if(project == null) {
+        if(project == null || !Symfony2ProjectComponent.isEnabled(project)) {
             this.setStatus(event, false);
             return;
         }

@@ -20,7 +20,9 @@ public class PhpBundleCompilerPassGenerateAction extends CodeInsightAction {
     @Override
     public void update(AnActionEvent event) {
         super.update(event);
-        event.getPresentation().setVisible(Symfony2ProjectComponent.isEnabled(event.getProject()));
+        boolean enabled = Symfony2ProjectComponent.isEnabled(event.getProject());
+        event.getPresentation().setVisible(enabled);
+        event.getPresentation().setEnabled(enabled);
     }
 
     @Override

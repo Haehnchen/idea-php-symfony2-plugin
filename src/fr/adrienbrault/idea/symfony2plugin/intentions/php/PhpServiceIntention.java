@@ -8,7 +8,9 @@ import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class PhpServiceIntention extends PsiElementBaseIntentionAction {
@@ -31,6 +33,9 @@ public class PhpServiceIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
+        if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return false;
+        }
 
         PsiElement parentByCondition = PhpPsiUtil.getParentByCondition(psiElement, Method.INSTANCEOF);
         if(parentByCondition == null) {

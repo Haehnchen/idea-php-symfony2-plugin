@@ -143,7 +143,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null) {
+                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -169,7 +169,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null) {
+                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -286,7 +286,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null) {
+                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 

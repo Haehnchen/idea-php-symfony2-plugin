@@ -10,6 +10,7 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderAbstract;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -30,12 +31,19 @@ public class TranslationDomainToolboxProvider extends PhpToolboxProviderAbstract
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements(@NotNull PhpToolboxCompletionContributorParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         return TranslationUtil.getTranslationDomainLookupElements(parameter.getProject());
     }
 
     @NotNull
     @Override
     public Collection<PsiElement> getPsiTargets(@NotNull PhpToolboxDeclarationHandlerParameter parameter) {
+        if(!Symfony2ProjectComponent.isEnabled(parameter.getProject())) {
+            return Collections.emptyList();
+        }
 
         Collection<PsiElement> psiElements = new HashSet<>();
         for (PsiFile psiFile : TranslationUtil.getDomainPsiFiles(parameter.getProject(), parameter.getContents())) {

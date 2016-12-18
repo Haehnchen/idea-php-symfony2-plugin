@@ -7,6 +7,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +16,9 @@ public class PhpParameterStringCompletionConfidence extends CompletionConfidence
     @NotNull
     @Override
     public ThreeState shouldSkipAutopopup(@NotNull PsiElement contextElement, @NotNull PsiFile psiFile, int offset) {
+        if (!Symfony2ProjectComponent.isEnabled(contextElement)) {
+            return ThreeState.UNSURE;
+        }
 
         if(!(psiFile instanceof PhpFile)) {
             return ThreeState.UNSURE;
