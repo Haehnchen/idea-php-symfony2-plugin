@@ -353,7 +353,7 @@ public class SymfonyCreateService extends JDialog {
             method.getName();
         }
 
-        Collections.sort(modelParameters, (o1, o2) -> {
+        modelParameters.sort((o1, o2) -> {
             int i = o1.getName().compareTo(o2.getName());
             if (i != 0) {
                 return i;
@@ -378,11 +378,6 @@ public class SymfonyCreateService extends JDialog {
 
         // we have a weight sorted Set, so first one
         return services.iterator().next();
-    }
-
-    @Override
-    protected void dialogInit() {
-        super.dialogInit();
     }
 
     private class IsServiceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, Boolean> {

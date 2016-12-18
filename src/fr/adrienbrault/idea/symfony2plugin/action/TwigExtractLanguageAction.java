@@ -252,9 +252,10 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             for(TranslationFileModel transPsiFile: files) {
                 PsiFile psiFile = transPsiFile.getPsiFile();
 
-                CommandProcessor.getInstance().executeCommand(psiFile.getProject(), () -> ApplicationManager.getApplication().runWriteAction(() -> {
-                    ContainerUtil.addIfNotNull(targets, TranslationInsertUtil.invokeTranslation(psiFile, keyName, finalTranslationText));
-                }), "Translation Insert " + psiFile.getName(), null);
+                CommandProcessor.getInstance().executeCommand(psiFile.getProject(), () -> ApplicationManager.getApplication().runWriteAction(() ->
+                    ContainerUtil.addIfNotNull(targets, TranslationInsertUtil.invokeTranslation(psiFile, keyName, finalTranslationText))),
+                    "Translation Insert " + psiFile.getName(), null
+                );
             }
 
             if(navigateTo && targets.size() > 0) {

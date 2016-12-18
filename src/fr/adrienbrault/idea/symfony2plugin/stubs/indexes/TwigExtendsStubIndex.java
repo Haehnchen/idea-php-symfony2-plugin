@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -47,12 +46,9 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
                 return map;
             }
 
-            PsiElement[] twigExtendsTags = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-                @Override
-                public boolean isAccepted(PsiElement psiElement) {
-                    return psiElement instanceof TwigExtendsTag;
-                }
-            });
+            PsiElement[] twigExtendsTags = PsiTreeUtil.collectElements(psiFile,
+                psiElement -> psiElement instanceof TwigExtendsTag
+            );
 
             if(twigExtendsTags.length == 0) {
                 return map;

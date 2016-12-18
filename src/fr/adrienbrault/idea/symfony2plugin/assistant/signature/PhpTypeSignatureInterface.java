@@ -13,8 +13,8 @@ import java.util.Collection;
 public interface PhpTypeSignatureInterface {
 
     @Nullable
-    public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter);
+    Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter);
 
     @NotNull
-    public String getName();
+    String getName();
 }

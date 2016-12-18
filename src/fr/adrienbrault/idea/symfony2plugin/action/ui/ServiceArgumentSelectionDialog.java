@@ -63,9 +63,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         generateButton.requestFocusInWindow();
         this.getRootPane().setDefaultButton(generateButton);
 
-        this.closeButton.addActionListener(e -> {
-            onCancel();
-        });
+        this.closeButton.addActionListener(e -> onCancel());
 
         this.getRootPane().registerKeyboardAction(e ->
             onCancel(),
@@ -237,8 +235,8 @@ public class ServiceArgumentSelectionDialog extends JDialog {
 
     }
 
-    public static interface Callback {
-        public void onOk(java.util.List<String> items);
+    public interface Callback {
+        void onOk(java.util.List<String> items);
     }
 
     public static ServiceArgumentSelectionDialog createDialog(Project project, Map<String, Set<String>> arguments, Callback callback) {

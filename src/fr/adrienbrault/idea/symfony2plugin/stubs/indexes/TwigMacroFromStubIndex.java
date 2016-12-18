@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -49,23 +48,19 @@ public class TwigMacroFromStubIndex extends FileBasedIndexExtension<String, Void
                 return map;
             }
 
-            PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-                @Override
-                public boolean isAccepted(PsiElement psiElement) {
-
-                    // {% include %}
-                    if(psiElement instanceof TwigTagWithFileReference) {
-                        PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("from"));
-                        if(fromTag != null) {
-                            String templateName = fromTag.getText();
-                            if(!StringUtils.isBlank(templateName)) {
-                                map.put(templateName, null);
-                            }
+            PsiTreeUtil.collectElements(psiFile, psiElement -> {
+                // {% include %}
+                if(psiElement instanceof TwigTagWithFileReference) {
+                    PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTemplateFileReferenceTagPattern("from"));
+                    if(fromTag != null) {
+                        String templateName = fromTag.getText();
+                        if(!StringUtils.isBlank(templateName)) {
+                            map.put(templateName, null);
                         }
                     }
-
-                    return false;
                 }
+
+                return false;
             });
 
             return map;

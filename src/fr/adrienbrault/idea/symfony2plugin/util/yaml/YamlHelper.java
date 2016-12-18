@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
-import com.intellij.util.Function;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
@@ -804,12 +803,7 @@ public class YamlHelper {
             // drop first item as getValueText() removes our key indent
             String[] remove = (String[]) ArrayUtils.remove(text.split("\\r?\\n"), 0);
 
-            List<String> map = ContainerUtil.map(remove, new Function<String, String>() {
-                @Override
-                public String fun(String s) {
-                    return previousIndent + s;
-                }
-            });
+            List<String> map = ContainerUtil.map(remove, s -> previousIndent + s);
 
             return "\n" + StringUtils.strip(StringUtils.join(map, "\n"), "\n");
         }, (String[]) ArrayUtils.add(keys, keyText));

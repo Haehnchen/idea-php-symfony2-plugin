@@ -121,12 +121,7 @@ public class ServiceXmlParserFactory {
 
     synchronized public static <T extends ServiceParserInterface> T getInstance(Project project, Class<T> serviceParser){
 
-        Map<Class, ServiceXmlParserFactory> projectInstance = instance.get(project);
-
-        if(projectInstance == null) {
-            projectInstance = new HashMap<>();
-            instance.put(project, projectInstance);
-        }
+        Map<Class, ServiceXmlParserFactory> projectInstance = instance.computeIfAbsent(project, k -> new HashMap<>());
 
         ServiceXmlParserFactory serviceXmlParserFactory = projectInstance.get(serviceParser);
         if(serviceXmlParserFactory == null) {

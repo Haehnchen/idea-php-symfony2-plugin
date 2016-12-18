@@ -60,7 +60,7 @@ public class ServiceBuilder {
             if(methods.containsKey(methodModelParameter.getName())) {
                 methods.get(methodName).add(methodModelParameter);
             } else {
-                methods.put(methodName, new ArrayList<>(Arrays.asList(methodModelParameter)));
+                methods.put(methodName, new ArrayList<>(Collections.singletonList(methodModelParameter)));
             }
         }
 
@@ -81,7 +81,7 @@ public class ServiceBuilder {
         ArrayList<String> methodCalls = new ArrayList<>();
 
         // sort by indexes parameter
-        Collections.sort(methodModelParameters, (o1, o2) -> ((Integer) o1.getIndex()).compareTo(o2.getIndex()));
+        methodModelParameters.sort((o1, o2) -> ((Integer) o1.getIndex()).compareTo(o2.getIndex()));
 
         for(MethodParameter.MethodModelParameter methodModelParameter: methodModelParameters) {
 

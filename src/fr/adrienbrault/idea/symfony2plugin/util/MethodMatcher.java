@@ -265,7 +265,7 @@ public class MethodMatcher {
 
     public interface MethodParameterMatcherInterface {
         @Nullable
-        public MethodMatchParameter match();
+        MethodMatchParameter match();
     }
 
     public abstract static class AbstractMethodParameterMatcher implements MethodParameterMatcherInterface {

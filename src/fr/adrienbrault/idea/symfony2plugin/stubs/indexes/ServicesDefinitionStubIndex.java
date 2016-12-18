@@ -90,7 +90,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     /**
      * @deprecated
      */
-    public static class MySetDataExternalizer extends ArrayDataExternalizer {};
+    public static class MySetDataExternalizer extends ArrayDataExternalizer {}
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
 

@@ -2,10 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -14,7 +12,6 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetada
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;

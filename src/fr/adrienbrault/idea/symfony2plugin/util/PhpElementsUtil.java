@@ -983,8 +983,8 @@ public class PhpElementsUtil {
 
     }
 
-    public static interface ClassForCompletionVisitor {
-        public void visit(PhpClass phpClass, String presentableFQN, String prefix);
+    public interface ClassForCompletionVisitor {
+        void visit(PhpClass phpClass, String presentableFQN, String prefix);
     }
 
     /**

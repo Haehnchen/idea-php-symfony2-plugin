@@ -8,5 +8,5 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ServiceNameStrategyInterface {
     @Nullable
-    public String getServiceName(@NotNull ServiceNameStrategyParameter parameter);
+    String getServiceName(@NotNull ServiceNameStrategyParameter parameter);
 }

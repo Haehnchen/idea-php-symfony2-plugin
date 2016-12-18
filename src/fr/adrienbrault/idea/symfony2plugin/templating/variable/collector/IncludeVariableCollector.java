@@ -177,7 +177,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         for(String templateName: TwigUtil.getTemplateName(twigFile)) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), virtualFile -> {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
                 targets.add(virtualFile);
                 return true;
             }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));

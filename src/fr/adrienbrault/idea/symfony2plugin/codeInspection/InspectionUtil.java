@@ -78,7 +78,7 @@ public class InspectionUtil {
 
     public interface LazyControllerNameResolve {
         @Nullable
-        public String getRouteName();
+        String getRouteName();
     }
 
 }

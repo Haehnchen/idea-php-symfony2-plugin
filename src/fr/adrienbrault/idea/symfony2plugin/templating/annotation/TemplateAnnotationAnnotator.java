@@ -80,9 +80,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
         }
 
         // find html target, as this this our first priority for end users condition
-        String templateName = ContainerUtil.find(templateNames, s -> {
-            return s.toLowerCase().endsWith(".html.twig");
-        });
+        String templateName = ContainerUtil.find(templateNames, s -> s.toLowerCase().endsWith(".html.twig"));
 
         // fallback on first item
         if(templateName == null) {

@@ -333,11 +333,7 @@ public class TranslationUtil {
         try {
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             document = documentBuilder.parse(content);
-        } catch (ParserConfigurationException e) {
-            return set;
-        } catch (SAXException e) {
-            return set;
-        } catch (IOException e) {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             return set;
         }
 

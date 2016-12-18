@@ -143,10 +143,10 @@ public class ServiceActionUtil {
         }
 
         // weak service have lower priority
-        Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityWeakComparator());
+        matchedContainer.sort(new SymfonyCreateService.ContainerServicePriorityWeakComparator());
 
         // lower priority of services like "doctrine.orm.default_entity_manager"
-        Collections.sort(matchedContainer, new SymfonyCreateService.ContainerServicePriorityNameComparator());
+        matchedContainer.sort(new SymfonyCreateService.ContainerServicePriorityNameComparator());
 
         Set<String> possibleServices = new LinkedHashSet<>();
         for(ContainerService containerService: matchedContainer) {
@@ -192,7 +192,7 @@ public class ServiceActionUtil {
             this.serviceKey = serviceKey;
             this.argument = argument;
             this.className = className;
-        };
+        }
 
         @Nullable
         public YAMLKeyValue getArgument() {
@@ -444,8 +444,8 @@ public class ServiceActionUtil {
         }
     }
 
-    public static interface InsertServicesCallback {
-        public void insert(List<String> items);
+    public interface InsertServicesCallback {
+        void insert(List<String> items);
     }
 
     public static class XmlInsertServicesCallback implements InsertServicesCallback {

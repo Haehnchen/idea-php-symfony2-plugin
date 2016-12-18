@@ -13,7 +13,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
 import com.intellij.util.containers.ContainerUtil;
@@ -1487,19 +1486,16 @@ public class TwigHelper {
 
         final Collection<PsiElement> targets = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Arrays.asList(name)), virtualFile -> {
+        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Collections.singletonList(name)), virtualFile -> {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
             if (psiFile != null) {
-                PsiTreeUtil.processElements(psiFile, new PsiElementProcessor() {
-                    public boolean execute(@NotNull PsiElement psiElement) {
-
-                        if (getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
-                            targets.add(psiElement);
-                        }
-
-                        return true;
-
+                PsiTreeUtil.processElements(psiFile, psiElement -> {
+                    if (getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
+                        targets.add(psiElement);
                     }
+
+                    return true;
+
                 });
             }
 
@@ -1796,9 +1792,9 @@ public class TwigHelper {
         if(firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
             PsiElement embedTag = firstParent.getFirstChild();
             if(embedTag.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
-                PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), psiElement12 -> {
-                    return TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement12);
-                });
+                PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), psiElement12 ->
+                    TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement12)
+                );
 
                 if(fileReference != null && TwigUtil.isValidTemplateString(fileReference)) {
                     String text = fileReference.getText();

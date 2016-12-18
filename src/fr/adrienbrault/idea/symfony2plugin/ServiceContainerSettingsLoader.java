@@ -8,6 +8,9 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 
 import java.util.List;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class ServiceContainerSettingsLoader implements ServiceContainerLoader {
 
     private static Condition<ContainerFile> CONDITION = new ContainerFileCondition();

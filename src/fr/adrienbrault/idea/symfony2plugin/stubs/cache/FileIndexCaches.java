@@ -39,9 +39,9 @@ public class FileIndexCaches {
 
                 final FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
 
-                getIndexKeysCache(project, dataHolderNames, ID).stream().forEach(service -> {
-                    items.put(service, fileBasedIndex.getValues(ID, service, scope));
-                });
+                getIndexKeysCache(project, dataHolderNames, ID).stream().forEach(service ->
+                    items.put(service, fileBasedIndex.getValues(ID, service, scope))
+                );
 
                 return CachedValueProvider.Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
             }, false);

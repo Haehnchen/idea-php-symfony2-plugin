@@ -57,9 +57,9 @@ public class CaretTextOverlayListener implements CaretListener {
         }
 
         synchronized (lock) {
-            schedule = executor.schedule(() -> {
-                ApplicationManager.getApplication().runReadAction(new MyPsiElementRunnable(project, caretEvent, editor));
-            }, startDelayMs, TimeUnit.MILLISECONDS);
+            schedule = executor.schedule(() ->
+                ApplicationManager.getApplication().runReadAction(new MyPsiElementRunnable(project, caretEvent, editor)), startDelayMs, TimeUnit.MILLISECONDS
+            );
         }
     }
 

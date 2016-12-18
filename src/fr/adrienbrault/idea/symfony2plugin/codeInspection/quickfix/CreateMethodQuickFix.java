@@ -65,7 +65,7 @@ public class CreateMethodQuickFix implements LocalQuickFix {
             return;
         }
 
-        final Editor editor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, phpClass.getContainingFile().getVirtualFile()), true);;
+        final Editor editor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, phpClass.getContainingFile().getVirtualFile()), true);
         if(editor == null) {
             return;
         }

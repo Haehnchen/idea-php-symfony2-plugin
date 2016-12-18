@@ -19,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -112,7 +111,7 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
 
             Method method = phpClass.findMethodByName(contents);
             if(method != null) {
-                return new ArrayList<>(Arrays.asList(method));
+                return new ArrayList<>(Collections.singletonList(method));
             }
 
             return Collections.emptyList();

@@ -24,7 +24,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -285,14 +284,14 @@ public class TranslatorKeyExtractorDialog extends JDialog {
             psiFilesSorted.add(psiWeightList);
         }
 
-        Collections.sort(psiFilesSorted, new PsiWeightListComparator());
+        psiFilesSorted.sort(new PsiWeightListComparator());
 
         return psiFilesSorted;
     }
 
 
-    public static interface OnOkCallback {
-        public void onClick(List<TranslationFileModel> files, String keyName, String domain, boolean navigateTo);
+    public interface OnOkCallback {
+        void onClick(List<TranslationFileModel> files, String keyName, String domain, boolean navigateTo);
     }
 
 }

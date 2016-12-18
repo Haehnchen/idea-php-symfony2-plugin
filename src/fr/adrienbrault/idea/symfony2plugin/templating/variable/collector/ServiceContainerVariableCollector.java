@@ -8,10 +8,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,7 +23,7 @@ public class ServiceContainerVariableCollector implements TwigFileVariableCollec
             if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
                 String serviceClass = ServiceXmlParserFactory.getInstance(parameter.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(globalVariableEntry.getValue().getValue());
                 if (serviceClass != null) {
-                    variables.put(globalVariableEntry.getKey(), new HashSet<>(Arrays.asList(serviceClass)));
+                    variables.put(globalVariableEntry.getKey(), new HashSet<>(Collections.singletonList(serviceClass)));
                 }
             }
         }

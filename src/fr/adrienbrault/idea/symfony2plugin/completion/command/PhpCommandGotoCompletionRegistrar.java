@@ -123,7 +123,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyList();
             }
 
-            return Arrays.asList(targets.get(contents).getTarget());
+            return Collections.singletonList(targets.get(contents).getTarget());
         }
 
         @Nullable

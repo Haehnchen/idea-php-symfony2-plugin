@@ -312,7 +312,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         }
     }
 
-    private static enum FormOption {
+    private enum FormOption {
         EXTENSION, DEFAULT_OPTIONS
     }
 

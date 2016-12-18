@@ -28,11 +28,7 @@ public class ParameterServiceCollector {
                 .newDocumentBuilder()
                 .parse(stream)
             );
-        } catch (IOException e) {
-            return Collections.emptyMap();
-        } catch (SAXException e) {
-            return Collections.emptyMap();
-        } catch (ParserConfigurationException e) {
+        } catch (IOException | SAXException | ParserConfigurationException e) {
             return Collections.emptyMap();
         }
     }
@@ -44,11 +40,7 @@ public class ParameterServiceCollector {
                 .newDocumentBuilder()
                 .parse(file)
             );
-        } catch (SAXException e) {
-            return Collections.emptyMap();
-        } catch (IOException e) {
-            return Collections.emptyMap();
-        } catch (ParserConfigurationException e) {
+        } catch (SAXException | IOException | ParserConfigurationException e) {
             return Collections.emptyMap();
         }
     }

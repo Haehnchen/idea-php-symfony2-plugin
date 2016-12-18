@@ -56,7 +56,7 @@ public class TwigBlockParser {
                 Collection<TwigBlock> blocksInFile = TwigHelper.getBlocksInFile((TwigFile) file);
                 // @TODO: remove this here just presentation
                 for (TwigBlock twigBlock : blocksInFile) {
-                    twigBlock.setShortcutName(shortcutName);;
+                    twigBlock.setShortcutName(shortcutName);
                 }
                 current.addAll(blocksInFile);
             }

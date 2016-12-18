@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.profiler.factory;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.profiler.LocalProfilerIndex;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import org.jetbrains.annotations.NotNull;

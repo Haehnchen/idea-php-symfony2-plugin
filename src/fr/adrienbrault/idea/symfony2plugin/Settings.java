@@ -109,7 +109,6 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     @Nullable
     public List<MethodSignatureSetting> methodSignatureSettings = new ArrayList<>();
-    ;
 
     public static Settings getInstance(Project project) {
         return ServiceManager.getService(project, Settings.class);

@@ -76,9 +76,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         }
 
         // normalize for xml
-        items = ContainerUtil.map(items, s -> {
-            return s.replace('_', '-');
-        });
+        items = ContainerUtil.map(items, s -> s.replace('_', '-'));
 
         // reverse to get top most item first
         Collections.reverse(items);
@@ -127,11 +125,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
             return document;
 
-        } catch (ParserConfigurationException e) {
-            return null;
-        } catch (SAXException e) {
-            return null;
-        } catch (IOException e) {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             return null;
         }
     }

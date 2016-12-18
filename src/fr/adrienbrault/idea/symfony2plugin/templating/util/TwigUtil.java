@@ -555,7 +555,7 @@ public class TwigUtil {
 
             // bundle names wins
             if(templateNames.size() > 1) {
-                Collections.sort(templateNames, new TwigUtil.TemplateStringComparator());
+                templateNames.sort(new TemplateStringComparator());
             }
 
             String templateName = templateNames.iterator().next();
@@ -732,7 +732,7 @@ public class TwigUtil {
             ).accepts(element)) {
 
             return false;
-        };
+        }
 
         return true;
     }

@@ -55,9 +55,9 @@ public class FormOptionsUtil {
     public static Collection<FormClass> getExtendedTypeClasses(@NotNull Project project, @NotNull String... formTypeNames) {
 
         // strip "\"
-        List<String> formTypeNamesList = ContainerUtil.map(Arrays.asList(formTypeNames), s -> {
-            return StringUtils.stripStart(s, "\\");
-        });
+        List<String> formTypeNamesList = ContainerUtil.map(Arrays.asList(formTypeNames), s ->
+            StringUtils.stripStart(s, "\\")
+        );
 
         Collection<FormClass> extendedTypeClasses = new ArrayList<>();
         for(PhpClass phpClass: getFormTypeExtensionClassNames(project)) {

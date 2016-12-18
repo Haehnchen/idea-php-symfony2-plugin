@@ -10,8 +10,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -67,7 +67,7 @@ public class PhpTypeSignatureTypes {
 
         @Nullable
         public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
-            return Arrays.asList(PhpElementsUtil.getClassInterface(project, parameter));
+            return Collections.singletonList(PhpElementsUtil.getClassInterface(project, parameter));
         }
 
         @NotNull
@@ -95,7 +95,7 @@ public class PhpTypeSignatureTypes {
 
         @Nullable
         public Collection<? extends PhpNamedElement> getByParameter(Project project, String parameter) {
-            return Arrays.asList(FormUtil.getFormTypeToClass(project, parameter));
+            return Collections.singletonList(FormUtil.getFormTypeToClass(project, parameter));
         }
 
         @NotNull

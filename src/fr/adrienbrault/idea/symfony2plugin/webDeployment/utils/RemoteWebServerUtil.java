@@ -89,9 +89,7 @@ public class RemoteWebServerUtil {
 
             fileStorage.clear();
 
-            ApplicationManager.getApplication().runReadAction(() -> {
-                fileStorage.build(project, contents);
-            });
+            ApplicationManager.getApplication().runReadAction(() -> fileStorage.build(project, contents));
         }
 
         connection.clone();
@@ -103,17 +101,11 @@ public class RemoteWebServerUtil {
             return Collections.emptyList();
         }
 
-        return ContainerUtil.map(ContainerUtil.filter(files, new Condition<UiFilePathInterface>() {
-            @Override
-            public boolean value(UiFilePathInterface routingFile) {
-                return routingFile.isRemote();
-            }
-        }), new Function<UiFilePathInterface, String>() {
-            @Override
-            public String fun(UiFilePathInterface routingFile) {
-                return routingFile.getPath().substring("remote://".length());
-            }
-        });
+        return ContainerUtil.map(ContainerUtil.filter(
+            files,
+            (Condition<UiFilePathInterface>) UiFilePathInterface::isRemote),
+            (Function<UiFilePathInterface, String>) routingFile -> routingFile.getPath().substring("remote://".length())
+        );
     }
 
     public static boolean hasConfiguredRemoteFile(@NotNull Project project) {

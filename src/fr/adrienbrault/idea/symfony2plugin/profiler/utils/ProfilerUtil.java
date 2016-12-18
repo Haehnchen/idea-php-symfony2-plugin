@@ -348,9 +348,9 @@ public class ProfilerUtil {
             String twigContent = getUrlContent(profilerUrl + "?panel=twig");
 
             if(requestContent != null) {
-                ApplicationManager.getApplication().runReadAction(() -> {
-                    requestAttributes.putAll(ProfilerUtil.getRequestAttributes(project, requestContent));
-                });
+                ApplicationManager.getApplication().runReadAction(() ->
+                    requestAttributes.putAll(ProfilerUtil.getRequestAttributes(project, requestContent))
+                );
             }
 
             if(twigContent != null) {

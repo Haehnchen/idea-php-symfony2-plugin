@@ -8,6 +8,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -66,6 +68,6 @@ public class ServiceStringLookupElement extends LookupElement {
 
     @Nullable
     private String getClassName(@NotNull ContainerService containerService) {
-        return ContainerUtil.find(containerService.getClassNames(), s -> s != null);
+        return ContainerUtil.find(containerService.getClassNames(), Objects::nonNull);
     }
 }

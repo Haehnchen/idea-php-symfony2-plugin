@@ -123,7 +123,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         for(String templateName: TwigUtil.getTemplateName(twigFile.getVirtualFile(), files)) {
 
             final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Arrays.asList(templateName)), virtualFile -> {
+            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
                 PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
                 if(psiFile != null) {

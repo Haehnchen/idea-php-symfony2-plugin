@@ -9,6 +9,6 @@ import org.jetbrains.annotations.Nullable;
 public interface QueryBuilderRepositoryDetector {
 
     @Nullable
-    public String getRepository(@NotNull QueryBuilderRepositoryDetectorParameter parameter);
+    String getRepository(@NotNull QueryBuilderRepositoryDetectorParameter parameter);
 
 }
