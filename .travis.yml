@@ -11,11 +11,8 @@ before_script:
  - chmod +x travis.sh
 
 env:
-  - PHPSTORM_ENV=2016.1
-  - PHPSTORM_ENV=2016.1.2
-  - PHPSTORM_ENV=2016.2
-  - PHPSTORM_ENV=2016.2.1
-  - PHPSTORM_ENV=2016.3
+  - PHPSTORM_ENV=2016.3.1
+  - PHPSTORM_ENV=2016.3.2
   - PHPSTORM_ENV=eap
 
 matrix:
