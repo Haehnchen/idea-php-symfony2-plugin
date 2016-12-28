@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.12.132</version>
+    <version>0.13.133</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -99,12 +99,19 @@
 
     <change-notes><![CDATA[
 
+0.13.x: PhpStorm 2016.3.1+<br/>
 0.12.x: PhpStorm 2016.1<br/>
 0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.12.133 / 0.13.133</h2>
+<ul>
+    <li>PhpStorm 2016.3.1: Make compatible with new Deployment API @Leneshka-jb <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/826">#826</a></li>
+    <li>Code cleanup and Java8 language migrations</li>
+</ul>
+
 <h2>0.12.132</h2>
 <ul>
     <li>Support more OptionsResolver options method parameter for references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/821">#821</a></li>
