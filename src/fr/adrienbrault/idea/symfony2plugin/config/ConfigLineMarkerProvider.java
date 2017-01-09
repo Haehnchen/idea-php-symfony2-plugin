@@ -54,7 +54,8 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         }
 
         String keyText = ((YAMLKeyValue) parent).getKeyText();
-        if(!getTreeSignatures(psiElement.getProject()).containsKey(keyText)) {
+        Map<String, Collection<String>> treeSignatures = getTreeSignatures(psiElement.getProject());
+        if(!treeSignatures.containsKey(keyText)) {
             return;
         }
 
@@ -68,7 +69,7 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
     @NotNull
     private Map<String, Collection<String>> getTreeSignatures(@NotNull Project project) {
         if(this.treeSignatures == null) {
-            this.treeSignatures = ConfigUtil.getTreeSignatures(project);
+            return this.treeSignatures = ConfigUtil.getTreeSignatures(project);
         }
 
         return this.treeSignatures;
