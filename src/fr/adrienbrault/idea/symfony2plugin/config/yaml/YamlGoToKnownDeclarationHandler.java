@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,6 +102,11 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.visitConfigKey(psiElement, results);
         }
 
+        // factory: "service:method"
+        if(YamlElementPatternHelper.getSingleLineScalarKey("factory").accepts(psiElement)) {
+            this.getFactoryStringGoto(psiElement, results);
+        }
+
         return results.toArray(new PsiElement[results.size()]);
     }
 
@@ -137,6 +143,33 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
         for (Method method : phpClass.getMethods()) {
             if(text.equals(method.getName())) {
+                results.add(method);
+            }
+        }
+    }
+
+    /**
+     * Factory goto: "factory: 'foo:bar'"
+     */
+    private void getFactoryStringGoto(PsiElement psiElement, List<PsiElement> results) {
+        PsiElement parent = psiElement.getParent();
+        if(!(parent instanceof YAMLScalar)) {
+            return;
+        }
+
+        String textValue = ((YAMLScalar) parent).getTextValue();
+        String[] split = textValue.split(":");
+        if(split.length != 2) {
+            return;
+        }
+
+        PhpClass phpClass = ServiceUtil.getServiceClass(psiElement.getProject(), split[0]);
+        if(phpClass == null) {
+            return;
+        }
+
+        for (Method method : phpClass.getMethods()) {
+            if(split[1].equals(method.getName())) {
                 results.add(method);
             }
         }

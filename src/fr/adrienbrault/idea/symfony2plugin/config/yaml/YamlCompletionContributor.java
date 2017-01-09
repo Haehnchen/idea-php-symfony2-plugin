@@ -43,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 import org.jetbrains.yaml.psi.YAMLSequence;
 
 import java.util.Collections;
@@ -107,9 +108,16 @@ public class YamlCompletionContributor extends CompletionContributor {
             new ConfigCompletionProvider()
         );
 
+        // factory: ['@app.newsletter_manager_factory', createNewsletterManager]
         extend(
             CompletionType.BASIC, YamlElementPatternHelper.getAfterCommaPattern(),
             new FactoryMethodCompletionProvider()
+        );
+
+        // factory: ['app.newsletter_manager_factory:createNewsletterManager']
+        extend(
+            CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory"),
+            new MyFactoryStringMethodCompletionProvider()
         );
 
         extend(
@@ -215,6 +223,45 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_method"), new ServiceClassMethodInsideScalarKeyCompletion("factory_service"));
 
+    }
+
+    /**
+     * factory: "foo:<caret>"
+     */
+    private static class MyFactoryStringMethodCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            PsiElement parent = position.getParent();
+            if(!(parent instanceof YAMLScalar)) {
+                return;
+            }
+
+            String textValue = ((YAMLScalar) parent).getTextValue();
+            String[] split = textValue.split(":");
+            if(split.length < 2) {
+                new ServiceCompletionProvider().addCompletions(parameters, processingContext, completionResultSet);
+                return;
+            }
+
+            PhpClass phpClass = ServiceUtil.getServiceClass(position.getProject(), split[0]);
+            if(phpClass == null) {
+                return;
+            }
+
+            for (Method method : phpClass.getMethods()) {
+                if(method.getAccess().isPublic() && !(method.getName().startsWith("__"))) {
+                    completionResultSet.addElement(
+                        LookupElementBuilder.create(split[0] + ":" + method.getName())
+                        .withIcon(method.getIcon()).withTypeText(phpClass.getName(), true)
+                    );
+                }
+            }
+        }
     }
 
     private static class FactoryMethodCompletionProvider extends CompletionProvider<CompletionParameters> {

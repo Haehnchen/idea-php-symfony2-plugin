@@ -55,4 +55,13 @@ public class YamlDicNavigationContributorTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testFactoryClassMethodnavigationForStringShortcut() {
+        assertNavigationContains(YAMLFileType.YML, "services:\n" +
+                "    foo.factory:\n" +
+                "        class: Foo\\Name\\FooClass\n" +
+                "    foo.manager:\n" +
+                "        factory: 'foo.factory:f<caret>oo'\n"
+            , "Foo\\Name\\FooClass::foo"
+        );
+    }
 }

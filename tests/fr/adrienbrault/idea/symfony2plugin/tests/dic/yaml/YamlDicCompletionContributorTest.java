@@ -154,4 +154,11 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
 
     }
 
+    public void testFactoryClassMethodCompletionForStringShortcut() {
+        assertCompletionContains(YAMLFileType.YML, "services:\n" +
+                "    foo.manager:\n" +
+                "        factory: '<caret>'\n"
+            , "data_collector.router"
+        );
+    }
 }
