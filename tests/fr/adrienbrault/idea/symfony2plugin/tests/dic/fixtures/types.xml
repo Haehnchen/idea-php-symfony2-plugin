@@ -3,5 +3,6 @@
   <services>
       <service id="foo" class="MyDateTime"/>
       <service id="foo.bar" class="MyDateTime"/>
+      <service id="MyDateTime"/>
   </services>
 </container>

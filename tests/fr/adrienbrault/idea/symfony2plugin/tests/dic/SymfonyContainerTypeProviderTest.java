@@ -15,9 +15,9 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("types.xml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("types2.xml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+        myFixture.copyFileToProject("types.xml");
+        myFixture.copyFileToProject("types2.xml");
+        myFixture.copyFileToProject("classes.php");
     }
 
     public String getTestDataPath() {
@@ -66,6 +66,18 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
                 "/** @var $d \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
                 "$d->get('foo.bar')->get<caret>Bar();",
             PlatformPatterns.psiElement(Method.class).withName("getBar")
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     */
+    public void testThatClassConstantResolves() {
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var $d \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$d->get(MyDateTime::class)->for<caret>mat();",
+            PlatformPatterns.psiElement(Method.class).withName("format")
         );
     }
 }

@@ -15,5 +15,10 @@
                  parent="foo"/>
 
         <service id="bar.UPPER" class="stdClass"/>
+
+        <service id="My\Class\Id\First"/>
+        <service id="My\Class\Id\Second"/>
+        <service id="my_abstract_without_class" abstract="true"/>
+        <service id="my_alias_without_class" alias="foobar"/>
     </services>
 </container>

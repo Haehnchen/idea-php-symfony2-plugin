@@ -874,4 +874,24 @@ public class YamlHelper {
 
         return newYamlKeyValue;
     }
+
+    /**
+     * Services id in Symfony 3.3 are allowed to be class names
+     * defensive extract by naming strategy
+     */
+    public static boolean isClassServiceId(@NotNull String serviceId) {
+        // foo.bar
+        if(serviceId.contains(".")) {
+            return false;
+        }
+
+        // Foo\Bar
+        if(serviceId.contains("\\")) {
+            return true;
+        }
+
+        // classes without namespaces "FooBar"?
+
+        return false;
+    }
 }

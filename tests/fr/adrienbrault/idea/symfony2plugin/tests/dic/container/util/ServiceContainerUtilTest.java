@@ -120,6 +120,16 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_4")).getAlias());
     }
 
+    public void testServiceWithoutClassMustUseIdAsClass() {
+        for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
+            ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("My\\Class\\Id\\First"));
+            assertEquals("My\\Class\\Id\\First", bar.getClassName());
+
+            assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("my_abstract_without_class")).getClassName());
+            assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("my_alias_without_class")).getClassName());
+        }
+    }
+
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {
 
         @NotNull

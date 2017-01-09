@@ -5,6 +5,8 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import org.apache.commons.lang.*;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,7 +73,7 @@ public class PhpTypeProviderUtil {
         if(parameter.startsWith("#K#C")) {
             // PhpStorm9: #K#C\Class\Foo.class
             if(parameter.endsWith(".class")) {
-                return parameter.substring(4, parameter.length() - 6);
+                return StringUtils.stripStart(parameter.substring(4, parameter.length() - 6), "\\");
             }
         }
 

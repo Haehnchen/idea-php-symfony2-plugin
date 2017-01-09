@@ -31,7 +31,7 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
      * @see PhpTypeProviderUtil#getResolvedParameter
      */
     public void testGetResolvedParameter() {
-        assertEquals("\\Class\\Foo", PhpTypeProviderUtil.getResolvedParameter(PhpIndex.getInstance(getProject()), "#K#C\\Class\\Foo.class"));
+        assertEquals("Class\\Foo", PhpTypeProviderUtil.getResolvedParameter(PhpIndex.getInstance(getProject()), "#K#C\\Class\\Foo.class"));
     }
 
     /**

@@ -30,3 +30,10 @@ services:
 
   bar.UPPER:
     class: stdClass
+
+  My\Class\Id\First: ~
+  My\Class\Id\Second: {}
+  my_abstract_without_class:
+    abstract: true
+  my_alias_without_class:
+    alias: foobar

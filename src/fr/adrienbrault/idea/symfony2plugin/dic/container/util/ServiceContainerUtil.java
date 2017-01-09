@@ -46,9 +46,7 @@ public class ServiceContainerUtil {
 
                 services.add(serializableService);
             });
-        }
-
-        if(psiFile instanceof YAMLFile) {
+        } else if (psiFile instanceof YAMLFile) {
             visitFile((YAMLFile) psiFile, serviceConsumer -> {
 
                 // alias inline "foo: @bar"
@@ -113,15 +111,30 @@ public class ServiceContainerUtil {
     private static SerializableService createService(@NotNull ServiceConsumer serviceConsumer) {
         AttributeValueInterface attributes = serviceConsumer.attributes();
 
+        Boolean anAbstract = attributes.getBoolean("abstract");
+        String aClass = StringUtils.stripStart(attributes.getString("class"), "\\");
+        if(aClass == null && isServiceIdAsClassSupported(attributes, anAbstract)) {
+            // if no "class" given since Syfmony 3.3 we have lowercase "id" names
+            // as we internally use case insensitive maps; add user provided values
+            aClass = serviceConsumer.getServiceId();
+        }
+
         return new SerializableService(serviceConsumer.getServiceId())
             .setAlias(attributes.getString("alias"))
-            .setClassName(StringUtils.stripStart(attributes.getString("class"), "\\"))
+            .setClassName(aClass)
             .setDecorates(attributes.getString("decorates"))
             .setParent(attributes.getString("parent"))
-            .setIsAbstract(attributes.getBoolean("abstract"))
+            .setIsAbstract(anAbstract)
             .setIsAutowire(attributes.getBoolean("autowrite"))
             .setIsLazy(attributes.getBoolean("lazy"))
             .setIsPublic(attributes.getBoolean("public"));
+    }
+
+    /**
+     * Service definition allows "id" to "class" transformation: eg not an alias or abstract service
+     */
+    private static boolean isServiceIdAsClassSupported(@NotNull AttributeValueInterface attributes, @Nullable Boolean anAbstract) {
+        return attributes.getString("alias") == null && !(anAbstract != null && anAbstract);
     }
 
     public static void visitFile(@NotNull YAMLFile psiFile, @NotNull Consumer<ServiceConsumer> consumer) {

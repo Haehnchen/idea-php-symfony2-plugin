@@ -115,4 +115,21 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
             "Symfony: lowercase letters for service and parameter"
         );
     }
+
+    public void testCaseSensitivityForServiceFilesMustNotHighlightClassesOfSymfony33() {
+        assertLocalInspectionNotContains("service.yml", "services:\n" +
+                "    My\\Sweet\\Cl<caret>ass:\n" +
+                "        class: DateTime",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.xml",
+            "<container>\n" +
+                "  <services>\n" +
+                "      <service id=\"My\\Sweet\\Cl<caret>ass\"/>\n" +
+                "  </services>\n" +
+                "</container>\n",
+            "Symfony: lowercase letters for service and parameter"
+        );
+    }
 }
