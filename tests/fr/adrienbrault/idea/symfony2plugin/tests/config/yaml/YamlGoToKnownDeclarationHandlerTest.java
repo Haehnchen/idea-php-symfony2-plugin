@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
@@ -15,7 +16,9 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("YamlGoToKnownDeclarationHandlerConfig.php");
+        myFixture.copyFileToProject("classes.php");
         myFixture.configureByText("config_foo.yml", "");
+        myFixture.configureByFile("tagged.services.xml");
     }
 
     public String getTestDataPath() {
@@ -44,5 +47,31 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
                 "    foo: ~",
             PlatformPatterns.psiElement(StringLiteralExpression.class)
         );
+    }
+
+    public void testNavigateToTaggedServices() {
+        String[] values = {"my_nice<caret>_tag", "'my_nice<caret>_tag'", "\"my_nice<caret>_tag\""};
+
+        for (String value : values) {
+            assertNavigationMatch("services.yml", "" +
+                    "services:\n" +
+                    "    foo:\n" +
+                    "       tags: { name: " + value + " }\n",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+        }
+    }
+
+    public void testNavigateToTaggedServicesForSymfony33Shortcut() {
+        String[] values = {"my_nice<caret>_tag", "'my_nice<caret>_tag'", "\"my_nice<caret>_tag\""};
+
+        for (String value : values) {
+            assertNavigationMatch("services.yml", "" +
+                    "services:\n" +
+                    "    foo:\n" +
+                    "       tags: [ " + value +" ]\n",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+        }
     }
 }

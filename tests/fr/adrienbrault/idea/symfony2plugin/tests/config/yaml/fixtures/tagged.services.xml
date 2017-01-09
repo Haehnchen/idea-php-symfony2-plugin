@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container>
+
+    <services>
+        <service id="my_nice_tag_service_id" class="MyDateTime">
+            <tag name="my_nice_tag"/>
+        </service>
+    </services>
+
+</container>

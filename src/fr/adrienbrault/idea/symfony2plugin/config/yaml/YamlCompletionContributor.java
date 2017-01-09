@@ -200,10 +200,18 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getSingleLineScalarKey("method")
         ), new ServiceCallsMethodTestCompletion());
 
+        // tags: { name: 'foobar' }
         extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
             YamlElementPatternHelper.getSingleLineScalarKey("name")
         ), new TagNameCompletionProvider());
+
+        // tags: [ foobar ]
+        extend(
+            CompletionType.BASIC,
+            YamlElementPatternHelper.getTagsAsSequencePattern(),
+            new TagNameCompletionProvider()
+        );
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_method"), new ServiceClassMethodInsideScalarKeyCompletion("factory_service"));
 

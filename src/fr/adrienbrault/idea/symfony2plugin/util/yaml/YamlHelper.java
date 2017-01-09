@@ -160,19 +160,6 @@ public class YamlHelper {
         }
     }
 
-    public static Set<String> getYamlCompoundValueKeyNames(YAMLCompoundValue yamlCompoundValue) {
-
-        Set<String> stringSet = new HashSet<>();
-
-        List<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.getChildrenOfTypeAsList(yamlCompoundValue, YAMLKeyValue.class);
-
-        for(YAMLKeyValue yamlKeyValue: yamlKeyValues) {
-            stringSet.add(yamlKeyValue.getKeyText());
-        }
-
-        return stringSet;
-    }
-
     public static boolean isValidParameterName(String parameterName) {
 
         if(parameterName.length() < 3) {
@@ -533,6 +520,7 @@ public class YamlHelper {
     /**
      * Collect defined service tags on a sequence list
      * - { name: assetic.factory_worker }
+     * - [ assetic.factory_worker ]
      *
      * @param yamlKeyValue the service key value to find the "tags" key on
      * @return tag names
@@ -554,16 +542,23 @@ public class YamlHelper {
 
         for (YAMLSequenceItem yamlSequenceItem : ((YAMLSequence) tagsCompound).getItems()) {
 
-            final YAMLValue value = yamlSequenceItem.getValue();
-            if(!(value instanceof YAMLMapping)) {
-                continue;
-            }
+            YAMLValue value = yamlSequenceItem.getValue();
+            if(value instanceof YAMLMapping) {
+                // tags:
+                //  - {name: foobar}
 
-            String name = YamlHelper.getYamlKeyValueAsString(((YAMLMapping) value), "name");
-            if(name != null) {
-                tags.add(name);
-            }
+                String name = YamlHelper.getYamlKeyValueAsString(((YAMLMapping) value), "name");
+                if(name != null) {
+                    tags.add(name);
+                }
+            } else if(value instanceof YAMLScalar) {
+                // tags: [foobar]
 
+                String textValue = ((YAMLScalar) value).getTextValue();
+                if(StringUtils.isNotBlank(textValue)) {
+                    tags.add(textValue);
+                }
+            }
         }
 
         return tags;
@@ -588,10 +583,24 @@ public class YamlHelper {
             final YAMLValue itemValue = yamlSequenceItem.getValue();
 
             if(itemValue instanceof YAMLMapping) {
+                // tags:
+                //  - {name: foobar}
+
                 final YAMLMapping yamlHash = (YAMLMapping) itemValue;
                 String tagName = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
                 if(tagName != null) {
                     visitor.visit(new YamlServiceTag(tagName, yamlHash));
+                }
+            } else if(itemValue instanceof YAMLScalar) {
+                // tags: [foobar]
+
+                String textValue = ((YAMLScalar) itemValue).getTextValue();
+                if(StringUtils.isNotBlank(textValue)) {
+                    // fake tag attribute: {name: 'foobar'}
+                    // @TODO: drop: fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagFactory.create
+                    YAMLMapping yamlMapping = YamlPsiElementFactory.createFromText(yamlServiceKeyValue.getProject(), YAMLMapping.class, "{name: " + textValue);
+
+                    visitor.visit(new YamlServiceTag(textValue, yamlMapping));
                 }
             }
         }

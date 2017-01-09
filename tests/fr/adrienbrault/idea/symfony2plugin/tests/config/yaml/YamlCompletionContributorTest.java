@@ -18,6 +18,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         myFixture.copyFileToProject("services.xml");
         myFixture.configureByText("config_foo.yml", "");
         myFixture.configureByFile("YamlCompletionContributor.php");
+        myFixture.configureByFile("tagged.services.xml");
     }
 
     public String getTestDataPath() {
@@ -146,6 +147,30 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "    foo:\n" +
                 "       factory_service: <caret>\n",
             "foo"
+        );
+    }
+
+    public void testTagsProvideCompletion() {
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo:\n" +
+                "       tags: { name: <caret>}\n",
+            "my_nice_tag"
+        );
+
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo:\n" +
+                "       tags: [ <caret> ]\n",
+            "my_nice_tag"
+        );
+
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo:\n" +
+                "       tags: \n" +
+                "           - <caret>\n",
+            "my_nice_tag"
         );
     }
 }

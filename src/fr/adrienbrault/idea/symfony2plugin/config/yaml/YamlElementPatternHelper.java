@@ -640,6 +640,21 @@ public class YamlElementPatternHelper {
     }
 
     /**
+     * tags: [ foobar ]
+     */
+    public static PsiElementPattern.Capture<PsiElement> getTagsAsSequencePattern() {
+        return PlatformPatterns.psiElement().withParent(
+            PlatformPatterns.psiElement(YAMLScalar.class).withParent(
+                PlatformPatterns.psiElement(YAMLSequenceItem.class).withParent(
+                    PlatformPatterns.psiElement(YAMLSequence.class).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName("tags")
+                    )
+                )
+            )
+        );
+    }
+
+    /**
      * Match elements types
      */
     private static class ElementTypePatternCondition extends PatternCondition<PsiElement> {

@@ -44,6 +44,10 @@ public class YamlServiceTag implements ServiceTagInterface {
         return YamlHelper.getYamlKeyValueAsString(yamlMapping, attr);
     }
 
+    /**
+     * Tags can be inlined since Symfony 3.3
+     */
+    @Deprecated
     @NotNull
     public YAMLMapping getYamlMapping() {
         return yamlMapping;

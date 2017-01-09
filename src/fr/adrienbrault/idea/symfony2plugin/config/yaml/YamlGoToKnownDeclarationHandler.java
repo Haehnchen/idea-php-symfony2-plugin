@@ -58,10 +58,16 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.attachResourceOnPathGoto(psiElement, results);
         }
 
+        // tags: { name: foobar }
         if(StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
             YamlElementPatternHelper.getSingleLineScalarKey("name")
         ).accepts(psiElement)) {
+            this.getTagClassesGoto(psiElement, results);
+        }
+
+        // tags: [ name: foobar ]
+        if(YamlElementPatternHelper.getTagsAsSequencePattern().accepts(psiElement)) {
             this.getTagClassesGoto(psiElement, results);
         }
 

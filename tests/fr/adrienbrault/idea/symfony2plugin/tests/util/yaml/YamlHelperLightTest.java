@@ -19,6 +19,7 @@ import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -46,6 +47,23 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("kernel.event_listener2", visitor.getItem(1).getName());
         assertEquals("eventName2", visitor.getItem(1).getAttribute("event"));
         assertEquals("methodName2", visitor.getItem(1).getAttribute("method"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
+     */
+    public void testVisitTagsOnServiceDefinitionForSymfony33TagsShortcut() {
+        YAMLKeyValue yamlKeyValue = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "foo:\n" +
+            "    tags:\n" +
+            "       - kernel.event_listener\n" +
+            "       - kernel.event_listener2\n"
+        );
+
+        ListYamlTagVisitor visitor = new ListYamlTagVisitor();
+        YamlHelper.visitTagsOnServiceDefinition(yamlKeyValue, visitor);
+
+        assertEquals("kernel.event_listener", visitor.getItem(0).getName());
+        assertEquals("kernel.event_listener2", visitor.getItem(1).getName());
     }
 
     /**
@@ -135,6 +153,41 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertNotNull(fromText);
         assertContainsElements(YamlHelper.collectServiceTags(fromText), "routing.loader", "routing.loader1");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#collectServiceTags
+     */
+    public void testCollectServiceTagsForSymfony33TagsShortcut() {
+
+        YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "foo:\n" +
+            "  tags:\n" +
+            "    - routing.loader_tags_1\n" +
+            "    - routing.loader_tags_2\n"
+        );
+
+        assertNotNull(fromText);
+        Set<String> collection = YamlHelper.collectServiceTags(fromText);
+
+        assertContainsElements(collection, "routing.loader_tags_1");
+        assertContainsElements(collection, "routing.loader_tags_2");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#collectServiceTags
+     */
+    public void testCollectServiceTagsForSymfony33TagsShortcutInline() {
+        YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "foo:\n" +
+            "  tags: [routing.loader_tags_3, routing.loader_tags_4]\n"
+        );
+
+        assertNotNull(fromText);
+        Set<String> collection = YamlHelper.collectServiceTags(fromText);
+
+        assertContainsElements(collection, "routing.loader_tags_3");
+        assertContainsElements(collection, "routing.loader_tags_4");
     }
 
     /**
