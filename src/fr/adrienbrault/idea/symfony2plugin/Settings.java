@@ -95,6 +95,11 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean profilerHttpEnabled = false;
     public String profilerHttpUrl = "http://127.0.0.1:8000";
 
+    /**
+     * Last user selected output of service generator eg: yaml or xml
+     */
+    public String lastServiceGeneratorLanguage = null;
+
     @Nullable
     public List<TwigNamespaceSetting> twigNamespaces = new ArrayList<>();
 

@@ -17,6 +17,7 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
@@ -111,9 +112,23 @@ public class SymfonyCreateService extends JDialog {
             new IsServiceColumn()
         );
 
-        // default is xml
-        radioButtonOutXml.setSelected(true);
+        // set default output language on last user selection
+        String lastServiceGeneratorLanguage = Settings.getInstance(project).lastServiceGeneratorLanguage;
+        if ("xml".equalsIgnoreCase(lastServiceGeneratorLanguage)) {
+            radioButtonOutXml.setSelected(true);
+        } else if ("yaml".equalsIgnoreCase(lastServiceGeneratorLanguage)) {
+            radioButtonOutYaml.setSelected(true);
+        }
+
+        // overwrite language output on direct file context
         if(this.psiFile instanceof YAMLFile) {
+            radioButtonOutYaml.setSelected(true);
+        } else if(this.psiFile instanceof XmlFile) {
+            radioButtonOutXml.setSelected(true);
+        }
+
+        // lets use yaml as default
+        if(!radioButtonOutYaml.isSelected() && !radioButtonOutXml.isSelected()) {
             radioButtonOutYaml.setSelected(true);
         }
 
@@ -306,6 +321,9 @@ public class SymfonyCreateService extends JDialog {
         if(radioButtonOutYaml.isSelected()) {
             outputType = ServiceBuilder.OutputType.Yaml;
         }
+
+        // save last selection
+        Settings.getInstance(project).lastServiceGeneratorLanguage = outputType.toString().toLowerCase();
 
         textAreaOutput.setText(createServiceAsText(outputType));
     }
