@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.133</version>
+    <version>0.13.134</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -100,12 +100,22 @@
     <change-notes><![CDATA[
 
 0.13.x: PhpStorm 2016.3.1+<br/>
-0.12.x: PhpStorm 2016.1<br/>
+0.12.x: PhpStorm 2016.1 (no support)<br/>
 0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.13.134</h2>
+<ul>
+    <li>Fix ConfigLineMarkerProvider.getTreeSignatures must not return null <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846">#846</a></li>
+    <li>Support yaml "tags" shortcut syntax for service container <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/849">#849</a></li>
+    <li>Support optional class for named services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/847">#847</a></li>
+    <li>Support new yaml factory syntax <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/841">#841</a></li>
+    <li>Fix Doctrine autocomplete not working for getRepository(Entity::class) <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/824">#824</a></li>
+    <li>Save last user selected service generator output format and reuse this value on dialog init <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/829">#829</a></li>
+</ul>
+
 <h2>0.12.133 / 0.13.133</h2>
 <ul>
     <li>PhpStorm 2016.3.1: Make compatible with new Deployment API @Leneshka-jb <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/826">#826</a></li>

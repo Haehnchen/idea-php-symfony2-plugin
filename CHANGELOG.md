@@ -3,10 +3,18 @@ Changelog
 
 ### Version names
 * 0.13.x: PhpStorm 2016.3.1+
-* 0.12.x: PhpStorm 2016.1+
+* 0.12.x: PhpStorm 2016.1+ (no support)
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.13.134
+* Fix ConfigLineMarkerProvider.getTreeSignatures must not return null [#846](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846)
+* Support yaml "tags" shortcut syntax for service container [#849](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/849)
+* Support optional class for named services [#847](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/847)
+* Support new yaml factory syntax [#841](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/841)
+* Fix Doctrine autocomplete not working for getRepository(Entity::class) [#824](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/824)
+* Save last user selected service generator output format and reuse this value on dialog init [#829](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/829)
 
 ### 0.12.133 / 0.13.133
 * PhpStorm 2016.3.1: Make compatible with new Deployment API @Leneshka-jb [#826](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/826)
