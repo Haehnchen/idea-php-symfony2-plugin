@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryB
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -264,20 +265,15 @@ public class QueryBuilderMethodReferenceParser {
         if(rootAlias != null && repository == null) {
             for(MethodReference methodReference: methodReferences) {
                 if("createQueryBuilder".equals(methodReference.getName())) {
-                    String signature = methodReference.getSignature();
-                    int endIndex = signature.lastIndexOf(ObjectRepositoryTypeProvider.TRIM_KEY);
-                    if(endIndex != -1) {
-                        String parameter = signature.substring(endIndex + 1);
-                        int point = parameter.indexOf(".");
-                        if(point > -1) {
-                            parameter = parameter.substring(0, point);
-                            parameter = PhpTypeProviderUtil.getResolvedParameter(PhpIndex.getInstance(project), parameter);
-                            if(parameter != null) {
-                                PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
-                                if(phpClass != null) {
-                                    roots.put(phpClass.getPresentableFQN(), rootAlias);
-                                    return roots;
-                                }
+                    String signatures = methodReference.getSignature();
+                    for (String signature : QueryBuilderUtil.extractQueryBuilderRepositoryParameters(signatures)) {
+                        // Resolve: "espend...ModelBundle:Car", "#K#C\...\Entity\Car.class", ...
+                        String parameter = PhpTypeProviderUtil.getResolvedParameter(PhpIndex.getInstance(project), signature);
+                        if(parameter != null) {
+                            PhpClass phpClass = EntityHelper.resolveShortcutName(project, parameter);
+                            if(phpClass != null) {
+                                roots.put(phpClass.getPresentableFQN(), rootAlias);
+                                return roots;
                             }
                         }
                     }
