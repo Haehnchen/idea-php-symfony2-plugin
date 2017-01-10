@@ -56,6 +56,37 @@ public class XmlHelper {
     }
 
     /**
+     * <tag attributeNames="|"/>
+     *
+     * @param attributeNames attribute values listen for
+     */
+    public static PsiElementPattern.Capture<PsiElement> getAttributePattern(String... attributeNames) {
+        return XmlPatterns
+            .psiElement()
+            .inside(XmlPatterns
+                .xmlAttributeValue()
+                .inside(XmlPatterns
+                    .xmlAttribute()
+                    .withName(StandardPatterns.string().oneOfIgnoreCase(attributeNames))
+                )
+            ).inFile(getXmlFilePattern());
+    }
+
+    /**
+     * <tag attributeNames="|"/>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getGlobalStringAttributePattern() {
+        return XmlPatterns
+            .psiElement()
+            .inside(XmlPatterns
+                .xmlAttributeValue().withValue(XmlPatterns.string().andOr(
+                    XmlPatterns.string().endsWith(".html.twig"),
+                    XmlPatterns.string().endsWith(".html.php")
+                ))
+            ).inFile(getXmlFilePattern());
+    }
+
+    /**
      * <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
      */
     public static PsiElementPattern.Capture<PsiElement> getParameterWithClassEndingPattern() {

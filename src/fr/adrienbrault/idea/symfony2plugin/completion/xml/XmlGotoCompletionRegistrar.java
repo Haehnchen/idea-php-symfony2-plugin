@@ -14,6 +14,8 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -30,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -81,6 +84,29 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                 .inFile(XmlHelper.getXmlFilePattern())),
             MyDecoratedServiceCompletionProvider::new
         );
+
+        // <foobar="@Foobar/profiler.html.twig" />
+        registrar.register(
+            XmlPatterns.psiElement().withParent(XmlHelper.getGlobalStringAttributePattern()),
+            new MyGlobalStringTemplateGotoCompletionContributor()
+        );
+
+        // <foo template="@Foobar/profiler.html.twig" />
+        registrar.register(
+            XmlPatterns.psiElement().withParent(XmlHelper.getAttributePattern("template")),
+            MyTemplateCompletionRegistrar::new
+        );
+    }
+
+    private static class MyTemplateCompletionRegistrar extends TemplateGotoCompletionRegistrar{
+        MyTemplateCompletionRegistrar(PsiElement element) {
+            super(element);
+        }
+
+        @NotNull
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            return Collections.emptyList();
+        }
     }
 
     private static class ImportResourceGotoCompletionProvider extends GotoCompletionProvider {
@@ -222,6 +248,38 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
             }
 
             return parentOfType.getAttributeValue("id");
+        }
+    }
+
+    private static class MyGlobalStringTemplateGotoCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+            return new GotoCompletionProvider(psiElement) {
+                @NotNull
+                @Override
+                public Collection<LookupElement> getLookupElements() {
+                    return Collections.emptyList();
+                }
+
+                @NotNull
+                @Override
+                public Collection<PsiElement> getPsiTargets(PsiElement element) {
+                    String xmlAttributeValue = GotoCompletionUtil.getXmlAttributeValue(element);
+                    if(xmlAttributeValue == null) {
+                        return Collections.emptyList();
+                    }
+
+                    String s = xmlAttributeValue.toLowerCase();
+                    if(!s.endsWith(".html.twig") && !s.endsWith(".html.php")) {
+                        return Collections.emptyList();
+                    }
+
+                    return Arrays.asList(
+                        TwigHelper.getTemplatePsiElements(getElement().getProject(), xmlAttributeValue)
+                    );
+                }
+            };
         }
     }
 }
