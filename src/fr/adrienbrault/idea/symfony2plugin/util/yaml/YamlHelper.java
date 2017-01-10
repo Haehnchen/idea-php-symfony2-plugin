@@ -14,6 +14,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
@@ -579,6 +580,8 @@ public class YamlHelper {
             return;
         }
 
+        String serviceId = yamlServiceKeyValue.getKeyText();
+
         for(YAMLSequenceItem yamlSequenceItem: ((YAMLSequence) tagsValue).getItems()) {
             final YAMLValue itemValue = yamlSequenceItem.getValue();
 
@@ -589,18 +592,14 @@ public class YamlHelper {
                 final YAMLMapping yamlHash = (YAMLMapping) itemValue;
                 String tagName = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
                 if(tagName != null) {
-                    visitor.visit(new YamlServiceTag(tagName, yamlHash));
+                    visitor.visit(new YamlServiceTag(serviceId, tagName, yamlHash));
                 }
             } else if(itemValue instanceof YAMLScalar) {
                 // tags: [foobar]
 
                 String textValue = ((YAMLScalar) itemValue).getTextValue();
                 if(StringUtils.isNotBlank(textValue)) {
-                    // fake tag attribute: {name: 'foobar'}
-                    // @TODO: drop: fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagFactory.create
-                    YAMLMapping yamlMapping = YamlPsiElementFactory.createFromText(yamlServiceKeyValue.getProject(), YAMLMapping.class, "{name: " + textValue);
-
-                    visitor.visit(new YamlServiceTag(textValue, yamlMapping));
+                    visitor.visit(new YamlServiceTag(serviceId, textValue, new StaticAttributeResolver("name", textValue)));
                 }
             }
         }

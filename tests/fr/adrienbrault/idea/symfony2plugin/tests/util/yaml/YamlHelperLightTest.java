@@ -63,6 +63,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         YamlHelper.visitTagsOnServiceDefinition(yamlKeyValue, visitor);
 
         assertEquals("kernel.event_listener", visitor.getItem(0).getName());
+        assertEquals("kernel.event_listener", visitor.getItem(0).getAttribute("name"));
         assertEquals("kernel.event_listener2", visitor.getItem(1).getName());
     }
 

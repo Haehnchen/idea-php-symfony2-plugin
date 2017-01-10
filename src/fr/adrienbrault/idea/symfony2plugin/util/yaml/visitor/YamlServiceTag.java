@@ -1,7 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor;
 
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.AttributeResolverInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.YamlMappingAttributeResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLMapping;
@@ -13,19 +14,29 @@ import org.jetbrains.yaml.psi.YAMLMapping;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlServiceTag implements ServiceTagInterface {
+    @NotNull
+    private final String serviceId;
 
+    @NotNull
     private final String tagName;
-    private final YAMLMapping yamlMapping;
 
-    public YamlServiceTag(@NotNull String tagName, @NotNull YAMLMapping yamlMapping) {
+    @NotNull
+    private final AttributeResolverInterface attributeResolver;
+
+    public YamlServiceTag(@NotNull String serviceId, @NotNull String tagName, @NotNull AttributeResolverInterface attributeResolver) {
+        this.serviceId = serviceId;
         this.tagName = tagName;
-        this.yamlMapping = yamlMapping;
+        this.attributeResolver = attributeResolver;
+    }
+
+    public YamlServiceTag(@NotNull String serviceId, @NotNull String tagName, @NotNull YAMLMapping yamlMapping) {
+        this(serviceId, tagName, new YamlMappingAttributeResolver(yamlMapping));
     }
 
     @NotNull
     @Override
     public String getServiceId() {
-        return "";
+        return this.serviceId;
     }
 
     @NotNull
@@ -41,15 +52,6 @@ public class YamlServiceTag implements ServiceTagInterface {
      */
     @Nullable
     public String getAttribute(@NotNull String attr) {
-        return YamlHelper.getYamlKeyValueAsString(yamlMapping, attr);
-    }
-
-    /**
-     * Tags can be inlined since Symfony 3.3
-     */
-    @Deprecated
-    @NotNull
-    public YAMLMapping getYamlMapping() {
-        return yamlMapping;
+        return attributeResolver.getAttribute(attr);
     }
 }

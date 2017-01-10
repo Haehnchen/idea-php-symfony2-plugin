@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.dic.tags;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.xml.XmlServiceTag;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +21,7 @@ public class ServiceTagFactory {
     public static Collection<ServiceTagInterface> create(@NotNull String serviceId, @NotNull PsiElement psiElement) {
 
         if(psiElement instanceof YAMLKeyValue) {
-            return create(serviceId, (YAMLKeyValue) psiElement);
+            return create((YAMLKeyValue) psiElement);
         } else if(psiElement instanceof XmlTag) {
             return create(serviceId, (XmlTag) psiElement);
         }
@@ -31,7 +30,7 @@ public class ServiceTagFactory {
     }
 
     @Nullable
-    private static Collection<ServiceTagInterface> create(@NotNull final String serviceId, @NotNull YAMLKeyValue yamlHash) {
+    private static Collection<ServiceTagInterface> create(@NotNull YAMLKeyValue yamlHash) {
 
         final Collection<ServiceTagInterface> tags = new ArrayList<>();
 
@@ -41,10 +40,7 @@ public class ServiceTagFactory {
                 return;
             }
 
-            ServiceTagInterface e = YamlServiceTag.create(serviceId, args.getYamlMapping());
-            if(e != null) {
-                tags.add(e);
-            }
+            tags.add(args);
         });
 
         return tags;
