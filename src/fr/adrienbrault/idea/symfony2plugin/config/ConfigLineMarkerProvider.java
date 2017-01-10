@@ -23,9 +23,6 @@ import java.util.Map;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ConfigLineMarkerProvider implements LineMarkerProvider {
-
-    private Map<String, Collection<String>> treeSignatures;
-
     @Nullable
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
@@ -38,23 +35,26 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        LazyConfigTreeSignatures function = null;
+
         for (PsiElement psiElement : psiElements) {
             if(psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getRootConfigKeyPattern().accepts(psiElement)) {
-                 visitRootElements(result, psiElement);
+                if(function == null) {
+                    function = new LazyConfigTreeSignatures(psiElements.get(0).getProject());
+                }
+                visitRootElements(result, psiElement, function);
             }
         }
-
-        treeSignatures = null;
     }
 
-    private void visitRootElements(@NotNull Collection<LineMarkerInfo> result, @NotNull PsiElement psiElement) {
+    private void visitRootElements(@NotNull Collection<LineMarkerInfo> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function) {
         PsiElement parent = psiElement.getParent();
         if(!(parent instanceof YAMLKeyValue)) {
             return;
         }
 
         String keyText = ((YAMLKeyValue) parent).getKeyText();
-        Map<String, Collection<String>> treeSignatures = getTreeSignatures(psiElement.getProject());
+        Map<String, Collection<String>> treeSignatures = function.value();
         if(!treeSignatures.containsKey(keyText)) {
             return;
         }
@@ -64,15 +64,6 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Navigate to configuration");
 
         result.add(builder.createLineMarkerInfo(psiElement));
-    }
-
-    @NotNull
-    private Map<String, Collection<String>> getTreeSignatures(@NotNull Project project) {
-        if(this.treeSignatures == null) {
-            return this.treeSignatures = ConfigUtil.getTreeSignatures(project);
-        }
-
-        return this.treeSignatures;
     }
 
     private static class MyClassIdLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
@@ -95,6 +86,26 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         @Override
         protected Collection<? extends PsiElement> compute() {
             return ConfigUtil.getTreeSignatureTargets(project, root, configuration);
+        }
+    }
+
+    private static class LazyConfigTreeSignatures {
+        @NotNull
+        private final Project project;
+
+        private Map<String, Collection<String>> treeSignatures;
+
+        LazyConfigTreeSignatures(@NotNull Project project) {
+            this.project = project;
+        }
+
+        @NotNull
+        public Map<String, Collection<String>> value() {
+            if(this.treeSignatures == null) {
+                return this.treeSignatures = ConfigUtil.getTreeSignatures(project);
+            }
+
+            return this.treeSignatures;
         }
     }
 }
