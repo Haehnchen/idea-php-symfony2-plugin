@@ -7,6 +7,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
@@ -221,9 +222,19 @@ public class QueryBuilderMethodReferenceParser {
                 }
             }
 
+            // $qb->from(Class::Class, 'article')
             // $qb->from('Foo\Class', 'article')
             if("from".equals(methodReferenceName)) {
-                String table = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
+                PsiElement typeParameter = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
+
+                // class constant condition
+                String table;
+                if(typeParameter instanceof ClassConstantReference) {
+                    table = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) typeParameter);
+                } else {
+                    table = PhpElementsUtil.getStringValue(typeParameter);
+                }
+
                 String alias = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1));
                 if(table != null && alias != null) {
                     PhpClass phpClass = EntityHelper.resolveShortcutName(project, table);
