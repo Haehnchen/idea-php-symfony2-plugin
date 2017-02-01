@@ -161,13 +161,13 @@ public class YamlHelper {
         }
     }
 
-    public static boolean isValidParameterName(String parameterName) {
+    public static boolean isValidParameterName(@NotNull String parameterName) {
 
         if(parameterName.length() < 3) {
             return false;
         }
 
-        if(!parameterName.startsWith("%") || !parameterName.endsWith("%")) {
+        if(!parameterName.startsWith("%") || !parameterName.endsWith("%") || parameterName.toLowerCase().startsWith("%env(")) {
             return false;
         }
 

@@ -19,6 +19,8 @@ public class YamlHelperTest extends Assert {
         assertFalse(YamlHelper.isValidParameterName("%kernel.root_dir%/../web/"));
         assertFalse(YamlHelper.isValidParameterName("%kernel.root_dir%/../web/%"));
         assertFalse(YamlHelper.isValidParameterName("%kernel.root_dir%/../web/%webpath_modelmasks%"));
+        assertFalse(YamlHelper.isValidParameterName("%env(FO<caret>O)"));
+        assertFalse(YamlHelper.isValidParameterName("%ENV(FO<caret>O)"));
     }
 
     @Test
