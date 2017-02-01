@@ -2,6 +2,7 @@
 
 namespace{
     function my_json_decode() {}
+    function twig_test_even() {}
 
     interface Twig_ExtensionInterface {}
     interface Twig_Environment {}
@@ -49,6 +50,7 @@ class DoctrineExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleTest('bar_even', 'twig_test_even'),
+            new \Twig_SimpleTest('bar even', 'twig_test_even'),
         );
     }
 

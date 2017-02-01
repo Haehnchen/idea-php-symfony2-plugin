@@ -330,7 +330,7 @@ public class TwigExtensionParser  {
             return;
         }
 
-        method.acceptChildren(new TwigSimpleTestVisitor(filters));
+        method.acceptChildren(new TwigSimpleTestVisitor(method, filters));
     }
 
     @NotNull
@@ -607,9 +607,13 @@ public class TwigExtensionParser  {
 
     private static class TwigSimpleTestVisitor extends PsiRecursiveElementWalkingVisitor {
         @NotNull
+        private final Method method;
+
+        @NotNull
         private final Map<String, TwigExtension> filters;
 
-        TwigSimpleTestVisitor(@NotNull Map<String, TwigExtension> filters) {
+        TwigSimpleTestVisitor(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
+            this.method = method;
             this.filters = filters;
         }
 
@@ -629,12 +633,30 @@ public class TwigExtensionParser  {
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
                     if(funcName != null && !funcName.contains("*")) {
-                        filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_TEST, null));
-                    }
+                        PhpClass phpClass = method.getContainingClass();
 
+                        String signature = null;
+
+                        // new \Twig_SimpleTest('my_test', null, array('node_class' => 'My_Node_Test'))
+                        if(psiElement.length > 1 && psiElement[1] instanceof StringLiteralExpression) {
+                            String contents = ((StringLiteralExpression) psiElement[1]).getContents();
+                            if(StringUtils.isNotBlank(contents)) {
+                                signature = "#F" + contents;
+                            }
+                        }
+
+                        // new \Twig_SimpleTest('empty', 'foo_test')
+                        if(signature == null && psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression) {
+                            String nodeClass = PhpElementsUtil.getArrayHashValue((ArrayCreationExpression) psiElement[2], "node_class");
+                            if(StringUtils.isNotBlank(nodeClass)) {
+                                signature = String.format("#M#C\\%s.%s", StringUtils.stripStart(nodeClass, "\\"), "compile");
+                            }
+                        }
+
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_TEST, signature));
+                    }
                 }
             }
-
         }
     }
 

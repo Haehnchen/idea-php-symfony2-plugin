@@ -2,6 +2,9 @@
 
 namespace
 {
+    function foo_test() {}
+    class My_Node_Test {}
+
     interface Twig_ExtensionInterface
     {
         public function getTokenParsers();
@@ -66,7 +69,8 @@ namespace Twig
         public function getTests()
         {
             return [
-                new \Twig_SimpleTest('my_test', [$this, 'foobar']),
+                new \Twig_SimpleTest('my_test', null, array('node_class' => 'My_Node_Test')),
+                new \Twig_SimpleTest('my_test_2', 'foo_test'),
             ];
         }
 

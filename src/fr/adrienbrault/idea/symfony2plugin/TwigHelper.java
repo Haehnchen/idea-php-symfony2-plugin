@@ -625,6 +625,37 @@ public class TwigHelper {
     }
 
     /**
+     * Check for {% if foo is "foo foo" %}
+     */
+    public static ElementPattern<PsiElement> getAfterIsTokenWithOneIdentifierLeafPattern() {
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement()
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(PlatformPatterns.psiElement(PsiWhiteSpace.class), PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.IS),
+                    PlatformPatterns.psiElement(TwigTokenTypes.NOT)
+                ))
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Extract text {% if foo is "foo foo" %}
+     */
+    public static ElementPattern<PsiElement> getAfterIsTokenTextPattern() {
+        //noinspection unchecked
+        return PlatformPatterns.or(
+            PlatformPatterns.psiElement(TwigTokenTypes.IS),
+            PlatformPatterns.psiElement(TwigTokenTypes.NOT)
+        );
+    }
+
+    /**
      * {% if foo <carpet> %}
      * {% if foo.bar <carpet> %}
      * {% if "foo.bar" <carpet> %}

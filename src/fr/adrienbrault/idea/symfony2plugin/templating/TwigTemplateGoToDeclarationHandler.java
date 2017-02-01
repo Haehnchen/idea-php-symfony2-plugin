@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -104,7 +105,58 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return getFilterGoTo(psiElement);
         }
 
+        // {% if foo is ... %}
+        // {% if foo is not ... %}
+        if(PlatformPatterns.or(TwigHelper.getAfterIsTokenPattern(), TwigHelper.getAfterIsTokenWithOneIdentifierLeafPattern()).accepts(psiElement)) {
+            return getAfterIsToken(psiElement);
+        }
+
         return null;
+    }
+
+    /**
+     * {% if foo is ... %}
+     */
+    private PsiElement[] getAfterIsToken(@NotNull PsiElement psiElement) {
+        // find text after if statement
+        String text = StringUtils.trim(
+            PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, TwigHelper.getAfterIsTokenTextPattern(), false) + psiElement.getText()
+        );
+
+        if(StringUtils.isBlank(text)) {
+            return new PsiElement[0];
+        }
+
+        Set<String> items = new HashSet<>(
+            Collections.singletonList(text)
+        );
+
+        // support atleat one identifier after current caret position
+        // "divisi<caret>ble by"
+        PsiElement whitespace = psiElement.getNextSibling();
+        if(whitespace instanceof PsiWhiteSpace) {
+            PsiElement nextSibling = whitespace.getNextSibling();
+            if(nextSibling != null && nextSibling.getNode().getElementType() == TwigTokenTypes.IDENTIFIER) {
+                String identifier = nextSibling.getText();
+                if(StringUtils.isNotBlank(identifier)) {
+                    items.add(text + " " + identifier);
+                }
+            }
+        }
+
+        Collection<PsiElement> psiElements = new ArrayList<>();
+
+        for (Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(psiElement.getProject()).getSimpleTest().entrySet()) {
+            for (String item : items) {
+                if(entry.getKey().equalsIgnoreCase(item)) {
+                    psiElements.addAll(Arrays.asList(
+                        PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), entry.getValue().getSignature()))
+                    );
+                }
+            }
+        }
+
+        return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
     private PsiElement[] getRouteParameterGoTo(PsiElement psiElement) {

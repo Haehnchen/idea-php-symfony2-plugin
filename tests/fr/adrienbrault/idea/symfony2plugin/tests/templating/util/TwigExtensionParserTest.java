@@ -41,6 +41,16 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
         );
 
         assertEquals(
+            "#M#C\\My_Node_Test.compile",
+            extensionParser.getSimpleTest().get("my_test").getSignature()
+        );
+
+        assertEquals(
+            "#Ffoo_test",
+            extensionParser.getSimpleTest().get("my_test_2").getSignature()
+        );
+
+        assertEquals(
             "OPERATOR",
             extensionParser.getOperators().get("not").getType()
         );

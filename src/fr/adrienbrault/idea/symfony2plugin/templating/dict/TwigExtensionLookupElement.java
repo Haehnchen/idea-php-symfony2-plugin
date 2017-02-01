@@ -5,9 +5,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.PhpPresentationUtil;
+import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.php.lang.psi.elements.impl.FunctionImpl;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,30 +42,41 @@ public class TwigExtensionLookupElement extends LookupElement {
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setIcon(TwigExtensionParser.getIcon(this.twigExtension.getTwigExtensionType()));
 
-        String signature = this.twigExtension.getSignature();
-        if(signature != null) {
-            Collection<? extends PhpNamedElement> phpNamedElements = PhpIndex.getInstance(this.project).getBySignature(signature);
-            if(phpNamedElements.size() > 0) {
-
-                PhpNamedElement function = phpNamedElements.iterator().next();
-                if(function instanceof FunctionImpl) {
-                    List<Parameter> parameters = new LinkedList<>(Arrays.asList(((FunctionImpl) function).getParameters()));
-                    if(this.twigExtension.getOption("needs_context") != null && parameters.size() > 0) {
-                        parameters.remove(0);
-                    }
-                    if(this.twigExtension.getOption("needs_environment") != null && parameters.size() > 0) {
-                        parameters.remove(0);
-                    }
-                    presentation.setTailText(PhpPresentationUtil.formatParameters(null, parameters.toArray(new Parameter[parameters.size()])).toString(), true);
-                }
-
-            }
-        }
+        buildTailText(presentation);
 
         presentation.setItemText(name);
         presentation.setTypeText(StringUtils.camelize(this.twigExtension.getType().toLowerCase()));
         presentation.setTypeGrayed(true);
-
     }
 
+    private void buildTailText(LookupElementPresentation presentation) {
+        if(this.twigExtension.getTwigExtensionType() == TwigExtensionParser.TwigExtensionType.SIMPLE_TEST) {
+            return;
+        }
+
+        String signature = this.twigExtension.getSignature();
+        if(signature == null) {
+            return;
+        }
+
+        Collection<? extends PhpNamedElement> phpNamedElements = PhpIndex.getInstance(this.project).getBySignature(signature);
+        if(phpNamedElements.size() == 0) {
+            return;
+        }
+
+        PhpNamedElement function = phpNamedElements.iterator().next();
+        if(function instanceof Function) {
+            List<Parameter> parameters = new LinkedList<>(Arrays.asList(((Function) function).getParameters()));
+
+            if(this.twigExtension.getOption("needs_context") != null && parameters.size() > 0) {
+                parameters.remove(0);
+            }
+
+            if(this.twigExtension.getOption("needs_environment") != null && parameters.size() > 0) {
+                parameters.remove(0);
+            }
+
+            presentation.setTailText(PhpPresentationUtil.formatParameters(null, parameters.toArray(new Parameter[parameters.size()])).toString(), true);
+        }
+    }
 }
