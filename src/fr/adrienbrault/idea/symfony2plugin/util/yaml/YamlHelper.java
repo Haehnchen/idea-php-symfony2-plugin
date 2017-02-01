@@ -147,7 +147,7 @@ public class YamlHelper {
 
             // @TODO: support case insensitive
             visitQualifiedKeyValuesInFile((YAMLFile) psiFile, rootKey, yamlKeyValue -> {
-                if(findServiceName.equals(yamlKeyValue.getKeyText())) {
+                if(findServiceName.equalsIgnoreCase(yamlKeyValue.getKeyText())) {
                     psiElements.add(yamlKeyValue);
                 }
             });

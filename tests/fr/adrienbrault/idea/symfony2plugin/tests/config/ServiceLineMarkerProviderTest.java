@@ -128,6 +128,28 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         ), new LineMarker.TargetAcceptsPattern("Navigate to definition", XmlPatterns.xmlTag().withName("service").withAttributeValue("id", "service_bar")));
     }
 
+    public void testXmlServiceLineMarkerForClassName() {
+        myFixture.configureByText(XmlFileType.INSTANCE,
+            "<container>\n" +
+                "  <services>\n" +
+                "      <service id=\"Service\\Bar\"/>\n" +
+                "  </services>\n" +
+                "</container>"
+        );
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Service{\n" +
+            "    class Bar{}\n" +
+            "}"
+        ), new LineMarker.ToolTipEqualsAssert("Navigate to definition"));
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Service{\n" +
+            "    class Bar{}\n" +
+            "}"
+        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", XmlPatterns.xmlTag().withName("service").withAttributeValue("id", "Service\\Bar")));
+    }
+
     public void testYamlServiceLineMarker() {
         myFixture.configureByText(YAMLFileType.YML,
             "services:\n" +
@@ -143,6 +165,24 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
                 return yamlKeyValue.getKeyText().equals("foo");
+            }
+        })));
+    }
+
+    public void testYamlServiceLineMarkerForClassName() {
+        myFixture.configureByText(YAMLFileType.YML,
+            "services:\n" +
+                "  Service\\YamlBar: ~\n"
+        );
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Service{\n" +
+            "    class YamlBar{}\n" +
+            "}"
+        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+            @Override
+            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
+                return yamlKeyValue.getKeyText().equals("Service\\YamlBar");
             }
         })));
     }

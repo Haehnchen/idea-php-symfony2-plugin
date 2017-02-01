@@ -330,7 +330,7 @@ public class XmlHelper {
     @Nullable
     public static PsiElement getLocalServiceName(PsiFile psiFile, String serviceName) {
 
-        if(!(psiFile.getFirstChild() instanceof XmlDocumentImpl)) {
+        if(!(psiFile.getFirstChild() instanceof XmlDocument)) {
             return null;
         }
 
@@ -344,12 +344,9 @@ public class XmlHelper {
                 for(XmlTag servicesTag: xmlTag.getSubTags()) {
                     if(servicesTag.getName().equals("services")) {
                         for(XmlTag serviceTag: servicesTag.getSubTags()) {
-                            XmlAttribute attrValue = serviceTag.getAttribute("id");
-                            if(attrValue != null) {
-                                String serviceNameId = attrValue.getValue();
-                                if(serviceNameId != null && serviceNameId.equalsIgnoreCase(serviceName)) {
-                                    return serviceTag;
-                                }
+                            String serviceNameId = serviceTag.getAttributeValue("id");
+                            if(serviceNameId != null && serviceNameId.equalsIgnoreCase(serviceName)) {
+                                return serviceTag;
                             }
                         }
                     }
