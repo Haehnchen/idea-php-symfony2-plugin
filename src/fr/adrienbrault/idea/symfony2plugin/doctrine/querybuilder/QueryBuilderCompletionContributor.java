@@ -407,7 +407,11 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
     }
 
-    private void attachClassNames(CompletionResultSet completionResultSet, String repoName) {
+    private void attachClassNames(@NotNull CompletionResultSet completionResultSet, @NotNull String repoName) {
+        // FooBarRepository => FooBar
+        if(repoName.toLowerCase().endsWith("repository")) {
+            repoName = repoName.substring(0, repoName.length() - "repository".length());
+        }
 
         int endIndex = repoName.lastIndexOf(":");
         if(endIndex == -1) {
@@ -415,18 +419,27 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         }
 
         if(endIndex > 0) {
-
             // unique list for equal underscore or camelize
             Set<String> strings = new HashSet<>();
 
-            strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length())));
+            String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length()));
+
+            // foo_bar => fb
+            List<String> starting = new ArrayList<>();
+            for (String s : underscore.split("_")) {
+                if(s.length() > 0) {
+                    starting.add(s.substring(0, 1));
+                }
+            }
+
+            strings.add(StringUtils.join(starting, ""));
+            strings.add(underscore);
             strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(strings.iterator().next(), true));
 
             for(String lookup: strings) {
                 completionResultSet.addElement(LookupElementBuilder.create(lookup));
             }
         }
-
     }
 
     private void buildLookupElements(CompletionResultSet completionResultSet, QueryBuilderScopeContext collect) {
