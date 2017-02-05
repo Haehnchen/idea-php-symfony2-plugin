@@ -898,6 +898,9 @@ public class PhpElementsUtil {
         }
 
         Method method = PsiTreeUtil.getParentOfType(variable, Method.class);
+        if(method == null) {
+            return variables;
+        }
 
         PhpPsiUtil.hasReferencesInSearchScope(method.getUseScope(), variableDecl, new CommonProcessors.FindProcessor<PsiReference>() {
             @Override
@@ -920,7 +923,6 @@ public class PhpElementsUtil {
         });
 
         return variables;
-
     }
 
     /**
