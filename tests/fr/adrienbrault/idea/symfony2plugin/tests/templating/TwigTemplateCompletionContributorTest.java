@@ -19,6 +19,7 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
     }
 
     public String getTestDataPath() {
@@ -77,6 +78,13 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
 
     public void testThatConstantProvidesCompletionForClassAndDefine() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
+    }
+
+    public void testInsertHandlerForTwigFunctionWithStringParameter() {
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ a_test<caret> }}", "{{ a_test('') }}");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ b_test<caret> }}", "{{ b_test('') }}");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ c_test<caret> }}", "{{ c_test('') }}");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ d_test<caret> }}", "{{ d_test() }}");
     }
 
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {

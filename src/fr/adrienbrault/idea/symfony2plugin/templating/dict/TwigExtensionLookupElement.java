@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.dict;
 
+import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.project.Project;
@@ -10,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -36,6 +38,15 @@ public class TwigExtensionLookupElement extends LookupElement {
     @Override
     public String getLookupString() {
         return name;
+    }
+
+    @Override
+    public void handleInsert(InsertionContext context) {
+        if(twigExtension.getTwigExtensionType() == TwigExtensionParser.TwigExtensionType.SIMPLE_FUNCTION) {
+            TwigExtensionInsertHandler.getInstance().handleInsert(context, this, twigExtension);
+        }
+
+        super.handleInsert(context);
     }
 
     @Override
