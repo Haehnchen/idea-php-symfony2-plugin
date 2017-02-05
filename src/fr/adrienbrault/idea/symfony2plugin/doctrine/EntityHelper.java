@@ -56,7 +56,8 @@ public class EntityHelper {
     /**
      * Resolve shortcut and namespaces classes for current phpclass and attached modelname
      */
-    public static PhpClass getAnnotationRepositoryClass(PhpClass phpClass, String modelName) {
+    @Nullable
+    public static PhpClass getAnnotationRepositoryClass(@NotNull PhpClass phpClass, @NotNull String modelName) {
 
         // \ns\Class fine we dont need to resolve classname we are in global context
         if(modelName.startsWith("\\")) {
@@ -75,9 +76,7 @@ public class EntityHelper {
 
         // repositoryClass="Classname\Test" trailing backslash can be stripped
         return  PhpElementsUtil.getClassInterface(phpClass.getProject(), modelName);
-
     }
-
 
     /**
      * Search for a repository class of a model

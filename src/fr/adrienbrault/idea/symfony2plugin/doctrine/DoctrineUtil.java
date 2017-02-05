@@ -126,7 +126,12 @@ public class DoctrineUtil {
                 return false;
             }
 
-            pairs.add(Pair.create(((PhpClass) phpClass).getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag)));
+            PhpClass phpClassScope = (PhpClass) phpClass;
+
+            pairs.add(Pair.create(
+                phpClassScope.getPresentableFQN(),
+                getAnnotationRepositoryClass(phpDocTag, phpClassScope))
+            );
 
             return false;
         }, MODEL_CLASS_ANNOTATION));
@@ -138,16 +143,27 @@ public class DoctrineUtil {
      * Extract text: @Entity(repositoryClass="foo")
      */
     @Nullable
-    private static String getAnnotationRepositoryClass(PhpDocTag phpDocTag) {
-
+    private static String getAnnotationRepositoryClass(@NotNull PhpDocTag phpDocTag, @NotNull PhpClass phpClass) {
         PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
         if(phpDocAttributeList == null) {
             return null;
         }
 
-        Matcher matcher = Pattern.compile("repositoryClass\\s*=\\s*\"([\\w\\.-]+)\"").matcher(phpDocAttributeList.getText());
+        // repositoryClass="Foobar"
+        String text = phpDocAttributeList.getText();
+        Matcher matcher = Pattern.compile("repositoryClass\\s*=\\s*\"([^\"]*)\"").matcher(text);
         if (matcher.find()) {
             return matcher.group(1);
+        }
+
+        // repositoryClass=Foobar::class
+        // @TODO: use annotation plugin
+        matcher = Pattern.compile("repositoryClass\\s*=\\s*([^\\s:]*)::class").matcher(text);
+        if (matcher.find()) {
+            PhpClass classConstant = EntityHelper.getAnnotationRepositoryClass(phpClass, matcher.group(1));
+            if(classConstant != null) {
+                return StringUtils.stripStart(classConstant.getFQN(), "\\");
+            }
         }
 
         return null;
