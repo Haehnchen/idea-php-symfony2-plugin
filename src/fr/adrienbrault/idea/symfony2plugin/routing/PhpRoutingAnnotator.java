@@ -20,7 +20,6 @@ import java.util.Map;
 public class PhpRoutingAnnotator {
 
     public static void annotateRouteName(PsiElement target, @NotNull AnnotationHolder holder, final String routeName) {
-
         Map<String, Route> routes = RouteHelper.getCompiledRoutes(target.getProject());
         if(routes.containsKey(routeName))  {
             return;
@@ -28,18 +27,15 @@ public class PhpRoutingAnnotator {
 
         Collection fileCollection = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName,  GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), YAMLFileType.YML, XmlFileType.INSTANCE));
         if(fileCollection.size() > 0) {
-            holder.createWeakWarningAnnotation(target, "Weak Route");
             return;
         }
 
         fileCollection = FileBasedIndex.getInstance().getContainingFiles(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(target.getProject()), PhpFileType.INSTANCE));
         if(fileCollection.size() > 0) {
-            holder.createWeakWarningAnnotation(target, "Weak Route");
             return;
         }
 
         holder.createWarningAnnotation(target, "Missing Route");
-
     }
 
 }
