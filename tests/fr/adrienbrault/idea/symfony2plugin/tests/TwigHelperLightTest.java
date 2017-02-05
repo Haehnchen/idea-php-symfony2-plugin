@@ -202,6 +202,21 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
+     * @see TwigHelper#getBlockTagPattern
+     */
+    public void testGetAutocompletableAssetPattern() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ asset('bundles/<caret>test/img/' ~ entity.img ~ '.png') }}");
+        assertFalse(TwigHelper.getAutocompletableAssetPattern().accepts(
+            myFixture.getFile().findElementAt(myFixture.getCaretOffset()
+        )));
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ asset('bundles/<caret>test/img/') }}");
+        assertTrue(TwigHelper.getAutocompletableAssetPattern().accepts(
+            myFixture.getFile().findElementAt(myFixture.getCaretOffset())
+        ));
+    }
+
+    /**
      * @see TwigHelper#getUniqueTwigTemplatesList
      */
     public void testGetUniqueTwigTemplatesList() {

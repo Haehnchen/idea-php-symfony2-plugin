@@ -1074,6 +1074,13 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("absolute_url")
                 )
             )
+            .beforeLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
+            )
             .withLanguage(TwigLanguage.INSTANCE)
         ;
     }
