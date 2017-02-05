@@ -78,9 +78,9 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         }
 
         // {{ function( }}
+        // {{ function }}
         if (PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
-            .beforeLeaf(PlatformPatterns.psiElement(TwigTokenTypes.LBRACE))
             .withParent(PlatformPatterns.or(
                 PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
                 PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
@@ -89,9 +89,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(Arrays.asList(this.getFunctions(psiElement)));
         }
 
-        /**
-         * {{ foo.fo<caret>o }}
-         */
+        // {{ foo.fo<caret>o }}
         if(TwigHelper.getTypeCompletionPattern().accepts(psiElement)
             || TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)
             || TwigHelper.getVariableTypePattern().accepts(psiElement))
@@ -280,6 +278,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         return new PsiElement[0];
     }
 
+    @NotNull
     private PsiElement[] getMacros(@NotNull PsiElement psiElement) {
         String funcName = psiElement.getText();
         String funcNameSearch = funcName;
@@ -290,7 +289,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         if(psiElement.getPrevSibling() != null && PlatformPatterns.psiElement(TwigTokenTypes.DOT).accepts(psiElement.getPrevSibling())) {
             PsiElement psiElement1 = psiElement.getPrevSibling().getPrevSibling();
             if(psiElement1 == null) {
-                return null;
+                return new PsiElement[0];
             }
 
             funcNameSearch = psiElement1.getText() + "." + funcName;

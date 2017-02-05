@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.Field;
+import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
@@ -20,6 +21,7 @@ public class TwigTemplateGoToLocalDeclarationHandlerTest extends SymfonyLightCod
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("TwigTemplateGoToLocalDeclarationHandlerTest.php");
     }
 
     public String getTestDataPath() {
@@ -60,5 +62,27 @@ public class TwigTemplateGoToLocalDeclarationHandlerTest extends SymfonyLightCod
         assertNavigationMatch(TwigFileType.INSTANCE, "{% set foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
 
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('CONST<caret>_FOO') }}", PlatformPatterns.psiElement());
+    }
+
+    public void testFunctionNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ foo<caret>_test() }}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ foo<caret>_test }}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% set foo = foo<caret>_test %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% set foo = foo<caret>_test() %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
     }
 }
