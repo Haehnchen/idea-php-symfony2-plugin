@@ -105,7 +105,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertNavigationContains(TwigFileType.INSTANCE, "{{ json_<caret>bar() }}", "my_json_decode");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ <caret> }}", "foobar");
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ fooba<caret> }}", "{{ foobar }}");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ fooba<caret> }}", "{{ foobar() }}");
     }
 
     /**
