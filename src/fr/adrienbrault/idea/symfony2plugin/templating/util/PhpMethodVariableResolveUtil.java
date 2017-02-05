@@ -134,7 +134,7 @@ public class PhpMethodVariableResolveUtil {
             if(parent instanceof AssignmentExpression) {
                 PsiElement arrayValue = ((AssignmentExpression) parent).getValue();
                 if(arrayValue instanceof PhpTypedElement) {
-                    variableTypes = ((PhpTypedElement) arrayValue).getType().getTypes();
+                    variableTypes.addAll(((PhpTypedElement) arrayValue).getType().getTypes());
                 }
 
                 collectedTypes.put(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) parent).getValue()));
@@ -163,7 +163,7 @@ public class PhpMethodVariableResolveUtil {
                 Set<String> variableTypes = new HashSet<>();
 
                 if(arrayHashElement.getValue() instanceof PhpTypedElement) {
-                    variableTypes = ((PhpTypedElement) arrayHashElement.getValue()).getType().getTypes();
+                    variableTypes.addAll(((PhpTypedElement) arrayHashElement.getValue()).getType().getTypes());
                 }
 
                 collectedTypes.put(variableName, new PsiVariable(variableTypes, arrayHashElement.getValue()));
