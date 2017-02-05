@@ -8,6 +8,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.13.135
+* Add global template navigation for xml strings and provide template name completion for "template" attributes [#803](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/803)
+* Linemarker collectors are not instance safe, load lazy values internally [#846](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846)
+* Support class constant in QueryBuilder::from(Entity::class) [#824](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/824)
+* Make yaml service id visitor case insensitive for class names [#847](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/847)
+* Fix "Missing Parameter" warning for parameters set via environment variables [#852](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/852)
+* Add twig test navigation [#860](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/860)
+* Fix Twig missing asset if variable in declaration [#854](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/854)
+* Use getBlockPrefix instead of override deprecated getName [#812](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/812) @Koc
+* Optimize Twig clickable function pattern [#850](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/850)
+* Add brace insert handler for Twig functions with string parameter detection [#864](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/864)
+* Add support for class constant in Doctrine repositoryClass on annotation metadata [#857](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/857)
+* Dropping weak route name annotator for php files
+* Fix possible npe in variable type extraction [#822](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/822)
+
 ## 0.13.134
 * Fix ConfigLineMarkerProvider.getTreeSignatures must not return null [#846](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846)
 * Support yaml "tags" shortcut syntax for service container [#849](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/849)

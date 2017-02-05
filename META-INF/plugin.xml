@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.134</version>
+    <version>0.13.135</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -104,6 +104,24 @@
 0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
+
+<br/>
+<h2>0.13.135</h2>
+<ul>
+    <li>Add global template navigation for xml strings and provide template name completion for "template" attributes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/803">#803</a></li>
+    <li>Linemarker collectors are not instance safe, load lazy values internally <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846">#846</a></li>
+    <li>Support class constant in QueryBuilder::from(Entity::class) <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/824">#824</a></li>
+    <li>Make yaml service id visitor case insensitive for class names <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/847">#847</a></li>
+    <li>Fix "Missing Parameter" warning for parameters set via environment variables <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/852">#852</a></li>
+    <li>Add twig test navigation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/860">#860</a></li>
+    <li>Fix Twig missing asset if variable in declaration <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/854">#854</a></li>
+    <li>Use getBlockPrefix instead of override deprecated getName <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/812">#812</a> @Koc</li>
+    <li>Optimize Twig clickable function pattern <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/850">#850</a></li>
+    <li>Add brace insert handler for Twig functions with string parameter detection <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/864">#864</a></li>
+    <li>Add support for class constant in Doctrine repositoryClass on annotation metadata <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/857">#857</a></li>
+    <li>Dropping weak route name annotator for php files</li>
+    <li>Fix possible npe in variable type extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/822">#822</a></li>
+</ul>
 
 <br/>
 <h2>0.13.134</h2>
