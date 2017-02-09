@@ -990,4 +990,16 @@ public class RouteHelper {
     private static String normalizeRouteController(@NotNull String string) {
         return string.replace("/", "\\");
     }
+
+    /**
+     * Support "use Symfony\Component\Routing\Annotation\Route as BaseRoute;"
+     */
+    public static boolean isRouteClassAnnotation(@NotNull String clazz) {
+        String myClazz = StringUtils.stripStart(clazz, "\\").toLowerCase();
+
+        return
+            myClazz.equalsIgnoreCase("Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route") ||
+            myClazz.equalsIgnoreCase("Symfony\\Component\\Routing\\Annotation\\Route")
+        ;
+    }
 }

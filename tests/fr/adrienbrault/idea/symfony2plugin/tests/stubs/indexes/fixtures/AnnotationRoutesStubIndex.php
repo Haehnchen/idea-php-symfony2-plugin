@@ -121,3 +121,18 @@ namespace AppBundle\Controller
         }
     }
 }
+
+namespace AppBundle\My\Controller
+{
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class DefaultController
+    {
+        /**
+         * @Route("/", name="framework_extra_bundle_route")
+         */
+        public function fooAction()
+        {
+        }
+    }
+}

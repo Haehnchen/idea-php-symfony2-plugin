@@ -21,6 +21,7 @@ import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
@@ -179,7 +180,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
             }
 
             String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, this.fileImports);
-            if(!"\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
+            if(annotationFqnName == null || !RouteHelper.isRouteClassAnnotation(annotationFqnName)) {
                 return;
             }
 
@@ -294,7 +295,12 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
 
             PhpDocComment docComment = phpClass.getDocComment();
             for (PhpDocTag docTag : PsiTreeUtil.getChildrenOfTypeAsList(docComment, PhpDocTag.class)) {
-                if(!"\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(AnnotationRoutesStubIndex.getClassNameReference(docTag, this.fileImports))) {
+                String classNameReference = AnnotationRoutesStubIndex.getClassNameReference(docTag, this.fileImports);
+                if(classNameReference == null) {
+                    continue;
+                }
+
+                if(!RouteHelper.isRouteClassAnnotation(classNameReference)) {
                     continue;
                 }
 

@@ -61,6 +61,10 @@ public class AnnotationRoutesStubIndexTest extends SymfonyLightCodeInsightFixtur
         route.getMethods().contains("head");
     }
 
+    public void testThatRouteOfComponentRoutingAnnotationRouteIsIndexed() {
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "framework_extra_bundle_route");
+    }
+
     private RouteInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
