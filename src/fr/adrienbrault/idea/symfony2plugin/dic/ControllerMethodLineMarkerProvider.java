@@ -4,6 +4,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ConstantFunction;
@@ -81,7 +82,15 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             return builder.createLineMarkerInfo(psiElement);
         }
 
-        return new LineMarkerInfo<>(psiElement, psiElement.getTextOffset(), Symfony2Icons.SYMFONY_LINE_MARKER, 6, new ConstantFunction("Related Files"), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<>(
+            psiElement,
+            psiElement.getTextRange(),
+            Symfony2Icons.SYMFONY_LINE_MARKER,
+            6,
+            new ConstantFunction<>("Related Files"),
+            new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
+            GutterIconRenderer.Alignment.RIGHT
+        );
     }
 
     public static List<GotoRelatedItem> getGotoRelatedItems(Method method) {

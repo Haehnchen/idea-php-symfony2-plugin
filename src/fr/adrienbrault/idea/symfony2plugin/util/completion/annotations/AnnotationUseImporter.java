@@ -5,8 +5,8 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtilCore;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
-import com.jetbrains.php.lang.psi.PhpCodeEditUtil;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.refactoring.PhpAliasImporter;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -32,11 +32,8 @@ public class AnnotationUseImporter {
         // this looks suitable! :)
         if(PhpCodeInsightUtil.alreadyImported(scopeForUseOperator, fqnAnnotation) == null) {
             PsiDocumentManager.getInstance(context.getProject()).commitDocument(context.getDocument());
-            PhpCodeEditUtil.insertUseStatement(fqnAnnotation, scopeForUseOperator);
+            PhpAliasImporter.insertUseStatement(fqnAnnotation, scopeForUseOperator);
             PsiDocumentManager.getInstance(context.getProject()).doPostponedOperationsAndUnblockDocument(context.getDocument());
         }
-
-
     }
-
 }
