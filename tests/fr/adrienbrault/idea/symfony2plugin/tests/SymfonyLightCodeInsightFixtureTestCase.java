@@ -661,6 +661,18 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         return elements;
     }
 
+    @NotNull
+    protected PsiElement findElementAt(@NotNull FileType fileType, @NotNull String content) {
+        myFixture.configureByText(fileType, content);
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        if(psiElement == null) {
+            fail("No element at caret found");
+        }
+
+        return psiElement;
+    }
+
     public void assertCaretTextOverlay(LanguageFileType languageFileType, String configureByText, CaretTextOverlay.Assert assertMatch) {
 
         myFixture.configureByText(languageFileType, configureByText);

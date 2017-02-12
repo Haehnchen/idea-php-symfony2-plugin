@@ -1,9 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
@@ -17,13 +14,13 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -239,6 +236,31 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
             new TwigPath("path", "path", TwigPathIndex.NamespaceType.BUNDLE),
             new TwigPath("path", "path")
         )));
+    }
+
+    /**
+     * @see TwigHelper#getPrintBlockOrTagFunctionPattern
+     */
+    public void testGetPrintBlockOrTagFunctionPattern() {
+        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar('f<caret>o') }}")
+        ));
+
+        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if foobar('f<caret>o') %}")
+        ));
+
+        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% set foo = foobar('f<caret>o') %}")
+        ));
+
+        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% elseif foobar('f<caret>o') %}")
+        ));
+
+        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% else foobar('f<caret>o') %}")
+        ));
     }
 
     private void assertEqual(Collection<String> c, String... values) {
