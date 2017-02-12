@@ -24,17 +24,20 @@ import java.util.*;
 public class Symfony2InterfacesUtil {
 
     public boolean isContainerGetCall(PsiElement e) {
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
-            getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
-        });
+        return isCallTo(e, createExpectedContainerMethods(e));
     }
 
     public boolean isContainerGetCall(Method e) {
-        return isCallTo(e, new Method[] {
+        return isCallTo(e, createExpectedContainerMethods(e));
+    }
+
+    @NotNull
+    private Method[] createExpectedContainerMethods(PsiElement e) {
+        return new Method[] {
             getInterfaceMethod(e.getProject(), "\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
+            getInterfaceMethod(e.getProject(), "\\Psr\\Container\\ContainerInterface", "get"),
             getClassMethod(e.getProject(), "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
-        });
+        };
     }
 
     public boolean isTemplatingRenderCall(PsiElement e) {
