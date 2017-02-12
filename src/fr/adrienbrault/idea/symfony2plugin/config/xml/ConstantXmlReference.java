@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
+import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.xml.XmlText;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +28,7 @@ class ConstantXmlReference extends PsiPolyVariantReferenceBase<XmlText> {
 
         // FOO
         if (!contents.contains("::")) {
-            return PhpResolveResult.createResults(
+            return PsiElementResolveResult.createResults(
                 PhpIndex.getInstance(getElement().getProject()).getConstantsByName(contents)
             );
         }
@@ -49,7 +49,7 @@ class ConstantXmlReference extends PsiPolyVariantReferenceBase<XmlText> {
             return new ResolveResult[0];
         }
 
-        return PhpResolveResult.createResults(field);
+        return PsiElementResolveResult.createResults(field);
     }
 
     @NotNull

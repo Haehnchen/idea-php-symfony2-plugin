@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
@@ -46,7 +45,7 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public ResolveResult[] multiResolve(boolean b) {
-            return PhpResolveResult.createResults(
+            return PsiElementResolveResult.createResults(
                 RouteHelper.getMethodsOnControllerShortcut(getElement().getProject(), getElement().getText())
             );
         }

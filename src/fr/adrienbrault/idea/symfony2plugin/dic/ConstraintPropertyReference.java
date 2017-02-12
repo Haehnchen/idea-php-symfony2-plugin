@@ -3,12 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import com.jetbrains.php.lang.psi.resolve.PhpResolveResult;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +42,7 @@ public class ConstraintPropertyReference extends PsiPolyVariantReferenceBase<Psi
             }
         }
 
-        return PhpResolveResult.createResults(psiElements);
+        return PsiElementResolveResult.createResults(psiElements);
     }
 
     @NotNull
