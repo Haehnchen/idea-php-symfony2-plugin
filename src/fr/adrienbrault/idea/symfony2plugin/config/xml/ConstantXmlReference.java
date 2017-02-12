@@ -4,19 +4,14 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.xml.XmlText;
-import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 class ConstantXmlReference extends PsiPolyVariantReferenceBase<XmlText> {
-
-    private String contents;
-
     ConstantXmlReference(@NotNull XmlText element) {
         super(element);
     }
@@ -24,32 +19,14 @@ class ConstantXmlReference extends PsiPolyVariantReferenceBase<XmlText> {
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        contents = getElement().getValue();
-
-        // FOO
-        if (!contents.contains("::")) {
-            return PsiElementResolveResult.createResults(
-                PhpIndex.getInstance(getElement().getProject()).getConstantsByName(contents)
-            );
-        }
-
-        // Foo\FooBar::FOO
-        String[] parts = contents.split("::");
-        if(parts.length != 2) {
+        String contents = getElement().getValue();
+        if(StringUtils.isBlank(contents)) {
             return new ResolveResult[0];
         }
 
-        PhpClass phpClass = PhpElementsUtil.getClassInterface(getElement().getProject(), parts[0]);
-        if(phpClass == null) {
-            return new ResolveResult[0];
-        }
-
-        Field field = phpClass.findFieldByName(parts[1], true);
-        if(field == null) {
-            return new ResolveResult[0];
-        }
-
-        return PsiElementResolveResult.createResults(field);
+        return PsiElementResolveResult.createResults(
+            ServiceContainerUtil.getTargetsForConstant(getElement().getProject(), contents)
+        );
     }
 
     @NotNull

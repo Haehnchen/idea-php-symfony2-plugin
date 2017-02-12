@@ -14,12 +14,14 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
@@ -153,23 +155,11 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     private Collection<PsiElement> constantGoto(@NotNull PsiElement psiElement, @NotNull String tagName) {
         String constantName = tagName.substring(11);
-
-        if(!constantName.contains(":")) {
-            return new ArrayList<>(PhpIndex.getInstance(psiElement.getProject()).getConstantsByFQN(constantName));
+        if(StringUtils.isBlank(constantName)) {
+            return Collections.emptyList();
         }
 
-        constantName = constantName.replaceAll(":+", ":");
-        String[] split = constantName.split(":");
-
-        Collection<PsiElement> psiElements = new ArrayList<>();
-        for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(psiElement.getProject(), split[0])) {
-            Field fieldByName = phpClass.findFieldByName(split[1], true);
-            if(fieldByName != null && fieldByName.isConstant()) {
-                psiElements.add(fieldByName);
-            }
-        }
-
-        return psiElements;
+        return ServiceContainerUtil.getTargetsForConstant(psiElement.getProject(), constantName);
     }
 
     @Nullable

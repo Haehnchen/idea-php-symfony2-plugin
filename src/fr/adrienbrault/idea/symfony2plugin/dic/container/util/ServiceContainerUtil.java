@@ -1,11 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator;
@@ -17,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
@@ -28,6 +32,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -345,6 +350,36 @@ public class ServiceContainerUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Foobar::CONST
+     */
+    @NotNull
+    public static Collection<PsiElement> getTargetsForConstant(@NotNull Project project, @NotNull String contents) {
+        // FOO
+        if (!contents.contains(":")) {
+            if(!contents.startsWith("\\")) {
+                contents = "\\" + contents;
+            }
+
+            return new ArrayList<>(
+                PhpIndex.getInstance(project).getConstantsByFQN(contents)
+            );
+        }
+
+        contents = contents.replaceAll(":+", ":");
+        String[] split = contents.split(":");
+
+        Collection<PsiElement> psiElements = new ArrayList<>();
+        for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, split[0])) {
+            Field fieldByName = phpClass.findFieldByName(split[1], true);
+            if(fieldByName != null && fieldByName.isConstant()) {
+                psiElements.add(fieldByName);
+            }
+        }
+
+        return psiElements;
     }
 
     private static int getArgumentIndex(@NotNull XmlTag xmlTag) {

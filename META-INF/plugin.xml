@@ -475,6 +475,11 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="ContainerConstant" displayName="Constant not found"
+                         groupName="Service"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>

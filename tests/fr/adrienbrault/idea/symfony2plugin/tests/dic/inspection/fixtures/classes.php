@@ -7,3 +7,11 @@ namespace Symfony\Component\DependencyInjection
         public function get();
     };
 }
+
+namespace Foobar
+{
+    class Car
+    {
+        const FOOBAR = null;
+    }
+}
