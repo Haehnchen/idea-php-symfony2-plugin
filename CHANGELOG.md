@@ -8,6 +8,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.13.136
+* Support SensioFrameworkExtraBundle @Route annotation for indexer [#828](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/828)
+* Add else and elseif to Twig references tag whitelist; fix autocompletion on constant twig macro [#869](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/869)
+* Implement support for PSR-11 containers [#867](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/867)
+* Add inspection for xml and yaml constants in dic container
+* Replace deprecated api usages
+
 ## 0.13.135
 * Add global template navigation for xml strings and provide template name completion for "template" attributes [#803](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/803)
 * Linemarker collectors are not instance safe, load lazy values internally [#846](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846)

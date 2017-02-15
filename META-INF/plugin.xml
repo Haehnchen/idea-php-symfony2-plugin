@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.135</version>
+    <version>0.13.136</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -106,6 +106,15 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.13.136</h2>
+<ul>
+    <li>Support SensioFrameworkExtraBundle @Route annotation for indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/828">#828</a></li>
+    <li>Add else and elseif to Twig references tag whitelist; fix autocompletion on constant twig macro <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/869">#869</a></li>
+    <li>Implement support for PSR-11 containers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/867">#867</a></li>
+    <li>Add inspection for xml and yaml constants in dic container</li>
+    <li>Replace deprecated api usages</li>
+</ul>
+
 <h2>0.13.135</h2>
 <ul>
     <li>Add global template navigation for xml strings and provide template name completion for "template" attributes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/803">#803</a></li>
@@ -123,7 +132,6 @@
     <li>Fix possible npe in variable type extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/822">#822</a></li>
 </ul>
 
-<br/>
 <h2>0.13.134</h2>
 <ul>
     <li>Fix ConfigLineMarkerProvider.getTreeSignatures must not return null <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/846">#846</a></li>
