@@ -55,6 +55,10 @@ public class ContainerBuilderStubIndexTest extends SymfonyLightCodeInsightFixtur
         assertIndexContainsKeyWithValue(ContainerBuilderStubIndex.KEY, "setDefinition", value ->
             !value.getParameter().contains("setDefinition")
         );
+
+        assertIndexContainsKeyWithValue(ContainerBuilderStubIndex.KEY, "getDefinition", value ->
+            value.getParameter().contains("get.definition")
+        );
     }
 
     public void testThatRegisterMethodIsIndexed() {

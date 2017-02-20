@@ -47,6 +47,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
     private static final Set<String> METHODS = new HashSet<String>() {{
         add("findTaggedServiceIds");
         add("setDefinition");
+        add("getDefinition");
         add("setParameter");
         add("setAlias");
         add("register");
@@ -210,7 +211,9 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
                 result.put(methodName, new ContainerBuilderCall());
             }
 
-            result.get(methodName).addParameter(value);
+            ContainerBuilderCall containerBuilderCall = result.get(methodName);
+
+            containerBuilderCall.addParameter(value);
 
             super.visitElement(element);
         }

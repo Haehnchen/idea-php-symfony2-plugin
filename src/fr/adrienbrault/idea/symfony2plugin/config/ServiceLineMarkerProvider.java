@@ -85,14 +85,14 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    protected void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
 
         if (!(psiElement instanceof StringLiteralExpression) || !(psiElement.getContext() instanceof ParameterList)) {
             return;
         }
 
         ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+        if (!(parameterList.getContext() instanceof MethodReference)) {
             return;
         }
 
@@ -237,7 +237,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    protected void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo> results) {
+    private void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo> results) {
         RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarkerInFolderScope(psiFile);
         if(lineMarker != null) {
             results.add(lineMarker);
@@ -284,7 +284,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         String fqn = ((PhpClass) phpClass).getFQN();
-        if(fqn == null || !fqn.endsWith("Validator")) {
+        if(!fqn.endsWith("Validator")) {
             return;
         }
 

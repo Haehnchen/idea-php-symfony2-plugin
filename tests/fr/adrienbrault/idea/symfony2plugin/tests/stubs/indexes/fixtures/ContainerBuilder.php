@@ -13,6 +13,7 @@ class Foo
         $container2->findTaggedServiceIds('TaggedServiceIds');
         $container2->setParameter('parameter');
         $container2->setDefinition('definition');
+        $container2->getDefinition('get.definition');
         $container2->setAlias('alias');
         $container2->register('register.id', 'Register');
     }

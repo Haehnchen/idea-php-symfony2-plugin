@@ -574,6 +574,25 @@ public class ServiceUtil {
     }
 
     /**
+     * eg CompilerPasses getDefinition references
+     */
+    @Nullable
+    public static NavigationGutterIconBuilder<PsiElement> getLineMarkerForDefinitionServiceId(@NotNull Project project, @NotNull String id) {
+        /*
+        NotNullLazyValue<Collection<? extends PsiElement>> lazy = ServiceIndexUtil.getServiceIdDefinitionLazyValue(
+            project,
+            ContainerUtil.map(decorated.get(id), ContainerService::getName)
+        );
+
+        return NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
+            .setTargets(lazy)
+            .setTooltipText("Navigate to decoration");
+            */
+
+        return null;
+    }
+
+    /**
      *  <service id="foo_bar_main" decorates="app.mailer"/>
      */
     @NotNull

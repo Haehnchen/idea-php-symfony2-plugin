@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
@@ -390,7 +390,6 @@ public class ContainerCollectionResolver {
             return paramOrClassName;
         }
 
-
         private Map<String, ContainerParameter> getParameters() {
 
             if(this.containerParameterMap != null) {
@@ -408,7 +407,6 @@ public class ContainerCollectionResolver {
                 if(key != null) {
                     this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
                 }
-
             }
 
             // index
@@ -426,7 +424,7 @@ public class ContainerCollectionResolver {
             }
 
             // setParameter("foo") for ContainerBuilder
-            for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
+            for (ContainerBuilderCall call : FileBasedIndex.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
                 Collection<String> parameters = call.getParameter();
                 if(parameters == null || parameters.size() == 0) {
                     continue;
@@ -442,10 +440,7 @@ public class ContainerCollectionResolver {
 
             }
 
-
-
             return this.containerParameterMap;
-
         }
 
         private Set<String> getNames() {
@@ -466,17 +461,14 @@ public class ContainerCollectionResolver {
             );
 
             // setParameter("foo") for ContainerBuilder
-            for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
+            for (ContainerBuilderCall call : FileBasedIndex.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
                 Collection<String> parameter = call.getParameter();
                 if(parameter != null) {
                     parameterNames.addAll(parameter);
                 }
             }
 
-
             return parameterNames;
         }
-
     }
-
 }

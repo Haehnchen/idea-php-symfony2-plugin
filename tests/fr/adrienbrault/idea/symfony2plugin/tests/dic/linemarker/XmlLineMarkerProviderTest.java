@@ -16,6 +16,7 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
     public void setUp() throws Exception {
         super.setUp();
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.xml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("ContainerBuilder.php"));
     }
 
     public String getTestDataPath() {
@@ -43,6 +44,18 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
                 "</container>"
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to decorated service")
+        );
+    }
+
+    public void testThatContainerBuilderProvidesRelatedServiceNavigation() {
+        assertLineMarker(createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "       <service id=\"foo_bar_main\"/>\n" +
+                "    </services>\n" +
+                "</container>"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to definition call")
         );
     }
 

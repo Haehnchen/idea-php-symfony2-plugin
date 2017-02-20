@@ -8,7 +8,7 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.ProcessingContext;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ContainerTagLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
@@ -49,10 +49,10 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         }
 
         SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
-        FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
+        FileBasedIndex.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
 
         for(String serviceName: projectUniqueKeysStrong.getResult()) {
-            List<Set<String>> tags = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            List<Set<String>> tags = FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
             for(Set<String> tagDef: tags) {
                 for(String tag: tagDef) {
                     if(!uniqueTags.contains(tag)) {
@@ -64,7 +64,7 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         }
 
         // findTaggedServiceIds("foo") for ContainerBuilder
-        for (ContainerBuilderCall call : FileBasedIndexImpl.getInstance().getValues(ContainerBuilderStubIndex.KEY, "findTaggedServiceIds", GlobalSearchScope.allScope(project))) {
+        for (ContainerBuilderCall call : FileBasedIndex.getInstance().getValues(ContainerBuilderStubIndex.KEY, "findTaggedServiceIds", GlobalSearchScope.allScope(project))) {
             Collection<String> parameter = call.getParameter();
             if(parameter == null || parameter.size() == 0) {
                 continue;
