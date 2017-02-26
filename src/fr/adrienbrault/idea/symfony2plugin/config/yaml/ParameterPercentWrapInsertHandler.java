@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -14,12 +15,8 @@ public class ParameterPercentWrapInsertHandler implements InsertHandler<LookupEl
     private static final ParameterPercentWrapInsertHandler instance = new ParameterPercentWrapInsertHandler();
 
     public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement lookupElement) {
-
         String insertText = null;
         if((lookupElement.getObject() instanceof PsiElement)) {
-
-            PsiElement psi = (PsiElement) lookupElement.getObject();
-            insertText = psi.getText();
             return;
         }
 
@@ -30,6 +27,9 @@ public class ParameterPercentWrapInsertHandler implements InsertHandler<LookupEl
         if(insertText == null) {
             return;
         }
+
+        // "<caret>", '<caret>'
+        insertText = PsiElementUtils.trimQuote(insertText);
 
         if(!insertText.startsWith("%")) {
             context.getDocument().insertString(context.getStartOffset(), "%");

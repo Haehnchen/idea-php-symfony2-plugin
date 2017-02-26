@@ -173,4 +173,32 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "my_nice_tag"
         );
     }
+
+    public void testParameterCompletion() {
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo: [%<caret>]",
+            "foo_parameter"
+        );
+    }
+
+    public void testParameterCompletionInsertHandler() {
+        assertCompletionResultEquals("services.yml", "services:\n" +
+                "    foo: [%foo_paramet<caret>%]",
+            "services:\n" +
+                "    foo: [%foo_parameter%]"
+        );
+
+        assertCompletionResultEquals("services.yml", "services:\n" +
+                "    foo: ['%foo_paramet<caret>']",
+            "services:\n" +
+                "    foo: ['%foo_parameter%']"
+        );
+
+        assertCompletionResultEquals("services.yml", "services:\n" +
+                "    foo: [\"%foo_paramet<caret>\"]",
+            "services:\n" +
+                "    foo: [\"%foo_parameter%\"]"
+        );
+    }
 }
