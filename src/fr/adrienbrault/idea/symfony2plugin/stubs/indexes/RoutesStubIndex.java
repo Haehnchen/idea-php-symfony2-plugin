@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
@@ -112,8 +113,13 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
             return false;
         }
 
+        VirtualFile baseDir = inputData.getProject().getBaseDir();
+        if(baseDir == null) {
+            return false;
+        }
+
         // is Test file in path name
-        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), baseDir, '/');
         if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }
