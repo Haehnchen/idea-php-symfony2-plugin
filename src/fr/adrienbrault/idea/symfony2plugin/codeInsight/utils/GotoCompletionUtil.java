@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlText;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -56,6 +57,9 @@ public class GotoCompletionUtil {
         } else if(parent instanceof YAMLScalar) {
             // foo: foo, foo: 'foo', foo: "foo"
             value = ((YAMLScalar) parent).getTextValue();
+        } else if(psiElement.getNode().getElementType() == TwigTokenTypes.STRING_TEXT) {
+            // twig: 'foobar'
+            value = psiElement.getText();
         }
 
         if(StringUtils.isBlank(value)) {

@@ -1,0 +1,8 @@
+security:
+    role_hierarchy:
+        YAML_ROLE_ADMIN: [YAML_ROLE_USER, YAML_ROLE_FEATURE_ALPHA, YAML_ROLE_ALLOWED_TO_SWITCH]
+        YAML_ROLE_SUPER_ADMIN: [YAML_ROLE_ADMIN, YAML_ROLE_ALLOWED_TO_SWITCH]
+    access_control:
+        - { path: /foobar, roles: YAML_ROLE_USER_FOOBAR }
+        - { path: /foobar_1, roles: YAML_ROLE_USER_FOOBAR_1 }
+        - { path: /foobar_2, roles: [YAML_ROLE_FOOBAR_ARRAY_1, YAML_ROLE_FOOBAR_ARRAY_2] }

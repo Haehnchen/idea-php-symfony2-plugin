@@ -1,0 +1,3 @@
+security:
+    access_control:
+        - { path: /foobar, roles: YAML_ROLE_USER_FOOBAR }

@@ -78,6 +78,28 @@ public class YamlHelper {
         return yamlArray.getItems();
     }
 
+    /**
+     * [ROLE_USER, FEATURE_ALPHA, ROLE_ALLOWED_TO_SWITCH]
+     */
+    @NotNull
+    static public Collection<String> getYamlArrayValuesAsString(@NotNull YAMLSequence yamlArray) {
+        Collection<String> keys = new HashSet<>();
+
+        for (YAMLSequenceItem yamlSequenceItem : yamlArray.getItems()) {
+            YAMLValue value = yamlSequenceItem.getValue();
+            if(!(value instanceof YAMLScalar)) {
+                continue;
+            }
+
+            String textValue = ((YAMLScalar) value).getTextValue();
+            if(StringUtils.isNotBlank(textValue)) {
+                keys.add(textValue);
+            }
+        }
+
+        return keys;
+    }
+
     @Nullable
     public static YAMLKeyValue getYamlKeyValue(@Nullable PsiElement yamlCompoundValue, String keyName) {
         return getYamlKeyValue(yamlCompoundValue, keyName, false);
