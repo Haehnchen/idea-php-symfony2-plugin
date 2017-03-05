@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
@@ -92,6 +93,11 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
                     files.add(translationPsiFile);
                 }
             }
+        }
+
+        if(files.size() == 0) {
+            HintManager.getInstance().showErrorHint(editor, "Ops, no domain file found");
+            return;
         }
 
         JBList<PsiFile> list = new JBList<>(files);
