@@ -127,7 +127,7 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
         PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(method.getProject(), serviceName);
         if(serviceParameterClass != null && !PhpElementsUtil.isInstanceOf(serviceParameterClass, expectedClass)) {
-            holder.createWeakWarningAnnotation(target, "Expect instance of: " + expectedClass.getPresentableFQN())
+            holder.createWarningAnnotation(target, "Expect instance of: " + expectedClass.getPresentableFQN())
                 .registerFix(new MySuggestionIntentionAction(expectedClass, target));
         }
 
