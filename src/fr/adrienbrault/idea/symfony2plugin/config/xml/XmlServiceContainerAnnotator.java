@@ -66,19 +66,19 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
             XmlAttribute classAttribute = parentXmlTag.getAttribute("class");
             if(classAttribute != null) {
-
                 String serviceDefName = classAttribute.getValue();
-                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+                if(serviceDefName != null) {
+                    PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
 
-                // check type hint on constructor
-                if(phpClass != null) {
-                    Method constructor = phpClass.getConstructor();
-                    if(constructor != null) {
-                        String serviceName = ((XmlAttributeValue) psiElement).getValue();
-                        attachMethodInstances(psiElement, serviceName, constructor, getArgumentIndex(currentXmlTag), holder);
+                    // check type hint on constructor
+                    if(phpClass != null) {
+                        Method constructor = phpClass.getConstructor();
+                        if(constructor != null) {
+                            String serviceName = ((XmlAttributeValue) psiElement).getValue();
+                            attachMethodInstances(psiElement, serviceName, constructor, getArgumentIndex(currentXmlTag), holder);
+                        }
                     }
                 }
-
             }
         } else if (name.equals("call")) {
 
@@ -93,22 +93,21 @@ public class XmlServiceContainerAnnotator implements Annotator {
                 if(serviceTag != null && "service".equals(serviceTag.getName())) {
                     XmlAttribute classAttribute = serviceTag.getAttribute("class");
                     if(classAttribute != null) {
-
                         String serviceDefName = classAttribute.getValue();
-                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+                        if(serviceDefName != null) {
+                            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
 
-                        // finally check method type hint
-                        if(phpClass != null) {
-                            Method method = phpClass.findMethodByName(methodName);
-                            if(method != null) {
-                                String serviceName = ((XmlAttributeValue) psiElement).getValue();
-                                attachMethodInstances(psiElement, serviceName, method, getArgumentIndex(currentXmlTag), holder);
+                            // finally check method type hint
+                            if(phpClass != null) {
+                                Method method = phpClass.findMethodByName(methodName);
+                                if(method != null) {
+                                    String serviceName = ((XmlAttributeValue) psiElement).getValue();
+                                    attachMethodInstances(psiElement, serviceName, method, getArgumentIndex(currentXmlTag), holder);
+                                }
                             }
                         }
-
                     }
                 }
-
             }
         }
     }
