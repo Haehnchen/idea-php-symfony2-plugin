@@ -82,7 +82,7 @@ public class QueryBuilderChainProcessor {
     }
 
     private void processVariableScope(List<MethodReference> medRefCollection, List<MethodReference> factoryReferences, Variable child) {
-        for(Variable varRef: PhpElementsUtil.getVariableReferencesInScope(child, false)) {
+        for(Variable varRef: PhpElementsUtil.getVariableReferencesInScope(child)) {
 
             // we need to handle variables and their declaration in different ways
             if(varRef.isDeclaration()) {

@@ -1,15 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.CommonProcessors;
-import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -20,24 +19,61 @@ public class PhpMethodVariableResolveUtil {
 
     /**
      * search for twig template variable on common use cases
+     *
+     * $this->render('foobar.html.twig', $foobar)
+     * $this->render('foobar.html.twig', ['foobar' => $var]))
+     * $this->render('foobar.html.twig', array_merge($foobar, ['foobar' => $var]))
+     * $this->render('foobar.html.twig', array_merge_recursive($foobar, ['foobar' => $var]))
+     * $this->render('foobar.html.twig', array_push($foobar, ['foobar' => $var]))
+     * $this->render('foobar.html.twig', array_replace($foobar, ['foobar' => $var]))
+     * $this->render('foobar.html.twig', $foobar + ['foobar' => $var])
+     * $this->render('foobar.html.twig', $foobar += ['foobar' => $var])
      */
-    public static Map<String, PsiVariable> collectMethodVariables(Function method) {
+    public static Map<String, PsiVariable> collectMethodVariables(@NotNull Function method) {
 
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
-        List<PsiElement> psiElements = collectPossibleTemplateArrays(method);
-        for(PsiElement templateVariablePsi: psiElements) {
-
-            if(templateVariablePsi instanceof ArrayCreationExpression) {
+        for(PsiElement var: collectPossibleTemplateArrays(method)) {
+            if(var instanceof ArrayCreationExpression) {
                 // "return array(...)" we dont need any parsing
-                collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) templateVariablePsi));
-
-            } else if(templateVariablePsi instanceof Variable) {
+                collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) var));
+            } else if(var instanceof Variable) {
                 // we need variable declaration line so resolve it and search for references which attach other values to array
                 // find definition and search for references on it
-                PsiElement resolvedVariable = ((Variable) templateVariablePsi).resolve();
+                PsiElement resolvedVariable = ((Variable) var).resolve();
                 if(resolvedVariable instanceof Variable) {
-                    collectedTypes.putAll(collectOnVariableReferences(method.getUseScope(), (Variable) resolvedVariable));
+                    collectedTypes.putAll(collectOnVariableReferences(method, (Variable) resolvedVariable));
+                }
+            } else if(var instanceof FunctionReference && "array_merge".equalsIgnoreCase(((FunctionReference) var).getName())) {
+                // array_merge($var, ['foobar' => $var]);
+
+                String name = ((FunctionReference) var).getName();
+                if("array_merge".equalsIgnoreCase(name) || "array_merge_recursive".equalsIgnoreCase(name) || "array_push".equalsIgnoreCase(name) || "array_replace".equalsIgnoreCase(name)) {
+                    for (PsiElement psiElement : ((FunctionReference) var).getParameters()) {
+                        collectVariablesForPsiElement(method, collectedTypes, psiElement);
+                    }
+                }
+            } else if(var instanceof BinaryExpression && var.getNode().getElementType() == PhpElementTypes.ADDITIVE_EXPRESSION) {
+                // $var + ['foobar' => $foobar]
+                PsiElement leftOperand = ((BinaryExpression) var).getLeftOperand();
+                if(leftOperand != null) {
+                    collectVariablesForPsiElement(method, collectedTypes, leftOperand);
+                }
+
+                PsiElement rightOperand = ((BinaryExpression) var).getRightOperand();
+                if(rightOperand != null) {
+                    collectVariablesForPsiElement(method, collectedTypes, rightOperand);
+                }
+            } else if(var instanceof SelfAssignmentExpression) {
+                // $var += ['foobar' => $foobar]
+                PhpPsiElement variable = ((SelfAssignmentExpression) var).getVariable();
+                if(variable != null) {
+                    collectVariablesForPsiElement(method, collectedTypes, variable);
+                }
+
+                PhpPsiElement value = ((SelfAssignmentExpression) var).getValue();
+                if(value != null) {
+                    collectVariablesForPsiElement(method, collectedTypes, value);
                 }
             }
         }
@@ -45,10 +81,24 @@ public class PhpMethodVariableResolveUtil {
         return collectedTypes;
     }
 
+    private static void collectVariablesForPsiElement(@NotNull Function method, @NotNull Map<String, PsiVariable> collectedTypes, @NotNull PsiElement psiElement) {
+        if(psiElement instanceof ArrayCreationExpression) {
+            // reuse array collector: ['foobar' => $var]
+            collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) psiElement));
+        } else if(psiElement instanceof Variable) {
+            // reuse variable collector: [$var]
+            PsiElement resolvedVariable = ((Variable) psiElement).resolve();
+            if(resolvedVariable instanceof Variable) {
+                collectedTypes.putAll(collectOnVariableReferences(method, (Variable) resolvedVariable));
+            }
+        }
+    }
+
     /**
      *  search for possible variables which are possible accessible inside rendered twig template
      */
-    private static List<PsiElement> collectPossibleTemplateArrays(Function method) {
+    @NotNull
+    private static List<PsiElement> collectPossibleTemplateArrays(@NotNull Function method) {
 
         List<PsiElement> collectedTemplateVariables = new ArrayList<>();
 
@@ -84,35 +134,25 @@ public class PhpMethodVariableResolveUtil {
     /**
      * search for references of variable declaration and collect the types
      *
-     * @param searchScope should be method scope
+     * @param function should be function / method scope
      * @param variable the variable declaration psi $var = array();
      */
-    private static Map<String, PsiVariable> collectOnVariableReferences(SearchScope searchScope, Variable variable) {
+    @NotNull
+    private static Map<String, PsiVariable> collectOnVariableReferences(@NotNull Function function, @NotNull Variable variable) {
+        Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
-        final Map<String, PsiVariable> collectedTypes = new HashMap<>();
-
-        PhpPsiUtil.hasReferencesInSearchScope(searchScope, variable, new CommonProcessors.FindProcessor<PsiReference>() {
-            @Override
-            protected boolean accept(PsiReference psiReference) {
-                if (psiReference.getElement() instanceof Variable) {
-                    PsiElement parent = psiReference.getElement().getParent();
-
-                    // $template['variable'] = $foo
-                    if (parent instanceof ArrayAccessExpression) {
-                        collectedTypes.putAll(getTypesOnArrayIndex((ArrayAccessExpression) parent));
-                    }
-
-                    // array('foo' => $var)
-                    if (parent instanceof AssignmentExpression) {
-                        if (((AssignmentExpression) parent).getValue() instanceof ArrayCreationExpression) {
-                            collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) ((AssignmentExpression) parent).getValue()));
-                        }
-                    }
+        for (Variable scopeVar : PhpElementsUtil.getVariablesInScope(function, variable)) {
+            PsiElement parent = scopeVar.getParent();
+            if (parent instanceof ArrayAccessExpression) {
+                // $template['variable'] = $foo
+                collectedTypes.putAll(getTypesOnArrayIndex((ArrayAccessExpression) parent));
+            } else if (parent instanceof AssignmentExpression) {
+                // array('foo' => $var)
+                if (((AssignmentExpression) parent).getValue() instanceof ArrayCreationExpression) {
+                    collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) ((AssignmentExpression) parent).getValue()));
                 }
-
-                return false;
             }
-        });
+        }
 
         return collectedTypes;
     }

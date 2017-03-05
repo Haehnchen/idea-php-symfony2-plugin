@@ -7,7 +7,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.CommonProcessors;
 import com.intellij.util.Processor;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
@@ -879,10 +878,13 @@ public class PhpElementsUtil {
         return getMethodParameterReferenceBag(psiElement, -1);
     }
 
-    public static List<Variable> getVariableReferencesInScope(final Variable variable, final boolean includeSelf) {
-
-        final List<Variable> variables = new ArrayList<>();
-
+    /**
+     * Find all variables in current function / method scope
+     *
+     * $v<caret>ar = 'foobar';
+     * $v<caret>ar->foo()
+     */
+    public static Collection<Variable> getVariableReferencesInScope(@NotNull Variable variable) {
         Variable variableDecl = null;
         if(!variable.isDeclaration()) {
             PsiElement psiElement = variable.resolve();
@@ -894,33 +896,21 @@ public class PhpElementsUtil {
         }
 
         if(variableDecl == null) {
-            return variables;
+            return Collections.emptyList();
         }
 
-        Method method = PsiTreeUtil.getParentOfType(variable, Method.class);
-        if(method == null) {
-            return variables;
+        Function function = PsiTreeUtil.getParentOfType(variable, Function.class);
+        if(function == null) {
+            return Collections.emptyList();
         }
 
-        PhpPsiUtil.hasReferencesInSearchScope(method.getUseScope(), variableDecl, new CommonProcessors.FindProcessor<PsiReference>() {
-            @Override
-            protected boolean accept(PsiReference psiReference) {
+        final List<Variable> variables = new ArrayList<>();
 
-                PsiElement variableRef = psiReference.getElement();
-                if (variableRef instanceof Variable) {
-                    if(includeSelf) {
-                        variables.add((Variable) variableRef);
-                    } else {
-                        if (!variableRef.equals(variable)) {
-                            variables.add((Variable) variableRef);
-                        }
-                    }
-
-                }
-
-                return false;
+        for (Variable variableRef : PhpElementsUtil.getVariablesInScope(function, variableDecl)) {
+            if (!variableRef.equals(variable)) {
+                variables.add(variableRef);
             }
-        });
+        }
 
         return variables;
     }

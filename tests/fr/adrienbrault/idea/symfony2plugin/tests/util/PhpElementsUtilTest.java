@@ -3,7 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
@@ -163,5 +163,59 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             "use Foo as Car;\n" +
             "class Foo{}\n"
         ), "Foo\\Cool\\Apple"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getVariableReferencesInScope
+     */
+    public void testGetVariableReferencesInScopeForVariable() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();" +
+            "  $va<caret>r->format();" +
+            "  $var->modify();" +
+            "\n}"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        Collection<Variable> vars = PhpElementsUtil.getVariableReferencesInScope((Variable) psiElement.getParent());
+        assertSize(2, vars);
+
+        assertNotNull(ContainerUtil.find(vars, variable ->
+            "$var = new \\DateTime()".equals(variable.getParent().getText()))
+        );
+
+        assertNotNull(ContainerUtil.find(vars, variable ->
+            "$var->modify()".equals(variable.getParent().getText()))
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getVariableReferencesInScope
+     */
+    public void testGetVariableReferencesInScopeForVariableDeclaration() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "function foobar() {\n" +
+            "  $v<caret>ar = new \\DateTime();" +
+            "  $var->format();" +
+            "  $var->modify();" +
+            "\n}"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        Collection<Variable> vars = PhpElementsUtil.getVariableReferencesInScope((Variable) psiElement.getParent());
+        assertSize(2, vars);
+
+        assertNotNull(ContainerUtil.find(vars, variable ->
+            "$var->format()".equals(variable.getParent().getText()))
+        );
+
+        assertNotNull(ContainerUtil.find(vars, variable ->
+            "$var->modify()".equals(variable.getParent().getText()))
+        );
     }
 }
