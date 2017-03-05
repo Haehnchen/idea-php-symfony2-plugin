@@ -488,6 +488,18 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigTranslationDomain" displayName="Twig: Missing translation domain"
+                         groupName="Translation"
+                         enabledByDefault="true" level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationDomainInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigTranslationDomain" displayName="Twig: Missing translation key"
+                         groupName="Translation"
+                         enabledByDefault="true" level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>

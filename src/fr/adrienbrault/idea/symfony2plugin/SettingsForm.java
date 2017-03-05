@@ -62,7 +62,6 @@ public class SettingsForm implements Configurable {
     private TextFieldWithBrowseButton pathToTranslationRootTextField;
     private JButton buttonHelp;
     private JCheckBox highlightServices;
-    private JCheckBox twigAnnotateTranslation;
     private JCheckBox phpAnnotateTranslation;
     
     private JCheckBox codeFoldingPhpRoute;
@@ -142,7 +141,6 @@ public class SettingsForm implements Configurable {
             || !twigAnnotateTemplate.isSelected() == getSettings().twigAnnotateTemplate
             || !twigAnnotateAsset.isSelected() == getSettings().twigAnnotateAsset
             || !twigAnnotateAssetTags.isSelected() == getSettings().twigAnnotateAssetTags
-            || !twigAnnotateTranslation.isSelected() == getSettings().twigAnnotateTranslation
 
             || !phpAnnotateTemplate.isSelected() == getSettings().phpAnnotateTemplate
             || !phpAnnotateService.isSelected() == getSettings().phpAnnotateService
@@ -183,7 +181,6 @@ public class SettingsForm implements Configurable {
         getSettings().twigAnnotateTemplate = twigAnnotateTemplate.isSelected();
         getSettings().twigAnnotateAsset = twigAnnotateAsset.isSelected();
         getSettings().twigAnnotateAssetTags = twigAnnotateAssetTags.isSelected();
-        getSettings().twigAnnotateTranslation = twigAnnotateTranslation.isSelected();
 
         getSettings().phpAnnotateTemplate = phpAnnotateTemplate.isSelected();
         getSettings().phpAnnotateService = phpAnnotateService.isSelected();
@@ -235,7 +232,6 @@ public class SettingsForm implements Configurable {
         twigAnnotateTemplate.setSelected(getSettings().twigAnnotateTemplate);
         twigAnnotateAsset.setSelected(getSettings().twigAnnotateAsset);
         twigAnnotateAssetTags.setSelected(getSettings().twigAnnotateAssetTags);
-        twigAnnotateTranslation.setSelected(getSettings().twigAnnotateTranslation);
 
         phpAnnotateTemplate.setSelected(getSettings().phpAnnotateTemplate);
         phpAnnotateService.setSelected(getSettings().phpAnnotateService);

@@ -391,15 +391,6 @@
               <text value="Asset Tags"/>
             </properties>
           </component>
-          <component id="cb3c8" class="javax.swing.JCheckBox" binding="twigAnnotateTranslation">
-            <constraints>
-              <grid row="36" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Translation"/>
-            </properties>
-          </component>
           <component id="c828d" class="javax.swing.JCheckBox" binding="codeFoldingTwigConstant">
             <constraints>
               <grid row="24" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
