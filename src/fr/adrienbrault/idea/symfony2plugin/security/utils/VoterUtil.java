@@ -4,16 +4,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.CommonProcessors;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -123,11 +120,9 @@ public class VoterUtil {
             return;
         }
 
-        PhpPsiUtil.hasReferencesInSearchScope(
-            method.getUseScope(),
-            parameters[0],
-            new MyAttributePsiReferenceFindProcessor(consumer)
-        );
+        for (Variable variable : PhpElementsUtil.getVariablesInScope(method, parameters[0])) {
+            visitVariable(variable, consumer);
+        }
     }
 
     public static class StringPairConsumer implements Consumer<Pair<String, PsiElement>> {
@@ -171,84 +166,71 @@ public class VoterUtil {
     /**
      * Find security roles on Voter implementation and security roles in Yaml
      */
-    private static class MyAttributePsiReferenceFindProcessor extends CommonProcessors.FindProcessor<PsiReference> {
-        private final Consumer<Pair<String, PsiElement>> consumer;
-
-        MyAttributePsiReferenceFindProcessor(Consumer<Pair<String, PsiElement>> consumer) {
-            this.consumer = consumer;
-        }
-
-        @Override
-        protected boolean accept(PsiReference psiReference) {
-            PsiElement resolve = psiReference.getElement();
-
-            PsiElement parent = resolve.getParent();
-            if(parent instanceof BinaryExpression) {
-                // 'VALUE' == $var
-                PsiElement rightElement = PsiTreeUtil.prevVisibleLeaf(resolve);
-                if(rightElement != null) {
-                    IElementType node = rightElement.getNode().getElementType();
-                    if(isIfOperand(node)) {
-                        PsiElement leftOperand = ((BinaryExpression) parent).getLeftOperand();
-                        String stringValue = PhpElementsUtil.getStringValue(leftOperand);
-                        if(StringUtils.isNotBlank(stringValue)) {
-                            consumer.accept(Pair.create(stringValue, leftOperand));
-                        }
-                    }
-                }
-
-                // $var == 'VALUE'
-                PsiElement leftElement = PsiTreeUtil.nextVisibleLeaf(resolve);
-                if(leftElement != null) {
-                    IElementType node = leftElement.getNode().getElementType();
-                    if(isIfOperand(node)) {
-                        PsiElement rightOperand = ((BinaryExpression) parent).getRightOperand();
-                        String stringValue = PhpElementsUtil.getStringValue(rightOperand);
-                        if(StringUtils.isNotBlank(stringValue)) {
-                            consumer.accept(Pair.create(stringValue, rightOperand));
-                        }
-                    }
-                }
-            } else if(parent instanceof ParameterList) {
-                // in_array($x, ['FOOBAR'])
-                PsiElement functionCall = parent.getParent();
-                if(functionCall instanceof FunctionReference && "in_array".equalsIgnoreCase(((FunctionReference) functionCall).getName())) {
-                    PsiElement[] functionParameter = ((ParameterList) parent).getParameters();
-                    if(functionParameter.length > 1 && functionParameter[1] instanceof ArrayCreationExpression) {
-                        PsiElement[] psiElements = PsiTreeUtil.collectElements(functionParameter[1], psiElement -> psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE);
-                        for (PsiElement psiElement : psiElements) {
-                            PsiElement firstChild = psiElement.getFirstChild();
-                            String stringValue = PhpElementsUtil.getStringValue(firstChild);
-                            if(StringUtils.isNotBlank(stringValue)) {
-                                consumer.accept(Pair.create(stringValue, firstChild));
-                            }
-                        }
-                    }
-                }
-            } else if(parent instanceof PhpSwitch) {
-                // case "foobar":
-                for (PhpCase phpCase : ((PhpSwitch) parent).getAllCases()) {
-                    PhpPsiElement condition = phpCase.getCondition();
-                    String stringValue = PhpElementsUtil.getStringValue(condition);
+    private static void visitVariable(@NotNull Variable resolve, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        PsiElement parent = resolve.getParent();
+        if(parent instanceof BinaryExpression) {
+            // 'VALUE' == $var
+            PsiElement rightElement = PsiTreeUtil.prevVisibleLeaf(resolve);
+            if(rightElement != null) {
+                IElementType node = rightElement.getNode().getElementType();
+                if(isIfOperand(node)) {
+                    PsiElement leftOperand = ((BinaryExpression) parent).getLeftOperand();
+                    String stringValue = PhpElementsUtil.getStringValue(leftOperand);
                     if(StringUtils.isNotBlank(stringValue)) {
-                        consumer.accept(Pair.create(stringValue, condition));
+                        consumer.accept(Pair.create(stringValue, leftOperand));
                     }
                 }
             }
 
-            return false;
+            // $var == 'VALUE'
+            PsiElement leftElement = PsiTreeUtil.nextVisibleLeaf(resolve);
+            if(leftElement != null) {
+                IElementType node = leftElement.getNode().getElementType();
+                if(isIfOperand(node)) {
+                    PsiElement rightOperand = ((BinaryExpression) parent).getRightOperand();
+                    String stringValue = PhpElementsUtil.getStringValue(rightOperand);
+                    if(StringUtils.isNotBlank(stringValue)) {
+                        consumer.accept(Pair.create(stringValue, rightOperand));
+                    }
+                }
+            }
+        } else if(parent instanceof ParameterList) {
+            // in_array($x, ['FOOBAR'])
+            PsiElement functionCall = parent.getParent();
+            if(functionCall instanceof FunctionReference && "in_array".equalsIgnoreCase(((FunctionReference) functionCall).getName())) {
+                PsiElement[] functionParameter = ((ParameterList) parent).getParameters();
+                if(functionParameter.length > 1 && functionParameter[1] instanceof ArrayCreationExpression) {
+                    PsiElement[] psiElements = PsiTreeUtil.collectElements(functionParameter[1], psiElement -> psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE);
+                    for (PsiElement psiElement : psiElements) {
+                        PsiElement firstChild = psiElement.getFirstChild();
+                        String stringValue = PhpElementsUtil.getStringValue(firstChild);
+                        if(StringUtils.isNotBlank(stringValue)) {
+                            consumer.accept(Pair.create(stringValue, firstChild));
+                        }
+                    }
+                }
+            }
+        } else if(parent instanceof PhpSwitch) {
+            // case "foobar":
+            for (PhpCase phpCase : ((PhpSwitch) parent).getAllCases()) {
+                PhpPsiElement condition = phpCase.getCondition();
+                String stringValue = PhpElementsUtil.getStringValue(condition);
+                if(StringUtils.isNotBlank(stringValue)) {
+                    consumer.accept(Pair.create(stringValue, condition));
+                }
+            }
         }
+    }
 
-        /**
-         * null == null, null != null, null === null
-         */
-        private boolean isIfOperand(@NotNull IElementType node) {
-            return
-                node == PhpTokenTypes.opIDENTICAL ||
+    /**
+     * null == null, null != null, null === null
+     */
+    private static boolean isIfOperand(@NotNull IElementType node) {
+        return
+            node == PhpTokenTypes.opIDENTICAL ||
                 node == PhpTokenTypes.opEQUAL ||
                 node == PhpTokenTypes.opNOT_EQUAL ||
                 node == PhpTokenTypes.opNOT_IDENTICAL
             ;
-        }
     }
 }

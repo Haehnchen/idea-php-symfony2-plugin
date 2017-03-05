@@ -1385,4 +1385,46 @@ public class PhpElementsUtil {
         return null;
     }
 
+    /**
+     * Collects all variables in a given scope.
+     * Eg find all variables usages in a given method
+     */
+    @NotNull
+    public static Set<Variable> getVariablesInScope(@NotNull PsiElement psiElement, @NotNull PhpNamedElement variable) {
+        return MyVariableRecursiveElementVisitor.visit(psiElement, variable.getName());
+    }
+
+    @NotNull
+    public static Set<Variable> getVariablesInScope(@NotNull PsiElement psiElement, @NotNull String name) {
+        return MyVariableRecursiveElementVisitor.visit(psiElement, name);
+    }
+
+    /**
+     * Visit and collect all variables in given scope
+     */
+    private static class MyVariableRecursiveElementVisitor extends PsiRecursiveElementVisitor {
+        @NotNull
+        private final String name;
+
+        @NotNull
+        private final Set<Variable> variables = new HashSet<>();
+
+        MyVariableRecursiveElementVisitor(@NotNull String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            if(element instanceof Variable && name.equals(((Variable) element).getName())) {
+                variables.add((Variable) element);
+            }
+            super.visitElement(element);
+        }
+
+        public static Set<Variable> visit(@NotNull PsiElement scope, @NotNull String name) {
+            MyVariableRecursiveElementVisitor visitor = new MyVariableRecursiveElementVisitor(name);
+            scope.acceptChildren(visitor);
+            return visitor.variables;
+        }
+    }
 }
