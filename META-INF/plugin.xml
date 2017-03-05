@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.136</version>
+    <version>0.13.137</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -106,6 +106,20 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.13.137</h2>
+<ul>
+    <li>Fix npe in route indexing <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/874">#874</a></li>
+    <li>Fix parameter autocomplete double percentages <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/871">#871</a></li>
+    <li>Add support for isGranted in Twig and php on security.yaml, Voter::voteOnAttribute and Voter::supports <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/431">#431</a></li>
+    <li>Add Twig filters autocompletion for filter tag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/878">#878</a></li>
+    <li>Replace hasReferencesInSearchScope which too slow for Twig variable extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/859">#859</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809">#809</a></li>
+    <li>Support much more Twig render template pattern like array_merge for controller variables extraction</li>
+    <li>Fix possible npe in container annotator because of empty xml tag value</li>
+    <li>Wrong xml service instances should be more visible so move from weak to warning highlight</li>
+    <li>Migrate Twig translation annotator to inspection; drop possible memory leaks with a popover bridge <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/832">#832</a></li>
+    <li>Add a persistent Twig translation annotator to create keys in all known domains <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/443">#443</a></li>
+</ul>
+
 <h2>0.13.136</h2>
 <ul>
     <li>Support SensioFrameworkExtraBundle @Route annotation for indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/828">#828</a></li>

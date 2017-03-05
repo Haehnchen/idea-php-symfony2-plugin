@@ -8,6 +8,18 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.13.137
+* Fix npe in route indexing [#874](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/874)
+* Fix parameter autocomplete double percentages [#871](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/871)
+* Add support for isGranted in Twig and php on security.yaml, Voter::voteOnAttribute and Voter::supports [#431](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/431)
+* Add Twig filters autocompletion for filter tag [#878](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/878)
+* Replace hasReferencesInSearchScope which too slow for Twig variable extraction [#859](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/859) [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809)
+* Support much more Twig render template pattern like array_merge for controller variables extraction
+* Fix possible npe in container annotator because of empty xml tag value
+* Wrong xml service instances should be more visible so move from weak to warning highlight
+* Migrate Twig translation annotator to inspection; drop possible memory leaks with a popover bridge [#832](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/832)
+* Add a persistent Twig translation annotator to create keys in all known domains [#443](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/443)
+
 ## 0.13.136
 * Support SensioFrameworkExtraBundle @Route annotation for indexer [#828](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/828)
 * Add else and elseif to Twig references tag whitelist; fix autocompletion on constant twig macro [#869](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/869)
