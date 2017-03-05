@@ -830,6 +830,28 @@ public class TwigHelper {
     }
 
     /**
+     * {% filter foo %}
+     */
+    public static ElementPattern<PsiElement> getFilterTagPattern() {
+        //noinspection unchecked
+        return
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+                )
+                .withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.FILTER_TAG)
+                )
+                .withLanguage(TwigLanguage.INSTANCE)
+            ;
+    }
+
+    /**
      * use getStringAfterTagNamePattern @TODO
      *
      * {% trans_default_domain '<carpet>' %}
