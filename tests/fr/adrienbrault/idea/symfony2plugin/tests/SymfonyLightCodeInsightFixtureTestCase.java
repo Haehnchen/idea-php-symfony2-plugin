@@ -487,13 +487,24 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         myFixture.configureByText(languageFileType, configureByText);
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
 
+        Set<String> items = new HashSet<>();
+
         for (IntentionAction intentionAction : IntentionManager.getInstance().getIntentionActions()) {
-            if(intentionAction.isAvailable(getProject(), getEditor(), psiElement.getContainingFile()) && intentionAction.getText().equals(intentionText)) {
-                return;
+            if(!intentionAction.isAvailable(getProject(), getEditor(), psiElement.getContainingFile())) {
+                continue;
             }
+
+            String text = intentionAction.getText();
+            items.add(text);
+
+            if(!text.equals(intentionText)) {
+                continue;
+            }
+
+            return;
         }
 
-        fail(String.format("Fail intention action '%s' is available in element '%s'", intentionText, psiElement.getText()));
+        fail(String.format("Fail intention action '%s' is available in element '%s' with '%s'", intentionText, psiElement.getText(), items));
     }
 
     public void assertLocalInspectionNotContains(String filename, String content, String contains) {
