@@ -46,6 +46,46 @@ public class VoterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testTwigIsGrantedAsArrayCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted(['<caret>']) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted({'<caret>'}) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted(['foobar', '<caret>']) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigIsGrantedAsArrayNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted(['YAML_ROLE<caret>_USER_FOOBAR']) }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted({'YAML_ROLE<caret>_USER_FOOBAR'}) }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted(['foobar', 'YAML_ROLE<caret>_USER_FOOBAR']) }}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
     public void testPhpIsGrantedCompletion() {
         assertCompletionContains(PhpFileType.INSTANCE,"<?php\n" +
                 "/** @var $x \\Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface */\n" +

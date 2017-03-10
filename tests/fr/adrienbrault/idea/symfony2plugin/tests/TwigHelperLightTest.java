@@ -263,6 +263,52 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         ));
     }
 
+    /**
+     * @see TwigHelper#getFunctionWithFirstParameterAsArrayPattern
+     */
+    public void testGetFunctionWithFirstParameterAsArrayPattern() {
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar(['fo<caret>o']) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar(['foo', 'fo<caret>o']) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar([\"foo\", \"fo<caret>o\"]) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar       (       [ 'foo'     , 'fo<caret>o']) }}")
+        ));
+    }
+
+    /**
+     * @see TwigHelper#getFunctionWithFirstParameterAsLiteralPattern
+     */
+    public void testFunctionWithFirstParameterAsLiteralPattern() {
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'f<caret>o'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar    (       {     'f<caret>o'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo', 'f<caret>o'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({\"f<caret>o\"}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({\"foo\", \"f<caret>o\"}) }}")
+        ));
+    }
+
     private void assertEqual(Collection<String> c, String... values) {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));

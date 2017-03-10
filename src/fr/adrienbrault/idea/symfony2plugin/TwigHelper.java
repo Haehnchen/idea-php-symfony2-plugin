@@ -549,6 +549,7 @@ public class TwigHelper {
                 .withLanguage(TwigLanguage.INSTANCE)
         );
     }
+
     /**
      * Check for {{ include('|')  }}, {% include('|') %}
      *
@@ -579,6 +580,100 @@ public class TwigHelper {
                 PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
             )
             .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Literal are fine in lexer so just extract the parameter
+     *
+     * {{ foo({'foobar', 'foo<caret>bar'}) }}
+     * {{ foo({'fo<caret>obar'}) }}
+     */
+    public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsLiteralPattern(@NotNull String... functionName) {
+        //noinspection unchecked
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                )
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Array values are not detected by lexer, lets do the magic on our own
+     *
+     * {{ foo(['foobar', 'foo<caret>bar']) }}
+     * {{ foo(['fo<caret>obar']) }}
+     */
+    public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsArrayPattern(@NotNull String... functionName) {
+        //noinspection unchecked
+
+        // "foo(<caret>"
+        PsiElementPattern.Capture<PsiElement> functionPattern = PlatformPatterns
+            .psiElement(TwigTokenTypes.LBRACE_SQ)
+            .afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                )
+            );
+
+        return
+            PlatformPatterns.or(
+                // {{ foo(['fo<caret>obar']) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                        TwigTokenTypes.SINGLE_QUOTE,
+                        TwigTokenTypes.DOUBLE_QUOTE
+                    )).afterLeafSkipping(
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        functionPattern
+                    )
+                ).withLanguage(TwigLanguage.INSTANCE),
+
+                // {{ foo(['foobar', 'foo<caret>bar']) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                        TwigTokenTypes.SINGLE_QUOTE,
+                        TwigTokenTypes.DOUBLE_QUOTE
+                    )).afterLeafSkipping(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                            PlatformPatterns.or(
+                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                                PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                                PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                            ),
+                            functionPattern
+                        )
+                    )
+                ).withLanguage(TwigLanguage.INSTANCE)
+            );
     }
 
     /**

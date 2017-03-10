@@ -28,8 +28,15 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
     public void register(GotoCompletionRegistrarParameter registrar) {
         // {% is_granted('foobar') %}
+        // {% is_granted({'foobar'}) %}
+        // {% is_granted(['foobar']) %}
         registrar.register(
-            TwigHelper.getPrintBlockOrTagFunctionPattern("is_granted"), MyVisitorGotoCompletionProvider::new
+            PlatformPatterns.or(
+                TwigHelper.getPrintBlockOrTagFunctionPattern("is_granted"),
+                TwigHelper.getFunctionWithFirstParameterAsArrayPattern("is_granted"),
+                TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("is_granted")
+            ),
+            MyVisitorGotoCompletionProvider::new
         );
 
         // Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface::isGranted %}
