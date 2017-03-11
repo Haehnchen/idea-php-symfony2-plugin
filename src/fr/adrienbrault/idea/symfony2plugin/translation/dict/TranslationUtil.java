@@ -44,6 +44,8 @@ import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -355,6 +357,36 @@ public class TranslationUtil {
 
         String extension = psiFile.getVirtualFile().getExtension();
         return "xlf".equalsIgnoreCase(extension) || "xliff".equalsIgnoreCase(extension);
+    }
+
+    /**
+     * Translation placeholder extraction:
+     * "%limit%", "{{ limit }}", "{{limit}}",
+     * "@username", "!username", "%username"
+     */
+    @NotNull
+    public static Set<String> getPlaceholderFromTranslation(@NotNull String text) {
+        Set<String> placeholder = new HashSet<>();
+
+        // best practise
+        Matcher matcher = Pattern.compile("(%[^%^\\s]*%)").matcher(text);
+        while(matcher.find()){
+            placeholder.add(matcher.group(1));
+        }
+
+        // validator
+        matcher = Pattern.compile("(\\{\\{\\s*[^{]*\\s*}})").matcher(text);
+        while(matcher.find()){
+            placeholder.add(matcher.group(1));
+        }
+
+        // Drupal
+        matcher = Pattern.compile("([@|!|%][^\\s][\\w-]*)[\\s]*").matcher(text);
+        while(matcher.find()){
+            placeholder.add(matcher.group(1));
+        }
+
+        return placeholder;
     }
 
     private static void visitNodes(@NotNull String xpath, @NotNull Set<String> set, @NotNull Document document) {

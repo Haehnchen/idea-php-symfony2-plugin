@@ -1,20 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.dict;
 
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.xml.XmlFileTypeFactory;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -115,5 +113,31 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertNotNull(ContainerUtil.find(files, psiElement ->
             psiElement instanceof XmlTag && "foo".equals(((XmlTag) psiElement).getValue().getText()))
         );
+    }
+
+    public void testGetPlaceholderFromTranslation() {
+        Set<String> placeholder = TranslationUtil.getPlaceholderFromTranslation(
+            "YAML Symfony2 %foobar% %foobar2% %foo-bar2% %foo_bar2% %foo bar2% {{ limit }} {{limit2}} is great"
+        );
+
+        assertContainsElements(placeholder, "%foobar%", "%foobar2%", "%foo-bar2%", "%foo_bar2%");
+        assertContainsElements(placeholder, "{{ limit }}", "{{limit2}}");
+    }
+
+    public void testGetPlaceholderFromTranslationForDrupalStyle() {
+        Set<String> placeholder = TranslationUtil.getPlaceholderFromTranslation(
+            "@username @username2@, !user1 !user2, %foo bar %fo-_-aa-o"
+        );
+
+        assertContainsElements(placeholder, "@username", "@username2", "!user1", "%foo", "%fo-_-aa-o");
+        assertFalse(placeholder.contains("@username2@"));
+    }
+
+    public void testGetPlaceholderFromTranslationForDrupalStyle2() {
+        Set<String> placeholder = TranslationUtil.getPlaceholderFromTranslation(
+            "Updated URL for feed %title to %url."
+        );
+
+        assertContainsElements(placeholder, "%title", "%url");
     }
 }

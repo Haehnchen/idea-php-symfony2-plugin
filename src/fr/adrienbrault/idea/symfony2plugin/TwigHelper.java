@@ -9,12 +9,14 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
+import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.twig.TwigFile;
@@ -614,6 +616,61 @@ public class TwigHelper {
                 )
             )
             .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {{ foo({'foo<caret>bar': 'foo'}}) }}
+     * {{ foo({'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
+     */
+    public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsKeyLiteralPattern(@NotNull String... functionName) {
+        //noinspection unchecked
+        PsiElementPattern.Capture<PsiElement> function = PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+        );
+
+        return
+            PlatformPatterns.or(
+                // {{ foo({'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.COLON),
+                            PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL).withParent(function)
+                    )
+                ).withLanguage(TwigLanguage.INSTANCE),
+                // {{ foo({'foo<caret>bar': 'foo'}}) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
+                )
+                    .withParent(function)
+                    .withLanguage(TwigLanguage.INSTANCE)
+            );
     }
 
     /**
