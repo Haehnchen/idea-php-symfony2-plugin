@@ -74,7 +74,7 @@ public class RouteHelper {
         "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
     );
 
-    public static LookupElement[] getRouteParameterLookupElements(Project project, String routeName) {
+    public static LookupElement[] getRouteParameterLookupElements(@NotNull Project project, @NotNull String routeName) {
         List<LookupElement> lookupElements = new ArrayList<>();
 
         Route route = RouteHelper.getRoute(project, routeName);

@@ -9,14 +9,13 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
-import com.intellij.util.ProcessingContext;
+import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.twig.TwigFile;
@@ -40,7 +39,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterat
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -1180,6 +1178,10 @@ public class TwigHelper {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {{ path('_profiler_info', {'<caret>'}) }}
+     * {{ path('_profiler_info', {'foobar': 'foobar', '<caret>'}) }}
+     */
     public static ElementPattern<PsiElement> getPathAfterLeafPattern() {
         //noinspection unchecked
         return PlatformPatterns
@@ -1196,7 +1198,25 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
                 )
             )
-            .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path")))
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).withParent(
+                            PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path"))
+                        )
+                    )
+                )
+            )
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
@@ -1739,17 +1759,54 @@ public class TwigHelper {
      * path('route', {'<parameter>': '', '<parameter2>': ''
      */
     @Nullable
-    public static String getMatchingRouteNameOnParameter(PsiElement startPsiElement) {
-        String prevText = PhpElementsUtil.getPrevSiblingAsTextUntil(startPsiElement, TwigHelper.getRoutePattern(), true);
-
-        String regex = "^path\\(([\"|'])([\\w-]+)\\1[\\s]*,[\\s]*\\{[\\s]*.*['|\"]$";
-        Matcher matcher = Pattern.compile(regex).matcher(prevText.replace("\r\n", " ").replace("\n", " "));
-
-        if (matcher.find()) {
-            return matcher.group(2);
+    public static String getMatchingRouteNameOnParameter(@NotNull PsiElement startPsiElement) {
+        PsiElement parent = startPsiElement.getParent();
+        if(parent.getNode().getElementType() != TwigElementTypes.LITERAL) {
+            return null;
         }
 
-        return null;
+        final String[] text = {null};
+        PsiElementUtils.getPrevSiblingOnCallback(parent, psiElement -> {
+            IElementType elementType = psiElement.getNode().getElementType();
+            if(elementType == TwigTokenTypes.STRING_TEXT) {
+
+                // Only valid string parameter "('foobar',"
+                if(getFirstFunctionParameterAsStringPattern().accepts(psiElement)){
+                    text[0] = psiElement.getText();
+                };
+
+                return false;
+            }
+
+            // exit on invalid items
+            return
+                psiElement instanceof PsiWhiteSpace ||
+                elementType == TwigTokenTypes.WHITE_SPACE ||
+                elementType == TwigTokenTypes.COMMA ||
+                elementType == TwigTokenTypes.SINGLE_QUOTE  ||
+                elementType == TwigTokenTypes.DOUBLE_QUOTE
+            ;
+        });
+
+        return text[0];
+    }
+
+    /**
+     * Only a parameter is valid "('foobar',"
+     */
+    @NotNull
+    private static PsiElementPattern.Capture<PsiElement> getFirstFunctionParameterAsStringPattern() {
+        // string wrapped elements
+        ElementPattern[] elementPatterns = {
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+        };
+
+        return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .beforeLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA))
+            .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.LBRACE));
     }
 
     public static Set<String> getTwigMacroSet(Project project) {

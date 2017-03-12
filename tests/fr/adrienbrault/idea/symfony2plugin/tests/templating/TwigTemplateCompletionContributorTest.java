@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +21,7 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         super.setUp();
         myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+        myFixture.copyFileToProject("routing.xml");
     }
 
     public String getTestDataPath() {
@@ -78,6 +80,11 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
 
     public void testThatConstantProvidesCompletionForClassAndDefine() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
+    }
+
+    public void testCompletionForRoutingParameter() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ path('xml_route', {'<caret>']) }}", "slug");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {'sl<caret>ug']) }}", PlatformPatterns.psiElement());
     }
 
     public void testInsertHandlerForTwigFunctionWithStringParameter() {

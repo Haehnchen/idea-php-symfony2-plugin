@@ -26,7 +26,7 @@ namespace FooBundle\Controller
 {
     class FooController
     {
-        public function barAction() {}
+        public function barAction($slug) {}
     }
 }
 

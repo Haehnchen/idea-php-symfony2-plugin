@@ -355,6 +355,42 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         ));
     }
 
+    /**
+     * @see TwigHelper#getPathAfterLeafPattern
+     */
+    public void testGetPathAfterLeafPattern() {
+        assertTrue(TwigHelper.getPathAfterLeafPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'f<caret>o'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getPathAfterLeafPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getPathAfterLeafPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'f': 'f', 'f': 'f', 'f<caret>a': 'f'}) }}")
+        ));
+    }
+
+    /**
+     * @see TwigHelper#getMatchingRouteNameOnParameter
+     */
+    public void testGetMatchingRouteNameOnParameter() {
+        assertEquals(
+            "foo",
+            TwigHelper.getMatchingRouteNameOnParameter(findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'f<caret>o'}) }}"))
+        );
+
+        assertEquals(
+            "foo",
+            TwigHelper.getMatchingRouteNameOnParameter(findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'f': 'f', 'f': 'f', 'f<caret>a': 'f'}) }}"))
+        );
+
+        assertNull(
+            TwigHelper.getMatchingRouteNameOnParameter(findElementAt(TwigFileType.INSTANCE, "{{ path('foo' ~ 'foo', {'f<caret>o'}) }}"))
+        );
+    }
+
     private void assertEqual(Collection<String> c, String... values) {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));
