@@ -674,6 +674,68 @@ public class TwigHelper {
     }
 
     /**
+     * {{ foo(12, {'foo<caret>bar': 'foo'}}) }}
+     * {{ foo(12, {'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
+     */
+    public static ElementPattern<PsiElement> getFunctionWithSecondParameterAsKeyLiteralPattern(@NotNull String... functionName) {
+        //noinspection unchecked
+        PsiElementPattern.Capture<PsiElement> parameterPattern = PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.NUMBER),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.CONCAT),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER),
+                    PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOT)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.NUMBER)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                )
+            )
+        );
+
+        return
+            PlatformPatterns.or(
+                // {{ foo({'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).withParent(parameterPattern)
+                ).withLanguage(TwigLanguage.INSTANCE),
+                // {{ foo(12, {'foo<caret>bar': 'foo'}}) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL).withParent(parameterPattern)
+                )
+                    .withLanguage(TwigLanguage.INSTANCE)
+            );
+    }
+
+    /**
      * Array values are not detected by lexer, lets do the magic on our own
      *
      * {{ foo(['foobar', 'foo<caret>bar']) }}

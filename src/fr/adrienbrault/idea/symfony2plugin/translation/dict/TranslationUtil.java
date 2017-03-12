@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -24,13 +25,16 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -52,6 +56,11 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
+    private static final String[] XLIFF_XPATH = {
+        "//xliff/file/body/trans-unit/source",
+        "//xliff/file/group/unit/segment/source",
+        "//xliff/file/unit/segment/source"
+    };
 
     static public VirtualFile[] getDomainFilePsiElements(Project project, String domainName) {
 
@@ -326,28 +335,31 @@ public class TranslationUtil {
     }
 
     @NotNull
-    public static Set<String> getXliffTranslations(InputStream content) {
-
+    public static Set<String> getXliffTranslations(@NotNull InputStream content) {
         Set<String> set = new HashSet<>();
 
+        visitXliffTranslations(content, pair -> set.add(pair.getFirst()));
+
+        return set;
+    }
+
+    private static void visitXliffTranslations(@NotNull InputStream content, @NotNull Consumer<Pair<String, Node>> consumer) {
         Document document;
 
         try {
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             document = documentBuilder.parse(content);
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            return set;
+            return;
         }
 
         if(document == null) {
-            return set;
+            return;
         }
 
-        for (String s : new String[]{"//xliff/file/body/trans-unit/source", "//xliff/file/group/unit/segment/source", "//xliff/file/unit/segment/source"}) {
-            visitNodes(s, set, document);
+        for (String s : XLIFF_XPATH) {
+            visitNodes(s, document, consumer);
         }
-
-        return set;
     }
 
     public static boolean isSupportedXlfFile(@NotNull PsiFile psiFile) {
@@ -389,7 +401,47 @@ public class TranslationUtil {
         return placeholder;
     }
 
-    private static void visitNodes(@NotNull String xpath, @NotNull Set<String> set, @NotNull Document document) {
+    /**
+     * Extract common placeholder pattern from translation content
+     */
+    @NotNull
+    public static Set<String> getPlaceholderFromTranslation(@NotNull Project project, @NotNull String key, @NotNull String domain) {
+        Set<String> placeholder = new HashSet<>();
+        Set<VirtualFile> visitedXlf = new HashSet<>();
+
+        for (PsiElement element : TranslationUtil.getTranslationPsiElements(project, key, domain)) {
+            if (element instanceof YAMLScalar) {
+                String textValue = ((YAMLScalar) element).getTextValue();
+                if(StringUtils.isBlank(textValue)) {
+                    continue;
+                }
+
+                placeholder.addAll(
+                    TranslationUtil.getPlaceholderFromTranslation(textValue)
+                );
+            } else if("xlf".equalsIgnoreCase(element.getContainingFile().getVirtualFile().getExtension()) || "xliff".equalsIgnoreCase(element.getContainingFile().getVirtualFile().getExtension())) {
+                VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
+
+                // visiting on file scope because we dont rely on xlf and xliff registered as XML file
+                // dont visit file twice
+                if(!visitedXlf.contains(virtualFile)) {
+                    try {
+                        visitXliffTranslations(
+                            element.getContainingFile().getVirtualFile().getInputStream(),
+                            new MyXlfTranslationConsumer(placeholder, key)
+                        );
+                    } catch (IOException ignored) {
+                    }
+                }
+
+                visitedXlf.add(virtualFile);
+            }
+        }
+
+        return placeholder;
+    }
+
+    private static void visitNodes(@NotNull String xpath, @NotNull Document document, @NotNull Consumer<Pair<String, Node>> consumer) {
         Object result;
         try {
             // @TODO: xpath should not use "file/body"
@@ -408,7 +460,57 @@ public class TranslationUtil {
             Element node = (Element) nodeList.item(i);
             String textContent = node.getTextContent();
             if(org.apache.commons.lang.StringUtils.isNotBlank(textContent)) {
-                set.add(textContent);
+                consumer.consume(Pair.create(textContent, node));
+            }
+        }
+    }
+
+    /**
+     * <trans-unit id="29">
+     *  <source>foo</source>
+     *  <target>foo</target>
+     * </trans-unit>
+     */
+    private static class MyXlfTranslationConsumer implements Consumer<Pair<String, Node>> {
+        @NotNull
+        private final Set<String> placeholder;
+
+        @NotNull
+        private final String key;
+
+        MyXlfTranslationConsumer(@NotNull Set<String> placeholder, @NotNull String key) {
+            this.placeholder = placeholder;
+            this.key = key;
+        }
+
+        @Override
+        public void consume(Pair<String, Node> pair) {
+            if(!(pair.getSecond() instanceof Element) || !"source".equalsIgnoreCase(pair.getSecond().getNodeName())) {
+                return;
+            }
+
+            Element source = (Element) pair.getSecond();
+            if(!key.equalsIgnoreCase(source.getTextContent())) {
+                return;
+            }
+
+            visitNodeText(source);
+
+            Node transUnit = source.getParentNode();
+            if(transUnit instanceof Element) {
+                NodeList target = ((Element) transUnit).getElementsByTagName("target");
+                if(target.getLength() > 0) {
+                    visitNodeText(target.item(0));
+                }
+            }
+        }
+
+        private void visitNodeText(@NotNull Node target) {
+            String nodeValue = target.getTextContent();
+            if(StringUtils.isNotBlank(nodeValue)) {
+                placeholder.addAll(
+                    TranslationUtil.getPlaceholderFromTranslation(nodeValue)
+                );
             }
         }
     }

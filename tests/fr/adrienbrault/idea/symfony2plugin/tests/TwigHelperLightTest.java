@@ -326,6 +326,35 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         ));
     }
 
+    /**
+     * @see TwigHelper#getFunctionWithSecondParameterAsKeyLiteralPattern
+     */
+    public void testGetFunctionWithSecondParameterAsKeyLiteralPattern() {
+        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar(12, {'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar(12, {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar(foo.foo, {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar('foo', {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar(\"foo\", {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar('f' ~ 'oo', {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+    }
+
     private void assertEqual(Collection<String> c, String... values) {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));

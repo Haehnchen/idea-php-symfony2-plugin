@@ -44,6 +44,28 @@ public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLi
         );
     }
 
+    public void testCompletionForTwigTransChoicePlaceholder() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ 'symfony.great'|transchoice(12, {'fo<caret>f'}, 'symfony')) }}",
+            "%foobar%"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ 'symfony.great'|transchoice(12, {'foobar': 'foobar', 'fo<caret>f'}, 'symfony')) }}",
+            "%foobar%"
+        );
+    }
+
+    public void testNavigationForTwigTransChoicePlaceholder() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ 'symfony.great'|transchoice(12, {'foobar': 'foobar', '%foo<caret>bar%'}, 'symfony')) }}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
     public void testCompletionForPhpTransPlaceholder() {
         assertCompletionContains(
             PhpFileType.INSTANCE,"<?php\n" +
@@ -72,6 +94,38 @@ public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLi
             PhpFileType.INSTANCE,"<?php\n" +
                 "/** @var $x \\Symfony\\Component\\Translation\\TranslatorInterface */\n" +
                 "$x->trans('symfony.great', ['%fo<caret>obar%', null], 'symfony')",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testCompletionForPhpTransChoicePlaceholder() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Translation\\TranslatorInterface */\n" +
+                "$x->transChoice('symfony.great', 2, ['<caret>'], 'symfony')",
+            "%foobar%"
+        );
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Translation\\TranslatorInterface */\n" +
+                "$x->transChoice('symfony.great', 2, ['<caret>', null], 'symfony')",
+            "%foobar%"
+        );
+    }
+
+    public void testNavigationForPhpTransChoicePlaceholder() {
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Translation\\TranslatorInterface */\n" +
+                "$x->transChoice('symfony.great', 2, ['%fo<caret>obar%'], 'symfony')",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Translation\\TranslatorInterface */\n" +
+                "$x->transChoice('symfony.great', 2, ['%fo<caret>obar%', null], 'symfony')",
             PlatformPatterns.psiElement()
         );
     }

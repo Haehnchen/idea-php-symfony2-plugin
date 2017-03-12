@@ -25,6 +25,8 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         myFixture.copyFileToProject("apple.de.yml", "Resources/translations/apple.de.yml");
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
+        myFixture.copyFileToProject("symfony.de.yml", "Resources/translations/symfony.de.yml");
+        myFixture.copyFileToProject("symfony.de.xlf", "Resources/translations/symfony.de.xlf");
     }
 
     public String getTestDataPath() {
@@ -139,5 +141,13 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         );
 
         assertContainsElements(placeholder, "%title", "%url");
+    }
+
+    public void testGetPlaceholderFromTranslationForKeyAndDomain() {
+        Set<String> placeholder = TranslationUtil.getPlaceholderFromTranslation(
+            getProject(), "my_foobar", "symfony"
+        );
+
+        assertContainsElements(placeholder, "%yaml_foobar%", "%xliff_foobar%");
     }
 }
