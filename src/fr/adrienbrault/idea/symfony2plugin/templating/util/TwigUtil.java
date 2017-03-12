@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -40,6 +41,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -273,39 +275,76 @@ public class TwigUtil {
     /**
      * Extract translation domain parameter
      * trans({}, 'Domain')
+     * transchoice(2, {}, 'Domain')
      */
     @Nullable
     public static String getDomainTrans(@NotNull PsiElement psiElement) {
-
-        // we only get a PRINT_BLOCK with a huge flat list of psi elements
-        // parsing this would be harder than use regex
-        // {{ 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain') }}
-
-        // @TODO: some more conditions needed here
-        // search in twig project for regex
-        // check for better solution; think of nesting
-
-        PsiElement parentPsiElement = psiElement.getParent();
-        if(parentPsiElement == null) {
+        PsiElement filter = PsiElementUtils.getNextSiblingAndSkip(psiElement, TwigTokenTypes.FILTER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE);
+        if(!PsiElementAssertUtil.isNotNullAndIsElementType(filter, TwigTokenTypes.FILTER)) {
             return null;
         }
 
-        String str = parentPsiElement.getText();
-
-        // @TODO: in another life dont use regular expression to find twig parameter :)
-
-        String regex = "\\|\\s*trans\\s*\\(\\s*[\\{|\\[].*?[\\}|\\]]\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
-
-        if (matcher.find()) {
-            return matcher.group(1);
+        PsiElement filterName = PsiTreeUtil.nextVisibleLeaf(filter);
+        if(!PsiElementAssertUtil.isNotNullAndIsElementType(filterName, TwigTokenTypes.IDENTIFIER)) {
+            return null;
         }
 
-        regex = "\\|\\s*transchoice\\s*\\(\\s*\\w*\\s*,\\s*[\\{|\\[].*?[\\}|\\]]\\s*,\\s*['\"]([\\w-]+)['\"]\\s*\\)";
-        matcher = Pattern.compile(regex).matcher(str.replace("\r\n", " ").replace("\n", " "));
+        // Elements that match a simple parameter foo(<caret>,)
+        IElementType[] skipArrayElements = {
+            TwigElementTypes.LITERAL, TwigTokenTypes.LBRACE_SQ, TwigTokenTypes.RBRACE_SQ, TwigTokenTypes.IDENTIFIER
+        };
 
-        if (matcher.find()) {
-            return matcher.group(1);
+        String filterNameText = filterName.getText();
+        if("trans".equalsIgnoreCase(filterNameText)) {
+            PsiElement brace = PsiTreeUtil.nextVisibleLeaf(filterName);
+            if (PsiElementAssertUtil.isNotNullAndIsElementType(brace, TwigTokenTypes.LBRACE)) {
+                PsiElement comma = PsiElementUtils.getNextSiblingAndSkip(brace, TwigTokenTypes.COMMA, skipArrayElements);
+                if(comma != null) {
+                    String text = extractDomainFromParameter(comma);
+                    if (text != null) {
+                        return text;
+                    }
+                }
+            }
+        } else if ("transchoice".equalsIgnoreCase(filterNameText)) {
+            PsiElement brace = PsiTreeUtil.nextVisibleLeaf(filterName);
+            if (PsiElementAssertUtil.isNotNullAndIsElementType(brace, TwigTokenTypes.LBRACE)) {
+                // skip elements which are possible a parameter variable and are between commas
+                IElementType[] skipElements = {
+                    TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.NUMBER,
+                    TwigTokenTypes.STRING_TEXT, TwigTokenTypes.DOT, TwigTokenTypes.IDENTIFIER,
+                    TwigTokenTypes.CONCAT, TwigTokenTypes.PLUS, TwigTokenTypes.MINUS,
+                };
+
+                PsiElement comma1 = PsiElementUtils.getNextSiblingAndSkip(brace, TwigTokenTypes.COMMA, skipElements);
+                if(comma1 != null) {
+                    PsiElement comma2 = PsiElementUtils.getNextSiblingAndSkip(comma1, TwigTokenTypes.COMMA, skipArrayElements);
+                    if(comma2 != null) {
+                        String text = extractDomainFromParameter(comma2);
+                        if (text != null) {
+                            return text;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * ({}, "foobar", )
+     */
+    @Nullable
+    private static String extractDomainFromParameter(@NotNull PsiElement comma) {
+        if (PsiElementAssertUtil.isNotNullAndIsElementType(comma, TwigTokenTypes.COMMA)) {
+            PsiElement quote = PsiTreeUtil.nextVisibleLeaf(comma);
+            if (PsiElementAssertUtil.isNotNullAndIsElementType(quote, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE)) {
+                PsiElement text = PsiTreeUtil.nextVisibleLeaf(quote);
+                if (text != null && TwigHelper.getParameterAsStringPattern().accepts(text)) {
+                    return text.getText();
+                }
+            }
         }
 
         return null;

@@ -9,13 +9,14 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
-import com.intellij.util.Processor;
+import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.twig.TwigFile;
@@ -86,6 +87,19 @@ public class TwigHelper {
         PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
         PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
     );
+
+    private static final ElementPattern[] PARAMETER_WHITE_LIST = new ElementPattern[]{
+        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+        PlatformPatterns.psiElement(TwigTokenTypes.NUMBER),
+        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+        PlatformPatterns.psiElement(TwigTokenTypes.CONCAT),
+        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER),
+        PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+        PlatformPatterns.psiElement(TwigTokenTypes.DOT)
+    };
 
     @Deprecated
     public static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project, boolean useTwig, boolean usePhp) {
@@ -621,30 +635,42 @@ public class TwigHelper {
      * {{ foo({'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
      */
     public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsKeyLiteralPattern(@NotNull String... functionName) {
-        return PlatformPatterns
-            // ",'foo'", {'foo'"
-            .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+        return PlatformPatterns.or(
+            PlatformPatterns
+                // ",'foo'", {'foo'"
+                .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL).withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                    )
+                )
+            ).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns
+                // ",'foo'", {'foo'"
+                .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
                 PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                    PlatformPatterns.psiElement().with(new MyBeforeColonAndInsideLiteralPatternCondition()),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COLON)
                 )
             )
-            // "foobar({"
-            .withParent(PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
-            ))
-            .withLanguage(TwigLanguage.INSTANCE);
+        );
     }
 
     /**
@@ -659,18 +685,7 @@ public class TwigHelper {
                 PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
             ),
             PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.NUMBER),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.CONCAT),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER),
-                    PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOT)
-                ),
+                PlatformPatterns.or(PARAMETER_WHITE_LIST),
                 PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
@@ -1124,21 +1139,28 @@ public class TwigHelper {
     }
 
     /**
-     * match ", 'dddd')" on ending
+     * trans({}, 'bar')
+     * trans(null, 'bar')
+     * transchoice(2, null, 'bar')
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
         //noinspection unchecked
+        ElementPattern[] whitespace = {
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+        };
+
+        ElementPattern[] placeholder = {
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOT),
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ),
+            PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
+        };
+
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
-            .beforeLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
-            )
             .afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -1146,10 +1168,57 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
-            )
-            .withParent(PlatformPatterns
-                .psiElement(TwigElementTypes.PRINT_BLOCK)
+                PlatformPatterns.or(
+                    // trans({}, 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(whitespace),
+                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_CURL).withParent(
+                            PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                                PlatformPatterns.or(whitespace),
+                                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                                    PlatformPatterns.or(whitespace),
+                                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans"))
+                                )
+                            )
+                        )
+                    ),
+                    // trans(null, 'bar')
+                    // trans(, 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(placeholder),
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                            PlatformPatterns.or(whitespace),
+                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans"))
+                        )
+                    ),
+                    // transchoice(2, {}, 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(whitespace),
+                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_CURL).withParent(
+                            PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                                PlatformPatterns.or(whitespace),
+                                PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                                    PlatformPatterns.or(PARAMETER_WHITE_LIST),
+                                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                                        PlatformPatterns.or(whitespace),
+                                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice"))
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    // transchoice(2, null, 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(placeholder),
+                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                            PlatformPatterns.or(PARAMETER_WHITE_LIST),
+                            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                                PlatformPatterns.or(whitespace),
+                                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice"))
+                            )
+                        )
+                    )
+                )
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
@@ -1785,6 +1854,24 @@ public class TwigHelper {
             .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.LBRACE));
     }
 
+    /**
+     * Only a parameter is valid ", 'foobar' [,)]"
+     */
+    @NotNull
+    public static PsiElementPattern.Capture<PsiElement> getParameterAsStringPattern() {
+        // string wrapped elements
+        ElementPattern[] elementPatterns = {
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+        };
+
+        return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .beforeLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.COMMA), PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)))
+            .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA));
+    }
+
     public static Set<String> getTwigMacroSet(Project project) {
         SymfonyProcessors.CollectProjectUniqueKeys ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeys(project, TwigMacroFunctionStubIndex.KEY);
         FileBasedIndexImpl.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, ymlProjectProcessor, project);
@@ -2228,6 +2315,27 @@ public class TwigHelper {
             twigPathContentIterator.processFile(virtualFile);
 
             return super.visitFile(virtualFile);
+        }
+    }
+
+    /**
+     * trans({
+     *  %some%': "button.reserve"|trans,
+     *  %vars%': "button.reserve"|trans({}, '<caret>')
+     * })
+     */
+    private static class MyBeforeColonAndInsideLiteralPatternCondition extends PatternCondition<PsiElement> {
+        MyBeforeColonAndInsideLiteralPatternCondition() {
+            super("BeforeColonAndInsideLiteralPattern");
+        }
+
+        @Override
+        public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+            IElementType elementType = psiElement.getNode().getElementType();
+            return
+                elementType != TwigTokenTypes.LBRACE_CURL &&
+                elementType != TwigTokenTypes.RBRACE_CURL &&
+                elementType != TwigTokenTypes.COLON;
         }
     }
 }

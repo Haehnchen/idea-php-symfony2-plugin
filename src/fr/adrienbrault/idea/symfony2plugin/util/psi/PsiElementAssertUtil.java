@@ -6,13 +6,15 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PsiElementAssertUtil {
 
-    public static boolean isNotNullAndIsElementType(@Nullable PsiElement psiElement, @NotNull IElementType iElementType) {
-        return psiElement != null && psiElement.getNode().getElementType() == iElementType;
+    public static boolean isNotNullAndIsElementType(@Nullable PsiElement psiElement, @NotNull IElementType... iElementType) {
+        return psiElement != null && Arrays.asList(iElementType).contains(psiElement.getNode().getElementType());
     }
 
     @Nullable

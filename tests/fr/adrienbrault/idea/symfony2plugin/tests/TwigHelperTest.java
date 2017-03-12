@@ -332,6 +332,14 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ foobar({'fo': 'f<caret>d'}) }}")
         ));
+
+        assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({}, 'a<caret>a'}")
+        ));
+
+        assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar( {foo({}, 'a<caret>a'}} )")
+        ));
     }
 
     /**
@@ -396,6 +404,59 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNull(
             TwigHelper.getMatchingRouteNameOnParameter(findElementAt(TwigFileType.INSTANCE, "{{ path('foo' ~ 'foo', {'f<caret>o'}) }}"))
+        );
+    }
+
+    /**
+     * @see TwigHelper#getParameterAsStringPattern
+     */
+    public void testGetParameterAsStringPattern() {
+        assertTrue(
+            TwigHelper.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('foo', 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('foo', 'f<caret>o', null) }}"))
+        );
+
+        assertFalse(
+            TwigHelper.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('f<caret>o') }}"))
+        );
+    }
+    /**
+     * @see TwigHelper#getTransDomainPattern
+     */
+    public void testGetTransDomainPattern() {
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans({}, 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans([], 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans(null, 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(2, {}, 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(2, null, 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(2, [], 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(test.test, [], 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(test ~ 'test', [], 'f<caret>o') }}"))
         );
     }
 

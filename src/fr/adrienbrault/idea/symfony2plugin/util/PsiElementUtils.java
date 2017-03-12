@@ -7,6 +7,8 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
@@ -323,6 +325,25 @@ public class PsiElementUtils {
             }
         }
         return elements;
+    }
+
+    @Nullable
+    public static PsiElement getNextSiblingAndSkip(@NotNull PsiElement psiElement, @NotNull IElementType find, @NotNull IElementType... skip) {
+        for (PsiElement child = psiElement.getNextSibling(); child != null; child = child.getNextSibling()) {
+            if(child.getNode().getElementType() == find) {
+                return child;
+            }
+
+            if(child instanceof PsiWhiteSpace) {
+                continue;
+            }
+
+            if(!Arrays.asList(skip).contains(child.getNode().getElementType())) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     @Nullable

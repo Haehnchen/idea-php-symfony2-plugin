@@ -92,12 +92,20 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "{{ '<caret>'|transchoice(3, {}, 'foo') }}",
             "{{ '<caret>'|transchoice(3, [], 'foo') }}",
             "{{ '<caret>'|trans({}, 'foo') }}",
+            "{{ '<caret>'   |   trans(    {}    ,   'foo'    ) }}",
             "{{ '<caret>'|trans([], 'foo') }}",
-            //@TODO "{{ '<caret>'|trans(, 'foo') }}",
+            "{{ '<caret>'|trans(, 'foo') }}",
+            "{{ '<caret>'|trans(null, 'foo') }}",
             "{{ '<caret>'|trans({'foo': 'foo', 'foo'}, 'foo') }}",
             "{{ '<caret>' | transchoice(count, {'%var%': value}, 'foo') }}",
             "{{ '<caret>' | transchoice(c, {'%var%': value}, 'foo') }}",
-            "{{ '<caret>' | transchoice(, {'%var%': value}, 'foo') }}"
+            "{{ '<caret>' | transchoice(, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>' | transchoice(foo.bar, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>' | transchoice(foo.bar ~ bar, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>' | transchoice(foo.bar + bar, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>' | transchoice(foo.bar - bar, {'%var%': value}, 'foo') }}",
+            "{{ '<caret>'|trans({'%some%': \"button.reserve\"|trans,}, 'foo') }}",
+            "{{ 'bar'|trans({'%some%': \"<caret>\"|trans({}, 'foo'),}) }}",
         };
 
         for (String s : blocks) {
