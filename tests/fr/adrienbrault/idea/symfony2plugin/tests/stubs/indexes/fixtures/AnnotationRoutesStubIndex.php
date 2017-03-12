@@ -25,6 +25,13 @@ namespace My
         public function getHeadAction()
         {
         }
+
+        /**
+         * @Route("/")
+         */
+        public function __invoke()
+        {
+        }
     }
 }
 

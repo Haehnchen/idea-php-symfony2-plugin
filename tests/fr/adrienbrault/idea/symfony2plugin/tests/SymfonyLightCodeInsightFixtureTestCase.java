@@ -41,7 +41,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
 import com.intellij.util.ui.UIUtil;
 import com.jetbrains.php.lang.psi.elements.Function;
@@ -402,7 +402,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
             final Collection<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
 
-            FileBasedIndexImpl.getInstance().getFilesWithKey(id, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+            FileBasedIndex.getInstance().getFilesWithKey(id, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
                     virtualFiles.add(virtualFile);
@@ -419,11 +419,11 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
     }
 
     public void assertIndexContainsKeyWithValue(@NotNull ID<String, String> id, @NotNull String key, @NotNull String value) {
-        assertContainsElements(FileBasedIndexImpl.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject())), value);
+        assertContainsElements(FileBasedIndex.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject())), value);
     }
 
     public <T> void assertIndexContainsKeyWithValue(@NotNull ID<String, T> id, @NotNull String key, @NotNull IndexValue.Assert<T> tAssert) {
-        List<T> values = FileBasedIndexImpl.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject()));
+        List<T> values = FileBasedIndex.getInstance().getValues(id, key, GlobalSearchScope.allScope(getProject()));
         for (T t : values) {
             if(tAssert.match(t)) {
                 return;

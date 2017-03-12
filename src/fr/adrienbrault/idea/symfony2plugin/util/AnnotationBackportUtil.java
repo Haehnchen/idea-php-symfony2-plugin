@@ -233,7 +233,7 @@ public class AnnotationBackportUtil {
                 return content.substring(0, content.length() - "controller".length());
             }
             return content;
-        }), "_") + "_" + name.toLowerCase();
+        }), "_") + (!name.startsWith("_") ? "_" : "") + name.toLowerCase();
     }
 
     @Nullable

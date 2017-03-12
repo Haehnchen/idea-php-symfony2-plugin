@@ -65,6 +65,10 @@ public class AnnotationRoutesStubIndexTest extends SymfonyLightCodeInsightFixtur
         assertIndexContains(AnnotationRoutesStubIndex.KEY, "framework_extra_bundle_route");
     }
 
+    public void testThatRouteWithInvokeMustNotAddAdditionalUnderscore() {
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "my_post__invoke");
+    }
+
     private RouteInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
