@@ -67,4 +67,10 @@ public class StringUtils {
         return class1.startsWith(class2);
     }
 
+    /**
+     * Test for interpolated string "#{segment.typeKey}.html.twig"
+     */
+    public static boolean isInterpolatedString(@NotNull String content) {
+        return content.matches(".*#\\{[^{]*}.*");
+    }
 }

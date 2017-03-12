@@ -53,7 +53,7 @@ public class TwigAnnotator implements Annotator {
         }
 
         String text = element.getText();
-        if(StringUtils.isBlank(text)) {
+        if(StringUtils.isBlank(text) || fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString(text)) {
             return;
         }
 

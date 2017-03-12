@@ -6,6 +6,7 @@ import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @see fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection
  */
 public class TwigTranslationKeyInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -28,6 +29,14 @@ public class TwigTranslationKeyInspectionTest extends SymfonyLightCodeInsightFix
         assertLocalInspectionContains(
             "f.html.twig",
             "{% trans_default_domain symfony %}\n{{ 'f<caret>oo'|trans }}",
+            "Missing translation key"
+        );
+    }
+
+    public void testThatInterpolatedStringsMustNotInspected() {
+        assertLocalInspectionNotContains(
+            "f.html.twig",
+            "{{ 'ti<caret>tle.#{word}'|trans({}, 'symfony')) }}",
             "Missing translation key"
         );
     }

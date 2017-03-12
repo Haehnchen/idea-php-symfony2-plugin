@@ -40,7 +40,7 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
             }
 
             String text = psiElement.getText();
-            if(StringUtils.isBlank(text)) {
+            if(StringUtils.isBlank(text) || fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString(text)) {
                 super.visitElement(psiElement);
                 return;
             }
