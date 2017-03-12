@@ -322,7 +322,15 @@ public class TwigHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         ));
 
         assertTrue(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo': 'foobar', 'fo': 'foobar', 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertTrue(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo': 'foobar'  ~ 'foobar' , 'f<caret>o': 'foobar'}) }}")
+        ));
+
+        assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'fo': 'f<caret>d'}) }}")
         ));
     }
 

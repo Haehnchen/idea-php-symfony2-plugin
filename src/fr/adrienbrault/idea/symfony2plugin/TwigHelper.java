@@ -621,54 +621,30 @@ public class TwigHelper {
      * {{ foo({'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
      */
     public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsKeyLiteralPattern(@NotNull String... functionName) {
-        //noinspection unchecked
-        PsiElementPattern.Capture<PsiElement> function = PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
-            PlatformPatterns.or(
-                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-            ),
-            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
-        );
-
-        return
-            PlatformPatterns.or(
-                // {{ foo({'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
-                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.COLON),
-                            PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL).withParent(function)
-                    )
-                ).withLanguage(TwigLanguage.INSTANCE),
-                // {{ foo({'foo<caret>bar': 'foo'}}) }}
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
+        return PlatformPatterns
+            // ",'foo'", {'foo'"
+            .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
                 )
-                    .withParent(function)
-                    .withLanguage(TwigLanguage.INSTANCE)
-            );
+            )
+            // "foobar({"
+            .withParent(PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+            ))
+            .withLanguage(TwigLanguage.INSTANCE);
     }
 
     /**
