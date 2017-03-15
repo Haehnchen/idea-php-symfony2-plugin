@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.137</version>
+    <version>0.13.138</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -106,6 +106,18 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.13.138</h2>
+<ul>
+    <li>Use intention for Twig key creation, drop redundant warnings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/443">#443</a></li>
+    <li>Fix roles completing/goto not working with array call <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/886">#886</a></li>
+    <li>Add support for translations placeholder in Twig and PHP <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/631">#631</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/528">#528</a></li>
+    <li>Fix routing path parameter completion in Twig; use newly literal lexer element and drop regular expression for route name extractio</li>
+    <li>Ignore interpolated strings in Twig "path" / "trans" annotator and inspections <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/884">#884</a></li>
+    <li>Fix incorrect resolving of Routes with too many underscores on new __invoke controller action in annotations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/881">#881</a></li>
+    <li>Drop regular expression for trans filter in Twig, trust and use lexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/877">#877</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/814">#814</a>, <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/716">#716</a></li>
+    <li>Support absolute urls in profiler <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/880">#880</a></li>
+</ul>
+
 <h2>0.13.137</h2>
 <ul>
     <li>Fix npe in route indexing <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/874">#874</a></li>

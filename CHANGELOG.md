@@ -8,6 +8,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.13.138
+* Use intention for Twig key creation, drop redundant warnings [#443](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/443)
+* Fix roles completing/goto not working with array call [#886](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/886)
+* Add support for translations placeholder in Twig and PHP [#631](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/631) [#528](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/528)
+* Fix routing path parameter completion in Twig; use newly literal lexer element and drop regular expression for route name extractio
+* Ignore interpolated strings in Twig "path" / "trans" annotator and inspections [#884](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/884)
+* Fix incorrect resolving of Routes with too many underscores on new __invoke controller action in annotations [#881](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/881)
+* Drop regular expression for trans filter in Twig, trust and use lexer [#877](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/877), [#814](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/814), [#716](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/716)
+* Support absolute urls in profiler [#880](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/880)
+
 ## 0.13.137
 * Fix npe in route indexing [#874](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/874)
 * Fix parameter autocomplete double percentages [#871](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/871)
