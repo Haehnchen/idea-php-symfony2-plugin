@@ -508,7 +508,7 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationDomainInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="TwigTranslationDomain" displayName="Twig: Missing translation key"
+        <localInspection groupPath="Symfony" shortName="TwigTranslationKeyInspection" displayName="Twig: Missing translation key"
                          groupName="Translation"
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
