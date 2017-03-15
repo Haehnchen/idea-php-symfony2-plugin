@@ -47,6 +47,13 @@ public class HttpProfilerIndex implements ProfilerIndexInterface {
     @Nullable
     @Override
     public String getUrlForRequest(@NotNull ProfilerRequestInterface request) {
-        return this.url  + "/" + StringUtils.stripStart(request.getProfilerUrl(), "/");
+        String profilerUrl = request.getProfilerUrl();
+
+        // already absolute url given
+        if(profilerUrl.startsWith("http://") || profilerUrl.startsWith("https://")) {
+            return profilerUrl;
+        }
+
+        return this.url  + "/" + StringUtils.stripStart(profilerUrl, "/");
     }
 }
