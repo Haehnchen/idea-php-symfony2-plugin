@@ -37,6 +37,18 @@ public class VoterUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(consumer.getValues(), "FOOBAR_ARRAY_3", "FOOBAR_ARRAY_4");
 
         assertContainsElements(consumer.getValues(), "FOOBAR_CASE_1", "FOOBAR_CASE_2");
+
+        assertContainsElements(consumer.getValues(), "FOOBAR_ATTRIBUTES_IN_CONST_1", "FOOBAR_ATTRIBUTES_IN_PROPERTY_1");
+    }
+
+    /**
+     * @see VoterUtil#visitAttribute
+     */
+    public void testVoterAttributeForPhpFileInForeach() {
+        VoterUtil.StringPairConsumer consumer = new VoterUtil.StringPairConsumer();
+        VoterUtil.visitAttribute(getProject(), consumer);
+
+        assertContainsElements(consumer.getValues(), "FOOBAR_EACH_1", "FOOBAR_ATTRIBUTES_IN_ARRAY");
     }
 
     public void testVoterAttributeForPhpFileWithTarget() {

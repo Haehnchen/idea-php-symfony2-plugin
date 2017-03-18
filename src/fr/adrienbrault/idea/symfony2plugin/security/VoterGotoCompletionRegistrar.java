@@ -4,7 +4,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -17,9 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -81,9 +81,21 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
-            VoterUtil.visitAttribute(getProject(), pair ->
-                lookupElements.add(LookupElementBuilder.create(pair.getFirst()).withIcon(Symfony2Icons.SYMFONY))
-            );
+            Set<String> elements = new HashSet<>();
+
+            VoterUtil.visitAttribute(getProject(), pair -> {
+                String name = pair.getFirst();
+                if(!elements.contains(name)) {
+                    LookupElementBuilder lookupElement = LookupElementBuilder.create(name).withIcon(Symfony2Icons.SYMFONY);
+                    PhpClass phpClass = PsiTreeUtil.getParentOfType(pair.getSecond(), PhpClass.class);
+                    if(phpClass != null) {
+                        lookupElement = lookupElement.withTypeText(phpClass.getName(), true);
+                    }
+
+                    lookupElements.add(lookupElement);
+                    elements.add(name);
+                }
+            });
 
             return lookupElements;
         }

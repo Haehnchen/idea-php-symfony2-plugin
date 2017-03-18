@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
@@ -13,6 +14,7 @@ import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +42,13 @@ public class VoterUtil {
             Method voteOnAttribute = phpClass.findMethodByName("voteOnAttribute");
             if(voteOnAttribute != null) {
                 visitAttribute(voteOnAttribute, consumer);
+            }
+        }
+
+        for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface")) {
+            Method vote = phpClass.findMethodByName("vote");
+            if(vote != null) {
+                visitAttributeForeach(vote, consumer);
             }
         }
 
@@ -107,6 +116,46 @@ public class VoterUtil {
                         // roles: [FOOBAR, FOOBAR_1]
                         for (String item : YamlHelper.getYamlArrayValuesAsString((YAMLSequence) value2)) {
                             consumer.accept(Pair.create(item, value2));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void visitAttributeForeach(@NotNull Method method, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        Parameter[] parameters = method.getParameters();
+        if(parameters.length < 3) {
+            return;
+        }
+
+        for (Variable variable : PhpElementsUtil.getVariablesInScope(method, parameters[2])) {
+            // foreach ($attributes as $attribute)
+            PsiElement psiElement = PsiTreeUtil.nextVisibleLeaf(variable);
+            if(psiElement != null && psiElement.getNode().getElementType() == PhpTokenTypes.kwAS) {
+                PsiElement parent = variable.getParent();
+                if(!(parent instanceof ForeachStatement)) {
+                    continue;
+                }
+
+                PhpPsiElement variableDecl = variable.getNextPsiSibling();
+                if(variableDecl instanceof Variable) {
+                    for (Variable variable1 : PhpElementsUtil.getVariablesInScope(parent, (Variable) variableDecl)) {
+                        visitVariable(variable1, consumer);
+                    }
+                }
+            }
+
+            // in_array('foobar', $attributes)
+            PsiElement parameterList = variable.getParent();
+            if(parameterList instanceof ParameterList && PsiElementUtils.getParameterIndexValue(variable) == 1) {
+                PsiElement functionCall = parameterList.getParent();
+                if(functionCall instanceof FunctionReference && "in_array".equalsIgnoreCase(((FunctionReference) functionCall).getName())) {
+                    PsiElement[] functionParameter = ((ParameterList) parameterList).getParameters();
+                    if(functionParameter.length > 0) {
+                        String stringValue = PhpElementsUtil.getStringValue(functionParameter[0]);
+                        if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
+                            consumer.accept(Pair.create(stringValue, functionParameter[0]));
                         }
                     }
                 }
@@ -194,18 +243,33 @@ public class VoterUtil {
                     }
                 }
             }
-        } else if(parent instanceof ParameterList) {
-            // in_array($x, ['FOOBAR'])
+        } else if(parent instanceof ParameterList && PsiElementUtils.getParameterIndexValue(resolve) == 0) {
+            // in_array($caret, X)
             PsiElement functionCall = parent.getParent();
             if(functionCall instanceof FunctionReference && "in_array".equalsIgnoreCase(((FunctionReference) functionCall).getName())) {
                 PsiElement[] functionParameter = ((ParameterList) parent).getParameters();
-                if(functionParameter.length > 1 && functionParameter[1] instanceof ArrayCreationExpression) {
-                    PsiElement[] psiElements = PsiTreeUtil.collectElements(functionParameter[1], psiElement -> psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE);
-                    for (PsiElement psiElement : psiElements) {
-                        PsiElement firstChild = psiElement.getFirstChild();
-                        String stringValue = PhpElementsUtil.getStringValue(firstChild);
-                        if(StringUtils.isNotBlank(stringValue)) {
-                            consumer.accept(Pair.create(stringValue, firstChild));
+                if(functionParameter.length > 1) {
+                    if(functionParameter[1] instanceof ArrayCreationExpression) {
+                        // in_array($x, ['FOOBAR'])
+                        PsiElement[] psiElements = PsiTreeUtil.collectElements(functionParameter[1], psiElement -> psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE);
+                        for (PsiElement psiElement : psiElements) {
+                            PsiElement firstChild = psiElement.getFirstChild();
+                            String stringValue = PhpElementsUtil.getStringValue(firstChild);
+                            if(StringUtils.isNotBlank(stringValue)) {
+                                consumer.accept(Pair.create(stringValue, firstChild));
+                            }
+                        }
+                    } else if(functionParameter[1] instanceof MemberReference) {
+                        // in_array($attribute, self::FOO);
+                        // in_array($attribute, $this->foo);
+                        PsiElement PsiReference = ((PsiReference) functionParameter[1]).resolve();
+                        if(PsiReference instanceof Field) {
+                            PsiElement defaultValue = ((Field) PsiReference).getDefaultValue();
+                            if(defaultValue instanceof ArrayCreationExpression) {
+                                for (String s : PhpElementsUtil.getArrayValuesAsString((ArrayCreationExpression) defaultValue)) {
+                                    consumer.accept(Pair.create(s, defaultValue));
+                                }
+                            }
                         }
                     }
                 }
