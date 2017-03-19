@@ -1,0 +1,15 @@
+<container>
+
+    <services>
+        <service>
+            <argument type="service" id="usage_xml_foobar"/>
+            <argument type="service" id="usage_xml_foobar2"/>
+            <argument type="service" id="usage_xml_foobar3"/>
+        </service>
+
+        <service>
+            <argument type="service" id="usage_xml_foobar"/>
+        </service>
+    </services>
+
+</container>

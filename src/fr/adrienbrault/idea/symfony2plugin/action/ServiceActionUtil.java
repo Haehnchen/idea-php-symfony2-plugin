@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceArgumentSelectionDialog;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -37,6 +38,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -148,12 +150,14 @@ public class ServiceActionUtil {
         // lower priority of services like "doctrine.orm.default_entity_manager"
         matchedContainer.sort(new SymfonyCreateService.ContainerServicePriorityNameComparator());
 
-        Set<String> possibleServices = new LinkedHashSet<>();
-        for(ContainerService containerService: matchedContainer) {
-            possibleServices.add(containerService.getName());
-        }
+        matchedContainer.sort((o1, o2) ->
+            ((Integer)ServiceContainerUtil.getServiceUsage(phpClass.getProject(), o2.getName()))
+                .compareTo(ServiceContainerUtil.getServiceUsage(phpClass.getProject(), o1.getName()))
+        );
 
-        return possibleServices;
+        return matchedContainer.stream()
+            .map(ContainerService::getName)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @NotNull

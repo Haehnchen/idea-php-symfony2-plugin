@@ -4,9 +4,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -20,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -32,12 +35,17 @@ import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceContainerUtil {
+
+    private static String[] LOWER_PRIORITY = new String[] {
+        "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"
+    };
 
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {
@@ -382,6 +390,20 @@ public class ServiceContainerUtil {
         return psiElements;
     }
 
+    /**
+     * Calculate usage as of given service id in project scope
+     */
+    public static int getServiceUsage(@NotNull Project project, @NotNull String id) {
+        int usage = 0;
+
+        List<Integer> values = FileBasedIndex.getInstance().getValues(ContainerIdUsagesStubIndex.KEY, id, GlobalSearchScope.allScope(project));
+        for (Integer integer : values) {
+            usage += integer;
+        }
+
+        return usage;
+    }
+
     private static int getArgumentIndex(@NotNull XmlTag xmlTag) {
 
         PsiElement psiElement = xmlTag;
@@ -395,5 +417,45 @@ public class ServiceContainerUtil {
         }
 
         return index;
+    }
+
+    public static boolean isLowerPriority(String name) {
+        for(String lowerName: LOWER_PRIORITY) {
+            if(name.contains(lowerName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static class ContainerServiceIdPriorityNameComparator implements Comparator<String> {
+        @Override
+        public int compare(String o1, String o2) {
+
+            if(isLowerPriority(o1) && isLowerPriority(o2)) {
+                return 0;
+            }
+
+            return isLowerPriority(o1) ? 1 : -1;
+        }
+    }
+
+    @NotNull
+    public static List<String> getSortedServiceId(@NotNull Project project, @NotNull Collection<String> ids) {
+        if(ids.size() == 0) {
+            return new ArrayList<>(ids);
+        }
+
+        List<String> myIds = new ArrayList<>(ids);
+
+        myIds.sort(new ServiceContainerUtil.ContainerServiceIdPriorityNameComparator());
+
+        myIds.sort((o1, o2) ->
+            ((Integer) ServiceContainerUtil.getServiceUsage(project, o2))
+                .compareTo(ServiceContainerUtil.getServiceUsage(project, o1))
+        );
+
+        return myIds;
     }
 }

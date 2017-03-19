@@ -1,0 +1,12 @@
+services:
+    foo:
+        arguments: [@usage_yml_foobar, @usage_yml_foobar2]
+        
+    foo2:
+        arguments: 
+          - @usage_yml_foobar2
+          - @usage_yml_foobar3
+          
+    foo3:
+        arguments: 
+          - @usage_yml_foobar
