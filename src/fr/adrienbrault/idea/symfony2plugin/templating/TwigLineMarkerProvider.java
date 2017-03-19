@@ -5,6 +5,7 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -217,7 +218,15 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        return new LineMarkerInfo<>(lineMarkerTarget, lineMarkerTarget.getTextOffset(), icon, 6, new ConstantFunction<>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<>(
+            lineMarkerTarget,
+            lineMarkerTarget.getTextRange(),
+            icon,
+            6,
+            new ConstantFunction<>(title),
+            new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
+            GutterIconRenderer.Alignment.RIGHT
+        );
     }
 
     @Nullable
@@ -280,7 +289,14 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        return new LineMarkerInfo<>(psiElement, psiElement.getTextOffset(), PhpIcons.OVERRIDES, 6, new ConstantFunction<>(title), new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems));
+        return new LineMarkerInfo<>(
+            psiElement,
+            psiElement.getTextRange(),
+            PhpIcons.OVERRIDES, 6,
+            new ConstantFunction<>(title),
+            new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
+            GutterIconRenderer.Alignment.RIGHT
+        );
     }
 
     @Nullable

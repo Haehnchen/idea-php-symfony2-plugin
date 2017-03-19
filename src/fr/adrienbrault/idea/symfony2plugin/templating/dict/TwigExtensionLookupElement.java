@@ -11,7 +11,6 @@ import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;

@@ -1818,7 +1818,7 @@ public class TwigHelper {
                 // Only valid string parameter "('foobar',"
                 if(getFirstFunctionParameterAsStringPattern().accepts(psiElement)){
                     text[0] = psiElement.getText();
-                };
+                }
 
                 return false;
             }
