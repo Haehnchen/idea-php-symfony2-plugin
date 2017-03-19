@@ -5,19 +5,17 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementWeigher;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.containers.HashSet;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.ServiceSuggestionCollector;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlCallServiceSuggestionCollector;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlConstructServiceSuggestionCollector;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,14 +60,19 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
 
     @NotNull
     public static PrioritizedLookupResult getLookupElements(@Nullable PsiElement element, @NotNull Collection<ContainerService> services) {
-
         // collect instance to highlight services
-        Collection<String> servicesForInstance = new HashSet<>();
+        List<String> servicesForInstance = new ArrayList<>();
 
         if(element != null) {
+            Set<String> servicesForInstanceSet = new java.util.HashSet<>();
+
             for (ServiceSuggestionCollector collector : COLLECTORS) {
-                servicesForInstance.addAll(collector.collect(element, services));
+                servicesForInstanceSet.addAll(collector.collect(element, services));
             }
+
+            servicesForInstance.addAll(
+                ServiceContainerUtil.getSortedServiceId(element.getProject(), servicesForInstanceSet)
+            );
         }
 
         Collection<LookupElement> collect = services.stream()
@@ -86,9 +89,9 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         private final Collection<LookupElement> lookupElements;
 
         @NotNull
-        private final Collection<String> topStrings;
+        private final List<String> topStrings;
 
-        public PrioritizedLookupResult(@NotNull Collection<LookupElement> lookupElements, @NotNull Collection<String> topStrings) {
+        public PrioritizedLookupResult(@NotNull Collection<LookupElement> lookupElements, @NotNull List<String> topStrings) {
             this.lookupElements = lookupElements;
             this.topStrings = topStrings;
         }
@@ -99,18 +102,21 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         }
 
         @NotNull
-        public Collection<String> getTopStrings() {
+        public List<String> getTopStrings() {
             return topStrings;
         }
     }
 
     private static class MyLookupElementWeigher extends LookupElementWeigher {
         @NotNull
-        private final Collection<String> elements;
+        private final List<String> elements;
 
-        MyLookupElementWeigher(@NotNull Collection<String> elements) {
+        MyLookupElementWeigher(@NotNull List<String> elements) {
             super("topElement");
             this.elements = elements;
+
+            // top most element ist first
+            Collections.reverse(elements);
         }
 
         @Nullable
@@ -121,12 +127,11 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
                 return 0;
             }
 
-            // we dont want eg ".debug." service first
-            if(ContainerUtil.find(SymfonyCreateService.ContainerServicePriorityNameComparator.LOWER_PRIORITY, lookupString::contains) != null) {
-                return -999;
-            }
+            // start by "0"
+            int pos = elements.indexOf(lookupString) + 1;
 
-            return -1000;
+            // we reversed the list so, top most element has higher negative value now
+            return -1000 - pos;
         }
     }
 }

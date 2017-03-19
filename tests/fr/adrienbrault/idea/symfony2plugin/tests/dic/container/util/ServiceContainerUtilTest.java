@@ -10,6 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -25,6 +28,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         super.setUp();
         this.xmlFile = myFixture.configureByFile("services.xml");
         this.ymlFile = myFixture.configureByFile("services.yml");
+
+        myFixture.configureByFile("usage.services.xml");
+        myFixture.configureByFile("usage1.services.xml");
     }
 
     public String getTestDataPath() {
@@ -128,6 +134,28 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
             assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("my_abstract_without_class")).getClassName());
             assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("my_alias_without_class")).getClassName());
         }
+    }
+
+    public void testGetServiceUsage() {
+        assertEquals(3, ServiceContainerUtil.getServiceUsage(getProject(), "usage_xml_foobar"));
+        assertEquals(3, ServiceContainerUtil.getServiceUsage(getProject(), "usage_xml_foobar2"));
+        assertEquals(1, ServiceContainerUtil.getServiceUsage(getProject(), "usage_xml_foobar3"));
+    }
+
+    public void testGetSortedServiceId() {
+        List<String> sortedServiceId = ServiceContainerUtil.getSortedServiceId(getProject(), Arrays.asList("foobar.default", "foobar", "usage_xml_foobar"));
+
+        assertEquals("usage_xml_foobar", sortedServiceId.get(0));
+        assertEquals("foobar", sortedServiceId.get(1));
+        assertEquals("foobar.default", sortedServiceId.get(2));
+    }
+
+    public void testGetSortedServiceIdByUsage() {
+        List<String> sortedServiceId = ServiceContainerUtil.getSortedServiceId(getProject(), Arrays.asList("foobar.default", "usage_xml_foobar3", "usage_xml_foobar2"));
+
+        assertEquals("usage_xml_foobar2", sortedServiceId.get(0));
+        assertEquals("usage_xml_foobar3", sortedServiceId.get(1));
+        assertEquals("foobar.default", sortedServiceId.get(2));
     }
 
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {

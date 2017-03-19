@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.ClassCompletionPanelWrapper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -528,34 +529,19 @@ public class SymfonyCreateService extends JDialog {
     }
 
     public static class ContainerServicePriorityNameComparator implements Comparator<ContainerService> {
-
-        public static String[] LOWER_PRIORITY = new String[] { "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"};
-
         @Override
         public int compare(ContainerService o1, ContainerService o2) {
 
-            if(this.isLowerPriority(o1.getName()) && this.isLowerPriority(o2.getName())) {
+            if(ServiceContainerUtil.isLowerPriority(o1.getName()) && ServiceContainerUtil.isLowerPriority(o2.getName())) {
                 return 0;
             }
 
-            if(this.isLowerPriority(o1.getName())) {
+            if(ServiceContainerUtil.isLowerPriority(o1.getName())) {
                 return 1;
             }
 
             return -1;
         }
-
-        private boolean isLowerPriority(String name) {
-
-            for(String lowerName: LOWER_PRIORITY) {
-                if(name.contains(lowerName)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
     }
 
     public static class ContainerServicePriorityWeakComparator implements Comparator<ContainerService> {

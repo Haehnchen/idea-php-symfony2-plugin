@@ -83,7 +83,15 @@ public class YamlHelper {
      */
     @NotNull
     static public Collection<String> getYamlArrayValuesAsString(@NotNull YAMLSequence yamlArray) {
-        Collection<String> keys = new HashSet<>();
+        return new HashSet<>(getYamlArrayValuesAsList(yamlArray));
+    }
+
+    /**
+     * [ROLE_USER, FEATURE_ALPHA, ROLE_ALLOWED_TO_SWITCH]
+     */
+    @NotNull
+    static public Collection<String> getYamlArrayValuesAsList(@NotNull YAMLSequence yamlArray) {
+        Collection<String> keys = new ArrayList<>();
 
         for (YAMLSequenceItem yamlSequenceItem : yamlArray.getItems()) {
             YAMLValue value = yamlSequenceItem.getValue();

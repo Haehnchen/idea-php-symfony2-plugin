@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,10 @@ abstract public class DecoratedServiceCompletionProvider extends GotoCompletionP
         ServiceCompletionProvider.addPrioritizedServiceLookupElements(
             arguments.getParameters(),
             arguments.getResultSet(),
-            new ServiceCompletionProvider.PrioritizedLookupResult(collect, servicesMatches)
+            new ServiceCompletionProvider.PrioritizedLookupResult(
+                collect,
+                ServiceContainerUtil.getSortedServiceId(getProject(), servicesMatches)
+            )
         );
     }
 
