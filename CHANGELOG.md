@@ -2,11 +2,18 @@ Changelog
 =========
 
 ### Version names
-* 0.13.x: PhpStorm 2016.3.1+
+* 0.14.x: PhpStorm 2017.1+
+* 0.13.x: PhpStorm 2016.3.1 (no support)
 * 0.12.x: PhpStorm 2016.1+ (no support)
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.13.139
+* Support granted strings in $attributes parameter of VoterInterface:vote foreach and in_array
+* Fix no description for an intention [#891](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/891)
+* Sort service instance suggest on project usage [#890](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/890)
+* Note: Last PhpStorm 2016.3.x release
 
 ## 0.13.138
 * Use intention for Twig key creation, drop redundant warnings [#443](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/443)

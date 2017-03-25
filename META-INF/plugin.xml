@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.138</version>
+    <version>0.13.139</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -99,13 +99,22 @@
 
     <change-notes><![CDATA[
 
-0.13.x: PhpStorm 2016.3.1+<br/>
+0.14.x: PhpStorm 2017.1+<br/>
+0.13.x: PhpStorm 2016.3.1 (no support)<br/>
 0.12.x: PhpStorm 2016.1 (no support)<br/>
 0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
 0.10.x: PhpStorm 7 (no support)<br/>
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.13.139</h2>
+<ul>
+    <li>Support granted strings in $attributes parameter of VoterInterface:vote foreach and in_array</li>
+    <li>Fix no description for an intention <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/891">#891</a></li>
+    <li>Sort service instance suggest on project usage <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/890">#890</a></li>
+    <li>Note: Last PhpStorm 2016.3.x release</li>
+</ul>
+
 <h2>0.13.138</h2>
 <ul>
     <li>Use intention for Twig key creation, drop redundant warnings <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/443">#443</a></li>
