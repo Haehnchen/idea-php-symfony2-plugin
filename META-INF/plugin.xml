@@ -405,6 +405,9 @@
         <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerProjectGenerator"/>
         <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerTemplatesFactory"/>
 
+        <codeInsight.parameterNameHints language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
+        <codeInsight.parameterNameHints language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
+
         <localInspection groupPath="Symfony" shortName="Symfony2PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
@@ -647,9 +650,6 @@
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.BundleTwigNamespaceExtension"/>
 
         <ServiceCollector implementation="fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector"/>
-
-        <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.XmlServiceContainerCaretTextOverlay"/>
-        <CaretTextOverlay implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.provider.YamlServiceContainerCaretTextOverlay"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>

@@ -189,7 +189,6 @@ public class ServiceContainerUtil {
         }
     }
 
-
     /**
      * foo:
      *  class: Foo
@@ -204,12 +203,23 @@ public class ServiceContainerUtil {
         }
 
         // @TODO: simplify code checks
-
         PsiElement yamlScalar = psiElement.getContext();
         if(!(yamlScalar instanceof YAMLScalar)) {
             return null;
         }
 
+        return getYamlConstructorTypeHint((YAMLScalar) yamlScalar, lazyServiceCollector);
+    }
+
+    /**
+     * foo:
+     *  class: Foo
+     *  arguments: [@<caret>]
+     *  arguments:
+     *      - @<caret>
+     */
+    @Nullable
+    public static ServiceTypeHint getYamlConstructorTypeHint(@NotNull YAMLScalar yamlScalar, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
         PsiElement context = yamlScalar.getContext();
         if(!(context instanceof YAMLSequenceItem)) {
             return null;
@@ -240,7 +250,7 @@ public class ServiceContainerUtil {
             return null;
         }
 
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText(), lazyServiceCollector);
+        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlScalar.getProject(), classKeyValue.getValueText(), lazyServiceCollector);
         if(serviceClass == null) {
             return null;
         }
@@ -253,7 +263,7 @@ public class ServiceContainerUtil {
         return new ServiceTypeHint(
             constructor,
             PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
-            psiElement
+            yamlScalar
         );
     }
 
