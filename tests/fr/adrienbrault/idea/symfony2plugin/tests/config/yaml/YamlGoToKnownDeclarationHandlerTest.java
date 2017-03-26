@@ -74,4 +74,12 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
             );
         }
     }
+
+    public void testNavigateToClassServiceAsKeyForSymfony33() {
+        assertNavigationMatch("services.yml", "" +
+                "services:\n" +
+                "    Fo<caret>o\\Bar: ~\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
 }

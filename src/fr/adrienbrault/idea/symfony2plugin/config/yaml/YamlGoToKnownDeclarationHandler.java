@@ -107,6 +107,12 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             this.getFactoryStringGoto(psiElement, results);
         }
 
+        // services:
+        //   My<caret>Class: ~
+        if(YamlElementPatternHelper.getServicesKeyPattern().accepts(psiElement)) {
+            getClassesForServiceKey(psiElement, results);
+        }
+
         return results.toArray(new PsiElement[results.size()]);
     }
 
@@ -279,6 +285,20 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
     private void getEventGoto(PsiElement psiElement, List<PsiElement> results) {
         results.addAll(EventDispatcherSubscriberUtil.getEventPsiElements(psiElement.getProject(), PsiElementUtils.trimQuote(psiElement.getText())));
+    }
+
+    /**
+     * services:
+     *   My<caret>Class: ~
+     */
+    private void getClassesForServiceKey(PsiElement psiElement, List<PsiElement> results) {
+        PsiElement parent = psiElement.getParent();
+        if(parent instanceof YAMLKeyValue) {
+            String valueText = ((YAMLKeyValue) parent).getKeyText();
+            if(StringUtils.isNotBlank(valueText)) {
+                results.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), valueText));
+            }
+        }
     }
 
     @Nullable

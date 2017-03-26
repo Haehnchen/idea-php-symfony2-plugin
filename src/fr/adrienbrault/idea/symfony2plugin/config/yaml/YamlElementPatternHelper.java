@@ -29,6 +29,11 @@ public class YamlElementPatternHelper {
     );
 
     /**
+     * services: ~
+     */
+    private static PatternCondition<YAMLKeyValue> YAML_KEY_SERVICES = new YAMLKeyValuePatternCondition("services");
+
+    /**
      * auto complete on
      *
      * keyName: refer|
@@ -198,6 +203,21 @@ public class YamlElementPatternHelper {
             getKeyPattern(keyName)
                 .withLanguage(YAMLLanguage.INSTANCE)
         );
+    }
+
+    /**
+     * services:
+     *   My<caret>Class: ~
+     */
+    public static ElementPattern<PsiElement> getServicesKeyPattern() {
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.SCALAR_KEY).withParent(
+                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                    PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).with(YAML_KEY_SERVICES)
+                    )
+                )
+            );
     }
 
     /**
@@ -683,6 +703,21 @@ public class YamlElementPatternHelper {
         @Override
         public boolean accepts(@NotNull YAMLScalar yamlScalar, ProcessingContext processingContext) {
             return StringUtils.startsWith(yamlScalar.getTextValue(), value);
+        }
+    }
+
+    private static class YAMLKeyValuePatternCondition extends PatternCondition<YAMLKeyValue> {
+        @NotNull
+        private final String keyText;
+
+        YAMLKeyValuePatternCondition(@NotNull String keyText) {
+            super("yaml " + keyText +" key");
+            this.keyText = keyText;
+        }
+
+        @Override
+        public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
+            return this.keyText.equals(yamlKeyValue.getKeyText());
         }
     }
 }
