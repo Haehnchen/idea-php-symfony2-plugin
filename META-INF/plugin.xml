@@ -1,4 +1,4 @@
-<idea-plugin version="2" url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
+<idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
     <version>0.13.139</version>
@@ -254,7 +254,7 @@
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="163.8703"/>
+    <idea-version since-build="171.3780"/>
 
     <extensions defaultExtensionNs="com.intellij">
 
