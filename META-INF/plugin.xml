@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.13.139</version>
+    <version>0.14.140</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -107,6 +107,12 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.14.140</h2>
+<ul>
+    <li>Add class navigation for named yaml service keys of Symfony 3.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/902">#902</a></li>
+    <li>Add Parameter Hints for YAML and XML service arguments and dropping caret text overlay <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896">#896</a></li>
+</ul>
+
 <h2>0.13.139</h2>
 <ul>
     <li>Support granted strings in $attributes parameter of VoterInterface:vote foreach and in_array</li>

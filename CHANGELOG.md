@@ -9,6 +9,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.140
+* Add class navigation for named yaml service keys of Symfony 3.3 [#902](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/902)
+* Add Parameter Hints for YAML and XML service arguments and dropping caret text overlay [#896](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896)
+
 ## 0.13.139
 * Support granted strings in $attributes parameter of VoterInterface:vote foreach and in_array
 * Fix no description for an intention [#891](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/891)
