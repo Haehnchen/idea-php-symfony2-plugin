@@ -1,11 +1,7 @@
 #!/bin/bash
 
-ideaVersion="2016.3.1"
-if [ "$PHPSTORM_ENV" == "2016.3.1" ]; then
-    ideaVersion="2016.3.4"
-elif [ "$PHPSTORM_ENV" == "2016.3.2" ]; then
-    ideaVersion="2016.3.4"
-elif [ "$PHPSTORM_ENV" == "2017.1" ]; then
+ideaVersion="2017.1"
+if [ "$PHPSTORM_ENV" == "2017.1" ]; then
     ideaVersion="2017.1"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
     ideaVersion="163.5644.15"
@@ -58,27 +54,7 @@ if [ -d ./plugins ]; then
   echo "created plugin dir"  
 fi
 
-if [ "$PHPSTORM_ENV" == "2016.3.1" ]; then
-
-    #php
-    download "http://phpstorm.espend.de/files/proxy/phpstorm-2016.3.1-php.zip"
-    unzip -qo $travisCache/phpstorm-2016.3.1-php.zip -d ./plugins
-
-    #twig
-    download "http://phpstorm.espend.de/files/proxy/phpstorm-2016.3.1-twig.zip"
-    unzip -qo $travisCache/phpstorm-2016.3.1-twig.zip -d ./plugins
-
-elif [ "$PHPSTORM_ENV" == "2016.3.2" ]; then
-
-    #php
-    download "http://phpstorm.espend.de/files/proxy/phpstorm-2016.3.2-php.zip"
-    unzip -qo $travisCache/phpstorm-2016.3.2-php.zip -d ./plugins
-
-    #twig
-    download "http://phpstorm.espend.de/files/proxy/phpstorm-2016.3.2-twig.zip"
-    unzip -qo $travisCache/phpstorm-2016.3.2-twig.zip -d ./plugins
-
-elif [ "$PHPSTORM_ENV" == "2017.1" ]; then
+if [ "$PHPSTORM_ENV" == "2017.1" ]; then
 
     #php
     download "http://phpstorm.espend.de/files/proxy/phpstorm-2017.1-php.zip"
