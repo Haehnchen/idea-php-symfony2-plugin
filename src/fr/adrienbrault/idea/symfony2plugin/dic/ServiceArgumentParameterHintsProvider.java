@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
@@ -38,6 +39,10 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
     @NotNull
     @Override
     public List<InlayInfo> getParameterHints(PsiElement psiElement) {
+        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return Collections.emptyList();
+        }
+
         List<InlayInfo> inlays = new ArrayList<>();
 
         Match typeHint = getTypeHint(psiElement);
