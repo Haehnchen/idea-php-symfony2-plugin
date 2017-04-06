@@ -54,6 +54,6 @@ If your issue does not exist, open a new issue :smiley:.
 Make sure to provide the maximum amount of informations, such as:
 * What version of PHPStorm are you using ?
 * What version of the plugin are you using ?
-* What kind of project have you enccountered the issue with ? (Symfony, etc, custom/full stack ? silex ?)
-* The stack trace if an error occured
+* What kind of project have you encountered the issue with ? (Symfony, etc, custom/full stack ? silex ?)
+* The stack trace if an error occurred
 * Check if you are in PhpStorm eap channel
