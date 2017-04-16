@@ -25,7 +25,7 @@ public class IndexUtil {
             TwigExtendsStubIndex.KEY,
             TwigIncludeStubIndex.KEY,
             TwigMacroFunctionStubIndex.KEY,
-            YamlTranslationStubIndex.KEY,
+            TranslationStubIndex.KEY,
         };
 
         for(ID<?,?> id: indexIds) {

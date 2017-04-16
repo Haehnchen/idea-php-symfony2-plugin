@@ -4,7 +4,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.containers.ArrayListSet;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,9 +13,9 @@ import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex
+ * @see TranslationStubIndex
  */
-public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
@@ -35,25 +35,25 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
     }
 
     public void testThatDomainAndTranslationsKeyOfXlfIsInIndex() {
-        assertIndexContains(YamlTranslationStubIndex.KEY, "messages");
+        assertIndexContains(TranslationStubIndex.KEY, "messages");
         assertContainsElements(getDomainKeys("messages"), "Symfony is great");
     }
 
     public void testThatDomainAndTranslationsKeyOfXliffIsInIndex() {
-        assertIndexContains(YamlTranslationStubIndex.KEY, "foo");
+        assertIndexContains(TranslationStubIndex.KEY, "foo");
         assertContainsElements(getDomainKeys("foo"), "Symfony is great xliff");
     }
 
     public void testThatDomainAndTranslationsKeyOfXliffv2IsInIndex() {
-        assertIndexContains(YamlTranslationStubIndex.KEY, "messages_two");
+        assertIndexContains(TranslationStubIndex.KEY, "messages_two");
         assertContainsElements(getDomainKeys("messages_two"), "hello xliff v2");
 
-        assertIndexContains(YamlTranslationStubIndex.KEY, "messages_two");
+        assertIndexContains(TranslationStubIndex.KEY, "messages_two");
         assertContainsElements(getDomainKeys("messages_two"), "hello xliff v2 group less");
     }
 
     public void testThatDomainAndTranslationsKeyOfYamlFileIsInIndex() {
-        assertIndexContains(YamlTranslationStubIndex.KEY, "apple");
+        assertIndexContains(TranslationStubIndex.KEY, "apple");
         assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.great");
         assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.greater than");
         assertContainsElements(getDomainKeys("apple"), "yaml_weak.symfony.greater than equals");
@@ -65,12 +65,12 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
         assertFalse(getDomainKeys("apple").contains("yaml_weak.symfony"));
         assertFalse(getDomainKeys("apple").contains("yaml_weak"));
 
-        assertIndexContains(YamlTranslationStubIndex.KEY, "car");
+        assertIndexContains(TranslationStubIndex.KEY, "car");
         assertContainsElements(getDomainKeys("car"), "foo_yaml.symfony.great");
     }
 
     public void testThatEmptyXliffDomainShouldNotIndexAsLanguageKey() {
-        assertIndexNotContains(YamlTranslationStubIndex.KEY, "fr");
+        assertIndexNotContains(TranslationStubIndex.KEY, "fr");
     }
 
     public void testThatResnameXliffShouldBeUsedForKey() {
@@ -81,7 +81,7 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
     private Set<String> getDomainKeys(@NotNull String domain) {
         Set<String> uniqueKeySet = new ArrayListSet<String>();
 
-        for(Set<String> splits: FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.allScope(getProject()))) {
+        for(Set<String> splits: FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.allScope(getProject()))) {
             ContainerUtil.addAll(uniqueKeySet, splits);
         }
 

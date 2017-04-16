@@ -15,7 +15,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
@@ -121,7 +121,7 @@ public class TranslationUtil {
             return true;
         };
 
-        FileBasedIndex.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
+        FileBasedIndex.getInstance().getFilesWithKey(TranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
             // prevent duplicate targets and dont walk same file twice
             if(virtualFilesFound.contains(virtualFile)) {
                 return true;
@@ -141,7 +141,7 @@ public class TranslationUtil {
                 // xlf are plain text because not supported by jetbrains
                 // for now we can only set file target
                 psiFoundElements.addAll(
-                    FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile)))
+                    FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile)))
                     .stream().filter(string -> string.contains(translationKey)).map(string -> psiFile).collect(Collectors.toList())
                 );
             }
@@ -216,7 +216,7 @@ public class TranslationUtil {
     public static boolean hasDomain(Project project, String domainName) {
         return TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName) ||
             FileBasedIndex.getInstance().getValues(
-                YamlTranslationStubIndex.KEY,
+                TranslationStubIndex.KEY,
                 domainName,
                 GlobalSearchScope.allScope(project)
             ).size() > 0;
@@ -233,7 +233,7 @@ public class TranslationUtil {
             return true;
         }
 
-        for(Set<String> keys: FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
+        for(Set<String> keys: FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
             if(keys.contains(keyName)) {
                 return true;
             }
@@ -246,7 +246,7 @@ public class TranslationUtil {
     public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
 
         Set<String> keySet = new HashSet<>();
-        List<Set<String>> test = FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
+        List<Set<String>> test = FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
         for(Set<String> keys: test ){
             keySet.addAll(keys);
         }
@@ -293,8 +293,8 @@ public class TranslationUtil {
             lookupElements.add(new TranslatorLookupElement(domainKey, domainKey));
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlTranslationStubIndex.KEY, domainList);
-        FileBasedIndex.getInstance().processAllKeys(YamlTranslationStubIndex.KEY, projectUniqueKeysStrong, project);
+        SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, TranslationStubIndex.KEY, domainList);
+        FileBasedIndex.getInstance().processAllKeys(TranslationStubIndex.KEY, projectUniqueKeysStrong, project);
 
         // attach index domains as weak one
         for(String domainKey: projectUniqueKeysStrong.getResult()) {
@@ -320,7 +320,7 @@ public class TranslationUtil {
             }
         }
 
-        FileBasedIndex.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domainName)), virtualFile -> {
+        FileBasedIndex.getInstance().getFilesWithKey(TranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domainName)), virtualFile -> {
             if(uniqueFileList.contains(virtualFile)) {
                 return true;
             }

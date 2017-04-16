@@ -10,7 +10,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAndQuickFixAction;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
@@ -94,7 +94,7 @@ public class TwigTranslationKeyIntention extends PsiElementBaseIntentionAction {
 
         private boolean isDomainAndKeyInPsi(@NotNull PsiFile psiFile, @NotNull String key, @NotNull String domain) {
             List<Set<String>> values = FileBasedIndex.getInstance()
-                .getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.fileScope(psiFile));
+                .getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.fileScope(psiFile));
 
             for (Set<String> value : values) {
                 if(value.contains(key)) {
