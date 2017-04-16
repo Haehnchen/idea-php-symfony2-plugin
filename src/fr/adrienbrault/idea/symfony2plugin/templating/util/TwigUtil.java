@@ -11,6 +11,7 @@ import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Consumer;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -24,15 +25,11 @@ import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
-import com.jetbrains.twig.elements.TwigBlockTag;
-import com.jetbrains.twig.elements.TwigCompositeElement;
-import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigExtendsTag;
+import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFromStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
@@ -809,30 +806,6 @@ public class TwigUtil {
     }
 
     /**
-     * Find files which implements then given file
-     */
-    @NotNull
-    public static Collection<PsiFile> getImplementationsForExtendsTag(@NotNull TwigFile twigFile, @NotNull TemplateFileMap files) {
-        final Collection<PsiFile> targets = new ArrayList<>();
-        for(String templateName: files.getNames(twigFile.getVirtualFile())) {
-
-            final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFromStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-
-                if(psiFile != null) {
-                    targets.add(psiFile);
-                }
-
-                return true;
-            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
-
-        }
-
-        return targets;
-    }
-
-    /**
      * Collects all files that include, extends, ... a given files
      */
     @NotNull
@@ -866,7 +839,6 @@ public class TwigUtil {
 
         // finally resolve virtual file to twig files
         for(VirtualFile virtualFile: virtualFiles) {
-
             PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
             if(resolvedPsiFile != null) {
                 twigChild.add(resolvedPsiFile);
@@ -874,6 +846,86 @@ public class TwigUtil {
             }
 
         }
+    }
 
+    /**
+     * Visit all possible Twig include file pattern
+     */
+    public static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer) {
+        visitTemplateIncludes(
+            twigFile,
+            consumer,
+            TemplateInclude.TYPE.EMBED, TemplateInclude.TYPE.INCLUDE, TemplateInclude.TYPE.INCLUDE_FUNCTION, TemplateInclude.TYPE.FROM, TemplateInclude.TYPE.IMPORT
+        );
+    }
+
+    public static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer, @NotNull TemplateInclude.TYPE... types) {
+        if(types.length == 0) {
+            return;
+        }
+
+        List<TemplateInclude.TYPE> myTypes = Arrays.asList(types);
+
+        PsiTreeUtil.collectElements(twigFile, psiElement -> {
+            if(psiElement instanceof TwigTagWithFileReference) {
+                // {% include %}
+                if(myTypes.contains(TemplateInclude.TYPE.INCLUDE)) {
+                    if(psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
+                        for (String templateName : TwigHelper.getIncludeTagStrings((TwigTagWithFileReference) psiElement)) {
+                            if(StringUtils.isNotBlank(templateName)) {
+                                consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE));
+                            }
+                        }
+                    }
+                }
+
+                // {% import "foo.html.twig"
+                if(myTypes.contains(TemplateInclude.TYPE.IMPORT)) {
+                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import"));
+                    if(embedTag != null) {
+                        String templateName = embedTag.getText();
+                        if(StringUtils.isNotBlank(templateName)) {
+                            consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
+                        }
+                    }
+                }
+
+                // {% from 'forms.html' import ... %}
+                if(myTypes.contains(TemplateInclude.TYPE.FROM)) {
+                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from"));
+                    if(embedTag != null) {
+                        String templateName = embedTag.getText();
+                        if(StringUtils.isNotBlank(templateName)) {
+                            consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
+                        }
+                    }
+                }
+            } else if(psiElement instanceof TwigCompositeElement) {
+                // {{ include() }}
+                // {{ source() }}
+                if(myTypes.contains(TemplateInclude.TYPE.INCLUDE_FUNCTION)) {
+                    PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getPrintBlockFunctionPattern("include", "source"));
+                    if(includeTag != null) {
+                        String templateName = includeTag.getText();
+                        if(StringUtils.isNotBlank(templateName)) {
+                            consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE_FUNCTION));
+                        }
+                    }
+                }
+
+                // {% embed "foo.html.twig"
+                if(myTypes.contains(TemplateInclude.TYPE.EMBED)) {
+                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getEmbedPattern());
+                    if(embedTag != null) {
+                        String templateName = embedTag.getText();
+                        if(StringUtils.isNotBlank(templateName)) {
+                            consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.EMBED));
+                        }
+                    }
+                }
+            }
+
+            return false;
+        });
     }
 }

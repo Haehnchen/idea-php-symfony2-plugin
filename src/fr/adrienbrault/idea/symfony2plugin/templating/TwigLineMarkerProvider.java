@@ -4,21 +4,27 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NotNullLazyValue;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -27,12 +33,12 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateFileMap;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -69,19 +75,14 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             if(psiElement instanceof TwigFile) {
                 attachController((TwigFile) psiElement, results);
 
-                // attach parent includes goto
+                // find foreign file references tags like:
+                // include, embed, source, from, import, ...
                 LineMarkerInfo lineIncludes = attachIncludes((TwigFile) psiElement);
                 if(lineIncludes != null) {
                     results.add(lineIncludes);
                 }
 
-                // attach parent includes goto
-                LineMarkerInfo lineFromInclude = attachFromIncludes((TwigFile) psiElement);
-                if(lineFromInclude != null) {
-                    results.add(lineFromInclude);
-                }
-
-                // attach parent includes goto
+                // eg bundle overwrites
                 LineMarkerInfo overwrites = attachOverwrites((TwigFile) psiElement);
                 if(overwrites != null) {
                     results.add(overwrites);
@@ -116,38 +117,36 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(twigFile));
     }
 
-    private LineMarkerInfo attachIncludes(TwigFile twigFile) {
-
+    private LineMarkerInfo attachIncludes(@NotNull TwigFile twigFile) {
         TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
 
-        final Collection<PsiFile> targets = new ArrayList<>();
-        for(String templateName: TwigUtil.getTemplateName(twigFile.getVirtualFile(), files)) {
+        Set<String> templateNames = TwigUtil.getTemplateName(twigFile.getVirtualFile(), files);
 
-            final Project project = twigFile.getProject();
-            FileBasedIndexImpl.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+        boolean found = false;
+        for(String templateName: templateNames) {
+            Project project = twigFile.getProject();
 
-                if(psiFile != null) {
-                    targets.add(psiFile);
-                }
+            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(
+                TwigIncludeStubIndex.KEY, templateName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE)
+            );
 
-                return true;
-            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
-
+            // stop on first target, we load them lazily afterwards
+            if(containingFiles.size() > 0) {
+                found = true;
+                break;
+            }
         }
 
-        if(targets.size() == 0) {
+        if(!found) {
             return null;
         }
 
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
+            .setTargets(new MyTemplateIncludeLazyValue(twigFile, templateNames))
+            .setTooltipText("Navigate to includes")
+            .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
-        for(PsiElement blockTag: targets) {
-            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
-        }
-
-        return getRelatedPopover("Implementations", "Impl: " ,twigFile, gotoRelatedItems);
-
+        return builder.createLineMarkerInfo(twigFile);
     }
 
     @Nullable
@@ -182,25 +181,6 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     private TemplateFileMap getTemplateFilesByName(Project project) {
         return this.templateMapCache == null ? this.templateMapCache = TwigHelper.getTemplateMap(project, true, false) : this.templateMapCache;
-    }
-
-    @Nullable
-    private LineMarkerInfo attachFromIncludes(TwigFile twigFile) {
-        TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
-
-        final Collection<PsiFile> targets = TwigUtil.getImplementationsForExtendsTag(twigFile, files);
-        if(targets.size() == 0) {
-            return null;
-        }
-
-        List<GotoRelatedItem> gotoRelatedItems = targets.stream().map(blockTag ->
-            new RelatedPopupGotoLineMarker
-                .PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true))
-                .withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER))
-            .collect(Collectors.toList()
-        );
-
-        return getRelatedPopover("Implementations", "Impl: ", twigFile, gotoRelatedItems);
     }
 
     private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems) {
@@ -303,5 +283,96 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
+    }
+
+    private static class MyFileReferencePsiElementListCellRenderer extends PsiElementListCellRenderer {
+        @Override
+        public String getElementText(PsiElement psiElement) {
+            String symbolPresentableText = SymbolPresentationUtil.getSymbolPresentableText(psiElement);
+            return StringUtils.abbreviate(symbolPresentableText, 50);
+        }
+
+        @Nullable
+        @Override
+        protected String getContainerText(PsiElement psiElement, String s) {
+            // relative path else fallback to default name extraction
+            PsiFile containingFile = psiElement.getContainingFile();
+            String relativePath = VfsUtil.getRelativePath(containingFile.getVirtualFile(), psiElement.getProject().getBaseDir(), '/');
+            return relativePath != null ? relativePath : SymbolPresentationUtil.getSymbolContainerText(psiElement);
+        }
+
+        @Override
+        protected int getIconFlags() {
+            return 1;
+        }
+
+        @Override
+        protected Icon getIcon(PsiElement psiElement) {
+            if(psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
+                return PhpIcons.IMPLEMENTED;
+            } else if(psiElement.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
+                return PhpIcons.OVERRIDEN;
+            }
+
+            return TwigIcons.TwigFileIcon;
+        }
+    }
+
+    private static class MyTemplateIncludeLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+        @NotNull
+        private final TwigFile twigFile;
+
+        @NotNull
+        private final Collection<String> templateNames;
+
+        MyTemplateIncludeLazyValue(@NotNull TwigFile twigFile, @NotNull Collection<String> templateNames) {
+            this.twigFile = twigFile;
+            this.templateNames = templateNames;
+        }
+
+        @NotNull
+        @Override
+        protected Collection<? extends PsiElement> compute() {
+            Collection<VirtualFile> twigFiles = new ArrayList<>();
+
+            Project project = twigFile.getProject();
+
+            for(String templateName: this.templateNames) {
+                // collect files which contains given template name for inclusion
+                twigFiles.addAll(FileBasedIndex.getInstance().getContainingFiles(
+                    TwigIncludeStubIndex.KEY,
+                    templateName,
+                    GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE))
+                );
+            }
+
+            Collection<PsiElement> targets = new ArrayList<>();
+
+            for (VirtualFile virtualFile : twigFiles) {
+                // resolve virtual file
+                PsiFile myTwigFile = PsiManager.getInstance(project).findFile(virtualFile);
+                if(!(myTwigFile instanceof TwigFile)) {
+                    continue;
+                }
+
+                Collection<PsiElement> fileTargets = new ArrayList<>();
+
+                TwigUtil.visitTemplateIncludes((TwigFile) myTwigFile, templateInclude -> {
+                        if(this.templateNames.contains(templateInclude.getTemplateName()) || this.templateNames.contains(TwigHelper.normalizeTemplateName(templateInclude.getTemplateName()))) {
+                            fileTargets.add(templateInclude.getPsiElement());
+                        }
+                    }
+                );
+
+                // navigate to include pattern; else fallback to file scope
+                if(fileTargets.size() > 0) {
+                    targets.addAll(fileTargets);
+                } else {
+                    targets.add(myTwigFile);
+                }
+            }
+
+            return targets;
+        }
     }
 }

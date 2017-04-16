@@ -1,22 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.elements.TwigCompositeElement;
-import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import gnu.trove.THashMap;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -50,38 +43,9 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
                 return map;
             }
 
-            PsiTreeUtil.collectElements(psiFile, psiElement -> {
-                // {% include %}
-                if(psiElement instanceof TwigTagWithFileReference && psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
-                    for (String templateName : TwigHelper.getIncludeTagStrings((TwigTagWithFileReference) psiElement)) {
-                        map.put(templateName, null);
-                    }
-                }
-
-                if(psiElement instanceof TwigCompositeElement) {
-
-                    // {{ include() }}
-                    PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getPrintBlockFunctionPattern("include", "source"));
-                    if(includeTag != null) {
-                        String templateName = includeTag.getText();
-                        if(StringUtils.isNotBlank(templateName)) {
-                            map.put(templateName, null);
-                        }
-                    }
-
-                    // {% embed "foo.html.twig"
-                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getEmbedPattern());
-                    if(embedTag != null) {
-                        String templateName = embedTag.getText();
-                        if(StringUtils.isNotBlank(templateName)) {
-                            map.put(templateName, null);
-                        }
-                    }
-
-                }
-
-                return false;
-            });
+            TwigUtil.visitTemplateIncludes((TwigFile) psiFile, templateInclude ->
+                map.put(templateInclude.getTemplateName(), null)
+            );
 
             return map;
         };
@@ -113,7 +77,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
 }

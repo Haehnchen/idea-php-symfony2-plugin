@@ -936,14 +936,14 @@ public class TwigHelper {
     }
 
     /**
-     * {% embed "vertical_boxes_skeleton.twig" %}
+     * {% FOOBAR "WANTED.html.twig" %}
      */
-    public static ElementPattern<PsiElement> getEmbedPattern() {
+    public static ElementPattern<PsiElement> getTagNameParameterPattern(@NotNull IElementType elementType, @NotNull String tagName) {
         //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.EMBED_TAG)
+                PlatformPatterns.psiElement(elementType)
             )
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -952,9 +952,16 @@ public class TwigHelper {
                     PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
                     PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("embed")
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(tagName)
             )
             .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {% embed "vertical_boxes_skeleton.twig" %}
+     */
+    public static ElementPattern<PsiElement> getEmbedPattern() {
+        return getTagNameParameterPattern(TwigElementTypes.EMBED_TAG, "embed");
     }
 
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {

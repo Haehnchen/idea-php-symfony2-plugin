@@ -24,7 +24,6 @@ public class IndexUtil {
             ServicesTagStubIndex.KEY,
             TwigExtendsStubIndex.KEY,
             TwigIncludeStubIndex.KEY,
-            TwigMacroFromStubIndex.KEY,
             TwigMacroFunctionStubIndex.KEY,
             YamlTranslationStubIndex.KEY,
         };
