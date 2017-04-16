@@ -12,7 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.YamlTranslationStubIndex;
@@ -32,10 +32,7 @@ import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -124,7 +121,7 @@ public class TranslationUtil {
             return true;
         };
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
+        FileBasedIndex.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
             // prevent duplicate targets and dont walk same file twice
             if(virtualFilesFound.contains(virtualFile)) {
                 return true;
@@ -144,7 +141,7 @@ public class TranslationUtil {
                 // xlf are plain text because not supported by jetbrains
                 // for now we can only set file target
                 psiFoundElements.addAll(
-                    FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile)))
+                    FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile)))
                     .stream().filter(string -> string.contains(translationKey)).map(string -> psiFile).collect(Collectors.toList())
                 );
             }
@@ -187,7 +184,13 @@ public class TranslationUtil {
             for (XmlTag body : file.findSubTags("body")) {
                 for (XmlTag transUnit : body.findSubTags("trans-unit")) {
                     consumer.consume(transUnit);
-                  }
+
+                    // <trans-unit id="1" resname="title.test">
+                    String resname = transUnit.getAttributeValue("resname");
+                    if(resname != null && key.equals(resname)) {
+                        psiElements.add(transUnit);
+                    }
+                }
             }
 
             // version="2.0"
@@ -212,7 +215,7 @@ public class TranslationUtil {
 
     public static boolean hasDomain(Project project, String domainName) {
         return TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName) ||
-            FileBasedIndexImpl.getInstance().getValues(
+            FileBasedIndex.getInstance().getValues(
                 YamlTranslationStubIndex.KEY,
                 domainName,
                 GlobalSearchScope.allScope(project)
@@ -230,7 +233,7 @@ public class TranslationUtil {
             return true;
         }
 
-        for(Set<String> keys: FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
+        for(Set<String> keys: FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
             if(keys.contains(keyName)) {
                 return true;
             }
@@ -243,7 +246,7 @@ public class TranslationUtil {
     public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
 
         Set<String> keySet = new HashSet<>();
-        List<Set<String>> test = FileBasedIndexImpl.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
+        List<Set<String>> test = FileBasedIndex.getInstance().getValues(YamlTranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
         for(Set<String> keys: test ){
             keySet.addAll(keys);
         }
@@ -291,7 +294,7 @@ public class TranslationUtil {
         }
 
         SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, YamlTranslationStubIndex.KEY, domainList);
-        FileBasedIndexImpl.getInstance().processAllKeys(YamlTranslationStubIndex.KEY, projectUniqueKeysStrong, project);
+        FileBasedIndex.getInstance().processAllKeys(YamlTranslationStubIndex.KEY, projectUniqueKeysStrong, project);
 
         // attach index domains as weak one
         for(String domainKey: projectUniqueKeysStrong.getResult()) {
@@ -317,7 +320,7 @@ public class TranslationUtil {
             }
         }
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domainName)), virtualFile -> {
+        FileBasedIndex.getInstance().getFilesWithKey(YamlTranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domainName)), virtualFile -> {
             if(uniqueFileList.contains(virtualFile)) {
                 return true;
             }
@@ -461,6 +464,21 @@ public class TranslationUtil {
             String textContent = node.getTextContent();
             if(org.apache.commons.lang.StringUtils.isNotBlank(textContent)) {
                 consumer.consume(Pair.create(textContent, node));
+            }
+
+            // <trans-unit id="1" resname="title.test">
+            Node transUnitNode = node.getParentNode();
+            if(transUnitNode != null) {
+                NamedNodeMap attributes = transUnitNode.getAttributes();
+                if(attributes != null) {
+                    Node resname = attributes.getNamedItem("resname");
+                    if(resname != null) {
+                        String textContentResname = resname.getTextContent();
+                        if(textContentResname != null && StringUtils.isNotBlank(textContentResname)) {
+                            consumer.consume(Pair.create(textContentResname, node));
+                        }
+                    }
+                }
             }
         }
     }

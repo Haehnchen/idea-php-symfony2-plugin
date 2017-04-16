@@ -10,7 +10,10 @@ import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Set;
 
@@ -115,6 +118,46 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertNotNull(ContainerUtil.find(files, psiElement ->
             psiElement instanceof XmlTag && "foo".equals(((XmlTag) psiElement).getValue().getText()))
         );
+    }
+
+    public void testGetTargetForXlfAsXmlFileInVersion12AndResname() {
+        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(XMLLanguage.INSTANCE, "" +
+            "<?xml version=\"1.0\"?>\n" +
+            "<xliff version=\"1.2\" xmlns=\"urn:oasis:names:tc:xliff:document:1.2\">\n" +
+            "    <file source-language=\"en\" datatype=\"plaintext\" original=\"file.ext\">\n" +
+            "        <body>\n" +
+            "            <trans-unit id=\"1\" resname=\"index.hello_world\">\n" +
+            "                <source>foo</source>\n" +
+            "            </trans-unit>\n" +
+            "        </body>\n" +
+            "    </file>\n" +
+            "</xliff>\n"
+        );
+
+        Collection<PsiElement> files = TranslationUtil.getTargetForXlfAsXmlFile((XmlFile) fileFromText, "index.hello_world");
+
+        assertNotNull(ContainerUtil.find(files, psiElement ->
+            psiElement instanceof XmlTag && "index.hello_world".equals(((XmlTag) psiElement).getAttributeValue("resname")))
+        );
+    }
+
+    public void testResnameAsIdInXlfAsXmlFileInVersion12() {
+        String text = "" +
+            "<?xml version=\"1.0\"?>\n" +
+            "<xliff version=\"1.2\" xmlns=\"urn:oasis:names:tc:xliff:document:1.2\">\n" +
+            "    <file source-language=\"en\" datatype=\"plaintext\" original=\"file.ext\">\n" +
+            "        <body>\n" +
+            "            <trans-unit id=\"1\" resname=\"index.hello_world\">\n" +
+            "                <source>foo</source>\n" +
+            "            </trans-unit>\n" +
+            "        </body>\n" +
+            "    </file>\n" +
+            "</xliff>\n";
+
+        InputStream stream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+
+        Set<String> files = TranslationUtil.getXliffTranslations(stream);
+        assertContainsElements(files, "index.hello_world", "foo");
     }
 
     public void testGetPlaceholderFromTranslation() {

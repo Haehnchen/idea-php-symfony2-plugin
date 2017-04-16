@@ -6,6 +6,10 @@
                 <source>Symfony is great</source>
                 <target>J'aime Symfony</target>
             </trans-unit>
+            <trans-unit id="1" resname="resname.symfony_is_great">
+                <source xml:lang="fr">Test</source>
+                <target xml:lang="fr">Test</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

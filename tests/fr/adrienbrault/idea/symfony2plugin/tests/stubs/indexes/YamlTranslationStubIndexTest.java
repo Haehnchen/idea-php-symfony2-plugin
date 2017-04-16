@@ -73,6 +73,10 @@ public class YamlTranslationStubIndexTest extends SymfonyLightCodeInsightFixture
         assertIndexNotContains(YamlTranslationStubIndex.KEY, "fr");
     }
 
+    public void testThatResnameXliffShouldBeUsedForKey() {
+        assertContainsElements(getDomainKeys("messages"), "resname.symfony_is_great");
+    }
+
     @NotNull
     private Set<String> getDomainKeys(@NotNull String domain) {
         Set<String> uniqueKeySet = new ArrayListSet<String>();
