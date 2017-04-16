@@ -11,6 +11,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -199,9 +200,12 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getSingleLineScalarKey("alias")
         ), new FormAliasCompletionProvider());
 
-        extend(CompletionType.BASIC, StandardPatterns.and(
-            YamlElementPatternHelper.getInsideKeyValue("calls")
-        ), new ServiceCallsMethodCompletion());
+        // - [ setContainer, [ @service_container ] ]
+        extend(
+            CompletionType.BASIC,
+            YamlElementPatternHelper.getInsideKeyValue("calls"),
+            new ServiceCallsMethodCompletion()
+        );
 
         extend(CompletionType.BASIC, StandardPatterns.and(
             YamlElementPatternHelper.getInsideKeyValue("tags"),
@@ -380,27 +384,23 @@ public class YamlCompletionContributor extends CompletionContributor {
     private class ServiceCallsMethodCompletion extends CompletionProvider<CompletionParameters> {
 
         protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
             }
 
-            // TODO: move this to pattern; filters match on parameter array
             // - [ setContainer, [ @service_container ] ]
             PsiElement psiElement = completionParameters.getPosition();
-            if(psiElement.getParent() == null || !(psiElement.getParent().getContext() instanceof YAMLSequence)) {
-                return;
+
+            PsiElement yamlScalar = psiElement.getParent();
+            if(yamlScalar instanceof YAMLScalar) {
+                YamlHelper.visitServiceCall((YAMLScalar) yamlScalar, clazz -> {
+                    PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), clazz);
+                    if(phpClass != null) {
+                        PhpElementsUtil.addClassPublicMethodCompletion(completionResultSet, phpClass);
+                    }
+                });
             }
-
-            YAMLKeyValue callYamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
-            if(callYamlKeyValue == null) {
-                return;
-            }
-
-            addYamlClassMethods(callYamlKeyValue.getContext(), completionResultSet, "class");
-
         }
-
     }
 
     private static void addYamlClassMethods(@Nullable PsiElement psiElement, CompletionResultSet completionResultSet, String classTag) {

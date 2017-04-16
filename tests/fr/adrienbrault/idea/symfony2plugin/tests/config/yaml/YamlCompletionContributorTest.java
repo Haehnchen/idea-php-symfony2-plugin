@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.yaml.YAMLFileType;
 
 import java.io.File;
 
@@ -19,6 +22,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         myFixture.configureByText("config_foo.yml", "");
         myFixture.configureByFile("YamlCompletionContributor.php");
         myFixture.configureByFile("tagged.services.xml");
+        myFixture.configureByFile("classes.php");
     }
 
     public String getTestDataPath() {
@@ -199,6 +203,26 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "    foo: [\"%foo_paramet<caret>\"]",
             "services:\n" +
                 "    foo: [\"%foo_parameter%\"]"
+        );
+    }
+
+    public void testThatMethodOfClassAreCompleted() {
+        assertCompletionContains(YAMLFileType.YML, "" +
+            "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       calls:\n" +
+            "           - [ <caret> ]\n",
+            "setBar"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    foobar:\n" +
+                "       class: Foo\\Bar\n" +
+                "       calls:\n" +
+                "           - [ '<caret>' ]\n",
+            "setBar"
         );
     }
 }

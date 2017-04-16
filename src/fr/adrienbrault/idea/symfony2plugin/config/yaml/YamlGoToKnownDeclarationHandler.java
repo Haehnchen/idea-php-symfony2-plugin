@@ -8,6 +8,7 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -191,31 +192,19 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
     }
 
     private void getMethodGoto(PsiElement psiElement, List<PsiElement> results) {
-
-        YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
-        if(yamlCompoundValue == null) {
-            return;
-        }
-
-        yamlCompoundValue = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
-        if(yamlCompoundValue == null) {
-            return;
-        }
-
-        YAMLKeyValue classKeyValue = PsiElementUtils.getChildrenOfType(yamlCompoundValue, PlatformPatterns.psiElement(YAMLKeyValue.class).withName("class"));
-        if(classKeyValue == null) {
-            return;
-        }
-
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText());
-        if(phpClass != null) {
-            for(Method method: PhpElementsUtil.getClassPublicMethod(phpClass)) {
-                if(method.getName().equals(PsiElementUtils.trimQuote(psiElement.getText()))) {
-                    results.add(method);
+        PsiElement parent = psiElement.getParent();
+        if(parent instanceof YAMLScalar) {
+            YamlHelper.visitServiceCall((YAMLScalar) parent, clazz -> {
+                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(),clazz);
+                if(phpClass != null) {
+                    for(Method method: PhpElementsUtil.getClassPublicMethod(phpClass)) {
+                        if(method.getName().equals(PsiElementUtils.trimQuote(psiElement.getText()))) {
+                            results.add(method);
+                        }
+                    }
                 }
-            }
+            });
         }
-
     }
 
     private void getTagMethodGoto(PsiElement psiElement, List<PsiElement> results) {

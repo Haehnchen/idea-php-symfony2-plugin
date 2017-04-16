@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.util.Consumer;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -14,10 +15,12 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -373,6 +376,45 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
                 "   tag: foo",
             yamlFile.getText()
         );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCall
+     */
+    public void testVisitServiceCall() {
+        myFixture.configureByText(YAMLFileType.YML, "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       calls:\n" +
+            "           - [ '<caret>' ]\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        Collection<String> values = new ArrayList<>();
+        YamlHelper.visitServiceCall(parent, values::add);
+
+        assertContainsElements(values, "Foo\\Bar");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCall
+     */
+    public void testVisitServiceCallForNamedServices() {
+        myFixture.configureByText(YAMLFileType.YML, "services:\n" +
+            "    Foo\\Bar:\n" +
+            "       calls:\n" +
+            "           - [ '<caret>' ]\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        Collection<String> values = new ArrayList<>();
+        YamlHelper.visitServiceCall(parent, values::add);
+
+        assertContainsElements(values, "Foo\\Bar");
     }
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {

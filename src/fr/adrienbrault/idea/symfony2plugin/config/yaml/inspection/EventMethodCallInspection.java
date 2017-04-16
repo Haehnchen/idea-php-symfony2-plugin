@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
+import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -141,37 +142,14 @@ public class EventMethodCallInspection extends LocalInspectionTool {
     }
 
     private void visitYamlMethod(PsiElement psiElement, ProblemsHolder holder, ContainerCollectionResolver.LazyServiceCollector collector) {
-        if(!YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)){
-            return;
+        if(YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)) {
+            PsiElement parent = psiElement.getParent();
+            if ((parent instanceof YAMLScalar)) {
+                YamlHelper.visitServiceCall((YAMLScalar) parent, s ->
+                    registerMethodProblem(psiElement, holder, YamlHelper.trimSpecialSyntaxServiceName(s), collector)
+                );
+            }
         }
-
-        PsiElement parent = psiElement.getParent();
-        if(!(parent instanceof YAMLScalar)) {
-            return;
-        }
-
-        PsiElement yamlSeq = parent.getContext();
-        if(!(yamlSeq instanceof YAMLSequenceItem)) {
-            return;
-        }
-
-        PsiElement context = yamlSeq.getContext();
-        if(!(context instanceof YAMLSequence)) {
-            return;
-        }
-
-        YAMLKeyValue callYamlKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
-        if(callYamlKeyValue == null) {
-            return;
-        }
-
-        YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(callYamlKeyValue.getContext(), "class");
-        if(classKeyValue == null) {
-            return;
-        }
-
-        registerMethodProblem(psiElement, holder, getServiceName(classKeyValue.getValue()), collector);
-
     }
 
     private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue, ContainerCollectionResolver.LazyServiceCollector collector) {
@@ -285,6 +263,5 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                 }
             }
         }
-
     }
 }

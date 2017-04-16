@@ -14,6 +14,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
@@ -922,5 +923,53 @@ public class YamlHelper {
         // classes without namespaces "FooBar"?
 
         return false;
+    }
+
+    /**
+     * service_name:
+     *   class: FOOBAR
+     *   calls:
+     *      - [onF<caret>oobar, []]
+     *
+     * FOOBAR:
+     *   calls:
+     *      - [onF<caret>oobar, []]
+     */
+    public static void visitServiceCall(@NotNull YAMLScalar yamlScalar, @NotNull Consumer<String> consumer) {
+        PsiElement yamlSeq = yamlScalar.getContext();
+        if(yamlSeq instanceof YAMLSequenceItem) {
+            PsiElement context = yamlSeq.getContext();
+            if(context instanceof YAMLSequence) {
+                PsiElement yamlSequenceItem = context.getParent();
+                if(yamlSequenceItem instanceof YAMLSequenceItem) {
+                    PsiElement yamlSeq1 = yamlSequenceItem.getParent();
+                    if(yamlSeq1 instanceof YAMLSequence) {
+                        PsiElement callYamlKeyValue = yamlSeq1.getParent();
+                        if(callYamlKeyValue instanceof YAMLKeyValue) {
+                            YAMLKeyValue classKeyValue = YamlHelper.getYamlKeyValue(callYamlKeyValue.getContext(), "class");
+                            if(classKeyValue != null) {
+                                // "class" key found use this as valid class name
+                                String valueText = classKeyValue.getValueText();
+                                if(StringUtils.isNotBlank(valueText)) {
+                                    consumer.consume(valueText);
+                                }
+                            } else {
+                                // named services; key is our class name
+                                PsiElement yamlMapping = callYamlKeyValue.getParent();
+                                if(yamlMapping instanceof YAMLMapping) {
+                                    PsiElement parent = yamlMapping.getParent();
+                                    if(parent instanceof YAMLKeyValue) {
+                                        String keyText = ((YAMLKeyValue) parent).getKeyText();
+                                        if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
+                                            consumer.consume(keyText);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

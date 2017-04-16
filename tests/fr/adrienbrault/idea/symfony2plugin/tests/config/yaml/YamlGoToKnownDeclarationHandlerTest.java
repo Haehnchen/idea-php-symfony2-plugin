@@ -82,4 +82,15 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
             PlatformPatterns.psiElement(PhpClass.class)
         );
     }
+
+    public void testNavigateForCallsMethodIsProvided() {
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       calls:\n" +
+            "           - [ set<caret>Bar, [@foo]]\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
 }

@@ -12,6 +12,7 @@ namespace Foo
     class Bar
     {
         function __construct($i, $z) { }
+        function setBar() {}
     }
 
     class Apple
