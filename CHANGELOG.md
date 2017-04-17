@@ -9,6 +9,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.141
+* Parameter Hints must not be provided if plugin is not enabled [#896](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896)
+* Fix cache folder detection in project auto configuration process [#810](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/810) @20uf
+* Add navigate to Twig "include" file references [#889](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/889) and use lazy value provider for better performance [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809)
+* Support of resname attribute in xlf trans-unit tag [#913](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/913)
+* Fix pattern for Yaml method "calls" [#755](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/755) and implement named services support
+* Provide parameter type hint for xml and yaml "call" tags
+
 ## 0.14.140
 * Add class navigation for named yaml service keys of Symfony 3.3 [#902](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/902)
 * Add Parameter Hints for YAML and XML service arguments and dropping caret text overlay [#896](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896)

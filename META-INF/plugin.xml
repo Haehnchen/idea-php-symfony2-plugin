@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.140</version>
+    <version>0.14.141</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -107,6 +107,16 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.14.141</h2>
+<ul>
+    <li>Parameter Hints must not be provided if plugin is not enabled <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896">#896</a></li>
+    <li>Fix cache folder detection in project auto configuration process <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/810">#810</a> @20uf</li>
+    <li>Add navigate to Twig "include" file references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/889">#889</a> and use lazy value provider for better performance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809">#809</a></li>
+    <li>Support of resname attribute in xlf trans-unit tag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/913">#913</a></li>
+    <li>Fix pattern for Yaml method "calls" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/755">#755</a> and implement named services support</li>
+    <li>Provide parameter type hint for xml and yaml "call" tags</li>
+</ul>
+
 <h2>0.14.140</h2>
 <ul>
     <li>Add class navigation for named yaml service keys of Symfony 3.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/902">#902</a></li>
