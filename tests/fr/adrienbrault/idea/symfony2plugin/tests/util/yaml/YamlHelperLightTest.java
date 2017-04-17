@@ -1,9 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.util.Consumer;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
@@ -19,6 +19,7 @@ import org.jetbrains.yaml.psi.YAMLScalar;
 import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +29,14 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase {
+    public void setUp() throws Exception {
+        super.setUp();
+        myFixture.copyFileToProject("classes.php");
+    }
+
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
@@ -415,6 +424,88 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         YamlHelper.visitServiceCall(parent, values::add);
 
         assertContainsElements(values, "Foo\\Bar");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgument
+     */
+    public void testVisitServiceCallArgument() {
+        myFixture.configureByText(YAMLFileType.YML, "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       calls:\n" +
+            "           - [ 'setBar', [@f<caret>oo] ]\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        Collection<String> values = new ArrayList<>();
+        YamlHelper.visitServiceCallArgument(parent, parameterVisitor ->
+            values.add(parameterVisitor.getClassName() + ":" + parameterVisitor.getMethod() + ":" + parameterVisitor.getParameterIndex())
+        );
+
+        assertContainsElements(values, "Foo\\Bar:setBar:0");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgument
+     */
+    public void testVisitServiceCallArgumentAsNamedService() {
+        myFixture.configureByText(YAMLFileType.YML, "services:\n" +
+            "    Foo\\Bar:\n" +
+            "       calls:\n" +
+            "           - [ 'setBar', [@f<caret>oo] ]\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        Collection<String> values = new ArrayList<>();
+        YamlHelper.visitServiceCallArgument(parent, parameterVisitor ->
+            values.add(parameterVisitor.getClassName() + ":" + parameterVisitor.getMethod() + ":" + parameterVisitor.getParameterIndex())
+        );
+
+        assertContainsElements(values, "Foo\\Bar:setBar:0");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgumentMethodIndex
+     */
+    public void testVisitServiceCallArgumentMethodIndex() {
+        myFixture.configureByText(YAMLFileType.YML, "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       calls:\n" +
+            "           - [ 'setBar', [@f<caret>oo] ]\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        Collection<Parameter> parameters = new ArrayList<>();
+        YamlHelper.visitServiceCallArgumentMethodIndex(parent, parameters::add);
+
+        assertNotNull(ContainerUtil.find(parameters, parameter -> "arg1".equals(parameter.getName())));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgumentMethodIndex
+     */
+    public void testVisitServiceCallArgumentMethodIndexForNamedServices() {
+        myFixture.configureByText(YAMLFileType.YML, "services:\n" +
+            "    Foo\\Bar:\n" +
+            "       calls:\n" +
+            "           - [ 'setBar', ['@foo', @f<caret>oo] ]\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        Collection<Parameter> parameters = new ArrayList<>();
+        YamlHelper.visitServiceCallArgumentMethodIndex(parent, parameters::add);
+
+        assertNotNull(ContainerUtil.find(parameters, parameter -> "arg2".equals(parameter.getName())));
     }
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {

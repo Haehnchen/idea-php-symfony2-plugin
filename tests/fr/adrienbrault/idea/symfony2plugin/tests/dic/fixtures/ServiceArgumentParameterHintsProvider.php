@@ -11,5 +11,9 @@ namespace Foobar
         public function __construct(FooInterface $foo, $foobar)
         {
         }
+
+        public function setFoo(FooInterface $foo)
+        {
+        }
     }
 }

@@ -14,9 +14,16 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.apache.commons.lang.ArrayUtils;
@@ -971,5 +978,114 @@ public class YamlHelper {
                 }
             }
         }
+    }
+
+    /**
+     * service_name:
+     *   class: FOOBAR
+     *   calls:
+     *      - [onFoobar, [@fo<caret>o]]
+     *
+     * FOOBAR:
+     *   calls:
+     *      - [onFoobar, [@fo<caret>o]]
+     */
+    public static void visitServiceCallArgument(@NotNull YAMLScalar yamlScalar, @NotNull Consumer<ParameterVisitor> consumer) {
+        PsiElement context = yamlScalar.getContext();
+        if(context instanceof YAMLSequenceItem) {
+            // [@foobar, @fo<caret>obar]
+            YAMLSequenceItem argumentSequenceItem = (YAMLSequenceItem) context;
+            if (argumentSequenceItem.getContext() instanceof YAMLSequence) {
+                YAMLSequence yamlCallParameterArray = (YAMLSequence) argumentSequenceItem.getContext();
+                PsiElement callSequenceItem = yamlCallParameterArray.getContext();
+                if(callSequenceItem instanceof YAMLSequenceItem) {
+                    YAMLSequenceItem enclosingItem = (YAMLSequenceItem) callSequenceItem;
+                    if (enclosingItem.getContext() instanceof YAMLSequence) {
+                        YAMLSequence yamlCallArray = (YAMLSequence) enclosingItem.getContext();
+                        PsiElement seqItem = yamlCallArray.getContext();
+                        if(seqItem instanceof YAMLSequenceItem) {
+                            // - [ setFoo, [@args_bar] ]
+                            PsiElement callYamlSeq = seqItem.getContext();
+                            if(callYamlSeq instanceof YAMLSequence) {
+                                // only given method and args are valid "setFoo, [@args_bar]"
+                                List<YAMLSequenceItem> methodParameter = YamlHelper.getYamlArrayValues(yamlCallArray);
+                                if(methodParameter.size() > 1) {
+                                    YAMLValue methodNameElement = methodParameter.get(0).getValue();
+                                    if(methodNameElement instanceof YAMLScalar) {
+                                        String methodName = ((YAMLScalar) methodNameElement).getTextValue();
+                                        if(StringUtils.isNotBlank(methodName)) {
+                                            PsiElement callYamlKeyValue = callYamlSeq.getContext();
+                                            if(callYamlKeyValue instanceof YAMLKeyValue) {
+                                                final YAMLKeyValue classKeyValue = ((YAMLKeyValue) callYamlKeyValue).getParentMapping().getKeyValueByKey("class");
+                                                if (classKeyValue != null) {
+                                                    String valueText = classKeyValue.getValueText();
+                                                    if (StringUtils.isNotBlank(valueText)) {
+                                                        consumer.consume(new ParameterVisitor(
+                                                            valueText,
+                                                            methodName,
+                                                            PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
+                                                        );
+                                                    }
+                                                } else {
+                                                    // named services; key is our class name
+                                                    PsiElement yamlMapping = callYamlKeyValue.getParent();
+                                                    if(yamlMapping instanceof YAMLMapping) {
+                                                        PsiElement parent = yamlMapping.getParent();
+                                                        if(parent instanceof YAMLKeyValue) {
+                                                            String keyText = ((YAMLKeyValue) parent).getKeyText();
+                                                            if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
+                                                                consumer.consume(new ParameterVisitor(
+                                                                    keyText,
+                                                                    methodName,
+                                                                    PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
+                                                                );
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Consumer for method parameter match
+     *
+     * service_name:
+     *   class: FOOBAR
+     *   calls:
+     *      - [onFoobar, [@fo<caret>o]]
+     */
+    public static void visitServiceCallArgumentMethodIndex(@NotNull YAMLScalar yamlScalar, @NotNull Consumer<Parameter> consumer) {
+        YamlHelper.visitServiceCallArgument(yamlScalar, visitor -> {
+            PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(
+                yamlScalar.getProject(),
+                visitor.getClassName(),
+                new ContainerCollectionResolver.LazyServiceCollector(yamlScalar.getProject())
+            );
+
+            if(serviceClass == null) {
+                return;
+            }
+
+            Method method = serviceClass.findMethodByName(visitor.getMethod());
+            if (method == null) {
+                return;
+            }
+
+            Parameter[] methodParameter = method.getParameters();
+            if(visitor.getParameterIndex() >= methodParameter.length) {
+                return;
+            }
+
+            consumer.consume(methodParameter[visitor.getParameterIndex()]);
+        });
     }
 }

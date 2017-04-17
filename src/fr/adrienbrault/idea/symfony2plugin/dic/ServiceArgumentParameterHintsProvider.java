@@ -10,6 +10,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -22,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,6 +88,14 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
                     return new Match(s, psiElement.getTextRange().getEndOffset());
                 }
             }
+
+            // call: [setFoo, [@foo]]
+            final Match[] match = {null};
+            YamlHelper.visitServiceCallArgumentMethodIndex((YAMLScalar) psiElement, parameter ->
+                match[0] = new Match(createTypeHintFromParameter(psiElement.getProject(), parameter), psiElement.getTextRange().getEndOffset())
+            );
+
+            return match[0];
         } else if (psiElement instanceof XmlAttributeValue) {
             // <service><argument type="service" id="a<caret>a"></service>
             PsiElement xmlAttribute = psiElement.getParent();
@@ -178,6 +188,11 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
 
         Parameter parameter = constructorParameter[parameterIndex];
 
+        return createTypeHintFromParameter(function.getProject(), parameter);
+    }
+
+    @NotNull
+    private String createTypeHintFromParameter(@NotNull Project project, Parameter parameter) {
         String className = parameter.getDeclaredType().toString();
         if(PhpType.isNotExtendablePrimitiveType(className)) {
             return parameter.getName();
@@ -188,7 +203,7 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
             return className.substring(i + 1);
         }
 
-        PhpClass expectedClass = PhpElementsUtil.getClassInterface(function.getProject(), className);
+        PhpClass expectedClass = PhpElementsUtil.getClassInterface(project, className);
         if(expectedClass != null) {
             return expectedClass.getName();
         }

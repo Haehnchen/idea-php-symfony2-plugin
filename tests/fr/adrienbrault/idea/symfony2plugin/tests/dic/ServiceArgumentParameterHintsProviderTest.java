@@ -100,12 +100,25 @@ public class ServiceArgumentParameterHintsProviderTest extends SymfonyLightCodeI
 
         assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "MyFoobar".equals(inlayInfo.getText())));
     }
+
     public void testYamlParameterTypeForId() {
         List<InlayInfo> parameterHints = getInlayInfo(YAMLFileType.YML,"" +
             "services:\n" +
             "    foobar:\n" +
             "        class: Foobar\\MyFoobar\n" +
             "        arguments: [@fo<caret>obar]\n"
+        );
+
+        assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
+    }
+
+    public void testYamlParameterTypeForCallMethodParameter() {
+        List<InlayInfo> parameterHints = getInlayInfo(YAMLFileType.YML,"" +
+            "services:\n" +
+            "    foobar:\n" +
+            "        class: Foobar\\MyFoobar\n" +
+            "        calls:\n" +
+            "           - [setFoo, [@fo<caret>obar]]\n"
         );
 
         assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));

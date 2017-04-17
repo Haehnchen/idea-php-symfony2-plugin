@@ -28,7 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.YAMLSequenceItem;
 
 import java.util.Collection;
 import java.util.List;
@@ -160,83 +161,24 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        // @TODO: simplify code checks
-
         PsiElement yamlScalar = psiElement.getContext();
         if(!(yamlScalar instanceof YAMLScalar)) {
             return;
         }
 
-        PsiElement context = yamlScalar.getContext();
-        if(!(context instanceof YAMLSequenceItem)) {
-            return;
-        }
+        YamlHelper.visitServiceCallArgument((YAMLScalar) yamlScalar, visitor -> {
+            PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), visitor.getClassName(), getLazyServiceCollector(psiElement.getProject()));
+            if(serviceClass == null) {
+                return;
+            }
 
-        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
-        if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
-            return;
-        }
+            Method method = serviceClass.findMethodByName(visitor.getMethod());
+            if (method == null) {
+                return;
+            }
 
-        YAMLSequence yamlCallParameterArray = (YAMLSequence) sequenceItem.getContext();
-        if(!(yamlCallParameterArray.getContext() instanceof YAMLSequenceItem)) {
-            return;
-        }
-
-        final YAMLSequenceItem enclosingItem = (YAMLSequenceItem) yamlCallParameterArray.getContext();
-        if (!(enclosingItem.getContext() instanceof YAMLSequence)) {
-            return;
-        }
-        
-        YAMLSequence yamlCallArray = (YAMLSequence) enclosingItem.getContext();
-
-        PsiElement seqItem = yamlCallArray.getContext();
-        if(!(seqItem instanceof YAMLSequenceItem)) {
-            return;
-        }
-
-        // - [ setFoo, [@args_bar] ]
-        PsiElement callYamlSeq = seqItem.getContext();
-        if(!(callYamlSeq instanceof YAMLSequence)) {
-            return;
-        }
-
-        // only given method and args are valid "setFoo, [@args_bar]"
-        final List<YAMLSequenceItem> methodParameter = YamlHelper.getYamlArrayValues(yamlCallArray);
-        if(methodParameter.size() < 2) {
-            return;
-        }
-
-        final YAMLValue methodNameElement = methodParameter.get(0).getValue();
-        if(!(methodNameElement instanceof YAMLScalar)) {
-            return;
-        }
-
-        final String methodName = ((YAMLScalar) methodNameElement).getTextValue();
-        if(StringUtils.isBlank(methodName)) {
-            return;
-        }
-
-        PsiElement yamlSequence = callYamlSeq.getContext();
-        if(!(yamlSequence instanceof YAMLKeyValue)) {
-            return;
-        }
-
-        final YAMLKeyValue classKeyValue = ((YAMLKeyValue) yamlSequence).getParentMapping().getKeyValueByKey("class");
-        if(classKeyValue == null) {
-            return;
-        }
-
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue.getValueText(), this.getLazyServiceCollector(psiElement.getProject()));
-        if(serviceClass == null) {
-            return;
-        }
-
-        Method method = serviceClass.findMethodByName(methodName);
-        if (method == null) {
-            return;
-        }
-
-        attachInstanceAnnotation(psiElement, holder, (YAMLSequenceItem) seqItem, method);
+            attachInstanceAnnotation(psiElement, holder, visitor.getParameterIndex(), method);
+        });
 
     }
     private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, int parameterIndex, Method constructor) {
@@ -265,16 +207,6 @@ public class YamlAnnotator implements Annotator {
             holder.createWeakWarningAnnotation(psiElement, "Expect instance of: " + expectedClass.getPresentableFQN())
                 .registerFix(new MySuggestIntentionAction(expectedClass, psiElement));
         }
-    }
-
-    private void attachInstanceAnnotation(PsiElement psiElement, AnnotationHolder holder, YAMLSequenceItem yamlSequenceItem, Method constructor) {
-
-        if(psiElement == null) {
-            return;
-        }
-
-        List<YAMLSequenceItem> sequenceItems = PsiElementUtils.getPrevSiblingsOfType(yamlSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class));
-        attachInstanceAnnotation(psiElement, holder, sequenceItems.size(), constructor);
     }
 
     private String getServiceName(PsiElement psiElement) {
