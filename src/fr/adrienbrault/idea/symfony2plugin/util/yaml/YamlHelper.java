@@ -14,15 +14,11 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
@@ -1064,28 +1060,6 @@ public class YamlHelper {
      *      - [onFoobar, [@fo<caret>o]]
      */
     public static void visitServiceCallArgumentMethodIndex(@NotNull YAMLScalar yamlScalar, @NotNull Consumer<Parameter> consumer) {
-        YamlHelper.visitServiceCallArgument(yamlScalar, visitor -> {
-            PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(
-                yamlScalar.getProject(),
-                visitor.getClassName(),
-                new ContainerCollectionResolver.LazyServiceCollector(yamlScalar.getProject())
-            );
-
-            if(serviceClass == null) {
-                return;
-            }
-
-            Method method = serviceClass.findMethodByName(visitor.getMethod());
-            if (method == null) {
-                return;
-            }
-
-            Parameter[] methodParameter = method.getParameters();
-            if(visitor.getParameterIndex() >= methodParameter.length) {
-                return;
-            }
-
-            consumer.consume(methodParameter[visitor.getParameterIndex()]);
-        });
+        YamlHelper.visitServiceCallArgument(yamlScalar, new ParameterResolverConsumer(yamlScalar.getProject(), consumer));
     }
 }

@@ -6,9 +6,13 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
+import com.intellij.util.Consumer;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -518,5 +522,62 @@ public class XmlHelper {
         }
 
         return ServiceUtil.getResolvedClassDefinition(xmlAttributeValue.getProject(), service);
+    }
+
+    /**
+     * <service id="app.newsletter_manager" class="AppBundle\Mail\NewsletterManager">
+     *   <call method="setMailer">
+     *     <argument type="service" id="mai<caret>ler" />
+     *   </call>
+     * </service>
+     */
+    public static void visitServiceCallArgument(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull Consumer<ParameterVisitor> consumer) {
+        // search for parent service definition
+        PsiElement xmlAttribute = xmlAttributeValue.getParent();
+        if(xmlAttribute instanceof XmlAttribute) {
+            PsiElement xmlArgumentTag = xmlAttribute.getParent();
+            if(xmlArgumentTag instanceof XmlTag) {
+                PsiElement xmlCallTag = xmlArgumentTag.getParent();
+                if(xmlCallTag instanceof XmlTag) {
+                    String name = ((XmlTag) xmlCallTag).getName();
+                    if (name.equals("call")) {
+                        // service/call/argument[id]
+                        XmlAttribute methodAttribute = ((XmlTag) xmlCallTag).getAttribute("method");
+                        if(methodAttribute != null) {
+                            String methodName = methodAttribute.getValue();
+                            if(methodName != null) {
+                                XmlTag serviceTag = ((XmlTag) xmlCallTag).getParentTag();
+                                // get service class
+                                if(serviceTag != null && "service".equals(serviceTag.getName())) {
+                                    XmlAttribute classAttribute = serviceTag.getAttribute("class");
+                                    if(classAttribute != null) {
+                                        String className = classAttribute.getValue();
+                                        if(className != null) {
+                                            consumer.consume(new ParameterVisitor(
+                                                className,
+                                                methodName,
+                                                XmlServiceContainerAnnotator.getArgumentIndex((XmlTag) xmlArgumentTag))
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Consumer for method parameter match
+     *
+     * service_name:
+     *   class: FOOBAR
+     *   calls:
+     *      - [onFoobar, [@fo<caret>o]]
+     */
+    public static void visitServiceCallArgumentMethodIndex(@NotNull XmlAttributeValue xmlAttribute, @NotNull Consumer<Parameter> consumer) {
+        visitServiceCallArgument(xmlAttribute, new ParameterResolverConsumer(xmlAttribute.getProject(), consumer));
     }
 }

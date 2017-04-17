@@ -11,6 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Consumer;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -23,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestInten
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +47,6 @@ public class XmlServiceContainerAnnotator implements Annotator {
     }
 
     private void annotateServiceInstance(@NotNull PsiElement psiElement, @NotNull AnnotationHolder holder) {
-
         if(!XmlHelper.getArgumentServiceIdPattern().accepts(psiElement)) {
             return;
         }
@@ -61,9 +62,7 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
 
         if(name.equals("service")) {
-
             // service/argument[id]
-
             XmlAttribute classAttribute = parentXmlTag.getAttribute("class");
             if(classAttribute != null) {
                 String serviceDefName = classAttribute.getValue();
@@ -133,6 +132,13 @@ public class XmlServiceContainerAnnotator implements Annotator {
 
     }
 
+    /**
+     * Returns current index of parent tag
+     * <foo>
+     *     <argument/>
+     *     <arg<caret>ument/>
+     * </foo>
+     */
     public static int getArgumentIndex(@NotNull XmlTag xmlTag) {
 
         PsiElement psiElement = xmlTag;

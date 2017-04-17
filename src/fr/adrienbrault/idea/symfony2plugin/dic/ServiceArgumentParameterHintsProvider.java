@@ -17,6 +17,7 @@ import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
@@ -121,6 +122,16 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
                                 return new Match(parameterHint.getFirst(), argumentTag.getTextRange().getEndOffset());
                             }
                         }
+
+                        // <call method="setMailer">
+                        //   <argument type="service" id="ma<caret>iler" />
+                        // </call>
+                        final Match[] match = {null};
+                        XmlHelper.visitServiceCallArgumentMethodIndex((XmlAttributeValue) psiElement, parameter ->
+                            match[0] = new Match(createTypeHintFromParameter(psiElement.getProject(), parameter), argumentTag.getTextRange().getEndOffset())
+                        );
+
+                        return match[0];
                     }
                 }
             }

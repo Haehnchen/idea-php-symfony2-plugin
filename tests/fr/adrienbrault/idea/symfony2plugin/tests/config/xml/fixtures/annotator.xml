@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container>
+
+    <parameters>
+        <parameter key="foo_parameter">foo_parameter_vale</parameter>
+        <parameter key="args_foo_class">Args\Car</parameter>
+    </parameters>
+
+    <services>
+        <service id="args_foo" class="Args\Foo"/>
+        <service id="args_bar" class="Args\Bar"/>
+    </services>
+
+</container>
