@@ -1,15 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
 import com.intellij.openapi.util.Pair;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.elements.TwigElementFactory;
-import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigExtendsTag;
-import com.jetbrains.twig.elements.TwigTagWithFileReference;
+import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
@@ -472,6 +470,19 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals("BarBundle:Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("BarBundle:Foo:steps\\step_finish.html.twig"));
         assertEquals("@BarBundle/Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("@BarBundle\\Foo/steps:step_finish.html.twig"));
+    }
+
+    /**
+     * @see TwigHelper#getDomainFromTranslationTag
+     */
+    public void testGetDomainFromTranslationTag() {
+        assertEquals("app", TwigHelper.getDomainFromTranslationTag(
+            (TwigCompositeElement) TwigElementFactory.createPsiElement(getProject(), "{% trans with {'%name%': 'Fabien'} from \"app\" %}", TwigElementTypes.TAG)
+        ));
+
+        assertEquals("app", TwigHelper.getDomainFromTranslationTag(
+            (TwigCompositeElement) TwigElementFactory.createPsiElement(getProject(), "{% transchoice count with {'%name%': 'Fabien'} from 'app' %}", TwigElementTypes.TAG)
+        ));
     }
 
     private void assertEqual(Collection<String> c, String... values) {

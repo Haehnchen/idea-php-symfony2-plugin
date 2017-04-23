@@ -2299,6 +2299,31 @@ public class TwigHelper {
         return paths;
     }
 
+    /**
+     * {% trans with {'%name%': 'Fabien'} from "aa" %}
+     */
+    @Nullable
+    public static String getDomainFromTranslationTag(@NotNull TwigCompositeElement twigCompositeElement) {
+        // getChildren fix
+        PsiElement firstChild = twigCompositeElement.getFirstChild();
+        if(firstChild == null) {
+            return null;
+        }
+
+        // with from identifier and get text value
+        PsiElement childrenOfType = PsiElementUtils.getNextSiblingOfType(firstChild, getTranslationTokenTagFromPattern());
+        if(childrenOfType == null) {
+            return null;
+        }
+
+        String text = childrenOfType.getText();
+        if(StringUtils.isBlank(text)) {
+            return null;
+        }
+
+        return text;
+    }
+
     private static class MyLimitedVirtualFileVisitor extends VirtualFileVisitor {
         @NotNull
         private final TwigPathContentIterator twigPathContentIterator;
