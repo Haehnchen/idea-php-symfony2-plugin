@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.141</version>
+    <version>0.14.142</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,12 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.14.142</h2>
+<ul>
+    <li>Implement environment variables references for %env(*) on .env and Docker files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/910">#910</a></li>
+    <li>Add Twig trans and transchoice tag support for translation keys <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459">#459</a></li>
+</ul>
+
 <h2>0.14.141</h2>
 <ul>
     <li>Parameter Hints must not be provided if plugin is not enabled <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896">#896</a></li>

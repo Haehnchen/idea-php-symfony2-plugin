@@ -9,6 +9,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.142
+* Implement environment variables references for %env(*) on .env and Docker files [#910](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/910)
+* Add Twig trans and transchoice tag support for translation keys [#459](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459)
+
 ## 0.14.141
 * Parameter Hints must not be provided if plugin is not enabled [#896](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896)
 * Fix cache folder detection in project auto configuration process [#810](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/810) @20uf
