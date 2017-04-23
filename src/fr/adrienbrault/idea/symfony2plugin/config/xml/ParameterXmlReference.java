@@ -5,8 +5,12 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.xml.XmlText;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -23,7 +27,15 @@ public class ParameterXmlReference extends PsiPolyVariantReferenceBase<PsiElemen
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        return PsiElementResolveResult.createResults(ServiceUtil.getServiceClassTargets(getElement().getProject(), this.parameterName));
+        Collection<PsiElement> targets = new ArrayList<>();
+
+        targets.addAll(
+            DotEnvUtil.getEnvironmentVariableTargetsForParameter(getElement().getProject(), this.parameterName)
+        );
+
+        targets.addAll(ServiceUtil.getServiceClassTargets(getElement().getProject(), this.parameterName));
+
+        return PsiElementResolveResult.createResults(targets);
     }
 
     @NotNull

@@ -83,6 +83,23 @@ public class YamlHelper {
     }
 
     /**
+     *  FOO:
+     *    - foobar
+     *
+     *  FOO: [foobar]
+     */
+    @NotNull
+    static public Collection<YAMLSequenceItem> getSequenceItems(@NotNull YAMLKeyValue yamlKeyValue) {
+        PsiElement yamlSequence = yamlKeyValue.getLastChild();
+
+        if(yamlSequence instanceof YAMLSequence) {
+            return ((YAMLSequence) yamlSequence).getItems();
+        }
+
+        return Collections.emptyList();
+    }
+
+    /**
      * [ROLE_USER, FEATURE_ALPHA, ROLE_ALLOWED_TO_SWITCH]
      */
     @NotNull

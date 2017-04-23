@@ -21,6 +21,7 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("services.xml");
         myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
+        myFixture.copyFileToProject("YamlGoToDeclarationHandler.env");
     }
 
     public String getTestDataPath() {
@@ -87,6 +88,11 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
 
     public void testParameter() {
         assertNavigationMatch(YAMLFileType.YML, "bar: %foo_p<caret>arameter%");
+    }
+
+    public void testEnvironmentParameter() {
+        assertNavigationMatch(YAMLFileType.YML, "bar: %env(FOOBA<caret>R_ENV)%");
+        assertNavigationMatch(YAMLFileType.YML, "bar: '%env(FOOBA<caret>R_ENV)%'");
     }
 
     @NotNull

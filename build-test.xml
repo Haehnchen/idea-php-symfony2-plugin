@@ -111,6 +111,8 @@
                 <include name="**/*.xlf"/>
                 <include name="**/*.xliff"/>
                 <include name="**/*.html"/>
+                <include name="**/*.env"/>
+                <include name="**/Dockerfile"/>
             </patternset>            
 
             <copy toDir="@{dest}">

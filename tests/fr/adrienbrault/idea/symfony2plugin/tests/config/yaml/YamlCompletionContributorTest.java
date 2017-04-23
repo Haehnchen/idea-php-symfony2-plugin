@@ -23,6 +23,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         myFixture.configureByFile("YamlCompletionContributor.php");
         myFixture.configureByFile("tagged.services.xml");
         myFixture.configureByFile("classes.php");
+        myFixture.configureByFile("YamlCompletionContributor.env");
     }
 
     public String getTestDataPath() {
@@ -183,6 +184,14 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "services:\n" +
                 "    foo: [%<caret>]",
             "foo_parameter"
+        );
+    }
+
+    public void testParameterEnvironmentCompletion() {
+        assertCompletionContains("services.yml", "" +
+                "services:\n" +
+                "    foo: [%<caret>]",
+            "env(FOOBAR_ENV)"
         );
     }
 

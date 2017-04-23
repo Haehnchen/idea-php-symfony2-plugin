@@ -17,6 +17,7 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes1.php"));
         myFixture.copyFileToProject("services.xml");
+        myFixture.copyFileToProject("XmlDicCompletionContributorTest.env");
 
         myFixture.configureByText("classes.php", "<?php\n" +
             "namespace Foo\\Name;\n" +
@@ -192,7 +193,17 @@ public class XmlDicCompletionContributorTest extends SymfonyLightCodeInsightFixt
             "<services><service><argument>%foo_bar<caret></argument></service></services>",
             "<services><service><argument>%foo_bar%</argument></service></services>"
         );
+    }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor.ArgumentParameterCompletionProvider
+     */
+    public void testEnvironmentArgumentParameterCompletion() {
+        assertCompletionContains(
+            "service.xml",
+            "<services><service><argument>%<caret></argument></service></services>",
+            "%env(FOOBAR_ENV)%"
+        );
     }
 
     public void testServiceInstanceHighlightCompletion() {

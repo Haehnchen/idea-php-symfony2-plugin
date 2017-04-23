@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLoo
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineYamlAnnotationLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
@@ -142,6 +143,9 @@ public class YamlCompletionContributor extends CompletionContributor {
                         resultSet.addElement(new ParameterLookupElement(containerParameter, ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
                     }
 
+                    for (String s : DotEnvUtil.getEnvironmentVariables(element.getProject())) {
+                        resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(" + s +")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
+                    }
                 }
             }
         );

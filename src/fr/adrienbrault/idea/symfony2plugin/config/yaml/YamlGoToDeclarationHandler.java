@@ -11,6 +11,7 @@ import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
@@ -136,13 +137,19 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     }
 
-    private PsiElement[] parameterGoToDeclaration(PsiElement psiElement, String psiParameterName) {
+    private PsiElement[] parameterGoToDeclaration(@NotNull PsiElement psiElement, @NotNull String psiParameterName) {
+        Collection<PsiElement> targets = new ArrayList<>();
+
+        targets.addAll(
+            DotEnvUtil.getEnvironmentVariableTargetsForParameter(psiElement.getProject(), psiParameterName)
+        );
 
         if(!YamlHelper.isValidParameterName(psiParameterName)) {
-            return new PsiElement[0];
+            return targets.toArray(new PsiElement[targets.size()]);
         }
 
-        Collection<PsiElement> targets = ServiceUtil.getServiceClassTargets(psiElement.getProject(), psiParameterName);
+        targets.addAll(ServiceUtil.getServiceClassTargets(psiElement.getProject(), psiParameterName));
+
         return targets.toArray(new PsiElement[targets.size()]);
     }
 

@@ -18,6 +18,7 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("XmlReferenceContributor.php");
+        myFixture.copyFileToProject("XmlReferenceContributor.env");
         myFixture.copyFileToProject("services.xml");
     }
 
@@ -100,6 +101,20 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
                 "    <services>\n" +
                 "        <service>\n" +
                 "            <argument type=\"constant\">CONS<caret>T_FOO</argument>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testEnvironmentParameter() {
+        assertReferenceMatch(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service>\n" +
+                "            <argument>%env(FOOB<caret>AR_ENV)%</argument>\n" +
                 "        </service>\n" +
                 "    </services>\n" +
                 "</container>\n",

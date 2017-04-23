@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterLook
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvider;
@@ -92,7 +93,6 @@ public class XmlCompletionContributor extends CompletionContributor {
     }
 
     /**
-     *
      * <argument>%</argument>
      * <argument></argument>
      */
@@ -112,9 +112,12 @@ public class XmlCompletionContributor extends CompletionContributor {
                     new ParameterLookupPercentElement(entry.getValue())
                 );
             }
+
+            // %env('foobar')%
+            for (String s : DotEnvUtil.getEnvironmentVariables(project)) {
+                completionResultSet.addElement(new ParameterLookupPercentElement(new ContainerParameter("env(" + s +")", false)));
+            }
         }
-
     }
-
 }
 

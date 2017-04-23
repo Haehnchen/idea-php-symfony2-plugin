@@ -1,0 +1,8 @@
+services:
+  foobar:
+    environment:
+      - DEBUG_SERVICES=1
+
+web:
+  environment:
+    - DEBUG_WEB=1
