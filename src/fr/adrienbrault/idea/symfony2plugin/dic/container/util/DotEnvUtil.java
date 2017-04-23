@@ -32,6 +32,13 @@ public class DotEnvUtil {
     private static final Key<CachedValue<Set<String>>> DOT_ENV_VARIABLE_CACHE = new Key<>("DOT_ENV_VARIABLE_CACHE");
 
     /**
+     * case insensitive filenames
+     */
+    private static final String[] DOCKER_FILES = {
+        "Dockerfile", "dockerfile"
+    };
+
+    /**
      * Provide targets for "%env(FOOBAR)%"
      *
      * @param parameter %env(FOOBAR)%
@@ -123,10 +130,12 @@ public class DotEnvUtil {
             }
         }
 
-        for (PsiFile psiFile : FilenameIndex.getFilesByName(project, "Dockerfile", GlobalSearchScope.allScope(project))) {
-            Matcher matcher = Pattern.compile("ENV\\s+([^\\s]*)\\s+").matcher(psiFile.getText());
-            while(matcher.find()){
-                consumer.accept(Pair.create(matcher.group(1), psiFile));
+        for (String file : DOCKER_FILES) {
+            for (PsiFile psiFile : FilenameIndex.getFilesByName(project, file, GlobalSearchScope.allScope(project))) {
+                Matcher matcher = Pattern.compile("ENV\\s+([^\\s]*)\\s+").matcher(psiFile.getText());
+                while(matcher.find()){
+                    consumer.accept(Pair.create(matcher.group(1), psiFile));
+                }
             }
         }
     }
