@@ -1,15 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
@@ -18,7 +19,8 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -236,6 +238,26 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNull(TwigUtil.getFoldingTemplateName("FooBundle:edit.foo.twig"));
         assertNull(TwigUtil.getFoldingTemplateName(""));
         assertNull(TwigUtil.getFoldingTemplateName(null));
+    }
+
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#visitTemplateIncludes
+     */
+    public void testVisitTemplateIncludes() {
+        Collection<String> includes = new ArrayList<>();
+
+        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+            "{% form_theme form ':Foobar:fields.html.twig' %}" +
+            "{% form_theme form.foobar \":Foobar:fields_foobar.html.twig\" %}" +
+            "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}"
+        );
+
+        TwigUtil.visitTemplateIncludes((TwigFile) fileFromText, templateInclude ->
+            includes.add(templateInclude.getTemplateName())
+        );
+
+        assertContainsElements(includes, ":Foobar:fields.html.twig", ":Foobar:fields_foobar.html.twig", ":Foobar:fields_foobar_1.html.twig");
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

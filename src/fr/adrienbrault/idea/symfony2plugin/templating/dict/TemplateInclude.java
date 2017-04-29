@@ -17,7 +17,7 @@ public class TemplateInclude {
     private final TYPE type;
 
     public enum TYPE {
-        INCLUDE, INCLUDE_FUNCTION, EMBED, IMPORT, FROM
+        INCLUDE, INCLUDE_FUNCTION, EMBED, IMPORT, FROM, FORM_THEME
     }
 
     public TemplateInclude(@NotNull PsiElement psiElement, @NotNull String templateName, @NotNull TYPE type) {

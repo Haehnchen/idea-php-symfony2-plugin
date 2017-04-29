@@ -855,7 +855,7 @@ public class TwigUtil {
         visitTemplateIncludes(
             twigFile,
             consumer,
-            TemplateInclude.TYPE.EMBED, TemplateInclude.TYPE.INCLUDE, TemplateInclude.TYPE.INCLUDE_FUNCTION, TemplateInclude.TYPE.FROM, TemplateInclude.TYPE.IMPORT
+            TemplateInclude.TYPE.EMBED, TemplateInclude.TYPE.INCLUDE, TemplateInclude.TYPE.INCLUDE_FUNCTION, TemplateInclude.TYPE.FROM, TemplateInclude.TYPE.IMPORT, TemplateInclude.TYPE.FORM_THEME
         );
     }
 
@@ -920,6 +920,40 @@ public class TwigUtil {
                         String templateName = embedTag.getText();
                         if(StringUtils.isNotBlank(templateName)) {
                             consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.EMBED));
+                        }
+                    }
+                }
+
+                if(myTypes.contains(TemplateInclude.TYPE.FORM_THEME) && psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
+                    PsiElement tagElement = PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME));
+                    if(tagElement != null) {
+                        String text = tagElement.getText();
+                        if("form_theme".equals(text)) {
+                            // {% form_theme form.child 'form/fields_child.html.twig' %}
+                            PsiElement childrenOfType = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigTokenTypes.STRING_TEXT,
+                                TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
+                            );
+
+                            if(childrenOfType != null) {
+                                String templateName = childrenOfType.getText();
+                                if(StringUtils.isNotBlank(templateName)) {
+                                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.FORM_THEME));
+                                }
+                            }
+
+                            // {% form_theme form.child 'form/fields_child.html.twig' %}
+                            PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with"));
+                            if(withElement != null) {
+                                PsiElement arrayStart = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigTokenTypes.LBRACE_SQ,
+                                    TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
+                                );
+
+                                if(arrayStart != null) {
+                                    TwigHelper.visitStringInArray(arrayStart, pair ->
+                                        consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
+                                    );
+                                }
+                            }
                         }
                     }
                 }

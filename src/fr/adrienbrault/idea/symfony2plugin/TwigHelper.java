@@ -16,6 +16,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
+import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndexImpl;
@@ -1973,31 +1974,9 @@ public class TwigHelper {
         // {% include ['foo.html.twig', 'foo_1.html.twig'] %}
         PsiElement arrayMatch = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ));
         if(arrayMatch != null) {
-
-            // match: "([,)''(,])"
-            Collection<PsiElement> questString = PsiElementUtils.getNextSiblingOfTypes(arrayMatch, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-                    .afterLeafSkipping(
-                        STRING_WRAP_PATTERN,
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
-                        )
-                    )
-                    .beforeLeafSkipping(
-                        STRING_WRAP_PATTERN,
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                            PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
-                        )
-                    )
+            visitStringInArray(arrayMatch, pair ->
+                strings.add(pair.getFirst())
             );
-
-            for (PsiElement psiElement : questString) {
-                String text = psiElement.getText();
-                if(StringUtils.isNotBlank(text)) {
-                    strings.add(text);
-                }
-            }
         }
 
         PsiElement psiQuestion = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.QUESTION));
@@ -2006,7 +1985,37 @@ public class TwigHelper {
         }
 
         return strings;
+    }
 
+    /**
+     * Visit string values of given array start brace
+     * ["foobar"]
+     */
+    public static void visitStringInArray(@NotNull PsiElement arrayStartBrace, @NotNull Consumer<Pair<String, PsiElement>> pair) {
+        // match: "([,)''(,])"
+        Collection<PsiElement> questString = PsiElementUtils.getNextSiblingOfTypes(arrayStartBrace, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .afterLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
+                    )
+                )
+                .beforeLeafSkipping(
+                    STRING_WRAP_PATTERN,
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
+                    )
+                )
+        );
+
+        for (PsiElement psiElement : questString) {
+            String text = psiElement.getText();
+            if(StringUtils.isNotBlank(text)) {
+                pair.consume(Pair.create(text, psiElement));
+            }
+        }
     }
 
     /**
