@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -38,12 +39,8 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
      * @see PhpTypeProviderUtil#getResolvedParameter
      */
     public void testGetTypeSignature() {
-        Function<PhpNamedElement, String> func = new Function<PhpNamedElement, String>() {
-            @Override
-            public String fun(PhpNamedElement phpNamedElement) {
-                return phpNamedElement instanceof Method ? ((Method) phpNamedElement).getContainingClass().getFQN() : null;
-            }
-        };
+        Function<PhpNamedElement, String> func = phpNamedElement ->
+            phpNamedElement instanceof Method ? ((Method) phpNamedElement).getContainingClass().getFQN() : null;
 
         ArrayList<? extends PhpNamedElement> typeSignature = new ArrayList<PhpNamedElement>(PhpTypeProviderUtil.getTypeSignature(
             PhpIndex.getInstance(getProject()),
@@ -64,12 +61,29 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
      */
     public void testMergeSignatureResults() {
 
-        Collection<PhpNamedElement> phpNamedElements = new ArrayList<PhpNamedElement>();
+        Collection<PhpNamedElement> phpNamedElements = new ArrayList<>();
         phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "foo"));
         phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "bar"));
         phpNamedElements.add(PhpElementsUtil.getClassMethod(getProject(), "PhpType\\Bar", "car"));
 
         Collection<? extends PhpNamedElement> elements = PhpTypeProviderUtil.mergeSignatureResults(phpNamedElements, PhpElementsUtil.getClass(getProject(), "\\PhpType\\Foo"));
         assertEquals(2, elements.size());
+    }
+
+    /**
+     * @see PhpTypeProviderUtil#getReferenceSignatureByFirstParameter
+     */
+    public void testGetReferenceSignature() {
+        assertEquals("#F\\foo|foobar", PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(
+            PhpPsiElementFactory.createFunctionReference(getProject(), "<?php foo('foobar');"), "|".charAt(0))
+        );
+
+        assertEquals("#F\\foo|#K#C\\Foo.class", PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(
+            PhpPsiElementFactory.createFunctionReference(getProject(), "<?php class Foo {}; foo(Foo::class);"), "|".charAt(0))
+        );
+
+        assertEquals("#F\\foo|#P#C\\Foo.foo", PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(
+            PhpPsiElementFactory.createFunctionReference(getProject(), "<?php class Foo { private $foo = 'foobar' \n private function() { foo($this->foo); } }; "), "|".charAt(0))
+        );
     }
 }

@@ -48,7 +48,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        return PhpTypeProviderUtil.getReferenceSignature((MethodReference) e, TRIM_KEY);
+        return PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
     }
 
 

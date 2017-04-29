@@ -16,22 +16,38 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpTypeProviderUtil {
-
-    @Nullable
+    /**
+     * Deprecated for external plugins
+     */
+    @Deprecated
     public static String getReferenceSignature(MethodReference methodReference, char trimKey) {
-        return getReferenceSignature(methodReference, trimKey, 1);
+        return getReferenceSignatureByFirstParameter(methodReference, trimKey);
     }
 
-    @Nullable
+    /**
+     * Deprecated for external plugins
+     */
+    @Deprecated
     public static String getReferenceSignature(MethodReference methodReference, char trimKey, int equalParameterCount) {
+        return getReferenceSignatureByFirstParameter(methodReference, trimKey);
+    }
 
-        String refSignature = methodReference.getSignature();
+    /**
+     * Creates a signature for PhpType implementation which must be resolved inside 'getBySignature'
+     *
+     * eg. foo(MyClass::class) => "#F\\foo|#K#C\\Foo.class"
+     * 
+     * foo($this->foo), foo('foobar')
+     */
+    @Nullable
+    public static String getReferenceSignatureByFirstParameter(@NotNull FunctionReference functionReference, char trimKey) {
+        String refSignature = functionReference.getSignature();
         if(StringUtil.isEmpty(refSignature)) {
             return null;
         }
 
-        PsiElement[] parameters = methodReference.getParameters();
-        if (parameters.length != equalParameterCount) {
+        PsiElement[] parameters = functionReference.getParameters();
+        if(parameters.length == 0) {
             return null;
         }
 
@@ -54,8 +70,6 @@ public class PhpTypeProviderUtil {
             if (StringUtil.isNotEmpty(signature)) {
                 return refSignature + trimKey + signature;
             }
-
-            return null;
         }
 
         return null;

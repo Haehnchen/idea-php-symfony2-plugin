@@ -53,6 +53,18 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
      */
+    public void testThatContainerServiceTypeResolvesOnFirstParameterAndAllowMultipleParameter() {
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var $container \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
+                "$container->get('foo', 'foobar')->for<caret>mat()",
+            PlatformPatterns.psiElement(Method.class).withName("format")
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     */
     public void testThatDuplicateServiceClassInstancesAreMerged() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
             "<?php" +

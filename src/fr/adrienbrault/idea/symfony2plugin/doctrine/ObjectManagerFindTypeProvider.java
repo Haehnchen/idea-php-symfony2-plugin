@@ -51,8 +51,8 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider2 {
         // we need the param key on getBySignature(), since we are already in the resolved method there attach it to signature
         // param can have dotted values split with \
         PsiElement[] parameters = ((MethodReference)e).getParameters();
-        if (parameters.length == 2) {
-            return PhpTypeProviderUtil.getReferenceSignature((MethodReference) e, TRIM_KEY, 2);
+        if (parameters.length >= 2) {
+            return PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
         }
 
         return null;
