@@ -679,8 +679,8 @@
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
+    <depends>de.espend.idea.php.annotation</depends>
 
-    <depends optional="true">de.espend.idea.php.annotation</depends>
     <depends optional="true">de.espend.idea.php.toolbox</depends>
     <depends optional="true" config-file="deployment-aware.xml">com.jetbrains.plugins.webDeployment</depends>
 
