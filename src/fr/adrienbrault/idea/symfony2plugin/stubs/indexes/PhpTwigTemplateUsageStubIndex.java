@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
@@ -107,12 +108,12 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                      */
                     private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
                         // "@var" and user non related tags dont need an action
-                        if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                        if(AnnotationUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                             return;
                         }
 
                         // init scope imports
-                        Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
+                        Map<String, String> fileImports = AnnotationUtil.getUseImportMap(phpDocTag);
                         if(fileImports.size() == 0) {
                             return;
                         }

@@ -84,7 +84,7 @@ else
     exit 1
 fi
 
-download "http://plugins.jetbrains.com/files/7320/19208/php-annotation.jar"
+download "https://jetbrains-plugins.s3.amazonaws.com/7320/32475/php-annotation.jar"
 cp $travisCache/php-annotation.jar ./plugins
 
 rm -f $travisCache/php-toolbox.jar

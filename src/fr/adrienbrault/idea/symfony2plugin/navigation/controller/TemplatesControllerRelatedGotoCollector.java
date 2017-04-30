@@ -5,6 +5,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
@@ -38,12 +39,12 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
             Collection<PhpDocTag> phpDocTags = AnnotationBackportUtil.filterValidDocTags(PsiTreeUtil.findChildrenOfType(phpDocComment, PhpDocTag.class));
             if(phpDocTags.size() > 0) {
                 // cache use map for this phpDocComment
-                Map<String, String> importMap = AnnotationBackportUtil.getUseImportMap(phpDocComment);
+                Map<String, String> importMap = AnnotationUtil.getUseImportMap(phpDocComment);
                 if(importMap.size() > 0) {
                     for(PhpDocTag phpDocTag: phpDocTags) {
 
                         // resolve annotation and check for template
-                        PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag, importMap);
+                        PhpClass phpClass = AnnotationUtil.getAnnotationReference(phpDocTag, importMap);
                         if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
                             for(Map.Entry<String, PsiElement> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
                                 if(!uniqueTemplates.contains(entry.getKey())) {

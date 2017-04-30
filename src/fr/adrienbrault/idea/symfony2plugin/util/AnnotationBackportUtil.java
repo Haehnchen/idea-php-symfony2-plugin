@@ -8,18 +8,21 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
-import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.lexer.PhpDocTokenTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,81 +32,12 @@ import java.util.regex.Pattern;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class AnnotationBackportUtil {
-
-    public static Set<String> NON_ANNOTATION_TAGS = new HashSet<String>() {{
-        addAll(Arrays.asList(PhpDocUtil.ALL_TAGS));
-        add("@Annotation");
-        add("@inheritDoc");
-        add("@Enum");
-        add("@inheritdoc");
-        add("@Target");
-    }};
-
-    @Nullable
-    public static PhpClass getAnnotationReference(PhpDocTag phpDocTag, final Map<String, String> useImports) {
-
-        String tagName = phpDocTag.getName();
-        if(tagName.startsWith("@")) {
-            tagName = tagName.substring(1);
-        }
-
-        String className = tagName;
-        String subNamespaceName = "";
-        if(className.contains("\\")) {
-            className = className.substring(0, className.indexOf("\\"));
-            subNamespaceName = tagName.substring(className.length());
-        }
-
-        if(!useImports.containsKey(className)) {
-            return null;
-        }
-
-        return PhpElementsUtil.getClass(phpDocTag.getProject(), useImports.get(className) + subNamespaceName);
-
-    }
-
     @NotNull
-    public static Map<String, String> getUseImportMap(@NotNull PhpDocTag phpDocTag) {
-        PhpDocComment phpDoc = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
-        if(phpDoc == null) {
-            return Collections.emptyMap();
-        }
-
-        return getUseImportMap(phpDoc);
-    }
-
-    @NotNull
-    public static Map<String, String> getUseImportMap(@NotNull PhpDocComment phpDocComment) {
-
-        // search for use alias in local file
-        final Map<String, String> useImports = new HashMap<>();
-
-        PhpPsiElement scope = PhpCodeInsightUtil.findScopeForUseOperator(phpDocComment);
-        if(scope == null) {
-            return useImports;
-        }
-
-        for (PhpUseList phpUseList : PhpCodeInsightUtil.collectImports(scope)) {
-            for (PhpUse phpUse : phpUseList.getDeclarations()) {
-                String alias = phpUse.getAliasName();
-                if (alias != null) {
-                    useImports.put(alias, phpUse.getFQN());
-                } else {
-                    useImports.put(phpUse.getName(), phpUse.getFQN());
-                }
-            }
-        }
-
-        return useImports;
-    }
-
-    @NotNull
-    public static Collection<PhpDocTag> filterValidDocTags(Collection<PhpDocTag> phpDocTags) {
-
+    public static Collection<PhpDocTag> filterValidDocTags(@NotNull Collection<PhpDocTag> phpDocTags) {
         Collection<PhpDocTag> filteredPhpDocTags = new ArrayList<>();
 
         for(PhpDocTag phpDocTag: phpDocTags) {
-            if(!NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+            if(!AnnotationUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                 filteredPhpDocTags.add(phpDocTag);
             }
         }
@@ -114,11 +48,11 @@ public class AnnotationBackportUtil {
     public static boolean hasReference(@Nullable PhpDocComment docComment, String... className) {
         if(docComment == null) return false;
 
-        Map<String, String> uses = AnnotationBackportUtil.getUseImportMap(docComment);
+        Map<String, String> uses = AnnotationUtil.getUseImportMap(docComment);
 
         for(PhpDocTag phpDocTag: PsiTreeUtil.findChildrenOfAnyType(docComment, PhpDocTag.class)) {
-            if(!AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
-                PhpClass annotationReference = AnnotationBackportUtil.getAnnotationReference(phpDocTag, uses);
+            if(!AnnotationUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                PhpClass annotationReference = AnnotationUtil.getAnnotationReference(phpDocTag, uses);
                 if(annotationReference != null && PhpElementsUtil.isEqualClassName(annotationReference, className)) {
                     return true;
                 }
@@ -132,14 +66,14 @@ public class AnnotationBackportUtil {
     public static PhpDocTag getReference(@Nullable PhpDocComment docComment, String className) {
         if(docComment == null) return null;
 
-        Map<String, String> uses = AnnotationBackportUtil.getUseImportMap(docComment);
+        Map<String, String> uses = AnnotationUtil.getUseImportMap(docComment);
 
         for(PhpDocTag phpDocTag: PsiTreeUtil.findChildrenOfAnyType(docComment, PhpDocTag.class)) {
-            if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+            if(AnnotationUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                 continue;
             }
 
-            PhpClass annotationReference = AnnotationBackportUtil.getAnnotationReference(phpDocTag, uses);
+            PhpClass annotationReference = AnnotationUtil.getAnnotationReference(phpDocTag, uses);
             if(annotationReference != null && PhpElementsUtil.isEqualClassName(annotationReference, className)) {
                 return phpDocTag;
             }

@@ -20,6 +20,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
@@ -106,7 +107,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
 
     @Nullable
     public static String getClassNameReference(PhpDocTag phpDocTag) {
-        return getClassNameReference(phpDocTag, AnnotationBackportUtil.getUseImportMap(phpDocTag));
+        return getClassNameReference(phpDocTag, AnnotationUtil.getUseImportMap(phpDocTag));
     }
 
     @Nullable
@@ -166,13 +167,13 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
         public void visitPhpDocTag(PhpDocTag phpDocTag) {
 
             // "@var" and user non related tags dont need an action
-            if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+            if(AnnotationUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                 return;
             }
 
             // init file imports
             if(this.fileImports == null) {
-                this.fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
+                this.fileImports = AnnotationUtil.getUseImportMap(phpDocTag);
             }
 
             if(this.fileImports.size() == 0) {
