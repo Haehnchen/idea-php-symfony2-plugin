@@ -279,6 +279,12 @@
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="171.3780"/>
 
+    <extensions defaultExtensionNs="com.jetbrains.php">
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
+    </extensions>
+
     <extensions defaultExtensionNs="com.intellij">
 
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
@@ -335,12 +341,9 @@
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigFileIconProvider" />
         -->
 
-        <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
-        <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindTypeProvider"/>
         <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
-        <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider"/>
 
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>

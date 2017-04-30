@@ -5,20 +5,22 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class EventDispatcherTypeProvider implements PhpTypeProvider2 {
+public class EventDispatcherTypeProvider implements PhpTypeProvider3 {
 
-    final static char TRIM_KEY = '\u0197';
+    private static char TRIM_KEY = '\u0197';
 
     @Override
     public char getKey() {
@@ -27,7 +29,7 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider2 {
 
     @Nullable
     @Override
-    public String getType(PsiElement e) {
+    public PhpType getType(PsiElement e) {
 
         if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).symfonyContainerTypeProvider) {
             return null;
@@ -73,12 +75,11 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        return refSignature + TRIM_KEY + signature;
+        return new PhpType().add("#" + this.getKey() + refSignature + TRIM_KEY + signature);
     }
 
     @Override
-    public Collection<? extends PhpNamedElement> getBySignature(String expression, Project project) {
-
+    public Collection<? extends PhpNamedElement> getBySignature(String expression, Set<String> visited, int depth, Project project) {
         // get back our original call
         // since phpstorm 7.1.2 we need to validate this
         int endIndex = expression.lastIndexOf(TRIM_KEY);

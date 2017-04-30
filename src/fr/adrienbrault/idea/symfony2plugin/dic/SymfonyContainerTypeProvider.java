@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.HashSet;
@@ -8,7 +7,8 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider2;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -18,14 +18,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
+public class SymfonyContainerTypeProvider implements PhpTypeProvider3 {
 
-    final static char TRIM_KEY = '\u0182';
+    private static char TRIM_KEY = '\u0182';
 
     @Override
     public char getKey() {
@@ -34,9 +35,8 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
     @Nullable
     @Override
-    public String getType(PsiElement e) {
-
-        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).symfonyContainerTypeProvider) {
+    public PhpType getType(PsiElement e) {
+        if (!Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).symfonyContainerTypeProvider) {
             return null;
         }
 
@@ -45,11 +45,12 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
             return null;
         }
 
-        return PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
+        String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
+        return signature == null ? null : new PhpType().add("#" + this.getKey() + signature);
     }
 
     @Override
-    public Collection<? extends PhpNamedElement> getBySignature(String expression, Project project) {
+    public Collection<? extends PhpNamedElement> getBySignature(String expression, Set<String> visited, int depth, Project project) {
 
         // get back our original call
         // since phpstorm 7.1.2 we need to validate this
@@ -95,5 +96,4 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider2 {
 
         return phpNamedElementCollections;
     }
-
 }

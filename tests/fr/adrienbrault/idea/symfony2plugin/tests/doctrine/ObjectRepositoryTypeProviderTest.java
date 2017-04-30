@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
 
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
