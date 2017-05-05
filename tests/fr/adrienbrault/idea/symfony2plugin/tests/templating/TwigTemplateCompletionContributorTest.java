@@ -94,6 +94,14 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ d_test<caret> }}", "{{ d_test() }}");
     }
 
+    public void testThatMacroSelfImportProvidesCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% from _self import <caret> %}\n" +
+                "{% macro foobar(foobar) %}{% endmacro %}\n",
+            "foobar"
+        );
+    }
+
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
 
         try {

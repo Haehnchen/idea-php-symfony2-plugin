@@ -14,15 +14,14 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -258,6 +257,39 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertContainsElements(includes, ":Foobar:fields.html.twig", ":Foobar:fields_foobar.html.twig", ":Foobar:fields_foobar_1.html.twig");
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacros
+     */
+    public void testGetImportedMacros() {
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+            "{% macro foobar %}{% endmacro %}{% from _self import foobar as input, foobar %}"
+        );
+
+        Collection<TwigMacro> importedMacros = TwigUtil.getImportedMacros(psiFile);
+
+        assertTrue(
+            importedMacros.stream().anyMatch(twigMacro -> "input".equals(twigMacro.getName()))
+        );
+
+        assertTrue(
+            importedMacros.stream().anyMatch(twigMacro -> "foobar".equals(twigMacro.getName()))
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacrosNamespaces
+     */
+    public void testGetImportedMacrosNamespaces() {
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+            "{% import _self as macros %}\n" +
+            "{% macro foobar %}{% endmacro %}\n"
+        );
+
+        assertTrue(
+            TwigUtil.getImportedMacrosNamespaces(psiFile).stream().anyMatch(twigMacro -> "macros.foobar".equals(twigMacro.getName()))
+        );
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

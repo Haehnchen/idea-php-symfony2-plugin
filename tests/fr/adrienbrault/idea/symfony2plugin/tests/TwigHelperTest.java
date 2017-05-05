@@ -1,17 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTag;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -483,6 +486,29 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("app", TwigHelper.getDomainFromTranslationTag(
             (TwigCompositeElement) TwigElementFactory.createPsiElement(getProject(), "{% transchoice count with {'%name%': 'Fabien'} from 'app' %}", TwigElementTypes.TAG)
         ));
+    }
+
+    public void testGetMacros() {
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+            "{% macro input(name, value, type, size) %}{% endmacro %}\n" +
+            "{% macro foobar %}{% endmacro %}\n" +
+            "{% if foobar %}{% macro foobar_if %}{% endmacro %}{% endif %}"
+        );
+
+        Collection<TwigMacroTag> macros = TwigUtil.getMacros(psiFile);
+
+        assertEquals(
+            "(name, value, type, size)",
+            macros.stream().filter(twigMacroTag -> "input".equals(twigMacroTag.getName())).findFirst().get().getParameters()
+        );
+
+        assertNull(
+            macros.stream().filter(twigMacroTag -> "foobar".equals(twigMacroTag.getName())).findFirst().get().getParameters()
+        );
+
+        assertNull(
+            macros.stream().filter(twigMacroTag -> "foobar_if".equals(twigMacroTag.getName())).findFirst().get().getParameters()
+        );
     }
 
     private void assertEqual(Collection<String> c, String... values) {

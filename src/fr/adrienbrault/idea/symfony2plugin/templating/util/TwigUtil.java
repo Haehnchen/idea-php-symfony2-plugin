@@ -347,9 +347,10 @@ public class TwigUtil {
         return null;
     }
 
-    public static List<TwigMacro> getImportedMacros(@NotNull PsiFile psiFile) {
+    @NotNull
+    public static Collection<TwigMacro> getImportedMacros(@NotNull PsiFile psiFile) {
 
-        List<TwigMacro> macros = new ArrayList<>();
+        Collection<TwigMacro> macros = new ArrayList<>();
 
         PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, paramPsiElement ->
             PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG).accepts(paramPsiElement)
@@ -378,7 +379,6 @@ public class TwigUtil {
         }
 
         return macros;
-
     }
 
     public static List<TwigMacro> getImportedMacrosNamespaces(@NotNull PsiFile psiFile) {
@@ -404,10 +404,10 @@ public class TwigUtil {
                 macroFiles = TwigHelper.getTemplatePsiElements(psiFile.getProject(), templateName);
             }
 
-            if(macroFiles != null && macroFiles.length > 0) {
+            if(macroFiles.length > 0) {
                 for (PsiFile macroFile : macroFiles) {
-                    for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(macroFile).entrySet()) {
-                        macros.add(new TwigMacro(asName + '.' + entry.getKey(), templateName));
+                    for (TwigMacroTag entry: TwigUtil.getMacros(macroFile)) {
+                        macros.add(new TwigMacro(asName + '.' + entry.getName(), templateName));
                     }
                 }
             }
@@ -961,5 +961,50 @@ public class TwigUtil {
 
             return false;
         });
+    }
+
+    /**
+     * Get all macros inside file
+     *
+     * {% macro foobar %}{% endmacro %}
+     * {% macro input(name, value, type, size) %}{% endmacro %}
+     */
+    @NotNull
+    public static Collection<TwigMacroTag> getMacros(@NotNull PsiFile file) {
+        Collection<TwigMacroTag> macros = new ArrayList<>();
+
+        PsiElement[] psiElements = PsiTreeUtil.collectElements(file, psiElement ->
+            psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
+        );
+
+        for (PsiElement psiElement : psiElements) {
+            PsiElement firstChild = psiElement.getFirstChild();
+            if(firstChild == null) {
+                continue;
+            }
+
+            PsiElement macroNamePsi = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.IDENTIFIER, TwigTokenTypes.TAG_NAME);
+            if(macroNamePsi == null) {
+                continue;
+            }
+
+            String macroName = macroNamePsi.getText();
+
+            String parameter = null;
+            PsiElement nextSiblingAndSkip = PsiElementUtils.getNextSiblingAndSkip(macroNamePsi, TwigTokenTypes.LBRACE);
+            if(nextSiblingAndSkip != null) {
+                PsiElement nextSiblingOfType = PsiElementUtils
+                    .getNextSiblingOfType(nextSiblingAndSkip, PlatformPatterns.psiElement()
+                        .withElementType(TwigTokenTypes.RBRACE));
+
+                if(nextSiblingOfType != null) {
+                    parameter = file.getText().substring(nextSiblingAndSkip.getTextOffset(), nextSiblingOfType.getTextOffset() + 1);
+                }
+            }
+
+            macros.add(new TwigMacroTag(macroName, parameter));
+        }
+
+        return macros;
     }
 }

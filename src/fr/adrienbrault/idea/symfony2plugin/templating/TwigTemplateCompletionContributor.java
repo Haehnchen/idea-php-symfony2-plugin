@@ -163,8 +163,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 private void attachLookupElements(@NotNull CompletionResultSet resultSet, PsiFile[] psiFiles) {
                     for (PsiFile psiFile : psiFiles) {
-                        for (Map.Entry<String, String> entry: new TwigMarcoParser().getMacros(psiFile).entrySet()) {
-                            resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue(), true).withIcon(TwigIcons.TwigFileIcon));
+                        for (TwigMacroTag entry: TwigUtil.getMacros(psiFile)) {
+                            resultSet.addElement(LookupElementBuilder.create(entry.getName()).withTypeText(entry.getParameters(), true).withIcon(TwigIcons.TwigFileIcon));
                         }
                     }
                 }
@@ -198,10 +198,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(new TwigExtensionLookupElement(psiElement.getProject(), entry.getKey(), entry.getValue()));
                     }
 
+                    // {% import 'forms.html' as forms %}
                     for(TwigMacro twigMacro: TwigUtil.getImportedMacros(psiElement.getContainingFile())) {
                         resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate(), true).withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
+                    // {% from 'forms.html' import input as input_field, textarea %}
                     for(TwigMacro twigMacro: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile())) {
                         resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate(), true).withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }

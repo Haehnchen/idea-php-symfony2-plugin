@@ -283,7 +283,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         String funcName = psiElement.getText();
         String funcNameSearch = funcName;
 
-        List<TwigMacro> twigMacros;
+        Collection<TwigMacro> twigMacros;
 
         // check for complete file as namespace import {% import "file" as foo %}
         if(psiElement.getPrevSibling() != null && PlatformPatterns.psiElement(TwigTokenTypes.DOT).accepts(psiElement.getPrevSibling())) {
