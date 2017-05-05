@@ -15,6 +15,7 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -300,6 +301,26 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertTrue(
             TwigUtil.getImportedMacrosNamespaces(psiFile).stream().anyMatch(twigMacro -> "macros.foobar".equals(twigMacro.getName()))
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getSetDeclaration
+     */
+    public void testGetSetDeclaration() {
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+            "{% set foobar = 'foo' %}\n" +
+            "{% set footag %}{% endset %}\n"
+        );
+
+        Collection<TwigSet> setDeclaration = TwigUtil.getSetDeclaration(psiFile);
+
+        assertTrue(
+            setDeclaration.stream().anyMatch(twigMacro -> "foobar".equals(twigMacro.getName()))
+        );
+
+        assertTrue(
+            setDeclaration.stream().anyMatch(twigMacro -> "footag".equals(twigMacro.getName()))
         );
     }
 

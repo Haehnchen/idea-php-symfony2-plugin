@@ -496,22 +496,43 @@ public class TwigUtil {
         return macros;
     }
 
-    public static ArrayList<TwigSet> getSetDeclaration(PsiFile psiFile) {
+    /**
+     * {% set foobar = 'foo' %}
+     * {% set foo %}{% endset %}
+     *
+     * TODO: {% set foo, bar = 'foo', 'bar' %}
+     */
+    @NotNull
+    public static Collection<TwigSet> getSetDeclaration(@NotNull PsiFile psiFile) {
+        Collection<TwigSet> sets = new ArrayList<>();
 
-        ArrayList<TwigSet> sets = new ArrayList<>();
-        String str = psiFile.getText();
+        PsiElement[] psiElements = PsiTreeUtil.collectElements(psiFile, psiElement ->
+            psiElement.getNode().getElementType() == TwigElementTypes.SET_TAG
+        );
 
-        // {% set foo = 'foo' %}
-        // {% set foo %}
-        String regex = "\\{%\\s?set\\s?(.*?)\\s.*?%}";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
+        for (PsiElement psiElement : psiElements) {
+            PsiElement firstChild = psiElement.getFirstChild();
+            if(firstChild == null) {
+                continue;
+            }
 
-        while (matcher.find()) {
-            sets.add(new TwigSet(matcher.group(1)));
+            PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.TAG_NAME);
+            if(tagName == null || !"set".equals(tagName.getText())) {
+                continue;
+            }
+
+            PsiElement setVariable = PsiElementUtils.getNextSiblingAndSkip(tagName, TwigTokenTypes.IDENTIFIER);
+            if(setVariable == null) {
+                continue;
+            }
+
+            String text = setVariable.getText();
+            if(StringUtils.isNotBlank(text)) {
+                sets.add(new TwigSet(text));
+            }
         }
 
         return sets;
-
     }
 
     @Nullable
