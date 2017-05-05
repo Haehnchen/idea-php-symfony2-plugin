@@ -381,40 +381,78 @@ public class TwigUtil {
         return macros;
     }
 
-    public static List<TwigMacro> getImportedMacrosNamespaces(@NotNull PsiFile psiFile) {
+    /**
+     * {% import _self as foobar %}
+     * {% import 'foobar.html.twig' as foobar %}
+     */
+    public static Collection<TwigMacro> getImportedMacrosNamespaces(@NotNull PsiFile psiFile) {
+        PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, psiElement ->
+            psiElement.getNode().getElementType() == TwigElementTypes.IMPORT_TAG
+        );
 
-        List<TwigMacro> macros = new ArrayList<>();
+        Collection<TwigMacro> macros = new ArrayList<>();
 
-        String str = psiFile.getText();
-
-        // {% import '@foo/bar.html.twig' as macro1 %}
-        // {% import _self as file1 %}
-        String regex = "\\{%\\s?import\\s?(_self|['\"].*['\"])\\s?as\\s?(.*?)\\s?%}";
-        Matcher matcher = Pattern.compile(regex).matcher(str.replace("\n", " "));
-
-        while (matcher.find()) {
-
-            String templateName = matcher.group(1);
-            String asName = matcher.group(2);
-
-            PsiFile[] macroFiles;
-            if("_self".equals(templateName)) {
-                macroFiles = new PsiFile[] { psiFile };
-            } else {
-                macroFiles = TwigHelper.getTemplatePsiElements(psiFile.getProject(), templateName);
+        for (PsiElement importPsiElement : importPsiElements) {
+            PsiElement firstChild = importPsiElement.getFirstChild();
+            if(firstChild == null) {
+                continue;
             }
 
-            if(macroFiles.length > 0) {
+            PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.TAG_NAME);
+            if(tagName == null || !"import".equals(tagName.getText())) {
+                continue;
+            }
+
+            Collection<PsiFile> macroFiles = new HashSet<>();
+            String asName = null;
+            String template = null;
+
+            PsiElement selfPsi = PsiElementUtils.getNextSiblingAndSkip(tagName, TwigTokenTypes.RESERVED_ID);
+            if(selfPsi != null && "_self".equals(selfPsi.getText())) {
+                // {% import _self as foobar %}
+                template = "_self";
+
+                PsiElement asKeyword = PsiElementUtils.getNextSiblingAndSkip(selfPsi, TwigTokenTypes.AS_KEYWORD);
+                if(asKeyword != null) {
+                    PsiElement asVariable = PsiElementUtils.getNextSiblingAndSkip(asKeyword, TwigTokenTypes.IDENTIFIER);
+                    if(asVariable != null) {
+                        asName = asVariable.getText();
+                    }
+                }
+
+                macroFiles.add(psiFile);
+            } else {
+                // {% import 'foobar.html.twig' as foobar %}
+                PsiElement templateString = PsiElementUtils.getNextSiblingAndSkip(tagName, TwigTokenTypes.STRING_TEXT, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE);
+                if(templateString != null) {
+                    String templateName = templateString.getText();
+                    if(StringUtils.isNotBlank(templateName)) {
+                        template = templateName;
+                        PsiElement asKeyword = PsiElementUtils.getNextSiblingAndSkip(templateString, TwigTokenTypes.AS_KEYWORD, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE);
+                        if(asKeyword != null) {
+                            PsiElement asVariable = PsiElementUtils.getNextSiblingAndSkip(asKeyword, TwigTokenTypes.IDENTIFIER);
+                            if(asVariable != null) {
+                                asName = asVariable.getText();
+                            }
+                        }
+
+                        if(asName != null) {
+                            macroFiles.addAll(Arrays.asList(TwigHelper.getTemplatePsiElements(psiFile.getProject(), templateName)));
+                        }
+                    }
+                }
+            }
+
+            if(template != null && asName != null && macroFiles.size() > 0) {
                 for (PsiFile macroFile : macroFiles) {
                     for (TwigMacroTag entry: TwigUtil.getMacros(macroFile)) {
-                        macros.add(new TwigMacro(asName + '.' + entry.getName(), templateName));
+                        macros.add(new TwigMacro(asName + '.' + entry.getName(), template));
                     }
                 }
             }
         }
 
         return macros;
-
     }
 
     public static ArrayList<TwigSet> getSetDeclaration(PsiFile psiFile) {
