@@ -264,17 +264,28 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      */
     public void testGetImportedMacros() {
         PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
-            "{% macro foobar %}{% endmacro %}{% from _self import foobar as input, foobar %}"
+            "{% macro foobar %}{% endmacro %}\n" +
+            "{% from _self import foobar as input, foobar %}\n" +
+            "{% from 'foobar.html.twig' import foobar_twig %}\n" +
+            "{% from \"foobar2.html.twig\" import foobar_twig_2 %}"
         );
 
         Collection<TwigMacro> importedMacros = TwigUtil.getImportedMacros(psiFile);
 
-        assertTrue(
-            importedMacros.stream().anyMatch(twigMacro -> "input".equals(twigMacro.getName()))
+        assertTrue(importedMacros.stream().anyMatch(twigMacro ->
+            "input".equals(twigMacro.getName()) && "foobar".equals(twigMacro.getOriginalName()))
         );
 
-        assertTrue(
-            importedMacros.stream().anyMatch(twigMacro -> "foobar".equals(twigMacro.getName()))
+        assertTrue(importedMacros.stream().anyMatch(twigMacro ->
+            "foobar".equals(twigMacro.getName()) && "_self".equals(twigMacro.getTemplate()))
+        );
+
+        assertTrue(importedMacros.stream().anyMatch(twigMacro ->
+            "foobar_twig".equals(twigMacro.getName()) && "foobar.html.twig".equals(twigMacro.getTemplate()))
+        );
+
+        assertTrue(importedMacros.stream().anyMatch(twigMacro ->
+            "foobar_twig_2".equals(twigMacro.getName()) && "foobar2.html.twig".equals(twigMacro.getTemplate()))
         );
     }
 
