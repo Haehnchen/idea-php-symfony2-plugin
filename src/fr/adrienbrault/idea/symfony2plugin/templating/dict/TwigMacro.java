@@ -16,6 +16,9 @@ public class TwigMacro {
     @Nullable
     private String originalName;
 
+    @Nullable
+    private String parameter;
+
     public TwigMacro(@NotNull String name, @NotNull String template) {
         this.name = name;
         this.template = template;
@@ -39,5 +42,17 @@ public class TwigMacro {
     @NotNull
     public String getTemplate() {
         return template;
+    }
+
+    @Nullable
+    public String getParameter() {
+        return parameter;
+    }
+
+    @NotNull
+    public TwigMacro withParameter(@Nullable String parameter) {
+        this.parameter = parameter;
+
+        return this;
     }
 }

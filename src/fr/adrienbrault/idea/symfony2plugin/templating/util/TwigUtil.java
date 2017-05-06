@@ -556,7 +556,7 @@ public class TwigUtil {
             if(macroFiles.size() > 0) {
                 for (PsiFile macroFile : macroFiles) {
                     TwigUtil.visitMacros(macroFile, tagPair -> consumer.consume(Pair.create(
-                        new TwigMacro(asName + '.' + tagPair.getFirst().getName(), template),
+                        new TwigMacro(asName + '.' + tagPair.getFirst().getName(), template).withParameter(tagPair.getFirst().getParameters()),
                         tagPair.getSecond()
                     )));
                 }

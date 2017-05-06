@@ -46,6 +46,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -317,6 +319,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getTypeCompletionPattern(),
             new TypeCompletionProvider()
+        );
+
+        // {% import 'detail/index.html.twig' as foobar %}
+        // {{ foobar.<caret> }}
+        extend(
+            CompletionType.BASIC,
+            TwigHelper.getTypeCompletionPattern(),
+            new MyMacroImportAsCompletionProvider()
         );
 
         // {# @var variable \Foo\ClassName #}
@@ -642,5 +652,37 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
     }
 
+    /**
+     * {% import 'detail/index.html.twig' as foobar %}
+     * {{ foobar.<caret> }}
+     */
+    private static class MyMacroImportAsCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement psiElement = parameters.getOriginalPosition();
+            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return;
+            }
+
+            // "foobar".<caret>
+            String[] possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+            if(possibleTypes.length != 1) {
+                return;
+            }
+
+            resultSet.addAllElements(
+                TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile()).stream()
+                    .filter(twigMacro ->
+                        twigMacro.getName().startsWith(possibleTypes[0] + ".")
+                    )
+                    .map((Function<TwigMacro, LookupElement>) twigMacro ->
+                        LookupElementBuilder.create(twigMacro.getName().substring(possibleTypes[0].length() + 1))
+                            .withTypeText(twigMacro.getTemplate(), true)
+                            .withTailText(twigMacro.getParameter(), true)
+                            .withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance())
+                    ).collect(Collectors.toList())
+            );
+        }
+    }
 }
 
