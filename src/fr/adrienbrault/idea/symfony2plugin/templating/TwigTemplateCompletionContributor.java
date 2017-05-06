@@ -205,7 +205,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     // {% from 'forms.html' import input as input_field, textarea %}
                     for(TwigMacro twigMacro: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile())) {
-                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate(), true).withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
+                        resultSet.addElement(LookupElementBuilder.create(twigMacro.getName())
+                            .withTypeText(twigMacro.getTemplate(), true)
+                            .withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance())
+                        );
                     }
 
                     for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {

@@ -21,8 +21,10 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -247,7 +249,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testVisitTemplateIncludes() {
         Collection<String> includes = new ArrayList<>();
 
-        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
             "{% form_theme form ':Foobar:fields.html.twig' %}" +
             "{% form_theme form.foobar \":Foobar:fields_foobar.html.twig\" %}" +
             "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}"
@@ -264,7 +266,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacros
      */
     public void testGetImportedMacros() {
-        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
             "{% macro foobar %}{% endmacro %}\n" +
             "{% from _self import foobar as input, foobar %}\n" +
             "{% from 'foobar.html.twig' import foobar_twig %}\n" +
@@ -290,11 +292,26 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
     }
 
+    public void testGetImportedMacrosTargets() {
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
+            "{% macro foobar %}{% endmacro %}\n" +
+            "{% from _self import foobar as input, foobar %}\n"
+        );
+
+        assertTrue(TwigUtil.getImportedMacros(psiFile, "foobar").stream().anyMatch(psiElement ->
+            psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
+        ));
+
+        assertTrue(TwigUtil.getImportedMacros(psiFile, "input").stream().anyMatch(psiElement ->
+            psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
+        ));
+    }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacrosNamespaces
      */
     public void testGetImportedMacrosNamespaces() {
-        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
             "{% import _self as macros %}\n" +
             "{% macro foobar %}{% endmacro %}\n"
         );
@@ -308,7 +325,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getSetDeclaration
      */
     public void testGetSetDeclaration() {
-        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
             "{% set foobar = 'foo' %}\n" +
             "{% set footag %}{% endset %}\n"
         );
@@ -322,6 +339,19 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(
             setDeclaration.stream().anyMatch(twigMacro -> "footag".equals(twigMacro.getName()))
         );
+    }
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacrosNamespaces
+     */
+    public void testGetImportedMacrosNamespacesTargets() {
+        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
+            "{% macro my_foobar %}{% endmacro %}\n" +
+            "{% import _self as foobar %}\n"
+        );
+
+        assertTrue(TwigUtil.getImportedMacrosNamespaces(psiFile, "foobar.my_foobar").stream().anyMatch(
+            psiElement -> psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
+        ));
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

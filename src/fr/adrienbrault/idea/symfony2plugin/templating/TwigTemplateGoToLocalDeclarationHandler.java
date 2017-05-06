@@ -58,12 +58,12 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
         // {{ goto_me() }}
         if (TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)) {
-            psiElements.addAll(Arrays.asList(this.getMacros(psiElement)));
+            psiElements.addAll(this.getMacros(psiElement));
         }
 
         // {% from 'boo.html.twig' import goto_me %}
         if (TwigHelper.getTemplateImportFileReferenceTagPattern().accepts(psiElement)) {
-            psiElements.addAll(Arrays.asList(this.getMacros(psiElement)));
+            psiElements.addAll(this.getMacros(psiElement));
         }
 
         // {% set foo  %}
@@ -279,51 +279,28 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
     }
 
     @NotNull
-    private PsiElement[] getMacros(@NotNull PsiElement psiElement) {
+    private Collection<PsiElement> getMacros(@NotNull PsiElement psiElement) {
         String funcName = psiElement.getText();
-        String funcNameSearch = funcName;
-
-        Collection<TwigMacro> twigMacros;
 
         // check for complete file as namespace import {% import "file" as foo %}
-        if(psiElement.getPrevSibling() != null && PlatformPatterns.psiElement(TwigTokenTypes.DOT).accepts(psiElement.getPrevSibling())) {
-            PsiElement psiElement1 = psiElement.getPrevSibling().getPrevSibling();
-            if(psiElement1 == null) {
-                return new PsiElement[0];
+        // {% import _self as foobar %}
+        // {{ foobar.bar }}
+        PsiElement prevSibling = psiElement.getPrevSibling();
+        if(prevSibling != null && prevSibling.getNode().getElementType() == TwigTokenTypes.DOT) {
+            PsiElement identifier = prevSibling.getPrevSibling();
+            if(identifier == null || identifier.getNode().getElementType() != TwigTokenTypes.IDENTIFIER) {
+                return Collections.emptyList();
             }
 
-            funcNameSearch = psiElement1.getText() + "." + funcName;
-            twigMacros = TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile());
-        } else {
-            twigMacros = TwigUtil.getImportedMacros(psiElement.getContainingFile());
+            return TwigUtil.getImportedMacrosNamespaces(
+                psiElement.getContainingFile(),
+                identifier.getText() + "." + funcName
+            );
         }
 
-        for(TwigMacro twigMacro : twigMacros) {
-            if(twigMacro.getName().equals(funcNameSearch)) {
-
-                // switch to alias mode
-                final String macroName = twigMacro.getOriginalName() == null ? funcName : twigMacro.getOriginalName();
-
-                PsiFile psiFile;
-                if("_self".equals(twigMacro.getTemplate())) {
-                    psiFile = psiElement.getContainingFile();
-                } else {
-                    psiFile = TwigHelper.getTemplateFileByName(psiElement.getProject(), twigMacro.getTemplate());
-                }
-
-                if(psiFile != null) {
-                    return PsiTreeUtil.collectElements(psiFile, new RegexPsiElementFilter(
-                        TwigElementTypes.MACRO_TAG,
-                        "\\{%\\s?macro\\s?" + Pattern.quote(macroName) + "\\s?\\(.*%}")
-                    );
-                }
-
-            }
-        }
-
-        return new PsiElement[0];
+        // {% from _self import foobar as input, foobar %}
+        return TwigUtil.getImportedMacros(psiElement.getContainingFile(), funcName);
     }
-
 
     private PsiElement[] getControllerNameGoto(PsiElement psiElement) {
         Pattern pattern = Pattern.compile(ControllerDocVariableCollector.DOC_PATTERN);

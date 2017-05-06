@@ -7,9 +7,13 @@ import org.jetbrains.annotations.Nullable;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigMacro {
-
+    @NotNull
     private String name;
+
+    @NotNull
     private String template;
+
+    @Nullable
     private String originalName;
 
     public TwigMacro(@NotNull String name, @NotNull String template) {
@@ -27,12 +31,13 @@ public class TwigMacro {
         return originalName;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @NotNull
     public String getTemplate() {
         return template;
     }
-
 }

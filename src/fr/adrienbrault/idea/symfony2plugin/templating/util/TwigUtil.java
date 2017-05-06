@@ -389,11 +389,15 @@ public class TwigUtil {
      */
     @NotNull
     public static Collection<TwigMacro> getImportedMacros(@NotNull PsiFile psiFile) {
-        Collection<TwigMacro> macros = new ArrayList<>();
-
         PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, paramPsiElement ->
             PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG).accepts(paramPsiElement)
         );
+
+        if(importPsiElements.length == 0) {
+            return Collections.emptyList();
+        }
+
+        Collection<TwigMacro> macros = new ArrayList<>();
 
         for(PsiElement psiImportTag: importPsiElements) {
             PsiElement firstChild = psiImportTag.getFirstChild();
@@ -440,15 +444,80 @@ public class TwigUtil {
     }
 
     /**
+     * Get targets for macro imports
+     *
+     * {% from _self import foobar as input, foobar %}
+     * {% from 'foobar.html.twig' import foobar_twig %}
+     */
+    @NotNull
+    public static Collection<PsiElement> getImportedMacros(@NotNull PsiFile psiFile, @NotNull String funcName) {
+        Collection<PsiElement> psiElements = new ArrayList<>();
+
+        for (TwigMacro twigMacro : TwigUtil.getImportedMacros(psiFile)) {
+            if (!twigMacro.getName().equals(funcName)) {
+                continue;
+            }
+
+            // switch to alias mode
+            String macroName = twigMacro.getOriginalName() == null ? funcName : twigMacro.getOriginalName();
+
+            PsiFile[] foreignPsiFile;
+            if ("_self".equals(twigMacro.getTemplate())) {
+                foreignPsiFile = new PsiFile[] {psiFile};
+            } else {
+                foreignPsiFile = TwigHelper.getTemplatePsiElements(psiFile.getProject(), twigMacro.getTemplate());
+            }
+
+            for (PsiFile file : foreignPsiFile) {
+                visitMacros(file, pair -> {
+                    if(macroName.equals(pair.getFirst().getName())) {
+                        psiElements.add(pair.getSecond());
+                    }
+                });
+            }
+        }
+
+        return psiElements;
+    }
+
+    /**
      * {% import _self as foobar %}
      * {% import 'foobar.html.twig' as foobar %}
      */
     public static Collection<TwigMacro> getImportedMacrosNamespaces(@NotNull PsiFile psiFile) {
+        Collection<TwigMacro> macros = new ArrayList<>();
+
+        visitImportedMacrosNamespaces(psiFile, pair -> macros.add(pair.getFirst()));
+
+        return macros;
+    }
+
+    /**
+     * Find targets for given macros, alias supported
+     *
+     * {% import _self as foobar %}
+     * {{ foobar.bar() }}
+     */
+    public static Collection<PsiElement> getImportedMacrosNamespaces(@NotNull PsiFile psiFile, @NotNull String macroName) {
+        Collection<PsiElement> macros = new ArrayList<>();
+
+        visitImportedMacrosNamespaces(psiFile, pair -> {
+            if(pair.getFirst().getName().equals(macroName)) {
+                macros.add(pair.getSecond());
+            }
+        });
+
+        return macros;
+    }
+
+    /**
+     * {% import _self as foobar %}
+     * {% import 'foobar.html.twig' as foobar %}
+     */
+    public static void visitImportedMacrosNamespaces(@NotNull PsiFile psiFile, @NotNull Consumer<Pair<TwigMacro, PsiElement>> consumer) {
         PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, psiElement ->
             psiElement.getNode().getElementType() == TwigElementTypes.IMPORT_TAG
         );
-
-        Collection<TwigMacro> macros = new ArrayList<>();
 
         for (PsiElement importPsiElement : importPsiElements) {
             PsiElement firstChild = importPsiElement.getFirstChild();
@@ -486,14 +555,13 @@ public class TwigUtil {
 
             if(macroFiles.size() > 0) {
                 for (PsiFile macroFile : macroFiles) {
-                    for (TwigMacroTag entry: TwigUtil.getMacros(macroFile)) {
-                        macros.add(new TwigMacro(asName + '.' + entry.getName(), template));
-                    }
+                    TwigUtil.visitMacros(macroFile, tagPair -> consumer.consume(Pair.create(
+                        new TwigMacro(asName + '.' + tagPair.getFirst().getName(), template),
+                        tagPair.getSecond()
+                    )));
                 }
             }
         }
-
-        return macros;
     }
 
     /**
@@ -1073,6 +1141,19 @@ public class TwigUtil {
     public static Collection<TwigMacroTag> getMacros(@NotNull PsiFile file) {
         Collection<TwigMacroTag> macros = new ArrayList<>();
 
+        visitMacros(file, pair -> macros.add(pair.getFirst()));
+
+        return macros;
+    }
+
+    /**
+     * Get all macros inside file
+     *
+     * {% macro foobar %}{% endmacro %}
+     * {% macro input(name, value, type, size) %}{% endmacro %}
+     */
+    @NotNull
+    private static void visitMacros(@NotNull PsiFile file, Consumer<Pair<TwigMacroTag, PsiElement>> consumer) {
         PsiElement[] psiElements = PsiTreeUtil.collectElements(file, psiElement ->
             psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
         );
@@ -1102,9 +1183,7 @@ public class TwigUtil {
                 }
             }
 
-            macros.add(new TwigMacroTag(macroName, parameter));
+            consumer.consume(Pair.create(new TwigMacroTag(macroName, parameter), psiElement));
         }
-
-        return macros;
     }
 }
