@@ -298,6 +298,7 @@
         <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
         <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -356,7 +357,7 @@
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigFileIconProvider" />
         -->
 
-        <php.typeProvider2 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
+
 
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
