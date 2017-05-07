@@ -165,7 +165,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 private void attachLookupElements(@NotNull CompletionResultSet resultSet, PsiFile[] psiFiles) {
                     for (PsiFile psiFile : psiFiles) {
-                        for (TwigMacroTag entry: TwigUtil.getMacros(psiFile)) {
+                        for (TwigMacroTagInterface entry: TwigUtil.getMacros(psiFile)) {
                             resultSet.addElement(LookupElementBuilder.create(entry.getName()).withTypeText(entry.getParameters(), true).withIcon(TwigIcons.TwigFileIcon));
                         }
                     }

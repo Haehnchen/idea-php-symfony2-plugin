@@ -1,22 +1,17 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.elements.TwigCompositeElement;
-import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TwigMacroTagIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import gnu.trove.THashMap;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -24,22 +19,23 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, Void> {
+public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, TwigMacroTagIndex> {
 
-    public static final ID<String, Void> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_macro_function");
+    public static final ID<String, TwigMacroTagIndex> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_macro_function");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
+    private static ObjectStreamDataExternalizer<TwigMacroTagIndex> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
-    public ID<String, Void> getName() {
+    public ID<String, TwigMacroTagIndex> getName() {
         return KEY;
     }
 
     @NotNull
     @Override
-    public DataIndexer<String, Void, FileContent> getIndexer() {
+    public DataIndexer<String, TwigMacroTagIndex, FileContent> getIndexer() {
         return inputData -> {
-            final Map<String, Void> map = new THashMap<>();
+            final Map<String, TwigMacroTagIndex> map = new THashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
@@ -50,19 +46,8 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
                 return map;
             }
 
-            PsiTreeUtil.processElements(psiFile, psiElement -> {
-                // {% macro "foo"( %}
-                if(psiElement instanceof TwigCompositeElement && PlatformPatterns.psiElement(TwigElementTypes.MACRO_TAG).accepts(psiElement)) {
-                    PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTwigMacroNamePattern());
-                    if(fromTag != null) {
-                        String macroName = fromTag.getText();
-                        if(!StringUtils.isBlank(macroName)) {
-                            map.put(macroName, null);
-                        }
-                    }
-                }
-
-                return true;
+            TwigUtil.visitMacros(psiFile, pair -> {
+                map.put(pair.getFirst().getName(), new TwigMacroTagIndex(pair.getFirst().getName(), pair.getFirst().getParameters()));
             });
 
             return map;
@@ -78,8 +63,8 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     @NotNull
     @Override
-    public DataExternalizer<Void> getValueExternalizer() {
-        return ScalarIndexExtension.VOID_DATA_EXTERNALIZER;
+    public DataExternalizer<TwigMacroTagIndex> getValueExternalizer() {
+        return EXTERNALIZER;
     }
 
     @NotNull
@@ -95,9 +80,8 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
-
 }
 
 

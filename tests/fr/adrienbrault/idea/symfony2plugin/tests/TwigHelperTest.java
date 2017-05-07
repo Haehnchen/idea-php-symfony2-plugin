@@ -11,7 +11,7 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTag;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -489,13 +489,13 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public void testGetMacros() {
-        PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+        PsiFile psiFile = myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{% macro input(name, value, type, size) %}{% endmacro %}\n" +
             "{% macro foobar %}{% endmacro %}\n" +
             "{% if foobar %}{% macro foobar_if %}{% endmacro %}{% endif %}"
         );
 
-        Collection<TwigMacroTag> macros = TwigUtil.getMacros(psiFile);
+        Collection<TwigMacroTagInterface> macros = TwigUtil.getMacros(psiFile);
 
         assertEquals(
             "(name, value, type, size)",

@@ -29,8 +29,10 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TwigMacroTagIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
@@ -1138,10 +1140,20 @@ public class TwigUtil {
      * {% macro input(name, value, type, size) %}{% endmacro %}
      */
     @NotNull
-    public static Collection<TwigMacroTag> getMacros(@NotNull PsiFile file) {
-        Collection<TwigMacroTag> macros = new ArrayList<>();
+    public static Collection<TwigMacroTagInterface> getMacros(@NotNull PsiFile file) {
+        Collection<TwigMacroTagInterface> macros = new ArrayList<>();
 
-        visitMacros(file, pair -> macros.add(pair.getFirst()));
+        Collection<String> keys = new ArrayList<>();
+
+        FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
+        fileBasedIndex.processAllKeys(TwigMacroFunctionStubIndex.KEY, s -> {
+            keys.add(s);
+            return true;
+        }, GlobalSearchScope.fileScope(file), null);
+
+        for (String key : keys) {
+            macros.addAll(fileBasedIndex.getValues(TwigMacroFunctionStubIndex.KEY, key, GlobalSearchScope.fileScope(file)));
+        }
 
         return macros;
     }
@@ -1152,8 +1164,7 @@ public class TwigUtil {
      * {% macro foobar %}{% endmacro %}
      * {% macro input(name, value, type, size) %}{% endmacro %}
      */
-    @NotNull
-    private static void visitMacros(@NotNull PsiFile file, Consumer<Pair<TwigMacroTag, PsiElement>> consumer) {
+    public static void visitMacros(@NotNull PsiFile file, Consumer<Pair<TwigMacroTag, PsiElement>> consumer) {
         PsiElement[] psiElements = PsiTreeUtil.collectElements(file, psiElement ->
             psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
         );

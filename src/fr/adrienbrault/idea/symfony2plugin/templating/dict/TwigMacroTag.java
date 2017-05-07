@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigMacroTag {
+public class TwigMacroTag implements TwigMacroTagInterface {
 
     @NotNull
     private final String name;
