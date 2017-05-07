@@ -4,14 +4,12 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ConstraintPropertyReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.ModelFieldReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -19,8 +17,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -147,38 +143,6 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement) };
-                }
-            }
-        );
-
-        psiReferenceRegistrar.registerReferenceProvider(
-            // @TODO: implement global pattern for array parameters
-            PlatformPatterns.psiElement(StringLiteralExpression.class).withParent(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE),
-                    PlatformPatterns.psiElement(PhpElementTypes.ARRAY_KEY)
-                )
-            ).inside(PlatformPatterns.psiElement(ParameterList.class)),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 0)
-                        .withSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy")
-                        .withSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy")
-                        .match();
-
-                    if(methodMatchParameter == null) {
-                        return new PsiReference[0];
-                    }
-
-                    Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(psiElement.getProject(), methodMatchParameter.getMethodReference().getType().getTypes());
-                    if(phpClasses.size() == 0) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{ new ModelFieldReference((StringLiteralExpression) psiElement, phpClasses)};
                 }
             }
         );

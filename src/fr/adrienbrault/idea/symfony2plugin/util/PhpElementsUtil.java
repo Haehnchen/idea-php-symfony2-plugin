@@ -1390,6 +1390,32 @@ public class PhpElementsUtil {
     }
 
     /**
+     * Provide array key pattern. we need incomplete array key support, too.
+     *
+     * foo(['<caret>'])
+     * foo(['<caret>' => 'foobar'])
+     */
+    @NotNull
+    public static PsiElementPattern.Capture<PsiElement> getParameterListArrayValuePattern() {
+        return PlatformPatterns.psiElement()
+            .withParent(PlatformPatterns.psiElement(StringLiteralExpression.class).withParent(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement().withElementType(PhpElementTypes.ARRAY_VALUE)
+                        .withParent(PlatformPatterns.psiElement(ArrayCreationExpression.class)
+                            .withParent(ParameterList.class)
+                        ),
+
+                    PlatformPatterns.psiElement().withElementType(PhpElementTypes.ARRAY_KEY)
+                        .withParent(PlatformPatterns.psiElement(ArrayHashElement.class)
+                            .withParent(PlatformPatterns.psiElement(ArrayCreationExpression.class)
+                                .withParent(ParameterList.class)
+                            )
+                        )
+                ))
+            );
+    }
+
+    /**
      * Visit and collect all variables in given scope
      */
     private static class MyVariableRecursiveElementVisitor extends PsiRecursiveElementVisitor {

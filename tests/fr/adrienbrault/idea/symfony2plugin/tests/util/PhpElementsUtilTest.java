@@ -218,4 +218,31 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             "$var->modify()".equals(variable.getParent().getText()))
         );
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getParameterListArrayValuePattern
+     */
+    public void testGetParameterListArrayValuePattern() {
+        String[] strings = {
+            "foo(['<caret>']",
+            "foo(['<caret>' => 'foo']",
+            "foo(['foo' => null, '<caret>' => null]"
+        };
+
+        for (String s : strings) {
+            myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" + s);
+
+            assertTrue(
+                PhpElementsUtil.getParameterListArrayValuePattern().accepts(myFixture.getFile().findElementAt(myFixture.getCaretOffset()))
+            );
+        }
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "foobar(['foobar' => '<caret>'])"
+        );
+
+        assertFalse(
+            PhpElementsUtil.getParameterListArrayValuePattern().accepts(myFixture.getFile().findElementAt(myFixture.getCaretOffset()))
+        );
+    }
 }

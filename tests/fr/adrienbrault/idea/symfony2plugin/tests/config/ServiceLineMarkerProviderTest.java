@@ -28,6 +28,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
 
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("ServiceLineMarkerProvider.php"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("SymfonyPhpReferenceContributor.php"));
     }
 

@@ -30,8 +30,7 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider3 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-
-        if (DumbService.getInstance(e.getProject()).isDumb() || !Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).symfonyContainerTypeProvider) {
+        if (!Settings.getInstance(e.getProject()).pluginEnabled || !Settings.getInstance(e.getProject()).symfonyContainerTypeProvider) {
             return null;
         }
 

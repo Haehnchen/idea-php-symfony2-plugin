@@ -136,6 +136,7 @@ public class DoctrineMetadataUtil {
             project.putUserData(DOCTRINE_REPOSITORY_CACHE, cache);
         }
 
+        repositoryClass = StringUtils.stripStart(repositoryClass,"\\");
         if(!cache.getValue().containsKey(repositoryClass)) {
             return Collections.emptyList();
         }
@@ -149,6 +150,31 @@ public class DoctrineMetadataUtil {
         }
 
         return virtualFiles;
+    }
+
+    /**
+     * Find metadata model in which the given repository class is used
+     * eg "@ORM\Entity(repositoryClass="FOOBAR")", xml or yaml
+     */
+    @NotNull
+    public static Collection<DoctrineModelInterface> findMetadataModelForRepositoryClass(final @NotNull Project project, @NotNull String repositoryClass) {
+        repositoryClass = StringUtils.stripStart(repositoryClass,"\\");
+
+        Collection<DoctrineModelInterface> models = new ArrayList<>();
+
+        for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
+            for (DoctrineModelInterface repositoryDefinition : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                String myRepositoryClass = repositoryDefinition.getRepositoryClass();
+                if(StringUtils.isBlank(myRepositoryClass) ||
+                    !repositoryClass.equalsIgnoreCase(StringUtils.stripStart(myRepositoryClass, "\\"))) {
+                    continue;
+                }
+
+                models.add(repositoryDefinition);
+            }
+        }
+
+        return models;
     }
 
     @NotNull
