@@ -9,6 +9,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.144
+* Migrate MethodSignatureTypeProvider to PhpTypeProvider3; prevent cross plugin issue [#926](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/926) [#792](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792)
+
 ## 0.14.143
 * Add Twig form_theme indexer and provide targets in linemarker [#920](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/920)
 * ContainerInterface::get doesn't resolve on multiple parameter; drop parameter length check [#916](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/916)
