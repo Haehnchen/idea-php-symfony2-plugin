@@ -9,6 +9,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.143
+* Add Twig form_theme indexer and provide targets in linemarker [#920](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/920)
+* ContainerInterface::get doesn't resolve on multiple parameter; drop parameter length check [#916](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/916)
+* Move PHP Annotation plugin `de.espend.idea.php.annotation` from soft to hard dependency to drop duplicate code usages [#448](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/448)
+* Use new PhpTypeProvider3 and replace deprecated usages in Container::get, ObjectManager::get, EventDispatcherInterface::dispatch [#792](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792)
+* Refactoring of Twig macro logic, provide tests, use indexer [#924](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/924)
+* Add completion for Twig macros after DOT element for "import as" function [#924](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/924)
+* Drop regex from Twig set variable collector
+* Migrate Doctrine type provider to PhpTypeProvider3 implementation [#792](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792)
+* Refactoring of ObjectManager::findBy* references and support more possible repository usages [#925](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/925) [#898](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/898)
+
 ## 0.14.142
 * Implement environment variables references for %env(*) on .env and Docker files [#910](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/910)
 * Add Twig trans and transchoice tag support for translation keys [#459](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459)

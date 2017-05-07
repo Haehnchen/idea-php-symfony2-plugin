@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.142</version>
+    <version>0.14.143</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,19 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+<h2>0.14.143</h2>
+<ul>
+    <li>Add Twig form_theme indexer and provide targets in linemarker <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/920">#920</a></li>
+    <li>ContainerInterface::get doesn't resolve on multiple parameter; drop parameter length check <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/916">#916</a></li>
+    <li>Move PHP Annotation plugin `de.espend.idea.php.annotation` from soft to hard dependency to drop duplicate code usages <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/448">#448</a></li>
+    <li>Use new PhpTypeProvider3 and replace deprecated usages in Container::get, ObjectManager::get, EventDispatcherInterface::dispatch <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792">#792</a></li>
+    <li>Refactoring of Twig macro logic, provide tests, use indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/924">#924</a></li>
+    <li>Add completion for Twig macros after DOT element for "import as" function <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/924">#924</a></li>
+    <li>Drop regex from Twig set variable collector</li>
+    <li>Migrate Doctrine type provider to PhpTypeProvider3 implementation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792">#792</a></li>
+    <li>Refactoring of ObjectManager::findBy* references and support more possible repository usages <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/925">#925</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/898">#898</a></li>
+</ul>
+
 <h2>0.14.142</h2>
 <ul>
     <li>Implement environment variables references for %env(*) on .env and Docker files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/910">#910</a></li>
