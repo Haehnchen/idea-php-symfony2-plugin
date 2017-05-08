@@ -95,7 +95,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
 
         String fileName = psiFile.getName();
-        if(fileName.startsWith(".") || fileName.contains("Test")) {
+        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
             return false;
         }
 

@@ -112,7 +112,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
         String fileName = psiFile.getName();
 
-        if(fileName.startsWith(".") || fileName.contains("Test")) {
+        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
             return false;
         }
 

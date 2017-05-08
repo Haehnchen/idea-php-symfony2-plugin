@@ -86,7 +86,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
 
         String fileName = psiFile.getName();
 
-        if(fileName.startsWith(".") || fileName.contains("Test")) {
+        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
             return false;
         }
 
