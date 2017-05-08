@@ -336,6 +336,10 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         element = RouteHelper.getRouteNameTarget(getProject(), "myfoobar_car_index");
         assertNotNull(element);
         assertTrue(element.getText().contains("Route"));
+
+        element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff_2");
+        assertNotNull(element);
+        assertTrue(element.getText().contains("my_car_foo_stuff_2"));
     }
 
     @NotNull

@@ -9,7 +9,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -23,10 +22,13 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
+import de.espend.idea.php.annotation.dict.PhpDocTagAnnotation;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -67,6 +69,11 @@ import java.util.stream.Collectors;
 public class RouteHelper {
 
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
+
+    private static Set<String> ROUTE_CLASSES = new HashSet<>(Arrays.asList(
+        "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
+        "Symfony\\Component\\Routing\\Annotation\\Route"
+    ));
 
     public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<>();
 
@@ -570,9 +577,10 @@ public class RouteHelper {
         return String.format("%s:%s:%s", symfonyBundle.getName(), relative.replace("/", "\\"), methodName);
     }
 
-    public static VirtualFile[] getRouteDefinitionInsideFile(Project project, String... routeNames) {
+    @NotNull
+    private static Collection<VirtualFile> getRouteDefinitionInsideFile(@NotNull Project project, @NotNull String... routeNames) {
 
-        final List<VirtualFile> virtualFiles = new ArrayList<>();
+        Collection<VirtualFile> virtualFiles = new ArrayList<>();
 
         FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), virtualFile -> {
             virtualFiles.add(virtualFile);
@@ -584,7 +592,7 @@ public class RouteHelper {
             return true;
         }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE));
 
-        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
+        return virtualFiles;
 
     }
 
@@ -795,51 +803,58 @@ public class RouteHelper {
         return routes;
     }
 
+    /**
+     * Find every possible route name declaration inside yaml, xml or @Route annotation
+     */
     @Nullable
     public static PsiElement getRouteNameTarget(@NotNull Project project, @NotNull String routeName) {
-
-        VirtualFile[] virtualFiles = RouteHelper.getRouteDefinitionInsideFile(project, routeName);
-        for(VirtualFile virtualFile: virtualFiles) {
-
+        for(VirtualFile virtualFile: RouteHelper.getRouteDefinitionInsideFile(project, routeName)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
             if(psiFile instanceof YAMLFile) {
                 return YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName);
-            }
-
-            if(psiFile instanceof XmlFile) {
+            } else if(psiFile instanceof XmlFile) {
                 PsiElement target = RouteHelper.getXmlRouteNameTarget((XmlFile) psiFile, routeName);
                 if(target != null) {
                     return target;
                 }
-            }
+            } else if(psiFile instanceof PhpFile) {
+                // find on @Route annotation
 
-            if(psiFile instanceof PhpFile) {
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
+                    for (Method method : phpClass.getOwnMethods()) {
+                        PhpDocComment docComment = method.getDocComment();
+                        if(docComment == null) {
+                            continue;
+                        }
 
-                Collection<PhpDocTag> phpDocTagList = PsiTreeUtil.findChildrenOfType(psiFile, PhpDocTag.class);
-                for(PhpDocTag phpDocTag: phpDocTagList) {
+                        PhpDocCommentAnnotation container = AnnotationUtil.getPhpDocCommentAnnotationContainer(docComment);
+                        if(container == null) {
+                            continue;
+                        }
 
-                    String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag);
-                    if("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route".equals(annotationFqnName)) {
-                        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
-                        if(phpDocAttributeList != null) {
-                            // @TODO: use pattern
-                            String annotationRouteName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
-                            if(annotationRouteName != null) {
-                                return phpDocAttributeList;
-                            } else {
-                                String routeByMethod = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
-                                if(routeName.equals(routeByMethod)) {
-                                    return phpDocTag;
+                        // multiple @Route annotation in bundles are allowed
+                        for (String routeClass : ROUTE_CLASSES) {
+                            PhpDocTagAnnotation phpDocTagAnnotation = container.getPhpDocBlock(routeClass);
+                            if(phpDocTagAnnotation != null) {
+                                String annotationRouteName = phpDocTagAnnotation.getPropertyValue("name");
+                                if(annotationRouteName != null) {
+                                    // name provided @Route(name="foobar")
+                                    if(routeName.equals(annotationRouteName)) {
+                                        return phpDocTagAnnotation.getPropertyValuePsi("name");
+                                    }
+                                } else {
+                                    // just @Route() without name provided
+                                    String routeByMethod = AnnotationBackportUtil.getRouteByMethod(phpDocTagAnnotation.getPhpDocTag());
+                                    if(routeName.equals(routeByMethod)) {
+                                        return phpDocTagAnnotation.getPhpDocTag();
+                                    }
                                 }
                             }
                         }
                     }
-
                 }
-
             }
-
         }
 
         return null;
@@ -995,11 +1010,7 @@ public class RouteHelper {
      * Support "use Symfony\Component\Routing\Annotation\Route as BaseRoute;"
      */
     public static boolean isRouteClassAnnotation(@NotNull String clazz) {
-        String myClazz = StringUtils.stripStart(clazz, "\\").toLowerCase();
-
-        return
-            myClazz.equalsIgnoreCase("Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route") ||
-            myClazz.equalsIgnoreCase("Symfony\\Component\\Routing\\Annotation\\Route")
-        ;
+        String myClazz = StringUtils.stripStart(clazz, "\\");
+        return ROUTE_CLASSES.stream().anyMatch(s -> s.equalsIgnoreCase(myClazz));
     }
 }

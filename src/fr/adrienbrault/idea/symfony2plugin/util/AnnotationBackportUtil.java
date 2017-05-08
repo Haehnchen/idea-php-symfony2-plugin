@@ -148,7 +148,11 @@ public class AnnotationBackportUtil {
         return null;
     }
 
+    /**
+     * Use AnnotationUtil of "PHP Annotations Plugin"
+     */
     @Nullable
+    @Deprecated
     public static String getAnnotationRouteName(@Nullable String rawDocText) {
 
         if(rawDocText == null) {
