@@ -25,6 +25,8 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf","foo.bar.de.xlf"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf",".de.xlf"));
 
         myFixture.copyFileToProject("apple.de.yml", "Resources/translations/apple.de.yml");
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
@@ -32,6 +34,11 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
 
     public String getTestDataPath() {
         return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
+
+    public void testThatDomainFromFileIsExtracted() {
+        assertIndexContains(TranslationStubIndex.KEY, "foo.bar");
+        assertIndexNotContains(TranslationStubIndex.KEY, "");
     }
 
     public void testThatDomainAndTranslationsKeyOfXlfIsInIndex() {

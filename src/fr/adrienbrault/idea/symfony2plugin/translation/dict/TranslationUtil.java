@@ -77,15 +77,12 @@ public class TranslationUtil {
     }
 
     public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, final String domain) {
-
-
-        final List<PsiElement> psiFoundElements = new ArrayList<>();
-        final List<VirtualFile> virtualFilesFound = new ArrayList<>();
+        List<PsiElement> psiFoundElements = new ArrayList<>();
+        List<VirtualFile> virtualFilesFound = new ArrayList<>();
 
         // @TODO: completely remove this? support translation paths from service compiler
         // search for available domain files
         for(VirtualFile translationVirtualFile : getDomainFilePsiElements(project, domain)) {
-
             if(translationVirtualFile.getFileType() != YAMLFileType.YML) {
                 continue;
             }
@@ -102,9 +99,7 @@ public class TranslationUtil {
                         virtualFilesFound.add(translationVirtualFile);
                     }
                 }
-
             }
-
         }
 
         // collect on index
@@ -140,9 +135,10 @@ public class TranslationUtil {
             } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()))) {
                 // xlf are plain text because not supported by jetbrains
                 // for now we can only set file target
-                psiFoundElements.addAll(
-                    FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile)))
-                    .stream().filter(string -> string.contains(translationKey)).map(string -> psiFile).collect(Collectors.toList())
+                psiFoundElements.addAll(FileBasedIndex.getInstance()
+                    .getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile))).stream()
+                    .filter(string -> string.contains(translationKey)).map(string -> psiFile)
+                    .collect(Collectors.toList())
                 );
             }
 
