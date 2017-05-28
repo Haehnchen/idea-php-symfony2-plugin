@@ -9,6 +9,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.145
+* Reduce blacklist of all file indexes; only ending with "Test" blocks processing now [#897](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/897)
+* Fix translation domain name extraction on empty filename [#927](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/927)
+* Provide ternary and better string value detection for form getParent and getExtendedType
+* Globally support string value resolve for class constant
+
 ## 0.14.144
 * Migrate MethodSignatureTypeProvider to PhpTypeProvider3; prevent cross plugin issue [#926](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/926) [#792](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792)
 
