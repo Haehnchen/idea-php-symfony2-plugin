@@ -646,6 +646,13 @@ public class PhpElementsUtil {
         return implementedMethods;
     }
 
+    /**
+     * Resolve string definition in a recursive way
+     *
+     * $foo = Foo::class
+     * $this->foo = Foo::class
+     * $this->foo1 = $this->foo
+     */
     @Nullable
     public static String getStringValue(@Nullable PsiElement psiElement) {
         return getStringValue(psiElement, 0);
@@ -653,7 +660,6 @@ public class PhpElementsUtil {
 
     @Nullable
     private static String getStringValue(@Nullable PsiElement psiElement, int depth) {
-
         if(psiElement == null || ++depth > 5) {
             return null;
         }
@@ -665,14 +671,12 @@ public class PhpElementsUtil {
             }
 
             return resolvedString;
-        }
-
-        if(psiElement instanceof Field) {
+        } else if(psiElement instanceof Field) {
             return getStringValue(((Field) psiElement).getDefaultValue(), depth);
-        }
-
-        if(psiElement instanceof PhpReference) {
-
+        } else if(psiElement instanceof ClassConstantReference) {
+            // Foobar::class
+            return getClassConstantPhpFqn((ClassConstantReference) psiElement);
+        } else if(psiElement instanceof PhpReference) {
             PsiReference psiReference = psiElement.getReference();
             if(psiReference == null) {
                 return null;
@@ -694,7 +698,6 @@ public class PhpElementsUtil {
         }
 
         return null;
-
     }
 
     public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern, boolean includeMatching) {
