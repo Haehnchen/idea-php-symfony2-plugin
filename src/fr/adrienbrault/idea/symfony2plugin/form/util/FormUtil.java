@@ -437,52 +437,50 @@ public class FormUtil {
      *
      * Concatenation "__NAMESPACE__.'\Foo', "Foo::class" and string 'foo' supported
      */
-    @Nullable
-    public static String getFormParentOfPhpClass(@NotNull PhpClass phpClass) {
+    @NotNull
+    public static Collection<String> getFormParentOfPhpClass(@NotNull PhpClass phpClass) {
         Method getParent = phpClass.findMethodByName("getParent");
         if(getParent == null) {
-            return null;
+            return Collections.emptyList();
         }
+
+        Collection<String> parents = new HashSet<>();
 
         for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(getParent, PhpReturn.class)) {
             PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
-            if(firstPsiChild instanceof StringLiteralExpression) {
-                String contents = ((StringLiteralExpression) firstPsiChild).getContents();
-                if(StringUtils.isNotBlank(contents)) {
-                    return contents;
+
+            if(firstPsiChild instanceof TernaryExpression) {
+                // true ? 'foobar' : Foo::class
+                parents.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings((TernaryExpression) firstPsiChild));
+            } else if(firstPsiChild instanceof BinaryExpression && PsiElementAssertUtil.isNotNullAndIsElementType(firstPsiChild, PhpElementTypes.CONCATENATION_EXPRESSION)) {
+                // Symfony core: __NAMESPACE__.'\Foo'
+                PsiElement leftOperand = ((BinaryExpression) firstPsiChild).getLeftOperand();
+                ConstantReference constantReference = PsiElementAssertUtil.getInstanceOfOrNull(leftOperand, ConstantReference.class);
+                if(constantReference == null || !"__NAMESPACE__".equals(constantReference.getName())) {
+                    continue;
                 }
-                continue;
+
+                StringLiteralExpression stringValue = PsiElementAssertUtil.getInstanceOfOrNull(((BinaryExpression) firstPsiChild).getRightOperand(), StringLiteralExpression.class);
+                if(stringValue == null) {
+                    continue;
+                }
+
+                String contents = stringValue.getContents();
+                if(StringUtils.isBlank(contents)) {
+                    continue;
+                }
+
+                parents.add(StringUtils.strip(phpClass.getNamespaceName(), "\\") + contents);
             }
 
-            // Foo::class
-            if(firstPsiChild instanceof ClassConstantReference) {
-                return PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) firstPsiChild);
+            // fallback try to resolve string value
+            String contents = PhpElementsUtil.getStringValue(firstPsiChild);
+            if(StringUtils.isNotBlank(contents)) {
+                parents.add(contents);
             }
-
-            if(!(firstPsiChild instanceof BinaryExpression) || !PsiElementAssertUtil.isNotNullAndIsElementType(firstPsiChild, PhpElementTypes.CONCATENATION_EXPRESSION)) {
-                continue;
-            }
-
-            PsiElement leftOperand = ((BinaryExpression) firstPsiChild).getLeftOperand();
-            ConstantReference constantReference = PsiElementAssertUtil.getInstanceOfOrNull(leftOperand, ConstantReference.class);
-            if(constantReference == null || !"__NAMESPACE__".equals(constantReference.getName())) {
-                continue;
-            }
-
-            StringLiteralExpression stringValue = PsiElementAssertUtil.getInstanceOfOrNull(((BinaryExpression) firstPsiChild).getRightOperand(), StringLiteralExpression.class);
-            if(stringValue == null) {
-                continue;
-            }
-
-            String contents = stringValue.getContents();
-            if(StringUtils.isBlank(contents)) {
-                continue;
-            }
-
-            return StringUtils.strip(phpClass.getNamespaceName(), "\\") + contents;
         }
 
-        return null;
+        return parents;
     }
 
     /**
@@ -555,27 +553,29 @@ public class FormUtil {
      *
      * 'Foo::class' and string 'foo' supported
      */
-    @Nullable
-    public static String getFormExtendedType(@NotNull PhpClass phpClass) {
+    @NotNull
+    public static Collection<String> getFormExtendedType(@NotNull PhpClass phpClass) {
         Method getParent = phpClass.findMethodByName(FormOptionsUtil.EXTENDED_TYPE_METHOD);
         if(getParent == null) {
-            return null;
+            return Collections.emptySet();
         }
+
+        Collection<String> types = new HashSet<>();
 
         for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(getParent, PhpReturn.class)) {
             PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
 
-            // Foo::class
-            if(firstPsiChild instanceof ClassConstantReference) {
-                return PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) firstPsiChild);
+            // true ? 'foo' : 'foo'
+            if(firstPsiChild instanceof TernaryExpression) {
+                types.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings((TernaryExpression) firstPsiChild));
             }
 
             String stringValue = PhpElementsUtil.getStringValue(firstPsiChild);
             if(stringValue != null) {
-                return stringValue;
+                types.add(stringValue);
             }
         }
 
-        return null;
+        return types;
     }
 }

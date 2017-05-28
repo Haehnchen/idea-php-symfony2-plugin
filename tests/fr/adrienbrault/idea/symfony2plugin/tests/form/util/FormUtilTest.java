@@ -97,7 +97,7 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "}"
         );
 
-        assertEquals("bar", FormUtil.getFormParentOfPhpClass(phpClass));
+        assertContainsElements(FormUtil.getFormParentOfPhpClass(phpClass), "bar");
 
         phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
                 "namespace My\\Bar {\n" +
@@ -110,7 +110,7 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "}"
         );
 
-        assertEquals("My\\Bar\\Foo", FormUtil.getFormParentOfPhpClass(phpClass));
+        assertContainsElements(FormUtil.getFormParentOfPhpClass(phpClass), "My\\Bar\\Foo");
 
         phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
                 "namespace My\\Bar {\n" +
@@ -124,7 +124,21 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "}"
         );
 
-        assertEquals("My\\Bar\\Bar", FormUtil.getFormParentOfPhpClass(phpClass));
+        assertContainsElements(FormUtil.getFormParentOfPhpClass(phpClass), "My\\Bar\\Bar");
+
+        phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace My\\Bar {\n" +
+            "  class Bar() {}\n" +
+            "  class Foo {\n" +
+            "    public function getParent()" +
+            "    {\n" +
+            "      return true ? Bar::class : 'foobar';\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        );
+
+        assertContainsElements(FormUtil.getFormParentOfPhpClass(phpClass), "My\\Bar\\Bar", "foobar");
     }
 
     public void testGetFormNameOfPhpClass() {
@@ -211,5 +225,19 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "  class Foo {}\n" +
                 "}"
         )));
+    }
+
+    public void testGetFormExtendedType() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "   public function getExtendedType()\n" +
+            "   {\n" +
+            "       return true ? 'foobar' : Foobar::class;" +
+            "   }\n" +
+            "}\n"
+        );
+
+        assertContainsElements(FormUtil.getFormExtendedType(phpClass), "foobar", "Foobar");
     }
 }

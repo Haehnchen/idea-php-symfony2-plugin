@@ -673,7 +673,7 @@ public class PhpElementsUtil {
             return resolvedString;
         } else if(psiElement instanceof Field) {
             return getStringValue(((Field) psiElement).getDefaultValue(), depth);
-        } else if(psiElement instanceof ClassConstantReference) {
+        } else if(psiElement instanceof ClassConstantReference && "class".equals(((ClassConstantReference) psiElement).getName())) {
             // Foobar::class
             return getClassConstantPhpFqn((ClassConstantReference) psiElement);
         } else if(psiElement instanceof PhpReference) {
@@ -1416,6 +1416,30 @@ public class PhpElementsUtil {
                         )
                 ))
             );
+    }
+
+    /**
+     * true ? "foo" : "Foobar::class"
+     */
+    @NotNull
+    public static Collection<String> getTernaryExpressionConditionStrings(@NotNull TernaryExpression firstPsiChild) {
+        Collection<String> types = new ArrayList<>();
+
+        PsiElement[] psiElements = {
+            firstPsiChild.getFalseVariant(),
+            firstPsiChild.getTrueVariant()
+        };
+
+        for (PsiElement psiElement : psiElements) {
+            if(psiElement != null) {
+                String stringValue = PhpElementsUtil.getStringValue(psiElement);
+                if(stringValue != null) {
+                    types.add(stringValue);
+                }
+            }
+        }
+
+        return types;
     }
 
     /**

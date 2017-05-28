@@ -61,9 +61,10 @@ public class FormOptionsUtil {
 
         Collection<FormClass> extendedTypeClasses = new ArrayList<>();
         for(PhpClass phpClass: getFormTypeExtensionClassNames(project)) {
-            String formExtendedType = FormUtil.getFormExtendedType(phpClass);
-            if(formExtendedType != null && formTypeNamesList.contains(formExtendedType)) {
-                extendedTypeClasses.add(new FormClass(FormClassEnum.EXTENSION, phpClass, true));
+            for (String formExtendedType : FormUtil.getFormExtendedType(phpClass)) {
+                if(formExtendedType != null && formTypeNamesList.contains(formExtendedType)) {
+                    extendedTypeClasses.add(new FormClass(FormClassEnum.EXTENSION, phpClass, true));
+                }
             }
         }
 
@@ -242,8 +243,7 @@ public class FormOptionsUtil {
 
         // recursive search for parent form types
         if (depth < 10) {
-            String formParent = FormUtil.getFormParentOfPhpClass(phpClass);
-            if(formParent != null) {
+            for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
                 visitFormOptions(project, formParent, defaultValues, collector, ++depth, visitor);
             }
         }
@@ -266,8 +266,7 @@ public class FormOptionsUtil {
 
         // recursive search for parent form types
         if (depth < 10) {
-            String formParent = FormUtil.getFormParentOfPhpClass(phpClass);
-            if(formParent != null) {
+            for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
                 getFormDefaultKeys(project, formParent, defaultValues, collector, ++depth, visitor);
             }
         }
