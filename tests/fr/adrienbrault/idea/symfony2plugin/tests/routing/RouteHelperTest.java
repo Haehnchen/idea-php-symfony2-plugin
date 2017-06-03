@@ -341,6 +341,17 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(element);
         assertTrue(element.getText().contains("my_car_foo_stuff_2"));
     }
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#isServiceController
+     */
+    public void testIsServiceController() {
+        assertTrue(RouteHelper.isServiceController("Foo:foo"));
+        assertTrue(RouteHelper.isServiceController("Foo\\Bar:foo"));
+
+        assertFalse(RouteHelper.isServiceController("Foo::bar"));
+        assertFalse(RouteHelper.isServiceController("Foo"));
+        assertFalse(RouteHelper.isServiceController("Foo:bar:foo"));
+    }
 
     @NotNull
     private XmlFile createXmlFile(@NotNull String content) {

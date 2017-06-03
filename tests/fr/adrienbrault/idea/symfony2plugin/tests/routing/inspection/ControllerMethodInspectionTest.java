@@ -14,7 +14,8 @@ public class ControllerMethodInspectionTest extends SymfonyLightCodeInsightFixtu
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+        myFixture.copyFileToProject("services.yml");
+        myFixture.copyFileToProject("classes.php");
     }
 
     protected String getTestDataPath() {
@@ -38,6 +39,22 @@ public class ControllerMethodInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionNotContains("routing.yml", "" +
             "foo:\n" +
             "    defaults: { _controller: Route\\Controller\\FooController::fooA<caret>ction }",
+            "Create Method"
+        );
+    }
+
+    public void testClassControllerAsServiceWithClassNameAsServiceId() {
+        assertLocalInspectionNotContains("routing.yml", "" +
+                "foo:\n" +
+                "    defaults:\n" +
+                "      _controller: Route\\Controller\\FooController:foo<caret>Action",
+            "Create Method"
+        );
+
+        assertLocalInspectionContains("routing.yml", "" +
+                "foo:\n" +
+                "    defaults:\n" +
+                "      _controller: Route\\Controller\\FooController:bar<caret>Action",
             "Create Method"
         );
     }

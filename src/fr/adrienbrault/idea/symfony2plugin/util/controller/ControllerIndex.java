@@ -16,10 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -36,12 +33,10 @@ public class ControllerIndex {
        this.phpIndex = PhpIndex.getInstance(project);
     }
 
-    public List<ControllerAction> getActions() {
+    public Collection<ControllerAction> getActions() {
+        Collection<ControllerAction> actions = new ArrayList<>();
 
-        List<ControllerAction> actions = new ArrayList<>();
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
-
-        for (SymfonyBundle symfonyBundle : symfonyBundleUtil.getBundles()) {
+        for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(phpIndex).getBundles()) {
             actions.addAll(this.getActionMethods(symfonyBundle));
         }
 
@@ -73,7 +68,7 @@ public class ControllerIndex {
     }
 
     @Nullable
-    public ControllerAction getControllerAction(String shortcutName) {
+    private ControllerAction getControllerAction(String shortcutName) {
         for(ControllerAction controllerAction: this.getActions()) {
             if(controllerAction.getShortcutName().equals(shortcutName)) {
                 return controllerAction;
@@ -131,8 +126,7 @@ public class ControllerIndex {
     }
 
     @NotNull
-    public List<ControllerAction> getServiceActionMethods(@NotNull Project project) {
-
+    private Collection<ControllerAction> getServiceActionMethods(@NotNull Project project) {
         Map<String,Route> routes = RouteHelper.getAllRoutes(project);
         if(routes.size() == 0) {
             return Collections.emptyList();
@@ -142,9 +136,8 @@ public class ControllerIndex {
         // so we search for predefined service controller and use the public methods
         ContainerCollectionResolver.LazyServiceCollector collector = new ContainerCollectionResolver.LazyServiceCollector(project);
 
-        List<ControllerAction> actions = new ArrayList<>();
+        Collection<ControllerAction> actions = new ArrayList<>();
         for (String serviceName : ServiceRouteContainer.build(routes).getServiceNames()) {
-
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceName, collector);
             if(phpClass == null) {
                 continue;
@@ -156,7 +149,6 @@ public class ControllerIndex {
                     actions.add(new ControllerAction(serviceName + ":" + method.getName(), method));
                 }
             }
-
         }
 
         return actions;

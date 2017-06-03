@@ -215,10 +215,6 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         }
     }
 
-    private String getServiceName(PsiElement psiElement) {
-        return YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(psiElement));
-    }
-
     /**
      * getSubscribedEvents method quick fix check
      *
@@ -231,7 +227,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
     private class PhpSubscriberRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
         private final ProblemsHolder holder;
 
-        public PhpSubscriberRecursiveElementWalkingVisitor(ProblemsHolder holder) {
+        PhpSubscriberRecursiveElementWalkingVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 

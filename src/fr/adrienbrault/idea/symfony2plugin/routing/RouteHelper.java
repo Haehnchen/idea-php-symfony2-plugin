@@ -158,8 +158,7 @@ public class RouteHelper {
      * @return targets
      */
     @NotNull
-    public static PsiElement[] getMethodsOnControllerShortcut(Project project, String controllerName) {
-
+    public static PsiElement[] getMethodsOnControllerShortcut(@NotNull Project project, @Nullable String controllerName) {
         if(controllerName == null)  {
             return new PsiElement[0];
         }
@@ -774,7 +773,7 @@ public class RouteHelper {
     }
 
     public static boolean isServiceController(@NotNull String shortcutName) {
-        return !shortcutName.contains("::") && shortcutName.contains(":") && !shortcutName.contains("\\") && shortcutName.split(":").length == 2;
+        return !shortcutName.contains("::") && shortcutName.contains(":") && shortcutName.split(":").length == 2;
     }
 
     @NotNull
@@ -949,8 +948,8 @@ public class RouteHelper {
 
     @NotNull
     synchronized public static Map<String, Route> getAllRoutes(final @NotNull Project project) {
-
         CachedValue<Map<String, Route>> cache = project.getUserData(ROUTE_CACHE);
+
         if (cache == null) {
             cache = CachedValuesManager.getManager(project).createCachedValue(() ->
                 CachedValueProvider.Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
