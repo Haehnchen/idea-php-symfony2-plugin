@@ -20,10 +20,10 @@ public class ServiceXmlParserFactory {
 
     protected static Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<>();
 
-    protected Project project;
-    protected ServiceParserInterface serviceParserInstance;
+    private Project project;
+    private ServiceParserInterface serviceParserInstance;
 
-    protected HashMap<String, Long> serviceFiles = new HashMap<>();
+    private HashMap<String, Long> serviceFiles = new HashMap<>();
 
     private Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<>();
     private static final ExtensionPointName<CompiledServiceBuilderFactory> EXTENSIONS = new ExtensionPointName<>(
@@ -34,7 +34,7 @@ public class ServiceXmlParserFactory {
         this.project = project;
     }
 
-    protected boolean isModified(List<File> serviceFiles) {
+    private boolean isModified(Collection<File> serviceFiles) {
         if(this.serviceFiles.size() != serviceFiles.size()) {
             return true;
         }
@@ -68,7 +68,7 @@ public class ServiceXmlParserFactory {
 
         Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
 
-        List<File> settingsServiceFiles = symfony2ProjectComponent.getContainerFiles();
+        Collection<File> settingsServiceFiles = symfony2ProjectComponent.getContainerFiles();
 
         if (this.serviceParserInstance != null && !this.isModified(settingsServiceFiles)) {
             return (T) this.serviceParserInstance;

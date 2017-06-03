@@ -1,51 +1,45 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-import org.jetbrains.annotations.Nullable;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
+ * @author Daniel Espendiller <daniel@espendiller.net>
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class ServiceMap {
+    @NotNull
+    final private Collection<ServiceInterface> services;
 
-    private Map<String, String> map;
-    private Map<String, String> publicMap;
+    private Collection<String> ids;
 
-    public ServiceMap(Map<String, String> map, Map<String, String> publicMap) {
-        this.map = Collections.unmodifiableMap(map);
-        this.publicMap = Collections.unmodifiableMap(publicMap);
+    ServiceMap() {
+        this.services = Collections.unmodifiableCollection(Collections.emptyList());
     }
 
-    public ServiceMap() {
-       this.map = new HashMap<>();
-       this.publicMap = new HashMap<>();
+    ServiceMap(@NotNull Collection<ServiceInterface> services) {
+        this.services = Collections.unmodifiableCollection(services);
     }
 
-    public Map<String, String> getMap() {
-        return map;
-    }
-
-    public Map<String, String> getPublicMap() {
-        return publicMap;
-    }
-
-    @Nullable
-    public String resolveClassName(String findValue) {
-
-        if(!findValue.startsWith("\\")) {
-            findValue = "\\" + findValue;
+    public Collection<String> getIds() {
+        // cache value, instance cached until invalidated
+        if(ids != null) {
+            return ids;
         }
 
-        for (Map.Entry<String, String> entry : this.getMap().entrySet()) {
-            if (entry.getValue().equals(findValue)) {
-                return entry.getKey();
-            }
-        }
+        Collection<String> map = new HashSet<>();
 
-        return null;
+        services.forEach(service ->
+            map.add(service.getId())
+        );
+
+        return this.ids = Collections.unmodifiableCollection(map);
     }
 
+    @NotNull
+    public Collection<ServiceInterface> getServices() {
+        return services;
+    }
 }

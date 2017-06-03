@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -113,7 +113,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
         }
 
         // dont add configured service paths
-        List<File> settingsServiceFiles = psiFile.getProject().getComponent(Symfony2ProjectComponent.class).getContainerFiles();
+        Collection<File> settingsServiceFiles = psiFile.getProject().getComponent(Symfony2ProjectComponent.class).getContainerFiles();
         for(File file: settingsServiceFiles) {
             if(VfsUtil.isAncestor(VfsUtil.virtualToIoFile(inputData.getFile()), file, false)) {
                 return false;

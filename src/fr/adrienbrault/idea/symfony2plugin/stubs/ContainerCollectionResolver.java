@@ -158,8 +158,8 @@ public class ContainerCollectionResolver {
             return null;
         }
 
+        @NotNull
         public Map<String, ContainerService> getServices() {
-
             if(this.services != null) {
                 return this.services;
             }
@@ -167,8 +167,12 @@ public class ContainerCollectionResolver {
             this.services = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             // file system
-            for(Map.Entry<String, String> entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().entrySet()) {
-                services.put(entry.getKey(), new ContainerService(entry.getKey(), entry.getValue()));
+            for(ServiceInterface entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getServices()) {
+                // compiled container owns all class names in resolved state
+                // api safe check
+                if(entry.getClassName() != null) {
+                    services.put(entry.getId(), new ContainerService(entry.getId(), entry.getClassName()));
+                }
             }
 
             Collection<ServiceInterface> aliases = new ArrayList<>();
@@ -313,7 +317,9 @@ public class ContainerCollectionResolver {
             Set<String> serviceNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
             // local filesystem
-            serviceNames.addAll(ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getMap().keySet());
+            serviceNames.addAll(
+                ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getIds()
+            );
 
             // Extension points
             ServiceCollectorParameter.Id parameter = null;
@@ -331,7 +337,6 @@ public class ContainerCollectionResolver {
             );
 
             return serviceNames;
-
         }
 
 

@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -12,7 +13,8 @@ import java.io.InputStream;
  */
 public class XmlServiceParser extends AbstractServiceParser {
 
-    protected ServiceMap serviceMap = new ServiceMap();
+    @NotNull
+    private ServiceMap serviceMap = new ServiceMap();
 
     @Override
     public String getXPathFilter() {
@@ -21,16 +23,13 @@ public class XmlServiceParser extends AbstractServiceParser {
 
     public void parser(InputStream file) {
         try {
-            // @TODO: make this one beautiful
-            ServiceMap serviceMap1 = new ServiceMapParser().parse(file);
-            this.serviceMap.getMap().putAll(serviceMap1.getMap());
-            this.serviceMap.getPublicMap().putAll(serviceMap1.getPublicMap());
+            this.serviceMap = new ServiceMapParser().parse(file);
         } catch (SAXException | IOException | ParserConfigurationException ignored) {
         }
     }
 
+    @NotNull
     public ServiceMap getServiceMap() {
         return serviceMap;
     }
-
 }

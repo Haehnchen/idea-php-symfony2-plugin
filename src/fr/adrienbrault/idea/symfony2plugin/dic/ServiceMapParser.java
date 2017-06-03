@@ -1,8 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-import org.apache.commons.lang.StringUtils;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.XmlService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @author Daniel Espendiller <daniel@espendiller.net>
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class ServiceMapParser {
@@ -36,24 +39,47 @@ public class ServiceMapParser {
     }
 
     public ServiceMap parse(Document document) {
-        Map<String, String> map = new HashMap<>();
-        Map<String, String> publicMap = new HashMap<>();
-
         NodeList servicesNodes = document.getElementsByTagName("service");
+
+        Map<String, ServiceInterface> services = new HashMap<>();
+        Map<String, ServiceInterface> aliases = new HashMap<>();
+
         for (int i = 0; i < servicesNodes.getLength(); i++) {
-            Element node = (Element) servicesNodes.item(i);
-            if (node.hasAttribute("class") && node.hasAttribute("id")) {
-                map.put(node.getAttribute("id"), StringUtils.stripStart(node.getAttribute("class"), "\\"));
+            Node node = servicesNodes.item(i);
+            if(!(node instanceof Element)) {
+                continue;
             }
-            if (!(node.hasAttribute("public") && node.getAttribute("public").equals("false"))) {
-                publicMap.put(node.getAttribute("id"), StringUtils.stripStart(node.getAttribute("class"), "\\"));
+
+            // invalid service
+            XmlService service = XmlService.createFromXml((Element) node);
+            if(service == null) {
+                continue;
             }
-            if (node.hasAttribute("alias") && publicMap.get(node.getAttribute("alias")) != null) {
-                map.put(node.getAttribute("id"), map.get(node.getAttribute("alias")));
-                publicMap.put(node.getAttribute("id"), map.get(node.getAttribute("alias")));
+
+            if(service.getAlias() == null) {
+                services.put(service.getId(), service);
+            } else {
+                aliases.put(service.getId(), service);
             }
         }
 
-        return new ServiceMap(map, publicMap);
+        // resolve alias, as xml as a fully validated stated
+        // all alias are valid per file
+        aliases.values().forEach(service -> {
+            ServiceInterface serviceAlias = services.get(service.getAlias());
+            if(serviceAlias != null) {
+                String className = serviceAlias.getClassName();
+                if(className != null) {
+                    XmlService v = XmlService.create(
+                        service.getId(),
+                        className,
+                        service.isPublic()
+                    );
+                    services.put(service.getId(), v);
+                }
+            }
+        });
+
+        return new ServiceMap(services.values());
     }
 }

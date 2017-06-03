@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -100,13 +100,8 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return Settings.getInstance(project).pluginEnabled;
     }
 
-    public List<File> getContainerFiles() {
-        return this.getContainerFiles(true);
-    }
-
-    public List<File> getContainerFiles(boolean attachSetting) {
-
-        List<ContainerFile> containerFiles = new ArrayList<>();
+    public Collection<File> getContainerFiles() {
+        Collection<ContainerFile> containerFiles = new ArrayList<>();
 
         ServiceContainerLoaderParameter containerLoaderExtensionParameter = new ServiceContainerLoaderParameter(project, containerFiles);
         for(ServiceContainerLoader loaderExtension : SERVICE_CONTAINER_POINT_NAME.getExtensions()) {
@@ -119,7 +114,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             }
         }
 
-        List<File> validFiles = new ArrayList<>();
+        Collection<File> validFiles = new ArrayList<>();
         for(ContainerFile containerFile : containerFiles) {
             if(containerFile.exists(this.project)) {
                 validFiles.add(containerFile.getFile(this.project));

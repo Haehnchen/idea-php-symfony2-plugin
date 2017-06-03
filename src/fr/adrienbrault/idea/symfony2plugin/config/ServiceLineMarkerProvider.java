@@ -17,15 +17,14 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -85,14 +84,18 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    protected void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    /**
+     * Dropable feature
+     */
+    @Deprecated
+    private void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
 
         if (!(psiElement instanceof StringLiteralExpression) || !(psiElement.getContext() instanceof ParameterList)) {
             return;
         }
 
         ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+        if (!(parameterList.getContext() instanceof MethodReference)) {
             return;
         }
 
@@ -102,19 +105,13 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         String serviceId = ((StringLiteralExpression) psiElement).getContents();
-
-        String serviceClass = ServiceXmlParserFactory.getInstance(psiElement.getProject(), XmlServiceParser.class).getServiceMap().getMap().get(serviceId.toLowerCase());
+        PhpClass serviceClass = ServiceUtil.getServiceClass(psiElement.getProject(), serviceId);
         if (null == serviceClass) {
             return;
         }
 
-        PsiElement[] resolveResults = PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
-        if(resolveResults.length == 0) {
-            return;
-        }
-
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SERVICE_LINE_MARKER).
-            setTargets(resolveResults).
+            setTargets(serviceClass).
             setTooltipText("Navigate to service");
 
         result.add(builder.createLineMarkerInfo(psiElement));
