@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
-import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -100,7 +99,7 @@ public class VoterUtil {
                         continue;
                     }
 
-                    YAMLKeyValue roles = ((YAMLHashImpl) value1).getKeyValueByKey("roles");
+                    YAMLKeyValue roles = ((YAMLMapping) value1).getKeyValueByKey("roles");
                     if(roles == null) {
                         continue;
                     }
