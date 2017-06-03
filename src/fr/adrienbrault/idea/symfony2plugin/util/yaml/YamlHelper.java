@@ -1029,29 +1029,32 @@ public class YamlHelper {
                                         if(StringUtils.isNotBlank(methodName)) {
                                             PsiElement callYamlKeyValue = callYamlSeq.getContext();
                                             if(callYamlKeyValue instanceof YAMLKeyValue) {
-                                                final YAMLKeyValue classKeyValue = ((YAMLKeyValue) callYamlKeyValue).getParentMapping().getKeyValueByKey("class");
-                                                if (classKeyValue != null) {
-                                                    String valueText = classKeyValue.getValueText();
-                                                    if (StringUtils.isNotBlank(valueText)) {
-                                                        consumer.consume(new ParameterVisitor(
-                                                            valueText,
-                                                            methodName,
-                                                            PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
-                                                        );
-                                                    }
-                                                } else {
-                                                    // named services; key is our class name
-                                                    PsiElement yamlMapping = callYamlKeyValue.getParent();
-                                                    if(yamlMapping instanceof YAMLMapping) {
-                                                        PsiElement parent = yamlMapping.getParent();
-                                                        if(parent instanceof YAMLKeyValue) {
-                                                            String keyText = ((YAMLKeyValue) parent).getKeyText();
-                                                            if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
-                                                                consumer.consume(new ParameterVisitor(
-                                                                    keyText,
-                                                                    methodName,
-                                                                    PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
-                                                                );
+                                                YAMLMapping parentMapping = ((YAMLKeyValue) callYamlKeyValue).getParentMapping();
+                                                if(parentMapping != null) {
+                                                    YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
+                                                    if (classKeyValue != null) {
+                                                        String valueText = classKeyValue.getValueText();
+                                                        if (StringUtils.isNotBlank(valueText)) {
+                                                            consumer.consume(new ParameterVisitor(
+                                                                valueText,
+                                                                methodName,
+                                                                PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
+                                                            );
+                                                        }
+                                                    } else {
+                                                        // named services; key is our class name
+                                                        PsiElement yamlMapping = callYamlKeyValue.getParent();
+                                                        if(yamlMapping instanceof YAMLMapping) {
+                                                            PsiElement parent = yamlMapping.getParent();
+                                                            if(parent instanceof YAMLKeyValue) {
+                                                                String keyText = ((YAMLKeyValue) parent).getKeyText();
+                                                                if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
+                                                                    consumer.consume(new ParameterVisitor(
+                                                                        keyText,
+                                                                        methodName,
+                                                                        PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
+                                                                    );
+                                                                }
                                                             }
                                                         }
                                                     }
