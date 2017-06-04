@@ -117,6 +117,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
 
         assertEquals("espend\\MyFirstFoo", service.getClassName());
         assertEquals("espend.my_next_foo.inner", service.getName());
+        assertTrue(service.isPrivate());
 
         service = ContainerCollectionResolver.getService(getProject(), "espend.my_bar_customer_inner.inner_foo");
         assertNotNull(service);

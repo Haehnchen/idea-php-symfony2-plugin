@@ -285,7 +285,7 @@ public class ContainerCollectionResolver {
                 }
 
                 // @TODO: migrate constructor to ServiceInterface and decorate
-                ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), origin.isPrivate());
+                ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), true);
                 origin.getClassNames().forEach(value::addClassName);
 
                 this.services.put(decorationInnerName, value);
