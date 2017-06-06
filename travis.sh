@@ -2,7 +2,7 @@
 
 ideaVersion="2017.1"
 if [ "$PHPSTORM_ENV" == "2017.1" ]; then
-    ideaVersion="2017.1"
+    ideaVersion="2017.1.3"
 elif [ "$PHPSTORM_ENV" == "eap" ]; then
     ideaVersion="163.5644.15"
 fi

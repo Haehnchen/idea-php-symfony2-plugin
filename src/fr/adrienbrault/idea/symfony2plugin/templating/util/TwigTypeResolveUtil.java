@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -22,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
@@ -51,18 +51,11 @@ public class TwigTypeResolveUtil {
 
     private static String[] propertyShortcuts = new String[] {"get", "is"};
 
-    private static TwigFileVariableCollector[] twigFileVariableCollectors = new TwigFileVariableCollector[] {
-        new StaticVariableCollector(),
-        new GlobalExtensionVariableCollector(),
-        new ControllerDocVariableCollector(),
-        new ServiceContainerVariableCollector(),
-        new FileDocVariableCollector(),
-        new ControllerVariableCollector(),
-        new IncludeVariableCollector(),
-        new MarcoScopeVariableCollector(),
-    };
+    private static final ExtensionPointName<TwigFileVariableCollector> TWIG_FILE_VARIABLE_COLLECTORS = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.TwigVariableCollector"
+    );
 
-    private static TwigTypeResolver[] twigTypeResolvers = new TwigTypeResolver[] {
+    private static TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
         new FormVarsResolver(),
         new FormFieldResolver(),
     };
@@ -121,7 +114,7 @@ public class TwigTypeResolveUtil {
         if(typeName.length == 1) {
 
             Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
-            for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
+            for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
                 twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<>(), rootVariables);
             }
 
@@ -237,13 +230,12 @@ public class TwigTypeResolveUtil {
         visitedFiles.add(virtualFile);
 
         TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, visitedFiles);
-        for(TwigFileVariableCollector collector: twigFileVariableCollectors) {
+        for(TwigFileVariableCollector collector: TWIG_FILE_VARIABLE_COLLECTORS.getExtensions()) {
             collector.collect(collectorParameter, globalVars);
 
             if(collector instanceof TwigFileVariableCollector.TwigFileVariableCollectorExt) {
                 ((TwigFileVariableCollector.TwigFileVariableCollectorExt) collector).collectVars(collectorParameter, controllerVars);
             }
-
         }
 
         // globals first
@@ -385,7 +377,7 @@ public class TwigTypeResolveUtil {
                 }
             }
 
-            for(TwigTypeResolver twigTypeResolver: twigTypeResolvers) {
+            for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
                 twigTypeResolver.resolve(phpNamedElements, previousElement, typeName, twigTypeContainer, null);
             }
 
