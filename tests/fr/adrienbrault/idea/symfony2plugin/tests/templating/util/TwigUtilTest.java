@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -8,10 +9,7 @@ import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.twig.TwigFile;
-import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.TwigLanguage;
-import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.*;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
@@ -340,6 +338,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             setDeclaration.stream().anyMatch(twigMacro -> "footag".equals(twigMacro.getName()))
         );
     }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacrosNamespaces
      */
@@ -352,6 +351,23 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(TwigUtil.getImportedMacrosNamespaces(psiFile, "foobar.my_foobar").stream().anyMatch(
             psiElement -> psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
         ));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTwigMacroNameAndParameter
+     */
+    public void testGetTwigMacroNameAndParameter() {
+        PsiElement psiElement = TwigElementFactory.createPsiElement(
+            getProject(),
+            "{% macro foo(foobar, foo, bar) %}{% endmacro %}",
+            TwigElementTypes.MACRO_TAG
+        );
+
+        Pair<String, String> parameter = TwigUtil.getTwigMacroNameAndParameter(psiElement);
+
+        assertNotNull(parameter);
+        assertEquals("foo", parameter.getFirst());
+        assertEquals("(foobar, foo, bar)", parameter.getSecond());
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

@@ -58,7 +58,8 @@ public class TwigTypeResolveUtil {
         new ServiceContainerVariableCollector(),
         new FileDocVariableCollector(),
         new ControllerVariableCollector(),
-        new IncludeVariableCollector()
+        new IncludeVariableCollector(),
+        new MarcoScopeVariableCollector(),
     };
 
     private static TwigTypeResolver[] twigTypeResolvers = new TwigTypeResolver[] {

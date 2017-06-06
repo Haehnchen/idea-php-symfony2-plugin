@@ -1170,31 +1170,50 @@ public class TwigUtil {
         );
 
         for (PsiElement psiElement : psiElements) {
-            PsiElement firstChild = psiElement.getFirstChild();
-            if(firstChild == null) {
+            Pair<String, String> macro = getTwigMacroNameAndParameter(psiElement);
+            if(macro == null) {
                 continue;
             }
 
-            PsiElement macroNamePsi = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.IDENTIFIER, TwigTokenTypes.TAG_NAME);
-            if(macroNamePsi == null) {
-                continue;
-            }
-
-            String macroName = macroNamePsi.getText();
-
-            String parameter = null;
-            PsiElement nextSiblingAndSkip = PsiElementUtils.getNextSiblingAndSkip(macroNamePsi, TwigTokenTypes.LBRACE);
-            if(nextSiblingAndSkip != null) {
-                PsiElement nextSiblingOfType = PsiElementUtils
-                    .getNextSiblingOfType(nextSiblingAndSkip, PlatformPatterns.psiElement()
-                        .withElementType(TwigTokenTypes.RBRACE));
-
-                if(nextSiblingOfType != null) {
-                    parameter = file.getText().substring(nextSiblingAndSkip.getTextOffset(), nextSiblingOfType.getTextOffset() + 1);
-                }
-            }
-
-            consumer.consume(Pair.create(new TwigMacroTag(macroName, parameter), psiElement));
+            consumer.consume(Pair.create(new TwigMacroTag(macro.getFirst(), macro.getSecond()), psiElement));
         }
+    }
+
+    /**
+     * Extract parameter from a Twig macro tag
+     *
+     * @param psiElement A MACRO_TAG node iElementType type
+     * @return "(foo, foobar)"
+     */
+    @Nullable
+    public static Pair<String, String> getTwigMacroNameAndParameter(@NotNull PsiElement psiElement) {
+        PsiElement firstChild = psiElement.getFirstChild();
+        if(firstChild == null) {
+            return null;
+        }
+
+        PsiElement macroNamePsi = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.IDENTIFIER, TwigTokenTypes.TAG_NAME);
+        if(macroNamePsi == null) {
+            return null;
+        }
+
+        String macroName = macroNamePsi.getText();
+
+        String parameter = null;
+        PsiElement nextSiblingAndSkip = PsiElementUtils.getNextSiblingAndSkip(macroNamePsi, TwigTokenTypes.LBRACE);
+        if(nextSiblingAndSkip != null) {
+            PsiElement nextSiblingOfType = PsiElementUtils
+                .getNextSiblingOfType(nextSiblingAndSkip, PlatformPatterns.psiElement()
+                    .withElementType(TwigTokenTypes.RBRACE));
+
+            if(nextSiblingOfType != null) {
+                parameter = psiElement.getContainingFile().getText().substring(
+                    nextSiblingAndSkip.getTextOffset(),
+                    nextSiblingOfType.getTextOffset() + 1
+                );
+            }
+        }
+
+        return Pair.create(macroName, parameter);
     }
 }
