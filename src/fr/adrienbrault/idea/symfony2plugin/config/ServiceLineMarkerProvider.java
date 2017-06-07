@@ -57,8 +57,6 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        boolean phpHighlightServices = Settings.getInstance(project).phpHighlightServices;
-
         for(PsiElement psiElement: psiElements) {
 
             if(PhpElementsUtil.getMethodReturnPattern().accepts(psiElement)) {
@@ -73,48 +71,10 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 this.constraintValidatorClassMarker(psiElement, results);
             }
 
-            if(phpHighlightServices) {
-                collectNavigationMarkers(psiElement, results);
-            }
-
             if(psiElement instanceof PhpFile) {
                 routeAnnotationFileResource((PhpFile) psiElement, results);
             }
         }
-
-    }
-
-    /**
-     * Dropable feature
-     */
-    @Deprecated
-    private void collectNavigationMarkers(@NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
-
-        if (!(psiElement instanceof StringLiteralExpression) || !(psiElement.getContext() instanceof ParameterList)) {
-            return;
-        }
-
-        ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (!(parameterList.getContext() instanceof MethodReference)) {
-            return;
-        }
-
-        MethodReference method = (MethodReference) parameterList.getContext();
-        if(!new Symfony2InterfacesUtil().isContainerGetCall(method)) {
-            return;
-        }
-
-        String serviceId = ((StringLiteralExpression) psiElement).getContents();
-        PhpClass serviceClass = ServiceUtil.getServiceClass(psiElement.getProject(), serviceId);
-        if (null == serviceClass) {
-            return;
-        }
-
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SERVICE_LINE_MARKER).
-            setTargets(serviceClass).
-            setTooltipText("Navigate to service");
-
-        result.add(builder.createLineMarkerInfo(psiElement));
 
     }
 

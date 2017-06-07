@@ -61,7 +61,6 @@ public class SettingsForm implements Configurable {
     private JButton pathToTranslationRootTextFieldReset;
     private TextFieldWithBrowseButton pathToTranslationRootTextField;
     private JButton buttonHelp;
-    private JCheckBox highlightServices;
     private JCheckBox phpAnnotateTranslation;
     
     private JCheckBox codeFoldingPhpRoute;
@@ -147,7 +146,6 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
             || !phpAnnotateTranslation.isSelected() == getSettings().phpAnnotateTranslation
-            || !highlightServices.isSelected() == getSettings().phpHighlightServices
 
             || !codeFoldingPhpRoute.isSelected() == getSettings().codeFoldingPhpRoute
             || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
@@ -187,7 +185,6 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
         getSettings().phpAnnotateTranslation = phpAnnotateTranslation.isSelected();
-        getSettings().phpHighlightServices = highlightServices.isSelected();
 
         getSettings().codeFoldingPhpRoute = codeFoldingPhpRoute.isSelected();
         getSettings().codeFoldingPhpModel = codeFoldingPhpModel.isSelected();
@@ -238,7 +235,6 @@ public class SettingsForm implements Configurable {
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
         phpAnnotateTranslation.setSelected(getSettings().phpAnnotateTranslation);
-        highlightServices.setSelected(getSettings().phpHighlightServices);
 
         codeFoldingPhpRoute.setSelected(getSettings().codeFoldingPhpRoute);
         codeFoldingPhpModel.setSelected(getSettings().codeFoldingPhpModel);
