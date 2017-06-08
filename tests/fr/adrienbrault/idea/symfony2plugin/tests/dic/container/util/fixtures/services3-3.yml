@@ -1,0 +1,15 @@
+services:
+    _defaults:
+        autowire: true
+        public: false
+
+    _yaml.defaults:
+        class: Foobar
+
+    _yaml.defaults_alias: "@_yaml.defaults"
+
+    _yaml.defaults_overwrite:
+        public: true
+        autowire: false
+
+    Yaml\DefaultClassPrivateAutowire: ~

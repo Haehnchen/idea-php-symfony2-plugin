@@ -7,7 +7,7 @@
                  decorates="foo"
                  decoration-inner-name="foo"
                  abstract="true"
-                 autowrite="true"
+                 autowire="true"
                  deprecated="true"
                  lazy="true"
                  public="false"

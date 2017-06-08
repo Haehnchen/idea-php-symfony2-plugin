@@ -28,13 +28,13 @@ public class DummyAttributeValue implements AttributeValueInterface {
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public String getString(@NotNull String key, String defaultValue) {
         return defaultValue;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public Boolean getBoolean(@NotNull String key, Boolean defaultValue) {
         return defaultValue;

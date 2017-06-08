@@ -1082,4 +1082,30 @@ public class YamlHelper {
     public static void visitServiceCallArgumentMethodIndex(@NotNull YAMLScalar yamlScalar, @NotNull Consumer<Parameter> consumer) {
         YamlHelper.visitServiceCallArgument(yamlScalar, new ParameterResolverConsumer(yamlScalar.getProject(), consumer));
     }
+
+    /**
+     * Get false or true value for given key or null if not found or invalid value was found
+     */
+    @Nullable
+    public static Boolean getYamlKeyValueAsBoolean(@NotNull YAMLKeyValue yamlKeyValue, @NotNull String key) {
+        YAMLKeyValue autowire = YamlHelper.getYamlKeyValue(yamlKeyValue, key);
+        if(autowire == null) {
+            return null;
+        }
+
+        YAMLValue value = autowire.getValue();
+        if(!(value instanceof YAMLScalar)) {
+            return null;
+        }
+
+        String textValue = ((YAMLScalar) value).getTextValue().toLowerCase();
+        switch (textValue) {
+            case "false":
+                return false;
+            case "true":
+                return true;
+            default:
+                return null;
+        }
+    }
 }

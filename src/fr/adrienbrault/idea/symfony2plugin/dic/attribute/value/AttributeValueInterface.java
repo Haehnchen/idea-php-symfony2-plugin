@@ -15,10 +15,10 @@ public interface AttributeValueInterface {
     @Nullable
     Boolean getBoolean(@NotNull String key);
 
-    @NotNull
+    @Nullable
     String getString(@NotNull String key, @Nullable String defaultValue);
 
-    @NotNull
+    @Nullable
     Boolean getBoolean(@NotNull String key, @Nullable Boolean defaultValue);
 
     @NotNull

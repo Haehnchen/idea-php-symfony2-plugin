@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeVa
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceFileDefaults;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -31,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.ArrayList;
@@ -68,8 +70,13 @@ public class ServiceContainerUtil {
                     PsiElement value = ((YAMLKeyValue) yamlKeyValue).getValue();
                     if(value instanceof YAMLScalar) {
                         String valueText = ((YAMLScalar) value).getTextValue();
-                        if(StringUtils.isNotBlank(valueText) && valueText.startsWith("@")) {
-                            services.add(new SerializableService(serviceConsumer.getServiceId()).setAlias(valueText.substring(1)));
+                        if(StringUtils.isNotBlank(valueText) && valueText.startsWith("@") && valueText.length() > 1) {
+                            services.add(
+                                new SerializableService(serviceConsumer.getServiceId())
+                                    .setAlias(valueText.substring(1))
+                                    .setIsAutowire(serviceConsumer.getDefaults().isAutowire())
+                                    .setIsPublic(serviceConsumer.getDefaults().isPublic())
+                            );
                             return;
                         }
                     }
@@ -94,6 +101,20 @@ public class ServiceContainerUtil {
         services.addAll(getPseudoDecoratedServices(services));
 
         return services;
+    }
+
+    @NotNull
+    private static ServiceFileDefaults createDefaults(@NotNull YAMLFile psiFile) {
+        YAMLKeyValue yamlKeyValueDefaults = YAMLUtil.getQualifiedKeyInFile(psiFile, "services", "_defaults");
+
+        if(yamlKeyValueDefaults != null) {
+            return new ServiceFileDefaults(
+                YamlHelper.getYamlKeyValueAsBoolean(yamlKeyValueDefaults, "public"),
+                YamlHelper.getYamlKeyValueAsBoolean(yamlKeyValueDefaults, "autowire")
+            );
+        }
+
+        return ServiceFileDefaults.EMPTY;
     }
 
     /**
@@ -138,9 +159,9 @@ public class ServiceContainerUtil {
             .setDecorates(attributes.getString("decorates"))
             .setParent(attributes.getString("parent"))
             .setIsAbstract(anAbstract)
-            .setIsAutowire(attributes.getBoolean("autowrite"))
+            .setIsAutowire(attributes.getBoolean("autowire", serviceConsumer.getDefaults().isAutowire()))
             .setIsLazy(attributes.getBoolean("lazy"))
-            .setIsPublic(attributes.getBoolean("public"));
+            .setIsPublic(attributes.getBoolean("public", serviceConsumer.getDefaults().isPublic()));
     }
 
     /**
@@ -151,13 +172,19 @@ public class ServiceContainerUtil {
     }
 
     public static void visitFile(@NotNull YAMLFile psiFile, @NotNull Consumer<ServiceConsumer> consumer) {
+        ServiceFileDefaults defaults = null;
+
         for (YAMLKeyValue keyValue : YamlHelper.getQualifiedKeyValuesInFile(psiFile, "services")) {
+            if(defaults == null) {
+                defaults = createDefaults(psiFile);
+            }
+
             String serviceId = keyValue.getKeyText();
-            if(StringUtils.isBlank(serviceId)) {
+            if(StringUtils.isBlank(serviceId) || "_defaults".equals(serviceId)) {
                 continue;
             }
 
-            consumer.consume(new ServiceConsumer(keyValue, serviceId, new YamlKeyValueAttributeValue(keyValue)));
+            consumer.consume(new ServiceConsumer(keyValue, serviceId, new YamlKeyValueAttributeValue(keyValue), defaults));
         }
     }
 
@@ -174,19 +201,61 @@ public class ServiceContainerUtil {
         for(XmlTag xmlTag: xmlTags) {
             if(xmlTag.getName().equals("container")) {
                 for(XmlTag servicesTag: xmlTag.getSubTags()) {
-                    if(servicesTag.getName().equals("services")) {
-                        for(XmlTag serviceTag: servicesTag.getSubTags()) {
+                    if("services".equals(servicesTag.getName())) {
+                        // default values:
+                        // <defaults autowire="true" public="false" />
+                        ServiceFileDefaults defaults = createDefaults(servicesTag);
+
+                        for(XmlTag serviceTag: servicesTag.findSubTags("service")) {
                             String serviceId = serviceTag.getAttributeValue("id");
                             if(StringUtils.isBlank(serviceId)) {
                                 continue;
                             }
 
-                            consumer.consume(new ServiceConsumer(serviceTag, serviceId, new XmlTagAttributeValue(serviceTag)));
+                            consumer.consume(new ServiceConsumer(serviceTag, serviceId, new XmlTagAttributeValue(serviceTag), defaults));
                        }
                     }
                 }
             }
         }
+    }
+
+
+    /**
+     * Extract default values for services tag scope
+     *
+     * <defaults autowire="true" public="false" />
+     */
+    private static ServiceFileDefaults createDefaults(@NotNull XmlTag servicesTag) {
+        XmlTag xmlDefaults = servicesTag.findFirstSubTag("defaults");
+        if(xmlDefaults == null) {
+            return ServiceFileDefaults.EMPTY;
+        }
+
+        return new ServiceFileDefaults(
+            getBooleanValueOf(xmlDefaults.getAttributeValue("public")),
+            getBooleanValueOf(xmlDefaults.getAttributeValue("autowire"))
+        );
+    }
+
+    /**
+     * Provide custom "Boolean.valueOf" with nullable support
+     */
+    @Nullable
+    private static Boolean getBooleanValueOf(@Nullable String value) {
+        if(value == null) {
+            return null;
+        }
+
+        switch (value.toLowerCase()) {
+            case "false":
+                return false;
+            case "true":
+                return true;
+            default:
+                return null;
+        }
+
     }
 
     /**

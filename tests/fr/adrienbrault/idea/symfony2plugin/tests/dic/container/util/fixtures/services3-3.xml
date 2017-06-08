@@ -1,0 +1,8 @@
+<container>
+    <services>
+        <defaults autowire="true" public="false" />
+
+        <service id="_xml.defaults" class="Foobar"/>
+        <service id="_xml.defaults_overwrite" class="Foobar" public="true" autowire="false"/>
+    </services>
+</container>

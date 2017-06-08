@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.attribute.value;
 
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -31,16 +32,16 @@ abstract class AttributeValueAbstract implements AttributeValueInterface {
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public Boolean getBoolean(@NotNull String key, @NotNull Boolean defaultValue) {
+    public Boolean getBoolean(@NotNull String key, @Nullable Boolean defaultValue) {
         Boolean aBoolean = getBoolean(key);
         return aBoolean != null ? aBoolean : defaultValue;
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public String getString(@NotNull String key, @NotNull String defaultValue) {
+    public String getString(@NotNull String key, @Nullable String defaultValue) {
         String string = getString(key);
         return string != null ? string : defaultValue;
     }

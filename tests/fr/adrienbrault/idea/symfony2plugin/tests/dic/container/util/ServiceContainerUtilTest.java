@@ -5,13 +5,14 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -156,6 +157,46 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertEquals("usage_xml_foobar2", sortedServiceId.get(0));
         assertEquals("usage_xml_foobar3", sortedServiceId.get(1));
         assertEquals("foobar.default", sortedServiceId.get(2));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
+     */
+    public void testYamlFileScopeDefaultsForSymfony33() {
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services3-3.yml"));
+
+        assertFalse(services.stream().anyMatch(service -> "_defaults".equals(service.getId())));
+
+        ServiceSerializable defaults = services.stream().filter(service -> "_yaml.defaults".equals(service.getId())).findFirst().get();
+        assertTrue(defaults.isAutowire());
+        assertFalse(defaults.isPublic());
+
+        ServiceSerializable defaultsOverwrite = services.stream().filter(service -> "_yaml.defaults_overwrite".equals(service.getId())).findFirst().get();
+        assertFalse(defaultsOverwrite.isAutowire());
+        assertTrue(defaultsOverwrite.isPublic());
+
+        ServiceSerializable defaultsClass = services.stream().filter(service -> "Yaml\\DefaultClassPrivateAutowire".equals(service.getId())).findFirst().get();
+        assertTrue(defaultsClass.isAutowire());
+        assertFalse(defaultsClass.isPublic());
+
+        ServiceSerializable defaultsAlias = services.stream().filter(service -> "_yaml.defaults_alias".equals(service.getId())).findFirst().get();
+        assertTrue(defaultsAlias.isAutowire());
+        assertFalse(defaultsAlias.isPublic());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
+     */
+    public void testXmlFileScopeDefaultsForSymfony33() {
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services3-3.xml"));
+
+        ServiceSerializable defaults = services.stream().filter(service -> "_xml.defaults".equals(service.getId())).findFirst().get();
+        assertTrue(defaults.isAutowire());
+        assertFalse(defaults.isPublic());
+
+        ServiceSerializable defaultsOverwrite = services.stream().filter(service -> "_xml.defaults_overwrite".equals(service.getId())).findFirst().get();
+        assertFalse(defaultsOverwrite.isAutowire());
+        assertTrue(defaultsOverwrite.isPublic());
     }
 
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {

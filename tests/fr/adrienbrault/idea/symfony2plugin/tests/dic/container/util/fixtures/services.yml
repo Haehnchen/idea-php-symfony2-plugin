@@ -16,7 +16,7 @@ services:
     decorates: "foo"
     decoration_inner_name: 'foo'
     abstract: true
-    autowrite: true
+    autowire: true
     deprecated: true
     lazy: true
     public: false
