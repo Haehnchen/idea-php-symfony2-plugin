@@ -27,7 +27,7 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures/tags").getFile()).getAbsolutePath();
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
     /**
@@ -69,6 +69,14 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             ServiceUtil.getServiceSuggestionForPhpClass(PhpElementsUtil.getClassInterface(getProject(), "MyFooInstance"), services),
             new MyNameContainerServiceCondition("my_foo_instance")
         ));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil#getParameterParameters
+     */
+    public void testGetParameterParameters() {
+        myFixture.copyFileToProject("kernel_parameter.php");
+        assertContainsElements(ServiceUtil.getParameterParameters(getProject()), "kernel.root_dir", "kernel.project_dir", "kernel.foobar");
     }
 
     private static class MyNameContainerServiceCondition implements Condition<ContainerService> {

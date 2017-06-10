@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -444,13 +445,18 @@ public class ContainerCollectionResolver {
 
                     this.containerParameterMap.put(parameter, new ContainerParameter(parameter, true));
                 }
-
             }
 
+            // Kernel::getKernelParameters
+            for (String parameterName : ServiceUtil.getParameterParameters(project)) {
+                if(this.containerParameterMap.containsKey(parameterName)) {
+                    continue;
+                }
 
+                this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, true));
+            }
 
             return this.containerParameterMap;
-
         }
 
         private Set<String> getNames() {

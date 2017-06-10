@@ -9,21 +9,22 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.*;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIcons;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.Parameter;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
@@ -120,6 +121,11 @@ public class ServiceUtil {
         put("form.pre_set_data", "\\Symfony\\Component\\Form\\FormEvent");
         put("form.post_set_data", "\\Symfony\\Component\\Form\\FormEvent");
     }};
+
+    /**
+     * Cache kernel.root_dir of Kernel class
+     */
+    private static final Key<CachedValue<Collection<String>>> KERNEL_PARAMETER_CACHE = new Key<>("KERNEL_PARAMETER_CACHE");
 
     /**
      * %test%, service, \Class\Name to PhpClass
@@ -571,6 +577,70 @@ public class ServiceUtil {
         return NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
             .setTargets(lazy)
             .setTooltipText("Navigate to decoration");
+    }
+
+    /**
+     * Extract parameter on php file
+     *
+     * return array_merge(
+     *  array(
+     *      'kernel.root_dir' => realpath($this->rootDir) ?: $this->rootDir,
+     *      'kernel.project_dir' => realpath($this->getProjectDir()) ?: $this->getProjectDir(),
+     *  ),
+     *  $this->getEnvParameters(false)
+     *  );
+     */
+    @NotNull
+    public static Collection<String> getParameterParameters(@NotNull Project project) {
+        CachedValue<Collection<String>> cache = project.getUserData(KERNEL_PARAMETER_CACHE);
+
+        if(cache == null) {
+            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                CachedValueProvider.Result.create(getParameterParametersInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+                false
+            );
+
+            project.putUserData(KERNEL_PARAMETER_CACHE, cache);
+        }
+
+        return cache.getValue();
+    }
+
+    @NotNull
+    private static Collection<String> getParameterParametersInner(@NotNull Project project) {
+        Collection<String> parameters = new HashSet<>();
+
+        Collection<PhpClass> phpClasses = new HashSet<PhpClass>() {{
+            addAll(PhpIndex.getInstance(project).getAnyByFQN("Symfony\\Component\\HttpKernel\\Kernel"));
+            addAll(PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\HttpKernel\\Kernel"));
+        }};
+
+        for (PhpClass phpClass : phpClasses) {
+            Method method = phpClass.findMethodByName("getKernelParameters");
+            if(method == null) {
+                continue;
+            }
+
+            for (PhpReturn phpReturn: PsiTreeUtil.collectElementsOfType(method, PhpReturn.class)) {
+                PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+
+                if(!(firstPsiChild instanceof FunctionReference) || !(
+                    "array_merge".equalsIgnoreCase(firstPsiChild.getName()) ||
+                    "array_merge_recursive".equalsIgnoreCase(firstPsiChild.getName())
+                )) {
+                    continue;
+                }
+
+                PsiElement[] params = ((FunctionReference) firstPsiChild).getParameters();
+                if(!(params[0] instanceof ArrayCreationExpression)) {
+                    continue;
+                }
+
+                parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) params[0]));
+            }
+        }
+
+        return parameters;
     }
 
     /**

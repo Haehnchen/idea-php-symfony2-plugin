@@ -55,6 +55,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
 
         myFixture.copyFileToProject("ContainerBuilder.php");
         myFixture.copyFileToProject("decorator.services.xml");
+        myFixture.copyFileToProject("kernel_parameter.php");
     }
 
     public String getTestDataPath() {
@@ -127,5 +128,9 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
 
         assertEquals(true, service.isPrivate());
         assertEquals(true, service.isWeak());
+    }
+
+    public void testThatGetKernelParametersAreCollected() {
+        assertContainsElements(ContainerCollectionResolver.getParameters(getProject()).keySet(), "kernel.foobar");
     }
 }
