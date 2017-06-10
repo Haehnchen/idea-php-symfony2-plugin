@@ -97,6 +97,8 @@ public class ServiceUtil {
         // 2.6 - @TODO: how to handle duplicate interfaces; also make them weaker
         put("routing.expression_language_provider", "\\Symfony\\Component\\ExpressionLanguage\\ExpressionFunctionProviderInterface");
         put("security.expression_language_provider", "\\Symfony\\Component\\ExpressionLanguage\\ExpressionFunctionProviderInterface");
+
+        put("controller.service_arguments", null);
     }};
 
     /**

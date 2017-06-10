@@ -11,7 +11,6 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -46,7 +45,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
-import org.jetbrains.yaml.psi.YAMLSequence;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +57,8 @@ import java.util.regex.Pattern;
  */
 public class YamlCompletionContributor extends CompletionContributor {
 
+    // @TODO: use xsd file
+    // Symfony/Component/DependencyInjection/Loader/schema/dic/services/services-1.0.xsd
     private static final Map<String, String> SERVICE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
         put("class", "(string)");
         put("public", "(bool)");
@@ -77,12 +77,14 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("factory_service", "<= 2.5");
         put("factory_method", "<= 2.5");
         put("autowire", "(bool) >= 2.8");
-        put("autowiring_types", ">= 2.8");
+        put("autowiring_type", ">= 2.8");
         put("deprecated", "(string) >= 2.8");
         put("decorates", null);
         put("decoration_inner_name", null);
         put("decoration_priority", "(int) >= 2.8");
         put("shared", "(bool) >= 3.0");
+        put("resource", "(string) >= 3.3");
+        put("autoconfigure", "(bool) >= 3.3");
     }});
 
     private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
