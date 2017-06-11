@@ -9,6 +9,22 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.146
+* Reworked compiled container parser to support aliases extraction more safety for Symfony 3.3 private service debugger [#618](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/618) [#943](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/943)
+* Fix type cast error in voter role extraction [#941](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/941)
+* Fix npe in service call visiting of yaml files [#942](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/942)
+* Fix when using a classname as service id in a routing.yml plugin is mistakenly reporting the method as of missing in Symfony 3.3 [#940](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/940)
+* The inner service of a decorator is always private [#908](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/908)
+* Add Twig variable collector for parameter of a given macro scope
+* Provide extension point a Twig variable collector
+* Dropping ContainerInterface::get usage service linemarker
+* Service indexer should known "_defaults" values of Symfony 3.3 dic component [#947](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/947)
+* Add parameter parser for Kernel::getKernelParameters [#950](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/950)
+* Add "controller.service_arguments" and new yaml service keys completion of Symfony 3.3
+* Service argument inspection must respect _default configuration [#948](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/948)
+* Service generator for YAML files extract indent from file scope [#533](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/533) [#374](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/374) [#362](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362) [#736](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/736)
+* Action generator menu should also display service generator for yaml files and reduce visibility for valid file scope
+
 ## 0.14.145
 * Reduce blacklist of all file indexes; only ending with "Test" blocks processing now [#897](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/897)
 * Fix translation domain name extraction on empty filename [#927](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/927)

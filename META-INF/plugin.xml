@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.145</version>
+    <version>0.14.146</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,25 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.14.146</h2>
+<ul>
+    <li>Reworked compiled container parser to support aliases extraction more safety for Symfony 3.3 private service debugger <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/618">#618</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/943">#943</a></li>
+    <li>Fix type cast error in voter role extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/941">#941</a></li>
+    <li>Fix npe in service call visiting of yaml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/942">#942</a></li>
+    <li>Fix when using a classname as service id in a routing.yml plugin is mistakenly reporting the method as of missing in Symfony 3.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/940">#940</a></li>
+    <li>The inner service of a decorator is always private <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/908">#908</a></li>
+    <li>Add Twig variable collector for parameter of a given macro scope</li>
+    <li>Provide extension point a Twig variable collector</li>
+    <li>Dropping ContainerInterface::get usage service linemarker</li>
+    <li>Service indexer should known "_defaults" values of Symfony 3.3 dic component <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/947">#947</a></li>
+    <li>Add parameter parser for Kernel::getKernelParameters <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/950">#950</a></li>
+    <li>Add "controller.service_arguments" and new yaml service keys completion of Symfony 3.3</li>
+    <li>Service argument inspection must respect _default configuration <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/948">#948</a></li>
+    <li>Service generator for YAML files extract indent from file scope <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/533">#533</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/374">#374</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362">#362</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/736">#736</a></li>
+    <li>Action generator menu should also display service generator for yaml files and reduce visibility for valid file scope</li>
+</ul>
+
 <h2>0.14.145</h2>
 <ul>
     <li>Reduce blacklist of all file indexes; only ending with "Test" blocks processing now <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/897">#897</a></li>
