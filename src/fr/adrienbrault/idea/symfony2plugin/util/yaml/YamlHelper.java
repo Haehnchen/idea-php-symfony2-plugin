@@ -6,12 +6,15 @@ import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
+import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -27,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLElementGenerator;
+import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
@@ -1106,6 +1110,49 @@ public class YamlHelper {
                 return true;
             default:
                 return null;
+        }
+    }
+
+    /**
+     * Try to find a valid indent value, which are spaces which we need to fill
+     */
+    public static int getIndentSpaceForFile(@NotNull YAMLFile yamlFile) {
+        List<YAMLDocument> documents = yamlFile.getDocuments();
+
+        YAMLMapping mapping = ObjectUtils.tryCast(documents.get(0).getTopLevelValue(), YAMLMapping.class);
+        if(mapping != null) {
+            // first first INDENT element in mapping
+            PsiElementPattern.Capture<PsiElement> pattern = PlatformPatterns
+                .psiElement(YAMLTokenTypes.INDENT)
+                .with(new PsiElementPatternCondition());
+
+            for (YAMLPsiElement yamlPsiElement : mapping.getKeyValues()) {
+                // get first value
+                PsiElement firstChild = yamlPsiElement.getFirstChild();
+                if(firstChild == null) {
+                    continue;
+                }
+
+                // first valid INDENT
+                PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(firstChild, pattern);
+                if(nextSiblingOfType != null && nextSiblingOfType.getTextLength() > 0) {
+                    return nextSiblingOfType.getTextLength();
+                }
+            }
+        }
+
+        // default value
+        return 4;
+    }
+
+    private static class PsiElementPatternCondition extends PatternCondition<PsiElement> {
+        PsiElementPatternCondition() {
+            super("Indent Check");
+        }
+
+        @Override
+        public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+            return psiElement.getNextSibling() instanceof YAMLMapping;
         }
     }
 }

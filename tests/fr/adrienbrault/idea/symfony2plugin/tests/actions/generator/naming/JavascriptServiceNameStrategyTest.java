@@ -10,7 +10,6 @@ import java.io.File;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-
 public class JavascriptServiceNameStrategyTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {

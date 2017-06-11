@@ -243,7 +243,7 @@ public class SymfonyCreateService extends JDialog {
             return;
         }
 
-        String text = createServiceAsText(ServiceBuilder.OutputType.Yaml);
+        String text = createServiceAsText(ServiceBuilder.OutputType.Yaml, this.psiFile);
         YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(project, YAMLKeyValue.class, text);
         if(fromText == null) {
             return;
@@ -292,6 +292,14 @@ public class SymfonyCreateService extends JDialog {
             editor.getCaretModel().moveToOffset(textRange[0].getStartOffset() + 1);
             editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
         }
+    }
+
+    private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType, @NotNull PsiFile psiFile) {
+        return new ServiceBuilder(this.modelList.getItems(), psiFile).build(
+            outputType,
+            StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
+            textFieldServiceName.getText()
+        );
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType) {

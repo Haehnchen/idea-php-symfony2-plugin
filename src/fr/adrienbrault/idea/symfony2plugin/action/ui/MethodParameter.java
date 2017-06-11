@@ -11,7 +11,7 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class MethodParameter implements Serializable {
-    static class MethodModelParameter {
+    public static class MethodModelParameter {
 
         private Method method;
         private Parameter parameter;

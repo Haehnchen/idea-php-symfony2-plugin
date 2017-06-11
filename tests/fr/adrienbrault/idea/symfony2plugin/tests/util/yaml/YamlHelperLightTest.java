@@ -508,6 +508,28 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertNotNull(ContainerUtil.find(parameters, parameter -> "arg2".equals(parameter.getName())));
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getIndentSpaceForFile
+     */
+    public void testGetIndentSpaceForFile() {
+        assertEquals(2, getIndentForTextContent("parameters:\n  foo: ~"));
+        assertEquals(4, getIndentForTextContent("parameters:\n    foo: ~"));
+        assertEquals(4, getIndentForTextContent("parameters: ~"));
+
+        assertEquals(4, getIndentForTextContent("parameters:\n" +
+            "  # foobar" +
+            "    foo: ~"
+        ));
+    }
+
+    private int getIndentForTextContent(@NotNull String content) {
+        return YamlHelper.getIndentSpaceForFile((YAMLFile) YamlPsiElementFactory.createDummyFile(
+            getProject(),
+            "foo.yml",
+            content
+        ));
+    }
+
     private static class ListYamlTagVisitor implements YamlTagVisitor {
 
         private List<YamlServiceTag> items = new ArrayList<YamlServiceTag>();

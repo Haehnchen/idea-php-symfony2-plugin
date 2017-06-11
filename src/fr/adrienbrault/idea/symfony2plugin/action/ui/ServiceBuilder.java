@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
@@ -8,9 +9,11 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -41,14 +44,23 @@ public class ServiceBuilder {
     private List<MethodParameter.MethodModelParameter>  methodModelParameter;
     private Project project;
 
+    @Nullable
+    private PsiFile psiFile;
+
     public ServiceBuilder(List<MethodParameter.MethodModelParameter> methodModelParameter, Project project) {
         this.methodModelParameter = methodModelParameter;
         this.project = project;
     }
 
+    public ServiceBuilder(List<MethodParameter.MethodModelParameter> methodModelParameter, @NotNull PsiFile psiFile) {
+        this.methodModelParameter = methodModelParameter;
+        this.project = psiFile.getProject();
+        this.psiFile = psiFile;
+    }
+
     @Nullable
     public String build(OutputType outputType, String className, String serviceName) {
-        HashMap<String, ArrayList<MethodParameter.MethodModelParameter>> methods = new HashMap<>();
+        HashMap<String, List<MethodParameter.MethodModelParameter>> methods = new HashMap<>();
 
         for(MethodParameter.MethodModelParameter methodModelParameter: this.methodModelParameter) {
 
@@ -78,7 +90,7 @@ public class ServiceBuilder {
     @Nullable
     private List<String> getParameters(List<MethodParameter.MethodModelParameter> methodModelParameters) {
         boolean hasCall = false;
-        ArrayList<String> methodCalls = new ArrayList<>();
+        List<String> methodCalls = new ArrayList<>();
 
         // sort by indexes parameter
         methodModelParameters.sort((o1, o2) -> ((Integer) o1.getIndex()).compareTo(o2.getIndex()));
@@ -134,16 +146,14 @@ public class ServiceBuilder {
     }
 
     @Nullable
-    private String buildXml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
-
+    private String buildXml(Map<String, List<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = null;
+        DocumentBuilder docBuilder;
         try {
             docBuilder = docFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             return null;
         }
-
 
         // root elements
         final Document doc = docBuilder.newDocument();
@@ -159,32 +169,19 @@ public class ServiceBuilder {
 
             List<String> parameters = getParameters(methods.get("__construct"));
             if(parameters != null) {
-                for(String parameter: parameters) {
-                    Element argument = doc.createElement("argument");
-                    argument.setAttribute("id", parameter);
-                    argument.setAttribute("type", "service");
-                    rootElement.appendChild(argument);
-                }
+                appendArgumentXmlTags(doc, rootElement, parameters);
             }
 
             methods.remove("__construct");
         }
 
-
-        for(Map.Entry<String, ArrayList<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
+        for(Map.Entry<String, List<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
 
             List<String> parameters = getParameters(entry.getValue());
             if(parameters != null) {
                 Element calls = doc.createElement("call");
                 calls.setAttribute("method", entry.getKey());
-
-                for(String parameter: parameters) {
-                    Element argument = doc.createElement("argument");
-                    argument.setAttribute("id", parameter);
-                    argument.setAttribute("type", "service");
-                    calls.appendChild(argument);
-                }
-
+                appendArgumentXmlTags(doc, calls, parameters);
                 rootElement.appendChild(calls);
             }
         }
@@ -215,6 +212,20 @@ public class ServiceBuilder {
         }
     }
 
+    /**
+     * Build arguments tags
+     *
+     * <argument type="service" id="foobar"/>
+     */
+    private void appendArgumentXmlTags(@NotNull Document doc, @NotNull Element rootElement, @NotNull List<String> parameters) {
+        for(String parameter: parameters) {
+            Element argument = doc.createElement("argument");
+            argument.setAttribute("type", "service");
+            argument.setAttribute("id", parameter);
+            rootElement.appendChild(argument);
+        }
+    }
+
     private static String getStringFromDocument(Document doc) throws TransformerException {
 
         StringWriter writer = new StringWriter();
@@ -231,13 +242,20 @@ public class ServiceBuilder {
     }
 
 
-    private String buildYaml(Map<String, ArrayList<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
+    private String buildYaml(Map<String, List<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
+        int indentSpaces = 4;
 
-        final String indent = "\t";
-        final List<String> lines = new ArrayList<>();
+        // find indent on file content
+        if(psiFile instanceof YAMLFile) {
+            indentSpaces = YamlHelper.getIndentSpaceForFile((YAMLFile) psiFile);
+        }
+
+        // yaml files are spaces only; fill indent
+        String indent = StringUtils.repeat(" ", indentSpaces);
+
+        Collection<String> lines = new ArrayList<>();
 
         String classAsParameter = getClassAsParameter(className);
-
         lines.add(serviceName + ":");
         lines.add(indent + "class: " + (classAsParameter != null ? "'%" + classAsParameter + "%'" : className));
 
@@ -252,7 +270,7 @@ public class ServiceBuilder {
         }
 
         List<String> calls = new ArrayList<>();
-        for(Map.Entry<String, ArrayList<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
+        for(Map.Entry<String, List<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
             List<String> parameters = getParameters(entry.getValue());
             if(parameters != null) {
                 calls.add(String.format("%s%s- [%s, [%s]]", indent, indent, entry.getKey(), StringUtils.join(formatYamlService(parameters), ", ")));
