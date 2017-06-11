@@ -24,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceArgumentSelectionDia
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -48,9 +49,13 @@ public class ServiceActionUtil {
     /**
      * Attributes which we should not support in missing arguments constructors for server definition
      */
-    public static final String[] INVALID_ARGUMENT_ATTRIBUTES = new String[]{
-        "parent", "factory-class", "factory-service", "abstract", "autowire"
-    };
+    public static final String[] INVALID_ARGUMENT_ATTRIBUTES = getInvalidArgumentAttributes();
+
+    private static String[] getInvalidArgumentAttributes() {
+        return Arrays.stream(YamlServiceArgumentInspection.INVALID_KEYS)
+            .map(s -> s.replace("_", "-"))
+            .toArray(String[]::new);
+    }
 
     public static void buildFile(AnActionEvent event, final Project project, String templatePath) {
         String extension = templatePath.endsWith(".yml") ? "yml" : "xml" ;
@@ -382,8 +387,19 @@ public class ServiceActionUtil {
 
         // <service><factory/></service>
         // symfony2 >= 2.6
-        for (XmlTag tag : xmlTag.getSubTags()) {
-            if("factory".equals(tag.getName())) {
+        if(xmlTag.findSubTags("factory").length > 0) {
+            return false;
+        }
+
+        // <services><defaults/></services>
+        PsiElement parent = xmlTag.getParent();
+        if(!(parent instanceof XmlTag) || !"services".equals(((XmlTag) parent).getName())) {
+            return true;
+        }
+
+        // <defaults autowire="true" />
+        for (XmlTag defaults : ((XmlTag) parent).findSubTags("defaults")) {
+            if("true".equalsIgnoreCase(defaults.getAttributeValue("autowire"))) {
                 return false;
             }
         }

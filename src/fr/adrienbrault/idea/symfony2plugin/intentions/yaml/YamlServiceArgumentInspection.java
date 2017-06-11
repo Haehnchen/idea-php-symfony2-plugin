@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 
 import java.util.List;
 import java.util.Set;
@@ -23,7 +24,11 @@ import java.util.Set;
  */
 public class YamlServiceArgumentInspection extends LocalInspectionTool {
 
-    public static final String[] INVALID_KEYS = new String[]{"parent", "factory_class", "factory_service", "factory_method", "abstract", "factory", "autowire"};
+    public static final String[] INVALID_KEYS = new String[]{
+        "parent", "factory_class", "factory_service",
+        "factory_method", "abstract", "factory",
+        "autowire", "resource", "exclude"
+    };
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -68,8 +73,9 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
         }
 
         private boolean isValidService(ServiceActionUtil.ServiceYamlContainer serviceYamlContainer) {
+            YAMLKeyValue serviceKey = serviceYamlContainer.getServiceKey();
 
-            Set<String> keySet = YamlHelper.getKeySet(serviceYamlContainer.getServiceKey());
+            Set<String> keySet = YamlHelper.getKeySet(serviceKey);
             if(keySet == null) {
                 return true;
             }
@@ -77,6 +83,19 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
             for(String s: INVALID_KEYS) {
                 if(keySet.contains(s)) {
                     return false;
+                }
+            }
+
+            // find file scope defaults
+            // defaults: [autowire: true]
+            YAMLMapping key = serviceKey.getParentMapping();
+            if(key != null) {
+                YAMLKeyValue defaults = YamlHelper.getYamlKeyValue(key, "_defaults");
+                if(defaults != null) {
+                    Boolean autowire = YamlHelper.getYamlKeyValueAsBoolean(defaults, "autowire");
+                    if(autowire != null && autowire) {
+                        return false;
+                    }
                 }
             }
 

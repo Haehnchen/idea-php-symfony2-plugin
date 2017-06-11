@@ -56,4 +56,25 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
         }
     }
 
+    public void testThatDefaultsWithAutoWireMustStopInspection() {
+        assertLocalInspectionNotContains("services.yml", "" +
+                "services:\n" +
+                "  _defaults:\n" +
+                "    autowire: true\n" +
+                "" +
+                "  f<caret>oo:\n" +
+                "    class: \\Foo\\Bar\n",
+            "Missing argument"
+        );
+
+        assertLocalInspectionContains("services.yml", "" +
+                "services:\n" +
+                "  _defaults:\n" +
+                "    autowire: false\n" +
+                "" +
+                "  f<caret>oo:\n" +
+                "    class: \\Foo\\Bar\n",
+            "Missing argument"
+        );
+    }
 }

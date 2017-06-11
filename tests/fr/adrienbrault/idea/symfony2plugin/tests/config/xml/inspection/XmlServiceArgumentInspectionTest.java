@@ -61,6 +61,22 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
         }
     }
 
+    public void testThatServiceResourceMustNotProvideInspection() {
+        assertLocalInspectionNotContains(
+            "services.xml",
+            createContainer("<serv<caret>ice resource=\"foo\" class=\"Foo\\Bar\"/>"),
+            "Missing argument"
+        );
+    }
+
+    public void testThatServiceFactoryServiceMustNotProvideInspection() {
+        assertLocalInspectionNotContains(
+            "services.xml",
+            createContainer("<serv<caret>ice factory-service=\"foo\" class=\"Foo\\Bar\"/>"),
+            "Missing argument"
+        );
+    }
+
     public void testThatFactoryServiceOfSymfony26NotProvidesInspection() {
         for (String s : ServiceActionUtil.INVALID_ARGUMENT_ATTRIBUTES) {
             assertLocalInspectionNotContains(
@@ -69,6 +85,20 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
                 "Missing argument"
             );
         }
+    }
+
+    public void testThatDefaultValueMustNotProvideInspection() {
+        assertLocalInspectionNotContains(
+            "services.xml",
+            createContainer("<defaults autowire=\"true\" /><serv<caret>ice class=\"Foo\\Bar\"/>"),
+            "Missing argument"
+        );
+
+        assertLocalInspectionContains(
+            "services.xml",
+            createContainer("<defaults autowire=\"false\" /><serv<caret>ice class=\"Foo\\Bar\"/>"),
+            "Missing argument"
+        );
     }
 
     private String createContainer(String serviceDefinition) {
