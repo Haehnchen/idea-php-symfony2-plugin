@@ -18,6 +18,8 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLUtil;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,10 +28,13 @@ public class ServiceGenerateAction extends CodeInsightAction {
 
     @Override
     public void update(AnActionEvent event) {
+        if(!Symfony2ProjectComponent.isEnabled(event.getProject())) {
+            event.getPresentation().setEnabled(false);
+            return;
+        }
+
+        // let main implementation decide on file scope if action is enabled
         super.update(event);
-        boolean enabled = Symfony2ProjectComponent.isEnabled(event.getProject());
-        event.getPresentation().setVisible(enabled);
-        event.getPresentation().setEnabled(enabled);
     }
 
     public static void invokeServiceGenerator(@NotNull Project project, @NotNull PsiFile file, @NotNull PhpClass phpClass, @Nullable Editor editor) {
@@ -40,7 +45,7 @@ public class ServiceGenerateAction extends CodeInsightAction {
 
     @Override
     protected boolean isValidForFile(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-        return isValidForPhpClass(editor, file) || isValidForXml(editor, file);
+        return isValidForPhpClass(editor, file) || isValidForFile(file);
     }
 
     @NotNull
@@ -54,7 +59,7 @@ public class ServiceGenerateAction extends CodeInsightAction {
                     return;
                 }
 
-                if(isValidForXml(editor, psiFile) && invokeXmlFile(project, editor)) {
+                if(isValidForFile(psiFile) && invokeFile(project, editor)) {
                     return;
                 }
 
@@ -83,28 +88,24 @@ public class ServiceGenerateAction extends CodeInsightAction {
             return false;
         }
 
-        if(!PlatformPatterns.psiElement().inside(PhpClass.class).accepts(psiElement)) {
-            return false;
-        }
-
-        return true;
+        return PlatformPatterns.psiElement().inside(PhpClass.class).accepts(psiElement);
     }
 
-    private boolean isValidForXml(Editor editor, PsiFile file) {
+    private boolean isValidForFile(@NotNull PsiFile file) {
 
-        if(!(file instanceof XmlFile)) {
-            return false;
+        if(file instanceof XmlFile) {
+            XmlTag rootTag = ((XmlFile) file).getRootTag();
+            return !(rootTag == null || !"container".equals(rootTag.getName()));
+        } else if(file instanceof YAMLFile) {
+            return
+                YAMLUtil.getQualifiedKeyInFile((YAMLFile) file, "parameters") != null ||
+                YAMLUtil.getQualifiedKeyInFile((YAMLFile) file, "services") != null;
         }
 
-        XmlTag rootTag = ((XmlFile) file).getRootTag();
-        if(rootTag == null || !"container".equals(rootTag.getName())) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
-    private boolean invokeXmlFile(Project project, Editor editor) {
+    private boolean invokeFile(Project project, Editor editor) {
 
         PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
         if(file == null) {
@@ -142,5 +143,4 @@ public class ServiceGenerateAction extends CodeInsightAction {
 
         return true;
     }
-
 }
