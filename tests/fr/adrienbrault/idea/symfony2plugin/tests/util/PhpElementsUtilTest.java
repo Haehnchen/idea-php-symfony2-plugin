@@ -264,4 +264,14 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
         assertEquals("Foobar", PhpElementsUtil.getStringValue(psiElement));
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getStringValue
+     */
+    public void testGetStringValueForFieldWithClassConstants() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php class Foobar { var $x = Foobar::class;\n function test() { $foo = $this-><caret>x; } };\n ");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+        assertEquals("Foobar", PhpElementsUtil.getStringValue(psiElement));
+    }
 }

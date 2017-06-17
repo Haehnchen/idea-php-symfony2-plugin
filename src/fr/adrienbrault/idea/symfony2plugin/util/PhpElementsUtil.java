@@ -688,13 +688,8 @@ public class PhpElementsUtil {
             }
 
             if(ref instanceof Field) {
-                PsiElement resolved = ((Field) ref).getDefaultValue();
-
-                if(resolved instanceof StringLiteralExpression) {
-                    return ((StringLiteralExpression) resolved).getContents();
-                }
+                return getStringValue(((Field) ref).getDefaultValue());
             }
-
         }
 
         return null;
