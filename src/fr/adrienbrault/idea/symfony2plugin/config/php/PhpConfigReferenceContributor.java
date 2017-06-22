@@ -43,6 +43,9 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findTaggedServiceIds")
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "addTag")
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "hasTag")
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "clearTag")
         );
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(EventDispatcherEventReference.class)

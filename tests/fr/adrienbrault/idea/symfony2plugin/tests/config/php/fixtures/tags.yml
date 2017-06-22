@@ -1,0 +1,5 @@
+services:
+    my_foobar:
+        class: espend\Form\TypeBundle\Form\FooType
+        tags:
+            - { name: foobar }
