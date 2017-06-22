@@ -35,8 +35,13 @@ public class YamlHelperTest extends Assert {
 
     @Test
     public void testIsClassServiceId() {
-        assertFalse(YamlHelper.isClassServiceId("foobar"));
         assertFalse(YamlHelper.isClassServiceId("foo.bar"));
+        assertFalse(YamlHelper.isClassServiceId("foo-bar"));
+        assertFalse(YamlHelper.isClassServiceId("Foo\\Bar-Car"));
+
+        assertTrue(YamlHelper.isClassServiceId("foobar"));
         assertTrue(YamlHelper.isClassServiceId("foo\\bar"));
+        assertTrue(YamlHelper.isClassServiceId("\\Foo\\Bar\\Bar"));
+        assertTrue(YamlHelper.isClassServiceId("FooBar"));
     }
 }

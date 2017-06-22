@@ -939,14 +939,8 @@ public class YamlHelper {
             return false;
         }
 
-        // Foo\Bar
-        if(serviceId.contains("\\")) {
-            return true;
-        }
-
-        // classes without namespaces "FooBar"?
-
-        return false;
+        // fallback let decide PhpStorm if this is a valid class
+        return PhpNameUtil.isValidNamespaceFullName(serviceId, true);
     }
 
     /**
