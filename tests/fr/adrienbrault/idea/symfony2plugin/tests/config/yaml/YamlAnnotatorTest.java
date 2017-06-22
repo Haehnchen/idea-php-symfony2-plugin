@@ -46,6 +46,24 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         }
     }
 
+    public void testAnnotatorConstructorArgumentsForServiceIdShortcut() {
+        assertAnnotationContains("services.yml",
+            "services:\n" +
+                "  Args\\Foo:\n" +
+                "    arguments: [ @foo, %foo%, '@ar<caret>gs_bar']",
+            "Expect instance of: Args\\Foo"
+        );
+
+        assertAnnotationContains("services.yml",
+            "services:\n" +
+                "  foo:\n" +
+                "    class: \\Args\\Foo\n" +
+                "    calls:\n" +
+                "     - [ setFoo, ['@ar<caret>gs_bar'] ]\n",
+            "Expect instance of: Args\\Foo"
+        );
+    }
+
     public void testAnnotatorConstructorArgumentsAsSequence() {
 
         String[] strings = {
