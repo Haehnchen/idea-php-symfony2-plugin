@@ -89,7 +89,7 @@ download "https://jetbrains-plugins.s3.amazonaws.com/7320/34692/php-annotation.j
 cp $travisCache/php-annotation.jar ./plugins
 
 rm -f $travisCache/php-toolbox.jar
-download "https://plugins.jetbrains.com/files/8133/23580/php-toolbox.jar"
+download "https://download.plugins.jetbrains.com/8133/36076/php-toolbox.jar"
 cp $travisCache/php-toolbox.jar ./plugins
 
 # Run the tests
