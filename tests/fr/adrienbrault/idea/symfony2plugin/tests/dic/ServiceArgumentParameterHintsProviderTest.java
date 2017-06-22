@@ -128,11 +128,32 @@ public class ServiceArgumentParameterHintsProviderTest extends SymfonyLightCodeI
         assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
     }
 
+    public void testYamlParameterTypeForServiceIdShortcut() {
+        List<InlayInfo> parameterHints = getInlayInfo(YAMLFileType.YML,"" +
+            "services:\n" +
+            "    Foobar\\MyFoobar:\n" +
+            "        arguments: [@fo<caret>obar]\n"
+        );
+
+        assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
+    }
+
     public void testYamlParameterTypeForCallMethodParameter() {
         List<InlayInfo> parameterHints = getInlayInfo(YAMLFileType.YML,"" +
             "services:\n" +
             "    foobar:\n" +
             "        class: Foobar\\MyFoobar\n" +
+            "        calls:\n" +
+            "           - [setFoo, [@fo<caret>obar]]\n"
+        );
+
+        assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
+    }
+
+    public void testYamlParameterTypeForCallMethodParameterWithIdShortcut() {
+        List<InlayInfo> parameterHints = getInlayInfo(YAMLFileType.YML,"" +
+            "services:\n" +
+            "    Foobar\\MyFoobar:\n" +
             "        calls:\n" +
             "           - [setFoo, [@fo<caret>obar]]\n"
         );

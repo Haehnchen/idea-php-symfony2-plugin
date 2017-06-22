@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceFileDefaults;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -314,12 +315,12 @@ public class ServiceContainerUtil {
             return null;
         }
 
-        final YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
-        if(classKeyValue == null) {
+        String serviceId = getServiceClassFromServiceMapping(parentMapping);
+        if(StringUtils.isBlank(serviceId)) {
             return null;
         }
 
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlScalar.getProject(), classKeyValue.getValueText(), lazyServiceCollector);
+        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlScalar.getProject(), serviceId, lazyServiceCollector);
         if(serviceClass == null) {
             return null;
         }
@@ -334,6 +335,34 @@ public class ServiceContainerUtil {
             PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
             yamlScalar
         );
+    }
+
+    /**
+     * Symfony 3.3: "class" is optional; use service name for its it
+     *
+     * Foo\Bar:
+     *  arguments: ~
+     */
+    @Nullable
+    private static String getServiceClassFromServiceMapping(@NotNull YAMLMapping yamlMapping) {
+        YAMLKeyValue classKeyValue = yamlMapping.getKeyValueByKey("class");
+
+        // Symfony 3.3: "class" is optional; use service id for class
+        // Foo\Bar:
+        //   arguments: ~
+        if(classKeyValue != null) {
+            return classKeyValue.getValueText();
+        }
+
+        PsiElement parent = yamlMapping.getParent();
+        if(parent instanceof YAMLKeyValue) {
+            String keyText = ((YAMLKeyValue) parent).getKeyText();
+            if(YamlHelper.isClassServiceId(keyText)) {
+                return keyText;
+            }
+        }
+
+        return null;
     }
 
     /**
