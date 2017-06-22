@@ -61,7 +61,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
                 if (YamlElementPatternHelper.getServiceDefinition().accepts(psiElement) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
                     String serviceName = PsiElementUtils.trimQuote(psiElement.getText());
                     // dont mark "@", "@?", "@@" escaping and expressions
-                    if (serviceName != null && isValidService(serviceName) && !serviceName.equals(serviceName.toLowerCase())) {
+                    if (serviceName != null && isValidService(serviceName) && !serviceName.equals(serviceName.toLowerCase()) && !YamlHelper.isClassServiceId(serviceName)) {
                         holder.registerProblem(psiElement, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);
                     }
                 }

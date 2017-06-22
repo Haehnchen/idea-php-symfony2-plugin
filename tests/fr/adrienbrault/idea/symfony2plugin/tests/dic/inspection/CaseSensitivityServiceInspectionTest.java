@@ -22,6 +22,15 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
         assertLocalInspectionContains("service.xml",
             "<container>\n" +
                 "  <services>\n" +
+                "      <service id=\"F<caret>oo.Bar\" class=\"DateTime\"/>\n" +
+                "  </services>\n" +
+                "</container>\n",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.xml",
+            "<container>\n" +
+                "  <services>\n" +
                 "      <service id=\"F<caret>oo\" class=\"DateTime\"/>\n" +
                 "  </services>\n" +
                 "</container>\n",
@@ -39,12 +48,6 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
     }
 
     public void testCaseSensitivityForYamlFiles() {
-        assertLocalInspectionContains("service.yml", "services:\n" +
-                "    foo<caret>_A:\n" +
-                "        class: DateTime",
-            "Symfony: lowercase letters for service and parameter"
-        );
-
         assertLocalInspectionNotContains("service.yml", "services:\n" +
                 "    foo<caret>_a:\n" +
                 "        class: DateTime",
@@ -54,16 +57,28 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
         assertLocalInspectionNotContains("service.yml", "services:\n" +
                 "    foo<caret>_a:\n" +
                 "        class: DateTime",
-            "Symfony: lowercase letters for service and parameter"
-        );
-
-        assertLocalInspectionContains("service.yml", "parameters:\n" +
-                "    F<caret>oo: bar",
             "Symfony: lowercase letters for service and parameter"
         );
 
         assertLocalInspectionNotContains("service.yml", "parameters:\n" +
                 "    f<caret>oo: bar",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.yml", "services:\n" +
+                "    fo.o<caret>a:\n" +
+                "        class: DateTime",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.yml", "parameters:\n" +
+                "    F<caret>oo: bar",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.yml", "services:\n" +
+                "    foo<caret>_A:\n" +
+                "        class: DateTime",
             "Symfony: lowercase letters for service and parameter"
         );
     }
@@ -118,7 +133,7 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
 
     public void testCaseSensitivityForServiceFilesMustNotHighlightClassesOfSymfony33() {
         assertLocalInspectionNotContains("service.yml", "services:\n" +
-                "    My\\Sweet\\Cl<caret>ass:\n" +
+                "    My\\Sweet\\FooabrCl<caret>ass:\n" +
                 "        class: DateTime",
             "Symfony: lowercase letters for service and parameter"
         );
@@ -126,7 +141,7 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
         assertLocalInspectionNotContains("service.xml",
             "<container>\n" +
                 "  <services>\n" +
-                "      <service id=\"My\\Sweet\\Cl<caret>ass\"/>\n" +
+                "      <service id=\"My\\Sweet\\Foo<caret>bar\"/>\n" +
                 "  </services>\n" +
                 "</container>\n",
             "Symfony: lowercase letters for service and parameter"

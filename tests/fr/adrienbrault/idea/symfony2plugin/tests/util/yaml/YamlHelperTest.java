@@ -43,5 +43,9 @@ public class YamlHelperTest extends Assert {
         assertTrue(YamlHelper.isClassServiceId("foo\\bar"));
         assertTrue(YamlHelper.isClassServiceId("\\Foo\\Bar\\Bar"));
         assertTrue(YamlHelper.isClassServiceId("FooBar"));
+        assertTrue(YamlHelper.isClassServiceId("My\\Sweet\\Foobar"));
+
+        // reserved "Class" keyword
+        assertFalse(YamlHelper.isClassServiceId("My\\Sweet\\Class"));
     }
 }
