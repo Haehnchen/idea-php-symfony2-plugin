@@ -85,11 +85,11 @@ else
 fi
 
 rm -f $travisCache/php-annotation.jar
-download "https://jetbrains-plugins.s3.amazonaws.com/7320/34692/php-annotation.jar"
+download "http://phpstorm.espend.de/files/proxy/plugins/php-annotation.jar"
 cp $travisCache/php-annotation.jar ./plugins
 
 rm -f $travisCache/php-toolbox.jar
-download "https://download.plugins.jetbrains.com/8133/36076/php-toolbox.jar"
+download "http://phpstorm.espend.de/files/proxy/plugins/php-toolbox.jar"
 cp $travisCache/php-toolbox.jar ./plugins
 
 # Run the tests
