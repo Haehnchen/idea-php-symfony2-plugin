@@ -48,9 +48,6 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayArguments;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlayElement;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.util.CaretTextOverlayUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -684,46 +681,6 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         return psiElement;
     }
 
-    public void assertCaretTextOverlay(LanguageFileType languageFileType, String configureByText, CaretTextOverlay.Assert assertMatch) {
-
-        myFixture.configureByText(languageFileType, configureByText);
-        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-
-        CaretTextOverlayArguments args = new CaretTextOverlayArguments(
-            new CaretEvent(getEditor(), new LogicalPosition(0, 0), new LogicalPosition(0, 0)),
-            psiElement.getContainingFile(),
-            psiElement
-        );
-
-        for (fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay caretTextOverlay : CaretTextOverlayUtil.getExtensions()) {
-            CaretTextOverlayElement overlay = caretTextOverlay.getOverlay(args);
-            if(overlay != null && assertMatch.match(overlay)) {
-                return;
-            }
-        }
-
-        fail(String.format("Fail that CaretTextOverlay '%s' matches on of '%s' PsiElements", assertMatch.getClass(), psiElement.getText()));
-    }
-
-    public void assertCaretTextOverlayEmpty(LanguageFileType languageFileType, String configureByText) {
-
-        myFixture.configureByText(languageFileType, configureByText);
-        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-
-        CaretTextOverlayArguments args = new CaretTextOverlayArguments(
-            new CaretEvent(getEditor(), new LogicalPosition(0, 0), new LogicalPosition(0, 0)),
-            psiElement.getContainingFile(),
-            psiElement
-        );
-
-        for (fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay caretTextOverlay : CaretTextOverlayUtil.getExtensions()) {
-            CaretTextOverlayElement overlay = caretTextOverlay.getOverlay(args);
-            if(overlay != null) {
-                fail(String.format("Fail that CaretTextOverlay is empty matching '%s'", overlay.getClass()));
-            }
-        }
-    }
-
     public static class IndexValue {
         public interface Assert<T> {
             boolean match(@NotNull T value);
@@ -778,27 +735,6 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
                 }
 
                 return false;
-            }
-        }
-    }
-
-    public static class CaretTextOverlay {
-        public interface Assert {
-            boolean match(@NotNull CaretTextOverlayElement caretTextOverlay);
-        }
-
-        public static class TextEqualsAssert implements Assert {
-
-            @NotNull
-            private final String text;
-
-            public TextEqualsAssert(@NotNull String text) {
-                this.text = text;
-            }
-
-            @Override
-            public boolean match(@NotNull CaretTextOverlayElement caretTextOverlay) {
-                return this.text.equals(caretTextOverlay.getText());
             }
         }
     }

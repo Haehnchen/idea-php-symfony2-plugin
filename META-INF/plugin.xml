@@ -542,7 +542,6 @@
         <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
         <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
         <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
-        <extensionPoint name="extension.CaretTextOverlay" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.caret.overlay.CaretTextOverlay"/>
         <extensionPoint name="extension.TwigNamespaceExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"/>
         <extensionPoint name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
         <extensionPoint name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
@@ -632,12 +631,6 @@
             <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
         </component>
     </project-components>
-
-    <application-components>
-        <component>
-            <implementation-class>fr.adrienbrault.idea.symfony2plugin.SymfonyApplicationComponent</implementation-class>
-        </component>
-    </application-components>
 
     <actions>
 
