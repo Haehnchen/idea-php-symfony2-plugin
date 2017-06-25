@@ -9,6 +9,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.147
+* Fix recursive string value resolve on class fields
+* Dropping custom caret overlay listener and all extension points in favor of core parameter hints
+* Symfony 3.3 Support classes in global namespace for id shortcut [#952](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/952)
+* Symfony 3.3 Argument hint must support yaml id shortcut [#958](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/958)
+* Symfony 3.3 Arguments not detected for type and argument index inspection in yaml id shortcut [#959](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/959)
+* Symfony 3.3 Invalid lower case inspection for service id as class name [#960](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/960)
+* Autocompletion for known tag names in Definition::addTag, clearTag, hasTag [#955](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/955)
+* Add Twig print block support for linemarker and navigation
+
 ## 0.14.146
 * Reworked compiled container parser to support aliases extraction more safety for Symfony 3.3 private service debugger [#618](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/618) [#943](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/943)
 * Fix type cast error in voter role extraction [#941](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/941)

@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.146</version>
+    <version>0.14.147</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,18 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.14.147</h2>
+<ul>
+    <li>Fix recursive string value resolve on class fields</li>
+    <li>Dropping custom caret overlay listener and all extension points in favor of core parameter hints</li>
+    <li>Symfony 3.3 Support classes in global namespace for id shortcut <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/952">#952</a></li>
+    <li>Symfony 3.3 Argument hint must support yaml id shortcut <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/958">#958</a></li>
+    <li>Symfony 3.3 Arguments not detected for type and argument index inspection in yaml id shortcut <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/959">#959</a></li>
+    <li>Symfony 3.3 Invalid lower case inspection for service id as class name <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/960">#960</a></li>
+    <li>Autocompletion for known tag names in Definition::addTag, clearTag, hasTag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/955">#955</a></li>
+    <li>Add Twig print block support for linemarker and navigation</li>
+</ul>
 
 <h2>0.14.146</h2>
 <ul>
