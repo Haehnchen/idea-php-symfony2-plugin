@@ -22,8 +22,6 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.LogicalPosition;
-import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.LanguageFileType;
@@ -515,7 +513,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
     }
 
-    private Pair<List<ProblemDescriptor>, Integer> getLocalInspectionsAtCaret(String filename, String content) {
+    private Pair<List<ProblemDescriptor>, Integer> getLocalInspectionsAtCaret(@NotNull String filename, @NotNull String content) {
 
         PsiElement psiFile = myFixture.configureByText(filename, content);
 
@@ -545,7 +543,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             psiElementVisitor.visitFile(psiFile.getContainingFile());;
         }
 
-        return new Pair<List<ProblemDescriptor>, Integer>(problemsHolder.getResults(), caretOffset);
+        return Pair.create(problemsHolder.getResults(), caretOffset);
     }
 
     protected void assertLocalInspectionIsEmpty(String filename, String content) {

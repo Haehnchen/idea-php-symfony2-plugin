@@ -6,7 +6,7 @@ services:
 
     foo.tagged.yaml_type2:
         class: AppBundle\Controller\DefaultController
-        tags: [ yaml_type_tag2 ]
+        tags: [ yaml_type_tag2, yaml_type_tag21 ]
 
     foo.tagged.yaml_type3:
         class: AppBundle\Controller\DefaultController

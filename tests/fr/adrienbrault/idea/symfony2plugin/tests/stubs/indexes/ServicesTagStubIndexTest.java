@@ -34,6 +34,8 @@ public class ServicesTagStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         assertIndexContainsKeyWithValue(ServicesTagStubIndex.KEY, "foo.tagged.yaml_type", new MyStringContainsAssert("yaml_type_tag"));
 
         assertIndexContainsKeyWithValue(ServicesTagStubIndex.KEY, "foo.tagged.yaml_type2", new MyStringContainsAssert("yaml_type_tag2"));
+        assertIndexContainsKeyWithValue(ServicesTagStubIndex.KEY, "foo.tagged.yaml_type2", new MyStringContainsAssert("yaml_type_tag21"));
+
         assertIndexContainsKeyWithValue(ServicesTagStubIndex.KEY, "foo.tagged.yaml_type3", new MyStringContainsAssert("yaml_type_tag3"));
     }
 
