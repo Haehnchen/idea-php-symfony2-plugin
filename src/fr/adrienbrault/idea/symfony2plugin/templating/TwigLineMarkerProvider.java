@@ -55,22 +55,6 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         for(PsiElement psiElement: psiElements) {
-
-            // blocks
-            if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
-
-                LineMarkerInfo lineImpl = this.attachBlockImplements(psiElement);
-                if(lineImpl != null) {
-                    results.add(lineImpl);
-                }
-
-                LineMarkerInfo lineOverwrites = this.attachBlockOverwrites(psiElement);
-                if(lineOverwrites != null) {
-                    results.add(lineOverwrites);
-                }
-
-            }
-
             // controller
             if(psiElement instanceof TwigFile) {
                 attachController((TwigFile) psiElement, results);
@@ -87,13 +71,23 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
-            }
+            } else if (TwigHelper.getBlockTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
+                // blocks: {% block 'foobar' %}, {{ block('foobar') }}
 
+                LineMarkerInfo lineImpl = this.attachBlockImplements(psiElement);
+                if(lineImpl != null) {
+                    results.add(lineImpl);
+                }
+
+                LineMarkerInfo lineOverwrites = this.attachBlockOverwrites(psiElement);
+                if(lineOverwrites != null) {
+                    results.add(lineOverwrites);
+                }
+            }
         }
 
         // reset cache
         templateMapCache = null;
-
     }
 
     private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
@@ -210,30 +204,10 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachBlockImplements(final PsiElement psiElement) {
-        PsiFile psiFile = psiElement.getContainingFile();
-        if(psiFile == null) {
-            return null;
-        }
-
+    private LineMarkerInfo attachBlockImplements(@NotNull PsiElement psiElement) {
         TemplateFileMap files = getTemplateFilesByName(psiElement.getProject());
 
-        Collection<PsiFile> twigChild = TwigUtil.getTemplateFileReferences(psiFile, files);
-        if(twigChild.size() == 0) {
-            return null;
-        }
-
-        final String blockName = psiElement.getText();
-
-        List<PsiElement> blockTargets = new ArrayList<>();
-        for(PsiFile psiFile1: twigChild) {
-
-            blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, psiElement1 ->
-                TwigHelper.getBlockTagPattern().accepts(psiElement1) && blockName.equals(psiElement1.getText())))
-            );
-
-        }
-
+        Collection<PsiElement> blockTargets = TwigHelper.getBlocksByImplementations(psiElement, files);
         if(blockTargets.size() == 0) {
             return null;
         }
@@ -257,7 +231,10 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: blocks) {
-            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(getTemplateFilesByName(psiElement.getProject()).getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
+                blockTag,
+                TwigUtil.getPresentableTemplateName(getTemplateFilesByName(psiElement.getProject()).getTemplates(), blockTag, true)
+            ).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
 
         // single item has no popup

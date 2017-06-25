@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -35,23 +36,31 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
     }
 
     private static class BlockFunctionReferenceCompletionProvider extends GotoCompletionProvider {
-
-        public BlockFunctionReferenceCompletionProvider(@NotNull PsiElement element) {
+        private BlockFunctionReferenceCompletionProvider(@NotNull PsiElement element) {
             super(element);
         }
 
         @NotNull
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
-
             String blockName = PsiElementUtils.trimQuote(element.getText());
             if(StringUtils.isBlank(blockName)) {
                 return Collections.emptyList();
             }
 
-            return Arrays.asList(
+            Collection<PsiElement> psiElements = new HashSet<>();
+
+            psiElements.addAll(Arrays.asList(
                 TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(element.getContainingFile(), blockName, true)
+            ));
+
+            psiElements.addAll(
+                TwigHelper.getBlocksByImplementations(element, TwigHelper.getTemplateMap(element.getProject(), true, false))
             );
 
+            // filter self navigation
+            return psiElements.stream()
+                .filter(psiElement -> psiElement != element)
+                .collect(Collectors.toSet());
         }
 
         @NotNull

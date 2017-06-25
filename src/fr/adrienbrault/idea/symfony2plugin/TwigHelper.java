@@ -2108,51 +2108,56 @@ public class TwigHelper {
     /**
      * Collect all block names in file
      *
-     * {% block sds %}, {% block 'sds' %}, {% block "sds" %}
-     * {%- block sds -%}
+     * {% block sds %}, {% block 'sds' %}, {% block "sds" %}, {%- block sds -%}
+     * {{ block('foobar') }}
      */
     @NotNull
     public static Collection<TwigBlock> getBlocksInFile(@NotNull TwigFile twigFile) {
+        // prefilter elements; dont visit until leaf elements fpr performance
+        PsiElement[] blocks = PsiTreeUtil.collectElements(twigFile, psiElement ->
+            psiElement instanceof TwigBlockTag || (psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.PRINT_BLOCK)
+        );
 
         Collection<TwigBlock> block = new ArrayList<>();
 
-        PsiElementPattern.Capture<PsiElement> pattern = null;
+        for (PsiElement psiElement : blocks) {
+            final PsiElement[] target = new PsiElement[1];
 
-        for (TwigBlockTag twigBlockTag : PsiTreeUtil.collectElementsOfType(twigFile, TwigBlockTag.class)) {
+            if(psiElement instanceof TwigBlockTag) {
+                // {% block sds %}, {% block "sds" %}
+                psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
+                    @Override
+                    public void visitElement(PsiElement element) {
+                        if(target[0] == null && getBlockTagPattern().accepts(element)) {
+                            target[0] = element;
+                        }
+                        super.visitElement(element);
+                    }
+                });
 
-            String name = twigBlockTag.getName();
-            if(name != null && StringUtils.isNotBlank(name)) {
-                block.add(new TwigBlock(name, twigBlockTag));
+            } else if(psiElement instanceof TwigCompositeElement) {
+                // {{ block('foobar') }}
+                psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
+                    @Override
+                    public void visitElement(PsiElement element) {
+                        if(target[0] == null && getPrintBlockFunctionPattern("block").accepts(element)) {
+                            target[0] = element;
+                        }
+                        super.visitElement(element);
+                    }
+                });
             }
 
-            PsiElement firstChild = twigBlockTag.getFirstChild();
-            if(firstChild == null) {
+            if(target[0] == null) {
                 continue;
             }
 
-            // provide support for quote wrapping
-            // {% block 'sds' %}
-            if(pattern == null) {
-                pattern = PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-                    .afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
-                    );
+            String blockName = target[0].getText();
+            if(StringUtils.isBlank(blockName)) {
+                continue;
             }
 
-            PsiElement psiString = PsiElementUtils.getNextSiblingOfType(firstChild, pattern);
-            if(psiString != null) {
-                String text = psiString.getText();
-                if(StringUtils.isNotBlank(text)) {
-                    block.add(new TwigBlock(text, twigBlockTag));
-                }
-            }
-
+            block.add(new TwigBlock(blockName, target[0]));
         }
 
         return block;
@@ -2331,6 +2336,40 @@ public class TwigHelper {
         }
 
         return text;
+    }
+
+    /**
+     *  {% extends 'foobar.html.twig' %}
+     *
+     *  {{ block('foo<caret>bar') }}
+     *  {% block 'foo<caret>bar' %}
+     *  {% block foo<caret>bar %}
+     */
+    @NotNull
+    public static Collection<PsiElement> getBlocksByImplementations(@NotNull PsiElement blockPsiName, @NotNull TemplateFileMap fileMap) {
+        PsiFile psiFile = blockPsiName.getContainingFile();
+        if(psiFile == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiFile> twigChild = TwigUtil.getTemplateFileReferences(psiFile, fileMap);
+        if(twigChild.size() == 0) {
+            return Collections.emptyList();
+        }
+
+        String blockName = blockPsiName.getText();
+        if(StringUtils.isBlank(blockName)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> blockTargets = new ArrayList<>();
+        for(PsiFile psiFile1: twigChild) {
+            blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, psiElement1 ->
+                (TwigHelper.getBlockTagPattern().accepts(psiElement1) || TwigHelper.getPrintBlockFunctionPattern("block").accepts(psiElement1)) && blockName.equals(psiElement1.getText())))
+            );
+        }
+
+        return blockTargets;
     }
 
     private static class MyLimitedVirtualFileVisitor extends VirtualFileVisitor {

@@ -84,6 +84,9 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(twigExtendsValues.contains("base.html"));
     }
 
+    /**
+     * @see TwigHelper#getBlocksInFile
+     */
     public void testBlocksInFileCollector() {
         assertEquals("foo", buildBlocks("{% block foo %}").iterator().next().getName());
         assertEquals("foo", buildBlocks("{% block \"foo\" %}").iterator().next().getName());
@@ -95,6 +98,9 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNotNull(buildBlocks("{%- block 'foo' -%}").iterator().next().getPsiFile());
         assertSize(1, buildBlocks("{%- block 'foo' -%}").iterator().next().getBlock());
+
+        assertEquals("foobar_block", buildBlocks("{{ block('foobar_block') }}").iterator().next().getName());
+        assertEquals("foobar_block", buildBlocks("{{ block(\"foobar_block\") }}").iterator().next().getName());
     }
 
     /**
