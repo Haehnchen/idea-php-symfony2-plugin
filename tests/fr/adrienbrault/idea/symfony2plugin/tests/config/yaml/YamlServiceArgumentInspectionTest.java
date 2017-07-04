@@ -36,6 +36,14 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
         );
     }
 
+    public void testThatServiceShortcutOnIdAttributeIsProvidesInspection() {
+        assertLocalInspectionContains("services.yml", "services:\n" +
+                "  Foo\\B<caret>ar:\n" +
+                "    arguments: []",
+            "Missing argument"
+        );
+    }
+
     public void testThatAllParametersAreGivenWithLastOneOptional() {
         for (String s : new String[]{"@foo", "'@foo'", "\"@foo\""}) {
             assertLocalInspectionNotContains("services.yml", String.format("services:\n" +
@@ -74,6 +82,16 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
                 "" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Bar\n",
+            "Missing argument"
+        );
+
+        assertLocalInspectionContains("services.yml", "" +
+                "services:\n" +
+                "  _defaults:\n" +
+                "    autowire: true\n" +
+                "" +
+                "  Foo<caret>\\Bar:\n" +
+                "    autowire: false\n",
             "Missing argument"
         );
     }

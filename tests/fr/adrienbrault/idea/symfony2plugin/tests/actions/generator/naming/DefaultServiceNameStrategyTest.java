@@ -7,7 +7,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-
 public class DefaultServiceNameStrategyTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testGetServiceName() {

@@ -27,7 +27,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
     public static final String[] INVALID_KEYS = new String[]{
         "parent", "factory_class", "factory_service",
         "factory_method", "abstract", "factory",
-        "autowire", "resource", "exclude"
+        "resource", "exclude"
     };
 
     @NotNull
@@ -46,7 +46,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
         private final ProblemsHolder problemsHolder;
         private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-        public MyPsiElementVisitor(@NotNull ProblemsHolder problemsHolder) {
+        MyPsiElementVisitor(@NotNull ProblemsHolder problemsHolder) {
             this.problemsHolder = problemsHolder;
         }
 
@@ -59,7 +59,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
             for (ServiceActionUtil.ServiceYamlContainer serviceYamlContainer : ServiceActionUtil.getYamlContainerServiceArguments((YAMLFile) file)) {
 
                 // we dont support parent services for now
-                if(!isValidService(serviceYamlContainer)) {
+                if("_defaults".equalsIgnoreCase(serviceYamlContainer.getServiceKey().getKeyText()) || !isValidService(serviceYamlContainer)) {
                     continue;
                 }
 
@@ -86,15 +86,24 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
                 }
             }
 
-            // find file scope defaults
-            // defaults: [autowire: true]
-            YAMLMapping key = serviceKey.getParentMapping();
-            if(key != null) {
-                YAMLKeyValue defaults = YamlHelper.getYamlKeyValue(key, "_defaults");
-                if(defaults != null) {
-                    Boolean autowire = YamlHelper.getYamlKeyValueAsBoolean(defaults, "autowire");
-                    if(autowire != null && autowire) {
-                        return false;
+            // check autowire scope
+            Boolean serviceAutowire = YamlHelper.getYamlKeyValueAsBoolean(serviceKey, "autowire");
+            if(serviceAutowire != null) {
+                // use service scope for autowire
+                if(serviceAutowire) {
+                    return false;
+                }
+            } else {
+                // find file scope defaults
+                // defaults: [autowire: true]
+                YAMLMapping key = serviceKey.getParentMapping();
+                if(key != null) {
+                    YAMLKeyValue defaults = YamlHelper.getYamlKeyValue(key, "_defaults");
+                    if(defaults != null) {
+                        Boolean autowire = YamlHelper.getYamlKeyValueAsBoolean(defaults, "autowire");
+                        if(autowire != null && autowire) {
+                            return false;
+                        }
                     }
                 }
             }

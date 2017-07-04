@@ -101,6 +101,14 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testThatServiceShortcutOnIdAttributeIsProvidesInspection() {
+        assertLocalInspectionContains(
+            "services.xml",
+            createContainer("<serv<caret>ice id=\"Foo\\Bar\"/>"),
+            "Missing argument"
+        );
+    }
+
     private String createContainer(String serviceDefinition) {
         return "<container><services>" + serviceDefinition + "</services></container>";
     }

@@ -230,17 +230,26 @@ public class ServiceActionUtil {
                 return null;
             }
 
+            String serviceClass = null;
+
             YAMLKeyValue aClass = childOfType.getKeyValueByKey("class");
-            if(aClass == null) {
-                return null;
+            if(aClass != null) {
+                // service:
+                //  class: Foobar
+                YAMLValue value = aClass.getValue();
+                if(value instanceof YAMLScalar) {
+                    serviceClass =  ((YAMLScalar) value).getTextValue();
+                }
+            } else {
+                // Foobar:
+                //  argument: ~
+                String keyText = yamlServiceKeyValue.getKeyText();
+
+                if(StringUtils.isNotBlank(keyText) && YamlHelper.isClassServiceId(keyText)) {
+                    serviceClass = keyText;
+                }
             }
 
-            YAMLValue value = aClass.getValue();
-            if(!(value instanceof YAMLScalar)) {
-                return null;
-            }
-
-            String serviceClass = ((YAMLScalar) value).getTextValue();
             if (StringUtils.isBlank(serviceClass)) {
                 return null;
             }
@@ -307,19 +316,18 @@ public class ServiceActionUtil {
 
     @Nullable
     public static PhpClass getPhpClassFromXmlTag(@NotNull XmlTag xmlTag, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
+        String className = xmlTag.getAttributeValue("class");
+        if(className == null) {
+            String id = xmlTag.getAttributeValue("id");
+            if(id == null || !YamlHelper.isClassServiceId(id)) {
+                return null;
+            }
 
-        XmlAttribute classAttribute = xmlTag.getAttribute("class");
-        if(classAttribute == null) {
-            return null;
-        }
-
-        String value = classAttribute.getValue();
-        if(StringUtils.isBlank(value)) {
-            return null;
+            className = id;
         }
 
         // @TODO: cache defs
-        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(xmlTag.getProject(), value, collector);
+        PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(xmlTag.getProject(), className, collector);
         if(resolvedClassDefinition == null) {
             return null;
         }
