@@ -385,22 +385,28 @@ public class ServiceActionUtil {
             }
         }
 
+        // <service autowire="[false|true]"/>
+        String autowire = xmlTag.getAttributeValue("autowire");
+        if("true".equalsIgnoreCase(autowire)) {
+            return false;
+        } else if("false".equalsIgnoreCase(autowire)) {
+            return true;
+        }
+
         // <service><factory/></service>
         // symfony2 >= 2.6
         if(xmlTag.findSubTags("factory").length > 0) {
             return false;
         }
 
-        // <services><defaults/></services>
-        PsiElement parent = xmlTag.getParent();
-        if(!(parent instanceof XmlTag) || !"services".equals(((XmlTag) parent).getName())) {
-            return true;
-        }
-
-        // <defaults autowire="true" />
-        for (XmlTag defaults : ((XmlTag) parent).findSubTags("defaults")) {
-            if("true".equalsIgnoreCase(defaults.getAttributeValue("autowire"))) {
-                return false;
+        // <services autowire="true"><defaults/></services>
+        PsiElement servicesTag = xmlTag.getParent();
+        if(servicesTag instanceof XmlTag &&  "services".equals(((XmlTag) servicesTag).getName())) {
+            // <defaults autowire="true" />
+            for (XmlTag defaults : ((XmlTag) servicesTag).findSubTags("defaults")) {
+                if("true".equalsIgnoreCase(defaults.getAttributeValue("autowire"))) {
+                    return false;
+                }
             }
         }
 
