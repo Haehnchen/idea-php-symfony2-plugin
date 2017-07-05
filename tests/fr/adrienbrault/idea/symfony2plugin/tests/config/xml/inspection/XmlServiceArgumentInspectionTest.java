@@ -99,6 +99,12 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
             createContainer("<defaults autowire=\"false\" /><serv<caret>ice class=\"Foo\\Bar\"/>"),
             "Missing argument"
         );
+
+        assertLocalInspectionContains(
+            "services.xml",
+            createContainer("<defaults autowire=\"true\" /><serv<caret>ice autowire=\"false\" class=\"Foo\\Bar\"/>"),
+            "Missing argument"
+        );
     }
 
     public void testThatServiceShortcutOnIdAttributeIsProvidesInspection() {
