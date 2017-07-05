@@ -152,7 +152,7 @@ public class ServiceIndexUtil {
     /**
      * Lazy values for linemarker
      */
-    @Nullable
+    @NotNull
     public static NotNullLazyValue<Collection<? extends PsiElement>> getServiceIdDefinitionLazyValue(@NotNull Project project, @NotNull Collection<String> ids) {
         return new MyServiceIdLazyValue(project, ids);
     }

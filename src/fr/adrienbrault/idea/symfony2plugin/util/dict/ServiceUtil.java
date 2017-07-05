@@ -623,22 +623,28 @@ public class ServiceUtil {
                 continue;
             }
 
+            // search for for all return values and try to extract array keys
             for (PhpReturn phpReturn: PsiTreeUtil.collectElementsOfType(method, PhpReturn.class)) {
                 PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
 
-                if(!(firstPsiChild instanceof FunctionReference) || !(
+                if(firstPsiChild instanceof ArrayCreationExpression) {
+                    // return ['foobar' => 'foo']
+
+                    parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) firstPsiChild));
+                } else if(firstPsiChild instanceof FunctionReference && (
                     "array_merge".equalsIgnoreCase(firstPsiChild.getName()) ||
-                    "array_merge_recursive".equalsIgnoreCase(firstPsiChild.getName())
+                    "array_merge_recursive".equalsIgnoreCase(firstPsiChild.getName()) ||
+                    "array_replace".equalsIgnoreCase(firstPsiChild.getName())
                 )) {
-                    continue;
-                }
+                    // return array_merge(['foobar' => 'foo'])
+                    // return array_merge($foobar, ['foobar' => 'foo'])
 
-                PsiElement[] params = ((FunctionReference) firstPsiChild).getParameters();
-                if(!(params[0] instanceof ArrayCreationExpression)) {
-                    continue;
+                    for (PsiElement parameter : ((FunctionReference) firstPsiChild).getParameters()) {
+                        if(parameter instanceof ArrayCreationExpression) {
+                            parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameter));
+                        }
+                    }
                 }
-
-                parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) params[0]));
             }
         }
 

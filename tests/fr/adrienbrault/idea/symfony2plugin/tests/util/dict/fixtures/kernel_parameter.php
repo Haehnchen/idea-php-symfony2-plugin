@@ -22,10 +22,30 @@ namespace Symfony\Component\HttpKernel
         {
             return array_merge(
                 array(
-                    'kernel.foobar' => null,
+                    'kernel.array_merge' => null,
                 ),
                 null
             );
+
+            return array_merge_recursive(
+                array(
+                    'kernel.array_merge_recursive' => null,
+                ),
+                null
+            );
+
+            return array_replace(
+                [
+                    'kernel.array_replace' => null,
+                ],
+                array(
+                    'kernel.array_replace_2' => null,
+                )
+            );
+
+            return [
+                'kernel.array' => null,
+            ];
         }
     }
 }

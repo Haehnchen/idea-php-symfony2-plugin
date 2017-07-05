@@ -76,7 +76,12 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      */
     public void testGetParameterParameters() {
         myFixture.copyFileToProject("kernel_parameter.php");
-        assertContainsElements(ServiceUtil.getParameterParameters(getProject()), "kernel.root_dir", "kernel.project_dir", "kernel.foobar");
+
+        assertContainsElements(
+            ServiceUtil.getParameterParameters(getProject()),
+            "kernel.root_dir", "kernel.project_dir", "kernel.array_merge",
+            "kernel.array_merge_recursive", "kernel.array_replace", "kernel.array", "kernel.array_replace_2"
+        );
     }
 
     private static class MyNameContainerServiceCondition implements Condition<ContainerService> {
