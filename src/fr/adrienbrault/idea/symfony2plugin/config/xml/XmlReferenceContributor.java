@@ -2,9 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
-import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlText;
-import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.xml.*;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -19,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,6 +71,13 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         registrar.registerReferenceProvider(
             XmlHelper.getServiceIdPattern(),
             new ClassPsiReferenceProvider()
+        );
+
+        // Symfoyn 3.3 shortcut
+        // <service id="Class\Name">
+        registrar.registerReferenceProvider(
+            XmlHelper.getAttributePattern("id"),
+            new ClassAsIdPsiReferenceProvider()
         );
 
         // <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
@@ -259,8 +265,38 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 return new PsiReference[0];
             }
 
-            return new PsiReference[]{ new ServiceIdReference(
-                (XmlAttributeValue) psiElement)
+            return new PsiReference[] {
+                new ServiceIdReference((XmlAttributeValue) psiElement)
+            };
+        }
+    }
+
+    /**
+     * Shortcut for service tag without class attribute
+     *
+     * <service id="Foobar\Foobar"/>
+     */
+    private static class ClassAsIdPsiReferenceProvider extends PsiReferenceProvider {
+        @NotNull
+        @Override
+        public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+            if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof XmlAttributeValue)) {
+                return new PsiReference[0];
+            }
+
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof XmlAttribute) && YamlHelper.isClassServiceId(parent.getText())) {
+                return new PsiReference[0];
+            }
+
+            // invalidate on class attribute
+            PsiElement xmlTag = parent.getParent();
+            if(!(xmlTag instanceof XmlTag) || ((XmlTag) xmlTag).getAttribute("class") != null) {
+                return new PsiReference[0];
+            }
+
+            return new PsiReference[] {
+                new ServiceIdWithoutParameterReference((XmlAttributeValue) psiElement)
             };
         }
     }
@@ -353,6 +389,33 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             return new Object[0];
         }
 
+    }
+
+    /**
+     * <service id="Foobar\Foo"/>
+     */
+    private static class ServiceIdWithoutParameterReference extends PsiPolyVariantReferenceBase<PsiElement> {
+
+        @NotNull
+        private final XmlAttributeValue psiElement;
+
+        private ServiceIdWithoutParameterReference(@NotNull XmlAttributeValue psiElement) {
+            super(psiElement);
+            this.psiElement = psiElement;
+        }
+
+        @NotNull
+        @Override
+        public ResolveResult[] multiResolve(boolean b) {
+            String value = this.psiElement.getValue();
+            return PsiElementResolveResult.createResults(ServiceUtil.getServiceClassTargets(getElement().getProject(), value));
+        }
+
+        @NotNull
+        @Override
+        public Object[] getVariants() {
+            return new Object[0];
+        }
     }
 
     /**

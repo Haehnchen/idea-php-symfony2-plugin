@@ -1,8 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.codeInsight;
 
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -25,8 +29,15 @@ public abstract class GotoCompletionProvider implements GotoCompletionProviderIn
         return this.element;
     }
 
+    @NotNull
     @Override
-    public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
-        // empty for compatibility
+    public Collection<LookupElement> getLookupElements() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
+    public Collection<PsiElement> getPsiTargets(PsiElement element) {
+        return Collections.emptyList();
     }
 }

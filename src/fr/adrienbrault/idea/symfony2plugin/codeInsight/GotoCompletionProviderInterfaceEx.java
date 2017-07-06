@@ -10,5 +10,5 @@ public interface GotoCompletionProviderInterfaceEx extends GotoCompletionProvide
      * Extended lookup element implementation
      * allowing resultSet modification
      */
-    void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments);
+    default void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {}
 }

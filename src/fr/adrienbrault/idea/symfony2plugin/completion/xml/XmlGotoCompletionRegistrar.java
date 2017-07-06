@@ -15,16 +15,14 @@ import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.completion.DecoratedServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -148,11 +146,8 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
             super(element);
         }
 
-        @NotNull
         @Override
-        public Collection<LookupElement> getLookupElements() {
-            Collection<LookupElement> lookupElements = new ArrayList<>();
-
+        public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
             // find class name of service tag
             PsiElement xmlToken = this.getElement();
             if(xmlToken instanceof XmlToken) {
@@ -163,23 +158,28 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                         PsiElement xmlTag = xmlAttribute.getParent();
                         if(xmlTag instanceof XmlTag) {
                             String aClass = ((XmlTag) xmlTag).getAttributeValue("class");
-                            if(aClass != null && StringUtils.isNotBlank(aClass)) {
-                                lookupElements.add(LookupElementBuilder.create(
-                                    ServiceUtil.getServiceNameForClass(getProject(), aClass)).withIcon(Symfony2Icons.SERVICE)
+                            if(aClass == null) {
+                                // <service id="Foo\Bar"/>
+
+                                PhpClassCompletionProvider.addClassCompletion(
+                                    arguments.getParameters(),
+                                    arguments.getResultSet(),
+                                    getElement(),
+                                    false
                                 );
+                            } else if(StringUtils.isNotBlank(aClass)) {
+                                // <service id="foo.bar" class="Foo\Bar"/>
+
+                                LookupElementBuilder lookupElement = LookupElementBuilder
+                                    .create(ServiceUtil.getServiceNameForClass(getProject(), aClass))
+                                    .withIcon(Symfony2Icons.SERVICE);
+
+                                arguments.getResultSet().addElement(lookupElement);
                             }
                         }
                     }
                 }
             }
-
-            return lookupElements;
-        }
-
-        @NotNull
-        @Override
-        public Collection<PsiElement> getPsiTargets(PsiElement element) {
-            return Collections.emptyList();
         }
     }
 

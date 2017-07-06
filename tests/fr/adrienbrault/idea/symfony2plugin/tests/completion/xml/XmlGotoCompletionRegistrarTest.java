@@ -54,6 +54,20 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testIdInsideServiceTagMustCompleteWithClassNameOnShortcut() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<services><service id=\"<caret>\"/></services>",
+            "Foobar"
+        );
+
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<services><service id=\"Foo\\<caret>\"/></services>",
+            "Foo\\Bar"
+        );
+    }
+
     public void testThatServiceFactoryMethodAttributeProvidesCompletion() {
         assertCompletionContains(XmlFileType.INSTANCE, "" +
                 "<?xml version=\"1.0\"?>\n" +

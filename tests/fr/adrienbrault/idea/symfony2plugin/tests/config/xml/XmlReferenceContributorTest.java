@@ -121,4 +121,16 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testServiceIdAsClassReferences() {
+        assertReferenceMatchOnParent(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\<caret>Bar\"/>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement(PhpClass.class).withName("Bar")
+        );
+    }
 }
