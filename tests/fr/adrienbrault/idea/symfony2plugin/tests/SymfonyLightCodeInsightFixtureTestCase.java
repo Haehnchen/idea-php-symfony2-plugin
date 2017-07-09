@@ -546,17 +546,6 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         return Pair.create(problemsHolder.getResults(), caretOffset);
     }
 
-    protected void assertLocalInspectionIsEmpty(String filename, String content) {
-        Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(filename, content);
-
-        for (ProblemDescriptor result : localInspectionsAtCaret.getFirst()) {
-            TextRange textRange = result.getPsiElement().getTextRange();
-            if (textRange.contains(localInspectionsAtCaret.getSecond())) {
-                fail("Fail that matches is empty");
-            }
-        }
-    }
-
     protected void createDummyFiles(String... files) throws Exception {
         for (String file : files) {
             String path = myFixture.getProject().getBaseDir().getPath() + "/" + file;
