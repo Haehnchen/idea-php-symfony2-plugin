@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.147</version>
+    <version>0.14.148</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,15 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.14.148</h2>
+<ul>
+    <li>Symfony 3.3 Fully support autowire in defaults of XML <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966">#966</a></li>
+    <li>Symfony 3.3 Arguments are not autocompleted when using the FQCN as id <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/968">#968</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966">#966</a></li>
+    <li>Symfony 4.0 Support array Kernel::getKernelParameters and array_replace <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/973">#973</a></li>
+    <li>Symfony 3.3 Provide class name completion in xml service ids <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/967">#967</a></li>
+    <li>Symfony 3.3 Goto definition does not support services with FQCN xml ids shortcuts <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/952">#952</a></li>
+</ul>
 
 <h2>0.14.147</h2>
 <ul>

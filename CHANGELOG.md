@@ -9,6 +9,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.148
+* Symfony 3.3 Fully support autowire in defaults of XML [#966](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966)
+* Symfony 3.3 Arguments are not autocompleted when using the FQCN as id [#968](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/968) [#966](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966)
+* Symfony 4.0 Support array Kernel::getKernelParameters and array_replace [#973](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/973)
+* Symfony 3.3 Provide class name completion in xml service ids [#967](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/967)
+* Symfony 3.3 Goto definition does not support services with FQCN xml ids shortcuts [#952](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/952)
+
 ## 0.14.147
 * Fix recursive string value resolve on class fields
 * Dropping custom caret overlay listener and all extension points in favor of core parameter hints
