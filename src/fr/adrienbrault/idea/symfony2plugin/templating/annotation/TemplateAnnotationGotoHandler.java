@@ -21,14 +21,6 @@ public class TemplateAnnotationGotoHandler implements PhpAnnotationDocTagGotoHan
             return;
         }
 
-        try {
-            AnnotationDocTagGotoHandlerParameter.class.getMethod("getPhpDocTag");
-        } catch (NoSuchMethodException e) {
-            return;
-        }
-
         parameter.addTargets(TwigUtil.getTemplateAnnotationFilesWithSiblingMethod(parameter.getPhpDocTag()).values());
-
     }
-
 }

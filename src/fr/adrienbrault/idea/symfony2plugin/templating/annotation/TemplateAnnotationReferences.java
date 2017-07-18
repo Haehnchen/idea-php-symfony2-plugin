@@ -23,13 +23,11 @@ public class TemplateAnnotationReferences implements PhpAnnotationReferenceProvi
             return new PsiReference[0];
         }
 
-        // @Foo("template.html.twig")
         if(annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.DEFAULT) {
+            // @Foo("template.html.twig")
             return new PsiReference[]{ new TemplateReference((StringLiteralExpression) annotationPropertyParameter.getElement()) };
-        }
-
-        // @Foo(template="template.html.twig")
-        if(annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.PROPERTY_VALUE || "template".equals(annotationPropertyParameter.getPropertyName())) {
+        } else if(annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.PROPERTY_VALUE || "template".equals(annotationPropertyParameter.getPropertyName())) {
+            // @Foo(template="template.html.twig")
             return new PsiReference[]{ new TemplateReference((StringLiteralExpression) annotationPropertyParameter.getElement()) };
         }
 

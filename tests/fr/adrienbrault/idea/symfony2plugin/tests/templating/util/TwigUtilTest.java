@@ -8,8 +8,13 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.twig.*;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigLanguage;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
@@ -19,10 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -368,6 +370,48 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(parameter);
         assertEquals("foo", parameter.getFirst());
         assertEquals("(foobar, foo, bar)", parameter.getSecond());
+    }
+
+    public void testGetControllerMethodShortcut() {
+        myFixture.copyFileToProject("controller_method.php");
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace FooBundle\\Controller;\n" +
+            "class FoobarController\n" +
+            "{\n" +
+            "   public function fo<caret>obarAction() {}\n" +
+            "" +
+            "}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
+
+        assertContainsElements(strings, "FooBundle:Foobar:foobar.html.twig");
+        assertContainsElements(strings, "FooBundle:Foobar:foobar.json.twig");
+        assertContainsElements(strings, "FooBundle:Foobar:foobar.xml.twig");
+    }
+
+    public void testGetControllerMethodShortcutForInvoke() {
+        myFixture.copyFileToProject("controller_method.php");
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace FooBundle\\Controller;\n" +
+            "class FoobarController\n" +
+            "{\n" +
+            "   public function __in<caret>voke() {}\n" +
+            "" +
+            "}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
+
+        assertContainsElements(strings, "FooBundle::Foobar.html.twig");
+        assertContainsElements(strings, "FooBundle::Foobar.json.twig");
+        assertContainsElements(strings, "FooBundle::Foobar.xml.twig");
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

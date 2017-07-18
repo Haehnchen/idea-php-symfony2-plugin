@@ -56,13 +56,9 @@ import java.util.regex.Pattern;
 public class TwigUtil {
 
     @Nullable
-    public static String[] getControllerMethodShortcut(Method method) {
-
+    public static String[] getControllerMethodShortcut(@NotNull Method method) {
         // indexAction
         String methodName = method.getName();
-        if(!methodName.endsWith("Action")) {
-            return null;
-        }
 
         PhpClass phpClass = method.getContainingClass();
         if(null == phpClass) {
@@ -82,24 +78,42 @@ public class TwigUtil {
             return null;
         }
 
-        // find the bundle name of file
-        PhpClass BundleClass = symfonyBundle.getPhpClass();
-        if(null == BundleClass) {
-            return null;
-        }
-
         // check if files is in <Bundle>/Controller/*
-        if(!phpClass.getNamespaceName().startsWith(BundleClass.getNamespaceName() + "Controller\\")) {
+        PhpClass bundleClass = symfonyBundle.getPhpClass();
+        if(!phpClass.getNamespaceName().startsWith(bundleClass.getNamespaceName() + "Controller\\")) {
             return null;
         }
 
         // strip the controller folder name
-        String templateFolderName = phpClass.getNamespaceName().substring(BundleClass.getNamespaceName().length() + 11);
+        String templateFolderName = phpClass.getNamespaceName().substring(bundleClass.getNamespaceName().length() + 11);
 
         // HomeBundle:default:indexes
         // HomeBundle:default/Test:indexes
         templateFolderName = templateFolderName.replace("\\", "/");
-        String shortcutName = symfonyBundle.getName() + ":" + templateFolderName + className.substring(0, className.lastIndexOf("Controller")) + ":" + methodName.substring(0, methodName.lastIndexOf("Action"));
+
+        String shortcutName;
+
+        // Foobar without (.html.twig)
+        String templateName = className.substring(0, className.lastIndexOf("Controller"));
+
+        if(methodName.equals("__invoke")) {
+            // AppBundle::Foobar.html.twig
+            shortcutName = String.format(
+                "%s::%s%s",
+                symfonyBundle.getName(),
+                templateFolderName,
+                templateName
+            );
+        } else {
+            // FooBundle:Foobar:foobar.html.twig
+            shortcutName = String.format(
+                "%s:%s%s:%s",
+                symfonyBundle.getName(),
+                templateFolderName,
+                templateName,
+                StringUtils.stripEnd(methodName, "Action")
+            );
+        }
 
         // @TODO: we should support types later on; but nicer
         // HomeBundle:default:indexes.html.twig
