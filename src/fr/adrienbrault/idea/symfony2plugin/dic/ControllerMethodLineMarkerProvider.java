@@ -45,11 +45,6 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        String methodName = ((Method) psiElement).getName();
-        if(!methodName.endsWith("Action")) {
-            return null;
-        }
-
         List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems((Method) psiElement);
 
         if(gotoRelatedItems.size() == 0) {

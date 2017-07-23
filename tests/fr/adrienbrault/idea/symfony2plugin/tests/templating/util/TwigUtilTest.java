@@ -2,10 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
@@ -412,6 +410,28 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(strings, "FooBundle::Foobar.html.twig");
         assertContainsElements(strings, "FooBundle::Foobar.json.twig");
         assertContainsElements(strings, "FooBundle::Foobar.xml.twig");
+    }
+
+    public void testFindTwigFileController() {
+        myFixture.copyFileToProject("bundle.php");
+
+        VirtualFile bar = myFixture.copyFileToProject("dummy.html.twig", "Resources/views/Foobar/Bar.html.twig");
+        assertEquals(
+            "barAction",
+            TwigUtil.findTwigFileController((TwigFile) PsiManager.getInstance(getProject()).findFile(bar)).iterator().next().getName()
+        );
+
+        VirtualFile json = myFixture.copyFileToProject("dummy.html.twig", "Resources/views/Foobar/Bar.json.twig");
+        assertEquals(
+            "barAction",
+            TwigUtil.findTwigFileController((TwigFile) PsiManager.getInstance(getProject()).findFile(json)).iterator().next().getName()
+        );
+
+        VirtualFile foobar = myFixture.copyFileToProject("dummy.html.twig", "Resources/views/Foobar.html.twig");
+        assertEquals(
+            "__invoke",
+            TwigUtil.findTwigFileController((TwigFile) PsiManager.getInstance(getProject()).findFile(foobar)).iterator().next().getName()
+        );
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

@@ -59,7 +59,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
             }
 
             Method method = PsiTreeUtil.getNextSiblingOfType(docComment, Method.class);
-            if(null == method || !method.getName().endsWith("Action")) {
+            if(null == method || (!method.getName().endsWith("Action") && !method.getName().equalsIgnoreCase("__invoke"))) {
                 return;
             }
 

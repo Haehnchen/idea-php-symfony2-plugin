@@ -93,11 +93,9 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
         Set<Function> methods = new HashSet<>();
-        Method method = TwigUtil.findTwigFileController(twigFile);
-        if(method != null) {
-            methods.add(method);
-        }
 
+
+        methods.addAll(TwigUtil.findTwigFileController(twigFile));
         methods.addAll(TwigUtil.getTwigFileMethodUsageOnIndex(twigFile));
 
         if(methods.size() == 0) {

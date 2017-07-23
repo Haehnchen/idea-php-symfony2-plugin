@@ -619,31 +619,72 @@ public class TwigUtil {
         return sets;
     }
 
-    @Nullable
-    public static Method findTwigFileController(TwigFile twigFile) {
+    /**
+     * Find a controller method which possibly rendered the tempalte
+     *
+     * Foobar/Bar.html.twig" => FoobarController::barAction
+     * Foobar/Bar.html.twig" => FoobarController::bar
+     * Foobar.html.twig" => FoobarController::__invoke
+     */
+    @NotNull
+    public static Collection<Method> findTwigFileController(@NotNull TwigFile twigFile) {
 
         SymfonyBundle symfonyBundle = new SymfonyBundleUtil(twigFile.getProject()).getContainingBundle(twigFile);
         if(symfonyBundle == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         String relativePath = symfonyBundle.getRelativePath(twigFile.getVirtualFile());
         if(relativePath == null || !relativePath.startsWith("Resources/views/")) {
-            return null;
+            return Collections.emptyList();
         }
 
         String viewPath = relativePath.substring("Resources/views/".length());
 
-        Matcher simpleFilter = Pattern.compile(".*/(\\w+)\\.\\w+\\.twig").matcher(viewPath);
-        if(!simpleFilter.find()) {
-            return null;
+        String className = null;
+        Collection<String> methodNames = new ArrayList<>();
+
+        Matcher methodMatcher = Pattern.compile(".*/(\\w+)\\.\\w+\\.twig").matcher(viewPath);
+        if(methodMatcher.find()) {
+            // Foobar/Bar.html.twig" => FoobarController::barAction
+            // Foobar/Bar.html.twig" => FoobarController::bar
+            methodNames.add(methodMatcher.group(1) + "Action");
+            methodNames.add(methodMatcher.group(1));
+
+            className = String.format(
+                "%sController\\%sController",
+                symfonyBundle.getNamespaceName(),
+                viewPath.substring(0, viewPath.lastIndexOf("/")).replace("/", "\\")
+            );
+        } else {
+            // Foobar.html.twig" => FoobarController::__invoke
+            Matcher invokeMatcher = Pattern.compile("^(\\w+)\\.\\w+\\.twig").matcher(viewPath);
+            if(invokeMatcher.find()) {
+                className = String.format(
+                    "%sController\\%sController",
+                    symfonyBundle.getNamespaceName(),
+                    invokeMatcher.group(1)
+                );
+
+                methodNames.add("__invoke");
+            }
         }
 
-        String methodName = simpleFilter.group(1) + "Action";
-        String className = symfonyBundle.getNamespaceName() + "Controller\\" + viewPath.substring(0, viewPath.lastIndexOf("/")).replace("/", "\\") + "Controller";
+        // found not valid template name pattern
+        if(className == null || methodNames.size() == 0) {
+            return Collections.emptyList();
+        }
 
-        return PhpElementsUtil.getClassMethod(twigFile.getProject(), className, methodName);
+        // find multiple targets
+        Collection<Method> methods = new HashSet<>();
+        for (String methodName : methodNames) {
+            Method method = PhpElementsUtil.getClassMethod(twigFile.getProject(), className, methodName);
+            if(method != null) {
+                methods.add(method);
+            }
+        }
 
+        return methods;
     }
 
     @NotNull
@@ -659,8 +700,7 @@ public class TwigUtil {
     public static Map<String, PsiVariable> collectControllerTemplateVariables(@NotNull TwigFile twigFile) {
         Map<String, PsiVariable> vars = new HashMap<>();
 
-        Method method = findTwigFileController(twigFile);
-        if(method != null) {
+        for (Method method : findTwigFileController(twigFile)) {
             vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method));
         }
 
