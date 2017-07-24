@@ -10,7 +10,6 @@ import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,20 +39,24 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        LazyDecoratedServiceValues lazyDecoratedServiceValues = null;
+
         for (PsiElement psiElement : psiElements) {
+            if(lazyDecoratedServiceValues == null) {
+                lazyDecoratedServiceValues = new LazyDecoratedServiceValues(psiElements.get(0).getProject());
+            }
+
             // <services><service id="foo"/></services>
             if(psiElement instanceof XmlTag && getServiceIdPattern().accepts(psiElement)) {
-                visitServiceId((XmlTag) psiElement, result);
+                visitServiceId((XmlTag) psiElement, result, lazyDecoratedServiceValues);
             }
         }
-
-        decoratedServiceCache = null;
     }
 
     /**
      * <service id="foo"/>
      */
-    private void visitServiceId(@NotNull XmlTag xmlTag, @NotNull Collection<LineMarkerInfo> result) {
+    private void visitServiceId(@NotNull XmlTag xmlTag, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedServiceValues lazyDecoratedServiceValues) {
         String id = xmlTag.getAttributeValue("id");
         if(StringUtils.isBlank(id)) {
             return;
@@ -61,16 +64,12 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
         // <service id="foo" decorates=foobar" />
         String decorates = xmlTag.getAttributeValue("decorates");
-        if(StringUtils.isNotBlank(decorates)) {
+        if(decorates != null && StringUtils.isNotBlank(decorates)) {
             result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(xmlTag, decorates, result));
         }
 
-        if(this.decoratedServiceCache == null) {
-            this.decoratedServiceCache = ServiceIndexUtil.getDecoratedServices(xmlTag.getProject());
-        }
-
         NavigationGutterIconBuilder<PsiElement> lineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            xmlTag.getProject(), this.decoratedServiceCache, id
+            xmlTag.getProject(), lazyDecoratedServiceValues.getDecoratedServices(), id
         );
 
         if(lineMarker == null) {

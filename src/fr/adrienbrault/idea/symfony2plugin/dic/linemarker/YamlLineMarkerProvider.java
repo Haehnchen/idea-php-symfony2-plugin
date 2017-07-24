@@ -7,7 +7,6 @@ import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -39,15 +38,21 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        final LazyDecoratedServiceValues[] lazyDecoratedServices = {null};
+
         // services -> service_name
         psiElements.stream()
             .filter(psiElement -> psiElement instanceof YAMLKeyValue && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement))
-            .forEach(psiElement -> visitServiceId((YAMLKeyValue) psiElement, result));
+            .forEach((PsiElement psiElement) -> {
+                if(lazyDecoratedServices[0] == null) {
+                    lazyDecoratedServices[0] = new LazyDecoratedServiceValues(psiElements.get(0).getProject());
+                }
 
-        decoratedServiceCache = null;
+                visitServiceId((YAMLKeyValue) psiElement, result, lazyDecoratedServices[0]);
+            });
     }
 
-    private void visitServiceId(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result) {
+    private void visitServiceId(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedServiceValues lazyDecoratedServices) {
         String id = yamlKeyValue.getKeyText();
         if(StringUtils.isBlank(id)) {
             return;
@@ -55,16 +60,12 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
         // decorates: @foobar
         String decorates = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates");
-        if(StringUtils.isNotBlank(decorates)) {
+        if(decorates != null && StringUtils.isNotBlank(decorates)) {
             result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(yamlKeyValue, decorates, result));
         }
 
-        if(this.decoratedServiceCache == null) {
-            this.decoratedServiceCache = ServiceIndexUtil.getDecoratedServices(yamlKeyValue.getProject());
-        }
-
         NavigationGutterIconBuilder<PsiElement> lineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            yamlKeyValue.getProject(), this.decoratedServiceCache, id
+            yamlKeyValue.getProject(), lazyDecoratedServices.getDecoratedServices(), id
         );
 
         if(lineMarker == null) {
