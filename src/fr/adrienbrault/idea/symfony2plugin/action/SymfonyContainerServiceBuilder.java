@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
@@ -13,8 +14,13 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.SymfonyCreateService;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLFile;
+
+import java.awt.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -33,29 +39,15 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return;
         }
 
-        PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
-        if(psiFile instanceof PhpFile) {
-
-            if("ProjectViewPopup".equals(event.getPlace())) {
-
-                if(PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile) == null) {
-                    this.setStatus(event, false);
-                }
-
-            } else {
-                PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
-                if(!(psiElement instanceof PhpClass)) {
-                    this.setStatus(event, false);
-                }
-            }
-
+        Pair<PsiFile, PhpClass> pair = findPhpClass(event);
+        if(pair == null) {
             return;
         }
 
-        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile)) {
+        PsiFile psiFile = pair.getFirst();
+        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
             this.setStatus(event, false);
         }
-
     }
 
     private void setStatus(AnActionEvent event, boolean status) {
@@ -64,42 +56,51 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
     }
 
     public void actionPerformed(AnActionEvent event) {
-
         Project project = event.getProject();
         if(project == null) {
             return;
         }
 
         Editor editor = event.getData(PlatformDataKeys.EDITOR);
-        if(editor == null) {
+
+        Component applicationWindow = IdeHelper.getWindowComponentFromProject(event.getProject());
+        if(applicationWindow == null) {
             return;
         }
 
+        Pair<PsiFile, PhpClass> pair = findPhpClass(event);
+        if(pair == null) {
+            return;
+        }
+
+        if(pair.getSecond() == null) {
+            SymfonyCreateService.create(applicationWindow, project, pair.getFirst(), editor);
+            return;
+        }
+
+        SymfonyCreateService.create(applicationWindow, project, pair.getFirst(), pair.getSecond(), editor);
+    }
+
+    @Nullable
+    private Pair<PsiFile, PhpClass> findPhpClass(@NotNull AnActionEvent event) {
         PsiFile psiFile = event.getData(PlatformDataKeys.PSI_FILE);
         if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
-            return;
+            return null;
         }
 
-        PhpClass phpClass = null;
-        if(psiFile instanceof PhpFile) {
-
-            if("ProjectViewPopup".equals(event.getPlace())) {
-                phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
+        if("ProjectViewPopup".equals(event.getPlace())) {
+            // menu item
+            return Pair.create(psiFile, PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile));
+        } else {
+            PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
+            if(psiElement instanceof PhpClass) {
+                // directly got the class
+                return Pair.create(psiFile, (PhpClass) psiElement);
             } else {
-                PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
-                if(psiElement instanceof PhpClass) {
-                    phpClass = (PhpClass) psiElement;
-                }
+                // click inside class
+                return Pair.create(psiFile, PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile));
             }
-
         }
-
-        if(phpClass == null) {
-            SymfonyCreateService.create(editor.getComponent(), project, psiFile, editor);
-            return;
-        }
-
-        SymfonyCreateService.create(editor.getComponent(), project, psiFile, phpClass, editor);
     }
 }
 

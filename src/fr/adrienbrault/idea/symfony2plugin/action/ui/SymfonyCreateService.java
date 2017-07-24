@@ -564,24 +564,28 @@ public class SymfonyCreateService extends JDialog {
         }
     }
 
-    private static SymfonyCreateService prepare(@NotNull Component component, @NotNull SymfonyCreateService service) {
+    private static SymfonyCreateService prepare(@Nullable Component component, @NotNull SymfonyCreateService service) {
         service.init();
         service.setTitle("Symfony: Service Generator");
         service.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
         service.pack();
 
         service.setMinimumSize(new Dimension(550, 250));
-        service.setLocationRelativeTo(component);
+
+        if(component != null) {
+            service.setLocationRelativeTo(component);
+        }
+
         service.setVisible(true);
 
         return service;
     }
 
-    public static SymfonyCreateService create(@NotNull Component component, @NotNull Project project, @NotNull PsiFile psiFile, @Nullable Editor editor) {
+    public static SymfonyCreateService create(@Nullable Component component, @NotNull Project project, @NotNull PsiFile psiFile, @Nullable Editor editor) {
         return prepare(component, new SymfonyCreateService(project, psiFile, editor));
     }
 
-    public static SymfonyCreateService create(@NotNull Component component, @NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass, @Nullable Editor editor) {
+    public static SymfonyCreateService create(@Nullable Component component, @NotNull Project project, @NotNull PsiFile psiFile, @NotNull PhpClass phpClass, @Nullable Editor editor) {
         return prepare(component, new SymfonyCreateService(project, psiFile, editor, phpClass.getFQN()));
     }
 }

@@ -4,24 +4,31 @@ import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ex.WindowManagerEx;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.util.ui.UIUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.SettingsForm;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class IdeHelper {
 
     public static void openUrl(String url) {
@@ -155,4 +162,47 @@ public class IdeHelper {
         }
     }
 
+    /**
+     * Find a window manager
+     *
+     * @see com.intellij.ui.popup.AbstractPopup
+     */
+    @Nullable
+    private static WindowManagerEx getWindowManager() {
+        return ApplicationManagerEx.getApplicationEx() != null ? WindowManagerEx.getInstanceEx() : null;
+    }
+
+    /**
+     * Find current window element of given project.
+     * Use this to find a component for new dialogs without using JBPopupFactory
+     *
+     * @see com.intellij.ui.popup.AbstractPopup#showCenteredInCurrentWindow
+     */
+    @Nullable
+    public static Window getWindowComponentFromProject(@NotNull Project project) {
+        WindowManagerEx windowManager = getWindowManager();
+        if(windowManager == null) {
+            return null;
+        }
+
+        Window window = null;
+
+        Component focusedComponent = windowManager.getFocusedComponent(project);
+        if (focusedComponent != null) {
+            Component parent = UIUtil.findUltimateParent(focusedComponent);
+            if (parent instanceof Window) {
+                window = (Window)parent;
+            }
+        }
+
+        if (window == null) {
+            window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+        }
+
+        if (window != null && window.isShowing()) {
+            return window;
+        }
+
+        return window;
+    }
 }
