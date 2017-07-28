@@ -153,7 +153,12 @@ public class DoctrineUtil {
         String text = phpDocAttributeList.getText();
         Matcher matcher = Pattern.compile("repositoryClass\\s*=\\s*\"([^\"]*)\"").matcher(text);
         if (matcher.find()) {
-            return matcher.group(1);
+            String value = matcher.group(1);
+            if(StringUtils.isBlank(value)) {
+                return null;
+            }
+
+            return value;
         }
 
         // repositoryClass=Foobar::class
@@ -201,7 +206,13 @@ public class DoctrineUtil {
                 continue;
             }
 
-            String repositoryClass = YamlHelper.getYamlKeyValueAsString(yamlKey, "repositoryClass");
+            String repositoryClassValue = YamlHelper.getYamlKeyValueAsString(yamlKey, "repositoryClass");
+
+            // check blank condition
+            String repositoryClass = null;
+            if(StringUtils.isNotBlank(repositoryClassValue)) {
+                repositoryClass = repositoryClassValue;
+            }
 
             // fine repositoryClass exists a valid metadata file
             if(!iAmMetadataFile && repositoryClass != null) {

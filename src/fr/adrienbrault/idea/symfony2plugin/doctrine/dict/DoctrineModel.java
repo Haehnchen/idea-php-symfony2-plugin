@@ -23,6 +23,11 @@ public class DoctrineModel implements DoctrineModelSerializable {
         this.clazz = clazz;
     }
 
+    public DoctrineModel(@NotNull String clazz, @Nullable String repositoryClass) {
+        this.clazz = clazz;
+        this.repositoryClass = repositoryClass;
+    }
+
     @NotNull
     public String getClassName() {
         return this.clazz;
@@ -33,18 +38,21 @@ public class DoctrineModel implements DoctrineModelSerializable {
         return repositoryClass;
     }
 
-    public DoctrineModel setRepositoryClass(@Nullable String repositoryClass) {
-        this.repositoryClass = repositoryClass;
-        return this;
-    }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .append(this.clazz)
-            .append(this.repositoryClass)
-            .toHashCode()
-        ;
+        HashCodeBuilder hash = new HashCodeBuilder()
+            .append(this.clazz);
+
+        String repositoryClass = this.repositoryClass;
+
+        // null != ""
+        if(repositoryClass == null) {
+            repositoryClass = "null";
+        }
+
+        hash.append(repositoryClass);
+
+        return hash.toHashCode();
     }
 
     @Override

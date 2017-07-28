@@ -54,7 +54,8 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
                 if(first == null || first.length() == 0) {
                     continue;
                 }
-                map.put(first, new DoctrineModel(first).setRepositoryClass(pair.getSecond()));
+
+                map.put(first, new DoctrineModel(first, pair.getSecond()));
             }
 
             return map;
