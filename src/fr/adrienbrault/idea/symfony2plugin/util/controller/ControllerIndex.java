@@ -114,7 +114,7 @@ public class ControllerIndex {
             for(Method method : phpClass.getMethods()) {
                 String methodName = method.getName();
                 if(methodName.endsWith("Action") && method.getAccess().isPublic()) {
-                    String shortcutName = symfonyBundle.getName() + ":" + ns.replace("\\", "/") + ':' + methodName.substring(0, methodName.length() - 6);
+                    String shortcutName = symfonyBundle.getName() + ":" + ns.replace("/", "\\") + ':' + methodName.substring(0, methodName.length() - 6);
                     actions.add(new ControllerAction(shortcutName, method));
                 }
 

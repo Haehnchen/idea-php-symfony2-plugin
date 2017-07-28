@@ -44,7 +44,7 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
         assertCompletionContains(YAMLFileType.YML, "foo:\n" +
                 "    pattern: /\n" +
                 "    defaults: { _controller: <caret> }\n"
-            , "AppBundle:Default:index", "AppBundle:Foo/Default:index"
+            , "AppBundle:Default:index", "AppBundle:Foo\\Default:index"
         );
 
         assertCompletionNotContains(YAMLFileType.YML, "foo:\n" +
@@ -56,7 +56,7 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
         assertCompletionContains(YAMLFileType.YML, "foo:\n" +
                 "    pattern: /\n" +
                 "    defaults: { _controller: '<caret>' }\n"
-            , "AppBundle:Default:index", "AppBundle:Foo/Default:index"
+            , "AppBundle:Default:index", "AppBundle:Foo\\Default:index"
         );
 
         assertCompletionNotContains(YAMLFileType.YML, "foo:\n" +
@@ -77,7 +77,7 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
 
         assertNavigationContains(YAMLFileType.YML, "foo:\n" +
                 "    pattern: /\n" +
-                "    defaults: { _controller: AppBundle:Foo/<caret>Default:index }\n"
+                "    defaults: { _controller: AppBundle:Foo\\<caret>Default:index }\n"
             , "AppBundle\\Controller\\Foo\\DefaultController::indexAction"
         );
 
@@ -89,7 +89,7 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
                 "<route id=\"blog_show\" path=\"/blog/{slug}\">\n" +
                 "    <default key=\"_controller\"><caret></default>\n" +
                 "</route>"
-            , "AppBundle:Default:index", "AppBundle:Foo/Default:index"
+            , "AppBundle:Default:index", "AppBundle:Foo\\Default:index"
         );
 
     }
