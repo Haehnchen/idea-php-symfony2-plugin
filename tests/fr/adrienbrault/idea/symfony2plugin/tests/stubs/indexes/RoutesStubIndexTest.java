@@ -96,4 +96,28 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
             value -> "FooBundle:Foo\\Foo:index".equalsIgnoreCase(value.getController())
         );
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     */
+    public void testControllerAsInvokeRoutingSupportsClassPatternForDefaults() {
+        myFixture.configureByText(YAMLFileType.YML, "" +
+            "controller_invoke:\n" +
+            "    pattern: /\n" +
+            "    defaults: { _controller: Foobar\\Foobar\\Foobar }" +
+            "\n" +
+            "controller_invoke_2:\n" +
+            "    pattern: /\n" +
+            "    defaults: { _controller: \\Foobar\\Foobar\\Foobar }" +
+            "\n"
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "controller_invoke",
+            value -> "Foobar\\Foobar\\Foobar".equalsIgnoreCase(value.getController())
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "controller_invoke_2",
+            value -> "Foobar\\Foobar\\Foobar".equalsIgnoreCase(value.getController())
+        );
+    }
 }

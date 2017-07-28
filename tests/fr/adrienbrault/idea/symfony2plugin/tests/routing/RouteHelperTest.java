@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -270,6 +271,29 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#convertMethodToRouteShortcutControllerName
+     */
+    public void testConvertMethodToRouteShortcutControllerForInvoke()
+    {
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("GetRoutesOnControllerAction.php"));
+
+        PhpClass phpClass = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace FooBar\\FooBundle\\Controller" +
+            "{\n" +
+            "  class FooBarController\n" +
+            "  {\n" +
+            "     function __invoke() {}\n" +
+            "  }\n" +
+            "}"
+        );
+
+        Method fooAction = phpClass.findMethodByName("__invoke");
+        assertNotNull(fooAction);
+
+        assertEquals("FooBar\\FooBundle\\Controller\\FooBarController", RouteHelper.convertMethodToRouteShortcutControllerName(fooAction));
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesOnControllerAction
      */
     public void testGetRoutesOnControllerAction() {
@@ -341,6 +365,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(element);
         assertTrue(element.getText().contains("my_car_foo_stuff_2"));
     }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#isServiceController
      */
@@ -351,6 +376,45 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(RouteHelper.isServiceController("Foo::bar"));
         assertFalse(RouteHelper.isServiceController("Foo"));
         assertFalse(RouteHelper.isServiceController("Foo:bar:foo"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getMethodsOnControllerShortcut
+     */
+    public void testGetMethodsOnControllerShortcutForControllerAsInvokeAction() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Foobar;\n" +
+            "class Bar\n" +
+            "{\n" +
+            "   public function __invoke() {}\n" +
+            "   public function barAction() {}\n" +
+            "   public function barAction() {}\n" +
+            "}\n"
+        );
+
+        PsiElement[] targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "Foobar\\Bar");
+        assertEquals("__invoke", ((Method) targets[0]).getName());
+
+        targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "\\Foobar\\Bar");
+        assertEquals("__invoke", ((Method) targets[0]).getName());
+
+        targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "Foobar\\Bar::barAction");
+        assertEquals("barAction", ((Method) targets[0]).getName());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getMethodsOnControllerShortcut
+     */
+    public void testGetMethodsOnControllerShortcutForControllerAsInvokeWithoutInvokeMethodFallbackToClass() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Foobar;\n" +
+            "class Bar\n" +
+            "{\n" +
+            "}\n"
+        );
+
+        PsiElement[] targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "Foobar\\Bar");
+        assertEquals("Bar", ((PhpClass) targets[0]).getName());
     }
 
     @NotNull

@@ -26,6 +26,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.refactoring.PhpNameUtil;
 import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
 import de.espend.idea.php.annotation.dict.PhpDocTagAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
@@ -152,6 +153,7 @@ public class RouteHelper {
      * FooBundle\Controller\BarController::fooBarAction
      * foo_service_bar:fooBar
      * AcmeDemoBundle:Demo:hello
+     * FooBundle\Controller\BarController (__invoke)
      *
      * @param project current project
      * @param controllerName controller service, raw or compiled
@@ -201,6 +203,16 @@ public class RouteHelper {
                 return new PsiElement[] {controllerServiceAction.getMethod()};
             }
 
+        } else if(PhpNameUtil.isValidNamespaceFullName(controllerName, true)) {
+            // FooBundle\Controller\BarController (__invoke)
+            Method invoke = PhpElementsUtil.getClassMethod(project, controllerName, "__invoke");
+            if(invoke != null) {
+                return new PsiElement[] {invoke};
+            }
+
+            // class fallback
+            Collection<PhpClass> phpClass = PhpElementsUtil.getClassesInterface(project, controllerName);
+            return phpClass.toArray(new PsiElement[phpClass.size()]);
         }
 
         return new PsiElement[0];
@@ -543,6 +555,10 @@ public class RouteHelper {
             return null;
         }
 
+        if("__invoke".equals(method.getName())) {
+            return StringUtils.stripStart(phpClass.getFQN(), "\\");
+        }
+
         String className = StringUtils.stripStart(phpClass.getFQN(), "\\");
         int bundlePos = className.lastIndexOf("Bundle\\");
         if(bundlePos == -1) {
@@ -554,8 +570,12 @@ public class RouteHelper {
             return null;
         }
 
-        String name = method.getName();
-        String methodName = name.substring(0, name.length() - "Action".length());
+        String methodName = method.getName();
+
+        // strip method action => FoobarAction
+        if(methodName.endsWith("Action")) {
+            methodName = methodName.substring(0, methodName.length() - "Action".length());
+        }
 
         // try to to find relative class name
         String controllerClass = className.toLowerCase();
@@ -1000,9 +1020,16 @@ public class RouteHelper {
         return routes;
     }
 
+    /**
+     * Foobar/Bar => Foobar\Bar
+     * \\Foobar\Foobar => Foobar\Bar
+     */
     @NotNull
     private static String normalizeRouteController(@NotNull String string) {
-        return string.replace("/", "\\");
+        string = string.replace("/", "\\");
+        string = StringUtils.stripStart(string,"\\");
+
+        return string;
     }
 
     /**

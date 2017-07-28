@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -91,6 +93,22 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
             "       calls:\n" +
             "           - [ set<caret>Bar, [@foo]]\n" +
             PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testThatNavigationForControllerInvokeMethodIsAvailable() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "   public function __invoke() {}\n" +
+            "}\n"
+        );
+
+        assertNavigationMatch("routing.yml", "" +
+            "foobar:\n" +
+            "    defaults:\n" +
+            "       _controller: Foo<caret>bar\n",
+            PlatformPatterns.psiElement(Method.class)
         );
     }
 }
