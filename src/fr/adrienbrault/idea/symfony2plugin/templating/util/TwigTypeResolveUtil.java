@@ -49,7 +49,7 @@ public class TwigTypeResolveUtil {
     // for supporting completion and navigation of one line element
     public static final String DOC_TYPE_PATTERN_SINGLE  = "\\{#[\\s]+@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
 
-    private static String[] propertyShortcuts = new String[] {"get", "is"};
+    private static String[] PROPERTY_SHORTCUTS = new String[] {"get", "is", "has"};
 
     private static final ExtensionPointName<TwigFileVariableCollector> TWIG_FILE_VARIABLE_COLLECTORS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigVariableCollector"
@@ -461,7 +461,7 @@ public class TwigTypeResolveUtil {
 
     public static boolean isPropertyShortcutMethod(Method method) {
 
-        for(String shortcut: propertyShortcuts) {
+        for(String shortcut: PROPERTY_SHORTCUTS) {
             if(method.getName().startsWith(shortcut) && method.getName().length() > shortcut.length()) {
                 return true;
             }
@@ -472,7 +472,7 @@ public class TwigTypeResolveUtil {
 
     public static boolean isPropertyShortcutMethodEqual(String methodName, String variableName) {
 
-        for(String shortcut: propertyShortcuts) {
+        for(String shortcut: PROPERTY_SHORTCUTS) {
             if(methodName.equalsIgnoreCase(shortcut + variableName)) {
                 return true;
             }
@@ -481,10 +481,18 @@ public class TwigTypeResolveUtil {
         return false;
     }
 
-    public static String getPropertyShortcutMethodName(Method method) {
-
+    /**
+     * Twig attribute shortcuts
+     *
+     * getFoo => foo
+     * hasFoo => foo
+     * isFoo => foo
+     */
+    @NotNull
+    public static String getPropertyShortcutMethodName(@NotNull Method method) {
         String methodName = method.getName();
-        for(String shortcut: propertyShortcuts) {
+
+        for(String shortcut: PROPERTY_SHORTCUTS) {
             // strip possible property shortcut and make it lcfirst
             if(method.getName().startsWith(shortcut) && method.getName().length() > shortcut.length()) {
                 methodName = methodName.substring(shortcut.length());

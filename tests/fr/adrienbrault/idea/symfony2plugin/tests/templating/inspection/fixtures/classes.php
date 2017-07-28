@@ -15,6 +15,7 @@ namespace Foo
         public $public;
 
         public function getFoo() {}
+        public function hasHassers() {}
         public function isCar() {}
         protected function getApple() {}
 
