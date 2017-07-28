@@ -313,8 +313,6 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
 
-        <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator"/>
-
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.PhpServiceAnnotator"/>
         <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationAnnotator"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
@@ -491,6 +489,13 @@
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigTemplateMissing" displayName="Twig: Template Missing"
+                         groupName="Twig"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateMissingInspection"/>
 
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>

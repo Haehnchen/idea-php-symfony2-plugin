@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
@@ -73,11 +74,8 @@ public class TwigAnnotator implements Annotator {
             return;
         }
 
-        holder.createWarningAnnotation(element, "Missing Template");
-
-        holder.createWarningAnnotation(element, "Create Template")
-            .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName));
-
+        holder.createWarningAnnotation(element, "Twig: Missing Template")
+            .registerFix(new TemplateCreateByNameLocalQuickFix(templateName));
     }
 
     private void annotateAsset(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {

@@ -11,7 +11,7 @@ import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnno
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateAnnotator;
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
@@ -94,9 +94,8 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
         }
 
         parameter.getHolder()
-            .createWarningAnnotation(firstChild.getTextRange(), "Create Template")
-            .registerFix(new PhpTemplateAnnotator.CreateTemplateFix(templateName))
+            .createWarningAnnotation(firstChild.getTextRange(), "Twig: Missing Template")
+            .registerFix(new TemplateCreateByNameLocalQuickFix(templateName))
         ;
     }
-
 }
