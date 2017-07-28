@@ -13,6 +13,16 @@
 
         <service>
             <argument type="service" id="usage_xml_foobar"/>
+
+            <call method="setFoo1">
+                <argument type="service" id="xml_setter_foobar_1" />
+                <argument type="service" id="xml_setter_foobar_2" />
+            </call>
+
+            <call method="setFoo2">
+                <argument type="service" id="xml_setter_foobar_3" />
+                <argument type="service" id="xml_setter_foobar_1" />
+            </call>
         </service>
     </services>
 

@@ -29,11 +29,23 @@ public class ContainerIdUsagesStubIndexTest extends SymfonyLightCodeInsightFixtu
         assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "usage_xml_foobar3", value -> value == 1);
     }
 
+    public void testThatXmlArgumentUsageOnSetterArgumentsAreExtracted() {
+        assertIndexContains(ContainerIdUsagesStubIndex.KEY, "xml_setter_foobar_1", "xml_setter_foobar_2", "xml_setter_foobar_3");
+
+        assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "xml_setter_foobar_1", value -> value == 2);
+    }
+    
     public void testThatYamlArgumentUsageExtracted() {
         assertIndexContains(ContainerIdUsagesStubIndex.KEY, "usage_yml_foobar", "usage_yml_foobar2", "usage_yml_foobar3");
 
         assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "usage_yml_foobar", value -> value == 2);
         assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "usage_yml_foobar2", value -> value == 2);
         assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "usage_yml_foobar3", value -> value == 1);
+    }
+
+    public void testThatYamlArgumentUsageOnSetterArgumentsAreExtracted() {
+        assertIndexContains(ContainerIdUsagesStubIndex.KEY, "yaml_setter_foobar_1", "yaml_setter_foobar_2", "yaml_setter_foobar_3");
+
+        assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "yaml_setter_foobar_1", value -> value == 2);
     }
 }

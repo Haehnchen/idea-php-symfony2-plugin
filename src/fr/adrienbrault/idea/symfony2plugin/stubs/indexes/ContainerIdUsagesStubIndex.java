@@ -16,13 +16,12 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLSequence;
-import org.jetbrains.yaml.psi.YAMLValue;
+import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -101,20 +100,57 @@ public class ContainerIdUsagesStubIndex extends FileBasedIndexExtension<String, 
             }
 
             YAMLKeyValue arguments = YamlHelper.getYamlKeyValue(yamlKeyValue, "arguments");
-            if(arguments == null) {
-                continue;
+            if(arguments != null) {
+                YAMLValue value = arguments.getValue();
+                if(value instanceof YAMLSequence) {
+                    for (String id : YamlHelper.getYamlArrayValuesAsList((YAMLSequence) value)) {
+                        String idClean = YamlHelper.trimSpecialSyntaxServiceName(id);
+                        if(StringUtils.isNotBlank(idClean)) {
+                            services.putIfAbsent(idClean, 0);
+                            services.put(idClean, services.get(idClean) + 1);
+                        }
+                    }
+                }
             }
 
-            YAMLValue value = arguments.getValue();
-            if(!(value instanceof YAMLSequence)) {
-                continue;
-            }
+            // calls:
+            //  - [foo, [@bar, @bar]]
+            YAMLKeyValue calls = YamlHelper.getYamlKeyValue(yamlKeyValue, "calls");
+            if(calls != null) {
 
-            for (String id : YamlHelper.getYamlArrayValuesAsList((YAMLSequence) value)) {
-                String idClean = YamlHelper.trimSpecialSyntaxServiceName(id);
-                if(StringUtils.isNotBlank(idClean)) {
-                    services.putIfAbsent(idClean, 0);
-                    services.put(idClean, services.get(idClean) + 1);
+                for (YAMLPsiElement yamlPsiElement : calls.getYAMLElements()) {
+                    if(yamlPsiElement instanceof YAMLSequence) {
+                        for (YAMLSequenceItem yamlSequenceItem : ((YAMLSequence) yamlPsiElement).getItems()) {
+                            YAMLValue value = yamlSequenceItem.getValue();
+                            if(value instanceof YAMLSequence) {
+                                List<YAMLSequenceItem> callItem = ((YAMLSequence) value).getItems();
+                                if(callItem.size() > 1) {
+                                    // [foo, [@bar, @bar2]]
+
+                                    // get arguments: [@bar, @bar2]
+                                    YAMLValue methodArguments = callItem.get(1).getValue();
+                                    if(methodArguments instanceof YAMLSequence) {
+                                        // visit arguments in array: [@bar, @bar2]
+
+                                        for (YAMLSequenceItem methodArgument : ((YAMLArrayImpl) methodArguments).getItems()) {
+                                            YAMLValue value2 = methodArgument.getValue();
+
+                                            // @bar
+                                            if(value2 instanceof YAMLScalar) {
+                                                String textValue = ((YAMLScalar) value2).getTextValue();
+
+                                                String idClean = YamlHelper.trimSpecialSyntaxServiceName(textValue);
+                                                if(StringUtils.isNotBlank(idClean)) {
+                                                    services.putIfAbsent(idClean, 0);
+                                                    services.put(idClean, services.get(idClean) + 1);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -144,6 +180,26 @@ public class ContainerIdUsagesStubIndex extends FileBasedIndexExtension<String, 
                             services.putIfAbsent(id, 0);
                             services.put(id, services.get(id) + 1);
                         }
+                    }
+                }
+
+                // <call method="setFoo2">
+                //   <argument type="service" id="xml_setter_foobar_3" />
+                //   <argument type="service" id="xml_setter_foobar_1" />
+                // </call>
+                for (XmlTag calls : service.findSubTags("call")) {
+                    for (XmlTag argument : calls.findSubTags("argument")) {
+                        if(!"service".equalsIgnoreCase(argument.getAttributeValue("type"))) {
+                            continue;
+                        }
+
+                        String id = argument.getAttributeValue("id");
+                        if(StringUtils.isBlank(id)) {
+                            continue;
+                        }
+
+                        services.putIfAbsent(id, 0);
+                        services.put(id, services.get(id) + 1);
                     }
                 }
             }

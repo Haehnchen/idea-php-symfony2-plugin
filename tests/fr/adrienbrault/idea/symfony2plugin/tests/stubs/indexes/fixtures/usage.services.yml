@@ -10,3 +10,6 @@ services:
     foo3:
         arguments: 
           - @usage_yml_foobar
+        calls:
+          - [ setFoo1, [@yaml_setter_foobar_1, @yaml_setter_foobar_2] ]
+          - [ setFoo2, [@yaml_setter_foobar_3, @yaml_setter_foobar_1] ]
