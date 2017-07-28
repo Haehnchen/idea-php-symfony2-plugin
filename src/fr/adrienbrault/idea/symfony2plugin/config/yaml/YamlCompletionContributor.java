@@ -233,6 +233,15 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("factory_method"), new ServiceClassMethodInsideScalarKeyCompletion("factory_service"));
 
+        // services:
+        //   Foobar<caret>: ~
+        //   Foobar\\<caret>: ~
+        //   <caret>: ~
+        extend(
+            CompletionType.BASIC,
+            YamlElementPatternHelper.getParentKeyName("services"),
+            new MyServiceKeyAsClassCompletionParametersCompletionProvider()
+        );
     }
 
     /**
@@ -335,6 +344,36 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
+    /**
+     * Yaml key completion inside services key for class as key shortcut
+     *
+     * Valid:
+     * services:
+     *   Foobar<caret>: ~
+     *
+     * Invalid:
+     * services:
+     *   Foobar<caret>:
+     *      class: Foobar
+     */
+    private static class MyServiceKeyAsClassCompletionParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            PsiElement position = parameters.getPosition();
+
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            PsiElement serviceDefinition = position.getParent();
+            if(serviceDefinition instanceof YAMLKeyValue) {
+                YAMLKeyValue aClass = YamlHelper.getYamlKeyValue((YAMLKeyValue) serviceDefinition, "class");
+                if(aClass == null) {
+                    PhpClassCompletionProvider.addClassCompletion(parameters, completionResultSet, position, false);
+                }
+            }
+        }
+    }
 
     private class ServiceCallsMethodTestCompletion extends CompletionProvider<CompletionParameters> {
 

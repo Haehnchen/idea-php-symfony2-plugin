@@ -234,4 +234,34 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "setBar"
         );
     }
+
+    public void testCompletionForServiceKeyAsClass() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Foobar\n" +
+            "{\n" +
+            "   class Bar {}\n" +
+            "}\n"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+            "services:\n" +
+            "    Foo\\<caret>: ~\n",
+            "Foo\\Bar"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    <caret>: ~\n",
+            "Bar"
+        );
+    }
+
+    public void testCompletionForServiceKeyAsClassMustNotBeFiredNonShortcutDefinitionWithClassAttribute() {
+        assertCompletionNotContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    <caret>:\n" +
+                "       class: Foobar",
+            "Bar"
+        );
+    }
 }
