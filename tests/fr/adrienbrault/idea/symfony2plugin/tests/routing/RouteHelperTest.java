@@ -388,7 +388,6 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
             "{\n" +
             "   public function __invoke() {}\n" +
             "   public function barAction() {}\n" +
-            "   public function barAction() {}\n" +
             "}\n"
         );
 

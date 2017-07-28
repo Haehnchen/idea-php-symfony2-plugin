@@ -17,7 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.*;
-import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -132,7 +131,7 @@ public class ContainerIdUsagesStubIndex extends FileBasedIndexExtension<String, 
                                     if(methodArguments instanceof YAMLSequence) {
                                         // visit arguments in array: [@bar, @bar2]
 
-                                        for (YAMLSequenceItem methodArgument : ((YAMLArrayImpl) methodArguments).getItems()) {
+                                        for (YAMLSequenceItem methodArgument : ((YAMLSequence) methodArguments).getItems()) {
                                             YAMLValue value2 = methodArgument.getValue();
 
                                             // @bar
