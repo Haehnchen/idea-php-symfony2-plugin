@@ -9,6 +9,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.149
+* Detect Twig templates when using `__invoke` controllers [#980](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980); drop some redundant template annotation code
+* Add @Template __invoke support for annotation template creation quickfix and in Twig template controller resolver [#980](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980)
+* Fix "Navigate to action" on controller with __invoke doesn't work [#986](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/986)
+* Create template for missing template is really weird [#795](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/795); replace custom dialog with more commonly JBPopupFactory
+* Provide better scope detection for Service Generator, add psr-0 class structure detection fixes: "Create Service" in project tree does nothing [#978](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/978)
+* Add lazy decorated service resolving to fix Argument 'decorated' of ServiceUtil.getLineMarkerForDecoratedServiceId must not be null [#982](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/982)
+* Add calls support for service usage indexer [#890](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/890)
+* Add support for Twig 2 hassers for the attribute operator [#964](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/964)
+* Add class completion for yaml service key to support Symfony 3.3 shortcut feature [#987](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/987)
+* Fix empty string indexing of Doctrine repository class; "THashSet contract violation - 25 reports & coming" [#985](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/985)
+* Use slash for controller subfolder which are PHP namespaces instead of filesystem style to fix autocompletion for controller names in routing files is broken for namespaced classes [#961](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/961)
+
 ## 0.14.148
 * Symfony 3.3 Fully support autowire in defaults of XML [#966](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966)
 * Symfony 3.3 Arguments are not autocompleted when using the FQCN as id [#968](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/968) [#966](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966)

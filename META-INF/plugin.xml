@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.148</version>
+    <version>0.14.149</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,21 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.14.149</h2>
+<ul>
+    <li>Detect Twig templates when using `__invoke` controllers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980">#980</a>; drop some redundant template annotation code</li>
+    <li>Add @Template __invoke support for annotation template creation quickfix and in Twig template controller resolver <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980">#980</a></li>
+    <li>Fix "Navigate to action" on controller with __invoke doesn't work <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/986">#986</a></li>
+    <li>Create template for missing template is really weird <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/795">#795</a>; replace custom dialog with more commonly JBPopupFactory</li>
+    <li>Provide better scope detection for Service Generator, add psr-0 class structure detection fixes: "Create Service" in project tree does nothing <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/978">#978</a></li>
+    <li>Add lazy decorated service resolving to fix Argument 'decorated' of ServiceUtil.getLineMarkerForDecoratedServiceId must not be null <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/982">#982</a></li>
+    <li>Add calls support for service usage indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/890">#890</a></li>
+    <li>Add support for Twig 2 hassers for the attribute operator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/964">#964</a></li>
+    <li>Add class completion for yaml service key to support Symfony 3.3 shortcut feature <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/987">#987</a></li>
+    <li>Fix empty string indexing of Doctrine repository class; "THashSet contract violation - 25 reports & coming" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/985">#985</a></li>
+    <li>Use slash for controller subfolder which are PHP namespaces instead of filesystem style to fix autocompletion for controller names in routing files is broken for namespaced classes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/961">#961</a></li>
+</ul>
 
 <h2>0.14.148</h2>
 <ul>
