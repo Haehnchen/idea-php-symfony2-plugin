@@ -88,19 +88,30 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
             return null;
         }
 
+        // menu item like ProjectView
         if("ProjectViewPopup".equals(event.getPlace())) {
-            // menu item
-            return Pair.create(psiFile, PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile));
-        } else {
-            PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
-            if(psiElement instanceof PhpClass) {
-                // directly got the class
-                return Pair.create(psiFile, (PhpClass) psiElement);
-            } else {
-                // click inside class
-                return Pair.create(psiFile, PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile));
+            // fins php class on scope
+            PhpClass phpClass = null;
+            if(psiFile instanceof PhpFile) {
+                phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
             }
+
+            return Pair.create(psiFile, phpClass);
         }
+
+        // directly got the class
+        PsiElement psiElement = event.getData(PlatformDataKeys.PSI_ELEMENT);
+        if(psiElement instanceof PhpClass) {
+            return Pair.create(psiFile, (PhpClass) psiElement);
+        }
+
+        // click inside class
+        PhpClass phpClass = null;
+        if(psiFile instanceof PhpFile) {
+            phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile);
+        }
+
+        return Pair.create(psiFile, phpClass);
     }
 }
 

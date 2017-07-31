@@ -14,4 +14,14 @@ public class SymfonyContainerServiceBuilderTest extends SymfonyLightCodeInsightF
 
         assertTrue(myFixture.testAction(new SymfonyContainerServiceBuilder()).isEnabledAndVisible());
     }
+
+    public void testActionAvailableForXmlFile() {
+        myFixture.configureByText("test.xml", "");
+        assertTrue(myFixture.testAction(new SymfonyContainerServiceBuilder()).isEnabledAndVisible());
+    }
+
+    public void testActionAvailableForYmlFile() {
+        myFixture.configureByText("test.yml", "");
+        assertTrue(myFixture.testAction(new SymfonyContainerServiceBuilder()).isEnabledAndVisible());
+    }
 }
