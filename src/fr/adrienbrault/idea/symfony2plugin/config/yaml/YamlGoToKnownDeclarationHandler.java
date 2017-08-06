@@ -7,8 +7,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -23,7 +21,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
@@ -214,11 +211,10 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
             return;
         }
 
-        String classValue = YamlHelper.getServiceDefinitionClass(psiElement);
+        String classValue = YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement);
         if(classValue == null) {
             return;
         }
-
 
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classValue);
         if(phpClass == null) {
@@ -229,7 +225,6 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
         if(method != null) {
             results.add(method);
         }
-
     }
 
     private void attachResourceBundleGoto(PsiElement psiElement, List<PsiElement> results) {

@@ -375,36 +375,35 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
+    /**
+     * tags:
+     *  - { method: 'foobar' }
+     */
     private class ServiceCallsMethodTestCompletion extends CompletionProvider<CompletionParameters> {
 
         protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
             }
 
             PsiElement psiElement = completionParameters.getPosition();
-            YAMLCompoundValue yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLCompoundValue.class);
-            if(yamlCompoundValue == null) {
-                return;
+
+            String serviceDefinitionClassFromTagMethod = YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement);
+
+            if(serviceDefinitionClassFromTagMethod != null) {
+                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefinitionClassFromTagMethod);
+                if(phpClass != null) {
+                    PhpElementsUtil.addClassPublicMethodCompletion(completionResultSet, phpClass);
+                }
             }
-
-            yamlCompoundValue = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLCompoundValue.class);
-            if(yamlCompoundValue == null) {
-                return;
-            }
-
-            addYamlClassMethods(yamlCompoundValue, completionResultSet, "class");
-
         }
-
     }
 
     private class ServiceClassMethodInsideScalarKeyCompletion extends CompletionProvider<CompletionParameters> {
 
         private String yamlArrayKeyName;
 
-        public ServiceClassMethodInsideScalarKeyCompletion(String yamlArrayKeyName) {
+        ServiceClassMethodInsideScalarKeyCompletion(String yamlArrayKeyName) {
             this.yamlArrayKeyName = yamlArrayKeyName;
         }
 

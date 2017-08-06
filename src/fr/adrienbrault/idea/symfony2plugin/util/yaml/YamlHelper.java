@@ -482,28 +482,36 @@ public class YamlHelper {
      *     - "@twig"
      *     - '@twig'
      *   tags:
-     *     -  { name: routing.loader, method: "crossHint<cursor>" }
+     *     -  { name: routing.loader, method: "crossHint<caret>" }
      *
+     * ClassName\Foo:
+     *   tags:
+     *     -  { method: "crossHint<caret>" }
      */
     @Nullable
-    public static String getServiceDefinitionClass(PsiElement psiElement) {
-
-        YAMLHashImpl yamlCompoundValue = PsiTreeUtil.getParentOfType(psiElement, YAMLHashImpl.class);
-        if(yamlCompoundValue == null) {
-            return null;
+    public static String getServiceDefinitionClassFromTagMethod(@NotNull PsiElement psiElement) {
+        PsiElement yamlScalar = psiElement.getParent();
+        if(yamlScalar instanceof YAMLScalar) {
+            PsiElement yamlKeyValue = yamlScalar.getParent();
+            if(yamlKeyValue instanceof YAMLKeyValue) {
+                // "{ method: '' }"
+                PsiElement yamlMapping = ((YAMLKeyValue) yamlKeyValue).getParentMapping();
+                if(yamlMapping != null) {
+                    PsiElement yamlSequenceItem = yamlMapping.getParent();
+                    if(yamlSequenceItem instanceof YAMLSequenceItem) {
+                        PsiElement yamlSequence = yamlSequenceItem.getParent();
+                        if(yamlSequence instanceof YAMLSequence) {
+                            PsiElement yamlKeyValueTags = yamlSequence.getParent();
+                            if(yamlKeyValueTags instanceof YAMLKeyValue) {
+                                return getClassFromServiceDefinition((YAMLKeyValue) yamlKeyValueTags);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        YAMLMapping yamlMapping = PsiTreeUtil.getParentOfType(yamlCompoundValue, YAMLMapping.class);
-        if(yamlMapping == null) {
-            return null;
-        }
-
-        YAMLKeyValue aClass = yamlMapping.getKeyValueByKey("class");
-        if(aClass == null) {
-            return null;
-        }
-
-        return aClass.getValueText();
+        return null;
     }
 
     /**
@@ -992,6 +1000,42 @@ public class YamlHelper {
     }
 
     /**
+     * Get class from server definition; supports shortcut
+     *
+     * service.id:
+     *  class: MyClass
+     *
+     * MyClass: ~
+     */
+    private static String getClassFromServiceDefinition(@NotNull YAMLKeyValue yamlKeyValue) {
+        YAMLMapping parentMapping = yamlKeyValue.getParentMapping();
+
+        if(parentMapping != null) {
+            YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
+            if (classKeyValue != null) {
+                String valueText = classKeyValue.getValueText();
+                if (StringUtils.isNotBlank(valueText)) {
+                    return valueText;
+                }
+            } else {
+                // named services; key is our class name
+                PsiElement yamlMapping = yamlKeyValue.getParent();
+                if(yamlMapping instanceof YAMLMapping) {
+                    PsiElement parent = yamlMapping.getParent();
+                    if(parent instanceof YAMLKeyValue) {
+                        String keyText = ((YAMLKeyValue) parent).getKeyText();
+                        if(StringUtils.isNotBlank(keyText) && !keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
+                            return keyText;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * service_name:
      *   class: FOOBAR
      *   calls:
@@ -1027,35 +1071,13 @@ public class YamlHelper {
                                         if(StringUtils.isNotBlank(methodName)) {
                                             PsiElement callYamlKeyValue = callYamlSeq.getContext();
                                             if(callYamlKeyValue instanceof YAMLKeyValue) {
-                                                YAMLMapping parentMapping = ((YAMLKeyValue) callYamlKeyValue).getParentMapping();
-                                                if(parentMapping != null) {
-                                                    YAMLKeyValue classKeyValue = parentMapping.getKeyValueByKey("class");
-                                                    if (classKeyValue != null) {
-                                                        String valueText = classKeyValue.getValueText();
-                                                        if (StringUtils.isNotBlank(valueText)) {
-                                                            consumer.consume(new ParameterVisitor(
-                                                                valueText,
-                                                                methodName,
-                                                                PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
-                                                            );
-                                                        }
-                                                    } else {
-                                                        // named services; key is our class name
-                                                        PsiElement yamlMapping = callYamlKeyValue.getParent();
-                                                        if(yamlMapping instanceof YAMLMapping) {
-                                                            PsiElement parent = yamlMapping.getParent();
-                                                            if(parent instanceof YAMLKeyValue) {
-                                                                String keyText = ((YAMLKeyValue) parent).getKeyText();
-                                                                if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
-                                                                    consumer.consume(new ParameterVisitor(
-                                                                        keyText,
-                                                                        methodName,
-                                                                        PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
-                                                                    );
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                                                String classFromServiceDefinition = getClassFromServiceDefinition((YAMLKeyValue) callYamlKeyValue);
+                                                if(classFromServiceDefinition != null) {
+                                                    consumer.consume(new ParameterVisitor(
+                                                        classFromServiceDefinition,
+                                                        methodName,
+                                                        PsiElementUtils.getPrevSiblingsOfType(argumentSequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size())
+                                                    );
                                                 }
                                             }
                                         }

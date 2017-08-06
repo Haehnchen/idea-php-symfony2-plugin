@@ -96,6 +96,25 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
         );
     }
 
+    public void testNavigateForCallsEventMethodIsProvided() {
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       tags:\n" +
+            "           - { method: set<caret>Bar }\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    Foo\\Bar:\n" +
+            "       tags:\n" +
+            "           - { method: set<caret>Bar }\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
     public void testThatNavigationForControllerInvokeMethodIsAvailable() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "class Foobar\n" +

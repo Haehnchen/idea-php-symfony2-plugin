@@ -12,6 +12,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -461,7 +462,7 @@ public class XmlHelper {
      * @return raw class attribute value
      */
     @Nullable
-    public static String getServiceDefinitionClass(PsiElement psiInsideService) {
+    public static String getServiceDefinitionClass(@NotNull PsiElement psiInsideService) {
 
         // search for parent service definition
         XmlTag callXmlTag = PsiTreeUtil.getParentOfType(psiInsideService, XmlTag.class);
@@ -470,20 +471,35 @@ public class XmlHelper {
             return null;
         }
 
-        XmlAttribute classAttribute = xmlTag.getAttribute("class");
-        if(classAttribute == null) {
+        return getClassFromServiceDefinition(xmlTag);
+    }
+
+    /**
+     * Extract service class for class or id attribute on shortcut
+     *
+     * <service id="foo" class="Foobar"/> => Foobar
+     * <service class="Foobar"/> => Foobar
+     */
+    @Nullable
+    private static String getClassFromServiceDefinition(@NotNull XmlTag xmlTag) {
+        String classAttribute = xmlTag.getAttributeValue("class");
+        if(StringUtils.isNotBlank(classAttribute)) {
+            return classAttribute;
+        }
+
+        String id = xmlTag.getAttributeValue("id");
+        if(id == null || StringUtils.isBlank(id) || !YamlHelper.isClassServiceId(id)) {
             return null;
         }
 
-        String value = classAttribute.getValue();
-        if(StringUtils.isNotBlank(value)) {
-            return value;
-        }
-
-        return null;
+        return id;
     }
 
-
+    /**
+     * Get class factory method attribute
+     *
+     * <factory class="FooBar" method="cre<caret>ate"/>
+     */
     @Nullable
     public static PhpClass getPhpClassForClassFactory(@NotNull XmlAttributeValue xmlAttributeValue) {
         String method = xmlAttributeValue.getValue();

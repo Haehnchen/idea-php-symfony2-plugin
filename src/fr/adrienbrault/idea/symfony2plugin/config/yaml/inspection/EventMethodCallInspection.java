@@ -12,7 +12,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
-import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -116,7 +115,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return;
         }
 
-        String classValue = YamlHelper.getServiceDefinitionClass(psiElement);
+        String classValue = YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement);
         if(classValue == null) {
             return;
         }

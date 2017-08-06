@@ -233,6 +233,33 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "           - [ '<caret>' ]\n",
             "setBar"
         );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    Foo\\Bar:\n" +
+                "       calls:\n" +
+                "           - [ '<caret>' ]\n",
+            "setBar"
+        );
+    }
+
+    public void testThatMethodOfEventTagsAreCompleted() {
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    foobar:\n" +
+                "       class: Foo\\Bar\n" +
+                "       tags:\n" +
+                "           - { method: <caret> }\n",
+            "setBar"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    Foo\\Bar:\n" +
+                "       tags:\n" +
+                "           - { method: <caret> }\n",
+            "setBar"
+        );
     }
 
     public void testCompletionForServiceKeyAsClass() {

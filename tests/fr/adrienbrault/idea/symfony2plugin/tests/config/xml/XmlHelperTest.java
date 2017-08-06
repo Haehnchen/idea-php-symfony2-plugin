@@ -76,4 +76,27 @@ public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
             ContainerUtil.find(results, parameter -> "arg2".equals(parameter.getName()))
         );
     }
+
+    /**
+     * @see XmlHelper#getServiceDefinitionClass
+     */
+    public void testGetServiceDefinitionClass() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service class=\"Foo\\Bar\">\n" +
+            "      <tag type=\"service\" method=\"ma<caret>iler\" />\n" +
+            "</service>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("Foo\\Bar", XmlHelper.getServiceDefinitionClass(psiElement));
+
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service id=\"Foo\\Bar\">\n" +
+            "      <tag type=\"service\" method=\"ma<caret>iler\" />\n" +
+            "</service>"
+        );
+
+        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("Foo\\Bar", XmlHelper.getServiceDefinitionClass(psiElement));
+    }
 }

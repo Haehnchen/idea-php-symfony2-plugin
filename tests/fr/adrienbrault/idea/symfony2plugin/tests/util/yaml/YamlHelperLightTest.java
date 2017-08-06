@@ -522,6 +522,32 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         ));
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getServiceDefinitionClassFromTagMethod
+     */
+    public void testGetServiceDefinitionClassFromTagMethod() {
+        myFixture.configureByText(YAMLFileType.YML, "" +
+            "services:\n" +
+            "   foobar:\n" +
+            "       class: ClassName\\Foo\n" +
+            "       tags:\n" +
+            "           - { method: cross<caret>Hint }"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("ClassName\\Foo", YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement));
+
+        myFixture.configureByText(YAMLFileType.YML, "" +
+            "services:\n" +
+            "   ClassName\\Foo:\n" +
+            "       tags:\n" +
+            "           - { method: cross<caret>Hint }"
+        );
+
+        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("ClassName\\Foo", YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement));
+    }
+
     private int getIndentForTextContent(@NotNull String content) {
         return YamlHelper.getIndentSpaceForFile((YAMLFile) YamlPsiElementFactory.createDummyFile(
             getProject(),
