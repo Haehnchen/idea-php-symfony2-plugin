@@ -9,6 +9,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.150
+* Fix wrong cast in service builder class scope extraction [#989](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/989)
+* Support Symfony 3.3 class shortcut in yaml and xml method tag scope
+
 ## 0.14.149
 * Detect Twig templates when using `__invoke` controllers [#980](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980); drop some redundant template annotation code
 * Add @Template __invoke support for annotation template creation quickfix and in Twig template controller resolver [#980](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980)

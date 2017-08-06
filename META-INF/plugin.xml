@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.149</version>
+    <version>0.14.150</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -108,6 +108,12 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.14.150</h2>
+<ul>
+    <li>Fix wrong cast in service builder class scope extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/989">#989</a></li>
+    <li>Support Symfony 3.3 class shortcut in yaml and xml method tag scope</li>
+</ul>
 
 <h2>0.14.149</h2>
 <ul>
