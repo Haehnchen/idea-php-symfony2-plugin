@@ -156,7 +156,7 @@ public class XmlHelper {
     /**
      * <service id="service_container" />
      */
-    public static XmlAttributeValuePattern getServiceIdNamePattern() {
+    public static XmlAttributeValuePattern getServiceIdAttributePattern() {
         return XmlPatterns
             .xmlAttributeValue()
             .withParent(XmlPatterns
@@ -259,9 +259,9 @@ public class XmlHelper {
     }
 
     /**
-     * <service class="%foo.class%">
+     * <service class="%foo.class%" id="required_attribute">
      */
-    public static XmlAttributeValuePattern getServiceIdPattern() {
+    public static XmlAttributeValuePattern getServiceClassAttributeWithIdPattern() {
         return XmlPatterns
             .xmlAttributeValue()
             .withParent(XmlPatterns

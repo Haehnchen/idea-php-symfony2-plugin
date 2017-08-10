@@ -595,8 +595,17 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         }
     }
 
+    public void assertReferenceMatchOnParent(@NotNull String file, @NotNull String contents, @NotNull ElementPattern<?> pattern) {
+        myFixture.configureByText(file, contents);
+        assertReferenceMatchOnParent(pattern);
+    }
+
     public void assertReferenceMatchOnParent(@NotNull FileType fileType, @NotNull String contents, @NotNull ElementPattern<?> pattern) {
         myFixture.configureByText(fileType, contents);
+        assertReferenceMatchOnParent(pattern);
+    }
+
+    private void assertReferenceMatchOnParent(@NotNull ElementPattern<?> pattern) {
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
         if(psiElement == null) {
             fail("Fail to find element in caret");

@@ -123,7 +123,7 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
     }
 
     public void testServiceIdAsClassReferences() {
-        assertReferenceMatchOnParent(XmlFileType.INSTANCE, "" +
+        assertReferenceMatchOnParent("test.xml", "" +
                 "<?xml version=\"1.0\"?>\n" +
                 "<container>\n" +
                 "    <services>\n" +

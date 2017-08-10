@@ -112,7 +112,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(PsiElement psiElement) {
-                if(psiElement instanceof XmlAttributeValue && (XmlHelper.getArgumentServiceIdPattern().accepts(psiElement) || XmlHelper.getServiceIdNamePattern().accepts(psiElement))) {
+                if(psiElement instanceof XmlAttributeValue && (XmlHelper.getArgumentServiceIdPattern().accepts(psiElement) || XmlHelper.getServiceIdAttributePattern().accepts(psiElement))) {
                     String serviceName = ((XmlAttributeValue) psiElement).getValue();
                     if(StringUtils.isNotBlank(serviceName) && !serviceName.equals(serviceName.toLowerCase()) && !YamlHelper.isClassServiceId(serviceName)) {
                         holder.registerProblem(psiElement, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);

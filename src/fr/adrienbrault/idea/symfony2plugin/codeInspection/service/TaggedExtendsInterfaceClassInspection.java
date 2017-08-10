@@ -64,7 +64,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(XmlHelper.getServiceIdPattern().accepts(element)) {
+            if(XmlHelper.getServiceClassAttributeWithIdPattern().accepts(element)) {
                 String text = PsiElementUtils.trimQuote(element.getText());
                 PsiElement[] psiElements = element.getChildren();
 

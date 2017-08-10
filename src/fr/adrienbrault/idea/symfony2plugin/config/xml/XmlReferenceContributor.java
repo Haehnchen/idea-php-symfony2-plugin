@@ -69,14 +69,14 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         // <service class="%foo.class%">
         // <service class="Class\Name">
         registrar.registerReferenceProvider(
-            XmlHelper.getServiceIdPattern(),
+            XmlHelper.getServiceClassAttributeWithIdPattern(),
             new ClassPsiReferenceProvider()
         );
 
-        // Symfoyn 3.3 shortcut
+        // Symfony 3.3 shortcut
         // <service id="Class\Name">
         registrar.registerReferenceProvider(
-            XmlHelper.getAttributePattern("id"),
+            XmlHelper.getServiceIdAttributePattern(),
             new ClassAsIdPsiReferenceProvider()
         );
 

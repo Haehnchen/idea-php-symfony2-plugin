@@ -50,7 +50,7 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
         // <service id="<caret>" class="MyFoo\Foo\Apple"/>
         registrar.register(
-            XmlPatterns.psiElement().withParent(XmlHelper.getServiceIdNamePattern()),
+            XmlPatterns.psiElement().withParent(XmlHelper.getServiceIdAttributePattern()),
             ServiceIdCompletionProvider::new
         );
 
