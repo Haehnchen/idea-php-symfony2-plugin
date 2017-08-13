@@ -21,6 +21,14 @@ public class ServiceActionUtilTest extends SymfonyLightCodeInsightFixtureTestCas
         assertFalse(ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag));
     }
 
+    public void testThatAliasAttributeBlocksInspect() {
+        XmlTag xmlTag = createServiceXmlTag(
+            "<services><serv<caret>ice id=\"Foobar\" alias=\"Test\"/></services>"
+        );
+
+        assertFalse(ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag));
+    }
+
     public void testThatDefaultValueIsOverwriteInService() {
         XmlTag xmlTag = createServiceXmlTag(
             "    <services>\n" +

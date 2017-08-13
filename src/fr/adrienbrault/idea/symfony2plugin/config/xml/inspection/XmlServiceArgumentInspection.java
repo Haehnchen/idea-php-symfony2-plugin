@@ -38,7 +38,7 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
         private final ProblemsHolder holder;
         private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-        public MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 

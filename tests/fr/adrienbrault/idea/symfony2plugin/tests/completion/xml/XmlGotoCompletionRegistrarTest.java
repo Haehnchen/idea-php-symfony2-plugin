@@ -68,6 +68,14 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testThatServiceAliasAttributeMustProvideCompletion() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<services><service alias=\"<caret>\"></services>",
+            "foo.bar_factory"
+        );
+    }
+
     public void testThatServiceFactoryMethodAttributeProvidesCompletion() {
         assertCompletionContains(XmlFileType.INSTANCE, "" +
                 "<?xml version=\"1.0\"?>\n" +

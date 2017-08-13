@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.*;
@@ -33,8 +34,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(PsiReferenceRegistrar registrar) {
 
         // <argument type="service" id="service_container" />
+        // <service alias="Foobar" />
         registrar.registerReferenceProvider(
-            XmlHelper.getArgumentServiceIdPattern(),
+            PlatformPatterns.or(XmlHelper.getArgumentServiceIdPattern(), XmlHelper.getServiceAliasPattern()),
             new ServiceReferenceProvider()
         );
 

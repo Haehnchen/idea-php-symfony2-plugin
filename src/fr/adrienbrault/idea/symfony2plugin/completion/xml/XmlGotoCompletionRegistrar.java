@@ -19,7 +19,9 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.completion.DecoratedServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
@@ -52,6 +54,12 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         registrar.register(
             XmlPatterns.psiElement().withParent(XmlHelper.getServiceIdAttributePattern()),
             ServiceIdCompletionProvider::new
+        );
+
+        // <service alias="<caret>"/>
+        registrar.register(
+            XmlPatterns.psiElement().withParent(XmlHelper.getServiceAliasPattern()),
+            ServiceAliasCompletionProvider::new
         );
 
         // <factory class="AppBundle\Trivago\ConfigFactory" method="create"/>
@@ -141,6 +149,10 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         }
     }
 
+    /**
+     * <service id="Foo\Bar"/>
+     * <service id="<caret>" class="MyFoo\Foo\Apple"/>
+     */
     private static class ServiceIdCompletionProvider extends GotoCompletionProvider {
         private ServiceIdCompletionProvider(PsiElement element) {
             super(element);
@@ -180,6 +192,22 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * <service alias="<caret>"/>
+     */
+    private static class ServiceAliasCompletionProvider extends GotoCompletionProvider {
+        private ServiceAliasCompletionProvider(PsiElement element) {
+            super(element);
+        }
+
+        @Override
+        public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
+            arguments.getResultSet().addAllElements(
+                ServiceCompletionProvider.getLookupElements(null, ContainerCollectionResolver.getServices(getProject()).values()).getLookupElements()
+            );
         }
     }
 

@@ -135,6 +135,22 @@ public class XmlHelper {
     }
 
     /**
+     * <service alias="Foobar" />
+     */
+    public static XmlAttributeValuePattern getServiceAliasPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("alias")
+                .withParent(
+                    XmlPatterns.xmlTag().withName("service")
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * Possible service id completion on not ready type="service" argument
      *
      * <service><argument id="service_container" /></service>

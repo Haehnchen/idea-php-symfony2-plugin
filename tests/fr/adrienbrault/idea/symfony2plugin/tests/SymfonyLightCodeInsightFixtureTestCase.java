@@ -638,8 +638,8 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             }
 
             // multiResolve support
-            if(element instanceof PsiPolyVariantReference) {
-                for (ResolveResult resolveResult : ((PsiPolyVariantReference) element).multiResolve(true)) {
+            if(reference instanceof PsiPolyVariantReference) {
+                for (ResolveResult resolveResult : ((PsiPolyVariantReference) reference).multiResolve(true)) {
                     if (pattern.accepts(resolveResult.getElement())) {
                         return;
                     }

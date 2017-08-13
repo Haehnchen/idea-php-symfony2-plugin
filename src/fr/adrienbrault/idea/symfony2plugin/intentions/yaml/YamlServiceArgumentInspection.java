@@ -27,7 +27,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
     public static final String[] INVALID_KEYS = new String[]{
         "parent", "factory_class", "factory_service",
         "factory_method", "abstract", "factory",
-        "resource", "exclude"
+        "resource", "exclude", "alias"
     };
 
     @NotNull
