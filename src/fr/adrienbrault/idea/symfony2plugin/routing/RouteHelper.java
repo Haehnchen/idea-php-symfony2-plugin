@@ -175,25 +175,12 @@ public class RouteHelper {
             return method != null ? new PsiElement[] {method} : new PsiElement[0];
 
         } else if(controllerName.contains(":")) {
-
             // AcmeDemoBundle:Demo:hello
             String[] split = controllerName.split(":");
             if(split.length == 3) {
-
-                // try to resolve on bundle path
-                SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getBundle(split[0]);
-                if(symfonyBundle != null) {
-                    // AcmeDemoBundle\Controller\DemoController:helloAction
-                    Method method = PhpElementsUtil.getClassMethod(project, symfonyBundle.getNamespaceName() + "Controller\\" + split[1] + "Controller", split[2] + "Action");
-                    if(method != null) {
-                        return new PsiElement[] {method};
-                    }
-                }
-
-                // fallback to controller class instances, if relative path doesnt follow default file structure
-                Method method = ControllerIndex.getControllerMethod(project, controllerName);
-                if(method != null) {
-                    return new PsiElement[] {method};
+                Collection<Method> controllerMethod = ControllerIndex.getControllerMethod(project, controllerName);
+                if(controllerMethod.size() > 0) {
+                    return controllerMethod.toArray(new PsiElement[controllerMethod.size()]);
                 }
             }
 

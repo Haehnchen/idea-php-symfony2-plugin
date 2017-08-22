@@ -33,8 +33,9 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("RouteHelper.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+        myFixture.copyFileToProject("RouteHelper.php");
+        myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("RouteHelper.services.yml");
     }
 
     protected String getTestDataPath() {
@@ -414,6 +415,14 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         PsiElement[] targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "Foobar\\Bar");
         assertEquals("Bar", ((PhpClass) targets[0]).getName());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getMethodsOnControllerShortcut
+     */
+    public void testGetMethodsOnControllerShortcutForControllerAsService() {
+        PsiElement[] targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "foobar_controller:indexAction");
+        assertEquals("CarController", ((Method) targets[0]).getContainingClass().getName());
     }
 
     @NotNull

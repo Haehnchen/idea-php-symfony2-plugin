@@ -23,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -90,9 +89,9 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         if(TwigHelper.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigHelper.getStringAfterTagNamePattern("render").accepts(psiElement)) {
-            PsiElement controllerMethod = this.getControllerGoTo(psiElement);
-            if(controllerMethod != null) {
-                return new PsiElement[] { controllerMethod };
+            Collection<PsiElement> controllerMethod = this.getControllerGoTo(psiElement);
+            if(controllerMethod.size() > 0) {
+                return controllerMethod.toArray(new PsiElement[controllerMethod.size()]);
             }
         }
 
@@ -169,9 +168,9 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return RouteHelper.getRouteParameterPsiElements(psiElement.getProject(), routeName, psiElement.getText());
     }
 
-    private PsiElement getControllerGoTo(PsiElement psiElement) {
+    private Collection<PsiElement> getControllerGoTo(@NotNull  PsiElement psiElement) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
-        return ControllerIndex.getControllerMethod(psiElement.getProject(), text);
+        return Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), text));
     }
 
     @Nullable

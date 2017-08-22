@@ -8,13 +8,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -23,8 +21,8 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -33,7 +31,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -201,7 +198,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             }
 
             psiElements.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), content));
-            ContainerUtil.addIfNotNull(psiElements, ControllerIndex.getControllerMethod(psiElement.getProject(), content));
+            ContainerUtil.addAll(psiElements, RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), content));
 
             PsiDirectory parent = psiElement.getContainingFile().getParent();
             if(parent != null) {
@@ -311,12 +308,7 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
 
         String controllerName = matcher.group(1);
 
-        Method method = ControllerIndex.getControllerMethod(psiElement.getProject(), controllerName);
-        if(method == null) {
-            return new PsiElement[0];
-        }
-
-        return new PsiElement[] { method };
+        return RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), controllerName);
     }
 
     private PsiElement[] getParentGoto(PsiElement psiElement) {

@@ -36,4 +36,14 @@ public class ControllerIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
             actions.stream().findFirst().filter(action -> "FooBundle:Apple\\Bar\\Foo:foo".equals(action.getShortcutName()))
         );
     }
+
+    public void testThatSlashAndBackSlashAreNormalized() {
+        assertEquals("fooAction", ControllerIndex.getControllerMethod(getProject(), "FooBundle:Apple\\Bar\\Foo:foo").iterator().next().getName());
+        assertEquals("fooAction", ControllerIndex.getControllerMethod(getProject(), "FooBundle:Apple/Bar/Foo:foo").iterator().next().getName());
+        assertEquals("fooAction", ControllerIndex.getControllerMethod(getProject(), "FooBundle:Apple/Bar:Foo/foo").iterator().next().getName());
+        assertEquals("fooAction", ControllerIndex.getControllerMethod(getProject(), "FooBundle:Apple/Bar:Foo/fooAction").iterator().next().getName());
+
+        assertEquals("fooAction", ControllerIndex.getControllerMethod(getProject(), "FooBundle:Apple///Bar:Foo////foo").iterator().next().getName());
+        assertEquals("fooAction", ControllerIndex.getControllerMethod(getProject(), "FooBundle:Apple\\\\\\\\Bar:Foo\\\\foo").iterator().next().getName());
+    }
 }

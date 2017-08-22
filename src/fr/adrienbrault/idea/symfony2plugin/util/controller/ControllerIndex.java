@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -154,20 +155,59 @@ public class ControllerIndex {
         return actions;
     }
 
-    @Nullable
-    public Method resolveShortcutName(String controllerName) {
-        ControllerIndex controllerIndex = new ControllerIndex(project);
-        ControllerAction controllerAction = controllerIndex.getControllerAction(controllerName);
-        if(controllerAction != null) {
-            return controllerAction.getMethod();
+    @NotNull
+    public Collection<Method> resolveShortcutName(@NotNull String controllerName) {
+        String[] split = controllerName.split(":");
+
+        // normalize: "FooBundle:Apple/Bar:foo" => FooBundle:Apple\Bar:foo
+        // support: "FooBundle:Apple\Bar:foo" => FooBundle:Apple\Bar:foo\bar
+        if(split.length == 3) {
+            // normalize incoming path "/" => "\" this are PHP namespace but both supported
+            split[1] = split[1].replaceAll("/+", "\\\\").replaceAll("\\\\+", "\\\\");
+            split[2] = split[2].replaceAll("/+", "\\\\").replaceAll("\\\\+", "\\\\");
+
+            Collection<Method> methods = new HashSet<>();
+            for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundles()) {
+                // Bundle matched "AppBundle"
+                if(split[0].equalsIgnoreCase(symfonyBundle.getName())) {
+                    String namespace = split[1] + "\\" + split[2];
+
+                    // last element is our method name
+                    int lastBackslash = namespace.lastIndexOf("\\");
+                    if(lastBackslash > 0) {
+                        String methodName = namespace.substring(lastBackslash + 1);
+
+                        // AppBundle/Controller/FooController
+                        String className = symfonyBundle.getNamespaceName() + "Controller\\" + namespace.substring(0, lastBackslash) + "Controller";
+
+                        for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, className)) {
+
+                            // cleanup action to support "fooAction" and "foo" methods
+                            if(methodName.endsWith("Action")) {
+                                methodName = methodName.substring(0, methodName.length() - "Action".length());
+                            }
+
+                            // find method
+                            for (String string : new String[] {methodName, methodName + "Action"}) {
+                                Method methodByName = phpClass.findMethodByName(string);
+                                if(methodByName != null) {
+                                    methods.add(methodByName);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return methods;
         }
 
-        controllerAction = controllerIndex.getControllerActionOnService(controllerName);
+        ControllerAction controllerAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
         if(controllerAction != null) {
-            return controllerAction.getMethod();
+            return Collections.singletonList(controllerAction.getMethod());
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(Project project) {
@@ -189,9 +229,8 @@ public class ControllerIndex {
         return lookupElements;
     }
 
-    @Nullable
-    static public Method getControllerMethod(Project project, String controllerName) {
+    @NotNull
+    static public Collection<Method> getControllerMethod(@NotNull Project project, @NotNull String controllerName) {
         return new ControllerIndex(project).resolveShortcutName(controllerName);
     }
-
 }

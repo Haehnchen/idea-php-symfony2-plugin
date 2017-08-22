@@ -41,12 +41,10 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
         ControllerIndex controllerIndex = new ControllerIndex(parameter.getProject());
 
         for(String controllerName: controllerNames) {
-            Method method = controllerIndex.resolveShortcutName(controllerName);
-            if(method != null) {
+            for(Method method : controllerIndex.resolveShortcutName(controllerName)) {
                 variables.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method));
             }
         }
-
     }
 
     private static ArrayList<String> findFileControllerDocBlocks(TwigFile twigFile) {
