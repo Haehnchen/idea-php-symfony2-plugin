@@ -44,13 +44,12 @@ public class YamlAnnotator implements Annotator {
     @Override
     public void annotate(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
 
-        if(!Symfony2ProjectComponent.isEnabled(psiElement.getProject()) || !Settings.getInstance(psiElement.getProject()).yamlAnnotateServiceConfig) {
+        if(!Symfony2ProjectComponent.isEnabled(psiElement.getProject())) {
             return;
         }
 
         this.annotateParameter(psiElement, holder);
         this.annotateClass(psiElement, holder);
-        this.annotateService(psiElement, holder);
 
         // only match inside service definitions
         if(!YamlElementPatternHelper.getInsideKeyValue("services").accepts(psiElement)) {
@@ -85,25 +84,6 @@ public class YamlAnnotator implements Annotator {
             holder.createWarningAnnotation(psiElement, "Missing Parameter");
         }
 
-    }
-
-    private void annotateService(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-        if(!YamlElementPatternHelper.getServiceDefinition().accepts(psiElement) || !YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
-            return;
-        }
-
-        String serviceName = getServiceName(psiElement);
-
-        // dont mark "@", "@?", "@@" escaping and expressions
-        if(serviceName.length() < 2 || serviceName.startsWith("=") || serviceName.startsWith("@")) {
-            return;
-        }
-
-        if(ContainerCollectionResolver.hasServiceNames(psiElement.getProject(), serviceName)) {
-            return;
-        }
-
-        holder.createWarningAnnotation(psiElement, "Missing Service");
     }
 
     private void annotateClass(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {

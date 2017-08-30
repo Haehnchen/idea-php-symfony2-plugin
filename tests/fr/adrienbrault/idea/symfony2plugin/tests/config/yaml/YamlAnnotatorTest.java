@@ -142,16 +142,6 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertAnnotationNotContains("services.yml", "services:\n   '%ENV(FO<caret>O)%'", "Missing Parameter");
     }
 
-    public void testAnnotatorServiceName() {
-        assertAnnotationContains("services.yml", "services:\n   @args<caret>_unknown", "Missing Service");
-        assertAnnotationContains("services.yml", "services:\n   @Args<caret>_unknown", "Missing Service");
-        assertAnnotationNotContains("services.yml", "services:\n   @args<caret>_foo", "Missing Service");
-        assertAnnotationNotContains("services.yml", "services:\n   @Args<caret>_foo", "Missing Service");
-
-        assertAnnotationNotContains("services.yml", "services:\n   @@args<caret>_unknown", "Missing Service");
-        assertAnnotationNotContains("services.yml", "services:\n   @=args<caret>_unknown", "Missing Service");
-    }
-
     public void testAnnotatorClass() {
         assertAnnotationContains("services.yml", "services:\n  class: Args\\Fo<caret>oBar", "Missing Class");
         assertAnnotationContains("services.yml", "services:\n  class: 'Args\\Fo<caret>oBar'", "Missing Class");

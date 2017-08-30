@@ -526,6 +526,12 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateMissingInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="MissingService" displayName="Missing Service"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.MissingServiceInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>

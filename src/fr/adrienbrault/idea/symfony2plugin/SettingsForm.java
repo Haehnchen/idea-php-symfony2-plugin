@@ -45,11 +45,9 @@ public class SettingsForm implements Configurable {
     private JCheckBox twigAnnotateAsset;
     private JCheckBox twigAnnotateAssetTags;
     private JCheckBox phpAnnotateTemplate;
-    private JCheckBox phpAnnotateService;
     private JCheckBox phpAnnotateRoute;
     private JCheckBox phpAnnotateTemplateAnnotation;
     private JCheckBox pluginEnabled;
-    private JCheckBox yamlAnnotateServiceConfig;
 
     private JButton directoryToWebReset;
     private JLabel directoryToWebLabel;
@@ -142,7 +140,6 @@ public class SettingsForm implements Configurable {
             || !twigAnnotateAssetTags.isSelected() == getSettings().twigAnnotateAssetTags
 
             || !phpAnnotateTemplate.isSelected() == getSettings().phpAnnotateTemplate
-            || !phpAnnotateService.isSelected() == getSettings().phpAnnotateService
             || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
             || !phpAnnotateTranslation.isSelected() == getSettings().phpAnnotateTranslation
@@ -153,8 +150,6 @@ public class SettingsForm implements Configurable {
             || !codeFoldingTwigRoute.isSelected() == getSettings().codeFoldingTwigRoute
             || !codeFoldingTwigTemplate.isSelected() == getSettings().codeFoldingTwigTemplate
             || !codeFoldingTwigConstant.isSelected() == getSettings().codeFoldingTwigConstant
-
-            || !yamlAnnotateServiceConfig.isSelected() == getSettings().yamlAnnotateServiceConfig
 
             || !directoryToApp.getText().equals(getSettings().directoryToApp)
             || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
@@ -181,7 +176,6 @@ public class SettingsForm implements Configurable {
         getSettings().twigAnnotateAssetTags = twigAnnotateAssetTags.isSelected();
 
         getSettings().phpAnnotateTemplate = phpAnnotateTemplate.isSelected();
-        getSettings().phpAnnotateService = phpAnnotateService.isSelected();
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
         getSettings().phpAnnotateTranslation = phpAnnotateTranslation.isSelected();
@@ -192,8 +186,6 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingTwigRoute = codeFoldingTwigRoute.isSelected();
         getSettings().codeFoldingTwigTemplate = codeFoldingTwigTemplate.isSelected();
         getSettings().codeFoldingTwigConstant = codeFoldingTwigConstant.isSelected();
-
-        getSettings().yamlAnnotateServiceConfig = yamlAnnotateServiceConfig.isSelected();
 
         getSettings().directoryToApp = directoryToApp.getText();
         getSettings().directoryToWeb = directoryToWeb.getText();
@@ -231,7 +223,6 @@ public class SettingsForm implements Configurable {
         twigAnnotateAssetTags.setSelected(getSettings().twigAnnotateAssetTags);
 
         phpAnnotateTemplate.setSelected(getSettings().phpAnnotateTemplate);
-        phpAnnotateService.setSelected(getSettings().phpAnnotateService);
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
         phpAnnotateTranslation.setSelected(getSettings().phpAnnotateTranslation);
@@ -242,8 +233,6 @@ public class SettingsForm implements Configurable {
         codeFoldingTwigRoute.setSelected(getSettings().codeFoldingTwigRoute);
         codeFoldingTwigTemplate.setSelected(getSettings().codeFoldingTwigTemplate);
         codeFoldingTwigConstant.setSelected(getSettings().codeFoldingTwigConstant);
-
-        yamlAnnotateServiceConfig.setSelected(getSettings().yamlAnnotateServiceConfig);
 
         directoryToApp.setText(getSettings().directoryToApp);
         directoryToWeb.setText(getSettings().directoryToWeb);

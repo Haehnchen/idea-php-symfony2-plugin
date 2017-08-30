@@ -44,12 +44,6 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -180,15 +174,6 @@
               <text value="Route"/>
             </properties>
           </component>
-          <component id="c9461" class="javax.swing.JCheckBox" binding="phpAnnotateService">
-            <constraints>
-              <grid row="32" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Service"/>
-            </properties>
-          </component>
           <component id="5a5a0" class="javax.swing.JCheckBox" binding="phpAnnotateTemplate">
             <constraints>
               <grid row="30" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -196,24 +181,6 @@
             </constraints>
             <properties>
               <text value="Template"/>
-            </properties>
-          </component>
-          <component id="93ec7" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="38" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Yaml Annotator"/>
-            </properties>
-          </component>
-          <component id="42ded" class="javax.swing.JCheckBox" binding="yamlAnnotateServiceConfig">
-            <constraints>
-              <grid row="40" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Service DIC"/>
             </properties>
           </component>
           <component id="224de" class="javax.swing.JCheckBox" binding="objectManagerFindTypeProvider">
@@ -378,24 +345,6 @@
               <text value="Constant (Twig)"/>
             </properties>
           </component>
-          <component id="a28d6" class="javax.swing.JCheckBox" binding="phpAnnotateTemplateAnnotation">
-            <constraints>
-              <grid row="34" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Template Annotation"/>
-            </properties>
-          </component>
-          <component id="9e0bc" class="javax.swing.JCheckBox" binding="phpAnnotateTranslation">
-            <constraints>
-              <grid row="36" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Translation"/>
-            </properties>
-          </component>
           <component id="dedbe" class="javax.swing.JCheckBox" binding="enableSchedulerCheckBox">
             <constraints>
               <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -412,6 +361,24 @@
             </constraints>
             <properties>
               <text value="Download remote files (exp.)"/>
+            </properties>
+          </component>
+          <component id="a28d6" class="javax.swing.JCheckBox" binding="phpAnnotateTemplateAnnotation">
+            <constraints>
+              <grid row="32" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Template Annotation"/>
+            </properties>
+          </component>
+          <component id="9e0bc" class="javax.swing.JCheckBox" binding="phpAnnotateTranslation">
+            <constraints>
+              <grid row="34" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Translation"/>
             </properties>
           </component>
         </children>
