@@ -9,6 +9,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.151
+* Adopt default container/routing files path to Symfony Flex [#993](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/993) @Koc
+* Fix xml id reference for Symfony 3.3 class shortcut was matched on all xml tags with id attribute
+* Provide service completion and references for xml alias attribute [#996](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/996)
+* Twig path directory separator must be "\" to be clickable [#995](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/995)
+
 ## 0.14.150
 * Fix wrong cast in service builder class scope extraction [#989](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/989)
 * Support Symfony 3.3 class shortcut in yaml and xml method tag scope
