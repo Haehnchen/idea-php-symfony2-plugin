@@ -94,25 +94,31 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
     public void testCaseSensitivityForServiceInYamlFiles() {
         assertLocalInspectionContains("service.yml", "services:\n" +
                 "    foo_a:\n" +
-                "        arguments: [@f<caret>oO]",
+                "        arguments: [@f<caret>oO.bar]",
             "Symfony: lowercase letters for service and parameter"
         );
 
         assertLocalInspectionContains("service.yml", "services:\n" +
                 "    foo_a:\n" +
-                "        arguments: ['@f<caret>oO']",
+                "        arguments: ['@f<caret>oO.bar']",
             "Symfony: lowercase letters for service and parameter"
         );
 
         assertLocalInspectionContains("service.yml", "services:\n" +
                 "    foo_a:\n" +
-                "        arguments: [\"@f<caret>oO\"]",
+                "        arguments: [\"@f<caret>oO.bar\"]",
             "Symfony: lowercase letters for service and parameter"
         );
 
         assertLocalInspectionNotContains("service.yml", "services:\n" +
                 "    foo_a:\n" +
-                "        arguments: [@f<caret>o]",
+                "        arguments: [@f<caret>o.bar]",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.yml", "services:\n" +
+                "    foo_a:\n" +
+                "        arguments: [@f<caret>oO]",
             "Symfony: lowercase letters for service and parameter"
         );
     }
@@ -144,6 +150,20 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
                 "      <service id=\"My\\Sweet\\Foo<caret>bar\"/>\n" +
                 "  </services>\n" +
                 "</container>\n",
+            "Symfony: lowercase letters for service and parameter"
+        );
+    }
+
+    public void testCaseSensitivityForServiceFilesMustNotHighlightClassesServicesOfSymfony33() {
+        assertLocalInspectionNotContains("service.yml", "services:\n" +
+                "    My\\Foobar:\n" +
+                "        arguments: ['@My\\Sweet\\FooabrCl<caret>ass']",
+            "Symfony: lowercase letters for service and parameter"
+        );
+
+        assertLocalInspectionNotContains("service.yml", "services:\n" +
+                "    My\\Foobar:\n" +
+                "        arguments: ['@?My\\Sweet\\FooabrCl<caret>ass']",
             "Symfony: lowercase letters for service and parameter"
         );
     }
