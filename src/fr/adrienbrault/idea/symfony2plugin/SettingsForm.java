@@ -57,8 +57,7 @@ public class SettingsForm implements Configurable {
     private JButton pathToTranslationRootTextFieldReset;
     private TextFieldWithBrowseButton pathToTranslationRootTextField;
     private JButton buttonHelp;
-    private JCheckBox phpAnnotateTranslation;
-    
+
     private JCheckBox codeFoldingPhpRoute;
     private JCheckBox codeFoldingPhpModel;
     private JCheckBox codeFoldingTwigRoute;
@@ -135,7 +134,6 @@ public class SettingsForm implements Configurable {
             || !phpAnnotateTemplate.isSelected() == getSettings().phpAnnotateTemplate
             || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
             || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
-            || !phpAnnotateTranslation.isSelected() == getSettings().phpAnnotateTranslation
 
             || !codeFoldingPhpRoute.isSelected() == getSettings().codeFoldingPhpRoute
             || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
@@ -170,7 +168,6 @@ public class SettingsForm implements Configurable {
         getSettings().phpAnnotateTemplate = phpAnnotateTemplate.isSelected();
         getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
         getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
-        getSettings().phpAnnotateTranslation = phpAnnotateTranslation.isSelected();
 
         getSettings().codeFoldingPhpRoute = codeFoldingPhpRoute.isSelected();
         getSettings().codeFoldingPhpModel = codeFoldingPhpModel.isSelected();
@@ -216,7 +213,6 @@ public class SettingsForm implements Configurable {
         phpAnnotateTemplate.setSelected(getSettings().phpAnnotateTemplate);
         phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
         phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
-        phpAnnotateTranslation.setSelected(getSettings().phpAnnotateTranslation);
 
         codeFoldingPhpRoute.setSelected(getSettings().codeFoldingPhpRoute);
         codeFoldingPhpModel.setSelected(getSettings().codeFoldingPhpModel);

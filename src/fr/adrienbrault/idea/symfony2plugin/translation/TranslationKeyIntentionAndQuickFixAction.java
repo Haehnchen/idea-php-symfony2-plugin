@@ -51,7 +51,7 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
     @NotNull
     @Override
     public String getName() {
-        return "Symfony: add translations";
+        return "Symfony: Add translations";
     }
 
     @Nls

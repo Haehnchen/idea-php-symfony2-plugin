@@ -342,7 +342,6 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
 
-        <annotator language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationAnnotator"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
         <annotator language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator"/>
@@ -517,6 +516,20 @@
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="PhpTranslationDomainInspection" displayName="PHP: Missing translation domain"
+                         groupName="Translation"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationDomainInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="PhpTranslationKeyInspection" displayName="PHP: Missing translation key"
+                         groupName="Translation"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigTemplateMissing" displayName="Twig: Template Missing"
                          groupName="Twig"

@@ -18,6 +18,9 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigTranslationDomainInspection extends LocalInspectionTool {
+
+    public static final String MESSAGE = "Missing translation domain";
+
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
         if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
@@ -63,7 +66,7 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
                 if(StringUtils.isNotBlank(text) && !TranslationUtil.hasDomain(psiElement.getProject(), text)) {
                     holder.registerProblem(
                         psiElement,
-                        "Missing translation domain",
+                        MESSAGE,
                         ProblemHighlightType.GENERIC_ERROR_OR_WARNING
                     );
                 }

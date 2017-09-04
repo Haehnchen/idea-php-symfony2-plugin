@@ -66,9 +66,6 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean phpAnnotateTemplate = true;
     public boolean phpAnnotateRoute = true;
     public boolean phpAnnotateTemplateAnnotation = true;
-    public boolean phpAnnotateTranslation = true;
-
-    public boolean yamlAnnotateServiceConfig = true;
 
     public boolean codeFoldingPhpRoute = true;
     public boolean codeFoldingPhpModel = true;
