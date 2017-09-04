@@ -22,18 +22,19 @@ import java.util.List;
 )
 public class Settings implements PersistentStateComponent<Settings> {
 
-    // Symfony 2 and 3 paths
+    // Default Symfony 2, 3 and 4 paths
     public static String[] DEFAULT_CONTAINER_PATHS = new String[] {
         "app/cache/dev/appDevDebugProjectContainer.xml",
         "var/cache/dev/appDevDebugProjectContainer.xml",
         "var/cache/dev/srcDevDebugProjectContainer.xml",
     };
 
-    // Symfony 2 and 3 paths
+    // Default Symfony 2, 3 and 4 paths
     public static String[] DEFAULT_ROUTES = new String[] {
         "app/cache/dev/appDevUrlGenerator.php",
         "var/cache/dev/appDevUrlGenerator.php",
-        "var/cache/dev/srcDevDebugProjectContainerUrlGenerator.php",   
+        "var/cache/dev/appDevDebugProjectContainerUrlGenerator.php",
+        "var/cache/dev/srcDevDebugProjectContainerUrlGenerator.php",
     };
 
     /**
