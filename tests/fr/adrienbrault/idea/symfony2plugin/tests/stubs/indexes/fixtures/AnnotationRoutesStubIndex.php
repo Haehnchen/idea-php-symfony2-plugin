@@ -35,6 +35,26 @@ namespace My
     }
 }
 
+namespace MyPrefix
+{
+    use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+    use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+
+    /**
+     * @Route("/foo", name="foo_")
+     */
+    class PrefixController
+    {
+        /**
+         * @Route("/edit/{id}", name="prefix_home")
+         * @Method("GET")
+         */
+        public function editAction()
+        {
+        }
+    }
+}
+
 namespace MyFooBarBundle\Controller
 {
     use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;

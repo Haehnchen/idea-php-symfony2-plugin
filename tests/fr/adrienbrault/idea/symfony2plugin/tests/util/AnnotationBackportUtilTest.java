@@ -7,16 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 
 public class AnnotationBackportUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     /**
-     * @see AnnotationBackportUtil#getAnnotationRouteName
-     */
-    public void testAnnotationRouteName() {
-        assertEquals("my_page_so_good", AnnotationBackportUtil.getAnnotationRouteName("\"/my/page/so-good\", name=\"my_page_so_good\""));
-        assertEquals("my.page.so.good", AnnotationBackportUtil.getAnnotationRouteName("\"/my/page/so-good\", name=\"my.page.so.good\""));
-        assertEquals("my-page.so_good", AnnotationBackportUtil.getAnnotationRouteName("\"/my/page/so-good\", name=\"my-page.so_good\""));
-    }
-
-    /**
-     * @see AnnotationBackportUtil#getDefaultOrPropertyContents
+     * @see AnnotationBackportUtil#getPropertyValueOrDefault
      */
     public void testGetDefaultOrProperty() {
         PhpDocTag fromText = PhpPsiElementFactory.createFromText(getProject(), PhpDocTag.class, "<?php\n" +
@@ -26,7 +17,7 @@ public class AnnotationBackportUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
 
         assertNotNull(fromText);
-        assertEquals("foobar.html.twig", AnnotationBackportUtil.getDefaultOrPropertyContents(fromText, "foobar"));
+        assertEquals("foobar.html.twig", AnnotationBackportUtil.getPropertyValueOrDefault(fromText, "foobar"));
 
         fromText = PhpPsiElementFactory.createFromText(getProject(), PhpDocTag.class, "<?php\n" +
             "/**\n" +
@@ -35,7 +26,7 @@ public class AnnotationBackportUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
 
         assertNotNull(fromText);
-        assertEquals("foobar.html.twig", AnnotationBackportUtil.getDefaultOrPropertyContents(fromText, "foobar"));
+        assertEquals("foobar.html.twig", AnnotationBackportUtil.getPropertyValueOrDefault(fromText, "foobar"));
 
         fromText = PhpPsiElementFactory.createFromText(getProject(), PhpDocTag.class, "<?php\n" +
             "/**\n" +
@@ -45,6 +36,6 @@ public class AnnotationBackportUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
 
         assertNotNull(fromText);
-        assertEquals("foobar.html.twig", AnnotationBackportUtil.getDefaultOrPropertyContents(fromText, "foobar"));
+        assertEquals("foobar.html.twig", AnnotationBackportUtil.getPropertyValueOrDefault(fromText, "foobar"));
     }
 }

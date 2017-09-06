@@ -20,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Some method from Php Annotations plugin to not fully set a "depends" entry on it
@@ -149,25 +147,6 @@ public class AnnotationBackportUtil {
     }
 
     /**
-     * Use AnnotationUtil of "PHP Annotations Plugin"
-     */
-    @Nullable
-    @Deprecated
-    public static String getAnnotationRouteName(@Nullable String rawDocText) {
-
-        if(rawDocText == null) {
-            return null;
-        }
-
-        Matcher matcher = Pattern.compile("name\\s*=\\s*\"([\\w\\.-]+)\"").matcher(rawDocText);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-
-        return null;
-    }
-
-    /**
      * Get class path on "use" path statement
      */
     @Nullable
@@ -256,11 +235,13 @@ public class AnnotationBackportUtil {
     }
 
     /**
+     * Extract property value or fallback on default annotation pattern
+     *
      * "@Template("foobar.html.twig")"
      * "@Template(template="foobar.html.twig")"
      */
     @Nullable
-    public static String getDefaultOrPropertyContents(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
+    public static String getPropertyValueOrDefault(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
         PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
         if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
             return null;
@@ -278,9 +259,10 @@ public class AnnotationBackportUtil {
             contents = ((StringLiteralExpression) defaultValue).getContents();
         } else {
             // @Template(template="foobar.html.twig")
-            PsiElement psiProperty = ContainerUtil.find(attributeList.getChildren(), psiElement ->
-                getPropertyIdentifierValue(property).accepts(psiElement)
-            );
+            PsiElement psiProperty = Arrays.stream(attributeList.getChildren())
+                .filter(psiElement1 -> getPropertyIdentifierValue(property).accepts(psiElement1))
+                .findFirst()
+                .orElse(null);
 
             if(psiProperty instanceof StringLiteralExpression) {
                 contents = ((StringLiteralExpression) psiProperty).getContents();
@@ -292,6 +274,40 @@ public class AnnotationBackportUtil {
         }
 
         return contents;
+    }
+
+    /**
+     * Get the property value by given name
+     *
+     * "@Template(template="foobar.html.twig")"
+     */
+    @Nullable
+    public static String getPropertyValue(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
+        PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
+        if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
+            return null;
+        }
+
+        PsiElement lParen = attributeList.getFirstChild();
+        if(lParen == null) {
+            return null;
+        }
+
+        PsiElement psiProperty = Arrays.stream(attributeList.getChildren())
+            .filter(psiElement1 -> getPropertyIdentifierValue(property).accepts(psiElement1))
+            .findFirst()
+            .orElse(null);
+
+        if(!(psiProperty instanceof StringLiteralExpression)) {
+            return null;
+        }
+
+        String contents = ((StringLiteralExpression) psiProperty).getContents();
+        if(StringUtils.isNotBlank(contents)) {
+            return contents;
+        }
+
+        return null;
     }
 
     /**

@@ -122,7 +122,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                             return;
                         }
 
-                        String template = AnnotationBackportUtil.getDefaultOrPropertyContents(phpDocTag, "template");
+                        String template = AnnotationBackportUtil.getPropertyValueOrDefault(phpDocTag, "template");
                         if(template != null && template.endsWith(".html.twig")) {
                             Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
                             if(methodScope != null) {

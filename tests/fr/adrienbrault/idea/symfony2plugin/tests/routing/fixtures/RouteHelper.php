@@ -38,4 +38,24 @@ namespace MyFooBarBundle\Controller
         {
         }
     }
+
+    /**
+     * @Route("/foo_bar", name="foobar_")
+     */
+    class AppleController
+    {
+        /**
+         * @Route("/edit/{id}")
+         */
+        public function indexAction()
+        {
+        }
+
+        /**
+         * @Route("/edit/{id}", name="my_foo")
+         */
+        public function fooAction()
+        {
+        }
+    }
 }

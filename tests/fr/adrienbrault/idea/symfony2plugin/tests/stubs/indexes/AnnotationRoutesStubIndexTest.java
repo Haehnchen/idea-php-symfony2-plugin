@@ -69,6 +69,10 @@ public class AnnotationRoutesStubIndexTest extends SymfonyLightCodeInsightFixtur
         assertIndexContains(AnnotationRoutesStubIndex.KEY, "my_post__invoke");
     }
 
+    public void testThatRouteWithPrefixIsInIndex() {
+        assertIndexContains(AnnotationRoutesStubIndex.KEY, "foo_prefix_home");
+    }
+
     private RouteInterface getFirstValue(@NotNull String key) {
         return FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }

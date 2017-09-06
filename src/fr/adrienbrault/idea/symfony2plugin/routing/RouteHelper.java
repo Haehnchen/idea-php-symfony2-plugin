@@ -71,7 +71,7 @@ public class RouteHelper {
 
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
 
-    private static Set<String> ROUTE_CLASSES = new HashSet<>(Arrays.asList(
+    public static Set<String> ROUTE_CLASSES = new HashSet<>(Arrays.asList(
         "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
         "Symfony\\Component\\Routing\\Annotation\\Route"
     ));
@@ -820,8 +820,10 @@ public class RouteHelper {
                 }
             } else if(psiFile instanceof PhpFile) {
                 // find on @Route annotation
-
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
+                    // get prefix by PhpClass
+                    String prefix = getRouteNamePrefix(phpClass);
+
                     for (Method method : phpClass.getOwnMethods()) {
                         PhpDocComment docComment = method.getDocComment();
                         if(docComment == null) {
@@ -840,13 +842,13 @@ public class RouteHelper {
                                 String annotationRouteName = phpDocTagAnnotation.getPropertyValue("name");
                                 if(annotationRouteName != null) {
                                     // name provided @Route(name="foobar")
-                                    if(routeName.equals(annotationRouteName)) {
+                                    if(routeName.equals(prefix + annotationRouteName)) {
                                         return phpDocTagAnnotation.getPropertyValuePsi("name");
                                     }
                                 } else {
                                     // just @Route() without name provided
                                     String routeByMethod = AnnotationBackportUtil.getRouteByMethod(phpDocTagAnnotation.getPhpDocTag());
-                                    if(routeName.equals(routeByMethod)) {
+                                    if(routeName.equals(prefix + routeByMethod)) {
                                         return phpDocTagAnnotation.getPhpDocTag();
                                     }
                                 }
@@ -858,6 +860,26 @@ public class RouteHelper {
         }
 
         return null;
+    }
+
+    /**
+     * Extract route name of @Route(name="foobar_")
+     * Must return empty string for easier accessibility
+     */
+    @NotNull
+    private static String getRouteNamePrefix(@NotNull  PhpClass phpClass) {
+        PhpDocCommentAnnotation phpClassContainer = AnnotationUtil.getPhpDocCommentAnnotationContainer(phpClass.getDocComment());
+        if(phpClassContainer != null) {
+            PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(ROUTE_CLASSES.toArray(new String[ROUTE_CLASSES.size()]));
+            if(firstPhpDocBlock != null) {
+                String name = firstPhpDocBlock.getPropertyValue("name");
+                if(name != null && StringUtils.isNotBlank(name)) {
+                    return name;
+                }
+            }
+        }
+
+        return "";
     }
 
     @Nullable

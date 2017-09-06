@@ -151,7 +151,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
         private final Map<String, StubIndexedRoute> map;
         private Map<String, String> fileImports;
 
-        public MyPsiRecursiveElementWalkingVisitor(Map<String, StubIndexedRoute> map) {
+        private MyPsiRecursiveElementWalkingVisitor(@NotNull Map<String, StubIndexedRoute> map) {
             this.map = map;
         }
 
@@ -163,7 +163,7 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
             super.visitElement(element);
         }
 
-        public void visitPhpDocTag(PhpDocTag phpDocTag) {
+        private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
 
             // "@var" and user non related tags dont need an action
             if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
@@ -189,24 +189,29 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
                 return;
             }
 
-            String routeName = AnnotationBackportUtil.getAnnotationRouteName(phpDocAttributeList.getText());
+            String routeName = AnnotationBackportUtil.getPropertyValue(phpDocTag, "name");
             if(routeName == null) {
                 routeName = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
             }
 
             if(routeName != null && StringUtils.isNotBlank(routeName)) {
+                // prepend route name on PhpClass scope
+                String routeNamePrefix = getRouteNamePrefix(phpDocTag);
+                if(routeNamePrefix != null) {
+                    routeName = routeNamePrefix + routeName;
+                }
 
                 StubIndexedRoute route = new StubIndexedRoute(routeName);
 
                 String path = "";
 
-                // get class scope pattern
+                // extract class path @Route("/foo") => "/foo" for prefixing upcoming methods
                 String classPath = getClassRoutePattern(phpDocTag);
                 if(classPath != null) {
                     path += classPath;
                 }
 
-                // extract method path
+                // extract method path @Route("/foo") => "/foo"
                 PhpPsiElement firstPsiChild = ((PhpPsiElement) phpDocAttributeList).getFirstPsiChild();
                 if(firstPsiChild instanceof StringLiteralExpression) {
                     String contents = ((StringLiteralExpression) firstPsiChild).getContents();
@@ -226,6 +231,39 @@ public class AnnotationRoutesStubIndex extends FileBasedIndexExtension<String, S
 
                 map.put(routeName, route);
             }
+        }
+
+        /**
+         * Extract route name of parent class "@Route(name="foo_")"
+         */
+        @Nullable
+        private String getRouteNamePrefix(@NotNull PhpDocTag phpDocTag) {
+            PhpClass phpClass = PsiTreeUtil.getParentOfType(phpDocTag, PhpClass.class);
+            if (phpClass == null) {
+                return null;
+            }
+
+            PhpDocComment docComment = phpClass.getDocComment();
+            if (docComment == null) {
+                return null;
+            }
+
+            for (PhpDocTag docTag : PsiTreeUtil.getChildrenOfTypeAsList(docComment, PhpDocTag.class)) {
+                String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(docTag, this.fileImports);
+
+                // check @Route or alias
+                if(annotationFqnName == null || !RouteHelper.isRouteClassAnnotation(annotationFqnName)) {
+                    continue;
+                }
+
+                // extract "name" property
+                String annotationRouteName = AnnotationBackportUtil.getPropertyValue(docTag, "name");
+                if(StringUtils.isNotBlank(annotationRouteName)) {
+                    return annotationRouteName;
+                }
+            }
+
+            return null;
         }
 
         private void extractMethods(@NotNull PhpDocTag phpDocTag, @NotNull StubIndexedRoute route) {

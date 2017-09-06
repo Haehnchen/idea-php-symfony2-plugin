@@ -368,6 +368,17 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRouteNameTarget
+     */
+    public void testGetRouteNameTargetForPrefixedControler() {
+        PsiElement element = RouteHelper.getRouteNameTarget(getProject(), "foobar_myfoobar_apple_index");
+        assertNotNull(element);
+
+        element = RouteHelper.getRouteNameTarget(getProject(), "foobar_my_foo");
+        assertNotNull(element);
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#isServiceController
      */
     public void testIsServiceController() {
