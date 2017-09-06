@@ -8,6 +8,8 @@ cache:
   directories:
     - .cache
 before_script:
+ - sudo apt-get -qq update
+ - sudo apt-get install ant-optional
  - chmod +x travis.sh
 
 env:
