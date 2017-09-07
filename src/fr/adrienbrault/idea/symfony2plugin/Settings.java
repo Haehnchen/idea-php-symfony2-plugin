@@ -36,19 +36,11 @@ public class Settings implements PersistentStateComponent<Settings> {
         "var/cache/dev/srcDevDebugProjectContainerUrlGenerator.php",   
     };
 
-    /**
-     * @deprecated
-     */
-    public static String DEFAULT_URL_GENERATOR_PATH = "app/cache/dev/appDevUrlGenerator.php";
     public static String DEFAULT_TRANSLATION_PATH = "app/cache/dev/translations";
 
     public static String DEFAULT_WEB_DIRECTORY = "web";
     public static String DEFAULT_APP_DIRECTORY = "app";
 
-    /**
-     * @deprecated
-     */
-    public String pathToUrlGenerator = DEFAULT_URL_GENERATOR_PATH;
     public String pathToTranslation = DEFAULT_TRANSLATION_PATH;
     public String directoryToWeb = DEFAULT_WEB_DIRECTORY;
     public String directoryToApp = DEFAULT_APP_DIRECTORY;

@@ -149,13 +149,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         if(this.getContainerFiles().size() == 0) {
             Symfony2ProjectComponent.getLogger().warn("missing at least one container file");
         }
-
-        String urlGeneratorPath = getPath(project, Settings.getInstance(project).pathToUrlGenerator);
-        File urlGeneratorFile = new File(urlGeneratorPath);
-        if (!urlGeneratorFile.exists()) {
-            Symfony2ProjectComponent.getLogger().warn("missing routing file: " + urlGeneratorPath);
-        }
-
     }
 
     public static boolean isEnabled(@Nullable Project project) {

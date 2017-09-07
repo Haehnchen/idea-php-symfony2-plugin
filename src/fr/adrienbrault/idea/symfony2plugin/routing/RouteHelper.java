@@ -269,15 +269,9 @@ public class RouteHelper {
         return path;
     }
 
+    @NotNull
     public static Map<String, Route> getCompiledRoutes(@NotNull Project project) {
-
         Set<String> files = new HashSet<>();
-
-        // old deprecated single file
-        String pathToUrlGenerator = Settings.getInstance(project).pathToUrlGenerator;
-        if(pathToUrlGenerator != null) {
-            files.add(pathToUrlGenerator);
-        }
 
         // add custom routing files on settings
         List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;

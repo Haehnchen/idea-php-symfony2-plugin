@@ -31,14 +31,12 @@ public class SettingsForm implements Configurable {
     private Project project;
 
     private JPanel panel1;
-    private JButton pathToUrlGeneratorTextFieldReset;
 
     private JCheckBox symfonyContainerTypeProvider;
     private JCheckBox objectRepositoryTypeProvider;
     private JCheckBox objectRepositoryResultTypeProvider;
     private JCheckBox objectManagerFindTypeProvider;
 
-    private TextFieldWithBrowseButton pathToUrlGeneratorTextField;
     private JLabel typesLabel;
     private JCheckBox twigAnnotateRoute;
     private JCheckBox twigAnnotateTemplate;
@@ -95,10 +93,6 @@ public class SettingsForm implements Configurable {
     }
 
     public JComponent createComponent() {
-
-        pathToUrlGeneratorTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), FileChooserDescriptorFactory.createSingleFileDescriptor(FileTypeManager.getInstance().getStdFileType("PHP"))));
-        pathToUrlGeneratorTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToUrlGeneratorTextField.getTextField(), Settings.DEFAULT_URL_GENERATOR_PATH));
-
         pathToTranslationRootTextField.getButton().addMouseListener(createPathButtonMouseListener(pathToTranslationRootTextField.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
         pathToTranslationRootTextFieldReset.addMouseListener(createResetPathButtonMouseListener(pathToTranslationRootTextField.getTextField(), Settings.DEFAULT_TRANSLATION_PATH));
 
@@ -125,7 +119,6 @@ public class SettingsForm implements Configurable {
     public boolean isModified() {
         return
             !pluginEnabled.isSelected() == getSettings().pluginEnabled
-            || !pathToUrlGeneratorTextField.getText().equals(getSettings().pathToUrlGenerator)
             || !pathToTranslationRootTextField.getText().equals(getSettings().pathToTranslation)
             || !enableSchedulerCheckBox.isSelected() == getSettings().remoteDevFileScheduler
 
@@ -161,7 +154,6 @@ public class SettingsForm implements Configurable {
 
         getSettings().pluginEnabled = pluginEnabled.isSelected();
 
-        getSettings().pathToUrlGenerator = pathToUrlGeneratorTextField.getText();
         getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
         getSettings().remoteDevFileScheduler = enableSchedulerCheckBox.isSelected();
 
@@ -208,7 +200,6 @@ public class SettingsForm implements Configurable {
 
         pluginEnabled.setSelected(getSettings().pluginEnabled);
 
-        pathToUrlGeneratorTextField.setText(getSettings().pathToUrlGenerator);
         pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
         enableSchedulerCheckBox.setSelected(getSettings().remoteDevFileScheduler);
 
@@ -236,10 +227,6 @@ public class SettingsForm implements Configurable {
 
         directoryToApp.setText(getSettings().directoryToApp);
         directoryToWeb.setText(getSettings().directoryToWeb);
-    }
-
-    private MouseListener createPathButtonMouseListener(final JTextField textField) {
-        return createPathButtonMouseListener(textField, FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
     private MouseListener createPathButtonMouseListener(final JTextField textField, final FileChooserDescriptor fileChooserDescriptor) {
