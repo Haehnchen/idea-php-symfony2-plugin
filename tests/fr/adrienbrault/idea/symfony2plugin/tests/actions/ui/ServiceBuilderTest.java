@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
@@ -29,7 +30,7 @@ public class ServiceBuilderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testBuildForClassWithoutParameter() {
         PsiFile dummyFile = YamlPsiElementFactory.createDummyFile(getProject(), "foo.yml", "services:\n  foobar: ~");
-        ServiceBuilder serviceBuilder = new ServiceBuilder(Collections.emptyList(), dummyFile);
+        ServiceBuilder serviceBuilder = new ServiceBuilder(Collections.emptyList(), dummyFile, false);
 
         assertEquals(
             "foobar:\n  class: Foobar",
@@ -43,20 +44,11 @@ public class ServiceBuilderTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public void testBuildForConstructor() {
-        PsiFile dummyFile = YamlPsiElementFactory.createDummyFile(getProject(), "foo.yml", "services:\n  foobar: ~");
-
-        PhpClass anyByFQN = PhpIndex.getInstance(getProject()).getAnyByFQN("\\Foo\\Bar").iterator().next();
-
-        Method constructor = anyByFQN.getConstructor();
-        assertNotNull(constructor);
-
-        Parameter parameter = constructor.getParameters()[0];
-
-        List<MethodParameter.MethodModelParameter> parameters = Collections.singletonList(
-            new MethodParameter.MethodModelParameter(constructor, parameter, 0, new HashSet<>(Collections.singletonList("foobar")), "foobar")
+        ServiceBuilder serviceBuilder = new ServiceBuilder(
+            getMethodModelParameters(),
+            YamlPsiElementFactory.createDummyFile(getProject(), "foo.yml", "services:\n  foobar: ~"),
+            false
         );
-
-        ServiceBuilder serviceBuilder = new ServiceBuilder(parameters, dummyFile);
 
         String expectedYaml = "" +
             "foobar:\n" +
@@ -76,6 +68,52 @@ public class ServiceBuilderTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals(
             expectedXml,
             StringUtils.trim(serviceBuilder.build(ServiceBuilder.OutputType.XML, "Foo\\Bar", "foobar"))
+        );
+    }
+
+    public void testBuildForClassAsId() {
+        ServiceBuilder serviceBuilder = new ServiceBuilder(Collections.emptyList(), getProject(), true);
+
+        assertEquals(
+            "Foobar: ~",
+            serviceBuilder.build(ServiceBuilder.OutputType.Yaml, "Foobar", "foobar")
+        );
+
+        assertEquals(
+            "<service id=\"Foobar\"/>",
+            StringUtils.trim(serviceBuilder.build(ServiceBuilder.OutputType.XML, "Foobar", "foobar"))
+        );
+    }
+
+    public void testBuildForClassAsIdWithParameter() {
+        ServiceBuilder serviceBuilder = new ServiceBuilder(
+            getMethodModelParameters(),
+            getProject(),
+            true
+        );
+
+        assertEquals(
+            "Foobar:\n    arguments: ['@foobar']",
+            serviceBuilder.build(ServiceBuilder.OutputType.Yaml, "Foobar", "foobar")
+        );
+
+        assertEquals(
+            "<service id=\"Foobar\">\n  <argument id=\"foobar\" type=\"service\"/>\n</service>",
+            StringUtils.trim(serviceBuilder.build(ServiceBuilder.OutputType.XML, "Foobar", "foobar"))
+        );
+    }
+
+    @NotNull
+    private List<MethodParameter.MethodModelParameter> getMethodModelParameters() {
+        PhpClass anyByFQN = PhpIndex.getInstance(getProject()).getAnyByFQN("\\Foo\\Bar").iterator().next();
+
+        Method constructor = anyByFQN.getConstructor();
+        assertNotNull(constructor);
+
+        Parameter parameter = constructor.getParameters()[0];
+
+        return Collections.singletonList(
+            new MethodParameter.MethodModelParameter(constructor, parameter, 0, new HashSet<>(Collections.singletonList("foobar")), "foobar")
         );
     }
 }

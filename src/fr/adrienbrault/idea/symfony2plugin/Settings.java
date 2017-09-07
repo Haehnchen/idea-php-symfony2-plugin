@@ -87,6 +87,11 @@ public class Settings implements PersistentStateComponent<Settings> {
     public String profilerHttpUrl = "http://127.0.0.1:8000";
 
     /**
+     * Use service id attribute as class name for service generator
+     */
+    public boolean serviceClassAsIdAttribute = false;
+
+    /**
      * Last user selected output of service generator eg: yaml or xml
      */
     public String lastServiceGeneratorLanguage = null;

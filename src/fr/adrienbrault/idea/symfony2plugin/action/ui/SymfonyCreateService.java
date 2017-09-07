@@ -67,6 +67,7 @@ public class SymfonyCreateService extends JDialog {
     private JButton buttonSettings;
     private JButton buttonInsert;
     private JPanel panelFoo;
+    private JCheckBox checkBoxSymfonyIdClass;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -156,6 +157,11 @@ public class SymfonyCreateService extends JDialog {
 
         this.generateButton.addActionListener(e -> update());
 
+        this.checkBoxSymfonyIdClass.setSelected(Settings.getInstance(project).symfonyContainerTypeProvider);
+        this.checkBoxSymfonyIdClass.addItemListener(e -> {
+            Settings.getInstance(project).symfonyContainerTypeProvider = checkBoxSymfonyIdClass.isSelected();
+            generateServiceDefinition();
+        });
 
         this.closeButton.addActionListener(e -> {
             setEnabled(false);
@@ -295,7 +301,7 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType, @NotNull PsiFile psiFile) {
-        return new ServiceBuilder(this.modelList.getItems(), psiFile).build(
+        return new ServiceBuilder(this.modelList.getItems(), psiFile, this.checkBoxSymfonyIdClass.isSelected()).build(
             outputType,
             StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
             textFieldServiceName.getText()
@@ -303,7 +309,7 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType) {
-        return new ServiceBuilder(this.modelList.getItems(), this.project).build(
+        return new ServiceBuilder(this.modelList.getItems(), this.project, this.checkBoxSymfonyIdClass.isSelected()).build(
             outputType,
             StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
             textFieldServiceName.getText()
@@ -311,15 +317,12 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private void generateServiceDefinition() {
-
         String className = classCompletionPanelWrapper.getClassName();
         if(StringUtils.isBlank(className)) {
             return;
         }
 
-        if(className.startsWith("\\")) {
-            className = className.substring(1);
-        }
+        className = StringUtils.stripStart(className,"\\");
 
         // after cleanup class is empty
         if(StringUtils.isBlank(className)) {
