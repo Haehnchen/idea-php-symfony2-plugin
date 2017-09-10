@@ -111,7 +111,7 @@ public class TwigUtil {
                 symfonyBundle.getName(),
                 templateFolderName,
                 templateName,
-                !methodName.endsWith("Action") ? methodName : methodName.substring(0, methodName.length() - "Action".length())
+                StringUtils.removeEnd(methodName, "Action")
             );
         }
 
