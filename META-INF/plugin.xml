@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.151</version>
+    <version>0.14.152</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -24,7 +24,7 @@
 <h2>Features:</h2>
 
 <h3>Version</h3>
-<p>This plugin supports Symfony 2 and 3</p>
+<p>This plugin supports Symfony 2, 3, 4, ...</p>
 
 <h3>Dependency Injection Container</h3>
 <ul>
@@ -108,6 +108,20 @@
 0.9.x: PhpStorm 6 (no support)<br/>
 
 <br/>
+
+<h2>0.14.152</h2>
+<ul>
+    <li>Move yaml and php service missing annotator into an inspection to fix missing services in `Container::get` calls should be exposed as an inspection <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/997">#997</a></li>
+    <li>Fix wrongly lowercase inspection in service name as class name <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1011">#1011</a></li>
+    <li>Fix template extraction for methods with ending "Action" to fix non-existing template complaining in @Template() annotation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/999">#999</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1000">#1000</a></li>
+    <li>Dropping old deprecated single url generator settings</li>
+    <li>Adopt default routing files path to Symfony > 2.7.20 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1014">#1014</a> @Koc</li>
+    <li>Add configuration switch for Symfony 3.3 service id as class attribute in service generator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1016">#1016</a> and dropping class as parameter resolving in class attribute</li>
+    <li>Support Symfony 3.4 controller route names prefix in annotations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1017">#1017</a></li>
+    <li>Migrate "missing translation" annotator to inspections</li>
+    <li>Provide support for translation domains in PHP references; like variables or constant</li>
+    <li>Optimize translation folder detection "Resources/translations/" => "/translations/" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1010">#1010</a></li>
+</ul>
 
 <h2>0.14.151</h2>
 <ul>

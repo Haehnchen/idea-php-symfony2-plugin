@@ -9,6 +9,18 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.152
+* Move yaml and php service missing annotator into an inspection to fix missing services in `Container::get` calls should be exposed as an inspection [#997](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/997)
+* Fix wrongly lowercase inspection in service name as class name [#1011](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1011)
+* Fix template extraction for methods with ending "Action" to fix non-existing template complaining in @Template() annotation [#999](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/999) [#1000](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1000)
+* Dropping old deprecated single url generator settings
+* Adopt default routing files path to Symfony > 2.7.20 [#1014](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1014) @Koc
+* Add configuration switch for Symfony 3.3 service id as class attribute in service generator [#1016](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1016) and dropping class as parameter resolving in class attribute
+* Support Symfony 3.4 controller route names prefix in annotations [#1017](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1017)
+* Migrate "missing translation" annotator to inspections
+* Provide support for translation domains in PHP references; like variables or constant
+* Optimize translation folder detection "Resources/translations/" => "/translations/" [#1010](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1010)
+
 ## 0.14.151
 * Adopt default container/routing files path to Symfony Flex [#993](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/993) @Koc
 * Fix xml id reference for Symfony 3.3 class shortcut was matched on all xml tags with id attribute

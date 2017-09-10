@@ -18,7 +18,7 @@ Install
 Version
 ---------------------
 
-* This plugin supports Symfony 2, 3, ... and hopefully all future ones
+* This plugin supports Symfony 2, 3, 4, ...
 
 Documentation and tutorials
 ---------------------
