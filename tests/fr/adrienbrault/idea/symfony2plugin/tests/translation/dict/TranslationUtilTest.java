@@ -30,6 +30,7 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
         myFixture.copyFileToProject("symfony.de.yml", "Resources/translations/symfony.de.yml");
         myFixture.copyFileToProject("symfony.de.xlf", "Resources/translations/symfony.de.xlf");
+        myFixture.copyFileToProject("symfony.de.xlf", "translations/my_foobar.de.xlf");
     }
 
     public String getTestDataPath() {
@@ -39,6 +40,7 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testGetDomainFilePsiElements() {
         assertTrue(TranslationUtil.getDomainPsiFiles(getProject(), "apple").size() > 0);
         assertTrue(TranslationUtil.getDomainPsiFiles(getProject(), "car").size() > 0);
+        assertTrue(TranslationUtil.getDomainPsiFiles(getProject(), "my_foobar").size() > 0);
     }
 
     public void testGetTranslationPsiElements() {

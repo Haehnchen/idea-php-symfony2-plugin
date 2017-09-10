@@ -85,13 +85,13 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 // dont index all yaml files; "Resources/translations" should be good for now
                 String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
                 if(relativePath != null) {
-                    return relativePath.contains("Resources/translations");
+                    return relativePath.contains("/translations");
                 }
 
                 // Resources/translations/messages.de.yml
                 // @TODO: Resources/translations/de/messages.yml
                 String path = inputData.getFile().getPath();
-                if(path.endsWith("Resources/translations/" + inputData.getFileName())) {
+                if(path.endsWith("/translations/" + inputData.getFileName())) {
                     return true;
                 }
 
