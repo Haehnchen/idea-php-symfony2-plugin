@@ -157,9 +157,9 @@ public class SymfonyCreateService extends JDialog {
 
         this.generateButton.addActionListener(e -> update());
 
-        this.checkBoxSymfonyIdClass.setSelected(Settings.getInstance(project).symfonyContainerTypeProvider);
+        this.checkBoxSymfonyIdClass.setSelected(Settings.getInstance(project).serviceClassAsIdAttribute);
         this.checkBoxSymfonyIdClass.addItemListener(e -> {
-            Settings.getInstance(project).symfonyContainerTypeProvider = checkBoxSymfonyIdClass.isSelected();
+            Settings.getInstance(project).serviceClassAsIdAttribute = checkBoxSymfonyIdClass.isSelected();
             generateServiceDefinition();
         });
 

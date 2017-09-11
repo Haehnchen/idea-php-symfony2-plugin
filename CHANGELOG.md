@@ -9,6 +9,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.153
+* Fix service generator was using wrong settings property
+
 ## 0.14.152
 * Move yaml and php service missing annotator into an inspection to fix missing services in `Container::get` calls should be exposed as an inspection [#997](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/997)
 * Fix wrongly lowercase inspection in service name as class name [#1011](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1011)
