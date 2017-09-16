@@ -15,7 +15,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
@@ -29,7 +28,6 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TwigMacroTagIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
@@ -1052,7 +1050,7 @@ public class TwigUtil {
             // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
             if(entry.getValue().equals(psiFile.getVirtualFile())) {
                 String key = entry.getKey();
-                FileBasedIndexImpl.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
+                FileBasedIndex.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
                     virtualFiles.add(virtualFile);
                     return true;
                 }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));

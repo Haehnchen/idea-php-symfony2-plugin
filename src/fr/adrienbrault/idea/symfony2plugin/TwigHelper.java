@@ -19,7 +19,7 @@ import com.intellij.psi.util.*;
 import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
@@ -1882,7 +1882,7 @@ public class TwigHelper {
 
     public static Set<String> getTwigMacroSet(Project project) {
         SymfonyProcessors.CollectProjectUniqueKeys ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeys(project, TwigMacroFunctionStubIndex.KEY);
-        FileBasedIndexImpl.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, ymlProjectProcessor, project);
+        FileBasedIndex.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, ymlProjectProcessor, project);
         return ymlProjectProcessor.getResult();
     }
 
@@ -1890,7 +1890,7 @@ public class TwigHelper {
 
         final Collection<PsiElement> targets = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Collections.singletonList(name)), virtualFile -> {
+        FileBasedIndex.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Collections.singletonList(name)), virtualFile -> {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
             if (psiFile != null) {
                 PsiTreeUtil.processElements(psiFile, psiElement -> {

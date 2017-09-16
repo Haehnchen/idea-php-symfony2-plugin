@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.util;
 
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
 
@@ -28,8 +28,8 @@ public class IndexUtil {
         };
 
         for(ID<?,?> id: indexIds) {
-            FileBasedIndexImpl.getInstance().requestRebuild(id);
-            FileBasedIndexImpl.getInstance().scheduleRebuild(id, new Throwable());
+            FileBasedIndex.getInstance().requestRebuild(id);
+            FileBasedIndex.getInstance().scheduleRebuild(id, new Throwable());
         }
 
     }

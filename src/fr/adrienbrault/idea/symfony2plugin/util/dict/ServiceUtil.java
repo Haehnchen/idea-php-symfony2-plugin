@@ -21,7 +21,6 @@ import com.intellij.ui.components.JBList;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.intellij.util.indexing.FileBasedIndexImpl;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -221,7 +220,7 @@ public class ServiceUtil {
         Project project = phpClass.getProject();
 
         SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
-        FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
+        FileBasedIndex.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
         ContainerCollectionResolver.ServiceCollector collector = null;
 
         Set<String> matchedTags = new HashSet<>();
@@ -229,7 +228,7 @@ public class ServiceUtil {
         for (String serviceName : result) {
 
             // get service where we found our tags
-            List<Set<String>> values = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            List<Set<String>> values = FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
             if(values.size() == 0) {
                 continue;
             }
@@ -290,13 +289,13 @@ public class ServiceUtil {
 
         // @TODO: cache
         SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
-        FileBasedIndexImpl.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
+        FileBasedIndex.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
 
         Set<String> service = new HashSet<>();
 
         for(String serviceName: projectUniqueKeysStrong.getResult()) {
 
-            List<Set<String>> serviceDefinitions = FileBasedIndexImpl.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+            List<Set<String>> serviceDefinitions = FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
             for(Set<String> strings: serviceDefinitions) {
                 if(strings.contains(tagName)) {
                     service.add(serviceName);
