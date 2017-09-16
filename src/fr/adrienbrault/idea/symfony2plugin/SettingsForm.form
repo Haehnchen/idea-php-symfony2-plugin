@@ -55,42 +55,6 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="21819" class="javax.swing.JCheckBox" binding="objectRepositoryTypeProvider">
-            <constraints>
-              <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Repository Entity"/>
-            </properties>
-          </component>
-          <component id="59e9b" class="javax.swing.JCheckBox" binding="objectRepositoryResultTypeProvider">
-            <constraints>
-              <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="ObjectRepository (find*)"/>
-            </properties>
-          </component>
-          <component id="d0415" class="javax.swing.JLabel" binding="typesLabel">
-            <constraints>
-              <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="PhpTypes Resolver"/>
-            </properties>
-          </component>
-          <component id="7d2c2" class="javax.swing.JCheckBox" binding="symfonyContainerTypeProvider">
-            <constraints>
-              <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Container Service"/>
-            </properties>
-          </component>
           <component id="ae90c" class="javax.swing.JCheckBox" binding="twigAnnotateRoute">
             <constraints>
               <grid row="26" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -152,15 +116,6 @@
             </constraints>
             <properties>
               <text value="Template"/>
-            </properties>
-          </component>
-          <component id="224de" class="javax.swing.JCheckBox" binding="objectManagerFindTypeProvider">
-            <constraints>
-              <grid row="18" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="ObjectManager::find"/>
             </properties>
           </component>
           <component id="58414" class="javax.swing.JLabel" binding="directoryToAppLabel">

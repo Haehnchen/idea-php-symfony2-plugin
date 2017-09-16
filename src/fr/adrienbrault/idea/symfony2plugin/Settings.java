@@ -51,11 +51,6 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public boolean pluginEnabled = false;
 
-    public boolean symfonyContainerTypeProvider = true;
-    public boolean objectRepositoryTypeProvider = true;
-    public boolean objectRepositoryResultTypeProvider = true;
-    public boolean objectManagerFindTypeProvider = true;
-
     public boolean objectSignatureTypeProvider = false;
 
     public boolean twigAnnotateTemplate = true;
