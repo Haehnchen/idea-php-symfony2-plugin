@@ -1848,7 +1848,7 @@ public class TwigHelper {
      * Only a parameter is valid "('foobar',"
      */
     @NotNull
-    private static PsiElementPattern.Capture<PsiElement> getFirstFunctionParameterAsStringPattern() {
+    private static PsiElementPattern getFirstFunctionParameterAsStringPattern() {
         // string wrapped elements
         ElementPattern[] elementPatterns = {
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
@@ -1866,7 +1866,7 @@ public class TwigHelper {
      * Only a parameter is valid ", 'foobar' [,)]"
      */
     @NotNull
-    public static PsiElementPattern.Capture<PsiElement> getParameterAsStringPattern() {
+    public static PsiElementPattern getParameterAsStringPattern() {
         // string wrapped elements
         ElementPattern[] elementPatterns = {
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
