@@ -439,12 +439,6 @@ public class PhpElementsUtil {
 
     @Nullable
     static public PhpClass getClassInterface(Project project, @NotNull String className) {
-
-        // api workaround for at least interfaces
-        if(!className.startsWith("\\")) {
-            className = "\\" + className;
-        }
-
         Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAnyByFQN(className);
         return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
     }
@@ -474,12 +468,6 @@ public class PhpElementsUtil {
     }
 
     static public Collection<PhpClass> getClassesInterface(Project project, @NotNull String className) {
-
-        // api workaround for at least interfaces
-        if(!className.startsWith("\\")) {
-            className = "\\" + className;
-        }
-
         return PhpIndex.getInstance(project).getAnyByFQN(className);
     }
 

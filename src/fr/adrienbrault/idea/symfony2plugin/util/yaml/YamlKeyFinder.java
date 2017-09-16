@@ -11,18 +11,12 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
  */
 @Deprecated
 public class YamlKeyFinder {
-
-    private PsiElement startRoot;
-
-    public YamlKeyFinder(PsiElement startRoot) {
-        this.startRoot = startRoot;
+    @Nullable
+    public static YAMLKeyValue findKeyValueElement(PsiElement psiElementRoot, String keyName) {
+        return YamlKeyFinder.find(psiElementRoot, keyName);
     }
 
-    public YAMLKeyValue find(String keyName) {
-        return find(this.startRoot, keyName);
-    }
-
-    public static YAMLKeyValue find(PsiElement psiElement, String keyName) {
+    private static YAMLKeyValue find(PsiElement psiElement, String keyName) {
 
         YAMLKeyValue currentYAMLKeyValues[] = PsiTreeUtil.getChildrenOfType(psiElement, YAMLKeyValue.class);
 
@@ -48,9 +42,7 @@ public class YamlKeyFinder {
         return null;
     }
 
-
-    public static YAMLKeyValue findKey(YAMLKeyValue currentYAMLKeyValue, String keyName) {
-
+    private static YAMLKeyValue findKey(YAMLKeyValue currentYAMLKeyValue, String keyName) {
         // not a key-value with more child
         YAMLCompoundValue yamlCompoundValues[] = PsiTreeUtil.getChildrenOfType(currentYAMLKeyValue, YAMLCompoundValue.class);
         if(yamlCompoundValues == null) {
@@ -66,11 +58,5 @@ public class YamlKeyFinder {
         }
 
         return null;
-
-    }
-
-    @Nullable
-    public static YAMLKeyValue findKeyValueElement(PsiElement psiElementRoot, String keyName) {
-        return YamlKeyFinder.find(psiElementRoot, keyName);
     }
 }
