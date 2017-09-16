@@ -91,11 +91,9 @@ public class FileIndexCaches {
         CachedValue<Set<String>> cache = project.getUserData(dataHolderKey);
 
         if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() -> {
-                SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeys = new SymfonyProcessors.CollectProjectUniqueKeys(project, ID);
-                FileBasedIndex.getInstance().processAllKeys(ID, projectUniqueKeys, project);
-                return CachedValueProvider.Result.create(projectUniqueKeys.getResult(), PsiModificationTracker.MODIFICATION_COUNT);
-            }, false);
+            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                CachedValueProvider.Result.create(SymfonyProcessors.createResult(project, ID), PsiModificationTracker.MODIFICATION_COUNT), false
+            );
 
             project.putUserData(dataHolderKey, cache);
         }

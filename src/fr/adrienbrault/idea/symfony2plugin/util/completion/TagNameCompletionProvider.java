@@ -48,10 +48,7 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
             lookupElements.add(new ContainerTagLookupElement(tag));
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
-        FileBasedIndex.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
-
-        for(String serviceName: projectUniqueKeysStrong.getResult()) {
+        for(String serviceName: SymfonyProcessors.createResult(project, ServicesTagStubIndex.KEY)) {
             List<Set<String>> tags = FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
             for(Set<String> tagDef: tags) {
                 for(String tag: tagDef) {

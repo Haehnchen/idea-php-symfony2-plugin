@@ -289,11 +289,8 @@ public class TranslationUtil {
             lookupElements.add(new TranslatorLookupElement(domainKey, domainKey));
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, TranslationStubIndex.KEY, domainList);
-        FileBasedIndex.getInstance().processAllKeys(TranslationStubIndex.KEY, projectUniqueKeysStrong, project);
-
         // attach index domains as weak one
-        for(String domainKey: projectUniqueKeysStrong.getResult()) {
+        for(String domainKey: SymfonyProcessors.createResult(project, TranslationStubIndex.KEY, domainList)) {
             if(!domainList.contains(domainKey)) {
                 lookupElements.add(new TranslatorLookupElement(domainKey, domainKey, true));
             }

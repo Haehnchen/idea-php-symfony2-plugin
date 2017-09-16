@@ -923,12 +923,11 @@ public class RouteHelper {
             uniqueSet.add(route.getName());
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueSet);
-        FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
-        for(String routeName: ymlProjectProcessor.getResult()) {
+        for(String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY, uniqueSet)) {
             if(uniqueSet.contains(routeName)) {
                 continue;
             }
+
             for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 lookupElements.add(new RouteLookupElement(new Route(route), true));
                 uniqueSet.add(routeName);
@@ -976,10 +975,7 @@ public class RouteHelper {
 
         Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, RoutesStubIndex.KEY, uniqueKeySet);
-        FileBasedIndex.getInstance().processAllKeys(RoutesStubIndex.KEY, ymlProjectProcessor, project);
-        for(String routeName: ymlProjectProcessor.getResult()) {
-
+        for(String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY, uniqueKeySet)) {
             if(uniqueKeySet.contains(routeName)) {
                 continue;
             }

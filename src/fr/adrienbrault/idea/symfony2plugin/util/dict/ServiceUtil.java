@@ -216,15 +216,12 @@ public class ServiceUtil {
      */
     @NotNull
     public static Set<String> getPhpClassTags(@NotNull PhpClass phpClass) {
-
         Project project = phpClass.getProject();
 
-        SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
-        FileBasedIndex.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
         ContainerCollectionResolver.ServiceCollector collector = null;
 
         Set<String> matchedTags = new HashSet<>();
-        Set<String> result = projectUniqueKeysStrong.getResult();
+        Set<String> result = SymfonyProcessors.createResult(project, ServicesTagStubIndex.KEY);
         for (String serviceName : result) {
 
             // get service where we found our tags
@@ -286,22 +283,15 @@ public class ServiceUtil {
     }
 
     public static Set<String> getTaggedServices(Project project, String tagName) {
-
-        // @TODO: cache
-        SymfonyProcessors.CollectProjectUniqueKeys projectUniqueKeysStrong = new SymfonyProcessors.CollectProjectUniqueKeys(project, ServicesTagStubIndex.KEY);
-        FileBasedIndex.getInstance().processAllKeys(ServicesTagStubIndex.KEY, projectUniqueKeysStrong, project);
-
         Set<String> service = new HashSet<>();
 
-        for(String serviceName: projectUniqueKeysStrong.getResult()) {
-
+        for(String serviceName: SymfonyProcessors.createResult(project, ServicesTagStubIndex.KEY)) {
             List<Set<String>> serviceDefinitions = FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
             for(Set<String> strings: serviceDefinitions) {
                 if(strings.contains(tagName)) {
                     service.add(serviceName);
                 }
             }
-
         }
 
         return service;

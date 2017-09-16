@@ -1880,10 +1880,9 @@ public class TwigHelper {
             .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA));
     }
 
+    @NotNull
     public static Set<String> getTwigMacroSet(Project project) {
-        SymfonyProcessors.CollectProjectUniqueKeys ymlProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeys(project, TwigMacroFunctionStubIndex.KEY);
-        FileBasedIndex.getInstance().processAllKeys(TwigMacroFunctionStubIndex.KEY, ymlProjectProcessor, project);
-        return ymlProjectProcessor.getResult();
+        return SymfonyProcessors.createResult(project, TwigMacroFunctionStubIndex.KEY);
     }
 
     public static Collection<PsiElement> getTwigMacroTargets(final Project project, final String name) {
