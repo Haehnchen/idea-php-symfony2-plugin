@@ -233,17 +233,6 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayValues
-     */
-    public void testGetYamlArrayValues() {
-        YAMLArrayImpl fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArrayImpl.class, "['@twig', @twig, @twig]");
-        assertEquals(3, YamlHelper.getYamlArrayValues(fromText).size());
-
-        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLArrayImpl.class, "[@service, \"@service2\"]");
-        assertEquals(2, YamlHelper.getYamlArrayValues(fromText).size());
-    }
-
-    /**
      * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
      */
     public void testGetYamlArrayOnSequenceOrArrayElementsForArray() {

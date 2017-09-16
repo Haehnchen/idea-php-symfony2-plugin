@@ -36,12 +36,6 @@ import java.util.*;
  */
 public class PhpElementsUtil {
     static public List<ResolveResult> getClassInterfaceResolveResult(Project project, String fqnClassOrInterfaceName) {
-
-        // api workaround for at least interfaces
-        if(!fqnClassOrInterfaceName.startsWith("\\")) {
-            fqnClassOrInterfaceName = "\\" + fqnClassOrInterfaceName;
-        }
-
         List<ResolveResult> results = new ArrayList<>();
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(fqnClassOrInterfaceName)) {
             results.add(new PsiElementResolveResult(phpClass));
@@ -439,12 +433,6 @@ public class PhpElementsUtil {
 
     @Nullable
     static public PhpClass getInterface(PhpIndex phpIndex, String className) {
-
-        // api workaround
-        if(!className.startsWith("\\")) {
-            className = "\\" + className;
-        }
-
         Collection<PhpClass> classes = phpIndex.getInterfacesByFQN(className);
         return classes.isEmpty() ? null : classes.iterator().next();
     }

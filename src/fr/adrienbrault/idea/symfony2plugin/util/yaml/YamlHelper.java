@@ -76,17 +76,6 @@ public class YamlHelper {
     }
 
     /**
-     *  Try to find psi value which match should be a array value and filter out comma, whitespace...
-     *  [@service, "@service2", [""], ['']];
-     *
-     *  TODO: drop this hack; included in core now
-     */
-    @NotNull
-    static public List<YAMLSequenceItem> getYamlArrayValues(@NotNull YAMLSequence yamlArray) {
-        return yamlArray.getItems();
-    }
-
-    /**
      *  FOO:
      *    - foobar
      *
@@ -1063,7 +1052,7 @@ public class YamlHelper {
                             PsiElement callYamlSeq = seqItem.getContext();
                             if(callYamlSeq instanceof YAMLSequence) {
                                 // only given method and args are valid "setFoo, [@args_bar]"
-                                List<YAMLSequenceItem> methodParameter = YamlHelper.getYamlArrayValues(yamlCallArray);
+                                List<YAMLSequenceItem> methodParameter = yamlCallArray.getItems();
                                 if(methodParameter.size() > 1) {
                                     YAMLValue methodNameElement = methodParameter.get(0).getValue();
                                     if(methodNameElement instanceof YAMLScalar) {
