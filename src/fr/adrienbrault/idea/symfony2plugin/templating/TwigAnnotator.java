@@ -3,12 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
-import fr.adrienbrault.idea.symfony2plugin.routing.PhpRoutingAnnotator;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -46,7 +45,9 @@ public class TwigAnnotator implements Annotator {
             return;
         }
 
-        PhpRoutingAnnotator.annotateRouteName(element, holder, text);
+        if(RouteHelper.getRoute(element.getProject(), text) == null) {
+            holder.createWarningAnnotation(element, "Missing Route");
+        }
     }
 
     private void annotateTemplate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
