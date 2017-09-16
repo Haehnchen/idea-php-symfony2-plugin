@@ -320,6 +320,42 @@ public class AnnotationBackportUtil {
         return null;
     }
 
+    @Nullable
+    public static String getClassNameReference(PhpDocTag phpDocTag, Map<String, String> useImports) {
+
+        if(useImports.size() == 0) {
+            return null;
+        }
+
+        String annotationName = phpDocTag.getName();
+        if(StringUtils.isBlank(annotationName)) {
+            return null;
+        }
+
+        if(annotationName.startsWith("@")) {
+            annotationName = annotationName.substring(1);
+        }
+
+        String className = annotationName;
+        String subNamespaceName = "";
+        if(className.contains("\\")) {
+            className = className.substring(0, className.indexOf("\\"));
+            subNamespaceName = annotationName.substring(className.length());
+        }
+
+        if(!useImports.containsKey(className)) {
+            return null;
+        }
+
+        // normalize name
+        String annotationFqnName = useImports.get(className) + subNamespaceName;
+        if(!annotationFqnName.startsWith("\\")) {
+            annotationFqnName = "\\" + annotationFqnName;
+        }
+
+        return annotationFqnName;
+    }
+
     /**
      * matches "@Callback(propertyName="<value>")"
      */

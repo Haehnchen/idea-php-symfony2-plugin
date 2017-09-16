@@ -117,7 +117,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                             return;
                         }
 
-                        String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, fileImports);
+                        String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
                         if(!"Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template".equals(StringUtils.stripStart(annotationFqnName, "\\"))) {
                             return;
                         }

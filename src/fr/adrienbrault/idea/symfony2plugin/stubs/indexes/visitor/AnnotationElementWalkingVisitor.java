@@ -46,7 +46,7 @@ public class AnnotationElementWalkingVisitor extends PsiRecursiveElementWalkingV
             return;
         }
 
-        String annotationFqnName = AnnotationRoutesStubIndex.getClassNameReference(phpDocTag, fileImports);
+        String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
         for (String annotation : annotations) {
             if(annotation.equals(annotationFqnName)) {
                 this.phpDocTagProcessor.process(phpDocTag);
