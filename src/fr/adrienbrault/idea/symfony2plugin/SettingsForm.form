@@ -32,16 +32,6 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
-        <rowspec value="top:4dlu:noGrow"/>
-        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -55,69 +45,6 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="ae90c" class="javax.swing.JCheckBox" binding="twigAnnotateRoute">
-            <constraints>
-              <grid row="26" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Route"/>
-            </properties>
-          </component>
-          <component id="1d0f2" class="javax.swing.JCheckBox" binding="twigAnnotateTemplate">
-            <constraints>
-              <grid row="28" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Template"/>
-            </properties>
-          </component>
-          <component id="19ad4" class="javax.swing.JCheckBox" binding="twigAnnotateAsset">
-            <constraints>
-              <grid row="30" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Asset"/>
-            </properties>
-          </component>
-          <component id="de54b" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="24" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Twig Annotator"/>
-            </properties>
-          </component>
-          <component id="59700" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="24" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Php Annotator"/>
-            </properties>
-          </component>
-          <component id="d0cf7" class="javax.swing.JCheckBox" binding="phpAnnotateRoute">
-            <constraints>
-              <grid row="26" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Route"/>
-            </properties>
-          </component>
-          <component id="5a5a0" class="javax.swing.JCheckBox" binding="phpAnnotateTemplate">
-            <constraints>
-              <grid row="28" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Template"/>
-            </properties>
-          </component>
           <component id="58414" class="javax.swing.JLabel" binding="directoryToAppLabel">
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -253,15 +180,6 @@
               <text value="Template (Twig)"/>
             </properties>
           </component>
-          <component id="e812e" class="javax.swing.JCheckBox" binding="twigAnnotateAssetTags">
-            <constraints>
-              <grid row="32" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Asset Tags"/>
-            </properties>
-          </component>
           <component id="c828d" class="javax.swing.JCheckBox" binding="codeFoldingTwigConstant">
             <constraints>
               <grid row="22" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -287,15 +205,6 @@
             </constraints>
             <properties>
               <text value="Download remote files (exp.)"/>
-            </properties>
-          </component>
-          <component id="a28d6" class="javax.swing.JCheckBox" binding="phpAnnotateTemplateAnnotation">
-            <constraints>
-              <grid row="30" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-              <forms/>
-            </constraints>
-            <properties>
-              <text value="Template Annotation"/>
             </properties>
           </component>
         </children>

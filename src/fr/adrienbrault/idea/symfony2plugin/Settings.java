@@ -53,15 +53,6 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public boolean objectSignatureTypeProvider = false;
 
-    public boolean twigAnnotateTemplate = true;
-    public boolean twigAnnotateAsset = true;
-    public boolean twigAnnotateAssetTags = true;
-    public boolean twigAnnotateRoute = true;
-
-    public boolean phpAnnotateTemplate = true;
-    public boolean phpAnnotateRoute = true;
-    public boolean phpAnnotateTemplateAnnotation = true;
-
     public boolean codeFoldingPhpRoute = true;
     public boolean codeFoldingPhpModel = true;
     public boolean codeFoldingPhpTemplate = true;

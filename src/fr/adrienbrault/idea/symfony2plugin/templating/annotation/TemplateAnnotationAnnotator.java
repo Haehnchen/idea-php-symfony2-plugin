@@ -8,7 +8,6 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import de.espend.idea.php.annotation.extension.PhpAnnotationDocTagAnnotator;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
@@ -30,7 +29,6 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
     public void annotate(PhpAnnotationDocTagAnnotatorParameter parameter) {
 
         if(!Symfony2ProjectComponent.isEnabled(parameter.getProject()) ||
-           !Settings.getInstance(parameter.getProject()).phpAnnotateTemplateAnnotation ||
            !PhpElementsUtil.isEqualClassName(parameter.getAnnotationClass(), TwigHelper.TEMPLATE_ANNOTATION_CLASS))
         {
             return;

@@ -25,26 +25,14 @@ public class TwigAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-
         if(!Symfony2ProjectComponent.isEnabled(element.getProject())) {
             return;
         }
 
-        if(Settings.getInstance(element.getProject()).twigAnnotateRoute) {
-            this.annotateRoute(element, holder);
-        }
-
-        if(Settings.getInstance(element.getProject()).twigAnnotateAsset) {
-            this.annotateAsset(element, holder);
-        }
-
-        if(Settings.getInstance(element.getProject()).twigAnnotateAssetTags) {
-            this.annotateAssetsTag(element, holder);
-        }
-
-        if(Settings.getInstance(element.getProject()).twigAnnotateTemplate) {
-            this.annotateTemplate(element, holder);
-        }
+        this.annotateRoute(element, holder);
+        this.annotateAsset(element, holder);
+        this.annotateAssetsTag(element, holder);
+        this.annotateTemplate(element, holder);
     }
 
     private void annotateRoute(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {

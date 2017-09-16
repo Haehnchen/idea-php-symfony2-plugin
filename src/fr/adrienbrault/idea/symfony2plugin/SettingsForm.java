@@ -32,18 +32,6 @@ public class SettingsForm implements Configurable {
 
     private JPanel panel1;
 
-    private JCheckBox symfonyContainerTypeProvider;
-    private JCheckBox objectRepositoryTypeProvider;
-    private JCheckBox objectRepositoryResultTypeProvider;
-    private JCheckBox objectManagerFindTypeProvider;
-
-    private JCheckBox twigAnnotateRoute;
-    private JCheckBox twigAnnotateTemplate;
-    private JCheckBox twigAnnotateAsset;
-    private JCheckBox twigAnnotateAssetTags;
-    private JCheckBox phpAnnotateTemplate;
-    private JCheckBox phpAnnotateRoute;
-    private JCheckBox phpAnnotateTemplateAnnotation;
     private JCheckBox pluginEnabled;
 
     private JButton directoryToWebReset;
@@ -120,15 +108,6 @@ public class SettingsForm implements Configurable {
             || !pathToTranslationRootTextField.getText().equals(getSettings().pathToTranslation)
             || !enableSchedulerCheckBox.isSelected() == getSettings().remoteDevFileScheduler
 
-            || !twigAnnotateRoute.isSelected() == getSettings().twigAnnotateRoute
-            || !twigAnnotateTemplate.isSelected() == getSettings().twigAnnotateTemplate
-            || !twigAnnotateAsset.isSelected() == getSettings().twigAnnotateAsset
-            || !twigAnnotateAssetTags.isSelected() == getSettings().twigAnnotateAssetTags
-
-            || !phpAnnotateTemplate.isSelected() == getSettings().phpAnnotateTemplate
-            || !phpAnnotateRoute.isSelected() == getSettings().phpAnnotateRoute
-            || !phpAnnotateTemplateAnnotation.isSelected() == getSettings().phpAnnotateTemplateAnnotation
-
             || !codeFoldingPhpRoute.isSelected() == getSettings().codeFoldingPhpRoute
             || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
             || !codeFoldingPhpTemplate.isSelected() == getSettings().codeFoldingPhpTemplate
@@ -148,15 +127,6 @@ public class SettingsForm implements Configurable {
 
         getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
         getSettings().remoteDevFileScheduler = enableSchedulerCheckBox.isSelected();
-
-        getSettings().twigAnnotateRoute = twigAnnotateRoute.isSelected();
-        getSettings().twigAnnotateTemplate = twigAnnotateTemplate.isSelected();
-        getSettings().twigAnnotateAsset = twigAnnotateAsset.isSelected();
-        getSettings().twigAnnotateAssetTags = twigAnnotateAssetTags.isSelected();
-
-        getSettings().phpAnnotateTemplate = phpAnnotateTemplate.isSelected();
-        getSettings().phpAnnotateRoute = phpAnnotateRoute.isSelected();
-        getSettings().phpAnnotateTemplateAnnotation = phpAnnotateTemplateAnnotation.isSelected();
 
         getSettings().codeFoldingPhpRoute = codeFoldingPhpRoute.isSelected();
         getSettings().codeFoldingPhpModel = codeFoldingPhpModel.isSelected();
@@ -188,15 +158,6 @@ public class SettingsForm implements Configurable {
 
         pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
         enableSchedulerCheckBox.setSelected(getSettings().remoteDevFileScheduler);
-
-        twigAnnotateRoute.setSelected(getSettings().twigAnnotateRoute);
-        twigAnnotateTemplate.setSelected(getSettings().twigAnnotateTemplate);
-        twigAnnotateAsset.setSelected(getSettings().twigAnnotateAsset);
-        twigAnnotateAssetTags.setSelected(getSettings().twigAnnotateAssetTags);
-
-        phpAnnotateTemplate.setSelected(getSettings().phpAnnotateTemplate);
-        phpAnnotateRoute.setSelected(getSettings().phpAnnotateRoute);
-        phpAnnotateTemplateAnnotation.setSelected(getSettings().phpAnnotateTemplateAnnotation);
 
         codeFoldingPhpRoute.setSelected(getSettings().codeFoldingPhpRoute);
         codeFoldingPhpModel.setSelected(getSettings().codeFoldingPhpModel);

@@ -12,7 +12,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
@@ -34,7 +33,7 @@ public class PhpRouteInspection extends LocalInspectionTool {
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
 
         PsiFile psiFile = holder.getFile();
-        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject()) || !Settings.getInstance(psiFile.getProject()).phpAnnotateRoute) {
+        if(!Symfony2ProjectComponent.isEnabled(psiFile.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
