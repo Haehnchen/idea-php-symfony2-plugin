@@ -362,7 +362,6 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
 
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
-        <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
 
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
@@ -582,6 +581,14 @@
                          level="WARNING"
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlClassInspection"/>
+
+
+        <localInspection groupPath="Symfony" shortName="YamlXmlServiceInstanceInspection" displayName="Yaml: Wrong Service Instance"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection"/>
 
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>

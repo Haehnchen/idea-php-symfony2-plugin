@@ -1150,6 +1150,14 @@ public class YamlHelper {
         return 4;
     }
 
+    public static boolean isStringValue(@NotNull PsiElement psiElement) {
+        // @TODO use new YAMLScalar element
+        return PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
+            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)
+            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_STRING).accepts(psiElement)
+            ;
+    }
+
     private static class PsiElementPatternCondition extends PatternCondition<PsiElement> {
         PsiElementPatternCondition() {
             super("Indent Check");

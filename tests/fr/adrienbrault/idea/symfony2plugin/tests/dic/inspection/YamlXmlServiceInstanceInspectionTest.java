@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
+package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -6,21 +6,20 @@ import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator
+ * @see fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection
  */
-public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
-
+public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlAnnotator.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlAnnotator.xml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlXmlServiceInstanceInspection.php"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlXmlServiceInstanceInspection.xml"));
     }
 
     public String getTestDataPath() {
         return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
 
-    public void testAnnotatorConstructorArguments() {
+    public void testInspectionForConstructorArguments() {
         String[] strings = {
             "@ar<caret>gs_bar",
             "\"@ar<caret>gs_bar\"",
@@ -28,7 +27,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         };
 
         for (String s : strings) {
-            assertAnnotationContains("services.yml",
+            assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -36,7 +35,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "Expect instance of: Args\\Foo"
             );
 
-            assertAnnotationContains("services.yml",
+            assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -46,15 +45,15 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         }
     }
 
-    public void testAnnotatorConstructorArgumentsForServiceIdShortcut() {
-        assertAnnotationContains("services.yml",
+    public void testInspectionForConstructorArgumentsForServiceIdShortcut() {
+        assertLocalInspectionContains("services.yml",
             "services:\n" +
                 "  Args\\Foo:\n" +
                 "    arguments: [ @foo, %foo%, '@ar<caret>gs_bar']",
             "Expect instance of: Args\\Foo"
         );
 
-        assertAnnotationContains("services.yml",
+        assertLocalInspectionContains("services.yml",
             "services:\n" +
                 "  foo:\n" +
                 "    class: \\Args\\Foo\n" +
@@ -64,8 +63,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
     }
 
-    public void testAnnotatorConstructorArgumentsAsSequence() {
-
+    public void testInspectionForConstructorArgumentsAsSequence() {
         String[] strings = {
             "@ar<caret>gs_bar",
             "\"@ar<caret>gs_bar\"",
@@ -73,7 +71,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         };
 
         for (String s : strings) {
-            assertAnnotationContains("services.yml",
+            assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -82,7 +80,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "Expect instance of: Args\\Foo"
             );
 
-            assertAnnotationContains("services.yml",
+            assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -95,7 +93,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         }
     }
 
-    public void testAnnotatorCallsArguments() {
+    public void testInspectionForCallsArguments() {
         String[] strings = {
             "@ar<caret>gs_bar",
             "\"@ar<caret>gs_bar\"",
@@ -103,7 +101,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
         };
 
         for (String s : strings) {
-            assertAnnotationContains("services.yml",
+            assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -112,7 +110,7 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "Expect instance of: Args\\Foo"
             );
 
-            assertAnnotationContains("services.yml",
+            assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +

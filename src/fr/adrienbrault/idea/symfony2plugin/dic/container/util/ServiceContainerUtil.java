@@ -13,7 +13,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
@@ -22,7 +21,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceFileDefaults;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -268,7 +266,7 @@ public class ServiceContainerUtil {
      */
     @Nullable
     public static ServiceTypeHint getYamlConstructorTypeHint(@NotNull PsiElement psiElement, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
-        if (!YamlAnnotator.isStringValue(psiElement)) {
+        if (!YamlHelper.isStringValue(psiElement)) {
             return null;
         }
 
