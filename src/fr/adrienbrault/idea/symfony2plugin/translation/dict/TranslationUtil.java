@@ -24,10 +24,10 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeyFinder;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -91,7 +91,7 @@ public class TranslationUtil {
             if(psiFile instanceof YAMLFile) {
                 PsiElement yamlDocu = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
                 if(yamlDocu != null) {
-                    YAMLKeyValue goToPsi = YamlKeyFinder.findKeyValueElement(yamlDocu, translationKey);
+                    YAMLKeyValue goToPsi = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, translationKey.split("\\."));
                     if(goToPsi != null) {
                         // multiline are line values are not resolve properly on psiElements use key as fallback target
                         PsiElement valuePsiElement = goToPsi.getValue();
