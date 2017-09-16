@@ -237,10 +237,15 @@ public class AnnotationBackportUtil {
     /**
      * Extract property value or fallback on default annotation pattern
      *
+     * TODO: Migrate to AnnotationUtil until plugin when all got the new API
+     *
      * "@Template("foobar.html.twig")"
      * "@Template(template="foobar.html.twig")"
+     *
+     * @see de.espend.idea.php.annotation.util.AnnotationUtil#getPropertyValueOrDefault
      */
     @Nullable
+    @Deprecated
     public static String getPropertyValueOrDefault(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
         PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
         if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
@@ -280,8 +285,13 @@ public class AnnotationBackportUtil {
      * Get the property value by given name
      *
      * "@Template(template="foobar.html.twig")"
+     *
+     * TODO: Migrate to AnnotationUtil until plugin when all got the new API
+     *
+     * @see de.espend.idea.php.annotation.util.AnnotationUtil#getPropertyValue
      */
     @Nullable
+    @Deprecated
     public static String getPropertyValue(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
         PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
         if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
