@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -20,8 +19,6 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.intellij.util.indexing.FileBasedIndexImpl;
-import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
@@ -37,12 +34,10 @@ import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -56,7 +51,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
@@ -107,13 +101,6 @@ public class RouteHelper {
         // @TODO: provide multiple ones
         Collection<VirtualFile> routeFiles = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
         for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
-            return new Route(route);
-        }
-
-        GlobalSearchScope scopeRestrictedByFileTypes = GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE);
-
-        routeFiles = FileBasedIndex.getInstance().getContainingFiles(AnnotationRoutesStubIndex.KEY, routeName, scopeRestrictedByFileTypes);
-        for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
             return new Route(route);
         }
 
@@ -598,15 +585,10 @@ public class RouteHelper {
 
         Collection<VirtualFile> virtualFiles = new ArrayList<>();
 
-        FileBasedIndexImpl.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), virtualFile -> {
+        FileBasedIndex.getInstance().getFilesWithKey(RoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), virtualFile -> {
             virtualFiles.add(virtualFile);
             return true;
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML, XmlFileType.INSTANCE));
-
-        FileBasedIndexImpl.getInstance().getFilesWithKey(AnnotationRoutesStubIndex.KEY, new HashSet<>(Arrays.asList(routeNames)), virtualFile -> {
-            virtualFiles.add(virtualFile);
-            return true;
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE));
+        }, GlobalSearchScope.allScope(project));
 
         return virtualFiles;
 
@@ -953,20 +935,6 @@ public class RouteHelper {
             }
         }
 
-        SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueSet);
-        FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
-        for(String routeName: annotationProjectProcessor.getResult()) {
-            if(uniqueSet.contains(routeName)) {
-                continue;
-            }
-
-            RouteInterface firstItem = ContainerUtil.getFirstItem(FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project)));
-            if(firstItem != null) {
-                lookupElements.add(new RouteLookupElement(new Route(firstItem), true));
-                uniqueSet.add(routeName);
-            }
-        }
-
         return lookupElements;
 
     }
@@ -1019,20 +987,6 @@ public class RouteHelper {
             for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 uniqueKeySet.add(routeName);
                 routes.put(routeName, new Route(route));
-            }
-        }
-
-        SymfonyProcessors.CollectProjectUniqueKeysStrong annotationProjectProcessor = new SymfonyProcessors.CollectProjectUniqueKeysStrong(project, AnnotationRoutesStubIndex.KEY, uniqueKeySet);
-        FileBasedIndex.getInstance().processAllKeys(AnnotationRoutesStubIndex.KEY, annotationProjectProcessor, project);
-        for(String routeName: annotationProjectProcessor.getResult()) {
-
-            if(uniqueKeySet.contains(routeName)) {
-                continue;
-            }
-
-            RouteInterface firstItem = ContainerUtil.getFirstItem(FileBasedIndexImpl.getInstance().getValues(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project)));
-            if(firstItem != null) {
-                routes.put(routeName, new Route(firstItem));
             }
         }
 

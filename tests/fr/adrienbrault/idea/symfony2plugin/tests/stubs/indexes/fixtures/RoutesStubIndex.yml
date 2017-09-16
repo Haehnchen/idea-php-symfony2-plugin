@@ -1,0 +1,18 @@
+foo_yaml_pattern:
+    pattern: /
+    methods: [GET, POST]
+    defaults: { _controller: foo_controller }
+
+foo_yaml_path:
+    path: /
+    defaults: { _controller: foo_controller }
+
+foo_yaml_controller_normalized:
+    path: /
+    defaults: { _controller: FooBundle:Foo/Foo:index }
+
+foo_yaml_path_only:
+    path: /
+
+foo_yaml_invalid:
+    path_invalid: /

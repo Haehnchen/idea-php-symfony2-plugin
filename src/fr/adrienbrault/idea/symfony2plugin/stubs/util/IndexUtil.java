@@ -12,7 +12,6 @@ public class IndexUtil {
     public static void forceReindex() {
 
         ID<?,?>[] indexIds = new ID<?,?>[] {
-            AnnotationRoutesStubIndex.KEY,
             ContainerBuilderStubIndex.KEY,
             ContainerParameterStubIndex.KEY,
             DoctrineMetadataFileStubIndex.KEY,

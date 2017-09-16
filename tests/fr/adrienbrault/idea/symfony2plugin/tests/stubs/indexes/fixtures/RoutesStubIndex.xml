@@ -1,0 +1,10 @@
+<routes>
+    <route id="foo_xml_pattern" pattern="/blog/{slug}" methods="GET|POST"/>
+    <route id="foo_xml_path" path="/blog/{slug}">
+        <default key="_controller">Foo</default>
+    </route>
+    <route id="foo_controller_normalized" path="/blog/{slug}">
+        <default key="_controller">FooBundle:Foo/Foo:index</default>
+    </route>
+    <route id="foo_xml_id_only"/>
+</routes>

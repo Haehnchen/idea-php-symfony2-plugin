@@ -1,53 +1,32 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
-import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.indexing.FileBasedIndex;
+import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
+
+import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex
  */
 public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
-
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureByText(YAMLFileType.YML, "" +
-            "foo_yaml_pattern:\n" +
-            "    pattern: /\n" +
-            "    methods: [GET, POST]\n" +
-            "    defaults: { _controller: foo_controller }" +
-            "\n" +
-            "foo_yaml_path:\n" +
-            "    path: /\n" +
-            "    defaults: { _controller: foo_controller }" +
-            "\n" +
-            "foo_yaml_controller_normalized:\n" +
-            "    path: /\n" +
-            "    defaults: { _controller: FooBundle:Foo/Foo:index }" +
-            "\n" +
-            "foo_yaml_path_only:\n" +
-            "    path: /\n" +
-            "foo_yaml_invalid:\n" +
-            "    path_invalid: /\n"
-        );
-
-        myFixture.configureByText(XmlFileType.INSTANCE, "" +
-            "<routes>\n" +
-            "  <route id=\"foo_xml_pattern\" pattern=\"/blog/{slug}\" methods=\"GET|POST\"/>\n" +
-            "  <route id=\"foo_xml_path\" path=\"/blog/{slug}\">\n" +
-            "    <default key=\"_controller\">Foo</default>\n" +
-            "  </route>\n" +
-            "  <route id=\"foo_controller_normalized\" path=\"/blog/{slug}\">\n" +
-            "    <default key=\"_controller\">FooBundle:Foo/Foo:index</default>\n" +
-            "  </route>\n" +
-            "  <route id=\"foo_xml_id_only\"/>\n" +
-            "</routes>"
-        );
+        myFixture.copyFileToProject("RoutesStubIndex.php");
+        myFixture.copyFileToProject("RoutesStubIndex.yml");
+        myFixture.copyFileToProject("RoutesStubIndex.xml");
     }
 
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
+    
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
      */
@@ -119,5 +98,58 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "controller_invoke_2",
             value -> "Foobar\\Foobar\\Foobar".equalsIgnoreCase(value.getController())
         );
+    }
+
+
+    public void testAnnotationIndexOfMethodPatternAndClassPrefix() {
+        assertIndexContains(RoutesStubIndex.KEY, "blog_home");
+        RouteInterface route = getFirstValue("blog_home");
+
+        assertEquals("blog_home", route.getName());
+        assertEquals("/foo/edit/{id}", route.getPath());
+        assertEquals("My\\PostController::editAction", route.getController());
+    }
+
+    public void testAnnotationThatEmptyRouteNameUseBundleMethodName() {
+        assertIndexContains(RoutesStubIndex.KEY, "myfoobar_car_index");
+        RouteInterface route = getFirstValue("myfoobar_car_index");
+
+        assertEquals("myfoobar_car_index", route.getName());
+        assertEquals("/foo_bar/edit/{id}", route.getPath());
+        assertEquals("MyFooBarBundle\\Controller\\CarController::indexAction", route.getController());
+    }
+
+    public void testAnnotationThatEmptyRouteNameUseBundleMethodNameAndStripsReservedWords() {
+        assertIndexContains(RoutesStubIndex.KEY, "foo_parkresort_sub_bundle_foo_nestedfoo");
+        assertIndexContains(RoutesStubIndex.KEY, "foo_parkresort_sub_car_index");
+        assertIndexContains(RoutesStubIndex.KEY, "foo_parkresort_default_index");
+        assertIndexContains(RoutesStubIndex.KEY, "foo_parkresort_actions_foo_index");
+        assertIndexContains(RoutesStubIndex.KEY, "app_default_foo");
+    }
+
+    public void testAnnotationThatMethodsAreInIndex() {
+        RouteInterface route = getFirstValue("blog_home");
+        route.getMethods().contains("get");
+
+        route = getFirstValue("blog_home_get_head");
+        route.getMethods().contains("get");
+        route.getMethods().contains("head");
+    }
+
+    public void testAnnotationThatRouteOfComponentRoutingAnnotationRouteIsIndexed() {
+        assertIndexContains(RoutesStubIndex.KEY, "framework_extra_bundle_route");
+    }
+
+    public void testAnnotationThatRouteWithInvokeMustNotAddAdditionalUnderscore() {
+        assertIndexContains(RoutesStubIndex.KEY, "my_post__invoke");
+    }
+
+    public void testAnnotationThatRouteWithPrefixIsInIndex() {
+        assertIndexContains(RoutesStubIndex.KEY, "foo_prefix_home");
+    }
+
+    @NotNull
+    private RouteInterface getFirstValue(@NotNull String key) {
+        return FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
 }

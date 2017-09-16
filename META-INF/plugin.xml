@@ -370,7 +370,6 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.AnnotationRoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex"/>

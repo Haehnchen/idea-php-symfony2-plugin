@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -10,10 +11,13 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementWalkingVisitor;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -49,7 +53,6 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
             }
 
             if(psiFile instanceof YAMLFile) {
-
                 if(!isValidForIndex(inputData, psiFile)) {
                     return map;
                 }
@@ -64,12 +67,17 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                 }
 
                 return map;
-            }
-
-            if(psiFile instanceof XmlFile) {
+            } else if(psiFile instanceof XmlFile) {
                 for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
                     map.put(indexedRoutes.getName(), indexedRoutes);
                 }
+            } else if(psiFile instanceof PhpFile) {
+                // annotations: @Route()
+                if(!isValidForIndex(inputData, psiFile)) {
+                    return map;
+                }
+
+                psiFile.accept(new AnnotationRouteElementWalkingVisitor(map));
             }
 
             return map;
@@ -92,8 +100,10 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return file ->
-            file.getFileType() == YAMLFileType.YML || file.getFileType() == XmlFileType.INSTANCE;
+        return file -> {
+            FileType fileType = file.getFileType();
+            return fileType == YAMLFileType.YML || fileType == XmlFileType.INSTANCE || fileType == PhpFileType.INSTANCE;
+        };
     }
 
     @Override
@@ -103,10 +113,10 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
-    public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
+    private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
 
         String fileName = psiFile.getName();
         if(fileName.startsWith(".") || fileName.endsWith("Test")) {
