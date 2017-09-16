@@ -10,7 +10,6 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ArrayDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
@@ -86,11 +85,6 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     public int getVersion() {
         return 4;
     }
-
-    /**
-     * @deprecated
-     */
-    public static class MySetDataExternalizer extends ArrayDataExternalizer {}
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
 

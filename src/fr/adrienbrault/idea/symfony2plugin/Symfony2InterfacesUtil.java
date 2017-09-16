@@ -253,6 +253,7 @@ public class Symfony2InterfacesUtil {
     /**
      * @deprecated isCallTo with MethodReference
      */
+    @Deprecated
     public boolean isCallTo(PsiElement e, String ClassInterfaceName, String methodName) {
 
         // we need a full fqn name

@@ -212,19 +212,6 @@ public class FormOptionsUtil {
         }
     }
 
-
-    @Deprecated
-    public static Map<String, String> getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName) {
-        final Map<String, String> items = new HashMap<>();
-
-        getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, (psiElement, option, formClass, optionEnum) -> {
-            String presentableFQN = formClass.getPhpClass().getPresentableFQN();
-            items.put(option, presentableFQN);
-        });
-
-        return items;
-    }
-
     public static void visitFormOptions(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
         visitFormOptions(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
     }

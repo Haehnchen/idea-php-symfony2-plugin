@@ -21,20 +21,8 @@ public class TemplateLookupElement extends LookupElement {
 
     private final String templateName;
 
-
     @Nullable
     private InsertHandler<LookupElement> insertHandler = null;
-
-    @Deprecated
-    public TemplateLookupElement(@NotNull String templateName, TwigFile twigFile) {
-        this(templateName, (PsiFile) twigFile);
-    }
-
-    public TemplateLookupElement(@NotNull String templateName, @NotNull PsiFile psiFile) {
-        this.templateName = templateName;
-        this.virtualFile = psiFile.getVirtualFile();
-        this.projectBaseDir = psiFile.getProject().getBaseDir();
-    }
 
     public TemplateLookupElement(@NotNull String templateName, @NotNull VirtualFile virtualFile, @NotNull VirtualFile projectBaseDir) {
         this.templateName = templateName;

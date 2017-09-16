@@ -184,16 +184,6 @@ public class PhpElementsUtil {
         return psiElements[0];
     }
 
-    /**
-     * There is no need for this proxy method.
-     * We are api safe now
-     */
-    @Deprecated
-    @Nullable
-    static public Method getClassMethod(PhpClass phpClass, String methodName) {
-        return phpClass.findMethodByName(methodName);
-    }
-
     @Nullable
     static public Method getClassMethod(@NotNull Project project, @NotNull String phpClassName, @NotNull String methodName) {
 
