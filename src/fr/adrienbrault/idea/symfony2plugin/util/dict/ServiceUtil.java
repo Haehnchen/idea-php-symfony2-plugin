@@ -510,7 +510,7 @@ public class ServiceUtil {
     }
 
     public static void insertTagWithPopupDecision(final @NotNull Editor editor, final @NotNull Set<String> phpServiceTags, final @NotNull Consumer<String> consumer) {
-        final JBList list = new JBList(phpServiceTags);
+        final JBList<String> list = new JBList<>(phpServiceTags);
 
         if(phpServiceTags.size() == 0) {
             HintManager.getInstance().showErrorHint(editor, "Ops, no tag found");

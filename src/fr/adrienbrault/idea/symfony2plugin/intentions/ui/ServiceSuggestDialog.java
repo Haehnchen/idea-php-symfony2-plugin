@@ -14,8 +14,7 @@ import java.util.Collection;
 public class ServiceSuggestDialog {
 
     public static void create(final @NotNull Editor editor, @NotNull Collection<String> services, final @NotNull Callback callback) {
-
-        final JBList list = new JBList(services);
+        final JBList<String> list = new JBList<>(services);
 
         JBPopupFactory.getInstance().createListPopupBuilder(list)
             .setTitle("Symfony: Service Suggestion")
