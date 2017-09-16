@@ -8,7 +8,9 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
@@ -125,9 +127,9 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         String serviceClass = ContainerCollectionResolver.resolveService(psiElement.getProject(), serviceId);
 
         if (serviceClass != null) {
-            PsiElement[] targetElements = PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), serviceClass);
-            if(targetElements.length > 0) {
-                return targetElements;
+            Collection<PhpClass> phpClasses = PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(serviceClass);
+            if(phpClasses.size() > 0) {
+                return phpClasses.toArray(new PsiElement[phpClasses.size()]);
             }
         }
 

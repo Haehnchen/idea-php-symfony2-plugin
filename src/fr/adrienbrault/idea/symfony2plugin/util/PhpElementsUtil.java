@@ -35,15 +35,6 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpElementsUtil {
-    static public List<ResolveResult> getClassInterfaceResolveResult(Project project, String fqnClassOrInterfaceName) {
-        List<ResolveResult> results = new ArrayList<>();
-        for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(fqnClassOrInterfaceName)) {
-            results.add(new PsiElementResolveResult(phpClass));
-        }
-
-        return results;
-    }
-
     /**
      * Gets all array keys as string of an ArrayCreationExpression
      *
@@ -90,14 +81,9 @@ public class PhpElementsUtil {
      */
     @NotNull
     static public Map<String, PsiElement> getArrayValuesAsMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
-
-        List<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, psiElement ->
+        Collection<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, psiElement ->
             psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
         );
-
-        if(arrayValues == null) {
-            return Collections.emptyMap();
-        }
 
         Map<String, PsiElement> keys = new HashMap<>();
         for (PsiElement child : arrayValues) {
@@ -165,7 +151,7 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public String getArrayValueString(ArrayCreationExpression arrayCreationExpression, String name) {
+    static public String getArrayValueString(@NotNull ArrayCreationExpression arrayCreationExpression, @NotNull String name) {
         PhpPsiElement phpPsiElement = getArrayValue(arrayCreationExpression, name);
         if(phpPsiElement == null) {
             return null;
@@ -178,7 +164,7 @@ public class PhpElementsUtil {
         return null;
     }
 
-    static public PsiElement[] getPsiElementsBySignature(Project project, @Nullable String signature) {
+    static public PsiElement[] getPsiElementsBySignature(@NotNull Project project, @Nullable String signature) {
 
         if(signature == null) {
             return new PsiElement[0];
@@ -196,18 +182,6 @@ public class PhpElementsUtil {
         }
 
         return psiElements[0];
-    }
-
-    @Deprecated
-    static public PsiElement[] getClassInterfacePsiElements(Project project, String FQNClassOrInterfaceName) {
-
-        // convert ResolveResult to PsiElement
-        List<PsiElement> results = new ArrayList<>();
-        for(ResolveResult result: getClassInterfaceResolveResult(project, FQNClassOrInterfaceName)) {
-            results.add(result.getElement());
-        }
-
-        return results.toArray(new PsiElement[results.size()]);
     }
 
     /**

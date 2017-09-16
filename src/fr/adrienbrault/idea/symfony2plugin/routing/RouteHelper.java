@@ -460,31 +460,41 @@ public class RouteHelper {
         }
     }
 
-    private static Route convertRouteConfig(String routeName, ArrayCreationExpression hashValue) {
+    @NotNull
+    private static Route convertRouteConfig(@NotNull String routeName, @NotNull ArrayCreationExpression hashValue) {
         List<ArrayHashElement> hashElementCollection = makeCollection(hashValue.getHashElements());
 
-        HashSet<String> variables = new HashSet<>();
+        Set<String> variables = new HashSet<>();
         if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression) {
-            variables.addAll(PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(0).getValue()).values());
+            ArrayCreationExpression value = (ArrayCreationExpression) hashElementCollection.get(0).getValue();
+            if(value != null) {
+                variables.addAll(PhpElementsUtil.getArrayKeyValueMap(value).values());
+            }
         }
 
-        HashMap<String, String> defaults = new HashMap<>();
+        Map<String, String> defaults = new HashMap<>();
         if(hashElementCollection.size() >= 2 && hashElementCollection.get(1).getValue() instanceof ArrayCreationExpression) {
-            defaults = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(1).getValue());
+            ArrayCreationExpression value = (ArrayCreationExpression) hashElementCollection.get(1).getValue();
+            if(value != null) {
+                defaults = PhpElementsUtil.getArrayKeyValueMap(value);
+            }
         }
 
-        HashMap<String, String>requirements = new HashMap<>();
+        Map<String, String>requirements = new HashMap<>();
         if(hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression) {
-            requirements = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) hashElementCollection.get(2).getValue());
+            ArrayCreationExpression value = (ArrayCreationExpression) hashElementCollection.get(2).getValue();
+            if(value != null) {
+                requirements = PhpElementsUtil.getArrayKeyValueMap(value);
+            }
         }
 
-        ArrayList<Collection<String>> tokens = new ArrayList<>();
+        List<Collection<String>> tokens = new ArrayList<>();
         if(hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression) {
             ArrayCreationExpression tokenArray = (ArrayCreationExpression) hashElementCollection.get(3).getValue();
             if(tokenArray != null) {
                 for(ArrayHashElement tokenArrayConfig: tokenArray.getHashElements()) {
                     if(tokenArrayConfig.getValue() instanceof ArrayCreationExpression) {
-                        HashMap<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
+                        Map<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
                         tokens.add(arrayKeyValueMap.values());
                     }
                 }

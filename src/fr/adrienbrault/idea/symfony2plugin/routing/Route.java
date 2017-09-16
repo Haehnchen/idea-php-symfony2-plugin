@@ -24,12 +24,12 @@ public class Route implements RouteInterface {
     private String path;
     private Set<String> pathCache;
 
-    private HashSet<String> variables = new HashSet<>();
+    private Set<String> variables = new HashSet<>();
     private Map<String, String> defaults = new HashMap<>();
     private Map<String, String> requirements = new HashMap<>();
     private List<Collection<String>> tokens = new ArrayList<>();
 
-    public Route(@NotNull String name, @NotNull HashSet<String> variables, @NotNull Map<String, String> defaults, @NotNull Map<String, String> requirements, @NotNull List<Collection<String>> tokens) {
+    public Route(@NotNull String name, @NotNull Set<String> variables, @NotNull Map<String, String> defaults, @NotNull Map<String, String> requirements, @NotNull List<Collection<String>> tokens) {
         this.name = name;
 
         this.variables = variables;

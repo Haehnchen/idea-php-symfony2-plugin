@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -45,7 +46,7 @@ public class YamlClassInspection extends LocalInspectionTool {
 
         if(YamlHelper.isValidParameterName(className)) {
             String resolvedParameter = ContainerCollectionResolver.resolveParameter(psiElement.getProject(), className);
-            if(resolvedParameter != null && PhpElementsUtil.getClassInterfacePsiElements(psiElement.getProject(), resolvedParameter) != null) {
+            if(resolvedParameter != null && PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(resolvedParameter).size() > 0) {
                 return ;
             }
         }

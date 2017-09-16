@@ -2,11 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -39,8 +40,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
             return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
         }
 
-        resolveResults.addAll(PhpElementsUtil.getClassInterfaceResolveResult(getElement().getProject(), serviceClass));
-        return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
+        return PsiElementResolveResult.createResults(PhpIndex.getInstance(getElement().getProject()).getAnyByFQN(serviceClass));
     }
 
     @NotNull
