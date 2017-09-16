@@ -436,6 +436,13 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("CarController", ((Method) targets[0]).getContainingClass().getName());
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoute
+     */
+    public void testGetRoute() {
+        RouteHelper.getRoute(getProject(), "my_car_foo_stuff");
+    }
+
     @NotNull
     private XmlFile createXmlFile(@NotNull String content) {
         return (XmlFile) PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + XmlFileType.INSTANCE.getDefaultExtension(), XmlFileType.INSTANCE, content);

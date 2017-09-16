@@ -99,7 +99,6 @@ public class RouteHelper {
 
     @Nullable
     public static Route getRoute(@NotNull Project project, @NotNull String routeName) {
-
         Map<String, Route> compiledRoutes = RouteHelper.getCompiledRoutes(project);
         if(compiledRoutes.containsKey(routeName)) {
             return compiledRoutes.get(routeName);
@@ -108,6 +107,13 @@ public class RouteHelper {
         // @TODO: provide multiple ones
         Collection<VirtualFile> routeFiles = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
         for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
+            return new Route(route);
+        }
+
+        GlobalSearchScope scopeRestrictedByFileTypes = GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE);
+
+        routeFiles = FileBasedIndex.getInstance().getContainingFiles(AnnotationRoutesStubIndex.KEY, routeName, scopeRestrictedByFileTypes);
+        for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(AnnotationRoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
             return new Route(route);
         }
 
