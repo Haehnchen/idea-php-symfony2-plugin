@@ -10,7 +10,6 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
-import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -18,7 +17,6 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -183,7 +181,7 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
         if("service".equalsIgnoreCase(((XmlTag) serviceTag).getName())) {
             String aClass = ((XmlTag) serviceTag).getAttributeValue("class");
             if(aClass != null && StringUtils.isNotBlank(aClass)) {
-                return foo(argumentTag.getProject(), aClass, aVoid -> XmlServiceContainerAnnotator.getArgumentIndex(argumentTag));
+                return foo(argumentTag.getProject(), aClass, aVoid -> XmlHelper.getArgumentIndex(argumentTag));
             }
         }
 

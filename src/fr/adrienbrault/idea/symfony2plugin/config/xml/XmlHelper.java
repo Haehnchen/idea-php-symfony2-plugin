@@ -588,7 +588,7 @@ public class XmlHelper {
                                             consumer.consume(new ParameterVisitor(
                                                 className,
                                                 methodName,
-                                                XmlServiceContainerAnnotator.getArgumentIndex((XmlTag) xmlArgumentTag))
+                                                getArgumentIndex((XmlTag) xmlArgumentTag))
                                             );
                                         }
                                     }
@@ -611,5 +611,28 @@ public class XmlHelper {
      */
     public static void visitServiceCallArgumentMethodIndex(@NotNull XmlAttributeValue xmlAttribute, @NotNull Consumer<Parameter> consumer) {
         visitServiceCallArgument(xmlAttribute, new ParameterResolverConsumer(xmlAttribute.getProject(), consumer));
+    }
+
+    /**
+     * Returns current index of parent tag
+     *
+     * <foo>
+     *     <argument/>
+     *     <arg<caret>ument/>
+     * </foo>
+     */
+    public static int getArgumentIndex(@NotNull XmlTag xmlTag) {
+
+        PsiElement psiElement = xmlTag;
+        int index = 0;
+
+        while (psiElement != null) {
+            psiElement = psiElement.getPrevSibling();
+            if(psiElement instanceof XmlTag && "argument".equalsIgnoreCase(((XmlTag) psiElement).getName())) {
+                index++;
+            }
+        }
+
+        return index;
     }
 }

@@ -11,7 +11,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -57,7 +57,7 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
             return;
         }
 
-        int argumentIndex = XmlServiceContainerAnnotator.getArgumentIndex(argumentTag);
+        int argumentIndex = XmlHelper.getArgumentIndex(argumentTag);
 
         String serviceName = classAttribute.getValue();
         if(serviceName == null || StringUtils.isBlank(serviceName)) {

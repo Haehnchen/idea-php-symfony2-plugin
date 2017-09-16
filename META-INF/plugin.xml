@@ -363,7 +363,6 @@
 
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
         <annotator language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlAnnotator"/>
-        <annotator language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlServiceContainerAnnotator"/>
 
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
@@ -562,6 +561,13 @@
                          enabledByDefault="true"
                          level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.MissingServiceInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="XmlServiceInstanceInspection" displayName="XML: Wrong Service Instance"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.XmlServiceInstanceInspection"/>
 
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
