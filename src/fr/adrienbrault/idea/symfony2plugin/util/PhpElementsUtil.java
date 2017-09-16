@@ -248,7 +248,7 @@ public class PhpElementsUtil {
         return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
     }
 
-    static public PsiElementPattern.Capture<StringLiteralExpression> methodWithFirstStringPattern() {
+    static public PsiElementPattern.Capture<StringLiteralExpression> getMethodWithFirstStringPattern() {
         return PlatformPatterns
             .psiElement(StringLiteralExpression.class)
             .withParent(

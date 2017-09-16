@@ -26,13 +26,13 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has")
             .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has")
             .addCall("\\Psr\\Container\\ContainerInterface", "has")
         );
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)
@@ -41,14 +41,14 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "removeAlias")
         );
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findTaggedServiceIds")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "addTag")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "hasTag")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "clearTag")
         );
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.methodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(EventDispatcherEventReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(EventDispatcherEventReference.class)
             .addCall("\\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface", "dispatch")
         );
 
