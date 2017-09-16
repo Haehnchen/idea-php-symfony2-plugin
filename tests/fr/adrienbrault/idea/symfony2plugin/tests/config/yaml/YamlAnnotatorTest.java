@@ -122,36 +122,4 @@ public class YamlAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
             );
         }
     }
-
-    public void testAnnotatorParameter() {
-        assertAnnotationContains("services.yml", "services:\n   %foo_<caret>missing%", "Missing Parameter");
-        assertAnnotationNotContains("services.yml", "services:\n   %foo_p<caret>arameter%", "Missing Parameter");
-
-        assertAnnotationContains("services.yml", "services:\n   %Foo_<caret>missing%", "Missing Parameter");
-        assertAnnotationNotContains("services.yml", "services:\n   %Foo_p<caret>arameter%", "Missing Parameter");
-
-        assertAnnotationContains("services.yml", "services:\n   [ '%Foo_<caret>missing%' ]\n", "Missing Parameter");
-        assertAnnotationContains("services.yml", "services:\n   [ \"%Foo_<caret>missing%\" ]\n", "Missing Parameter");
-        assertAnnotationNotContains("services.yml", "services:\n   %kernel.root_dir%/../we<caret>b/%webpath_modelmasks%", "Missing Parameter");
-    }
-
-    public void testAnnotatorParameterForEnvMustNotAnnotationAsMissing() {
-        assertAnnotationNotContains("services.yml", "services:\n   %env(FO<caret>O)%", "Missing Parameter");
-        assertAnnotationNotContains("services.yml", "services:\n   '%env(FO<caret>O)%'", "Missing Parameter");
-        assertAnnotationNotContains("services.yml", "services:\n   \"%env(FO<caret>O)%\"", "Missing Parameter");
-        assertAnnotationNotContains("services.yml", "services:\n   '%ENV(FO<caret>O)%'", "Missing Parameter");
-    }
-
-    public void testAnnotatorClass() {
-        assertAnnotationContains("services.yml", "services:\n  class: Args\\Fo<caret>oBar", "Missing Class");
-        assertAnnotationContains("services.yml", "services:\n  class: 'Args\\Fo<caret>oBar'", "Missing Class");
-        assertAnnotationContains("services.yml", "services:\n  class: \"Args\\Fo<caret>oBar\"", "Missing Class");
-        assertAnnotationContains("services.yml", "services:\n  factory_class: Args\\Fo<caret>oBar", "Missing Class");
-        assertAnnotationNotContains("services.yml", "services:\n  factory_class: Args\\Fo<caret>o", "Missing Class");
-
-        assertAnnotationContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>oBar", "Missing Class");
-        assertAnnotationContains("services.yml", "parameters:\n  foo.class: 'Args\\Fo<caret>oBar'", "Missing Class");
-        assertAnnotationContains("services.yml", "parameters:\n  foo.class: \"Args\\Fo<caret>oBar\"", "Missing Class");
-        assertAnnotationNotContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>o", "Missing Class");
-    }
 }

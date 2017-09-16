@@ -569,6 +569,20 @@
                          language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.XmlServiceInstanceInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="YamlParameterInspection" displayName="Yaml: Missing Parameter"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlParameterInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="YamlClassInspection" displayName="Yaml: Missing Class"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlClassInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>

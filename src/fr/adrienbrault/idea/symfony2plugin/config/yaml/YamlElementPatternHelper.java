@@ -580,7 +580,7 @@ public class YamlElementPatternHelper {
      *    foo.example.class: |
      *
      */
-    static PsiElementPattern.Capture<? extends PsiElement> getParameterClassPattern() {
+    public static PsiElementPattern.Capture<? extends PsiElement> getParameterClassPattern() {
         return PlatformPatterns
             .psiElement()
             .withParent(PlatformPatterns

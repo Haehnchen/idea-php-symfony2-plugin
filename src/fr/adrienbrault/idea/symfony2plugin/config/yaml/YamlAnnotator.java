@@ -48,9 +48,6 @@ public class YamlAnnotator implements Annotator {
             return;
         }
 
-        this.annotateParameter(psiElement, holder);
-        this.annotateClass(psiElement, holder);
-
         // only match inside service definitions
         if(!YamlElementPatternHelper.getInsideKeyValue("services").accepts(psiElement)) {
             return;
@@ -60,51 +57,6 @@ public class YamlAnnotator implements Annotator {
         this.annotateCallsArguments(psiElement, holder);
 
         this.lazyServiceCollector = null;
-    }
-
-    private void annotateParameter(@NotNull final PsiElement psiElement, @NotNull AnnotationHolder holder) {
-        if(!YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement) || !YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
-            return;
-        }
-
-        // at least %a%
-        // and not this one: %kernel.root_dir%/../web/
-        // %kernel.root_dir%/../web/%webpath_modelmasks%
-        String parameterName = PsiElementUtils.getText(psiElement);
-        if(!YamlHelper.isValidParameterName(parameterName)) {
-            return;
-        }
-
-        // strip "%"
-        parameterName = parameterName.substring(1, parameterName.length() - 1);
-
-        // parameter a always lowercase see #179
-        parameterName = parameterName.toLowerCase();
-        if (!ContainerCollectionResolver.getParameterNames(psiElement.getProject()).contains(parameterName)) {
-            holder.createWarningAnnotation(psiElement, "Missing Parameter");
-        }
-
-    }
-
-    private void annotateClass(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-
-        if(!((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(element) || YamlElementPatternHelper.getParameterClassPattern().accepts(element)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(element))) {
-            return;
-        }
-
-        String className = PsiElementUtils.getText(element);
-
-        if(YamlHelper.isValidParameterName(className)) {
-            String resolvedParameter = ContainerCollectionResolver.resolveParameter(element.getProject(), className);
-            if(resolvedParameter != null && PhpElementsUtil.getClassInterfacePsiElements(element.getProject(), resolvedParameter) != null) {
-                return ;
-            }
-        }
-
-        if(PhpElementsUtil.getClassInterface(element.getProject(), className) == null) {
-            holder.createWarningAnnotation(element, "Missing Class");
-        }
-
     }
 
     /**
