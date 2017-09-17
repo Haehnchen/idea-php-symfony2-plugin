@@ -44,7 +44,7 @@ public class YamlGoToKnownDeclarationHandler implements GotoDeclarationHandler {
 
         List<PsiElement> results = new ArrayList<>();
 
-        if(YamlElementPatternHelper.getSingleLineScalarKey("_controller").accepts(psiElement)) {
+        if(YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(psiElement)) {
             this.getControllerGoto(psiElement, results);
         }
 

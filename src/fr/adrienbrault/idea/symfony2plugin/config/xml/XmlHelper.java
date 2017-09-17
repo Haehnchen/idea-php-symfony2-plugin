@@ -325,6 +325,33 @@ public class XmlHelper {
     }
 
     /**
+     * <route id="foo" controller="Foo:Demo:hello"/>
+     *
+     * <route id="foo" path="/blog/{slug}">
+     *  <default key="_controller">Foo:Demo:hello</default>
+     * </route>
+     */
+    public static ElementPattern<PsiElement> getRouteControllerPattern() {
+        return PlatformPatterns.or(getRouteControllerKeywordPattern(), getRouteDefaultWithKeyAttributePattern("_controller"));
+    }
+
+    /**
+     * <route id="foo" controller="Foo:Demo:hello"/>
+     */
+    private static XmlAttributeValuePattern getRouteControllerKeywordPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("controller")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("route")
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("route")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
      * <route id="foo" path="/blog/{slug}">
      *  <default key="_controller">Foo:Demo:hello</default>
      * </route>

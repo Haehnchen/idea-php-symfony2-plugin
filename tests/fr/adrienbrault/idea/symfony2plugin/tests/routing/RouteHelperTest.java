@@ -111,6 +111,22 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getYamlRouteDefinitions
+     */
+    public void testGetYamlRouteDefinitionsForControllerKeyword() {
+        Collection<StubIndexedRoute> yamlRouteDefinitions = RouteHelper.getYamlRouteDefinitions(YamlPsiElementFactory.createFromText(getProject(), YAMLDocument.class,
+            "foo_keyword:\n" +
+                "   path: /foo\n" +
+                "   controller: 'AppBundle:Blog:list'\n"
+        ));
+
+        StubIndexedRoute route = ContainerUtil.find(yamlRouteDefinitions, new MyEqualStubIndexedRouteCondition("foo_keyword"));
+        assertNotNull(route);
+
+        assertContainsElements(Collections.singletonList("AppBundle:Blog:list"), route.getController());
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getXmlRouteDefinitions
      */
     public void testGetXmlRouteDefinitions() {
@@ -198,6 +214,21 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
             Arrays.asList("get", "post", "put", "fight"),
             ContainerUtil.find(xmlRouteDefinitions, new MyEqualStubIndexedRouteCondition("foo3")).getMethods()
         );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getXmlRouteDefinitions
+     */
+    public void testGetXmlRouteDefinitionsForControllerKeyword() {
+        StubIndexedRoute route = ContainerUtil.find(RouteHelper.getXmlRouteDefinitions(createXmlFile("" +
+            "<routes>\n" +
+            "   <route id=\"foo_keyword\" controller=\"AppBundle:Blog:list\"/>\n" +
+            "</routes>"
+        )), new MyEqualStubIndexedRouteCondition("foo_keyword"));
+
+        assertNotNull(route);
+
+        assertEquals("AppBundle:Blog:list", route.getController());
     }
 
     /**

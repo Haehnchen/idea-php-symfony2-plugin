@@ -108,5 +108,12 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to action")
         );
+
+        assertLineMarker(myFixture.configureByText(YAMLFileType.YML, "" +
+                "foo:\n" +
+                "    controller: Foo\\BarController::fooBarAction\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
+        );
     }
 }

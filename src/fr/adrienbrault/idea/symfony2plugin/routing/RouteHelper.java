@@ -641,8 +641,6 @@ public class RouteHelper {
             }
 
             indexedRoutes.add(route);
-
-
         }
 
         return indexedRoutes;
@@ -658,11 +656,13 @@ public class RouteHelper {
 
         Collection<StubIndexedRoute> indexedRoutes = new ArrayList<>();
 
-        /**
+        /*
          * <routes>
          *   <route id="foo" path="/blog/{slug}" methods="GET">
          *     <default key="_controller">Foo</default>
          *   </route>
+         *
+         *   <route id="foo" path="/blog/{slug}" methods="GET" controller="AppBundle:Blog:list"/>
          * </routes>
          */
         for(XmlTag xmlTag: PsiTreeUtil.getChildrenOfTypeAsList(psiFile.getFirstChild(), XmlTag.class)) {
@@ -672,40 +672,34 @@ public class RouteHelper {
                         XmlAttribute xmlAttribute = servicesTag.getAttribute("id");
                         if(xmlAttribute != null) {
                             String attrValue = xmlAttribute.getValue();
-                            if(StringUtils.isNotBlank(attrValue)) {
+                            if(attrValue != null && StringUtils.isNotBlank(attrValue)) {
 
-                                StubIndexedRoute e = new StubIndexedRoute(attrValue);
+                                StubIndexedRoute route = new StubIndexedRoute(attrValue);
                                 String pathAttribute = servicesTag.getAttributeValue("path");
                                 if(pathAttribute == null) {
                                     pathAttribute = servicesTag.getAttributeValue("pattern");
                                 }
 
                                 if(pathAttribute != null && StringUtils.isNotBlank(pathAttribute) ) {
-                                    e.setPath(pathAttribute);
+                                    route.setPath(pathAttribute);
                                 }
 
                                 String methods = servicesTag.getAttributeValue("methods");
                                 if(methods != null && StringUtils.isNotBlank(methods))  {
                                     String[] split = methods.replaceAll(" +", "").toLowerCase().split("\\|");
                                     if(split.length > 0) {
-                                        e.addMethod(split);
+                                        route.addMethod(split);
                                     }
                                 }
 
-                                for(XmlTag subTag :servicesTag.getSubTags()) {
-                                    if("default".equalsIgnoreCase(subTag.getName())) {
-                                        String keyValue = subTag.getAttributeValue("key");
-                                        if(keyValue != null && "_controller".equals(keyValue)) {
-                                            String actionName = subTag.getValue().getTrimmedText();
-                                            if(StringUtils.isNotBlank(actionName)) {
-                                                e.setController(normalizeRouteController(actionName));
-                                            }
-                                        }
-                                    }
+                                // <route><default key="_controller"/></route>
+                                //  <route controller="AppBundle:Blog:list"/>
+                                String controller = getXmlController(servicesTag);
+                                if(controller != null) {
+                                    route.setController(normalizeRouteController(controller));
                                 }
 
-                                indexedRoutes.add(e);
-
+                                indexedRoutes.add(route);
                             }
                         }
                     }
@@ -716,20 +710,49 @@ public class RouteHelper {
         return indexedRoutes;
     }
 
+    /**
+     * <route controller="Foo"/>
+     * <route>
+     *     <default key="_controller">Foo</default>
+     * </route>
+     */
     @Nullable
-    private static String getYamlController(YAMLKeyValue psiElement) {
-        /*
-         * foo:
-         *   defaults: { _controller: "Bundle:Foo:Bar" }
-         *   defaults:
-         *      _controller: "Bundle:Foo:Bar"
-         */
+    public static String getXmlController(@NotNull XmlTag serviceTag) {
+        for(XmlTag subTag :serviceTag.getSubTags()) {
+            if("default".equalsIgnoreCase(subTag.getName())) {
+                String keyValue = subTag.getAttributeValue("key");
+                if(keyValue != null && "_controller".equals(keyValue)) {
+                    String actionName = subTag.getValue().getTrimmedText();
+                    if(StringUtils.isNotBlank(actionName)) {
+                        return actionName;
+                    }
+                }
+            }
+        }
 
+        String controller = serviceTag.getAttributeValue("controller");
+        if(controller != null && StringUtils.isNotBlank(controller)) {
+            return controller;
+        }
+
+        return null;
+    }
+
+    /**
+     * Find controller definition in yaml structure
+     *
+     * foo:
+     *   defaults: { _controller: "Bundle:Foo:Bar" }
+     *   defaults:
+     *      _controller: "Bundle:Foo:Bar"
+     *   controller: "Bundle:Foo:Bar"
+     */
+    @Nullable
+    public static String getYamlController(@NotNull YAMLKeyValue psiElement) {
         YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue(psiElement, "defaults");
         if(yamlKeyValue != null) {
             final YAMLValue container = yamlKeyValue.getValue();
             if(container instanceof YAMLMapping) {
-
                 YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(container, "_controller", true);
                 if(yamlKeyValueController != null) {
                     String valueText = yamlKeyValueController.getValueText();
@@ -738,7 +761,11 @@ public class RouteHelper {
                     }
                 }
             }
+        }
 
+        String controller = YamlHelper.getYamlKeyValueAsString(psiElement, "controller");
+        if(controller != null && StringUtils.isNotBlank(controller)) {
+            return controller;
         }
 
         return null;

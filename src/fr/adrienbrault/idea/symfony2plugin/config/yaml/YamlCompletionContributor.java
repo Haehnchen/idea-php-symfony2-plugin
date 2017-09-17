@@ -98,6 +98,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("prefix", "(string)");
         put("schemes", "(array|string)");
         put("host", "(string)");
+        put("controller", "(string)");
     }});
 
     public YamlCompletionContributor() {
@@ -188,7 +189,8 @@ public class YamlCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("mappedBy", "inversedBy"), new OrmRelationCompletionProvider());
         extend(CompletionType.BASIC, YamlElementPatternHelper.getOrmSingleLineScalarKey("referencedColumnName"), new ReferencedColumnCompletionProvider());
 
-        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller"), new ControllerCompletionProvider());
+        extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller"), new ControllerCompletionProvider());
+
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new SymfonyBundleFileCompletionProvider("Resources/config", "Controller"));
         extend(CompletionType.BASIC, YamlElementPatternHelper.getSingleLineScalarKey("resource"), new DirectoryScopeCompletionProvider());
 

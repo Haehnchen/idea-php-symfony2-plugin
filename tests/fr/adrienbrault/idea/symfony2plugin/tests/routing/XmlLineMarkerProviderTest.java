@@ -19,6 +19,8 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         super.setUp();
 
         myFixture.copyFileToProject("BundleScopeLineMarkerProvider.php");
+        myFixture.copyFileToProject("XmlLineMarkerProvider.php");
+
         myFixture.configureByText(
             XmlFileType.INSTANCE,
             "<routes><import resource=\"@FooBundle/foo.xml\" /></routes>"
@@ -42,4 +44,15 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         );
     }
 
+    public void testThatRouteLineMarkerForControllerIsGiven() {
+        assertLineMarker(
+            myFixture.configureByText("foo.xml", "<routes><route controller=\"Foo\\Bar\"/></routes>"),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
+        );
+
+        assertLineMarker(
+            myFixture.configureByText("foo.xml", "<routes><route><default key=\"_controller\">Foo\\Bar</default></route></routes>"),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
+        );
+    }
 }

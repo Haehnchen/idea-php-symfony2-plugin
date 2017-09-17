@@ -47,31 +47,22 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void attachRouteActions(XmlTag xmlTag, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
-
+    private void attachRouteActions(@NotNull XmlTag xmlTag, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
         if(!Pattern.getRouteTag().accepts(xmlTag)) {
             return;
         }
 
-        for(XmlTag subTag : xmlTag.getSubTags()) {
-            if("default".equalsIgnoreCase(subTag.getName())) {
-                XmlAttribute xmlAttr = subTag.getAttribute("key");
-                if(xmlAttr != null && "_controller".equals(xmlAttr.getValue())) {
-                    String actionName = subTag.getValue().getTrimmedText();
-                    if(StringUtils.isNotBlank(actionName)) {
-                        PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(xmlTag.getProject(), actionName);
-                        if(methods.length > 0) {
-                            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                                setTargets(methods).
-                                setTooltipText("Navigate to action");
+        String controller = RouteHelper.getXmlController(xmlTag);
+        if(controller != null) {
+            PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(xmlTag.getProject(), controller);
+            if(methods.length > 0) {
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
+                    setTargets(methods).
+                    setTooltipText("Navigate to action");
 
-                            lineMarkerInfos.add(builder.createLineMarkerInfo(xmlTag));
-                        }
-                    }
-                }
+                lineMarkerInfos.add(builder.createLineMarkerInfo(xmlTag));
             }
         }
-
     }
 
     @Nullable

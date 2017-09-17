@@ -95,6 +95,15 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         );
     }
 
+    public void testRouteControllerActionCompletionForControllerKeyword() {
+        assertCompletionContains("routing.yml", "" +
+                "foo:\n" +
+                "    pattern:  /hello/{name}\n" +
+                "    controller: <caret>",
+            "FooBundle:Foo:foo"
+        );
+    }
+
     public void testClassCompletion() {
         assertCompletionContains("routing.yml", "" +
             "services:\n" +

@@ -129,5 +129,11 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
             "       _controller: Foo<caret>bar\n",
             PlatformPatterns.psiElement(Method.class)
         );
+
+        assertNavigationMatch("routing.yml", "" +
+                "foobar:\n" +
+                "    controller: Foo<caret>bar\n" +
+            PlatformPatterns.psiElement(Method.class)
+        );
     }
 }

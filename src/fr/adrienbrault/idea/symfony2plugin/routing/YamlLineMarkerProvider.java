@@ -77,37 +77,26 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
+    /**
+     * Find controller definition in yaml structor
+     *
+     * foo:
+     *   defaults: { _controller: "Bundle:Foo:Bar" }
+     *   controller: "Bundle:Foo:Bar"
+     */
     private void attachRouteActions(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
+        if(psiElement instanceof YAMLKeyValue) {
+            String yamlController = RouteHelper.getYamlController((YAMLKeyValue) psiElement);
+            if(yamlController != null) {
+                PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlController);
+                if(methods.length > 0) {
+                    NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
+                        setTargets(methods).
+                        setTooltipText("Navigate to action");
 
-        /*
-         * foo:
-         *   defaults: { _controller: "Bundle:Foo:Bar" }
-         *   defaults:
-         *      _controller: "Bundle:Foo:Bar"
-         */
-        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLMapping) {
-            YAMLKeyValue yamlKeyValue = YamlHelper.getYamlKeyValue((YAMLKeyValue) psiElement, "defaults");
-            if(yamlKeyValue != null) {
-                final YAMLValue container = yamlKeyValue.getValue();
-                if(container instanceof YAMLMapping) {
-
-                    YAMLKeyValue yamlKeyValueController = YamlHelper.getYamlKeyValue(container, "_controller", true);
-                    if(yamlKeyValueController != null) {
-                        PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlKeyValueController.getValueText());
-                        if(methods.length > 0) {
-                            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                                setTargets(methods).
-                                setTooltipText("Navigate to action");
-
-                            lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
-                        }
-
-                    }
-
+                    lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
                 }
-
             }
-
         }
     }
 
