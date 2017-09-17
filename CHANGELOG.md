@@ -9,6 +9,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.154
+* Drop several workarounds and deprecated usages for old PhpStorm versions
+* Migrate xml service instance annotator to inspection and prevent possible memory leaks
+* Remove configuration for all type provider og plugins settings
+* Migrate yaml parameter and class annotator into inspections
+* Migrate all yaml annotator to inspection like service instance check in constructor and calls
+* Drop for all annotator configuration of plugin settings
+* Fix global route loader was not care about annotations
+* Remove annotation route indexer and merge into main router indexer [#648](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/648)
+* API: Simplify usage of key index process
+* Drop Twig annotator and move to inspections: routing, translations, templates and assets
+* Introduce Twig interpolated and concat checks for string values in inspections
+* Symfony 3.4: Add support for "controller" keyword for configuring routes controllers [#1023](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1023)
+* Fix "trans" auto-complete not working in embed with parameters [#1012](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1012)
+
 ## 0.14.153
 * Fix service generator was using wrong settings property
 

@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.153</version>
+    <version>0.14.154</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -94,160 +94,30 @@
 <h2><a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
 <ul>
     <li><a href="https://github.com/Haehnchen">Daniel Espendiller</a></li>
-    <li><a href="https://github.com/adrienbrault">Adrien Brault</a></li>
 </ul>
       ]]></description>
 
-    <change-notes><![CDATA[
+    <change-notes>
+<![CDATA[
 
-0.14.x: PhpStorm 2017.1+<br/>
-0.13.x: PhpStorm 2016.3.1 (no support)<br/>
-0.12.x: PhpStorm 2016.1 (no support)<br/>
-0.11.x: PhpStorm 8, 9, 10 (no support)<br/>
-0.10.x: PhpStorm 7 (no support)<br/>
-0.9.x: PhpStorm 6 (no support)<br/>
-
-<br/>
-
-<h2>0.14.153</h2>
 <ul>
-    <li>Fix service generator was using wrong settings property</li>
-</ul>
-
-<h2>0.14.152</h2>
-<ul>
-    <li>Move yaml and php service missing annotator into an inspection to fix missing services in `Container::get` calls should be exposed as an inspection <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/997">#997</a></li>
-    <li>Fix wrongly lowercase inspection in service name as class name <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1011">#1011</a></li>
-    <li>Fix template extraction for methods with ending "Action" to fix non-existing template complaining in @Template() annotation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/999">#999</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1000">#1000</a></li>
-    <li>Dropping old deprecated single url generator settings</li>
-    <li>Adopt default routing files path to Symfony > 2.7.20 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1014">#1014</a> @Koc</li>
-    <li>Add configuration switch for Symfony 3.3 service id as class attribute in service generator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1016">#1016</a> and dropping class as parameter resolving in class attribute</li>
-    <li>Support Symfony 3.4 controller route names prefix in annotations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1017">#1017</a></li>
-    <li>Migrate "missing translation" annotator to inspections</li>
-    <li>Provide support for translation domains in PHP references; like variables or constant</li>
-    <li>Optimize translation folder detection "Resources/translations/" => "/translations/" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1010">#1010</a></li>
-</ul>
-
-<h2>0.14.151</h2>
-<ul>
-    <li>Adopt default container/routing files path to Symfony Flex <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/993">#993</a> @Koc</li>
-    <li>Fix xml id reference for Symfony 3.3 class shortcut was matched on all xml tags with id attribute</li>
-    <li>Provide service completion and references for xml alias attribute <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/996">#996</a></li>
-    <li>Twig path directory separator must be "\" to be clickable <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/995">#995</a></li>
-</ul>
-
-<h2>0.14.150</h2>
-<ul>
-    <li>Fix wrong cast in service builder class scope extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/989">#989</a></li>
-    <li>Support Symfony 3.3 class shortcut in yaml and xml method tag scope</li>
-</ul>
-
-<h2>0.14.149</h2>
-<ul>
-    <li>Detect Twig templates when using `__invoke` controllers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980">#980</a>; drop some redundant template annotation code</li>
-    <li>Add @Template __invoke support for annotation template creation quickfix and in Twig template controller resolver <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/980">#980</a></li>
-    <li>Fix "Navigate to action" on controller with __invoke doesn't work <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/986">#986</a></li>
-    <li>Create template for missing template is really weird <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/795">#795</a>; replace custom dialog with more commonly JBPopupFactory</li>
-    <li>Provide better scope detection for Service Generator, add psr-0 class structure detection fixes: "Create Service" in project tree does nothing <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/978">#978</a></li>
-    <li>Add lazy decorated service resolving to fix Argument 'decorated' of ServiceUtil.getLineMarkerForDecoratedServiceId must not be null <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/982">#982</a></li>
-    <li>Add calls support for service usage indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/890">#890</a></li>
-    <li>Add support for Twig 2 hassers for the attribute operator <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/964">#964</a></li>
-    <li>Add class completion for yaml service key to support Symfony 3.3 shortcut feature <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/987">#987</a></li>
-    <li>Fix empty string indexing of Doctrine repository class; "THashSet contract violation - 25 reports & coming" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/985">#985</a></li>
-    <li>Use slash for controller subfolder which are PHP namespaces instead of filesystem style to fix autocompletion for controller names in routing files is broken for namespaced classes <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/961">#961</a></li>
-</ul>
-
-<h2>0.14.148</h2>
-<ul>
-    <li>Symfony 3.3 Fully support autowire in defaults of XML <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966">#966</a></li>
-    <li>Symfony 3.3 Arguments are not autocompleted when using the FQCN as id <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/968">#968</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/966">#966</a></li>
-    <li>Symfony 4.0 Support array Kernel::getKernelParameters and array_replace <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/973">#973</a></li>
-    <li>Symfony 3.3 Provide class name completion in xml service ids <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/967">#967</a></li>
-    <li>Symfony 3.3 Goto definition does not support services with FQCN xml ids shortcuts <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/952">#952</a></li>
-</ul>
-
-<h2>0.14.147</h2>
-<ul>
-    <li>Fix recursive string value resolve on class fields</li>
-    <li>Dropping custom caret overlay listener and all extension points in favor of core parameter hints</li>
-    <li>Symfony 3.3 Support classes in global namespace for id shortcut <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/952">#952</a></li>
-    <li>Symfony 3.3 Argument hint must support yaml id shortcut <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/958">#958</a></li>
-    <li>Symfony 3.3 Arguments not detected for type and argument index inspection in yaml id shortcut <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/959">#959</a></li>
-    <li>Symfony 3.3 Invalid lower case inspection for service id as class name <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/960">#960</a></li>
-    <li>Autocompletion for known tag names in Definition::addTag, clearTag, hasTag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/955">#955</a></li>
-    <li>Add Twig print block support for linemarker and navigation</li>
-</ul>
-
-<h2>0.14.146</h2>
-<ul>
-    <li>Reworked compiled container parser to support aliases extraction more safety for Symfony 3.3 private service debugger <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/618">#618</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/943">#943</a></li>
-    <li>Fix type cast error in voter role extraction <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/941">#941</a></li>
-    <li>Fix npe in service call visiting of yaml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/942">#942</a></li>
-    <li>Fix when using a classname as service id in a routing.yml plugin is mistakenly reporting the method as of missing in Symfony 3.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/940">#940</a></li>
-    <li>The inner service of a decorator is always private <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/908">#908</a></li>
-    <li>Add Twig variable collector for parameter of a given macro scope</li>
-    <li>Provide extension point a Twig variable collector</li>
-    <li>Dropping ContainerInterface::get usage service linemarker</li>
-    <li>Service indexer should known "_defaults" values of Symfony 3.3 dic component <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/947">#947</a></li>
-    <li>Add parameter parser for Kernel::getKernelParameters <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/950">#950</a></li>
-    <li>Add "controller.service_arguments" and new yaml service keys completion of Symfony 3.3</li>
-    <li>Service argument inspection must respect _default configuration <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/948">#948</a></li>
-    <li>Service generator for YAML files extract indent from file scope <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/533">#533</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/374">#374</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/362">#362</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/736">#736</a></li>
-    <li>Action generator menu should also display service generator for yaml files and reduce visibility for valid file scope</li>
-</ul>
-
-<h2>0.14.145</h2>
-<ul>
-    <li>Reduce blacklist of all file indexes; only ending with "Test" blocks processing now <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/897">#897</a></li>
-    <li>Fix translation domain name extraction on empty filename <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/927">#927</a></li>
-    <li>Provide ternary and better string value detection for form getParent and getExtendedType</li>
-    <li>Globally support string value resolve for class constant</li>
-</ul>
-
-<h2>0.14.144</h2>
-<ul>
-    <li>Migrate MethodSignatureTypeProvider to PhpTypeProvider3; prevent cross plugin issue <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/926">#926</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792">#792</a></li>
-</ul>
-
-<h2>0.14.143</h2>
-<ul>
-    <li>Add Twig form_theme indexer and provide targets in linemarker <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/920">#920</a></li>
-    <li>ContainerInterface::get doesn't resolve on multiple parameter; drop parameter length check <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/916">#916</a></li>
-    <li>Move PHP Annotation plugin `de.espend.idea.php.annotation` from soft to hard dependency to drop duplicate code usages <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/448">#448</a></li>
-    <li>Use new PhpTypeProvider3 and replace deprecated usages in Container::get, ObjectManager::get, EventDispatcherInterface::dispatch <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792">#792</a></li>
-    <li>Refactoring of Twig macro logic, provide tests, use indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/924">#924</a></li>
-    <li>Add completion for Twig macros after DOT element for "import as" function <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/924">#924</a></li>
-    <li>Drop regex from Twig set variable collector</li>
-    <li>Migrate Doctrine type provider to PhpTypeProvider3 implementation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/792">#792</a></li>
-    <li>Refactoring of ObjectManager::findBy* references and support more possible repository usages <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/925">#925</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/898">#898</a></li>
-</ul>
-
-<h2>0.14.142</h2>
-<ul>
-    <li>Implement environment variables references for %env(*) on .env and Docker files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/910">#910</a></li>
-    <li>Add Twig trans and transchoice tag support for translation keys <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/459">#459</a></li>
-</ul>
-
-<h2>0.14.141</h2>
-<ul>
-    <li>Parameter Hints must not be provided if plugin is not enabled <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896">#896</a></li>
-    <li>Fix cache folder detection in project auto configuration process <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/810">#810</a> @20uf</li>
-    <li>Add navigate to Twig "include" file references <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/889">#889</a> and use lazy value provider for better performance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809">#809</a></li>
-    <li>Support of resname attribute in xlf trans-unit tag <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/913">#913</a></li>
-    <li>Fix pattern for Yaml method "calls" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/755">#755</a> and implement named services support</li>
-    <li>Provide parameter type hint for xml and yaml "call" tags</li>
-</ul>
-
-<h2>0.14.140</h2>
-<ul>
-    <li>Add class navigation for named yaml service keys of Symfony 3.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/902">#902</a></li>
-    <li>Add Parameter Hints for YAML and XML service arguments and dropping caret text overlay <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/896">#896</a></li>
+    <li>Drop several workarounds and deprecated usages for old PhpStorm versions</li>
+    <li>Migrate xml service instance annotator to inspection and prevent possible memory leaks</li>
+    <li>Remove configuration for all type provider og plugins settings</li>
+    <li>Migrate yaml parameter and class annotator into inspections</li>
+    <li>Migrate all yaml annotator to inspection like service instance check in constructor and calls</li>
+    <li>Drop for all annotator configuration of plugin settings</li>
+    <li>Fix global route loader was not care about annotations</li>
+    <li>Remove annotation route indexer and merge into main router indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/648">#648</a></li>
+    <li>API: Simplify usage of key index process</li>
+    <li>Drop Twig annotator and move to inspections: routing, translations, templates and assets</li>
+    <li>Introduce Twig interpolated and concat checks for string values in inspections</li>
+    <li>Symfony 3.4: Add support for "controller" keyword for configuring routes controllers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1023">#1023</a></li>
+    <li>Fix "trans" auto-complete not working in embed with parameters <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1012">#1012</a></li>
 </ul>
 
 <br/>
-<a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">open full changelog</a>
-<br/>
-
+<a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">see full changelog</a> | <a href="https://www.paypal.me/DanielEspendiller">Donate</a>
 ]]>
     </change-notes>
 
@@ -318,8 +188,6 @@
         <!--
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigFileIconProvider" />
         -->
-
-
 
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
