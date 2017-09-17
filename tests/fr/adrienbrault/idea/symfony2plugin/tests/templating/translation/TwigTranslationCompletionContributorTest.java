@@ -120,6 +120,16 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
         );
     }
 
+    public void testTranslationCompletionForEmbedTransDefaultDomainScopeInsideWithParameter() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% trans_default_domain 'interchange' %}" +
+                "{% embed 'foo.html.twig' with {'foo': '<caret>'|trans } %}\n" +
+                "   {% trans_default_domain 'foobar' %}" +
+                "{% endembed %}\n",
+            "xlf_weak.symfony.great"
+        );
+    }
+
     public void testTransDefaultDomainCompletionShouldQuotedStringValue() {
         assertCompletionResultEquals(
             TwigFileType.INSTANCE,

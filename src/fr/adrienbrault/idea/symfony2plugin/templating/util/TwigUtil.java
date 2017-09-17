@@ -183,6 +183,20 @@ public class TwigUtil {
      */
     @Nullable
     public static String getTransDefaultDomainOnScope(@NotNull PsiElement position) {
+        // {% embed 'foo.html.twig' with { foo: '<caret>'|trans } %}
+        PsiElement parent = position.getParent();
+        if(parent != null && parent.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
+            PsiElement firstParent = PsiTreeUtil.findFirstParent(position, true, psiElement -> {
+                IElementType elementType = psiElement.getNode().getElementType();
+                return elementType != TwigElementTypes.EMBED_TAG && elementType != TwigElementTypes.EMBED_STATEMENT;
+            });
+
+            if(firstParent != null) {
+                position = firstParent;
+            }
+        }
+
+        // find embed or file scope
         PsiElement scope = getTransDefaultDomainScope(position);
         if(scope == null) {
             return null;

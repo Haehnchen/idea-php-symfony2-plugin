@@ -168,6 +168,39 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     */
+    public void testGetTwigFileTransDefaultDomainForEmbedScopeInEmbedTag() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+            "{% trans_default_domain \"foo\" %}\n" +
+            "{% embed 'default/e.html.twig' with { foo: '<caret>'|trans } %}\n" +
+            "  {% trans_default_domain \"foobar\" %}\n" +
+            "{% endembed %}\n"
+        );
+
+        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
+
+        assertNotNull(psiElement);
+        assertEquals("foo", TwigUtil.getTransDefaultDomainOnScope(psiElement));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     */
+    public void testGetTwigFileTransDefaultDomainForEmbedScopeInEmbedTagWithNotMatch() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+            "{% embed 'default/e.html.twig' with {foo: '<caret>'|trans } %}\n" +
+            "  {% trans_default_domain \"foobar\" %}\n" +
+            "{% endembed %}\n"
+        );
+
+        PsiElement psiElement = psiFile.findElementAt(myFixture.getCaretOffset());
+
+        assertNotNull(psiElement);
+        assertNull(TwigUtil.getTransDefaultDomainOnScope(psiElement));
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getInjectedTwigElement
      */
     public void testGetTransDefaultDomainOnInjectedElement() {
