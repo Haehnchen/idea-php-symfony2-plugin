@@ -972,14 +972,14 @@ public class TwigUtil {
      * {% include "foo/#{1 + 2}.html.twig" %}
      * {% include "foo/" ~ segment.typeKey ~ ".html.twig" %}
      */
-    public static boolean isValidTemplateString(@NotNull PsiElement element) {
+    public static boolean isValidStringWithoutInterpolatedOrConcat(@NotNull PsiElement element) {
         String templateName = element.getText();
 
-        if(templateName.matches(".*#\\{.*\\}.*")) {
+        if(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString(templateName)) {
             return false;
         }
 
-        if(PlatformPatterns.psiElement()
+        return !(PlatformPatterns.psiElement()
             .afterLeafSkipping(
                 TwigHelper.STRING_WRAP_PATTERN,
                 PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
@@ -987,12 +987,7 @@ public class TwigUtil {
             PlatformPatterns.psiElement().beforeLeafSkipping(
                 TwigHelper.STRING_WRAP_PATTERN,
                 PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
-            ).accepts(element)) {
-
-            return false;
-        }
-
-        return true;
+            ).accepts(element));
     }
 
     @NotNull

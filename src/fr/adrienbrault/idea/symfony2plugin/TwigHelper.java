@@ -2212,7 +2212,7 @@ public class TwigHelper {
                     TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement12)
                 );
 
-                if(fileReference != null && TwigUtil.isValidTemplateString(fileReference)) {
+                if(fileReference != null && TwigUtil.isValidStringWithoutInterpolatedOrConcat(fileReference)) {
                     String text = fileReference.getText();
                     if(StringUtils.isNotBlank(text)) {
                         return Pair.create(

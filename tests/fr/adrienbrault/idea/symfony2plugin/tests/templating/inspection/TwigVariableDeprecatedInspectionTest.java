@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariablePathInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;

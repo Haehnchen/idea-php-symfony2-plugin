@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigTemplateMissingInspection extends LocalInspectionTool {
+public class PhpTemplateMissingInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {

@@ -75,16 +75,16 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#isValidTemplateString
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#isValidStringWithoutInterpolatedOrConcat
      */
     public void testIsValidTemplateString() {
-        assertFalse(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include \"foo/#{segment.typeKey}.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
-        assertFalse(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include \"foo/#{1 + 2}.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
-        assertFalse(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include ~ \"foo.html.twig\" ~ %}", TwigElementTypes.INCLUDE_TAG)));
-        assertFalse(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include \"foo.html.twig\" ~ %}", TwigElementTypes.INCLUDE_TAG)));
-        assertFalse(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include ~ \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
+        assertFalse(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include \"foo/#{segment.typeKey}.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
+        assertFalse(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include \"foo/#{1 + 2}.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
+        assertFalse(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include ~ \"foo.html.twig\" ~ %}", TwigElementTypes.INCLUDE_TAG)));
+        assertFalse(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include \"foo.html.twig\" ~ %}", TwigElementTypes.INCLUDE_TAG)));
+        assertFalse(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include ~ \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
 
-        assertTrue(TwigUtil.isValidTemplateString(createPsiElementAndFindString("{% include \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
+        assertTrue(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
     }
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getDomainTrans

@@ -361,8 +361,6 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
 
-        <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigAnnotator"/>
-
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
@@ -547,12 +545,12 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="TwigTemplateMissing" displayName="Twig: Template Missing"
+        <localInspection groupPath="Symfony" shortName="PhpTemplateMissingInspection" displayName="Twig: Template Missing"
                          groupName="Twig"
                          enabledByDefault="true"
                          level="WARNING"
                          language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="MissingService" displayName="Missing Service"
                          groupName="Service"
@@ -588,6 +586,34 @@
                          level="WARNING"
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigRouteInspection" displayName="Twig: Missing Route"
+                         groupName="Route"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.TwigRouteMissingInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigTemplateMissingInspection" displayName="Twig: Missing Template"
+                         groupName="Template"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigTemplateMissingInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigAssetMissingInspection" displayName="Twig: Missing Asset"
+                         groupName="Asset"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetMissingInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigAssetsTagMissingInspection" displayName="Twig: Missing Asset"
+                         groupName="Asset"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection"/>
 
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>

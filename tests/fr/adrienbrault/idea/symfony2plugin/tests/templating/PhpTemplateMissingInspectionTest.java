@@ -6,9 +6,9 @@ import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateMissingInspection
+ * @see fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateMissingInspection
  */
-public class TwigTemplateMissingInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class PhpTemplateMissingInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("TwigTemplateMissingInspection.php");
