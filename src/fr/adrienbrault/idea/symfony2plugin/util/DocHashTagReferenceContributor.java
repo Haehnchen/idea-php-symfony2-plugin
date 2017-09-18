@@ -166,11 +166,21 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
             return parameters;
         }
 
+        private PsiReference getElementReference(PsiElement element) {
+            if (element instanceof NewExpression) {
+                return ((NewExpression) element).getClassReference();
+            } else if (element instanceof FunctionReference) {
+                return element.getReference();
+            } else {
+                return null;
+            }
+        }
+
         public boolean isValid() {
 
             this.parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
 
-            if (this.parameterList == null || !(this.parameterList.getContext() instanceof MethodReference)) {
+            if (this.parameterList == null) {
                 return false;
             }
 
@@ -179,18 +189,14 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                 return false;
             }
 
-            MethodReference methodReference = (MethodReference) this.parameterList.getContext();
-            if(methodReference == null) {
-                return false;
-            }
-
-            PsiReference psiReference = methodReference.getReference();
+            PsiElement parent = parameterList.getParent();
+            PsiReference psiReference = getElementReference(parent);
             if (null == psiReference) {
                 return false;
             }
 
             PsiElement resolvedReference = psiReference.resolve();
-            if (!(resolvedReference instanceof Method)) {
+            if (!(resolvedReference instanceof Function)) {
                 return false;
             }
 
@@ -209,7 +215,9 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                     Parameter parameter = implementedParameters[currentIndex.getIndex()];
                     PsiElement implementedParameterList = parameter.getContext();
 
-                    if(implementedParameterList instanceof ParameterList) {
+                    if(implementedParameterList instanceof ParameterList
+                        || implementedParameterList instanceof Method
+                    ) {
                         PhpDocParamTag phpDocParamTag = parameter.getDocTag();
                         if(phpDocParamTag != null) {
                             this.phpDocParamTags.add(phpDocParamTag);
