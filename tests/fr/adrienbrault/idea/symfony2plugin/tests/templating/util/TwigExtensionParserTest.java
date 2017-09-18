@@ -1,11 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -82,6 +80,44 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
         assertEquals(
             "#Ffoobar",
             extensionParser.getFilters().get("localizeddate").getSignature()
+        );
+    }
+
+    public void testExtensionAreCollectedForVersion2() {
+        TwigExtensionParser extensionParser = new TwigExtensionParser(getProject());
+
+        assertEquals(
+            "#M#C\\Twig\\Extensions.foobar",
+            extensionParser.getFilters().get("trans_2").getSignature()
+        );
+
+        assertEquals(
+            "#Fmax",
+            extensionParser.getFunctions().get("max_2").getSignature()
+        );
+
+        assertEquals(
+            "#Ffoo_test",
+            extensionParser.getSimpleTest().get("iterable_2").getSignature()
+        );
+    }
+
+    public void testExtensionAreCollectedForVersion3() {
+        TwigExtensionParser extensionParser = new TwigExtensionParser(getProject());
+
+        assertEquals(
+            "#M#C\\Twig\\Extensions.foobar",
+            extensionParser.getFilters().get("trans_3").getSignature()
+        );
+
+        assertEquals(
+            "#Fmax",
+            extensionParser.getFunctions().get("max_3").getSignature()
+        );
+
+        assertEquals(
+            "#Ffoo_test",
+            extensionParser.getSimpleTest().get("iterable_3").getSignature()
         );
     }
 }

@@ -946,10 +946,19 @@ public class PhpElementsUtil {
         return null;
     }
 
-    public static boolean isNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String instance) {
-        return getNewExpressionPhpClassWithInstance(newExpression, instance) != null;
-    }
+    /**
+     * Check new class is instance of given type eg: "new \Twig_Test()"
+     */
+    public static boolean isNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String... instances) {
+        for (String instance : instances) {
+            PhpClass phpClass = getNewExpressionPhpClassWithInstance(newExpression, instance);
+            if(phpClass != null) {
+                return true;
+            }
+        }
 
+        return false;
+    }
 
     @NotNull
     public static Collection<PsiElement> collectMethodElementsWithParents(final @NotNull Method method, @NotNull final Processor<PsiElement> processor) {

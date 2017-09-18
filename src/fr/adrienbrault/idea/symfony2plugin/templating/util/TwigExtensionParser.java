@@ -404,8 +404,8 @@ public class TwigExtensionParser  {
 
         private void visitNewExpression(@NotNull NewExpression element) {
 
-            // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
-            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFilter")) {
+            // new \Twig_SimpleFilter('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFilter", "Twig_Filter", "Twig\\TwigFilter")) {
                 PsiElement[] psiElement = element.getParameters();
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
@@ -525,7 +525,7 @@ public class TwigExtensionParser  {
         private void visitNewExpression(@NotNull NewExpression element) {
 
             // new \Twig_SimpleFunction('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
-            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFunction")) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleFunction", "Twig_Function", "Twig\\TwigFunction")) {
                 PsiElement[] psiElement = element.getParameters();
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
@@ -628,13 +628,11 @@ public class TwigExtensionParser  {
         private void visitNewExpression(@NotNull NewExpression element) {
 
             // new Twig_SimpleTest('even', null, array('node_class' => 'Twig_Node_Expression_Test_Even')),
-            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleTest")) {
+            if(PhpElementsUtil.isNewExpressionPhpClassWithInstance(element, "Twig_SimpleTest", "Twig_Test", "Twig\\TwigTest")) {
                 PsiElement[] psiElement = element.getParameters();
                 if(psiElement.length > 0) {
                     String funcName = PhpElementsUtil.getStringValue(psiElement[0]);
                     if(funcName != null && !funcName.contains("*")) {
-                        PhpClass phpClass = method.getContainingClass();
-
                         String signature = null;
 
                         // new \Twig_SimpleTest('my_test', null, array('node_class' => 'My_Node_Test'))

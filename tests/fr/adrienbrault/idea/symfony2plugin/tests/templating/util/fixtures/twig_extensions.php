@@ -44,10 +44,28 @@ namespace
     class Twig_Filter_Function
     {
     }
+
+    // Twig 2.0
+    class Twig_Filter
+    {
+    }
+
+    class Twig_Test
+    {
+    }
+
+    class Twig_Function
+    {
+    }
 }
 
 namespace Twig
 {
+    // Twig 3.0
+    class TwigFilter {}
+    class TwigFunction {}
+    class TwigTest {}
+
     class Extensions implements \Twig_ExtensionInterface {
         public function getTokenParsers()
         {
@@ -63,6 +81,8 @@ namespace Twig
                 new \Twig_SimpleFilter('trans', [$this, 'foobar']),
                 'doctrine_minify_query' => new \Twig_Filter_Method($this, 'foobar'),
                 'localizeddate' => new \Twig_Filter_Function('foobar'),
+                new \Twig_Filter('trans_2', [$this, 'foobar']),
+                new TwigFilter('trans_3', [$this, 'foobar']),
             ];
         }
 
@@ -71,6 +91,8 @@ namespace Twig
             return [
                 new \Twig_SimpleTest('my_test', null, array('node_class' => 'My_Node_Test')),
                 new \Twig_SimpleTest('my_test_2', 'foo_test'),
+                new \Twig_Test('iterable_2', 'foo_test'),
+                new TwigTest('iterable_3', 'foo_test'),
             ];
         }
 
@@ -80,6 +102,8 @@ namespace Twig
                 new \Twig_SimpleFunction('max', 'max'),
                 'form_enctype' => new \Twig_Function_Node('Symfony\Bridge\Twig\Node\FormEnctypeNode'),
                 'hwi_oauth_login_url'  => new \Twig_Function_Method($this, 'foobar'),
+                new \Twig_Function('max_2', 'max'),
+                new TwigFunction('max_3', 'max'),
             ];
         }
 
