@@ -196,7 +196,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
             }
 
             PsiElement resolvedReference = psiReference.resolve();
-            if (!(resolvedReference instanceof Function)) {
+            if (!(resolvedReference instanceof Method)) {
                 return false;
             }
 
