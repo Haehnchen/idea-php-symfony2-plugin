@@ -238,12 +238,11 @@ public class FormOptionsUtil {
         return defaultValues;
     }
 
-    public static void getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
+    private static void getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
         getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
     }
 
     private static Map<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
-
         PhpClass phpClass = collector.getFormTypeToClass(formTypeName);
         if(phpClass == null) {
             return defaultValues;
@@ -278,9 +277,15 @@ public class FormOptionsUtil {
     }
 
     private static void getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor) {
+        getDefaultOptions(project, phpClass, formClass, visitor, 10);
+    }
+
+    private static void getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor, int depth) {
+        if(depth-- < 0) {
+            return;
+        }
 
         for(String methodName: FORM_OPTION_METHODS) {
-
             Method method = phpClass.findMethodByName(methodName);
             if(method == null) {
                 continue;
@@ -288,7 +293,6 @@ public class FormOptionsUtil {
 
             Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(method, MethodReference.class);
             for(MethodReference methodReference: tests) {
-
                 if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, "setDefaults")) {
                     PsiElement[] parameters = methodReference.getParameters();
                     if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
@@ -320,15 +324,12 @@ public class FormOptionsUtil {
                         PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
                         if(phpClassInner != null) {
                             // @TODO only use setDefaultOptions, recursive call get setDefaults again
-                            getDefaultOptions(project, phpClassInner, formClass, visitor);
+                            getDefaultOptions(project, phpClassInner, formClass, visitor, depth);
                         }
                     }
                 }
-
             }
-
         }
-
     }
 
     /**
