@@ -57,20 +57,11 @@ public class TranslationTagCompletionRegistrar implements GotoCompletionRegistra
     }
 
     /**
-     * Resolve html language injection
-     */
-    private static PsiElement getElementOnTwigViewProvider(@NotNull PsiElement element) {
-        PsiFile file = element.getContainingFile();
-        TextRange textRange = element.getTextRange();
-        return file.getViewProvider().findElementAt(textRange.getStartOffset(), TwigLanguage.INSTANCE);
-    }
-
-    /**
      * Find trans tag as this is
      * <caret>{% endtrans %}
      */
     private static TwigCompositeElement getTagOnTwigViewProvider(@NotNull PsiElement element) {
-        PsiElement psiElement = getElementOnTwigViewProvider(element);
+        PsiElement psiElement = TwigUtil.getElementOnTwigViewProvider(element);
         if(psiElement == null) {
             return null;
         }

@@ -179,7 +179,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
     }
 
-    private TreeMap<String, Integer> getPossibleDomainTreeMap(TwigFile psiFile, final Set<String> domainNames) {
+    public static TreeMap<String, Integer> getPossibleDomainTreeMap(TwigFile psiFile, final Set<String> domainNames) {
 
         final Map<String, Integer> found = new HashMap<>();
 

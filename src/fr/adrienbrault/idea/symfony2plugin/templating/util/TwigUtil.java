@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -25,6 +26,7 @@ import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -251,7 +253,7 @@ public class TwigUtil {
     }
 
     /**
-     * Html in Twig is injected trx to find an real Twig element
+     * Html in Twig is injected try to find an real Twig element
      * TODO: there must be some nicer solution
      *
      * {% block %}<html/>{% endblock %}
@@ -1301,5 +1303,14 @@ public class TwigUtil {
         return allSubclasses.stream()
             .filter(phpClass -> !PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile()))
             .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
+     * Resolve html language injection
+     */
+    public static PsiElement getElementOnTwigViewProvider(@NotNull PsiElement element) {
+        PsiFile file = element.getContainingFile();
+        TextRange textRange = element.getTextRange();
+        return file.getViewProvider().findElementAt(textRange.getStartOffset(), TwigLanguage.INSTANCE);
     }
 }
