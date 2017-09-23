@@ -594,6 +594,7 @@
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ContainerTwigNamespaceExtension"/>
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension"/>
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.BundleTwigNamespaceExtension"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.FlexTwigNamespaceExtension"/>
 
         <ServiceCollector implementation="fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector"/>
 
