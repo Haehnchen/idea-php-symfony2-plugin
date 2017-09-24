@@ -201,16 +201,18 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getInjectedTwigElement
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getElementOnTwigViewProvider
      */
     public void testGetTransDefaultDomainOnInjectedElement() {
-        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+        myFixture.configureByText("foo.html.twig", "" +
             "{% trans_default_domain \"foo\" %}\n" +
             "<a href=\"#\">FOO<caret>BAR</a>"
         );
 
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
         assertTrue(
-            TwigUtil.getInjectedTwigElement(psiFile, myFixture.getCaretOffset()).getContainingFile().getFileType() == TwigFileType.INSTANCE
+            TwigUtil.getElementOnTwigViewProvider(psiElement).getContainingFile().getFileType() == TwigFileType.INSTANCE
         );
     }
 
@@ -218,14 +220,15 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScopeOrInjectedElement
      */
     public void testGetTransDefaultDomainOnScopeOrInjectedElement() {
-        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
+        myFixture.configureByText("foo.html.twig", "" +
             "{% trans_default_domain \"foo\" %}\n" +
             "<a href=\"#\">FOO<caret>BAR</a>"
         );
 
-        assertEquals("foo", TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(psiFile, myFixture.getCaretOffset()));
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("foo", TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(psiElement));
 
-        psiFile = myFixture.configureByText("foo.html.twig", "" +
+        myFixture.configureByText("foo.html.twig", "" +
             "{% trans_default_domain \"foo\" %}\n" +
             "{% embed 'default/e.html.twig' %}\n" +
             "  {% trans_default_domain \"foobar\" %}\n" +
@@ -233,20 +236,25 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "{% endembed %}\n"
         );
 
-        assertEquals("foobar", TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(psiFile, myFixture.getCaretOffset()));
+        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("foobar", TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(psiElement));
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getInjectedTwigElement
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getElementOnTwigViewProvider
      */
     public void testGetTransDefaultDomainOnInjectedElementWithInvalidOversizesCaretOffset() {
-        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "<a href=\"#\">FOO<caret>BAR</a>");
+        myFixture.configureByText("foo.html.twig", "<a href=\"#\">FOO<caret>BAR</a>");
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
 
         assertTrue(
-            TwigUtil.getInjectedTwigElement(psiFile, 3).getContainingFile().getFileType() == TwigFileType.INSTANCE
+            TwigUtil.getElementOnTwigViewProvider(psiElement).getContainingFile().getFileType() == TwigFileType.INSTANCE
         );
 
-        assertNull(TwigUtil.getInjectedTwigElement(psiFile, 300000));
+        myFixture.configureByText("test.php", "<?php<caret> ");
+        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        assertNull(TwigUtil.getElementOnTwigViewProvider(psiElement));
     }
 
     /**

@@ -239,36 +239,17 @@ public class TwigUtil {
      * Search Twig element to find use trans_default_domain and returns given string parameter
      */
     @Nullable
-    public static String getTransDefaultDomainOnScopeOrInjectedElement(@NotNull PsiElement position, int caretOffset) {
+    public static String getTransDefaultDomainOnScopeOrInjectedElement(@NotNull PsiElement position) {
         if(position.getContainingFile().getContainingFile() == TwigFileType.INSTANCE) {
             return getTransDefaultDomainOnScope(position);
         }
 
-        PsiElement element = getInjectedTwigElement(position.getContainingFile(), caretOffset);
+        PsiElement element = getElementOnTwigViewProvider(position);
         if(element != null) {
             return getTransDefaultDomainOnScope(element);
         }
 
         return null;
-    }
-
-    /**
-     * Html in Twig is injected try to find an real Twig element
-     * TODO: there must be some nicer solution
-     *
-     * {% block %}<html/>{% endblock %}
-     */
-    @Nullable
-    public static PsiElement getInjectedTwigElement(@NotNull PsiFile psiFile, int caretOffset) {
-        PsiElement elementAt;
-
-        int limit = 20;
-        do {
-            caretOffset = caretOffset - 5;
-            elementAt = psiFile.findElementAt(caretOffset);
-        } while (limit-- > 0 && caretOffset > 0 && elementAt != null && elementAt.getContainingFile().getFileType() != TwigFileType.INSTANCE);
-
-        return elementAt;
     }
 
     /**

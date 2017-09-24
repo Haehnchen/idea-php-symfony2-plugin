@@ -146,7 +146,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             transDefaultScope = psiFile;
         }
 
-        String defaultDomain = TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(transDefaultScope, caretOffset);
+        String defaultDomain = TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(transDefaultScope);
         if(defaultDomain == null) {
             defaultDomain = "messages";
         }
