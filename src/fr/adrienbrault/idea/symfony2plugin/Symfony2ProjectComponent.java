@@ -133,16 +133,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     }
 
     private void checkProject() {
+        if(!this.isEnabled()
+            && !Settings.getInstance(project).dismissEnableNotification
+            && VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor", "symfony") != null
+            ) {
 
-        if(!this.isEnabled() && !Settings.getInstance(project).dismissEnableNotification) {
-            if(VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor") != null
-                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "config") != null
-                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "app", "Resources") != null
-                && VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor", "symfony", "symfony") != null
-              ) {
-                IdeHelper.notifyEnableMessage(project);
-            }
-
+            IdeHelper.notifyEnableMessage(project);
             return;
         }
 
