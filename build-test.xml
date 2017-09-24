@@ -105,6 +105,7 @@
                 <include name="**/*.png"/>
                 <include name="**/*.xml"/>
                 <include name="**/*.yml"/>
+                <include name="**/*.yaml"/>
                 <include name="**/*.xlf"/>
                 <include name="**/*.twig"/>
                 <include name="**/*.json"/>
