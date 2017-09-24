@@ -8,28 +8,21 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
-import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
 import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtractorDialog;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.awt.*;
 import java.util.*;
@@ -146,29 +139,22 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             transDefaultScope = psiFile;
         }
 
-        String defaultDomain = TwigUtil.getTransDefaultDomainOnScopeOrInjectedElement(transDefaultScope);
-        if(defaultDomain == null) {
-            defaultDomain = "messages";
-        }
-
-        TreeMap<String, Integer> sortedMap = getPossibleDomainTreeMap((TwigFile) psiFile, domainNames);
+        PsiElement element = TwigUtil.getElementOnTwigViewProvider(transDefaultScope);
+        TwigUtil.DomainScope twigFileDomainScope = TwigUtil.getTwigFileDomainScope(element != null ? element : transDefaultScope);
 
         // we want to have mostly used domain preselected
-        String reselectedDomain = defaultDomain;
-        if(sortedMap.size() > 0) {
-            reselectedDomain = sortedMap.firstKey();
-        }
+        final String defaultDomain = twigFileDomainScope.getDefaultDomain();
+        final String reselectedDomain = twigFileDomainScope.getDomain();
 
         String defaultKey = null;
         if(translationText.length() < 15) {
             defaultKey = translationText.toLowerCase().replace(" ", ".");
         }
 
-        final String finalDefaultDomain = defaultDomain;
         final int finalStartOffset = startOffset;
         final int finalEndOffset = endOffset;
         final String finalTranslationText = translationText;
-        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(project, psiFile, domainNames, defaultKey, reselectedDomain, new MyOnOkCallback(project, editor, finalDefaultDomain, finalStartOffset, finalEndOffset, finalTranslationText));
+        TranslatorKeyExtractorDialog extractorDialog = new TranslatorKeyExtractorDialog(project, psiFile, domainNames, defaultKey, reselectedDomain, new MyOnOkCallback(project, editor, defaultDomain, finalStartOffset, finalEndOffset, finalTranslationText));
 
         extractorDialog.setTitle("Symfony: Extract Translation Key");
         extractorDialog.setMinimumSize(new Dimension(600, 200));
@@ -177,37 +163,6 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
         extractorDialog.setVisible(true);
         extractorDialog.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
 
-    }
-
-    public static TreeMap<String, Integer> getPossibleDomainTreeMap(TwigFile psiFile, final Set<String> domainNames) {
-
-        final Map<String, Integer> found = new HashMap<>();
-
-        // visit every trans or transchoice to get possible domain names
-        PsiTreeUtil.collectElements(psiFile, psiElement -> {
-            if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
-                PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
-                if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-                    String text = psiElement.getText();
-                    if (StringUtils.isNotBlank(text) && domainNames.contains(text)) {
-                        if (found.containsKey(text)) {
-                            found.put(text, found.get(text) + 1);
-                        } else {
-                            found.put(text, 1);
-                        }
-                    }
-                }
-            }
-
-            return false;
-        });
-
-        // sort in found integer value
-        ValueComparator vc =  new ValueComparator(found);
-        TreeMap<String, Integer> sortedMap = new TreeMap<>(vc);
-        sortedMap.putAll(found);
-
-        return sortedMap;
     }
 
     private static class MyOnOkCallback implements TranslatorKeyExtractorDialog.OnOkCallback {

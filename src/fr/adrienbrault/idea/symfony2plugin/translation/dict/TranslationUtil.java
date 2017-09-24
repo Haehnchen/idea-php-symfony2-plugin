@@ -238,8 +238,8 @@ public class TranslationUtil {
         return false;
     }
 
-
-    public static List<LookupElement> getTranslationLookupElementsOnDomain(Project project, String domainName) {
+    @NotNull
+    public static List<LookupElement> getTranslationLookupElementsOnDomain(@NotNull Project project, @NotNull String domainName) {
 
         Set<String> keySet = new HashSet<>();
         List<Set<String>> test = FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));

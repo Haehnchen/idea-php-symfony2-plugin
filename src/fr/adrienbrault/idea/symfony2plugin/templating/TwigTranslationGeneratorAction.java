@@ -14,7 +14,6 @@ import com.intellij.ui.components.JBList;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.TwigExtractLanguageAction;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang.StringUtils;
@@ -22,9 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -79,22 +75,11 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
                 return;
             }
 
-            String defaultDomain = TwigUtil.getTransDefaultDomainOnScope(psiElement);
-            if(defaultDomain == null) {
-                defaultDomain = "messages";
-            }
+            PsiElement element = TwigUtil.getElementOnTwigViewProvider(psiElement);
+            TwigUtil.DomainScope twigFileDomainScope = TwigUtil.getTwigFileDomainScope(element != null ? element : psiElement);
 
-            final Set<String> domainNames = TranslationUtil.getTranslationDomainLookupElements(project).stream()
-                .map(LookupElement::getLookupString)
-                .collect(Collectors.toCollection(TreeSet::new));
-
-            TreeMap<String, Integer> sortedMap = TwigExtractLanguageAction.getPossibleDomainTreeMap((TwigFile) containingFile, domainNames);
-
-            // we want to have mostly used domain preselected
-            String domain = defaultDomain;
-            if(sortedMap.size() > 0) {
-                domain = sortedMap.firstKey();
-            }
+            final String defaultDomain = twigFileDomainScope.getDefaultDomain();
+            final String domain = twigFileDomainScope.getDomain();
 
             List<String> collect = TranslationUtil.getTranslationLookupElementsOnDomain(project, domain)
                 .stream()
@@ -103,9 +88,6 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
                 .collect(Collectors.toList());
 
             final JBList<String> list = new JBList<>(collect);
-
-            String finalDefaultDomain = defaultDomain;
-            String finalDomain = domain;
 
             JBPopupFactory.getInstance().createListPopupBuilder(list)
                 .setTitle(String.format("Symfony: Translations \"%s\"", StringUtils.abbreviate(domain, 20)))
@@ -117,8 +99,8 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
                         protected void run() {
                             String s;
 
-                            if (!finalDomain.equals(finalDefaultDomain)) {
-                                s = String.format("{{ '%s'|trans({}, '%s') }}", selectedValue, finalDomain);
+                            if (!domain.equals(defaultDomain)) {
+                                s = String.format("{{ '%s'|trans({}, '%s') }}", selectedValue, domain);
                             } else {
                                 s = String.format("{{ '%s'|trans }}", selectedValue);
                             }

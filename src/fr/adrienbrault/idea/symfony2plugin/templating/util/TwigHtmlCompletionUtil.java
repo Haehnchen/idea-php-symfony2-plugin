@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
-import com.intellij.patterns.StandardPatterns;
-import com.intellij.patterns.XmlPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.html.HtmlTag;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlText;
+import com.intellij.util.ProcessingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,21 +28,41 @@ public class TwigHtmlCompletionUtil {
     }
 
     public static PsiElementPattern.Capture<PsiElement> getFormActionAttributePattern() {
+        return getTagAttributePattern("form", "action");
+    }
+
+    /**
+     * <foo>bar</foo>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getTagTextPattern(@NotNull String... tag) {
+        return XmlPatterns
+            .psiElement().withParent(
+                PlatformPatterns.psiElement(XmlText.class).withParent(
+                    PlatformPatterns.psiElement(HtmlTag.class).withName(tag)
+                )
+            )
+            .inFile(XmlPatterns.psiFile()
+                .withName(XmlPatterns
+                    .string().endsWith(".twig")
+                )
+            );
+    }
+
+    public static PsiElementPattern.Capture<PsiElement> getTagAttributePattern(@NotNull String tag, @NotNull String attribute) {
         return PlatformPatterns.psiElement()
             .withParent(
                 XmlPatterns.xmlAttributeValue()
                     .withParent(
-                        XmlPatterns.xmlAttribute("action").withParent(
-                            XmlPatterns.xmlTag().withName("form")
+                        XmlPatterns.xmlAttribute(attribute).withParent(
+                            XmlPatterns.xmlTag().withName(tag)
                         )
                     )
             ).inFile(XmlPatterns.psiFile()
-                    .withName(XmlPatterns
-                            .string().endsWith(".twig")
-                    )
+                .withName(XmlPatterns
+                    .string().endsWith(".twig")
+                )
             );
     }
-
 
     // html inside twig: <link href="#" rel="stylesheet" />
     public static PsiElementPattern.Capture<PsiElement> getAssetCssAttributePattern() {

@@ -30,6 +30,7 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
@@ -1289,9 +1290,91 @@ public class TwigUtil {
     /**
      * Resolve html language injection
      */
+    @Nullable
     public static PsiElement getElementOnTwigViewProvider(@NotNull PsiElement element) {
         PsiFile file = element.getContainingFile();
         TextRange textRange = element.getTextRange();
         return file.getViewProvider().findElementAt(textRange.getStartOffset(), TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Collect appearance for Twig translation domains
+     */
+    @NotNull
+    private static TreeMap<String, Integer> getPossibleDomainTreeMap(@NotNull PsiFile psiFile) {
+        Map<String, Integer> found = new HashMap<>();
+
+        // visit every trans or transchoice to get possible domain names
+        PsiTreeUtil.collectElements(psiFile, psiElement -> {
+            String text1 = psiElement.getText();
+            if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+                PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+                if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+                    String text = psiElement.getText();
+                    if (StringUtils.isNotBlank(text)) {
+                        if (found.containsKey(text)) {
+                            found.put(text, found.get(text) + 1);
+                        } else {
+                            found.put(text, 1);
+                        }
+                    }
+                }
+            }
+
+            return false;
+        });
+
+        // sort in found integer value
+        TreeMap<String, Integer> sortedMap = new TreeMap<>(new ValueComparator(found));
+        sortedMap.putAll(found);
+
+        return sortedMap;
+    }
+
+    @NotNull
+    public static DomainScope getTwigFileDomainScope(@NotNull PsiElement psiElement) {
+        String defaultDomain = TwigUtil.getTransDefaultDomainOnScope(psiElement);
+        if(defaultDomain == null) {
+            defaultDomain = "messages";
+        }
+
+        TreeMap<String, Integer> sortedMap = getPossibleDomainTreeMap(psiElement.getContainingFile());
+
+        // we want to have mostly used domain preselected
+        String domain = defaultDomain;
+        if(sortedMap.size() > 0) {
+            domain = sortedMap.firstKey();
+        }
+
+        return new DomainScope(defaultDomain, domain);
+    }
+
+    public static class DomainScope {
+        @NotNull
+        private final String defaultDomain;
+
+        @NotNull
+        private final String domain;
+
+        DomainScope(@NotNull String defaultDomain, @NotNull String domain) {
+            this.defaultDomain = defaultDomain;
+            this.domain = domain;
+        }
+
+        /**
+         * trans_default_domain for scope
+         */
+        @NotNull
+        public String getDefaultDomain() {
+            return defaultDomain;
+        }
+
+        /**
+         * Domain with most file scope appearance
+         */
+        @NotNull
+        public String getDomain() {
+            return domain;
+        }
     }
 }

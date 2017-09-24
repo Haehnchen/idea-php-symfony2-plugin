@@ -484,6 +484,20 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
     }
 
+    public void testGetTwigFileDomainScope() {
+        myFixture.configureByText(
+            "t.html.twig",
+            "{% trans_default_domain 'foobar' %} {{ 'f'|trans({}, 'bar') }} {{ 'f'|trans({}, 'bar') }} {{ 'f'|trans({}, 'bar2') }}"
+        );
+
+        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        TwigUtil.DomainScope twigFileDomainScope = TwigUtil.getTwigFileDomainScope(element);
+
+        assertEquals("foobar", twigFileDomainScope.getDefaultDomain());
+        assertEquals("bar", twigFileDomainScope.getDomain());
+    }
+
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {
         PsiElement psiElement = TwigElementFactory.createPsiElement(getProject(), content, type);
         if(psiElement == null) {
