@@ -4,7 +4,6 @@ import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -24,18 +23,8 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceArgumentGenerateAction extends CodeInsightAction {
-
-    @Override
-    public void update(AnActionEvent event) {
-        super.update(event);
-        boolean enabled = Symfony2ProjectComponent.isEnabled(event.getProject());
-        event.getPresentation().setVisible(enabled);
-        event.getPresentation().setEnabled(enabled);
-    }
-
     @Nullable
     private static XmlTag getMatchXmlTag(@NotNull Editor editor, @NotNull PsiFile file) {
-
         if(!(file instanceof XmlFile)) {
             return null;
         }
@@ -55,19 +44,16 @@ public class ServiceArgumentGenerateAction extends CodeInsightAction {
 
     @Override
     protected boolean isValidForFile(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-
         if(file.getFileType() != XmlFileType.INSTANCE || !Symfony2ProjectComponent.isEnabled(project)) {
             return false;
         }
 
         return getMatchXmlTag(editor, file) != null;
     }
-    
-    
+
     @NotNull
     @Override
     protected CodeInsightActionHandler getHandler() {
-
         return new CodeInsightActionHandler() {
             @Override
             public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
@@ -95,7 +81,5 @@ public class ServiceArgumentGenerateAction extends CodeInsightAction {
                 return true;
             }
         };
-
     }
-
 }

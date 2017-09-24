@@ -3,13 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.form.action.generator;
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
 import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.jetbrains.php.lang.psi.PhpCodeEditUtil;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
@@ -27,17 +27,12 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormTypeConstantMigrationAction extends CodeInsightAction {
-
-    @Override
-    public void update(AnActionEvent event) {
-        super.update(event);
-        boolean enabled = Symfony2ProjectComponent.isEnabled(event.getProject());
-        event.getPresentation().setVisible(enabled);
-        event.getPresentation().setEnabled(enabled);
-    }
-
     @Override
     protected boolean isValidForFile(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+        if(!(file instanceof PhpFile) || !Symfony2ProjectComponent.isEnabled(project)) {
+            return false;
+        }
+
         PhpClass classAtCaret = PhpCodeEditUtil.findClassAtCaret(editor, file);
 
         return
@@ -84,9 +79,10 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
         }
 
         private class FormTypeStringElementVisitor extends PsiRecursiveElementVisitor {
+            @NotNull
             private final Collection<StringLiteralExpression> formTypes;
 
-            public FormTypeStringElementVisitor(Collection<StringLiteralExpression> formTypes) {
+            private FormTypeStringElementVisitor(@NotNull Collection<StringLiteralExpression> formTypes) {
                 this.formTypes = formTypes;
             }
 
