@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -53,7 +54,12 @@ public class YamlElementPatternHelper {
                 return true;
             }
 
-            String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), psiFile.getVirtualFile());
+            VirtualFile virtualFile = psiFile.getVirtualFile();
+            if(virtualFile == null) {
+                return false;
+            }
+
+            String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), virtualFile);
             return relativePath != null && relativePath.contains("/config/packages/");
         }
     };
