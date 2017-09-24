@@ -1,0 +1,3 @@
+services:
+    foo.yaml_id:
+        class: AppBundle\Controller\DefaultController

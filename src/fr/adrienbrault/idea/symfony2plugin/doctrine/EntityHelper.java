@@ -322,7 +322,7 @@ public class EntityHelper {
     @Nullable
     private static PsiFile getEntityMetadataFile(@NotNull Project project, @NotNull SymfonyBundle symfonyBundleUtil, @NotNull String className, @NotNull String modelShortcut) {
 
-        for(String s: new String[] {"yml", "xml"}) {
+        for(String s: new String[] {"yml", "yaml", "xml"}) {
 
             String entityFile = "Resources/config/doctrine/" + className + String.format(".%s.%s", modelShortcut, s);
             VirtualFile virtualFile = symfonyBundleUtil.getRelative(entityFile);

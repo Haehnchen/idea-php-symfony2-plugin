@@ -149,6 +149,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     private boolean isMetadataFile(String fileName) {
         fileName = fileName.toLowerCase();
-        return fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml") || fileName.endsWith("couchdb.yml") || fileName.endsWith("document.yml");
+        return fileName.endsWith("orm.yml") || fileName.endsWith("odm.yml") || fileName.endsWith("mongodb.yml") || fileName.endsWith("couchdb.yml") || fileName.endsWith("document.yml")
+            || fileName.endsWith("orm.yaml") || fileName.endsWith("odm.yaml") || fileName.endsWith("mongodb.yaml") || fileName.endsWith("couchdb.yaml") || fileName.endsWith("document.yaml");
     }
 }

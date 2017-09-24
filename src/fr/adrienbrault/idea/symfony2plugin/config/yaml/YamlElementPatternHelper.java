@@ -6,11 +6,13 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ProcessingContext;
+import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.ParentPathPatternCondition;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
+import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
@@ -32,6 +34,29 @@ public class YamlElementPatternHelper {
      * services: ~
      */
     private static PatternCondition<YAMLKeyValue> YAML_KEY_SERVICES = new YAMLKeyValuePatternCondition("services");
+
+    /**
+     * config.yml, config_dev.yml,
+     * security.yml, security_dev.yml
+     *
+     * /../config/packages/doctrine.yml
+     * /../config/packages/test/doctrine.yml
+     */
+    private static final PatternCondition<PsiFile> CONFIG_YAML_PATTERN = new PatternCondition<PsiFile>("Yaml Configuration") {
+        @Override
+        public boolean accepts(@NotNull PsiFile psiFile, ProcessingContext processingContext) {
+            if (psiFile.getFileType() != YAMLFileType.YML) {
+                return false;
+            }
+
+            if (psiFile.getName().matches("(security|config).*\\.(yml|yaml)")) {
+                return true;
+            }
+
+            String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), psiFile.getVirtualFile());
+            return relativePath != null && relativePath.contains("/config/packages/");
+        }
+    };
 
     /**
      * auto complete on
@@ -493,7 +518,13 @@ public class YamlElementPatternHelper {
             PlatformPatterns.string().endsWith("couchdb.yml"),
             PlatformPatterns.string().endsWith("odm.yml"),
             PlatformPatterns.string().endsWith("mongodb.yml"),
-            PlatformPatterns.string().endsWith("document.yml")
+            PlatformPatterns.string().endsWith("document.yml"),
+
+            PlatformPatterns.string().endsWith("orm.yaml"),
+            PlatformPatterns.string().endsWith("couchdb.yaml"),
+            PlatformPatterns.string().endsWith("odm.yaml"),
+            PlatformPatterns.string().endsWith("mongodb.yaml"),
+            PlatformPatterns.string().endsWith("document.yaml")
         ));
     }
 
@@ -530,10 +561,13 @@ public class YamlElementPatternHelper {
     /**
      * config.yml, config_dev.yml,
      * security.yml, security_dev.yml
+     *
+     * /../config/packages/doctrine.yml
+     * /../config/packages/test/doctrine.yml
      */
     @NotNull
     public static PsiFilePattern.Capture<PsiFile> getConfigFileNamePattern() {
-        return PlatformPatterns.psiFile().withName(PlatformPatterns.string().matches("(security|config).*\\.yml"));
+        return PlatformPatterns.psiFile().with(CONFIG_YAML_PATTERN);
     }
 
     /**

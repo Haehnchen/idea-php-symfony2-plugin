@@ -58,14 +58,14 @@ public class ServiceActionUtil {
     }
 
     public static void buildFile(AnActionEvent event, final Project project, String templatePath) {
-        String extension = templatePath.endsWith(".yml") ? "yml" : "xml" ;
+        String extension = (templatePath.endsWith(".yml") || templatePath.endsWith(".yaml")) ? "yml" : "xml" ;
 
         String fileName = Messages.showInputDialog(project, "File name (without extension)", String.format("Create %s Service", extension), Symfony2Icons.SYMFONY);
         if(fileName == null || StringUtils.isBlank(fileName)) {
             return;
         }
 
-        FileType fileType = templatePath.endsWith(".yml") ? YAMLFileType.YML : XmlFileType.INSTANCE ;
+        FileType fileType = (templatePath.endsWith(".yml") || templatePath.endsWith(".yaml")) ? YAMLFileType.YML : XmlFileType.INSTANCE ;
 
         if(!fileName.endsWith("." + extension)) {
             fileName = fileName.concat("." + extension);

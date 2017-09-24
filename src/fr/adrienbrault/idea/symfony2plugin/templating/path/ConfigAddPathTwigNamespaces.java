@@ -14,11 +14,13 @@ import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * Extract Twig path of config.yml
@@ -50,19 +52,33 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
 
     @NotNull
     private Collection<TwigPath> getTwigPaths(@NotNull TwigNamespaceExtensionParameter parameter) {
+        Collection<String[]> paths = Arrays.asList(
+            new String[] {"config", "packages", "twig", "config.yml"},
+            new String[] {"config", "packages", "twig", "config.yaml"}
+        );
+
+        Collection<VirtualFile> virtualFiles = new HashSet<>();
+
+        for (String[] path : paths) {
+            VirtualFile configFile = VfsUtil.findRelativeFile(parameter.getProject().getBaseDir(), path);
+            if(configFile != null) {
+                virtualFiles.add(configFile);
+            }
+        }
+
         VirtualFile configDir = VfsUtil.findRelativeFile(parameter.getProject().getBaseDir(), "app", "config");
-        if(configDir == null) {
-            return Collections.emptyList();
+        if(configDir != null) {
+            for (VirtualFile configFile : configDir.getChildren()) {
+                // app/config/config*yml
+                if(configFile.getFileType() == YAMLFileType.YML && configFile.getName().startsWith("config")) {
+                    virtualFiles.add(configFile);
+                }
+            }
         }
 
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
-        // app/config/config*yml
-        for (VirtualFile file : configDir.getChildren()) {
-            if(!file.getName().startsWith("config.yml")) {
-                continue;
-            }
-
+        for (VirtualFile file : virtualFiles) {
             PsiFile psiFile = PsiManager.getInstance(parameter.getProject()).findFile(file);
             if(!(psiFile instanceof YAMLFile)) {
                 continue;

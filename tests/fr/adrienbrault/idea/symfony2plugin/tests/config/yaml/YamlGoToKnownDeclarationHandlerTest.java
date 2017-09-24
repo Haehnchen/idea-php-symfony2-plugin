@@ -49,6 +49,11 @@ public class YamlGoToKnownDeclarationHandlerTest extends SymfonyLightCodeInsight
                 "    foo: ~",
             PlatformPatterns.psiElement(StringLiteralExpression.class)
         );
+
+        assertNavigationMatch("config.yaml", "foobar<caret>_root:\n" +
+                "    foo: ~",
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
+        );
     }
 
     public void testNavigateToTaggedServices() {

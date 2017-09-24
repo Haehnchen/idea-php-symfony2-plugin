@@ -1,17 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper
  */
 public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
+    public String getTestDataPath() {
+        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+    }
 
     private String[] dataProviders() {
         return new String[] {
@@ -170,6 +176,23 @@ public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixture
                 "       car: foo\n" +
                 "       <caret>a"
         )));
+    }
+
+    public void testGetConfigFileNamePattern() {
+        assertTrue(YamlElementPatternHelper.getConfigFileNamePattern().accepts(
+            myFixture.configureByText("config.yml", "")
+        ));
+
+        myFixture.copyFileToProject("config.yaml", "config/packages/doctrine.yml");
+        myFixture.copyFileToProject("config.yaml", "config/packages/test/doctrine.yaml");
+
+        assertTrue(YamlElementPatternHelper.getConfigFileNamePattern().accepts(
+            myFixture.configureByFile("config/packages/doctrine.yml")
+        ));
+
+        assertTrue(YamlElementPatternHelper.getConfigFileNamePattern().accepts(
+            myFixture.configureByFile("config/packages/test/doctrine.yaml")
+        ));
     }
 
     private PsiElement createCaretElement(@NotNull String contents) {

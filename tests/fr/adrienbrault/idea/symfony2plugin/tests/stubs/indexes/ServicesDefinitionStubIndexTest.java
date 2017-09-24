@@ -20,6 +20,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
 
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.xml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yaml"));
     }
 
     public String getTestDataPath() {
@@ -28,6 +29,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
 
     public void testThatServiceIdOfYamlFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yaml_id");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.yml_id.alias");
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id").getClassName());

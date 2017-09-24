@@ -95,7 +95,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         // container file need to be xml file, eg xsd filetypes are not valid
         String extension = inputData.getFile().getExtension();
-        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml"))) {
+        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml"))) {
             return false;
         }
 

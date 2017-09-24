@@ -51,70 +51,72 @@ public class VoterUtil {
             }
         }
 
-        for (PsiFile psiFile : FilenameIndex.getFilesByName(project, "security.yml", GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML))) {
-            if(!(psiFile instanceof YAMLFile)) {
-                continue;
-            }
-
-            YAMLKeyValue roleHierarchy = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, "security", "role_hierarchy");
-            if(roleHierarchy != null) {
-                YAMLValue value = roleHierarchy.getValue();
-                if(!(value instanceof YAMLMapping)) {
+        for (String files : new String[]{"security.yml", "security.yaml"}) {
+            for (PsiFile psiFile : FilenameIndex.getFilesByName(project, files, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML))) {
+                if(!(psiFile instanceof YAMLFile)) {
                     continue;
                 }
 
-                for (YAMLPsiElement yamlPsiElement : value.getYAMLElements()) {
-                    if(!(yamlPsiElement instanceof YAMLKeyValue)) {
+                YAMLKeyValue roleHierarchy = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, "security", "role_hierarchy");
+                if(roleHierarchy != null) {
+                    YAMLValue value = roleHierarchy.getValue();
+                    if(!(value instanceof YAMLMapping)) {
                         continue;
                     }
 
-                    String keyText = ((YAMLKeyValue) yamlPsiElement).getKeyText();
-                    if(StringUtils.isNotBlank(keyText)) {
-                        consumer.accept(Pair.create(keyText, yamlPsiElement));
-                    }
+                    for (YAMLPsiElement yamlPsiElement : value.getYAMLElements()) {
+                        if(!(yamlPsiElement instanceof YAMLKeyValue)) {
+                            continue;
+                        }
 
-                    YAMLValue yamlValue = ((YAMLKeyValue) yamlPsiElement).getValue();
-                    if(yamlValue instanceof YAMLSequence) {
-                        for (String item : YamlHelper.getYamlArrayValuesAsString((YAMLSequence) yamlValue)) {
-                            consumer.accept(Pair.create(item, yamlValue));
+                        String keyText = ((YAMLKeyValue) yamlPsiElement).getKeyText();
+                        if(StringUtils.isNotBlank(keyText)) {
+                            consumer.accept(Pair.create(keyText, yamlPsiElement));
+                        }
+
+                        YAMLValue yamlValue = ((YAMLKeyValue) yamlPsiElement).getValue();
+                        if(yamlValue instanceof YAMLSequence) {
+                            for (String item : YamlHelper.getYamlArrayValuesAsString((YAMLSequence) yamlValue)) {
+                                consumer.accept(Pair.create(item, yamlValue));
+                            }
                         }
                     }
                 }
-            }
 
-            YAMLKeyValue accessControl = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, "security", "access_control");
-            if(accessControl != null) {
-                YAMLValue value = accessControl.getValue();
-                if(!(value instanceof YAMLSequence)) {
-                    continue;
-                }
-
-                for (YAMLPsiElement yamlPsiElement : value.getYAMLElements()) {
-                    if(!(yamlPsiElement instanceof YAMLSequenceItem)) {
+                YAMLKeyValue accessControl = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, "security", "access_control");
+                if(accessControl != null) {
+                    YAMLValue value = accessControl.getValue();
+                    if(!(value instanceof YAMLSequence)) {
                         continue;
                     }
 
-                    YAMLValue value1 = ((YAMLSequenceItem) yamlPsiElement).getValue();
-                    if(!(value1 instanceof YAMLMapping)) {
-                        continue;
-                    }
-
-                    YAMLKeyValue roles = ((YAMLMapping) value1).getKeyValueByKey("roles");
-                    if(roles == null) {
-                        continue;
-                    }
-
-                    YAMLValue value2 = roles.getValue();
-                    if(value2 instanceof YAMLScalar) {
-                        // roles: FOOBAR
-                        String textValue = ((YAMLScalar) value2).getTextValue();
-                        if(StringUtils.isNotBlank(textValue)) {
-                            consumer.accept(Pair.create(textValue, value2));
+                    for (YAMLPsiElement yamlPsiElement : value.getYAMLElements()) {
+                        if(!(yamlPsiElement instanceof YAMLSequenceItem)) {
+                            continue;
                         }
-                    } else if(value2 instanceof YAMLSequence) {
-                        // roles: [FOOBAR, FOOBAR_1]
-                        for (String item : YamlHelper.getYamlArrayValuesAsString((YAMLSequence) value2)) {
-                            consumer.accept(Pair.create(item, value2));
+
+                        YAMLValue value1 = ((YAMLSequenceItem) yamlPsiElement).getValue();
+                        if(!(value1 instanceof YAMLMapping)) {
+                            continue;
+                        }
+
+                        YAMLKeyValue roles = ((YAMLMapping) value1).getKeyValueByKey("roles");
+                        if(roles == null) {
+                            continue;
+                        }
+
+                        YAMLValue value2 = roles.getValue();
+                        if(value2 instanceof YAMLScalar) {
+                            // roles: FOOBAR
+                            String textValue = ((YAMLScalar) value2).getTextValue();
+                            if(StringUtils.isNotBlank(textValue)) {
+                                consumer.accept(Pair.create(textValue, value2));
+                            }
+                        } else if(value2 instanceof YAMLSequence) {
+                            // roles: [FOOBAR, FOOBAR_1]
+                            for (String item : YamlHelper.getYamlArrayValuesAsString((YAMLSequence) value2)) {
+                                consumer.accept(Pair.create(item, value2));
+                            }
                         }
                     }
                 }

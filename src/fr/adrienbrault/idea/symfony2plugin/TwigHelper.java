@@ -2285,31 +2285,38 @@ public class TwigHelper {
     public static Collection<Pair<String, String>> getTwigPathFromYamlConfigResolved(@NotNull YAMLFile yamlFile) {
         VirtualFile baseDir = yamlFile.getProject().getBaseDir();
 
-        VirtualFile appDir = VfsUtil.findRelativeFile(baseDir, "app");
-        if(appDir == null) {
-            return Collections.emptyList();
-        }
-
         Collection<Pair<String, String>> paths = new ArrayList<>();
 
         for (Pair<String, String> pair : getTwigPathFromYamlConfig(yamlFile)) {
             String second = pair.getSecond();
-            if(!second.startsWith("%kernel.root_dir%")) {
-                continue;
-            }
 
-            String path = StringUtils.stripStart(second.substring("%kernel.root_dir%".length()), "/");
+            if(second.startsWith("%kernel.root_dir%")) {
+                VirtualFile appDir = VfsUtil.findRelativeFile(baseDir, "app");
+                if(appDir != null) {
+                    String path = StringUtils.stripStart(second.substring("%kernel.root_dir%".length()), "/");
 
-            VirtualFile relativeFile = VfsUtil.findRelativeFile(appDir, path.split("/"));
-            if(relativeFile != null) {
-                String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
-                if(relativePath != null) {
-                    paths.add(Pair.create(pair.getFirst(), relativePath));
+                    VirtualFile relativeFile = VfsUtil.findRelativeFile(appDir, path.split("/"));
+                    if(relativeFile != null) {
+                        String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
+                        if(relativePath != null) {
+                            paths.add(Pair.create(pair.getFirst(), relativePath));
+                        }
+                    }
+                }
+            } else if(second.startsWith("%kernel.project_dir%")) {
+                String path = StringUtils.stripStart(second.substring("%kernel.project_dir%".length()), "/");
+
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(yamlFile.getProject().getBaseDir(), path.split("/"));
+                if(relativeFile != null) {
+                    String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
+                    if(relativePath != null) {
+                        paths.add(Pair.create(pair.getFirst(), relativePath));
+                    }
                 }
             }
         }
 
-        return paths;
+         return paths;
     }
 
     /**
