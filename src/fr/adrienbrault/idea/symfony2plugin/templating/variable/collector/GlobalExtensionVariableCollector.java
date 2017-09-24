@@ -5,6 +5,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -19,12 +20,8 @@ import java.util.Set;
 public class GlobalExtensionVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
     @Override
     public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
-
-        PhpIndex phpIndex = PhpIndex.getInstance(parameter.getProject());
-
-        for(PhpClass phpClass : phpIndex.getAllSubclasses("\\Twig_ExtensionInterface")) {
+        for(PhpClass phpClass : TwigUtil.getTwigExtensionClasses(parameter.getProject())) {
             if(!PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
-                // @TODO: signature vs getMethod faster?
                 Method method = phpClass.findMethodByName("getGlobals");
                 if(method != null) {
                     Collection<PhpReturn> phpReturns = PsiTreeUtil.findChildrenOfType(method, PhpReturn.class);

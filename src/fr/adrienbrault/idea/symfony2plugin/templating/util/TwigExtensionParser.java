@@ -12,7 +12,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.phpunit.PhpUnitUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -21,8 +20,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -93,7 +94,7 @@ public class TwigExtensionParser  {
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FILTERS_CACHE);
             if(cache == null) {
                 cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseFilters(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    CachedValueProvider.Result.create(parseFilters(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
                     false
                 );
 
@@ -107,7 +108,7 @@ public class TwigExtensionParser  {
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FUNCTION_CACHE);
             if(cache == null) {
                 cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseFunctions(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    CachedValueProvider.Result.create(parseFunctions(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
                     false
                 );
 
@@ -121,7 +122,7 @@ public class TwigExtensionParser  {
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(TEST_CACHE);
             if(cache == null) {
                 cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseTests(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    CachedValueProvider.Result.create(parseTests(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
                     false
                 );
 
@@ -135,7 +136,7 @@ public class TwigExtensionParser  {
             CachedValue<Map<String, TwigExtension>> cache = project.getUserData(OPERATORS_CACHE);
             if(cache == null) {
                 cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseOperators(getTwigExtensionClasses()), PsiModificationTracker.MODIFICATION_COUNT),
+                    CachedValueProvider.Result.create(parseOperators(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
                     false
                 );
 
@@ -144,19 +145,6 @@ public class TwigExtensionParser  {
 
             this.operators = cache.getValue();
         }
-    }
-
-    @NotNull
-    private Collection<PhpClass> getTwigExtensionClasses() {
-        Collection<PhpClass> phpClasses = new ArrayList<>();
-
-        // only the interface gave use all elements; service container dont hold all
-        // dont add unit tests classes
-        phpClasses.addAll(PhpIndex.getInstance(this.project).getAllSubclasses("\\Twig_ExtensionInterface").stream()
-            .filter(phpClass -> !PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile()))
-            .collect(Collectors.toList()));
-
-        return phpClasses;
     }
 
     @NotNull

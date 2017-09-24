@@ -22,6 +22,7 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -47,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -1276,5 +1278,28 @@ public class TwigUtil {
         }
 
         return Pair.create(macroName, parameter);
+    }
+
+    /**
+     * Get all Twig extension implementations:
+
+     * \Twig_ExtensionInterface
+     * \Twig\Extension\ExtensionInterface
+     */
+    @NotNull
+    public static Collection<PhpClass> getTwigExtensionClasses(@NotNull Project project) {
+        // \Twig\Extension\ExtensionInterface
+        Collection<PhpClass> allSubclasses = new HashSet<>();
+
+        // Twig 1
+        allSubclasses.addAll(PhpIndex.getInstance(project).getAllSubclasses("\\Twig_ExtensionInterface"));
+
+        // Twig 2+
+        allSubclasses.addAll(PhpIndex.getInstance(project).getAllSubclasses("\\Twig\\Extension\\ExtensionInterface"));
+
+        // Filter units tests and use HashSet as interfaces are nested for BC
+        return allSubclasses.stream()
+            .filter(phpClass -> !PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile()))
+            .collect(Collectors.toCollection(HashSet::new));
     }
 }
