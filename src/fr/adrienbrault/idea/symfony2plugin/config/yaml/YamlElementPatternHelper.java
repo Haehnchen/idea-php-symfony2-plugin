@@ -60,7 +60,7 @@ public class YamlElementPatternHelper {
             }
 
             String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), virtualFile);
-            return relativePath != null && relativePath.contains("/config/packages/");
+            return relativePath != null && relativePath.contains("config/packages/");
         }
     };
 

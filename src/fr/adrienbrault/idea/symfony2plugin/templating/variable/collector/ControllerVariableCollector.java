@@ -14,11 +14,6 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ControllerVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
-
-    @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-    }
-
     @Override
     public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
         PsiFile psiFile = parameter.getElement().getContainingFile();

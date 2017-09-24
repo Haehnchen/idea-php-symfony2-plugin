@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.config.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.*;
 import com.intellij.util.containers.ContainerUtil;
@@ -12,6 +14,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -139,5 +142,37 @@ public class ConfigUtil {
             this.psiElement = psiElement;
             this.contents = contents;
         }
+    }
+
+    /**
+     * app/config[..].yml
+     * config/packages/twig.yml
+     */
+    public static Collection<VirtualFile> getConfigurations(@NotNull Project project, @NotNull String packageName) {
+        Collection<String[]> paths = Arrays.asList(
+            new String[] {"config", "packages", packageName +".yml"},
+            new String[] {"config", "packages", packageName + "config.yaml"}
+        );
+
+        Collection<VirtualFile> virtualFiles = new HashSet<>();
+
+        for (String[] path : paths) {
+            VirtualFile configFile = VfsUtil.findRelativeFile(project.getBaseDir(), path);
+            if(configFile != null) {
+                virtualFiles.add(configFile);
+            }
+        }
+
+        VirtualFile configDir = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "config");
+        if(configDir != null) {
+            for (VirtualFile configFile : configDir.getChildren()) {
+                // app/config/config*yml
+                if(configFile.getFileType() == YAMLFileType.YML && configFile.getName().startsWith("config")) {
+                    virtualFiles.add(configFile);
+                }
+            }
+        }
+
+        return virtualFiles;
     }
 }

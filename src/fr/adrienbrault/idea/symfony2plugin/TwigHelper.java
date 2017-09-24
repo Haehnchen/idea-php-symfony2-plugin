@@ -2320,6 +2320,49 @@ public class TwigHelper {
     }
 
     /**
+     * Collects Twig globals in given yaml configuration
+     *
+     * twig:
+     *    globals:
+     *       ga_tracking: '%ga_tracking%'
+     *       user_management: '@AppBundle\Service\UserManagement'
+     */
+    @NotNull
+    public static Map<String, String> getTwigGlobalsFromYamlConfig(@NotNull YAMLFile yamlFile) {
+        YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInFile(yamlFile, "twig", "globals");
+        if(yamlKeyValue == null) {
+            return Collections.emptyMap();
+        }
+
+        YAMLValue value = yamlKeyValue.getValue();
+        if(!(value instanceof YAMLMapping)) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> pair = new HashMap<>();
+
+        for (YAMLPsiElement element : value.getYAMLElements()) {
+            if(!(element instanceof YAMLKeyValue)) {
+                continue;
+            }
+
+            String keyText = ((YAMLKeyValue) element).getKeyText();
+            if(StringUtils.isBlank(keyText)) {
+                continue;
+            }
+
+            String valueText = ((YAMLKeyValue) element).getValueText();
+            if(StringUtils.isBlank(valueText)) {
+                continue;
+            }
+
+            pair.put(keyText, valueText);
+        }
+
+        return pair;
+    }
+
+    /**
      * {% trans with {'%name%': 'Fabien'} from "aa" %}
      */
     @Nullable

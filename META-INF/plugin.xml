@@ -605,6 +605,7 @@
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.GlobalTwigConfigVariableCollector"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>

@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public interface TwigFileVariableCollector {
 
-    void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables);
+    default void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {}
 
     interface TwigFileVariableCollectorExt {
         void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables);

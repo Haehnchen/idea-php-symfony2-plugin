@@ -7,7 +7,6 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
@@ -22,6 +21,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -184,6 +184,24 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(ContainerUtil.find(map, pair ->
             pair.getFirst().equals("core9") && pair.getSecond().equals("%kernel.root_dir%/../src/views")
         ));
+    }
+    /**
+     * @see TwigHelper#getTwigGlobalsFromYamlConfig
+     */
+    public void testGetTwigGlobalsFromYamlConfig() {
+        String content = "twig:\n" +
+            "    globals:\n" +
+            "       ga_tracking: '%ga_tracking%'\n" +
+            "       user_management: '@AppBundle\\Service\\UserManagement'\n"
+            ;
+
+        YAMLFile yamlFile = (YAMLFile) PsiFileFactory.getInstance(getProject())
+            .createFileFromText("DUMMY__." + YAMLFileType.YML.getDefaultExtension(), YAMLFileType.YML, content, System.currentTimeMillis(), false);
+
+        Map<String, String> globals = TwigHelper.getTwigGlobalsFromYamlConfig(yamlFile);
+
+        assertEquals("%ga_tracking%", globals.get("ga_tracking"));
+        assertEquals("@AppBundle\\Service\\UserManagement", globals.get("user_management"));
     }
 
     /**

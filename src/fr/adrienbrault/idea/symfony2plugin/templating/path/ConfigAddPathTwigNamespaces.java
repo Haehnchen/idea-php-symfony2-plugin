@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -11,16 +10,14 @@ import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 
 /**
  * Extract Twig path of config.yml
@@ -28,6 +25,7 @@ import java.util.HashSet;
  *  twig:
  *    paths:
  *      "%kernel.root_dir%/../src/vendor/bundle/Resources/views": core
+ *      "%kernel.project_dir%/src/vendor/bundle/Resources/views": core
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -52,33 +50,9 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
 
     @NotNull
     private Collection<TwigPath> getTwigPaths(@NotNull TwigNamespaceExtensionParameter parameter) {
-        Collection<String[]> paths = Arrays.asList(
-            new String[] {"config", "packages", "twig", "config.yml"},
-            new String[] {"config", "packages", "twig", "config.yaml"}
-        );
-
-        Collection<VirtualFile> virtualFiles = new HashSet<>();
-
-        for (String[] path : paths) {
-            VirtualFile configFile = VfsUtil.findRelativeFile(parameter.getProject().getBaseDir(), path);
-            if(configFile != null) {
-                virtualFiles.add(configFile);
-            }
-        }
-
-        VirtualFile configDir = VfsUtil.findRelativeFile(parameter.getProject().getBaseDir(), "app", "config");
-        if(configDir != null) {
-            for (VirtualFile configFile : configDir.getChildren()) {
-                // app/config/config*yml
-                if(configFile.getFileType() == YAMLFileType.YML && configFile.getName().startsWith("config")) {
-                    virtualFiles.add(configFile);
-                }
-            }
-        }
-
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
-        for (VirtualFile file : virtualFiles) {
+        for (VirtualFile file : ConfigUtil.getConfigurations(parameter.getProject(), "twig")) {
             PsiFile psiFile = PsiManager.getInstance(parameter.getProject()).findFile(file);
             if(!(psiFile instanceof YAMLFile)) {
                 continue;

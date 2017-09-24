@@ -35,8 +35,4 @@ public class GlobalExtensionVariableCollector implements TwigFileVariableCollect
             }
         }
     }
-
-    @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-    }
 }
