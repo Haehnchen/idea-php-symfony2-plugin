@@ -20,13 +20,10 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigHtmlCompletionContributor extends CompletionContributor {
-
     public TwigHtmlCompletionContributor() {
-
         // add completion for href and provide twig insert handler
-        // <a href="#">#</a>
-        // <a href="{{ path('', {'foo' : 'bar'}) }}">#</a>
-        // <form action="<caret>"
+        // <a href="<caret>"/> => <a href="{{ path('foobar', {'foo' : 'bar'}) }}"/>
+        // <form action="<caret>"/>
         extend(
             CompletionType.BASIC,
             PlatformPatterns.or(
@@ -36,7 +33,6 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
             new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-
                 if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
@@ -49,14 +45,13 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                 }
 
                 resultSet.addAllElements(routesLookupElements);
-
             }
         });
 
+        // <link href="<caret>" rel="stylesheet" />
         extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetCssAttributePattern(), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-
                 if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
@@ -64,15 +59,13 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                 for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.CSS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
-
             }
-
         });
 
+        // <script src="<caret>"></script>
         extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetJsAttributePattern(), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-
                 if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
@@ -80,15 +73,13 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                 for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.JS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
-
             }
-
         });
 
+        // <img src="<caret>">
         extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetImageAttributePattern(), new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-
                 if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
@@ -96,11 +87,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                 for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.IMG_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
-
             }
-
         });
-
     }
-
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<routes>
+    <route id="xml_route" path="/blog/{slug}">
+        <default key="_controller">FooBundle\Controller\FooController::barAction</default>
+    </route>
+</routes>
