@@ -2,14 +2,11 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.VirtualFilePattern;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlToken;
-import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
