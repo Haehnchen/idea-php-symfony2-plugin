@@ -6,7 +6,11 @@ IntelliJ IDEA / PhpStorm Symfony Plugin
 [![Downloads last month](http://phpstorm.espend.de/badge/7219/last-month)](https://plugins.jetbrains.com/plugin/7219)
 [![Donate to this project using Paypal](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.me/DanielEspendiller)
 
-Plugin url: https://plugins.jetbrains.com/plugin/7219
+Key         | Value
+----------- | -----------
+Plugin Url  | https://plugins.jetbrains.com/plugin/7219
+ID          | fr.adrienbrault.idea.symfony2plugin
+Changelog   | [CHANGELOG](CHANGELOG.md)
 
 Install
 ---------------------
