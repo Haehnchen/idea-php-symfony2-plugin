@@ -9,6 +9,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.155
+* Fix Doc Tag completion in class constructors [#1024](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024)
+* Drop deprecated ScalarIndexExtension usage in index process
+* Allow usage of new Twig 2.0 function and Twig 3.0 namespaces in Extension parser [#893](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/893) [#962](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/962)
+* Fix StackOverflowError in FormOptionsUtil for collecting default values [#1026](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1026)
+* Fix wrong instance of check in DocHashtagReference [#1024](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024)
+* Add support for Symfony flex template path structure [#922](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/922)
+* Add support for Symfony flex: templates, configurations, yml -> yaml extension change, %kernel.project_dir% for Twig config path resolve [#922](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/922)
+* Plugin auto configuration should be valid on vendor/symfony existence, drop project specification path validation
+* Add support for Twig globals via configuration Twig => globals [#558](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/558) [#904](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/904)
+* Add generator for Twig translations [#506](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/506)
+* Provide translation shortcut insert handler for common text html elements in Twig file
+
 ## 0.14.154
 * Drop several workarounds and deprecated usages for old PhpStorm versions
 * Migrate xml service instance annotator to inspection and prevent possible memory leaks

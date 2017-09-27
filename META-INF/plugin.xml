@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.154</version>
+    <version>0.14.155</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,19 +101,17 @@
 <![CDATA[
 
 <ul>
-    <li>Drop several workarounds and deprecated usages for old PhpStorm versions</li>
-    <li>Migrate xml service instance annotator to inspection and prevent possible memory leaks</li>
-    <li>Remove configuration for all type provider og plugins settings</li>
-    <li>Migrate yaml parameter and class annotator into inspections</li>
-    <li>Migrate all yaml annotator to inspection like service instance check in constructor and calls</li>
-    <li>Drop for all annotator configuration of plugin settings</li>
-    <li>Fix global route loader was not care about annotations</li>
-    <li>Remove annotation route indexer and merge into main router indexer <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/648">#648</a></li>
-    <li>API: Simplify usage of key index process</li>
-    <li>Drop Twig annotator and move to inspections: routing, translations, templates and assets</li>
-    <li>Introduce Twig interpolated and concat checks for string values in inspections</li>
-    <li>Symfony 3.4: Add support for "controller" keyword for configuring routes controllers <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1023">#1023</a></li>
-    <li>Fix "trans" auto-complete not working in embed with parameters <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1012">#1012</a></li>
+    <li>Fix Doc Tag completion in class constructors <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024">#1024</a></li>
+    <li>Drop deprecated ScalarIndexExtension usage in index process</li>
+    <li>Allow usage of new Twig 2.0 function and Twig 3.0 namespaces in Extension parser <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/893">#893</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/962">#962</a></li>
+    <li>Fix StackOverflowError in FormOptionsUtil for collecting default values <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1026">#1026</a></li>
+    <li>Fix wrong instance of check in DocHashtagReference <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024">#1024</a></li>
+    <li>Add support for Symfony flex template path structure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/922">#922</a></li>
+    <li>Add support for Symfony flex: templates, configurations, yml -> yaml extension change, %kernel.project_dir% for Twig config path resolve <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/922">#922</a></li>
+    <li>Plugin auto configuration should be valid on vendor/symfony existence, drop project specification path validation</li>
+    <li>Add support for Twig globals via configuration Twig => globals <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/558">#558</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/904">#904</a></li>
+    <li>Add generator for Twig translations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/506">#506</a></li>
+    <li>Provide translation shortcut insert handler for common text html elements in Twig file</li>
 </ul>
 
 <br/>
