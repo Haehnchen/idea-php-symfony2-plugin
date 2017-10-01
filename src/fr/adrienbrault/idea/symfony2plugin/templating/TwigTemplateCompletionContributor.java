@@ -443,7 +443,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            Collection<PhpClass> allSubclasses = PhpIndex.getInstance(parameters.getPosition().getProject()).getAllSubclasses("\\Twig_TokenParserInterface");
+            Set<PhpClass> allSubclasses = new HashSet<>();
+
+            PhpIndex phpIndex = PhpIndex.getInstance(parameters.getPosition().getProject());
+
+            allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig_TokenParserInterface"));
+            allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig\\TokenParser\\TokenParserInterface"));
+
             for (PhpClass allSubclass : allSubclasses) {
 
                 // we dont want to see test extension like "§"
