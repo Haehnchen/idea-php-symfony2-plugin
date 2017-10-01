@@ -16,12 +16,26 @@ namespace
 
 namespace Twig
 {
-    class Extensions implements \Twig_ExtensionInterface {
+    use Twig\TokenParser\TokenParserInterface;
+
+    class Extensions implements \Twig_ExtensionInterface, TokenParserInterface {
         public function getFunctions()
         {
             return [
                 new \Twig_SimpleFunction('foo_test', 'foo_test'),
             ];
         }
+
+        public function getTag() {
+            return 'tag_foobar';
+        }
+    }
+}
+
+namespace Twig\TokenParser
+{
+    interface TokenParserInterface
+    {
+        public function getTag();
     }
 }

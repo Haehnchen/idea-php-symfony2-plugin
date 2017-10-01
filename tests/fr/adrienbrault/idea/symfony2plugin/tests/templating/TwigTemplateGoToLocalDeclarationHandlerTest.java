@@ -21,7 +21,7 @@ public class TwigTemplateGoToLocalDeclarationHandlerTest extends SymfonyLightCod
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
-        myFixture.copyFileToProject("TwigTemplateGoToLocalDeclarationHandlerTest.php");
+        myFixture.copyFileToProject("TwigTemplateGoToLocalDeclarationHandler.php");
     }
 
     public String getTestDataPath() {
@@ -83,6 +83,13 @@ public class TwigTemplateGoToLocalDeclarationHandlerTest extends SymfonyLightCod
         assertNavigationMatch(
             TwigFileType.INSTANCE,
             "{% set foo = foo<caret>_test() %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+    }
+
+    public void testTokenTagNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% tag_<caret>foobar 'foo' %}", PlatformPatterns.psiElement()
         );
     }
 }

@@ -19,10 +19,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
@@ -1347,6 +1344,44 @@ public class TwigUtil {
         }
 
         return new DomainScope(defaultDomain, domain);
+    }
+
+    /**
+     * Visit Twig TokenParser
+     * eg. {% my_token %}
+     */
+    public static void visitTokenParsers(@NotNull Project project, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        Set<PhpClass> allSubclasses = new HashSet<>();
+
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+
+        allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig_TokenParserInterface"));
+        allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig\\TokenParser\\TokenParserInterface"));
+
+        for (PhpClass allSubclass : allSubclasses) {
+
+            // we dont want to see test extension like "§"
+            if(allSubclass.getName().endsWith("Test") || allSubclass.getContainingFile().getVirtualFile().getNameWithoutExtension().endsWith("Test")) {
+                continue;
+            }
+
+            Method getTag = allSubclass.findMethodByName("getTag");
+            if(getTag == null) {
+                continue;
+            }
+
+            // get string return value
+            PhpReturn childrenOfType = PsiTreeUtil.findChildOfType(getTag, PhpReturn.class);
+            if(childrenOfType != null) {
+                PhpPsiElement returnValue = childrenOfType.getFirstPsiChild();
+                if(returnValue instanceof StringLiteralExpression) {
+                    String contents = ((StringLiteralExpression) returnValue).getContents();
+                    if(StringUtils.isNotBlank(contents)) {
+                        consumer.consume(Pair.create(contents, returnValue));
+                    }
+                }
+            }
+        }
     }
 
     public static class DomainScope {

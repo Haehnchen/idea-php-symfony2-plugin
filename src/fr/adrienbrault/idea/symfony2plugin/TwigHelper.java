@@ -910,7 +910,7 @@ public class TwigHelper {
      * Twig tag pattern with some hack
      * because we have invalid psi elements after STATEMENT_BLOCK_START
      *
-     * {% <carpet> %}
+     * {% <caret> %}
      */
     public static ElementPattern<PsiElement> getTagTokenParserPattern() {
         //noinspection unchecked
@@ -933,6 +933,19 @@ public class TwigHelper {
                 ),
                 PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
             )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Twig tag pattern
+     *
+     * {% fo<caret>obar %}
+     * {% fo<caret>obar 'foo' %}
+     */
+    public static ElementPattern<PsiElement> getTagTokenBlockPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.TAG_NAME)
+                .withParent(PlatformPatterns.psiElement(TwigElementTypes.TAG))
             .withLanguage(TwigLanguage.INSTANCE);
     }
 

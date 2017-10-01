@@ -119,6 +119,11 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
             psiElements.addAll(this.getSeeDocTagTargets(psiElement));
         }
 
+        // {% FOO_TOKEN %}
+        if(TwigHelper.getTagTokenBlockPattern().accepts(psiElement)) {
+            psiElements.addAll(this.getTokenTargets(psiElement));
+        }
+
         return psiElements.toArray(new PsiElement[psiElements.size()]);
     }
 
@@ -332,7 +337,29 @@ public class TwigTemplateGoToLocalDeclarationHandler implements GotoDeclarationH
         }
 
         String blockName = ((TwigBlockTag) blockTag).getName();
+        if(blockName == null) {
+            return new PsiElement[0];
+        }
+
         return TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(psiElement.getContainingFile(), blockName);
+    }
+
+    @NotNull
+    private Collection<? extends PsiElement> getTokenTargets(@NotNull PsiElement psiElement) {
+        String tagName = psiElement.getText();
+        if(StringUtils.isBlank(tagName)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> targets = new ArrayList<>();
+
+        TwigUtil.visitTokenParsers(psiElement.getProject(), pair -> {
+            if(tagName.equalsIgnoreCase(pair.getFirst())) {
+                targets.add(pair.getSecond());
+            }
+        });
+
+        return targets;
     }
 
     @Nullable

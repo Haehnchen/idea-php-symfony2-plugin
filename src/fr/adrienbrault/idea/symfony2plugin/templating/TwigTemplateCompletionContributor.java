@@ -9,12 +9,13 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Field;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -438,42 +439,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     private static class TagTokenParserCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-
-            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
                 return;
             }
 
-            Set<PhpClass> allSubclasses = new HashSet<>();
-
-            PhpIndex phpIndex = PhpIndex.getInstance(parameters.getPosition().getProject());
-
-            allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig_TokenParserInterface"));
-            allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig\\TokenParser\\TokenParserInterface"));
-
-            for (PhpClass allSubclass : allSubclasses) {
-
-                // we dont want to see test extension like "§"
-                if(allSubclass.getName().endsWith("Test") || allSubclass.getContainingFile().getVirtualFile().getNameWithoutExtension().endsWith("Test")) {
-                    continue;
-                }
-
-                Method getTag = allSubclass.findMethodByName("getTag");
-                if(getTag == null) {
-                    continue;
-                }
-
-                // get string return value
-                PhpReturn childrenOfType = PsiTreeUtil.findChildOfType(getTag, PhpReturn.class);
-                if(childrenOfType != null) {
-                    PhpPsiElement returnValue = childrenOfType.getFirstPsiChild();
-                    if(returnValue instanceof StringLiteralExpression) {
-                        String contents = ((StringLiteralExpression) returnValue).getContents();
-                        if(StringUtils.isNotBlank(contents)) {
-                            resultSet.addElement(LookupElementBuilder.create(contents).withIcon(Symfony2Icons.SYMFONY));
-                        }
-                    }
-                }
-            }
+            TwigUtil.visitTokenParsers(position.getProject(), pair ->
+                resultSet.addElement(LookupElementBuilder.create(pair.getFirst()).withIcon(Symfony2Icons.SYMFONY))
+            );
 
             // add special tag ending, provide a static list. there no suitable safe way to extract them
             // search able via: "return $token->test(array('end"
