@@ -36,9 +36,7 @@ Autocomplete (or something else) is not working! Help! :open_mouth:
 -------------------------------------------------------------------
 
 * You usually need to trigger the autocomplete popup yourself, by pressing CTRL+SPACE (may be a different shortcut depending on your keymap).
-* Check your File -> Settings -> Symfony Plugin -> Enable Plugin for this Project
-* Many features require the `app/cache/dev/appDevDebugProjectContainer.xml` file to exist. It is generated when you boot your app in dev environment (open `/app_dev.php` in a browser or `php app/console`).
-* Routing features require the `app/cache/dev/appDevUrlGenerator.php` file to exist. It is generated the first time a call to `$urlGenerator->generate()` is made at runtime (open a page in your browser that generate at least 1 url).
+* Check your File -> Settings -> Languages & Framework -> PHP -> Symfony -> Enable Plugin for this Project
 
 Building, debugging and other
 --------------------
@@ -56,8 +54,7 @@ If your issue already exists, don't hesitate to add a comment to help contributo
 If your issue does not exist, open a new issue :smiley:.
 
 Make sure to provide the maximum amount of informations, such as:
-* What version of PHPStorm are you using ?
+* What version of Phptorm are you using ?
 * What version of the plugin are you using ?
-* What kind of project have you encountered the issue with ? (Symfony, etc, custom/full stack ? silex ?)
 * The stack trace if an error occurred
 * Check if you are in PhpStorm eap channel
