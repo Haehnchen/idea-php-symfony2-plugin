@@ -320,7 +320,8 @@ public class ServiceUtil {
         return phpClasses;
     }
 
-    public static Collection<PhpClass> getTaggedClassesWithCompiled(Project project, String tagName) {
+    @NotNull
+    public static Collection<PhpClass> getTaggedClassesWithCompiled(@NotNull Project project, @NotNull String tagName) {
 
         Set<String> uniqueClass = new HashSet<>();
 

@@ -7,6 +7,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.ParentPathPatternCondition;
 import org.apache.commons.lang.ArrayUtils;
@@ -712,6 +713,22 @@ public class YamlElementPatternHelper {
                 )
             )
         );
+    }
+
+    /**
+     * !tagged twig.extension
+     */
+    public static ElementPattern<PsiElement> getTaggedServicePattern() {
+        return
+            PlatformPatterns
+                .psiElement()
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement().withText("!tagged")
+                );
     }
 
     /**

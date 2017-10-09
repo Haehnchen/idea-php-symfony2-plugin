@@ -36,6 +36,7 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         completionResultSet.addAllElements(getTagLookupElements(completionParameters.getPosition().getProject()));
     }
 
+    @NotNull
     public static Collection<LookupElement> getTagLookupElements(@NotNull Project project) {
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
@@ -78,6 +79,4 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
 
         return lookupElements;
     }
-
-
 }

@@ -1,0 +1,4 @@
+services:
+    foobar.service:
+        class: Foobar\Foo
+        tags: [foobar]

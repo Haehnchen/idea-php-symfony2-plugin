@@ -187,6 +187,28 @@ public class XmlHelper {
     }
 
     /**
+     * <argument type="tagged" tag="twig.extension" />
+     */
+    public static XmlAttributeValuePattern getTypeTaggedTagAttribute() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("tag")
+                .withParent(XmlPatterns
+                    .xmlTag()
+                    .withChild(XmlPatterns
+                        .xmlAttribute("type")
+                        .withValue(
+                            StandardPatterns.string().equalTo("tagged")
+                        )
+                    )
+                )
+            ).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+    
+    /**
      * <factory service="factory_service" method="createFooMethod" />
      */
     public static XmlAttributeValuePattern getFactoryServiceCompletionPattern() {
