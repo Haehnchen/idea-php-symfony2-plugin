@@ -41,6 +41,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
                     .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter")
                     .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter")
+                    .withSignature("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ParametersConfigurator", "set")
                     .match();
 
                 if(methodMatchParameter == null) {

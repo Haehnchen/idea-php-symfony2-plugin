@@ -24,8 +24,7 @@ import org.jetbrains.annotations.NotNull;
 public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
     @Override
-    public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
-
+    public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has")
             .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has")
@@ -39,6 +38,9 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "removeDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "removeAlias")
+
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ServicesConfigurator", "get")
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\AbstractServiceConfigurator", "alias", 1)
         );
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
@@ -46,6 +48,8 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "addTag")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "hasTag")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "clearTag")
+
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\Traits\\TagTrait", "tag")
         );
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(EventDispatcherEventReference.class)

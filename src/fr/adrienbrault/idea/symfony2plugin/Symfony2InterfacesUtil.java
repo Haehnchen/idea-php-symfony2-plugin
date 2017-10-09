@@ -191,7 +191,7 @@ public class Symfony2InterfacesUtil {
         return null;
     }
 
-    protected boolean isMatchingMethodName(MethodReference methodRef, Method[] expectedMethods) {
+    private boolean isMatchingMethodName(MethodReference methodRef, Method[] expectedMethods) {
         for (Method expectedMethod : Arrays.asList(expectedMethods)) {
             if(expectedMethod != null && expectedMethod.getName().equals(methodRef.getName())) {
                 return true;
@@ -215,8 +215,7 @@ public class Symfony2InterfacesUtil {
     }
 
     @Nullable
-    protected Method getInterfaceMethod(@NotNull Project project, @NotNull String interfaceFQN, @NotNull String methodName) {
-
+    private Method getInterfaceMethod(@NotNull Project project, @NotNull String interfaceFQN, @NotNull String methodName) {
         Collection<PhpClass> interfaces = PhpIndex.getInstance(project).getInterfacesByFQN(interfaceFQN);
 
         if (interfaces.size() < 1) {
@@ -254,30 +253,29 @@ public class Symfony2InterfacesUtil {
      * @deprecated isCallTo with MethodReference
      */
     @Deprecated
-    public boolean isCallTo(PsiElement e, String ClassInterfaceName, String methodName) {
-
-        // we need a full fqn name
-        if(ClassInterfaceName.contains("\\") && !ClassInterfaceName.startsWith("\\")) {
-            ClassInterfaceName = "\\" + ClassInterfaceName;
-        }
-
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), ClassInterfaceName, methodName),
-            getClassMethod(e.getProject(), ClassInterfaceName, methodName),
-        });
+    public boolean isCallTo(@NotNull PsiElement psiElement, @NotNull String classInterfaceName, @NotNull String methodName) {
+        Collection<Method> methods = getMethodsInstances(psiElement.getProject(), classInterfaceName, methodName);
+        return isCallTo(psiElement, methods.toArray(new Method[methods.size()]));
     }
 
-    public boolean isCallTo(Method e, String ClassInterfaceName, String methodName) {
+    @NotNull
+    private Collection<Method> getMethodsInstances(@NotNull Project project, @NotNull String classInterfaceName, @NotNull String methodName) {
+        Collection<Method> methods = new ArrayList<>();
 
-        // we need a full fqn name
-        if(ClassInterfaceName.contains("\\") && !ClassInterfaceName.startsWith("\\")) {
-            ClassInterfaceName = "\\" + ClassInterfaceName;
+        for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(classInterfaceName)) {
+            Method method = phpClass.findMethodByName(methodName);
+
+            if(method != null) {
+                methods.add(method);
+            }
         }
 
-        return isCallTo(e, new Method[] {
-            getInterfaceMethod(e.getProject(), ClassInterfaceName, methodName),
-            getClassMethod(e.getProject(), ClassInterfaceName, methodName),
-        });
+        return methods;
+    }
+
+    public boolean isCallTo(@NotNull Method method, @NotNull String classInterfaceName, @NotNull String methodName) {
+        Collection<Method> methods = getMethodsInstances(method.getProject(), classInterfaceName, methodName);
+        return isCallTo(method, methods.toArray(new Method[methods.size()]));
     }
 
     private List<Method> getCallToSignatureInterfaceMethods(PsiElement e, Collection<MethodMatcher.CallToSignature> signatures) {
