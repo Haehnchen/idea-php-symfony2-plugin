@@ -9,6 +9,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.14.156
+* Fix binary incompatibility with 2017.2.x and upcoming 2017.3 [#991](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/991) [#1002](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1002) [#1040](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1040)
+* Add Twig TokenParserInterface namespace for getTag extraction
+* Add navigation for twig token parser tags
+* Symfony 3.4 basic support of simpler injection of tagged services [#1039](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1039)
+* Symfony 3.4 completion for PHP-based configuration for services [#1041](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1041)
+* Optimize instance checks includes support for traits
+
 ## 0.14.155
 * Fix Doc Tag completion in class constructors [#1024](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024)
 * Drop deprecated ScalarIndexExtension usage in index process

@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.155</version>
+    <version>0.14.156</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,17 +101,12 @@
 <![CDATA[
 
 <ul>
-    <li>Fix Doc Tag completion in class constructors <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024">#1024</a></li>
-    <li>Drop deprecated ScalarIndexExtension usage in index process</li>
-    <li>Allow usage of new Twig 2.0 function and Twig 3.0 namespaces in Extension parser <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/893">#893</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/962">#962</a></li>
-    <li>Fix StackOverflowError in FormOptionsUtil for collecting default values <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1026">#1026</a></li>
-    <li>Fix wrong instance of check in DocHashtagReference <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1024">#1024</a></li>
-    <li>Add support for Symfony flex template path structure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/922">#922</a></li>
-    <li>Add support for Symfony flex: templates, configurations, yml -> yaml extension change, %kernel.project_dir% for Twig config path resolve <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/922">#922</a></li>
-    <li>Plugin auto configuration should be valid on vendor/symfony existence, drop project specification path validation</li>
-    <li>Add support for Twig globals via configuration Twig => globals <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/558">#558</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/904">#904</a></li>
-    <li>Add generator for Twig translations <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/506">#506</a></li>
-    <li>Provide translation shortcut insert handler for common text html elements in Twig file</li>
+    <li>Fix binary incompatibility with build 2017.2.x and 2017.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/991">#991</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1002">#1002</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1040">#1040</a></li>
+    <li>Add Twig TokenParserInterface namespace for getTag extraction</li>
+    <li>Add navigation for twig token parser tags</li>
+    <li>Symfony 3.4 basic support of simpler injection of tagged services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1039">#1039</a></li>
+    <li>Symfony 3.4 completion for PHP-based configuration for services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1041">#1041</a></li>
+    <li>Optimize instance checks includes support for traits</li>
 </ul>
 
 <br/>
