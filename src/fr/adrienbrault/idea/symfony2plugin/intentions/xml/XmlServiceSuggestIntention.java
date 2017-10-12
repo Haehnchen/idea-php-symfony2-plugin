@@ -41,14 +41,13 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
-
         XmlTag xmlTag = XmlServiceArgumentIntention.getServiceTagValid(psiElement);
         if (xmlTag == null) {
             return;
         }
 
-        XmlAttribute classAttribute = xmlTag.getAttribute("class");
-        if(classAttribute == null) {
+        String aClass = XmlHelper.getClassFromServiceDefinition(xmlTag);
+        if(aClass == null || StringUtils.isBlank(aClass)) {
             return;
         }
 
@@ -59,12 +58,7 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
 
         int argumentIndex = XmlHelper.getArgumentIndex(argumentTag);
 
-        String serviceName = classAttribute.getValue();
-        if(serviceName == null || StringUtils.isBlank(serviceName)) {
-            return;
-        }
-
-        Set<String> suggestions = ServiceUtil.getServiceSuggestionsForServiceConstructorIndex(project, serviceName, argumentIndex);
+        Set<String> suggestions = ServiceUtil.getServiceSuggestionsForServiceConstructorIndex(project, aClass, argumentIndex);
         if(suggestions.size() == 0) {
             HintManager.getInstance().showErrorHint(editor, "No suggestion found");
             return;

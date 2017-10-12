@@ -13,6 +13,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
@@ -387,16 +388,12 @@ public class ServiceContainerUtil {
         }
 
         XmlTag serviceTag = PsiElementAssertUtil.getParentOfTypeOrNull(argumentTag, XmlTag.class);
-        if(serviceTag == null) {
-            return null;
-        }
-
-        if(!serviceTag.getName().equals("service")) {
+        if(serviceTag == null || !"service".equals(serviceTag.getName())) {
             return null;
         }
 
         // service/argument[id]
-        String serviceDefName = serviceTag.getAttributeValue("class");
+        String serviceDefName = XmlHelper.getClassFromServiceDefinition(serviceTag);
         if(serviceDefName != null) {
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
 
@@ -407,7 +404,6 @@ public class ServiceContainerUtil {
                     return new ServiceTypeHint(constructor, getArgumentIndex(argumentTag), psiElement);
                 }
             }
-
         }
 
         return null;

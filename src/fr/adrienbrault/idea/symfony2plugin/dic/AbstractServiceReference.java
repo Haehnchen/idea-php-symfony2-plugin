@@ -29,15 +29,13 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> resolveResults = new ArrayList<>();
-
         ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
             .ServiceCollector.create(getElement().getProject());
 
         // Return the PsiElement for the class corresponding to the serviceId
         String serviceClass = collector.resolve(serviceId);
         if (serviceClass == null) {
-            return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
+            return new ResolveResult[0];
         }
 
         return PsiElementResolveResult.createResults(PhpIndex.getInstance(getElement().getProject()).getAnyByFQN(serviceClass));

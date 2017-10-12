@@ -546,7 +546,7 @@ public class XmlHelper {
      * <service class="Foobar"/> => Foobar
      */
     @Nullable
-    private static String getClassFromServiceDefinition(@NotNull XmlTag xmlTag) {
+    public static String getClassFromServiceDefinition(@NotNull XmlTag xmlTag) {
         String classAttribute = xmlTag.getAttributeValue("class");
         if(StringUtils.isNotBlank(classAttribute)) {
             return classAttribute;

@@ -72,6 +72,21 @@ public class ServiceArgumentParameterHintsProviderTest extends SymfonyLightCodeI
         assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "foobar".equals(inlayInfo.getText())));
     }
 
+    public void testXmlParameterTypeHintWithoutTypeHintMustFallbackToParameterNameOnClassAsId() {
+        List<InlayInfo> parameterHints = getInlayInfo("" +
+            "<container>\n" +
+            "    <services>\n" +
+            "        <service id=\"Foobar\\MyFoobar\">\n" +
+            "           <argument>a</argument>\n" +
+            "           <argument>%a<caret>a%</argument>\n" +
+            "        </service>\n" +
+            "    </services>\n" +
+            "</container>\n"
+        );
+
+        assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "foobar".equals(inlayInfo.getText())));
+    }
+
     public void testXmlParameterTypeForNestedArgumentsMustNotProvideHint() {
         List<InlayInfo> parameterHints = getInlayInfo("" +
             "<container>\n" +

@@ -88,7 +88,7 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
                 }
             }
 
-            // call: [setFoo, [@foo]]
+            // call: [setFoo, [@getParamater]]
             final Match[] match = {null};
             YamlHelper.visitServiceCallArgumentMethodIndex((YAMLScalar) psiElement, parameter ->
                 match[0] = new Match(createTypeHintFromParameter(psiElement.getProject(), parameter), psiElement.getTextRange().getEndOffset())
@@ -153,7 +153,8 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
         return null;
     }
 
-    private Pair<String, Method> foo(@NotNull Project project, @NotNull String aClass, java.util.function.Function<Void, Integer> function) {
+    @Nullable
+    private Pair<String, Method> getParamater(@NotNull Project project, @NotNull String aClass, @NotNull java.util.function.Function<Void, Integer> function) {
         if(StringUtils.isNotBlank(aClass)) {
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, aClass);
             if(phpClass != null) {
@@ -179,9 +180,9 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
     private Pair<String, Method> findMethodParameterHint(@NotNull XmlTag argumentTag) {
         PsiElement serviceTag = argumentTag.getParent();
         if("service".equalsIgnoreCase(((XmlTag) serviceTag).getName())) {
-            String aClass = ((XmlTag) serviceTag).getAttributeValue("class");
+            String aClass = XmlHelper.getClassFromServiceDefinition((XmlTag) serviceTag);
             if(aClass != null && StringUtils.isNotBlank(aClass)) {
-                return foo(argumentTag.getProject(), aClass, aVoid -> XmlHelper.getArgumentIndex(argumentTag));
+                return getParamater(argumentTag.getProject(), aClass, aVoid -> XmlHelper.getArgumentIndex(argumentTag));
             }
         }
 

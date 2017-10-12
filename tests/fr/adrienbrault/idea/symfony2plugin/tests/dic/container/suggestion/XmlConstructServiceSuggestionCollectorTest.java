@@ -40,5 +40,14 @@ public class XmlConstructServiceSuggestionCollectorTest extends SymfonyLightCode
                 "</services>",
             lookupElement -> "foo_bar_car".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold()
         );
+
+        assertCompletionLookupContainsPresentableItem(XmlFileType.INSTANCE, "" +
+                "<services>" +
+                "  <service id=\"Foo\\Bar\\Car\">\n" +
+                "    <argument type=\"service\" id=\"<caret>\" />\n" +
+                "  </service>" +
+                "</services>",
+            lookupElement -> "foo_bar_apple".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold()
+        );
     }
 }
