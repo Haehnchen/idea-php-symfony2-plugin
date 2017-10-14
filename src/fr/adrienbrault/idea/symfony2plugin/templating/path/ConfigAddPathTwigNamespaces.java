@@ -26,6 +26,7 @@ import java.util.Collection;
  *    paths:
  *      "%kernel.root_dir%/../src/vendor/bundle/Resources/views": core
  *      "%kernel.project_dir%/src/vendor/bundle/Resources/views": core
+ *      "%kernel.project_dir%/src/vendor/bundle/Resources/views": !core
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */

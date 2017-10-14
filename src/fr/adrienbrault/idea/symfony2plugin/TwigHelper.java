@@ -49,6 +49,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
@@ -2279,7 +2280,30 @@ public class TwigHelper {
 
             keyText = keyText.replace("\\", "/").replaceAll("/+", "/");
 
-            String valueText = ((YAMLKeyValue) element).getValueText();
+            // empty value is empty string on out side:
+            // "foo: "
+            String valueText = "";
+
+            YAMLValue yamlValue = ((YAMLKeyValue) element).getValue();
+            if (yamlValue != null) {
+                valueText = ((YAMLKeyValue) element).getValueText();
+            } else {
+                // workaround for foo: !foobar
+                // as we got tag element
+                PsiElement key = ((YAMLKeyValue) element).getKey();
+                if(key != null) {
+                    PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(key, PlatformPatterns.psiElement(YAMLTokenTypes.TAG));
+                    if(nextSiblingOfType != null) {
+                        String text = nextSiblingOfType.getText();
+                        if(text.startsWith("!")) {
+                            valueText = StringUtils.stripStart(text, "!");
+                        }
+                    }
+                }
+            }
+
+            // Symfony 3.4 / 4.0: namespace overwrite: "@!Foo" => "@Foo"
+            valueText = StringUtils.stripStart(valueText, "!");
 
             // normalize null value
             if(valueText.equals("~")) {
