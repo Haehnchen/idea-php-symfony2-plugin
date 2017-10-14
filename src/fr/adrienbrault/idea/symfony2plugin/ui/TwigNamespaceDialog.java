@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.table.TableView;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -71,15 +72,21 @@ public class TwigNamespaceDialog extends JDialog {
 
     private void setOkState() {
         TwigNamespaceDialog.this.buttonOK.setEnabled(
-            TwigNamespaceDialog.this.namespacePath.getText().length() > 0 &&
-            TwigNamespaceDialog.this.name.getText().length() > 0
+            TwigNamespaceDialog.this.namespacePath.getText().length() > 0
         );
     }
 
     private void onOK() {
+        // empty namespace use "__main__", as this is same as Twig internals does
+        String namespace = this.name.getText();
+        if(StringUtils.isBlank(namespace)) {
+            namespace = "__main__";
+        }
 
-        TwigPath twigPath = new TwigPath(this.namespacePath.getText(), this.name.getText(), TwigPathIndex.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
-        if(this.namespacePath.getText().length() == 0 || this.namespacePath.getText().length() == 0) {
+        String namespacePath = this.namespacePath.getText();
+
+        TwigPath twigPath = new TwigPath(namespacePath, namespace, TwigPathIndex.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
+        if(namespacePath.length() == 0) {
             dispose();
             return;
         }
