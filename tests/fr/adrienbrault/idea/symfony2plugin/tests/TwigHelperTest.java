@@ -8,9 +8,11 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -30,7 +32,6 @@ import java.util.Map;
  * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getBlocksInFile
  */
 public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
-
     public void testSingleExtends() {
         assertEquals("::base.html.twig", buildExtendsTagList("{% extends '::base.html.twig' %}").iterator().next());
         assertEquals("::base.html.twig", buildExtendsTagList("{% extends \"::base.html.twig\" %}").iterator().next());
@@ -534,6 +535,29 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNull(
             macros.stream().filter(twigMacroTag -> "foobar_if".equals(twigMacroTag.getName())).findFirst().get().getParameters()
         );
+    }
+
+    public void testGetTemplatePsiElements() {
+        if(System.getenv("PHPSTORM_ENV") != null) return;
+
+        myFixture.addFileToProject("res/foo.html.twig", "{# #}");
+
+        Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
+            new TwigNamespaceSetting("Foo", "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.BUNDLE, true)
+        ));
+
+        String[] strings = {
+            "@Foo/foo.html.twig", "@!Foo/foo.html.twig", "foo.html.twig", ":foo.html.twig", "@Foo\\foo.html.twig", "::foo.html.twig"
+        };
+
+        for (String file : strings) {
+            PsiFile[] templatePsiElements = TwigHelper.getTemplatePsiElements(getProject(), file);
+
+            assertTrue(templatePsiElements.length > 0);
+            assertEquals("foo.html.twig", templatePsiElements[0].getName());
+        }
     }
 
     private void assertEqual(Collection<String> c, String... values) {

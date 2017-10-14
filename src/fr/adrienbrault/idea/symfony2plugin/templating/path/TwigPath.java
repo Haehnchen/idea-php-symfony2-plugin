@@ -71,8 +71,7 @@ public class TwigPath implements Comparable<TwigPath> {
     }
 
     @Nullable
-    public String getRelativePath(Project project) {
-
+    public String getRelativePath(@NotNull Project project) {
         if(this.isCustomPath()) {
             return this.getPath();
         }
@@ -86,7 +85,7 @@ public class TwigPath implements Comparable<TwigPath> {
     }
 
     @Nullable
-    public VirtualFile getDirectory(Project project) {
+    public VirtualFile getDirectory(@NotNull Project project) {
         String relativePath = this.getRelativePath(project);
         if(relativePath == null) {
             return null;
