@@ -57,7 +57,7 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
 
             for(PsiElement twigExtendsTag: twigExtendsTags) {
                 for (String s : TwigHelper.getTwigExtendsTagTemplates((TwigExtendsTag) twigExtendsTag)) {
-                    map.put(s, null);
+                    map.put(TwigHelper.normalizeTemplateName(s), null);
                 }
             }
 

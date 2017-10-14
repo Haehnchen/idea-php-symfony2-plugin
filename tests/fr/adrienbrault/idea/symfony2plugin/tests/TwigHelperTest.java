@@ -497,6 +497,7 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals("BarBundle:Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("BarBundle:Foo:steps\\step_finish.html.twig"));
         assertEquals("@BarBundle/Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("@BarBundle\\Foo/steps:step_finish.html.twig"));
+        assertEquals("@BarBundle/Foo/steps:step_finish.html.twig", TwigHelper.normalizeTemplateName("@!BarBundle\\Foo/steps:step_finish.html.twig"));
     }
 
     /**

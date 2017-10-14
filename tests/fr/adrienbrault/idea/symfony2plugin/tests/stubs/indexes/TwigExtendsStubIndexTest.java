@@ -15,6 +15,8 @@ public class TwigExtendsStubIndexTest extends SymfonyLightCodeInsightFixtureTest
 
         myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{% extends 'extends.html.twig' %}\n" +
+            "{% extends '@Bar/extends.html.twig' %}\n" +
+            "{% extends '@!Bar/extends_overwrite.html.twig' %}\n" +
             "{% extends ajax ? 'extends_statement_0.html.twig' : 'extends_statement_1.html.twig' %}\n" +
             "{% extends request.ajax ? foo ~ \"extends_statement_2.html.twig\" : \"extends_statement_3.html.twig\" %}\n"
         );
@@ -26,7 +28,7 @@ public class TwigExtendsStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void testTemplateExtendsIndexer() {
         assertIndexContains(TwigExtendsStubIndex.KEY,
             "extends.html.twig", "extends_statement_0.html.twig", "extends_statement_1.html.twig",
-            "extends_statement_3.html.twig"
+            "extends_statement_3.html.twig", "@Bar/extends_overwrite.html.twig"
         );
 
         assertIndexNotContains(TwigExtendsStubIndex.KEY,

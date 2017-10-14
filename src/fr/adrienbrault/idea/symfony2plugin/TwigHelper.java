@@ -236,9 +236,11 @@ public class TwigHelper {
     }
 
     /**
-     * both are valid names first is internal completion
+     * Normalize incoming template names. Provide normalization on indexing and resolving
+     *
      * BarBundle:Foo:steps/step_finish.html.twig
      * BarBundle:Foo/steps:step_finish.html.twig
+     * "@!Bar/step_finish.html.twig"
      *
      * todo: provide setting for that
      */
@@ -248,6 +250,12 @@ public class TwigHelper {
         templateName = templateName.replace("\\", "/");
 
         if(templateName.startsWith("@") || !templateName.matches("^.*?:.*?:.*?/.*?$")) {
+            // Symfony 3.4 overwrite
+            // {% extends '@!FOSUser/layout.html.twig' %}
+            if(templateName.startsWith("@!")) {
+                templateName = "@" + templateName.substring(2);
+            }
+
             return templateName;
         }
 
@@ -261,7 +269,6 @@ public class TwigHelper {
         String file = templateName.substring(templateName.lastIndexOf("/") + 1);
 
         return String.format("%s:%s:%s", bundle, StringUtils.strip(subFolder, "/"), file);
-
     }
 
     /**
@@ -272,8 +279,6 @@ public class TwigHelper {
      * @return target files
      */
     public static PsiFile[] getTemplatePsiElements(Project project, String templateName) {
-
-
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
         Collection<PsiFile> psiFiles = new HashSet<>();

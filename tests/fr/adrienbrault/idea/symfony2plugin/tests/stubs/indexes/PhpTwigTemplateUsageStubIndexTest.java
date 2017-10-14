@@ -16,6 +16,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "{\n" +
             "   public function foobar() {\n" +
             "       $foo->render('foo-render.html.twig');\n" +
+            "       $foo->render('@!Foo/overwrite.html.twig');\n" +
             "       $foo->renderView('foo-renderView.html.twig');\n" +
             "       $foo->renderResponse('foo-renderResponse.html.twig');\n" +
             "   }\n" +
@@ -29,7 +30,8 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
 
         assertIndexContains(
             PhpTwigTemplateUsageStubIndex.KEY,
-            "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig"
+            "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig",
+            "@Foo/overwrite.html.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-render.html.twig", value ->
@@ -72,6 +74,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "/**\n" +
             " *\n" +
             " * @Template(foo=\"bar\", template=\"foo-annotation-property.html.twig\")\n" +
+            " * @Template(foo=\"bar\", template=\"@!Bar/overwrite.html.twig\")\n" +
             " */" +
             "public function foobar() {}" +
             "}\n"
@@ -79,7 +82,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
 
         assertIndexContains(
             PhpTwigTemplateUsageStubIndex.KEY,
-            "foo-annotation-property.html.twig"
+            "foo-annotation-property.html.twig", "@Bar/overwrite.html.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-annotation-property.html.twig", value ->

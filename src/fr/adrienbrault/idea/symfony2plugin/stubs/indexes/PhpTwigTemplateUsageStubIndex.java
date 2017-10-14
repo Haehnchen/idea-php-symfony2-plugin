@@ -143,8 +143,8 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
                 Map<String, TemplateUsage> map = new HashMap<>();
 
-                items.entrySet().forEach(entry ->
-                    map.put(entry.getKey(), new TemplateUsage(entry.getKey(), entry.getValue()))
+                items.forEach(
+                    (key, value) -> map.put(key, new TemplateUsage(key, value))
                 );
 
                 return map;
