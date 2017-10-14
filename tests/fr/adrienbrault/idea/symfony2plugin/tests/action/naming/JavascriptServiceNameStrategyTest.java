@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.actions.generator.naming;
+package fr.adrienbrault.idea.symfony2plugin.tests.action.naming;
 
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;

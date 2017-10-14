@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.actions.ui;
+package fr.adrienbrault.idea.symfony2plugin.tests.action.ui;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
