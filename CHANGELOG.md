@@ -2,14 +2,15 @@ Changelog
 =========
 
 # Version names
-* 0.14.x: PhpStorm 2017.1+
+* 0.15.x: PhpStorm 2017.2+
+* 0.14.x: PhpStorm 2017.1+ (no support)
 * 0.13.x: PhpStorm 2016.3.1 (no support)
 * 0.12.x: PhpStorm 2016.1+ (no support)
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 0.14.157
+## 0.14.157 / 0.15.157
 *   Support services suggestions, argument inspection and service completion prioritization for service class as id attribute in xml files
 *   Symfony 3.4 support "improved the overriding of templates" [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043); all template are know normalized inside index process
 *   Symfony 3.4 config provider supports "improved the overriding of templates" features [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043)
