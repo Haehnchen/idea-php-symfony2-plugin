@@ -1,9 +1,7 @@
 #!/bin/bash
 
 ideaVersion="2017.1"
-if [ "$PHPSTORM_ENV" == "2017.1" ]; then
-    ideaVersion="2017.1.4"
-elif [ "$PHPSTORM_ENV" == "2017.2" ]; then
+if [ "$PHPSTORM_ENV" == "2017.2" ]; then
     ideaVersion="2017.2.4"
 elif [ "$PHPSTORM_ENV" == "2017.2.4" ]; then
     ideaVersion="2017.2.4"
@@ -58,17 +56,7 @@ if [ -d ./plugins ]; then
   echo "created plugin dir"  
 fi
 
-if [ "$PHPSTORM_ENV" == "2017.1" ]; then
-
-    #php
-    download "http://phpstorm.espend.de/files/proxy/phpstorm-2017.1-php.zip"
-    unzip -qo $travisCache/phpstorm-2017.1-php.zip -d ./plugins
-
-    #twig
-    download "http://phpstorm.espend.de/files/proxy/phpstorm-2017.1-twig.zip"
-    unzip -qo $travisCache/phpstorm-2017.1-twig.zip -d ./plugins
-
-elif [ "$PHPSTORM_ENV" == "2017.2" ]; then
+if [ "$PHPSTORM_ENV" == "2017.2" ]; then
 
     #php
     download "http://phpstorm.espend.de/files/proxy/phpstorm-2017.2-php.zip"
