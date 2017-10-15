@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.14.156</version>
+    <version>0.14.157</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,12 +101,11 @@
 <![CDATA[
 
 <ul>
-    <li>Fix binary incompatibility with build 2017.2.x and 2017.3 <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/991">#991</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1002">#1002</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1040">#1040</a></li>
-    <li>Add Twig TokenParserInterface namespace for getTag extraction</li>
-    <li>Add navigation for twig token parser tags</li>
-    <li>Symfony 3.4 basic support of simpler injection of tagged services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1039">#1039</a></li>
-    <li>Symfony 3.4 completion for PHP-based configuration for services <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1041">#1041</a></li>
-    <li>Optimize instance checks includes support for traits</li>
+    <li>Support services suggestions, argument inspection and service completion prioritization for service class as id attribute in xml files</li>
+    <li>Symfony 3.4 support "improved the overriding of templates" <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043">#1043</a>; all template are know normalized inside index process</li>
+    <li>Symfony 3.4 config provider supports "improved the overriding of templates" features <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043">#1043</a></li>
+    <li>Empty namespace in Twig settings must be "__main__" to reflect internals</li>
+    <li>Add completion for variables of template rendering in PHP; supporting function parameter and annotation methods <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052">#1052</a></li>
 </ul>
 
 <br/>
