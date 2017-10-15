@@ -7,6 +7,8 @@ import com.intellij.psi.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
@@ -496,6 +498,53 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals("foobar", twigFileDomainScope.getDefaultDomain());
         assertEquals("bar", twigFileDomainScope.getDomain());
+    }
+
+    public void testVisitTemplateVariables() {
+        PsiFile psiFile = myFixture.configureByFile("variables.html.twig");
+
+        Map<String, PsiElement> elementMap = new HashMap<>();
+
+        TwigUtil.visitTemplateVariables((TwigFile) psiFile, pair ->
+            elementMap.put(pair.getFirst(), pair.getSecond())
+        );
+
+        // set declaration
+        assertContainsElements(elementMap.keySet(), "set_foo");
+        assertContainsElements(elementMap.keySet(), "my_block_set_foo");
+
+        // file doc
+        assertContainsElements(elementMap.keySet(), "inline_foo");
+
+        // if
+        assertContainsElements(elementMap.keySet(), "if_foo");
+        assertContainsElements(elementMap.keySet(), "if_foo_set_foo");
+        assertContainsElements(elementMap.keySet(), "if_foo_or");
+
+        // print
+        assertContainsElements(elementMap.keySet(), "print_foo");
+        assertContainsElements(elementMap.keySet(), "my_block_print_foo");
+        assertContainsElements(elementMap.keySet(), "my_block_print_foo_html");
+        assertContainsElements(elementMap.keySet(), "set_foo_inner_print_foo");
+
+        // for
+        assertContainsElements(elementMap.keySet(), "for_bar");
+    }
+
+    public void testGetTemplateAnnotationFilesWithSiblingMethod() {
+        PhpDocTag phpDocTag = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpDocTag.class, "<?php\n" +
+            "class Foo\n" +
+            "{\n" +
+            "   /**" +
+            "   * @Template(\"foo.html.twig\")" +
+            "   */" +
+            "   function fooAction()\n" +
+            "   {\n" +
+            "   }\n" +
+            "}\n"
+        );
+
+        assertContainsElements(TwigUtil.getTemplateAnnotationFilesWithSiblingMethod(phpDocTag).keySet(), "foo.html.twig");
     }
 
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {

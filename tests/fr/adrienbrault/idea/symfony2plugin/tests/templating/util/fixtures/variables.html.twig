@@ -1,0 +1,24 @@
+{% set set_foo = '' %}
+
+{% set set_foo_inner %}
+    {{ set_foo_inner_print_foo }}
+{% endset %}
+
+{% if if_foo or if_foo_or %}
+    {% set if_foo_set_foo = '' %}
+{% endif %}
+
+{{ print_foo }}
+
+{% for foo in for_bar %}{% endfor %}
+
+{# @var inline_foo Class #}
+
+{% block my_block %}
+    {% set my_block_set_foo = '' %}
+    {{ my_block_print_foo }}
+
+    <ul>
+        <li><p><strong>{{ my_block_print_foo_html }}</strong></p></li>
+    </ul>
+{% endblock %}

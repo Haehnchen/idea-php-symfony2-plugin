@@ -46,6 +46,11 @@ public class TwigTypeResolveUtil {
     public static final String DEPRECATED_DOC_TYPE_PATTERN = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
     public static final String DOC_TYPE_PATTERN = "@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]*";
 
+    public static final Pattern[] INLINE_DOC_REGEX = {
+        Pattern.compile(DOC_TYPE_PATTERN, Pattern.MULTILINE),
+        Pattern.compile(DEPRECATED_DOC_TYPE_PATTERN),
+    };
+
     // for supporting completion and navigation of one line element
     public static final String DOC_TYPE_PATTERN_SINGLE  = "\\{#[\\s]+@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
 
@@ -174,12 +179,6 @@ public class TwigTypeResolveUtil {
     private static Map<String, String> getInlineCommentDocsVars(@NotNull PsiElement twigCompositeElement) {
         Map<String, String> variables = new HashMap<>();
 
-        // wtf in completion { | } root we have no comments in child context !?
-        Pattern[] patterns = new Pattern[] {
-            Pattern.compile(DOC_TYPE_PATTERN, Pattern.MULTILINE),
-            Pattern.compile(DEPRECATED_DOC_TYPE_PATTERN),
-        };
-
         for(PsiElement psiComment: YamlHelper.getChildrenFix(twigCompositeElement)) {
             if(!(psiComment instanceof PsiComment)) {
                 continue;
@@ -190,7 +189,7 @@ public class TwigTypeResolveUtil {
                 continue;
             }
 
-            for (Pattern pattern : patterns) {
+            for (Pattern pattern : INLINE_DOC_REGEX) {
                 Matcher matcher = pattern.matcher(text);
                 while (matcher.find()) {
                     variables.put(matcher.group(1), matcher.group(2));

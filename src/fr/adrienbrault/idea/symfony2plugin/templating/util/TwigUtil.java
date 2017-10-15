@@ -6,10 +6,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -54,34 +51,33 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigUtil {
-
-    @Nullable
+    @NotNull
     public static String[] getControllerMethodShortcut(@NotNull Method method) {
         // indexAction
         String methodName = method.getName();
 
         PhpClass phpClass = method.getContainingClass();
         if(null == phpClass) {
-            return null;
+            return new String[0];
         }
 
         // defaultController
         // default/Folder/FolderController
         String className = phpClass.getName();
         if(!className.endsWith("Controller")) {
-            return null;
+            return new String[0];
         }
 
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(method.getProject()));
         SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(phpClass);
         if(symfonyBundle == null) {
-            return null;
+            return new String[0];
         }
 
         // check if files is in <Bundle>/Controller/*
         PhpClass bundleClass = symfonyBundle.getPhpClass();
         if(!phpClass.getNamespaceName().startsWith(bundleClass.getNamespaceName() + "Controller\\")) {
-            return null;
+            return new String[0];
         }
 
         // strip the controller folder name
@@ -125,49 +121,45 @@ public class TwigUtil {
     }
 
     @NotNull
-    public static Map<String, PsiElement> getTemplateAnnotationFiles(PhpDocTag phpDocTag) {
-
+    public static Map<String, PsiElement[]> getTemplateAnnotationFiles(@NotNull PhpDocTag phpDocTag) {
         // @TODO: @Template(template="templatename")
         // Also replace "Matcher" with annotation psi elements; now possible
         // Wait for "annotation plugin" update; to not implement whole stuff here again?
-
-        Map<String, PsiElement> templateFiles = new HashMap<>();
 
         // find template name on annotation parameter
         // @Template("templatename")
         PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
         if(phpDocAttrList == null) {
-            return templateFiles;
+            return Collections.emptyMap();
         }
+
+        Map<String, PsiElement[]> templateFiles = new HashMap<>();
 
         String tagValue = phpDocAttrList.getText();
         Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
 
         if (matcher.find()) {
-            // @TODO: only one should possible; refactor getTemplatePsiElements
-            PsiElement[] psiElement = TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), matcher.group(1));
-            if(psiElement.length > 0) {
-                templateFiles.put(matcher.group(1), psiElement[0]);
-            }
+            templateFiles.put(matcher.group(1), TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), matcher.group(1)));
         }
 
         return templateFiles;
     }
 
-    public static Map<String, PsiElement> getTemplateAnnotationFilesWithSiblingMethod(PhpDocTag phpDocTag) {
-        Map<String, PsiElement> targets = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
+    /**
+     * Get templates on "@Template()" and on method attached to given PhpDocTag
+     */
+    @NotNull
+    public static Map<String, PsiElement[]> getTemplateAnnotationFilesWithSiblingMethod(@NotNull PhpDocTag phpDocTag) {
+        Map<String, PsiElement[]> targets = new HashMap<>(
+            TwigUtil.getTemplateAnnotationFiles(phpDocTag)
+        );
 
         PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
         if(phpDocComment != null) {
             PsiElement method = phpDocComment.getNextPsiSibling();
             if(method instanceof Method) {
-                String[] templateNames = TwigUtil.getControllerMethodShortcut((Method) method);
-                if(templateNames != null) {
-                    for (String name : templateNames) {
-                        for(PsiElement psiElement: TwigHelper.getTemplatePsiElements(method.getProject(), name)) {
-                            targets.put(name, psiElement);
-                        }
-                    }
+                for (String name : TwigUtil.getControllerMethodShortcut((Method) method)) {
+                    targets.put(name, TwigHelper.getTemplatePsiElements(method.getProject(), name));
                 }
             }
         }
@@ -1382,6 +1374,148 @@ public class TwigUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Visit all template variables which are completion in Twig file rendering call as array
+     */
+    public static void visitTemplateVariables(@NotNull TwigFile scope, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        visitTemplateVariables((PsiElement) scope, consumer);
+    }
+
+    /**
+     * Proxy to consume every given scope
+     */
+    private static void visitTemplateVariables(@NotNull PsiElement scope, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        for (PsiElement psiElement : scope.getChildren()) {
+            IElementType elementType = psiElement.getNode().getElementType();
+
+            if (elementType == TwigElementTypes.IF_STATEMENT || elementType == TwigElementTypes.SET_STATEMENT) {
+                // {% if foobar
+                // {% set foobar
+                PsiElement firstChild = psiElement.getFirstChild();
+                IElementType firstChildElementType = firstChild.getNode().getElementType();
+
+                if (firstChildElementType == TwigElementTypes.IF_TAG || firstChildElementType == TwigElementTypes.SET_TAG) {
+                    PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(
+                        firstChild.getFirstChild(),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+                        )
+                    );
+
+                    // {% if foo and foobar
+                    // {% if foo or foobar
+                    if (firstChildElementType == TwigElementTypes.IF_TAG) {
+                        PsiElement firstChild1 = firstChild.getFirstChild();
+                        PsiElement nextSiblingOfType1 = PsiElementUtils.getNextSiblingOfType(
+                            firstChild1,
+                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(
+                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                                PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.AND), PlatformPatterns.psiElement(TwigTokenTypes.OR))
+                            )
+                        );
+
+                        visitTemplateVariablesConsumer(nextSiblingOfType1, consumer);
+                    }
+
+                    visitTemplateVariablesConsumer(nextSiblingOfType, consumer);
+                }
+
+                // nested "if" or "set" statement is supported
+                visitTemplateVariables(psiElement, consumer);
+
+            } else if (elementType == TwigElementTypes.PRINT_BLOCK) {
+                // {{ foobar }}
+
+                PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(
+                    psiElement.getFirstChild(),
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeaf(PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.PRINT_BLOCK_START)
+                    ))
+                );
+
+                visitTemplateVariablesConsumer(nextSiblingOfType, consumer);
+            } else if (elementType == TwigElementTypes.FOR_STATEMENT) {
+                // {% for foo in bar %}{% endfor %}
+
+                // we do not collect nested variables in this scope
+                // because there can be new variables inside for statement itself
+
+                PsiElement firstChild = psiElement.getFirstChild();
+                if(firstChild.getNode().getElementType() == TwigElementTypes.FOR_TAG) {
+                    PsiElement afterIn = PsiElementUtils.getNextSiblingOfType(
+                        firstChild.getFirstChild(),
+                        TwigHelper.getForTagInVariablePattern()
+                    );
+
+                    visitTemplateVariablesConsumer(afterIn, consumer);
+                }
+            } else if (psiElement instanceof PsiComment) {
+                // {# @var foobar Class #}
+                String text = psiElement.getText();
+
+                if(StringUtils.isNotBlank(text)) {
+                    for (Pattern pattern : TwigTypeResolveUtil.INLINE_DOC_REGEX) {
+                        Matcher matcher = pattern.matcher(text);
+                        while (matcher.find()) {
+                            consumer.consume(Pair.create(matcher.group(1), psiElement));
+                        }
+                    }
+                }
+            } else if (elementType == TwigElementTypes.BLOCK_STATEMENT) {
+                // visit block statement
+                String text = psiElement.getText();
+
+                visitTemplateVariables(psiElement, consumer);
+            }
+        }
+    }
+
+    /**
+     * Consume if not empty element provided
+     */
+    private static void visitTemplateVariablesConsumer(@Nullable PsiElement nextSiblingOfType, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        if (nextSiblingOfType != null) {
+            String text = nextSiblingOfType.getText();
+            if (StringUtils.isNotBlank(text)) {
+                consumer.consume(Pair.create(text, nextSiblingOfType));
+            }
+        }
+    }
+
+    /**
+     * Collect all parent Twig on "extends" tag
+     */
+    @NotNull
+    public static Map<TwigFile, String> getExtendsTemplates(@NotNull TwigFile twigFile) {
+        return getExtendsTemplates(twigFile, 15);
+    }
+
+    @NotNull
+    private static Map<TwigFile, String> getExtendsTemplates(@NotNull TwigFile twigFile, int depth) {
+        if (depth < 0) {
+            return Collections.emptyMap();
+        }
+
+        Map<TwigFile, String> templates = new HashMap<>();
+
+        for (TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(twigFile, TwigExtendsTag.class)) {
+            for (String extendsTemplate : TwigHelper.getTwigExtendsTagTemplates(extendsTag)) {
+                String templateName = TwigHelper.normalizeTemplateName(extendsTemplate);
+
+                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(twigFile.getProject(), templateName)) {
+                    if (psiFile instanceof TwigFile && !templates.containsKey(psiFile)) {
+                        templates.put((TwigFile) psiFile, templateName);
+                        templates.putAll(getExtendsTemplates((TwigFile) psiFile, --depth));
+                    }
+                }
+            }
+        }
+
+        return templates;
     }
 
     public static class DomainScope {

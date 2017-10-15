@@ -61,10 +61,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
                 return;
             }
 
-            String[] controllerMethodShortcut = TwigUtil.getControllerMethodShortcut(method);
-            if(controllerMethodShortcut != null) {
-                templateNames.addAll(Arrays.asList(controllerMethodShortcut));
-            }
+            templateNames.addAll(Arrays.asList(TwigUtil.getControllerMethodShortcut(method)));
         }
 
         if(templateNames.size() == 0) {

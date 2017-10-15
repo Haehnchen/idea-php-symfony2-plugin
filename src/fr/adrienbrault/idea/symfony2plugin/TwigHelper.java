@@ -283,7 +283,6 @@ public class TwigHelper {
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
         Collection<PsiFile> psiFiles = new HashSet<>();
-
         for (TwigPath twigPath : getTwigNamespaces(project)) {
             if(!twigPath.isEnabled()) {
                 continue;
@@ -397,7 +396,7 @@ public class TwigHelper {
         return PsiElementUtils.convertVirtualFilesToPsiFiles(project, files);
     }
 
-    private static void addFileInsideTwigPath(@NotNull Project project, @NotNull String templatePath, @NotNull Collection<PsiFile> psiFiles, TwigPath twigPath) {
+    private static void addFileInsideTwigPath(@NotNull Project project, @NotNull String templatePath, @NotNull Collection<PsiFile> psiFiles, @NotNull TwigPath twigPath) {
         String[] split = templatePath.split("/");
         VirtualFile virtualFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), split);
         if(virtualFile != null) {
