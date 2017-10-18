@@ -14,7 +14,7 @@ Changelog
 *   Support services suggestions, argument inspection and service completion prioritization for service class as id attribute in xml files
 *   Symfony 3.4 support "improved the overriding of templates" [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043); all template are know normalized inside index process
 *   Symfony 3.4 config provider supports "improved the overriding of templates" features [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043)
-*   Empty namespace in Twig settings must be "__main__" to reflect internals
+*   Empty namespace in Twig settings must be `__main__` to reflect internals
 *   Add completion for variables of template rendering in PHP; supporting function parameter and annotation methods [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
 
 ## 0.14.156
