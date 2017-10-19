@@ -7,8 +7,6 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlCreateServiceArgumentsCallback;
-import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlUpdateArgumentServicesCallback;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
@@ -131,42 +129,11 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
 
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor problemDescriptor) {
-
             final PsiElement serviceKeyValue = problemDescriptor.getPsiElement().getParent();
-            if(!(serviceKeyValue instanceof YAMLKeyValue)) {
-                return;
+
+            if(serviceKeyValue instanceof YAMLKeyValue) {
+                ServiceActionUtil.fixServiceArgument((YAMLKeyValue) serviceKeyValue);
             }
-
-            YAMLKeyValue argumentsKeyValue = YamlHelper.getYamlKeyValue((YAMLKeyValue) serviceKeyValue, "arguments");
-
-            // there is no "arguments" key so provide one
-            if(argumentsKeyValue == null) {
-
-                ServiceActionUtil.ServiceYamlContainer serviceYamlContainer = ServiceActionUtil.ServiceYamlContainer.create((YAMLKeyValue) serviceKeyValue);
-                List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(project, serviceYamlContainer, false, new ContainerCollectionResolver.LazyServiceCollector(project));
-
-                if(yamlMissingArgumentTypes == null) {
-                    return;
-                }
-
-                ServiceActionUtil.fixServiceArgument(project, yamlMissingArgumentTypes, new YamlCreateServiceArgumentsCallback((YAMLKeyValue) serviceKeyValue));
-
-                return;
-            }
-
-            // update service
-            ServiceActionUtil.ServiceYamlContainer serviceYamlContainer = ServiceActionUtil.ServiceYamlContainer.create((YAMLKeyValue) serviceKeyValue);
-            List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(project, serviceYamlContainer, false, new ContainerCollectionResolver.LazyServiceCollector(project));
-            if(yamlMissingArgumentTypes == null) {
-                return;
-            }
-
-            ServiceActionUtil.fixServiceArgument(project, yamlMissingArgumentTypes, new YamlUpdateArgumentServicesCallback(
-                project,
-                argumentsKeyValue,
-                (YAMLKeyValue) serviceKeyValue
-            ));
         }
-
     }
 }
