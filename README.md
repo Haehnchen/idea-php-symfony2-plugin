@@ -54,7 +54,7 @@ If your issue already exists, don't hesitate to add a comment to help contributo
 If your issue does not exist, open a new issue :smiley:.
 
 Make sure to provide the maximum amount of informations, such as:
-* What version of Phptorm are you using ?
+* What version of PhpStorm are you using ?
 * What version of the plugin are you using ?
 * The stack trace if an error occurred
 * Check if you are in PhpStorm eap channel
