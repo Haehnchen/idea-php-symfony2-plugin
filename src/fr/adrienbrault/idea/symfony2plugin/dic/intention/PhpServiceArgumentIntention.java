@@ -62,17 +62,40 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
     }
 
     private void invokeByScope(@NotNull PsiElement psiElement, @NotNull Editor editor) {
+        boolean success = false;
+
         if(psiElement instanceof XmlTag) {
             List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes((XmlTag) psiElement, true, new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject()));
-            if (args == null) {
-                HintManager.getInstance().showErrorHint(editor, "No argument update needed");
-                return;
-            }
 
-            ServiceActionUtil.fixServiceArgument(args, (XmlTag) psiElement);
+            success = args.size() > 0;
+            if (success) {
+                ServiceActionUtil.fixServiceArgument(args, (XmlTag) psiElement);
+            }
         } else if(psiElement instanceof YAMLKeyValue) {
-            ServiceActionUtil.fixServiceArgument((YAMLKeyValue) psiElement);
+            List<String> args = ServiceActionUtil.getYamlMissingArgumentTypes(
+                psiElement.getProject(),
+                ServiceActionUtil.ServiceYamlContainer.create((YAMLKeyValue) psiElement),
+                false,
+                new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject())
+            );
+
+            success = args.size() > 0;
+            if (success) {
+                ServiceActionUtil.fixServiceArgument((YAMLKeyValue) psiElement);
+            }
         }
+
+        if(!success) {
+            HintManager.getInstance().showErrorHint(editor, "No argument update needed");
+            return;
+        }
+
+        String relativePath = VfsUtil.getRelativePath(psiElement.getContainingFile().getVirtualFile(), psiElement.getProject().getBaseDir());
+        if(relativePath == null) {
+            relativePath = "n/a";
+        }
+
+        HintManager.getInstance().showInformationHint(editor, String.format("Argument updated: %s", relativePath));
     }
 
     @Override

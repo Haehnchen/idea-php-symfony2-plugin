@@ -67,7 +67,7 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
             }
 
             final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, getLazyServiceCollector(xmlTag));
-            if (args == null) {
+            if (args.size() == 0) {
                 return;
             }
 

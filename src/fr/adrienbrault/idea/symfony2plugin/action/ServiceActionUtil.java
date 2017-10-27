@@ -279,17 +279,16 @@ public class ServiceActionUtil {
         return services;
     }
 
-    @Nullable
+    @NotNull
     public static List<String> getXmlMissingArgumentTypes(@NotNull XmlTag xmlTag, boolean collectOptionalParameter, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
-
         PhpClass resolvedClassDefinition = getPhpClassFromXmlTag(xmlTag, collector);
         if (resolvedClassDefinition == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         Method constructor = resolvedClassDefinition.getConstructor();
         if(constructor == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         int serviceArguments = 0;
@@ -302,7 +301,7 @@ public class ServiceActionUtil {
 
         Parameter[] parameters = collectOptionalParameter ? constructor.getParameters() : PhpElementsUtil.getFunctionRequiredParameter(constructor);
         if(parameters.length <= serviceArguments) {
-            return null;
+            return Collections.emptyList();
         }
 
         final List<String> args = new ArrayList<>();
@@ -337,24 +336,22 @@ public class ServiceActionUtil {
         return resolvedClassDefinition;
     }
 
-    @Nullable
+    @NotNull
     public static List<String> getYamlMissingArgumentTypes(Project project, ServiceActionUtil.ServiceYamlContainer container, boolean collectOptionalParameter, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
-
         PhpClass resolvedClassDefinition = ServiceUtil.getResolvedClassDefinition(project, container.getClassName(), collector);
         if(resolvedClassDefinition == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         Method constructor = resolvedClassDefinition.getConstructor();
         if(constructor == null) {
-            return null;
+            return Collections.emptyList();
         }
-
 
         int serviceArguments = -1;
         if(container.getArgument() != null) {
-
             PsiElement yamlCompoundValue = container.getArgument().getValue();
+
             if(yamlCompoundValue instanceof YAMLCompoundValue) {
                 List<PsiElement> yamlArrayOnSequenceOrArrayElements = YamlHelper.getYamlArrayOnSequenceOrArrayElements((YAMLCompoundValue) yamlCompoundValue);
                 if(yamlArrayOnSequenceOrArrayElements != null) {
@@ -367,12 +364,12 @@ public class ServiceActionUtil {
         }
 
         if(serviceArguments == -1) {
-            return null;
+            return Collections.emptyList();
         }
 
         Parameter[] parameters = collectOptionalParameter ? constructor.getParameters() : PhpElementsUtil.getFunctionRequiredParameter(constructor);
         if(parameters.length <= serviceArguments) {
-            return null;
+            return Collections.emptyList();
         }
 
         final List<String> args = new ArrayList<>();
@@ -430,44 +427,31 @@ public class ServiceActionUtil {
     public static void fixServiceArgument(@NotNull YAMLKeyValue yamlKeyValue) {
         YAMLKeyValue argumentsKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, "arguments");
 
-        // there is no "arguments" key so provide one
-        if(argumentsKeyValue == null) {
-            ServiceActionUtil.ServiceYamlContainer serviceYamlContainer = ServiceActionUtil.ServiceYamlContainer.create(yamlKeyValue);
-
-            List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(
-                yamlKeyValue.getProject(),
-                serviceYamlContainer,
-                false,
-                new ContainerCollectionResolver.LazyServiceCollector(yamlKeyValue.getProject())
-            );
-
-            if(yamlMissingArgumentTypes == null) {
-                return;
-            }
-
-            ServiceActionUtil.fixServiceArgument(yamlKeyValue.getProject(), yamlMissingArgumentTypes, new YamlCreateServiceArgumentsCallback(yamlKeyValue));
-
-            return;
-        }
-
-        // update service
-        ServiceActionUtil.ServiceYamlContainer serviceYamlContainer = ServiceActionUtil.ServiceYamlContainer.create(yamlKeyValue);
         List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(
             yamlKeyValue.getProject(),
-            serviceYamlContainer,
+            ServiceActionUtil.ServiceYamlContainer.create(yamlKeyValue),
             false,
             new ContainerCollectionResolver.LazyServiceCollector(yamlKeyValue.getProject())
         );
 
-        if(yamlMissingArgumentTypes == null) {
+        if(yamlMissingArgumentTypes.size() == 0) {
             return;
         }
 
-        ServiceActionUtil.fixServiceArgument(yamlKeyValue.getProject(), yamlMissingArgumentTypes, new YamlUpdateArgumentServicesCallback(
-            yamlKeyValue.getProject(),
-            argumentsKeyValue,
-            yamlKeyValue
-        ));
+        InsertServicesCallback insertServicesCallback;
+
+        if(argumentsKeyValue == null) {
+            // there is no "arguments" key so provide one
+            insertServicesCallback = new YamlCreateServiceArgumentsCallback(yamlKeyValue);
+        } else {
+            insertServicesCallback = new YamlUpdateArgumentServicesCallback(
+                yamlKeyValue.getProject(),
+                argumentsKeyValue,
+                yamlKeyValue
+            );
+        }
+
+        ServiceActionUtil.fixServiceArgument(yamlKeyValue.getProject(), yamlMissingArgumentTypes, insertServicesCallback);
     }
 
     public static void fixServiceArgument(@NotNull Project project, @NotNull List<String> args, final @NotNull InsertServicesCallback callback) {
