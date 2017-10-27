@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config.xml;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -98,5 +99,75 @@ public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
         assertEquals("Foo\\Bar", XmlHelper.getServiceDefinitionClass(psiElement));
+    }
+
+    /**
+     * @see XmlHelper#getArgumentIndex
+     */
+    public void testGetArgumentIndex() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service class=\"Foo\\Bar\">\n" +
+            "      <argum<caret>ent key=\"$foobar1\" />\n" +
+            "</service>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals(1, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
+    }
+
+    /**
+     * @see XmlHelper#getArgumentIndex
+     */
+    public void testGetArgumentIndexOnIndex() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service class=\"Foo\\Bar\">\n" +
+            "      <argum<caret>ent index=\"2\" />\n" +
+            "</service>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals(2, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
+
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service class=\"Foo\\Bar\">\n" +
+            "      <argum<caret>ent index=\"foobar\" />\n" +
+            "</service>"
+        );
+
+        psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals(-1, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
+    }
+
+    /**
+     * @see XmlHelper#getArgumentIndex
+     */
+    public void testGetArgumentIndexCallOnNamedArgument() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service class=\"Foo\\Bar\">\n" +
+            "   <call method=\"setBar\">\n" +
+            "       <arg<caret>ument type=\"service\" key=\"$arg2\" id=\"args_bar\"/>\n" +
+            "   </call>\n" +
+            "</service>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals(1, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
+    }
+
+    /**
+     * @see XmlHelper#getArgumentIndex
+     */
+    public void testGetArgumentIndexOnArgumentCount() {
+        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+            "<service class=\"Foo\\Bar\">\n" +
+            "      <argument/>\n" +
+            "      <argument index=\"\"/>\n" +
+            "      <argument key=\"\"/>\n" +
+            "      <argum<caret>ent/>\n" +
+            "</service>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals(1, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
     }
 }

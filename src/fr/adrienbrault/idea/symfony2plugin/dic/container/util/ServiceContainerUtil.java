@@ -12,6 +12,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
@@ -290,50 +291,71 @@ public class ServiceContainerUtil {
     @Nullable
     public static ServiceTypeHint getYamlConstructorTypeHint(@NotNull YAMLScalar yamlScalar, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
         PsiElement context = yamlScalar.getContext();
-        if(!(context instanceof YAMLSequenceItem)) {
-            return null;
+        if(context instanceof YAMLKeyValue) {
+            // arguments: ['$foobar': '@foo']
+
+            String parameterName = ((YAMLKeyValue) context).getKeyText();
+            if(parameterName.startsWith("$") && parameterName.length() > 1) {
+                PsiElement yamlMapping = context.getParent();
+                if(yamlMapping instanceof YAMLMapping) {
+                    PsiElement yamlKeyValue = yamlMapping.getParent();
+                    if(yamlKeyValue instanceof YAMLKeyValue) {
+                        String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
+                        if(keyText.equals("arguments")) {
+                            YAMLMapping parentMapping = ((YAMLKeyValue) yamlKeyValue).getParentMapping();
+                            if(parentMapping != null) {
+                                String serviceId = getServiceClassFromServiceMapping(parentMapping);
+                                if(StringUtils.isNotBlank(serviceId)) {
+                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlScalar.getProject(), serviceId, lazyServiceCollector);
+                                    if(serviceClass != null) {
+                                        Method constructor = serviceClass.getConstructor();
+                                        if(constructor != null) {
+                                            int parameterIndex = PhpElementsUtil.getFunctionArgumentByName(constructor, StringUtils.stripStart(parameterName, "$"));
+                                            if(parameterIndex >= 0) {
+                                                return new ServiceTypeHint(constructor, parameterIndex, yamlScalar);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else if(context instanceof YAMLSequenceItem) {
+            // arguments: ['@foobar']
+
+            YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
+            PsiElement yamlSequenceItem = sequenceItem.getContext();
+            if(yamlSequenceItem instanceof YAMLSequence) {
+                YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
+                PsiElement yamlKeyValue = yamlArray.getContext();
+                if(yamlKeyValue instanceof YAMLKeyValue) {
+                    YAMLKeyValue yamlKeyValueArguments = (YAMLKeyValue) yamlKeyValue;
+                    if(yamlKeyValueArguments.getKeyText().equals("arguments")) {
+                        YAMLMapping parentMapping = yamlKeyValueArguments.getParentMapping();
+                        if(parentMapping != null) {
+                            String serviceId = getServiceClassFromServiceMapping(parentMapping);
+                            if(StringUtils.isNotBlank(serviceId)) {
+                                PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlScalar.getProject(), serviceId, lazyServiceCollector);
+                                if(serviceClass != null) {
+                                    Method constructor = serviceClass.getConstructor();
+                                    if(constructor != null) {
+                                        return new ServiceTypeHint(
+                                            constructor,
+                                            PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
+                                            yamlScalar
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        final YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
-        if (!(sequenceItem.getContext() instanceof YAMLSequence)) {
-            return null;
-        }
-
-        final YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
-        if(!(yamlArray.getContext() instanceof YAMLKeyValue)) {
-            return null;
-        }
-
-        final YAMLKeyValue yamlKeyValue = (YAMLKeyValue) yamlArray.getContext();
-        if(!yamlKeyValue.getKeyText().equals("arguments")) {
-            return null;
-        }
-
-        YAMLMapping parentMapping = yamlKeyValue.getParentMapping();
-        if(parentMapping == null) {
-            return null;
-        }
-
-        String serviceId = getServiceClassFromServiceMapping(parentMapping);
-        if(StringUtils.isBlank(serviceId)) {
-            return null;
-        }
-
-        PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlScalar.getProject(), serviceId, lazyServiceCollector);
-        if(serviceClass == null) {
-            return null;
-        }
-
-        Method constructor = serviceClass.getConstructor();
-        if(constructor == null) {
-            return null;
-        }
-
-        return new ServiceTypeHint(
-            constructor,
-            PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
-            yamlScalar
-        );
+        return null;
     }
 
     /**
@@ -395,13 +417,13 @@ public class ServiceContainerUtil {
         // service/argument[id]
         String serviceDefName = XmlHelper.getClassFromServiceDefinition(serviceTag);
         if(serviceDefName != null) {
-            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName, lazyServiceCollector);
 
             // check type hint on constructor
             if(phpClass != null) {
                 Method constructor = phpClass.getConstructor();
                 if(constructor != null) {
-                    return new ServiceTypeHint(constructor, getArgumentIndex(argumentTag), psiElement);
+                    return new ServiceTypeHint(constructor, XmlHelper.getArgumentIndex(argumentTag, constructor), psiElement);
                 }
             }
         }
@@ -440,19 +462,15 @@ public class ServiceContainerUtil {
 
             // get service class
             if(serviceTag != null && "service".equals(serviceTag.getName())) {
-                XmlAttribute classAttribute = serviceTag.getAttribute("class");
-                if(classAttribute != null) {
+                String serviceDefName = XmlHelper.getClassFromServiceDefinition(serviceTag);
+                if(serviceDefName != null) {
+                    PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName, lazyServiceCollector);
 
-                    String serviceDefName = classAttribute.getValue();
-                    if(serviceDefName != null) {
-                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
-
-                        // finally check method type hint
-                        if(phpClass != null) {
-                            Method method = phpClass.findMethodByName(methodName);
-                            if(method != null) {
-                                return new ServiceTypeHint(method, getArgumentIndex(currentXmlTag), psiElement);
-                            }
+                    // finally check method type hint
+                    if(phpClass != null) {
+                        Method method = phpClass.findMethodByName(methodName);
+                        if(method != null) {
+                            return new ServiceTypeHint(method, XmlHelper.getArgumentIndex(currentXmlTag, method), psiElement);
                         }
                     }
                 }
@@ -504,21 +522,6 @@ public class ServiceContainerUtil {
         }
 
         return usage;
-    }
-
-    private static int getArgumentIndex(@NotNull XmlTag xmlTag) {
-
-        PsiElement psiElement = xmlTag;
-        int index = 0;
-
-        while (psiElement != null) {
-            psiElement = psiElement.getPrevSibling();
-            if(psiElement instanceof XmlTag && "argument".equalsIgnoreCase(((XmlTag) psiElement).getName())) {
-                index++;
-            }
-        }
-
-        return index;
     }
 
     public static boolean isLowerPriority(String name) {

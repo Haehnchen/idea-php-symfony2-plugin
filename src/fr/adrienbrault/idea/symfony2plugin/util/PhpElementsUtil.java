@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -1384,6 +1385,33 @@ public class PhpElementsUtil {
         }
 
         return types;
+    }
+
+    /**
+     * Find argument by name in constructor parameter: __construct($foobar)
+     */
+    public static int getConstructorArgumentByName(@NotNull PhpClass phpClass, @NotNull String argumentName) {
+        Method constructor = phpClass.getConstructor();
+        if(constructor == null) {
+            return -1;
+        }
+
+        return getFunctionArgumentByName(constructor, argumentName);
+    }
+
+    /**
+     * Find argument by name in function parameter: argumentName($foobar)
+     */
+    public static int getFunctionArgumentByName(@NotNull Function function, @NotNull String argumentName) {
+        Parameter[] parameters = function.getParameters();
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            if (argumentName.equals(parameter.getName())) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**

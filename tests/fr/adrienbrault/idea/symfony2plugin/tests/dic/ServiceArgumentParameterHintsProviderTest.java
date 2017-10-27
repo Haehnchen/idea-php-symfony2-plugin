@@ -87,6 +87,20 @@ public class ServiceArgumentParameterHintsProviderTest extends SymfonyLightCodeI
         assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "foobar".equals(inlayInfo.getText())));
     }
 
+    public void testXmlParameterTypeHintForNamedArguments() {
+        List<InlayInfo> parameterHints = getInlayInfo("" +
+            "<container>\n" +
+            "    <services>\n" +
+            "        <service id=\"Foobar\\MyFoobarNamed\">\n" +
+            "           <argument key=\"$foo\" id=\"a<caret>a\"/>\n" +
+            "        </service>\n" +
+            "    </services>\n" +
+            "</container>\n"
+        );
+
+        assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
+    }
+
     public void testXmlParameterTypeForNestedArgumentsMustNotProvideHint() {
         List<InlayInfo> parameterHints = getInlayInfo("" +
             "<container>\n" +
@@ -148,6 +162,17 @@ public class ServiceArgumentParameterHintsProviderTest extends SymfonyLightCodeI
             "services:\n" +
             "    Foobar\\MyFoobar:\n" +
             "        arguments: [@fo<caret>obar]\n"
+        );
+
+        assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
+    }
+
+    public void testYamlParameterTypeForServiceIdShortcutWithNamedArgument() {
+        List<InlayInfo> parameterHints = getInlayInfo(YAMLFileType.YML,"" +
+            "services:\n" +
+            "    Foobar\\MyFoobar:\n" +
+            "        arguments:\n" +
+            "           $foo: @fo<caret>obar\n"
         );
 
         assertNotNull(ContainerUtil.find(parameterHints, inlayInfo -> "FooInterface".equals(inlayInfo.getText())));
