@@ -12,6 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -22,6 +23,9 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
@@ -100,7 +104,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
-        return true;
+        return psiElement.getLanguage().equals(PhpLanguage.INSTANCE) && getServicesInScope(psiElement).size() > 0;
     }
 
     @Nls
@@ -114,5 +118,14 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
     @Override
     public String getText() {
         return "Symfony: Update service arguments";
+    }
+
+    @NotNull
+    private Set<String> getServicesInScope(@NotNull PsiElement psiElement) {
+        PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
+
+        return phpClass == null
+            ? Collections.emptySet()
+            : ContainerCollectionResolver.ServiceCollector.create(psiElement.getProject()).convertClassNameToServices(phpClass.getFQN());
     }
 }
