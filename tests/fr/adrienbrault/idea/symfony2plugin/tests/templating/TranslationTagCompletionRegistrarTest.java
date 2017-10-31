@@ -14,6 +14,7 @@ public class TranslationTagCompletionRegistrarTest extends SymfonyLightCodeInsig
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("app.de.yml", "Resources/translations/app.de.yml");
+        myFixture.copyFileToProject("app.de.yml", "Resources/translations/messages.de.yml");
     }
 
     public String getTestDataPath() {
@@ -36,6 +37,12 @@ public class TranslationTagCompletionRegistrarTest extends SymfonyLightCodeInsig
         assertCompletionContains(
             TwigFileType.INSTANCE,
             "{% transchoice from \"app\" %}s<caret>{% endtrans %}",
+            "symfony.great"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% trans %}s<caret>{% endtrans %}",
             "symfony.great"
         );
     }

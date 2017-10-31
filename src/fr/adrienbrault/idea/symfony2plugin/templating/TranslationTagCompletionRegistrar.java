@@ -41,6 +41,11 @@ public class TranslationTagCompletionRegistrar implements GotoCompletionRegistra
                     domain = TwigUtil.getTransDefaultDomainOnScope(element);
                 }
 
+                // overall fallback if no "trans*" scope was found
+                if(domain == null) {
+                    domain = "messages";
+                }
+
                 return new MyTranslationGotoCompletionProvider(element, domain);
             }
         );
@@ -75,7 +80,7 @@ public class TranslationTagCompletionRegistrar implements GotoCompletionRegistra
     private static class MyTranslationGotoCompletionProvider extends GotoCompletionProvider {
         private final String domain;
 
-        MyTranslationGotoCompletionProvider(PsiElement element, String domain) {
+        MyTranslationGotoCompletionProvider(@NotNull PsiElement element, @NotNull String domain) {
             super(element);
             this.domain = domain;
         }
