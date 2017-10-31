@@ -2,13 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.tests.dic.container.util;
 
 import com.google.gson.Gson;
 import com.intellij.openapi.util.Condition;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.io.File;
 import java.util.Arrays;
@@ -32,6 +36,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
 
         myFixture.configureByFile("usage.services.xml");
         myFixture.configureByFile("usage1.services.xml");
+
+        myFixture.configureByFile("classes.php");
     }
 
     public String getTestDataPath() {
@@ -197,6 +203,101 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         ServiceSerializable defaultsOverwrite = services.stream().filter(service -> "_xml.defaults_overwrite".equals(service.getId())).findFirst().get();
         assertFalse(defaultsOverwrite.isAutowire());
         assertTrue(defaultsOverwrite.isPublic());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
+     */
+    public void testGetYamlConstructorTypeHint() {
+        myFixture.configureByText("test.yml", "" +
+            "services:\n" +
+            "   NamedArgument\\Foobar:\n" +
+            "       arguments: ['<caret>']\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        ServiceTypeHint typeHint = ServiceContainerUtil.getYamlConstructorTypeHint(
+            parent,
+            new ContainerCollectionResolver.LazyServiceCollector(getProject())
+        );
+
+        assertEquals(0, typeHint.getIndex());
+        assertEquals("__construct", typeHint.getMethod().getName());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
+     */
+    public void testGetYamlConstructorTypeHintForNamedArgument() {
+        myFixture.configureByText("test.yml", "" +
+            "services:\n" +
+            "   NamedArgument\\Foobar:\n" +
+            "       arguments:\n" +
+            "           $foobar: '<caret>'\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        YAMLScalar parent = (YAMLScalar) psiElement.getParent();
+
+        ServiceTypeHint typeHint = ServiceContainerUtil.getYamlConstructorTypeHint(
+            parent,
+            new ContainerCollectionResolver.LazyServiceCollector(getProject())
+        );
+
+        assertEquals(0, typeHint.getIndex());
+        assertEquals("__construct", typeHint.getMethod().getName());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getXmlConstructorTypeHint
+     */
+    public void testGetXmlConstructorTypeHint() {
+        myFixture.configureByText("services.xml", "" +
+                "<services>" +
+                "     <service id=\"NamedArgument\\Foobar\">\n" +
+                "         <argument type=\"service\" key=\"$foobar\" id=\"args<caret>_bar\"/>\n" +
+                "     </service>" +
+                "</services>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        ServiceTypeHint typeHint = ServiceContainerUtil.getXmlConstructorTypeHint(
+            psiElement,
+            new ContainerCollectionResolver.LazyServiceCollector(getProject())
+        );
+
+        assertEquals(0, typeHint.getIndex());
+        assertEquals("__construct", typeHint.getMethod().getName());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getXmlCallTypeHint
+     */
+    public void testGetXmlCallTypeHint() {
+        myFixture.configureByText("services.xml", "" +
+            "<services>" +
+            "     <service id=\"NamedArgument\\Foobar\">\n" +
+            "         <call method=\"setFoo\">\n" +
+            "             <argument type=\"service\" key=\"$foobar\" id=\"args_bar<caret>\"/>\n" +
+            "         </call>\n" +
+            "     </service>" +
+            "</services>"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        ServiceTypeHint typeHint = ServiceContainerUtil.getXmlCallTypeHint(
+            psiElement,
+            new ContainerCollectionResolver.LazyServiceCollector(getProject())
+        );
+
+        assertEquals(1, typeHint.getIndex());
+        assertEquals("setFoo", typeHint.getMethod().getName());
     }
 
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {

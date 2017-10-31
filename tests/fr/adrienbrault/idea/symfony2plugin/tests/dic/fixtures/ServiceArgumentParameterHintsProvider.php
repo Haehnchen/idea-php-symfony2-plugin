@@ -16,4 +16,11 @@ namespace Foobar
         {
         }
     }
+
+    class MyFoobarNamed
+    {
+        public function __construct($foobar, $foobar2, FooInterface $foo)
+        {
+        }
+    }
 }

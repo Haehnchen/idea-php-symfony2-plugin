@@ -7,6 +7,8 @@ import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
@@ -630,16 +632,13 @@ public class XmlHelper {
                                 XmlTag serviceTag = ((XmlTag) xmlCallTag).getParentTag();
                                 // get service class
                                 if(serviceTag != null && "service".equals(serviceTag.getName())) {
-                                    XmlAttribute classAttribute = serviceTag.getAttribute("class");
-                                    if(classAttribute != null) {
-                                        String className = classAttribute.getValue();
-                                        if(className != null) {
-                                            consumer.consume(new ParameterVisitor(
-                                                className,
-                                                methodName,
-                                                getArgumentIndex((XmlTag) xmlArgumentTag))
-                                            );
-                                        }
+                                    String className = XmlHelper.getClassFromServiceDefinition(serviceTag);
+                                    if(className != null) {
+                                        consumer.consume(new ParameterVisitor(
+                                            className,
+                                            methodName,
+                                            getArgumentIndex((XmlTag) xmlArgumentTag)
+                                        ));
                                     }
                                 }
                             }
@@ -662,6 +661,107 @@ public class XmlHelper {
         visitServiceCallArgument(xmlAttribute, new ParameterResolverConsumer(xmlAttribute.getProject(), consumer));
     }
 
+
+    /**
+     * Find argument of given service method scope
+     *
+     * <service>
+     *     <argument key="$foobar"/>
+     *     <argument index="0"/>
+     *     <argument/>
+     *     <call method="foobar">
+     *          <argument key="$foobar"/>
+     *          <argument index="0"/>
+     *          <argument/>
+     *     </call>
+     * </service>
+     */
+    public static int getArgumentIndex(@NotNull XmlTag argumentTag) {
+        String indexAttr = argumentTag.getAttributeValue("index");
+        if(indexAttr != null) {
+            try {
+                return Integer.valueOf(indexAttr);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+
+        String keyAttr = argumentTag.getAttributeValue("key");
+        if(keyAttr != null && keyAttr.length() > 1 && keyAttr.startsWith("$")) {
+            PsiElement parentTag = argumentTag.getParent();
+            if(parentTag instanceof XmlTag) {
+                String name = ((XmlTag) parentTag).getName();
+
+                if("service".equalsIgnoreCase(name)) {
+                    // <service><argument/></service>
+                    String aClass = XmlHelper.getClassFromServiceDefinition((XmlTag) parentTag);
+                    if(aClass != null) {
+                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(argumentTag.getProject(), aClass);
+                        if(phpClass != null) {
+                            int parameter = PhpElementsUtil.getConstructorArgumentByName(phpClass, StringUtils.stripStart(keyAttr, "$"));
+                            if(parameter >= 0) {
+                                return parameter;
+                            }
+                        }
+                    }
+                } else if("call".equalsIgnoreCase(name)) {
+                    // <service><call method="foobar"><argument/></call></service>
+                    PsiElement serviceTag = parentTag.getParent();
+                    if(serviceTag instanceof XmlTag && "service".equalsIgnoreCase(((XmlTag) serviceTag).getName())) {
+                        String methodName = ((XmlTag) parentTag).getAttributeValue("method");
+                        if(methodName != null && StringUtils.isNotBlank(methodName)) {
+                            String aClass = XmlHelper.getClassFromServiceDefinition((XmlTag) serviceTag);
+                            if(aClass != null) {
+                                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(argumentTag.getProject(), aClass);
+                                if(phpClass != null) {
+                                    Method methodByName = phpClass.findMethodByName(methodName);
+                                    if(methodByName != null) {
+                                        int parameter = PhpElementsUtil.getFunctionArgumentByName(methodByName, StringUtils.stripStart(keyAttr, "$"));
+                                        if(parameter >= 0) {
+                                            return parameter;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return getArgumentIndexByCount(argumentTag);
+    }
+
+    /**
+     * Find argument of given service function / method scope
+     *
+     * <service>
+     *     <argument key="$foobar"/>
+     *     <argument index="0"/>
+     *     <argument/>
+     * </service>
+     */
+    public static int getArgumentIndex(@NotNull XmlTag argumentTag, @NotNull Function function) {
+        String indexAttr = argumentTag.getAttributeValue("index");
+        if(indexAttr != null) {
+            try {
+                return Integer.valueOf(indexAttr);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+
+        String keyAttr = argumentTag.getAttributeValue("key");
+        if(keyAttr != null) {
+            int parameter = PhpElementsUtil.getFunctionArgumentByName(function, StringUtils.stripStart(keyAttr, "$"));
+            if(parameter >= 0) {
+                return parameter;
+            }
+        }
+
+        return getArgumentIndexByCount(argumentTag);
+    }
+
     /**
      * Returns current index of parent tag
      *
@@ -670,14 +770,14 @@ public class XmlHelper {
      *     <arg<caret>ument/>
      * </foo>
      */
-    public static int getArgumentIndex(@NotNull XmlTag xmlTag) {
-
+    private static int getArgumentIndexByCount(@NotNull XmlTag xmlTag) {
         PsiElement psiElement = xmlTag;
         int index = 0;
 
         while (psiElement != null) {
             psiElement = psiElement.getPrevSibling();
-            if(psiElement instanceof XmlTag && "argument".equalsIgnoreCase(((XmlTag) psiElement).getName())) {
+            // ignore: <argument index="0"/>, <argument key="$foobar"/>
+            if(psiElement instanceof XmlTag && "argument".equalsIgnoreCase(((XmlTag) psiElement).getName()) && ((XmlTag) psiElement).getAttribute("key") == null && ((XmlTag) psiElement).getAttribute("index") == null) {
                 index++;
             }
         }

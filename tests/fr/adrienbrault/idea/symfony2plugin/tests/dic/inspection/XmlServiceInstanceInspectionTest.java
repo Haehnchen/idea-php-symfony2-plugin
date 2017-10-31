@@ -29,12 +29,50 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
             "</services>",
             "Expect instance of: Args\\Foo"
         );
+
+        assertLocalInspectionContains("test.xml", "" +
+                "<services>" +
+                "     <service id=\"Args\\Foo\">\n" +
+                "         <argument type=\"service\" id=\"args<caret>_bar\"/>\n" +
+                "     </service>" +
+                "</services>",
+            "Expect instance of: Args\\Foo"
+        );
+
+        assertLocalInspectionContains("test.xml", "" +
+                "<services>" +
+                "     <service id=\"Args\\Foo\">\n" +
+                "         <argument type=\"service\" index=\"0\" id=\"args<caret>_bar\"/>\n" +
+                "     </service>" +
+                "</services>",
+            "Expect instance of: Args\\Foo"
+        );
+
+        assertLocalInspectionContains("test.xml", "" +
+                "<services>" +
+                "     <service id=\"Args\\Foo\">\n" +
+                "         <argument type=\"service\" key=\"$foo\" id=\"args<caret>_bar\"/>\n" +
+                "     </service>" +
+                "</services>",
+            "Expect instance of: Args\\Foo"
+        );
     }
 
     public void testCallInstance() {
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
                 "        <service class=\"Args\\Foo\">\n" +
+                "            <call method=\"setFoo\">\n" +
+                "                <argument type=\"service\" id=\"args<caret>_bar\"/>\n" +
+                "            </call>\n" +
+                "        </service>" +
+                "</services>",
+            "Expect instance of: Args\\Foo"
+        );
+
+        assertLocalInspectionContains("test.xml", "" +
+                "<services>" +
+                "        <service id=\"Args\\Foo\">\n" +
                 "            <call method=\"setFoo\">\n" +
                 "                <argument type=\"service\" id=\"args<caret>_bar\"/>\n" +
                 "            </call>\n" +
@@ -61,6 +99,30 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "             <argument/>\n" +
                 "             <argument/>\n" +
                 "             <argument type=\"service\" id=\"args_bar<caret>\"/>\n" +
+                "         </call>\n" +
+                "     </service>" +
+                "</services>",
+            "Expect instance of: Args\\Foo"
+        );
+    }
+
+    public void testCallInstanceForNamedAndIndexParameter() {
+        assertLocalInspectionContains("test.xml", "" +
+                "<services>" +
+                "     <service id=\"Args\\Foo\">\n" +
+                "         <call method=\"setFoo\">\n" +
+                "             <argument type=\"service\" key=\"$car\" id=\"args_bar<caret>\"/>\n" +
+                "         </call>\n" +
+                "     </service>" +
+                "</services>",
+            "Expect instance of: Args\\Foo"
+        );
+
+        assertLocalInspectionContains("test.xml", "" +
+                "<services>" +
+                "     <service id=\"Args\\Foo\">\n" +
+                "         <call method=\"setFoo\">\n" +
+                "             <argument type=\"service\" index=\"2\" id=\"args_bar<caret>\"/>\n" +
                 "         </call>\n" +
                 "     </service>" +
                 "</services>",

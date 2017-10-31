@@ -52,18 +52,17 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
         String name = parentXmlTag.getName();
         if(name.equals("service")) {
             // service/argument[id]
-            XmlAttribute classAttribute = parentXmlTag.getAttribute("class");
-            if(classAttribute != null) {
-                String serviceDefName = classAttribute.getValue();
-                if(serviceDefName != null) {
-                    PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+            String serviceDefName = XmlHelper.getClassFromServiceDefinition(parentXmlTag);
+            if(serviceDefName != null) {
+                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
 
-                    // check type hint on constructor
-                    if(phpClass != null) {
-                        Method constructor = phpClass.getConstructor();
-                        if(constructor != null) {
-                            String serviceName = ((XmlAttributeValue) psiElement).getValue();
-                            attachMethodInstances(psiElement, serviceName, constructor, XmlHelper.getArgumentIndex(currentXmlTag), holder);
+                // check type hint on constructor
+                if(phpClass != null) {
+                    Method constructor = phpClass.getConstructor();
+                    if(constructor != null) {
+                        String serviceName = ((XmlAttributeValue) psiElement).getValue();
+                        if(serviceName != null) {
+                            attachMethodInstances(psiElement, serviceName, constructor, XmlHelper.getArgumentIndex(currentXmlTag, constructor), holder);
                         }
                     }
                 }
@@ -79,18 +78,17 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
 
                 // get service class
                 if(serviceTag != null && "service".equals(serviceTag.getName())) {
-                    XmlAttribute classAttribute = serviceTag.getAttribute("class");
-                    if(classAttribute != null) {
-                        String serviceDefName = classAttribute.getValue();
-                        if(serviceDefName != null) {
-                            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+                    String serviceDefName = XmlHelper.getClassFromServiceDefinition(serviceTag);
+                    if(serviceDefName != null) {
+                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
 
-                            // finally check method type hint
-                            if(phpClass != null) {
-                                Method method = phpClass.findMethodByName(methodName);
-                                if(method != null) {
-                                    String serviceName = ((XmlAttributeValue) psiElement).getValue();
-                                    attachMethodInstances(psiElement, serviceName, method, XmlHelper.getArgumentIndex(currentXmlTag), holder);
+                        // finally check method type hint
+                        if(phpClass != null) {
+                            Method method = phpClass.findMethodByName(methodName);
+                            if(method != null) {
+                                String serviceName = ((XmlAttributeValue) psiElement).getValue();
+                                if(serviceName != null) {
+                                    attachMethodInstances(psiElement, serviceName, method, XmlHelper.getArgumentIndex(currentXmlTag, method), holder);
                                 }
                             }
                         }
