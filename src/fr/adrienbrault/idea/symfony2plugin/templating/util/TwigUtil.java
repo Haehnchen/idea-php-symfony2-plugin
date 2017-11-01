@@ -12,6 +12,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ArrayListSet;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
@@ -1378,13 +1379,13 @@ public class TwigUtil {
      * Visit all template variables which are completion in Twig file rendering call as array
      */
     public static void visitTemplateVariables(@NotNull TwigFile scope, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        visitTemplateVariables((PsiElement) scope, consumer);
+        visitTemplateVariables(scope, consumer, 3);
     }
 
     /**
      * Proxy to consume every given scope
      */
-    private static void visitTemplateVariables(@NotNull PsiElement scope, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+    private static void visitTemplateVariables(@NotNull PsiElement scope, @NotNull Consumer<Pair<String, PsiElement>> consumer, int includeDepth) {
         for (PsiElement psiElement : scope.getChildren()) {
             IElementType elementType = psiElement.getNode().getElementType();
 
@@ -1422,7 +1423,7 @@ public class TwigUtil {
                 }
 
                 // nested "if" or "set" statement is supported
-                visitTemplateVariables(psiElement, consumer);
+                visitTemplateVariables(psiElement, consumer, includeDepth);
 
             } else if (elementType == TwigElementTypes.PRINT_BLOCK) {
                 // {{ foobar }}
@@ -1435,7 +1436,10 @@ public class TwigUtil {
                     ))
                 );
 
-                visitTemplateVariablesConsumer(nextSiblingOfType, consumer);
+                // not match function {{ foobar() }}
+                if(!PlatformPatterns.psiElement().beforeLeafSkipping(PlatformPatterns.psiElement(PsiWhiteSpace.class), PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)).accepts(nextSiblingOfType)) {
+                    visitTemplateVariablesConsumer(nextSiblingOfType, consumer);
+                }
             } else if (elementType == TwigElementTypes.FOR_STATEMENT) {
                 // {% for foo in bar %}{% endfor %}
 
@@ -1463,11 +1467,27 @@ public class TwigUtil {
                         }
                     }
                 }
+            } else if (psiElement instanceof TwigTagWithFileReference && includeDepth-- >= 0) {
+                // we dont support "with" and "context" modification for now
+                // {% include 'foo.html.twig' only %}
+                // {% include 'foo.html.twig' with {} %}
+
+                if(PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("with", "only"))) == null) {
+                    // collect includes unique and visit until given "includeDepth"
+
+                    Set<TwigFile> files = TwigHelper.getIncludeTagStrings((TwigTagWithFileReference) psiElement).stream()
+                        .flatMap(template -> Arrays.stream(TwigHelper.getTemplatePsiElements(psiElement.getProject(), template)))
+                        .filter(psiFile -> psiFile instanceof TwigFile)
+                        .map(psiFile -> (TwigFile) psiFile)
+                        .collect(Collectors.toCollection(ArrayListSet::new));
+
+                    for (TwigFile file : files) {
+                        visitTemplateVariables(file, consumer, includeDepth);
+                    }
+                }
             } else if (elementType == TwigElementTypes.BLOCK_STATEMENT) {
                 // visit block statement
-                String text = psiElement.getText();
-
-                visitTemplateVariables(psiElement, consumer);
+                visitTemplateVariables(psiElement, consumer, includeDepth);
             }
         }
     }

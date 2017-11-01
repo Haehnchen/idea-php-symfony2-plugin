@@ -523,12 +523,15 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         // print
         assertContainsElements(elementMap.keySet(), "print_foo");
+        assertContainsElements(elementMap.keySet(), "print_foo2");
         assertContainsElements(elementMap.keySet(), "my_block_print_foo");
         assertContainsElements(elementMap.keySet(), "my_block_print_foo_html");
         assertContainsElements(elementMap.keySet(), "set_foo_inner_print_foo");
 
         // for
         assertContainsElements(elementMap.keySet(), "for_bar");
+
+        assertFalse(elementMap.keySet().contains("print_foo_method"));
     }
 
     public void testGetTemplateAnnotationFilesWithSiblingMethod() {
