@@ -43,10 +43,12 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
             if(!uniqueTemplates.contains(templateName)) {
                 uniqueTemplates.add(templateName);
 
-                parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
-                    pair.getSecond(),
-                    TwigUtil.getFoldingTemplateNameOrCurrent(templateName)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER)
-                );
+                for (PsiElement psiElement : pair.getSecond()) {
+                    parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
+                        psiElement,
+                        TwigUtil.getFoldingTemplateNameOrCurrent(templateName)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER)
+                    );
+                }
             }
         });
 
@@ -67,7 +69,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
     /**
      *  Visit every possible template on given method: eg Annotations @Template()
      */
-    public static void visitMethodTemplateNames(@NotNull Method method, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+    public static void visitMethodTemplateNames(@NotNull Method method, @NotNull Consumer<Pair<String, PsiElement[]>> consumer) {
         // on @Template annotation
         PhpDocComment phpDocComment = method.getDocComment();
         if(phpDocComment != null) {
@@ -80,10 +82,9 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
                         // resolve annotation and check for template
                         PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag, importMap);
                         if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
-                            for(Map.Entry<String, PsiElement[]> entry: TwigUtil.getTemplateAnnotationFiles(phpDocTag).entrySet()) {
-                                for (PsiElement psiElement : entry.getValue()) {
-                                    consumer.accept(Pair.create(entry.getKey(), psiElement));
-                                }
+                            Pair<String, PsiElement[]> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
+                            if(templateAnnotationFiles != null) {
+                                consumer.accept(Pair.create(templateAnnotationFiles.getFirst(), templateAnnotationFiles.getSecond()));
                             }
                         }
                     }
@@ -93,9 +94,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
 
         // on method name
         for (String templateName : TwigUtil.getControllerMethodShortcut(method)) {
-            for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(method.getProject(), templateName)) {
-                consumer.accept(Pair.create(templateName, templateTarget));
-            }
+            consumer.accept(Pair.create(templateName, TwigHelper.getTemplatePsiElements(method.getProject(), templateName)));
         }
     }
 }

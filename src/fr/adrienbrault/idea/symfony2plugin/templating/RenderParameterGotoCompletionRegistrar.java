@@ -6,10 +6,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
@@ -28,15 +25,24 @@ import java.util.*;
  * Provides template name completion for PHP related calls which will render the given template
  *
  * render('foo.html.twig', ['fo<caret>obar' => 'foobar'])
+ *
  * return ['fo<caret>obar' => 'foobar']
+ * return array_merge(['fo<caret>obar' => 'foobar'])
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class RenderParameterGotoCompletionRegistrar implements GotoCompletionRegistrar {
+    /**
+     * supported "array merge" function for template variables
+     */
+    final public static Set<String> ARRAY_FUNCTIONS = new HashSet<>(Arrays.asList(
+        "array_merge", "array_merge_recursive", "array_replace"
+    ));
+
     @Override
     public void register(GotoCompletionRegistrarParameter registrar) {
         registrar.register(
-            PlatformPatterns.psiElement(),
+            PlatformPatterns.psiElement().withParent(StringLiteralExpression.class),
             MyTemplateVariablesGotoCompletionProvider::new
         );
     }
@@ -131,14 +137,28 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             return Collections.emptyList();
         }
 
-        ArrayCreationExpression arrayCreationElement = PhpElementsUtil.getCompletableArrayCreationElement(stringLiteral);
+        PhpPsiElement arrayCreationElement = PhpElementsUtil.getCompletableArrayCreationElement(stringLiteral);
         if(arrayCreationElement == null) {
             return Collections.emptyList();
         }
 
+
         Set<String> templates = new HashSet<>();
 
+        // array_merge($template, ['<caret>'])
+        // array_merge(['<caret>' => 'foo'], $template)
         PsiElement parentArrayCreation = arrayCreationElement.getParent();
+        if(parentArrayCreation instanceof ParameterList) {
+            PsiElement functionReference = parentArrayCreation.getParent();
+            if(functionReference instanceof FunctionReference) {
+                String name = ((FunctionReference) functionReference).getName();
+
+                if(ARRAY_FUNCTIONS.contains(name)) {
+                    arrayCreationElement = (PhpPsiElement) functionReference;
+                }
+            }
+        }
+
         if(parentArrayCreation instanceof PhpReturn) {
             // fooAction() {
             //   return ['<caret>'];

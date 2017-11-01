@@ -547,6 +547,17 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(TwigUtil.getTemplateAnnotationFilesWithSiblingMethod(phpDocTag).keySet(), "foo.html.twig");
     }
 
+    public void testGetTemplateAnnotationFiles() {
+        PhpDocTag phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpDocTag.class, "/** @Template(\"foo.html.twig\") */");
+        assertEquals("foo.html.twig", TwigUtil.getTemplateAnnotationFiles(phpPsiFromText).getFirst());
+
+        phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpDocTag.class, "/** @Template(template=\"foo.html.twig\") */");
+        assertEquals("foo.html.twig", TwigUtil.getTemplateAnnotationFiles(phpPsiFromText).getFirst());
+
+        phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpDocTag.class, "/** @Template(template=\"foo\\foo.html.twig\") */");
+        assertEquals("foo/foo.html.twig", TwigUtil.getTemplateAnnotationFiles(phpPsiFromText).getFirst());
+    }
+
     private PsiElement createPsiElementAndFindString(@NotNull String content, @NotNull IElementType type) {
         PsiElement psiElement = TwigElementFactory.createPsiElement(getProject(), content, type);
         if(psiElement == null) {

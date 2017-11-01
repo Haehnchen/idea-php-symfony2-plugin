@@ -33,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -120,29 +121,21 @@ public class TwigUtil {
         };
     }
 
-    @NotNull
-    public static Map<String, PsiElement[]> getTemplateAnnotationFiles(@NotNull PhpDocTag phpDocTag) {
-        // @TODO: @Template(template="templatename")
-        // Also replace "Matcher" with annotation psi elements; now possible
-        // Wait for "annotation plugin" update; to not implement whole stuff here again?
-
-        // find template name on annotation parameter
-        // @Template("templatename")
-        PhpPsiElement phpDocAttrList = phpDocTag.getFirstPsiChild();
-        if(phpDocAttrList == null) {
-            return Collections.emptyMap();
+    /**
+     * Extract Template names from PhpDocTag
+     *
+     * "@Template("foo.html.twig")"
+     * "@Template(template="foo.html.twig")"
+     */
+    @Nullable
+    public static Pair<String, PsiElement[]> getTemplateAnnotationFiles(@NotNull PhpDocTag phpDocTag) {
+        String template = AnnotationBackportUtil.getPropertyValueOrDefault(phpDocTag, "template");
+        if(template == null) {
+            return null;
         }
 
-        Map<String, PsiElement[]> templateFiles = new HashMap<>();
-
-        String tagValue = phpDocAttrList.getText();
-        Matcher matcher = Pattern.compile("\\(\"(.*)\"").matcher(tagValue);
-
-        if (matcher.find()) {
-            templateFiles.put(matcher.group(1), TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), matcher.group(1)));
-        }
-
-        return templateFiles;
+        template = TwigHelper.normalizeTemplateName(template);
+        return Pair.create(template, TwigHelper.getTemplatePsiElements(phpDocTag.getProject(), template));
     }
 
     /**
@@ -150,10 +143,15 @@ public class TwigUtil {
      */
     @NotNull
     public static Map<String, PsiElement[]> getTemplateAnnotationFilesWithSiblingMethod(@NotNull PhpDocTag phpDocTag) {
-        Map<String, PsiElement[]> targets = new HashMap<>(
-            TwigUtil.getTemplateAnnotationFiles(phpDocTag)
-        );
+        Map<String, PsiElement[]> targets = new HashMap<>();
 
+        // template on direct PhpDocTag
+        Pair<String, PsiElement[]> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
+        if(templateAnnotationFiles != null) {
+            targets.put(templateAnnotationFiles.getFirst(), templateAnnotationFiles.getSecond());
+        }
+
+        // templates on "Method" of PhpDocTag
         PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
         if(phpDocComment != null) {
             PsiElement method = phpDocComment.getNextPsiSibling();

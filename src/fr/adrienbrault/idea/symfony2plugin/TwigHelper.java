@@ -279,6 +279,7 @@ public class TwigHelper {
      * @param templateName path known, should not be normalized
      * @return target files
      */
+    @NotNull
     public static PsiFile[] getTemplatePsiElements(@NotNull Project project, @NotNull String templateName) {
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
