@@ -10,12 +10,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.15.158
+* [Shopware #meetnext] Add service argument updater via PHP intention
+* [SymfonyLive] Add support for indexed and named arguments [#998](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/998)
+* Improve support for class as id services in xml metadata
+* Fix NPE for call to TranslationUtil.getTranslationLookupElementsOnDomain [#1067](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1067)
+* Allow array function like array_merge variables in template rendering variables completion [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
+* Use Annotation plugin for template name DocBlock extraction and support "template" property
+* Support includes in template rendering variables and fix function calls was detected as variable [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
+
 ## 0.14.157 / 0.15.157
-*   Support services suggestions, argument inspection and service completion prioritization for service class as id attribute in xml files
-*   Symfony 3.4 support "improved the overriding of templates" [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043); all template are know normalized inside index process
-*   Symfony 3.4 config provider supports "improved the overriding of templates" features [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043)
-*   Empty namespace in Twig settings must be `__main__` to reflect internals
-*   Add completion for variables of template rendering in PHP; supporting function parameter and annotation methods [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
+* Support services suggestions, argument inspection and service completion prioritization for service class as id attribute in xml files
+* Symfony 3.4 support "improved the overriding of templates" [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043); all template are know normalized inside index process
+* Symfony 3.4 config provider supports "improved the overriding of templates" features [#1043](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1043)
+* Empty namespace in Twig settings must be `__main__` to reflect internals
+* Add completion for variables of template rendering in PHP; supporting function parameter and annotation methods [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
 
 ## 0.14.156
 * Fix binary incompatibility with 2017.2.x and upcoming 2017.3 [#991](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/991) [#1002](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1002) [#1040](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1040)
