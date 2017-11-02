@@ -175,4 +175,60 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             lookupElement -> "foo.bar_factory".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold() && lookupElement.isItemTextBold()
         );
     }
+
+    public void testNamedArgumentKeyCompletionWithMethodParameterVariables() {
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\Bar\">\n" +
+                "           <argument key=\"<caret>\"/>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            "$foo", "$foo3"
+        );
+
+        assertCompletionContains(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\Bar\">\n" +
+                "           <call method=\"setBar\">\n" +
+                "               <argument key=\"<caret>\"/>\n" +
+                "           </call>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            "$bar", "$bar3"
+        );
+    }
+
+    public void testNamedArgumentKeyNavigationWithMethodParameterVariables() {
+        assertNavigationMatch("services.xml", "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\Bar\">\n" +
+                "           <argument key=\"$f<caret>oo\"/>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch("services.xml", "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\Bar\">\n" +
+                "           <call method=\"setBar\">\n" +
+                "               <argument key=\"$b<caret>ar\"/>\n" +
+                "           </call>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

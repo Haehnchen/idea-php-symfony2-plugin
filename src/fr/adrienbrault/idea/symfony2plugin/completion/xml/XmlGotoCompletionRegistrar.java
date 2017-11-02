@@ -10,8 +10,11 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
+import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.completion.PhpLookupElement;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -101,6 +104,12 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         registrar.register(
             XmlPatterns.psiElement().withParent(XmlHelper.getAttributePattern("template")),
             MyTemplateCompletionRegistrar::new
+        );
+
+        // <argument key="$foobar"/>
+        registrar.register(
+            XmlHelper.getTagAttributePattern("argument", "key"),
+            MyKeyArgumentGotoCompletionProvider::new
         );
     }
 
@@ -308,6 +317,117 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                     );
                 }
             };
+        }
+    }
+
+    /**
+     * Named key argument provider
+     *
+     * <service id="Foo">
+     *  <argument key="<caret>"/>
+     *
+     *  <call method="setBar">
+     *    <argument key="<caret>"/>
+     *  </call>
+     *
+     * </service>
+     */
+    private static class MyKeyArgumentGotoCompletionProvider extends GotoCompletionProvider {
+        MyKeyArgumentGotoCompletionProvider(PsiElement psiElement) {
+            super(psiElement);
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            XmlTag xmlTag = PsiTreeUtil.getParentOfType(getElement(), XmlTag.class);
+            if(xmlTag == null) {
+                return Collections.emptyList();
+            }
+
+            visitParameter(xmlTag, parameter -> {
+                String typeText = StringUtils.stripStart(parameter.getDeclaredType().toString(), "\\");
+
+                int i = typeText.lastIndexOf("\\");
+                if(i > 0) {
+                    typeText = typeText.substring(i + 1);
+                }
+
+                lookupElements.add(
+                    LookupElementBuilder.create("$" + parameter.getName()).withTypeText(typeText, true)
+                );
+            });
+
+            return lookupElements;
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            String xmlAttributeValue = GotoCompletionUtil.getXmlAttributeValue(element);
+            if(xmlAttributeValue == null || !xmlAttributeValue.startsWith("$")) {
+                return Collections.emptyList();
+            }
+
+            Collection<PsiElement> targets = new ArrayList<>();
+
+            XmlTag xmlTag = PsiTreeUtil.getParentOfType(getElement(), XmlTag.class);
+            if(xmlTag == null) {
+                return Collections.emptyList();
+            }
+
+            String finalXmlAttributeValue = StringUtils.stripStart(xmlAttributeValue, "$");
+            visitParameter(xmlTag, parameter -> {
+                if(finalXmlAttributeValue.equals(parameter.getName())) {
+                    targets.add(parameter);
+                }
+            });
+
+            return targets;
+        }
+
+        private void visitParameter(@NotNull XmlTag argumentTag, @NotNull Consumer<Parameter> consumer) {
+            PsiElement serviceTag = argumentTag.getParent();
+            if(!(serviceTag instanceof XmlTag)) {
+                return;
+            }
+
+            Function methodToVisit = null;
+
+            String xmlMethodName = ((XmlTag) serviceTag).getName();
+            if("call".equals(xmlMethodName)) {
+                String methodName = ((XmlTag) serviceTag).getAttributeValue("method");
+
+                if(methodName != null && StringUtils.isNotBlank(methodName)) {
+                    PsiElement serviceTagParent = serviceTag.getParent();
+
+                    if(serviceTagParent instanceof XmlTag && "service".equals(((XmlTag) serviceTagParent).getName())) {
+                        String aClass = XmlHelper.getClassFromServiceDefinition((XmlTag) serviceTagParent);
+                        if(aClass != null) {
+                            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(serviceTag.getProject(), aClass);
+                            if(phpClass != null) {
+                                methodToVisit = phpClass.findMethodByName(methodName);
+                            }
+                        }
+                    }
+                }
+            } else if("service".equals(xmlMethodName)) {
+                String aClass = XmlHelper.getClassFromServiceDefinition((XmlTag) serviceTag);
+                if(aClass != null) {
+                    PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(serviceTag.getProject(), aClass);
+                    if(phpClass != null) {
+                        methodToVisit = phpClass.getConstructor();
+                    }
+                }
+            }
+
+            if(methodToVisit != null) {
+                for (Parameter parameter : methodToVisit.getParameters()) {
+                    consumer.consume(parameter);
+                }
+            }
         }
     }
 }
