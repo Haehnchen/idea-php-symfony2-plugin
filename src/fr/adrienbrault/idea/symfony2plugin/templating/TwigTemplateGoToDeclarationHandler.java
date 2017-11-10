@@ -4,7 +4,6 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -31,6 +30,7 @@ import java.util.*;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandler {
 
@@ -201,7 +201,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     @NotNull
-    public static PsiElement[] getBlockGoTo(@NotNull PsiElement psiElement) {
+    static PsiElement[] getBlockGoTo(@NotNull PsiElement psiElement) {
         String blockName = psiElement.getText();
         if(StringUtils.isBlank(blockName)) {
             return new PsiElement[0];
@@ -217,16 +217,14 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     @NotNull
-    public static PsiElement[] getBlockNameGoTo(@NotNull PsiFile psiFile, @NotNull String blockName) {
+    static PsiElement[] getBlockNameGoTo(@NotNull PsiFile psiFile, @NotNull String blockName) {
         return getBlockNameGoTo(psiFile, blockName, false);
     }
 
     @NotNull
-    public static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
-        Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(psiFile.getProject());
-        List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).withSelfBlocks(withSelfBlocks).walk(psiFile);
+    static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
         List<PsiElement> psiElements = new ArrayList<>();
-        for (TwigBlock block : blocks) {
+        for (TwigBlock block : new TwigBlockParser(withSelfBlocks).walk(psiFile)) {
             if(block.getName().equals(blockName)) {
                 Collections.addAll(psiElements, block.getBlock());
             }

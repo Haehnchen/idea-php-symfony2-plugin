@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigTemplateCompletionContributor extends CompletionContributor {
 
@@ -615,12 +616,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             // collect blocks in all related files
             Pair<PsiFile[], Boolean> scopedContext = TwigHelper.findScopedFile(position);
 
-            List<TwigBlock> blocks = new TwigBlockParser(TwigHelper.getTwigFilesByName(position.getProject()))
-                .withSelfBlocks(scopedContext.getSecond())
-                .visit(scopedContext.getFirst());
-
             Set<String> uniqueList = new HashSet<>();
-            for (TwigBlock block : blocks) {
+            for (TwigBlock block : new TwigBlockParser(scopedContext.getSecond()).visit(scopedContext.getFirst())) {
                 if(uniqueList.contains(block.getName())) {
                     continue;
                 }

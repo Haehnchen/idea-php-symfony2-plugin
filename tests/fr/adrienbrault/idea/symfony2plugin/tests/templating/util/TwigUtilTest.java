@@ -44,28 +44,6 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
-     */
-    public void testTemplateOverwriteNameGeneration() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        assertEquals(
-            "TwigUtilIntegrationBundle:layout.html.twig",
-            TwigUtil.getTemplateNameByOverwrite(getProject(), VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/TwigUtilIntegrationBundle/views/layout.html.twig".split("/")))
-        );
-
-        assertEquals(
-            "TwigUtilIntegrationBundle:Foo/layout.html.twig",
-            TwigUtil.getTemplateNameByOverwrite(getProject(), VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig".split("/")))
-        );
-
-        assertEquals(
-            "TwigUtilIntegrationBundle:Foo/Bar/layout.html.twig",
-            TwigUtil.getTemplateNameByOverwrite(getProject(), VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig".split("/")))
-        );
-    }
-
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateName
      */
     public void testTemplateOverwriteNavigation() {

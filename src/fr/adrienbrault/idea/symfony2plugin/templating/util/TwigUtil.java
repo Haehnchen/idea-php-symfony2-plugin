@@ -783,16 +783,12 @@ public class TwigUtil {
     }
 
     @NotNull
-    public static String getPresentableTemplateName(@NotNull Map<String, VirtualFile> files, @NotNull PsiElement psiElement, boolean shortMode) {
-
+    public static String getPresentableTemplateName(@NotNull PsiElement psiElement, boolean shortMode) {
         VirtualFile currentFile = psiElement.getContainingFile().getVirtualFile();
 
-        List<String> templateNames = new ArrayList<>();
-        for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
-            if(entry.getValue().equals(currentFile)) {
-                templateNames.add(entry.getKey());
-            }
-        }
+        List<String> templateNames = new ArrayList<>(
+            TwigHelper.getTemplateNamesForFile(psiElement.getProject(), currentFile)
+        );
 
         if(templateNames.size() > 0) {
 

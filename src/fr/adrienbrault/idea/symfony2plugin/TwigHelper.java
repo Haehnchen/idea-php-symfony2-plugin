@@ -57,6 +57,7 @@ import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -330,6 +331,68 @@ public class TwigHelper {
         psiFiles.addAll(getTemplateOverwrites(project, normalizedTemplateName));
 
         return psiFiles.toArray(new PsiFile[psiFiles.size()]);
+    }
+
+    /**
+     * Resolve VirtualFile to its possible template names:
+     *
+     * "@Foo/test.html.twig"
+     * "test.html.twig"
+     * "::test.html.twig"
+     */
+    @NotNull
+    public static Collection<String> getTemplateNamesForFile(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        List<TwigPath> collect = getTwigNamespaces(project, true)
+            .stream()
+            .filter(TwigPath::isEnabled)
+            .collect(Collectors.toList());
+
+        Collection<String> templates = new ArrayList<>();
+
+        for (TwigPath twigPath : collect) {
+            VirtualFile directory = twigPath.getDirectory(project);
+            if(directory == null) {
+                continue;
+            }
+
+            String templatePath = VfsUtil.getRelativePath(virtualFile, directory, '/');
+            if(templatePath == null) {
+                continue;
+            }
+
+            String templateDirectory; // xxx:XXX:xxx
+            String templateFile; // xxx:xxx:XXX
+
+            if (templatePath.contains("/")) {
+                int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
+                templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
+                templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
+            } else {
+                templateDirectory = "";
+                templateFile = templatePath;
+            }
+
+            String namespace = twigPath.getNamespace().equals(TwigPathIndex.MAIN) ? "" : twigPath.getNamespace();
+
+            String templateFinalName;
+            if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+                templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
+            } else {
+                templateFinalName = namespace + "/" + templateDirectory + "/" + templateFile;
+
+                // remove empty path and check for root (global namespace)
+                templateFinalName = templateFinalName.replace("//", "/");
+                if(templateFinalName.startsWith("/")) {
+                    templateFinalName = templateFinalName.substring(1);
+                } else {
+                    templateFinalName = "@" + templateFinalName;
+                }
+            }
+
+            templates.add(templateFinalName);
+        }
+
+        return templates;
     }
 
     /**

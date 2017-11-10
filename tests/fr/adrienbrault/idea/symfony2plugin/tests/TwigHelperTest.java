@@ -547,29 +547,6 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
     }
 
-    public void testGetTemplatePsiElements() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        myFixture.addFileToProject("res/foo.html.twig", "{# #}");
-
-        Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
-            new TwigNamespaceSetting("Foo", "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.BUNDLE, true)
-        ));
-
-        String[] strings = {
-            "@Foo/foo.html.twig", "@!Foo/foo.html.twig", "foo.html.twig", ":foo.html.twig", "@Foo\\foo.html.twig", "::foo.html.twig"
-        };
-
-        for (String file : strings) {
-            PsiFile[] templatePsiElements = TwigHelper.getTemplatePsiElements(getProject(), file);
-
-            assertTrue(templatePsiElements.length > 0);
-            assertEquals("foo.html.twig", templatePsiElements[0].getName());
-        }
-    }
-
     private void assertEqual(Collection<String> c, String... values) {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));

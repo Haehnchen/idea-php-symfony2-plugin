@@ -196,10 +196,9 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 }
             }
 
+            // @TODO name filter
             if(getTemplateMap().containsKey(name)) {
-                VirtualFile virtualFile = getTemplateMap().get(name);
-                PsiFile psiFile = PsiManager.getInstance(this.project).findFile(virtualFile);
-                if(psiFile != null) {
+                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(project, name)) {
                     processor.process(new NavigationItemEx(psiFile, name, psiFile.getFileType().getIcon(), "Template"));
                 }
             }

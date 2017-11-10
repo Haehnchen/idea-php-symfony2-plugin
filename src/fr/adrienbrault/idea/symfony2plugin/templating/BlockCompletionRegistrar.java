@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -68,10 +67,8 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
 
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
-            Map<String, VirtualFile> twigFilesByName = TwigHelper.getTwigFilesByName(getElement().getProject());
-            List<TwigBlock> blocks = new TwigBlockParser(twigFilesByName).withSelfBlocks(true).walk(getElement().getContainingFile());
             List<String> uniqueList = new ArrayList<>();
-            for (TwigBlock block : blocks) {
+            for (TwigBlock block : new TwigBlockParser(true).walk(getElement().getContainingFile())) {
                 if(!uniqueList.contains(block.getName())) {
                     uniqueList.add(block.getName());
                     lookupElements.add(new TwigBlockLookupElement(block));

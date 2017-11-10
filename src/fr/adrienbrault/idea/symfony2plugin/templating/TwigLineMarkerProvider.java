@@ -162,7 +162,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         for(PsiElement blockTag: targets) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
                 blockTag,
-                TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)
+                TwigUtil.getPresentableTemplateName(blockTag, true)
             ).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_OVERWRITE));
         }
 
@@ -210,7 +210,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
         for(PsiElement blockTag: blockTargets) {
-            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(files.getTemplates(), blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
 
         return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems);
@@ -229,7 +229,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         for(PsiElement blockTag: blocks) {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
                 blockTag,
-                TwigUtil.getPresentableTemplateName(getTemplateFilesByName(psiElement.getProject()).getTemplates(), blockTag, true)
+                TwigUtil.getPresentableTemplateName(blockTag, true)
             ).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
 
