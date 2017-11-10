@@ -782,11 +782,8 @@ public class TwigUtil {
         return templateShortcutName;
     }
 
-    public static String getPresentableTemplateName(Map<String, VirtualFile> files, PsiElement psiElement) {
-        return getPresentableTemplateName(files, psiElement, false);
-    }
-
-    public static String getPresentableTemplateName(Map<String, VirtualFile> files, PsiElement psiElement, boolean shortMode) {
+    @NotNull
+    public static String getPresentableTemplateName(@NotNull Map<String, VirtualFile> files, @NotNull PsiElement psiElement, boolean shortMode) {
 
         VirtualFile currentFile = psiElement.getContainingFile().getVirtualFile();
 

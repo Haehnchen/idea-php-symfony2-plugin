@@ -36,29 +36,29 @@ public class TwigPathContentIterator {
         this.project = project;
     }
 
-    public boolean processFile(VirtualFile virtualFile) {
+    public void processFile(VirtualFile virtualFile) {
 
         // @TODO make file types more dynamically like eg js
         if(!this.isProcessable(virtualFile)) {
-            return true;
+            return;
         }
 
         // prevent process double file if processCollection and ContentIterator is used in one instance
         String filePath = virtualFile.getPath();
         if(workedOn.contains(filePath)) {
-            return true;
+            return;
         }
 
         workedOn.add(filePath);
 
         VirtualFile virtualDirectoryFile = twigPath.getDirectory(this.project);
         if(virtualDirectoryFile == null) {
-            return true;
+            return;
         }
 
         String templatePath = VfsUtil.getRelativePath(virtualFile, virtualDirectoryFile, '/');
         if(templatePath == null) {
-            return true;
+            return;
         }
 
         String templateDirectory; // xxx:XXX:xxx
@@ -91,12 +91,9 @@ public class TwigPathContentIterator {
         }
 
         this.results.put(templateFinalName, virtualFile);
-
-        return true;
     }
 
     private boolean isProcessable(VirtualFile virtualFile) {
-
         if(virtualFile.isDirectory()) {
             return false;
         }

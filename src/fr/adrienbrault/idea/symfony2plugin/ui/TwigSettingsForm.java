@@ -42,7 +42,7 @@ public class TwigSettingsForm implements Configurable {
         this.project = project;
     }
 
-    private void attachItems(boolean includeSettings) {
+    private void attachItems() {
 
         // @TODO: remove this check, moved init stuff out of constructor
         // dont load on project less context
@@ -51,7 +51,7 @@ public class TwigSettingsForm implements Configurable {
         }
 
         List<TwigPath> sortableLookupItems = new ArrayList<>();
-        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, includeSettings));
+        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, true));
         Collections.sort(sortableLookupItems);
 
         for (TwigPath twigPath : sortableLookupItems) {
@@ -85,7 +85,7 @@ public class TwigSettingsForm implements Configurable {
             new DisableColumn()
         );
 
-        this.attachItems(true);
+        this.attachItems();
 
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
@@ -182,7 +182,7 @@ public class TwigSettingsForm implements Configurable {
     @Override
     public void reset() {
         this.resetList();
-        this.attachItems(true);
+        this.attachItems();
         this.changed = false;
     }
 
