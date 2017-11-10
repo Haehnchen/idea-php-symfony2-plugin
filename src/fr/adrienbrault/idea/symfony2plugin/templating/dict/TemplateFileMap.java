@@ -7,53 +7,37 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TemplateFileMap {
-
+    @NotNull
     private final Map<String, Set<VirtualFile>> templateNames = new HashMap<>();
 
-    public Map<String, Set<VirtualFile>> getTemplateNames() {
-        return templateNames;
-    }
-
-    public Set<String> getNames(@NotNull VirtualFile virtualFile) {
-        Set<String> fileNames = new HashSet<>();
-
-        for (Map.Entry<String, Set<VirtualFile>> entry : templateNames.entrySet()) {
-            if(entry.getValue().contains(virtualFile)) {
-                fileNames.add(entry.getKey());
+    public TemplateFileMap(@NotNull Map<String, VirtualFile> templates) {
+        for (Map.Entry<String, VirtualFile> entry : templates.entrySet()) {
+            String namespace = entry.getKey();
+            if(!templateNames.containsKey(namespace)) {
+                templateNames.put(namespace, new HashSet<>());
             }
-        }
 
-        return fileNames;
+            templateNames.get(namespace).add(entry.getValue());
+        }
     }
 
+    @NotNull
+    public Set<String> getNames(@NotNull VirtualFile virtualFile) {
+        return templateNames.entrySet().stream()
+            .filter(entry -> entry.getValue().contains(virtualFile))
+            .map(Map.Entry::getKey).collect(Collectors.toSet());
+    }
+
+    @NotNull
     @Deprecated
     public Map<String, VirtualFile> getTemplates() {
-
-        Map<String, VirtualFile> templates = new HashMap<>();
-
-        for (Map.Entry<String, Set<VirtualFile>> entry : templateNames.entrySet()) {
-            templates.put(entry.getKey(), entry.getValue().iterator().next());
-        }
-
-        return templates;
-    }
-
-    public void put(@NotNull String namespace, @NotNull VirtualFile virtualFile) {
-        if(!templateNames.containsKey(namespace)) {
-            templateNames.put(namespace, new HashSet<>());
-        }
-
-        templateNames.get(namespace).add(virtualFile);
-    }
-
-    public void putAll(@NotNull Map<String, VirtualFile> files) {
-        for (Map.Entry<String, VirtualFile> entry : files.entrySet()) {
-            put(entry.getKey(), entry.getValue());
-        }
+        return templateNames.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().iterator().next(), (a, b) -> b));
     }
 }

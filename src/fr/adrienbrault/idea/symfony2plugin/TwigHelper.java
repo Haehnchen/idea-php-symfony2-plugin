@@ -146,12 +146,9 @@ public class TwigHelper {
 
     @NotNull
     private static TemplateFileMap getTemplateMapProxy(@NotNull Project project, boolean useTwig, boolean usePhp) {
-
-        List<TwigPath> twigPaths = new ArrayList<>();
-        twigPaths.addAll(getTwigNamespaces(project));
-
+        List<TwigPath> twigPaths = new ArrayList<>(getTwigNamespaces(project));
         if(twigPaths.size() == 0) {
-            return new TemplateFileMap();
+            return new TemplateFileMap(new HashMap<>());
         }
 
         // app/Resources/ParentBundle/Resources/views
@@ -183,34 +180,35 @@ public class TwigHelper {
             }
         }
 
-        TemplateFileMap container = new TemplateFileMap();
+        Map<String, VirtualFile> results = new HashMap<>();
 
         for (TwigPath twigPath : twigPaths) {
             if(twigPath.isEnabled()) {
                 VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
                 if(virtualDirectoryFile != null) {
-                    final TwigPathContentIterator iterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
+                    TwigPathContentIterator iterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
                     VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new MyLimitedVirtualFileVisitor(iterator, 5, 150));
-                    container.putAll(iterator.getResults());
+                    results.putAll(iterator.getResults());
                 }
             }
 
         }
         
-        return container;
+        return new TemplateFileMap(results);
     }
 
-    public static Map<String, VirtualFile> getTwigFilesByName(Project project) {
+    @NotNull
+    public static Map<String, VirtualFile> getTwigFilesByName(@NotNull Project project) {
         return getTemplateFilesByName(project, true, false);
     }
 
-    public static Map<String, VirtualFile> getTemplateFilesByName(Project project) {
+    @NotNull
+    private static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project) {
         return getTemplateFilesByName(project, true, true);
     }
 
     @Nullable
-    public static TwigNamespaceSetting findManagedTwigNamespace(Project project, TwigPath twigPath) {
-
+    private static TwigNamespaceSetting findManagedTwigNamespace(@NotNull Project project, @NotNull TwigPath twigPath) {
         List<TwigNamespaceSetting> twigNamespaces = Settings.getInstance(project).twigNamespaces;
         if(twigNamespaces == null) {
             return null;
@@ -225,17 +223,6 @@ public class TwigHelper {
         return null;
     }
 
-    @Nullable
-    public static PsiFile getTemplateFileByName(Project project, String templateName) {
-
-        PsiFile[] templatePsiElements = TwigHelper.getTemplatePsiElements(project, templateName);
-        if(templatePsiElements.length > 0) {
-            return templatePsiElements[0];
-        }
-
-        return null;
-    }
-
     /**
      * Normalize incoming template names. Provide normalization on indexing and resolving
      *
@@ -245,7 +232,7 @@ public class TwigHelper {
      *
      * todo: provide setting for that
      */
-    public static String normalizeTemplateName(String templateName) {
+    public static String normalizeTemplateName(@NotNull String templateName) {
 
         // force linux path style
         templateName = templateName.replace("\\", "/");
