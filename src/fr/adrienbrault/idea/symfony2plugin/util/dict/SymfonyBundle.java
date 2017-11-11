@@ -4,8 +4,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.GlobalSearchScopes;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -15,13 +13,8 @@ import org.jetbrains.annotations.Nullable;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyBundle {
-
     @NotNull
     final private PhpClass phpClass;
-
-    public SymfonyBundle(@NotNull PhpClass phpClass) {
-        this.phpClass = phpClass;
-    }
 
     @NotNull
     public PhpClass getPhpClass() {
@@ -36,6 +29,10 @@ public class SymfonyBundle {
     @NotNull
     public String getName() {
         return this.phpClass.getName();
+    }
+
+    public SymfonyBundle(@NotNull PhpClass phpClass) {
+        this.phpClass = phpClass;
     }
 
     @Nullable
@@ -53,18 +50,7 @@ public class SymfonyBundle {
     }
 
     @Nullable
-    public VirtualFile getVirtualDirectory() {
-        PsiDirectory psiDirectory = this.getDirectory();
-        if(psiDirectory == null) {
-            return null;
-        }
-
-        return psiDirectory.getVirtualFile();
-    }
-
-    @Nullable
-    public PsiDirectory getSubDirectory(String... names) {
-
+    public PsiDirectory getSubDirectory(@NotNull String... names) {
         PsiDirectory currentDir = this.getDirectory();
         if(null == currentDir) {
             return null;
@@ -81,9 +67,9 @@ public class SymfonyBundle {
     }
 
     @Nullable
-    public String getRelativePath(VirtualFile file) {
-
+    public String getRelativePath(@NotNull VirtualFile file) {
         PsiDirectory currentDir = this.getDirectory();
+
         if(null == currentDir) {
           return null;
         }
@@ -91,48 +77,35 @@ public class SymfonyBundle {
         return VfsUtil.getRelativePath(file, currentDir.getVirtualFile(), '/');
     }
 
-    @Nullable
-    public GlobalSearchScope getBundleSearchScope() {
-        PsiDirectory currentDir = this.getDirectory();
-        if(null == currentDir) {
-            return null;
-        }
-
-        return GlobalSearchScopes.directoryScope(currentDir, true);
-    }
-
-    public boolean isInBundle(PhpClass phpClass) {
+    public boolean isInBundle(@NotNull PhpClass phpClass) {
         return phpClass.getNamespaceName().startsWith(this.phpClass.getNamespaceName());
     }
 
-    public boolean isInBundle(PsiFile psiFile) {
+    public boolean isInBundle(@NotNull PsiFile psiFile) {
         return isInBundle(psiFile.getVirtualFile());
     }
 
     public boolean isInBundle(@Nullable VirtualFile virtualFile) {
-
         if(virtualFile == null) {
             return false;
         }
 
         PsiDirectory psiDirectory =  this.getDirectory();
         return psiDirectory != null && VfsUtil.isAncestor(psiDirectory.getVirtualFile(), virtualFile, false);
-
     }
 
     @Nullable
-    public VirtualFile getRelative(String path) {
+    public VirtualFile getRelative(@NotNull String path) {
         PsiDirectory virtualDirectory =  this.getDirectory();
         if(virtualDirectory == null) {
             return null;
         }
 
        return VfsUtil.findRelativeFile(virtualDirectory.getVirtualFile(), path.split("/"));
-
     }
 
     @Nullable
-    public String getRelative(VirtualFile virtualFile) {
+    public String getRelative(@NotNull VirtualFile virtualFile) {
         PsiDirectory virtualDirectory =  this.getDirectory();
         if(virtualDirectory == null) {
             return null;
@@ -142,26 +115,7 @@ public class SymfonyBundle {
     }
 
     @Nullable
-    public String getRelative(VirtualFile virtualFile, boolean stripExtension) {
-        String relativePath =  this.getRelative(virtualFile);
-        if(relativePath == null) {
-            return null;
-        }
-
-        if(!stripExtension) {
-            return relativePath;
-        }
-
-        int bla = relativePath.lastIndexOf(".");
-        if(bla == -1) {
-            return null;
-        }
-
-        return relativePath.substring(0, bla);
-    }
-
-    @Nullable
-    public String getFileShortcut(BundleFile bundleFile) {
+    public String getFileShortcut(@NotNull BundleFile bundleFile) {
         String relativePath = this.getRelative(bundleFile.getVirtualFile());
         if(relativePath == null) {
             return null;
@@ -184,5 +138,4 @@ public class SymfonyBundle {
     public String getParentBundleName() {
         return PhpElementsUtil.getMethodReturnAsString(this.getPhpClass(), "getParent");
     }
-
 }
