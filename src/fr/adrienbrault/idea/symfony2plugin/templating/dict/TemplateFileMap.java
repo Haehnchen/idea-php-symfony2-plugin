@@ -28,13 +28,6 @@ public class TemplateFileMap {
     }
 
     @NotNull
-    public Set<String> getNames(@NotNull VirtualFile virtualFile) {
-        return templateNames.entrySet().stream()
-            .filter(entry -> entry.getValue().contains(virtualFile))
-            .map(Map.Entry::getKey).collect(Collectors.toSet());
-    }
-
-    @NotNull
     @Deprecated
     public Map<String, VirtualFile> getTemplates() {
         return templateNames.entrySet().stream()

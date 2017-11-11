@@ -108,9 +108,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     private LineMarkerInfo attachIncludes(@NotNull TwigFile twigFile) {
-        TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
-
-        Set<String> templateNames = TwigUtil.getTemplateName(twigFile.getVirtualFile(), files);
+        Collection<String> templateNames = TwigHelper.getTemplateNamesForFile(twigFile);
 
         boolean found = false;
         for(String templateName: templateNames) {
@@ -141,12 +139,9 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo attachOverwrites(@NotNull TwigFile twigFile) {
-
         Collection<PsiFile> targets = new ArrayList<>();
 
-        TemplateFileMap files = getTemplateFilesByName(twigFile.getProject());
-
-        for (String templateName: TwigUtil.getTemplateName(twigFile.getVirtualFile(), files)) {
+        for (String templateName: TwigHelper.getTemplateNamesForFile(twigFile)) {
             for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(twigFile.getProject(), templateName)) {
                 if(!psiFile.getVirtualFile().equals(twigFile.getVirtualFile()) && !targets.contains(psiFile)) {
                     targets.add(psiFile);

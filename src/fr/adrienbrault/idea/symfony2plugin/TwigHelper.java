@@ -104,11 +104,6 @@ public class TwigHelper {
         PlatformPatterns.psiElement(TwigTokenTypes.DOT)
     };
 
-    @Deprecated
-    public static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project, boolean useTwig, boolean usePhp) {
-        return getTemplateMap(project, useTwig, usePhp).getTemplates();
-    }
-
     @NotNull
     public static synchronized TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, final boolean usePhp) {
 
@@ -199,13 +194,18 @@ public class TwigHelper {
     }
 
     @NotNull
-    public static Map<String, VirtualFile> getTwigFilesByName(@NotNull Project project) {
-        return getTemplateFilesByName(project, true, false);
+    public static Map<String, VirtualFile> getTwigTemplateFiles(@NotNull Project project) {
+        return getTemplateMap(project, true, false).getTemplates();
     }
 
     @NotNull
-    private static Map<String, VirtualFile> getTemplateFilesByName(@NotNull Project project) {
-        return getTemplateFilesByName(project, true, true);
+    public static Collection<String> getTwigFileNames(@NotNull Project project) {
+        return getTemplateMap(project, true, false).getTemplates().keySet();
+    }
+
+    @NotNull
+    public static Map<String, VirtualFile> getTwigAndPhpTemplateFiles(@NotNull Project project) {
+        return getTemplateMap(project, true, true).getTemplates();
     }
 
     @Nullable
@@ -331,6 +331,18 @@ public class TwigHelper {
         psiFiles.addAll(getTemplateOverwrites(project, normalizedTemplateName));
 
         return psiFiles.toArray(new PsiFile[psiFiles.size()]);
+    }
+
+    /**
+     * Resolve TwigFile to its possible template names:
+     *
+     * "@Foo/test.html.twig"
+     * "test.html.twig"
+     * "::test.html.twig"
+     */
+    @NotNull
+    public static Collection<String> getTemplateNamesForFile(@NotNull TwigFile twigFile) {
+        return getTemplateNamesForFile(twigFile.getProject(), twigFile.getVirtualFile());
     }
 
     /**
@@ -1976,12 +1988,16 @@ public class TwigHelper {
         return targets;
     }
 
-    public static Collection<LookupElement> getTwigLookupElements(Project project) {
+    /**
+     * Lookup elements for Twig files
+     */
+    @NotNull
+    public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project) {
         VirtualFile baseDir = project.getBaseDir();
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
 
-        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigFilesByName(project).entrySet()) {
+        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigTemplateFiles(project).entrySet()) {
             lookupElements.add(
                 new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
             );
@@ -1990,12 +2006,16 @@ public class TwigHelper {
         return lookupElements;
     }
 
-    public static Collection<LookupElement> getAllTemplateLookupElements(Project project) {
+    /**
+     * Lookup elements for Twig and PHP template files
+     */
+    @NotNull
+    public static Collection<LookupElement> getAllTemplateLookupElements(@NotNull Project project) {
         VirtualFile baseDir = project.getBaseDir();
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
 
-        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTemplateFilesByName(project).entrySet()) {
+        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigAndPhpTemplateFiles(project).entrySet()) {
             lookupElements.add(
                 new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
             );

@@ -673,16 +673,6 @@ public class TwigUtil {
         return methods;
     }
 
-    @NotNull
-    public static Set<String> getTemplateName(@NotNull VirtualFile virtualFile, @NotNull TemplateFileMap map) {
-        return map.getNames(virtualFile);
-    }
-
-    @NotNull
-    public static Set<String> getTemplateName(@NotNull TwigFile twigFile) {
-        return getTemplateName(twigFile.getVirtualFile(), TwigHelper.getTemplateMap(twigFile.getProject(), true, false));
-    }
-
     public static Map<String, PsiVariable> collectControllerTemplateVariables(@NotNull TwigFile twigFile) {
         Map<String, PsiVariable> vars = new HashMap<>();
 
@@ -702,8 +692,8 @@ public class TwigUtil {
      * Collect function variables scopes for given Twig file
      */
     @NotNull
-    public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull TwigFile psiFile) {
-        return getTwigFileMethodUsageOnIndex(psiFile.getProject(), TwigUtil.getTemplateName(psiFile));
+    public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull TwigFile twigFile) {
+        return getTwigFileMethodUsageOnIndex(twigFile.getProject(), TwigHelper.getTemplateNamesForFile(twigFile));
     }
 
     /**

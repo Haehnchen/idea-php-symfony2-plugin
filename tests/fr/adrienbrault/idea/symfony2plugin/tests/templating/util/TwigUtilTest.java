@@ -44,7 +44,6 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateName
      */
     public void testTemplateOverwriteNavigation() {
         if(System.getenv("PHPSTORM_ENV") != null) return;

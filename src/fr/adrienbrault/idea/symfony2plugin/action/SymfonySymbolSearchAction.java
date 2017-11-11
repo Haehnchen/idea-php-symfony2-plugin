@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FindSymbolParameters;
@@ -72,15 +71,16 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
     }
 
     private static class Symfony2NavigationContributor implements ChooseByNameContributorEx, DumbAware {
-
+        @NotNull
         final private Project project;
+
         private ContainerCollectionResolver.ServiceCollector serviceCollector;
         private Map<String, VirtualFile> templateMap;
         private Map<String, Route> routes;
         private Set<String> twigMacroSet;
         private Map<String, LookupElement> lookupElements;
 
-        public Symfony2NavigationContributor(Project project) {
+        private Symfony2NavigationContributor(@NotNull Project project) {
             this.project = project;
         }
 
@@ -93,16 +93,14 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         }
 
         private Map<String, VirtualFile> getTemplateMap() {
-
             if(this.templateMap == null) {
-                this.templateMap = TwigHelper.getTemplateFilesByName(this.project, true, true);
+                this.templateMap = TwigHelper.getTwigAndPhpTemplateFiles(this.project);
             }
 
             return this.templateMap;
         }
 
         private Map<String, Route> getRoutes() {
-
             if(this.routes == null) {
                 this.routes = RouteHelper.getAllRoutes(project);
             }
@@ -111,7 +109,6 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         }
 
         private Set<String> getTwigMacroSet() {
-
             if(this.twigMacroSet == null) {
                 this.twigMacroSet = TwigHelper.getTwigMacroSet(this.project);
             }
@@ -136,8 +133,6 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         @Override
         public void processNames(@NotNull Processor<String> processor, @NotNull GlobalSearchScope scope, @Nullable IdFilter filter) {
-
-
             for(String name: getServiceCollector().getServices().keySet()) {
                 processor.process(name);
             }
@@ -281,15 +276,12 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
     }
 
     class MyGotoCallback extends GotoActionBase.GotoActionCallback<FileType> {
-
         @Override
         public void elementChosen(ChooseByNamePopup popup, Object element) {
             if(element instanceof NavigationItem) {
                 ((NavigationItem) element).navigate(true);
             }
         }
-
     }
-
 }
 

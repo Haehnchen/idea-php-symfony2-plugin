@@ -20,7 +20,6 @@ import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -167,32 +166,32 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
     @Override
     public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-
     }
 
     private Collection<VirtualFile> getImplements(TwigFile twigFile) {
-
         final Set<VirtualFile> targets = new HashSet<>();
 
-        for(String templateName: TwigUtil.getTemplateName(twigFile)) {
-
-            final Project project = twigFile.getProject();
+        for(String templateName: TwigHelper.getTemplateNamesForFile(twigFile)) {
             FileBasedIndex.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
                 targets.add(virtualFile);
                 return true;
-            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
-
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(twigFile.getProject()), TwigFileType.INSTANCE));
         }
 
         return targets;
     }
 
     private class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
+        @NotNull
         private final PsiFile psiFile;
+
+        @NotNull
         private final Map<String, PsiVariable> variables;
+
+        @NotNull
         private final TwigFileVariableCollectorParameter parameter;
 
-        public MyPsiRecursiveElementWalkingVisitor(PsiFile psiFile, Map<String, PsiVariable> variables, TwigFileVariableCollectorParameter parameter) {
+        private MyPsiRecursiveElementWalkingVisitor(@NotNull PsiFile psiFile, Map<String, PsiVariable> variables, @NotNull TwigFileVariableCollectorParameter parameter) {
             this.psiFile = psiFile;
             this.variables = variables;
             this.parameter = parameter;
