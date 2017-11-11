@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
@@ -108,11 +106,6 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
      * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isInstanceOf
      */
     public void testIsInstanceOf() {
-        if("162.1121.34".equals(PluginManager.getPlugin(PluginId.getId("com.jetbrains.php")).getVersion())) {
-            System.out.println("Skipping PhpElementsUtil.testIsInstanceOf for PhpStorm 2016.2 (162.1121.34) inconsistently behavior fixed in 2016.2.1");
-            return;
-        }
-
         myFixture.copyFileToProject("InstanceOf.php");
 
         Collection<String[]> providers = new ArrayList<String[]>() {{
