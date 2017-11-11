@@ -6,7 +6,6 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.Variable;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -69,27 +68,18 @@ public class FormFieldResolver implements TwigTypeResolver {
                                         if(resolve != null) {
                                             attachFormFields(PsiTreeUtil.getNextSiblingOfType(resolve, MethodReference.class), targets);
                                         }
-
                                     }
                                 }
                             }
                         }
                     }
-
                 }
             }
-
         }
     }
 
     private static void attachFormFields(@Nullable MethodReference methodReference, Collection<TwigTypeContainer> targets) {
-
-        if(methodReference == null) {
-            return;
-        }
-
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-        if(symfony2InterfacesUtil.isCallTo(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")) {
+        if(methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")) {
             PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
             if(formType != null) {
                 PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
@@ -105,13 +95,10 @@ public class FormFieldResolver implements TwigTypeResolver {
 
                 targets.addAll(getTwigTypeContainer(method));
             }
-
         }
-
     }
 
-    public static List<TwigTypeContainer> getTwigTypeContainer(Method method) {
-
+    private static List<TwigTypeContainer> getTwigTypeContainer(Method method) {
         MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
         List<TwigTypeContainer> twigTypeContainers = new ArrayList<>();
 

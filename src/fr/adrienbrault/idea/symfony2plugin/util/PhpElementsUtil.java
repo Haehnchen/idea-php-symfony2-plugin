@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -770,21 +769,21 @@ public class PhpElementsUtil {
             .equals(StringUtils.stripStart(compareClassName, "\\"));
     }
 
-    @Nullable
-    public static PsiElement[] getMethodParameterReferences(Method method, int parameterIndex) {
-
+    @NotNull
+    public static PsiElement[] getMethodParameterReferences(@NotNull Method method, int parameterIndex) {
         // we dont have a parameter on resolved method
         Parameter[] parameters = method.getParameters();
+
         if(parameters.length == 0 || parameterIndex >= parameters.length) {
-            return null;
+            return new PsiElement[0];
         }
 
-        final String tempVariableName = parameters[parameterIndex].getName();
+        String tempVariableName = parameters[parameterIndex].getName();
+
         return PsiTreeUtil.collectElements(method.getLastChild(), element ->
             element instanceof Variable && tempVariableName.equals(((Variable) element).getName())
         );
     }
-
 
     @Nullable
     public static MethodReferenceBag getMethodParameterReferenceBag(PsiElement psiElement, int wantIndex) {
@@ -1205,6 +1204,45 @@ public class PhpElementsUtil {
         return isMethodReferenceInstanceOf(methodReference, expectedClassName);
     }
 
+
+    /**
+     * Try to find method matching on any "className::method" giving
+     */
+    public static boolean isMethodReferenceInstanceOf(@NotNull MethodReference methodReference, @NotNull MethodMatcher.CallToSignature... signatures) {
+        for (MethodMatcher.CallToSignature method : signatures) {
+            if (isMethodReferenceInstanceOf(methodReference, method.getInstance(), method.getMethod())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isMethodInstanceOf(@NotNull Method method, @NotNull String clazz, @NotNull String methodName) {
+        return isMethodInstanceOf(method, new MethodMatcher.CallToSignature(clazz, methodName));
+    }
+
+    public static boolean isMethodInstanceOf(Method method, @NotNull MethodMatcher.CallToSignature... signatures) {
+        PhpClass containingClass = method.getContainingClass();
+        if(containingClass == null) {
+            return false;
+        }
+
+        for (MethodMatcher.CallToSignature signature : signatures) {
+            String methodName = signature.getMethod();
+
+            if(!methodName.equals(method.getName())) {
+                continue;
+            }
+
+            if (PhpElementsUtil.isInstanceOf(containingClass, signature.getInstance())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static void replaceElementWithClassConstant(@NotNull PhpClass phpClass, @NotNull PsiElement originElement) throws Exception{
         String fqn = phpClass.getFQN();
         if(!fqn.startsWith("\\")) {
@@ -1402,6 +1440,49 @@ public class PhpElementsUtil {
         }
 
         return -1;
+    }
+
+    /**
+     * Single resolve doesnt work if we have non unique class names in project context,
+     * so try a multiResolve
+     */
+    @NotNull
+    public static Method[] getMultiResolvedMethod(@NotNull PsiReference psiReference) {
+        // class be unique in normal case, so try this first
+        PsiElement resolvedReference = psiReference.resolve();
+        if (resolvedReference instanceof Method) {
+            return new Method[] { (Method) resolvedReference };
+        }
+
+        // try multiResolve if class exists twice in project
+        if(psiReference instanceof PsiPolyVariantReference) {
+            Collection<Method> methods = new HashSet<>();
+            for(ResolveResult resolveResult : ((PsiPolyVariantReference) psiReference).multiResolve(false)) {
+                PsiElement element = resolveResult.getElement();
+                if(element instanceof Method) {
+                    methods.add((Method) element);
+                }
+            }
+
+            if(methods.size() > 0) {
+                return methods.toArray(new Method[methods.size()]);
+            }
+
+        }
+
+        return new Method[0];
+    }
+
+    @Nullable
+    public static String getFirstArgumentStringValue(@NotNull MethodReference e) {
+        String stringValue = null;
+
+        PsiElement[] parameters = e.getParameters();
+        if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
+            stringValue = ((StringLiteralExpression) parameters[0]).getContents();
+        }
+
+        return stringValue;
     }
 
     /**

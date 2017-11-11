@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
@@ -23,6 +22,11 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormTypeReferenceContributor extends PsiReferenceContributor {
+    private static MethodMatcher.CallToSignature[] BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "buildForm"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "buildView"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "finishView"),
+    };
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
@@ -45,13 +49,12 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                    PsiElement methodReference = parameterList.getContext();
+                    if(!(methodReference instanceof MethodReference)) {
                         return new PsiReference[0];
                     }
 
-                    MethodReference method = (MethodReference) parameterList.getContext();
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isFormBuilderFormTypeCall(method)) {
+                    if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
                         return new PsiReference[0];
                     }
 
@@ -102,7 +105,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
         );
 
-        /**
+        /*
          * support form type alias references;
          * we dont use completion here, form type resolving depends on container, which is slow stuff
          */
@@ -115,7 +118,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     // match add('foo', 'type name')
                     MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
-                        .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
+                        .withSignature(FormUtil.PHP_FORM_BUILDER_SIGNATURES)
                         .match();
 
                     if(methodMatchParameter == null) {
@@ -150,12 +153,12 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     ParameterList parameterList = (ParameterList) psiElement.getContext();
 
-                    if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+                    PsiElement methodReference = parameterList.getContext();
+                    if (!(methodReference instanceof MethodReference)) {
                         return new PsiReference[0];
                     }
 
-                    MethodReference method = (MethodReference) parameterList.getContext();
-                    if (method == null || !new Symfony2InterfacesUtil().isFormBuilderFormTypeCall(method)) {
+                    if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
                         return new PsiReference[0];
                     }
 
@@ -321,11 +324,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-                    if(!symfony2InterfacesUtil.isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "buildForm") &&
-                        !symfony2InterfacesUtil.isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "buildView") &&
-                        !symfony2InterfacesUtil.isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "finishView"))
-                    {
+                    if(!PhpElementsUtil.isMethodInstanceOf(method, BUILDER_SIGNATURES)) {
                         return new PsiReference[0];
                     }
 

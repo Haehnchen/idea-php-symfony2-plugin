@@ -13,7 +13,8 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,6 +27,12 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider3 {
+    private static MethodMatcher.CallToSignature[] FIND_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "find"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
+    };
 
     final static char TRIM_KEY = '\u0184';
 
@@ -140,7 +147,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider3 {
 
     private Method getObjectRepositoryCall(Collection<? extends PhpNamedElement> phpNamedElements) {
         for (PhpNamedElement phpNamedElement: phpNamedElements) {
-            if(phpNamedElement instanceof Method && new Symfony2InterfacesUtil().isObjectRepositoryCall((Method) phpNamedElement)) {
+            if(phpNamedElement instanceof Method && PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, FIND_SIGNATURES)) {
                 return (Method) phpNamedElement;
             }
         }

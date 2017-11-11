@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslation
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +54,11 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
+    public static MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice")
+    };
+
     private static final String[] XLIFF_XPATH = {
         "//xliff/file/body/trans-unit/source",
         "//xliff/file/group/unit/segment/source",

@@ -6,9 +6,10 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,19 +32,17 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
                     }
 
                     ParameterList parameterList = (ParameterList) psiElement.getContext();
-
-                    if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+                    PsiElement methodReference = parameterList.getContext();
+                    if (!(methodReference instanceof MethodReference)) {
                         return new PsiReference[0];
                     }
 
-                    MethodReference method = (MethodReference) parameterList.getContext();
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isTranslatorCall(method)) {
+                    if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
                         return new PsiReference[0];
                     }
 
                     int domainParameter = 2;
-                    if(method.getName().equals("transChoice")) {
+                    if("transChoice".equals(((MethodReference) methodReference).getName())) {
                         domainParameter = 3;
                     }
 

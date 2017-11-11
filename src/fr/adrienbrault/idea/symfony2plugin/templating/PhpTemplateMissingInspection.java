@@ -6,11 +6,12 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
     @Nullable
     private String getTemplateNameIfMissing(@NotNull PsiElement psiElement) {
         MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(psiElement);
-        if (methodReference == null || !new Symfony2InterfacesUtil().isTemplatingRenderCall(methodReference)) {
+        if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES)) {
             return null;
         }
 
@@ -62,7 +63,7 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
             return null;
         }
 
-        String templateName = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
+        String templateName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
         if(templateName == null || StringUtils.isBlank(templateName)) {
             return null;
         }

@@ -5,9 +5,9 @@ import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -47,19 +47,23 @@ public class MethodMatcher {
     }
 
     public static class CallToSignature {
-
+        @NotNull
         private final String instance;
+
+        @NotNull
         private final String method;
 
-        public CallToSignature(String instance, String method) {
+        public CallToSignature(@NotNull String instance, @NotNull String method) {
             this.instance = instance;
             this.method = method;
         }
 
+        @NotNull
         public String getInstance() {
             return instance;
         }
 
+        @NotNull
         public String getMethod() {
             return method;
         }
@@ -163,7 +167,6 @@ public class MethodMatcher {
 
         @Nullable
         public MethodMatchParameter match() {
-
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }
@@ -184,19 +187,8 @@ public class MethodMatcher {
 
             // walk down next method
             MethodReference methodReference = bag.getMethodReference();
-            Method[] methods = Symfony2InterfacesUtil.getMultiResolvedMethod(methodReference);
-            if(methods == null) {
-                return null;
-            }
-
-            for (Method method : methods) {
-
-                PsiElement[] parameterReferences = PhpElementsUtil.getMethodParameterReferences(method, bag.getParameterBag().getIndex());
-                if(parameterReferences == null || parameterReferences.length == 0) {
-                    continue;
-                }
-
-                for(PsiElement var: parameterReferences) {
+            for (Method method : PhpElementsUtil.getMultiResolvedMethod(methodReference)) {
+                for(PsiElement var: PhpElementsUtil.getMethodParameterReferences(method, bag.getParameterBag().getIndex())) {
 
                     MethodMatcher.MethodMatchParameter methodMatchParameterRef = new MethodMatcher.StringParameterMatcher(var, parameterIndex)
                         .withSignature(this.signatures)
@@ -205,14 +197,11 @@ public class MethodMatcher {
                     if(methodMatchParameterRef != null) {
                         return methodMatchParameterRef;
                     }
-
                 }
-
             }
 
             return null;
         }
-
     }
 
     public static class ArrayParameterMatcher extends AbstractMethodParameterMatcher {
@@ -297,10 +286,8 @@ public class MethodMatcher {
 
         @Nullable
         protected CallToSignature isCallTo(MethodReference methodReference) {
-            Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-
             for(CallToSignature signature: this.signatures) {
-                if(interfacesUtil.isCallTo(methodReference, signature.getInstance(), signature.getMethod())) {
+                if(PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, signature)) {
                     return signature;
                 }
             }

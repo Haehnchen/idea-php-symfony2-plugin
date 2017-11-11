@@ -13,7 +13,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -259,34 +258,6 @@ public class PsiElementUtils {
             return null;
         }
         return PsiManager.getInstance(project).findFile(virtualFile);
-    }
-
-    public static boolean isCallToWithParameter(PsiElement psiElement, String className, String methodName) {
-        return isCallToWithParameter(psiElement, className, methodName, 0);
-    }
-
-    public static boolean isCallToWithParameter(PsiElement psiElement, String className, String methodName, int parameterIndex) {
-        if ( !(psiElement.getContext() instanceof ParameterList)) {
-            return false;
-        }
-
-        ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
-            return false;
-        }
-
-        MethodReference method = (MethodReference) parameterList.getContext();
-        Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-        if (!interfacesUtil.isCallTo(method, className, methodName)) {
-            return false;
-        }
-
-        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-        if(currentIndex == null || currentIndex.getIndex() != parameterIndex) {
-            return false;
-        }
-
-        return true;
     }
 
     @Nullable

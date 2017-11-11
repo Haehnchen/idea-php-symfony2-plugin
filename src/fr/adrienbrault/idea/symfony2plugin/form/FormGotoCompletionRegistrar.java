@@ -8,7 +8,6 @@ import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -51,7 +50,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
-                .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
+                .withSignature(FormUtil.PHP_FORM_BUILDER_SIGNATURES)
                 .match();
 
             if(methodMatchParameter == null) {
@@ -110,7 +109,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         });
 
-        /**
+        /*
          * FormTypeInterface::getParent
          */
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
@@ -124,16 +123,14 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return null;
             }
 
-            if(!new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
+            if(!PhpElementsUtil.isMethodInstanceOf(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
                 return null;
             }
 
             return new FormBuilderAddGotoCompletionProvider(parent);
-
         });
 
-
-        /**
+        /*
          * $type lookup
          * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
          */

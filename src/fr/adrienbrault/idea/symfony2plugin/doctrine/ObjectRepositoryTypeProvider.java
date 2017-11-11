@@ -11,7 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +24,10 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
+    private static MethodMatcher.CallToSignature[] GET_REPOSITORIES_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+    };
 
     final public static char TRIM_KEY = '\u0185';
 
@@ -76,7 +80,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
             return phpNamedElementCollections;
         }
 
-        if (!new Symfony2InterfacesUtil().isGetRepositoryCall((Method) phpNamedElement)) {
+        if (!PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, GET_REPOSITORIES_SIGNATURES)) {
             return phpNamedElementCollections;
         }
 

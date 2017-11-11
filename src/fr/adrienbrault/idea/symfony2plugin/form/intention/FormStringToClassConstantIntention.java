@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -50,7 +49,7 @@ public class FormStringToClassConstantIntention extends PsiElementBaseIntentionA
         }
 
         return null != new MethodMatcher.StringParameterMatcher(parent, 1)
-            .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
+            .withSignature(FormUtil.PHP_FORM_BUILDER_SIGNATURES)
             .match();
     }
 

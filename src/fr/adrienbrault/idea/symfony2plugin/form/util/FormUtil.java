@@ -15,11 +15,11 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
@@ -40,6 +40,13 @@ public class FormUtil {
 
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
     final public static String FORM_EXTENSION_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeExtensionInterface";
+
+    public static MethodMatcher.CallToSignature[] PHP_FORM_BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "add"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "add"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "create")
+    };
 
     @Nullable
     public static PhpClass getFormTypeToClass(Project project, @Nullable String formType) {
@@ -73,17 +80,14 @@ public class FormUtil {
     }
 
     public static MethodReference[] getFormBuilderTypes(Method method) {
+        List<MethodReference> methodReferences = new ArrayList<>();
 
-        final List<MethodReference> methodReferences = new ArrayList<>();
-
-        final Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
-        PsiTreeUtil.collectElements(method, psiElement -> {
-
-            if (psiElement instanceof MethodReference) {
-                String methodName = ((MethodReference) psiElement).getName();
+        PsiTreeUtil.collectElements(method, methodReference -> {
+            if (methodReference instanceof MethodReference) {
+                String methodName = ((MethodReference) methodReference).getName();
                 if (methodName != null && (methodName.equals("add") || methodName.equals("create"))) {
-                    if(symfony2InterfacesUtil.isFormBuilderFormTypeCall(psiElement)) {
-                        methodReferences.add((MethodReference) psiElement);
+                    if(PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
+                        methodReferences.add((MethodReference) methodReference);
                         return true;
                     }
                 }
@@ -100,7 +104,7 @@ public class FormUtil {
      * $form->get ..
      */
     @Nullable
-    public static PhpClass resolveFormGetterCall(MethodReference methodReference) {
+    private static PhpClass resolveFormGetterCall(MethodReference methodReference) {
 
         // "$form"->get('field_name');
         PhpPsiElement variable = methodReference.getFirstPsiChild();
@@ -130,13 +134,8 @@ public class FormUtil {
 
     }
 
-    public static PhpClass getFormTypeClass(@Nullable MethodReference calledMethodReference) {
-
-        if(calledMethodReference == null) {
-            return null;
-        }
-
-        if(new Symfony2InterfacesUtil().isCallTo(calledMethodReference, "\\Symfony\\Component\\Form\\FormFactory", "create")) {
+    private static PhpClass getFormTypeClass(@Nullable MethodReference calledMethodReference) {
+        if(calledMethodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(calledMethodReference, "\\Symfony\\Component\\Form\\FormFactory", "create")) {
             return null;
         }
 

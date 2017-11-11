@@ -5,7 +5,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
@@ -71,7 +70,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                     if(context instanceof MethodReference) {
                         ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
                         if(currentIndex != null && currentIndex.getIndex() == 2) {
-                            if (new Symfony2InterfacesUtil().isFormBuilderFormTypeCall(context)) {
+                            if (PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) context, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
                                 return getMatchingOption((ParameterList) parameterList, psiElement);
                             }
                         }
