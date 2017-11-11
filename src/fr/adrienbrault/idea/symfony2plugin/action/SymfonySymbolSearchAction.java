@@ -75,7 +75,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         final private Project project;
 
         private ContainerCollectionResolver.ServiceCollector serviceCollector;
-        private Map<String, VirtualFile> templateMap;
+        private Map<String, Set<VirtualFile>> templateMap;
         private Map<String, Route> routes;
         private Set<String> twigMacroSet;
         private Map<String, LookupElement> lookupElements;
@@ -92,7 +92,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             return this.serviceCollector;
         }
 
-        private Map<String, VirtualFile> getTemplateMap() {
+        private Map<String, Set<VirtualFile>> getTemplateMap() {
             if(this.templateMap == null) {
                 this.templateMap = TwigHelper.getTwigAndPhpTemplateFiles(this.project);
             }
@@ -137,8 +137,8 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 processor.process(name);
             }
 
-            for(Map.Entry<String, VirtualFile> entry: getTemplateMap().entrySet()) {
-                processor.process(entry.getKey());
+            for(String templateName: getTemplateMap().keySet()) {
+                processor.process(templateName);
             }
 
             for(String name: getRoutes().keySet()) {

@@ -33,7 +33,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateFileMap;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
@@ -55,6 +54,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -75,8 +75,8 @@ public class TwigHelper {
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
-    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
-    private static final Key<CachedValue<TemplateFileMap>> TEMPLATE_CACHE_ALL = new Key<>("TEMPLATE_CACHE_ALL");
+    private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
+    private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_ALL = new Key<>("TEMPLATE_CACHE_ALL");
 
     public static final String DOC_SEE_REGEX  = "\\{#[\\s]+@see[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
     public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "\\{#[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
@@ -104,16 +104,20 @@ public class TwigHelper {
         PlatformPatterns.psiElement(TwigTokenTypes.DOT)
     };
 
+    /**
+     * Generate a mapped template name file multiple relation:
+     *
+     * foo.html.twig => ["views/foo.html.twig", "templates/foo.html.twig"]
+     */
     @NotNull
-    public static synchronized TemplateFileMap getTemplateMap(@NotNull Project project, boolean useTwig, final boolean usePhp) {
-
-        TemplateFileMap templateMapProxy = null;
+    private static synchronized Map<String, Set<VirtualFile>> getTemplateMap(@NotNull Project project, boolean useTwig, final boolean usePhp) {
+        Map<String, Set<VirtualFile>> templateMapProxy = null;
 
         // cache twig and all files,
         // only PHP files we dont need to cache
         if(useTwig && !usePhp) {
             // cache twig files only, most use case
-            CachedValue<TemplateFileMap> cache = project.getUserData(TEMPLATE_CACHE_TWIG);
+            CachedValue<Map<String, Set<VirtualFile>>> cache = project.getUserData(TEMPLATE_CACHE_TWIG);
             if (cache == null) {
                 cache = CachedValuesManager.getManager(project).createCachedValue(new MyTwigOnlyTemplateFileMapCachedValueProvider(project), false);
                 project.putUserData(TEMPLATE_CACHE_TWIG, cache);
@@ -123,7 +127,7 @@ public class TwigHelper {
 
         } else if(useTwig && usePhp) {
             // cache all files
-            CachedValue<TemplateFileMap> cache = project.getUserData(TEMPLATE_CACHE_ALL);
+            CachedValue<Map<String, Set<VirtualFile>>> cache = project.getUserData(TEMPLATE_CACHE_ALL);
             if (cache == null) {
                 cache = CachedValuesManager.getManager(project).createCachedValue(new MyAllTemplateFileMapCachedValueProvider(project), false);
                 project.putUserData(TEMPLATE_CACHE_ALL, cache);
@@ -141,10 +145,10 @@ public class TwigHelper {
     }
 
     @NotNull
-    private static TemplateFileMap getTemplateMapProxy(@NotNull Project project, boolean useTwig, boolean usePhp) {
+    private static Map<String, Set<VirtualFile>> getTemplateMapProxy(@NotNull Project project, boolean useTwig, boolean usePhp) {
         List<TwigPath> twigPaths = new ArrayList<>(getTwigNamespaces(project));
         if(twigPaths.size() == 0) {
-            return new TemplateFileMap(new HashMap<>());
+            return Collections.emptyMap();
         }
 
         // app/Resources/ParentBundle/Resources/views
@@ -176,36 +180,44 @@ public class TwigHelper {
             }
         }
 
-        Map<String, VirtualFile> results = new HashMap<>();
+        Map<String, Set<VirtualFile>> templateNames = new HashMap<>();
 
         for (TwigPath twigPath : twigPaths) {
-            if(twigPath.isEnabled()) {
-                VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
-                if(virtualDirectoryFile != null) {
-                    TwigPathContentIterator iterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
-                    VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new MyLimitedVirtualFileVisitor(iterator, 5, 150));
-                    results.putAll(iterator.getResults());
-                }
+            if(!twigPath.isEnabled()) {
+                continue;
             }
 
+            VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
+            if(virtualDirectoryFile != null) {
+                TwigPathContentIterator iterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
+                VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new MyLimitedVirtualFileVisitor(iterator, 5, 150));
+
+                for (Map.Entry<String, VirtualFile> entry : iterator.getResults().entrySet()) {
+                    if(templateNames.containsKey(entry.getKey())) {
+                        templateNames.put(entry.getKey(), new HashSet<>());
+                    }
+
+                    templateNames.get(entry.getKey()).add(entry.getValue());
+                }
+            }
         }
         
-        return new TemplateFileMap(results);
+        return templateNames;
     }
 
     @NotNull
-    public static Map<String, VirtualFile> getTwigTemplateFiles(@NotNull Project project) {
-        return getTemplateMap(project, true, false).getTemplates();
+    private static Map<String, Set<VirtualFile>> getTwigTemplateFiles(@NotNull Project project) {
+        return getTemplateMap(project, true, false);
     }
 
     @NotNull
     public static Collection<String> getTwigFileNames(@NotNull Project project) {
-        return getTemplateMap(project, true, false).getTemplates().keySet();
+        return getTemplateMap(project, true, false).keySet();
     }
 
     @NotNull
-    public static Map<String, VirtualFile> getTwigAndPhpTemplateFiles(@NotNull Project project) {
-        return getTemplateMap(project, true, true).getTemplates();
+    public static Map<String, Set<VirtualFile>> getTwigAndPhpTemplateFiles(@NotNull Project project) {
+        return getTemplateMap(project, true, true);
     }
 
     @Nullable
@@ -1995,15 +2007,12 @@ public class TwigHelper {
     public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project) {
         VirtualFile baseDir = project.getBaseDir();
 
-        Collection<LookupElement> lookupElements = new ArrayList<>();
-
-        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigTemplateFiles(project).entrySet()) {
-            lookupElements.add(
-                new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
-            );
-        }
-
-        return lookupElements;
+        return TwigHelper.getTwigTemplateFiles(project).entrySet().stream()
+            .filter(entry -> entry.getValue().size() > 0)
+            .map((Function<Map.Entry<String, Set<VirtualFile>>, LookupElement>) entry ->
+                new TemplateLookupElement(entry.getKey(), entry.getValue().iterator().next(), baseDir)
+            )
+            .collect(Collectors.toList());
     }
 
     /**
@@ -2013,15 +2022,12 @@ public class TwigHelper {
     public static Collection<LookupElement> getAllTemplateLookupElements(@NotNull Project project) {
         VirtualFile baseDir = project.getBaseDir();
 
-        Collection<LookupElement> lookupElements = new ArrayList<>();
-
-        for (Map.Entry<String, VirtualFile> entry : TwigHelper.getTwigAndPhpTemplateFiles(project).entrySet()) {
-            lookupElements.add(
-                new TemplateLookupElement(entry.getKey(), entry.getValue(), baseDir)
-            );
-        }
-
-        return lookupElements;
+        return TwigHelper.getTwigAndPhpTemplateFiles(project).entrySet().stream()
+            .filter(entry -> entry.getValue().size() > 0)
+            .map((Function<Map.Entry<String, Set<VirtualFile>>, LookupElement>) entry ->
+                new TemplateLookupElement(entry.getKey(), entry.getValue().iterator().next(), baseDir)
+            )
+            .collect(Collectors.toList());
     }
 
     /**
@@ -2250,32 +2256,32 @@ public class TwigHelper {
         return block;
     }
 
-    private static class MyTwigOnlyTemplateFileMapCachedValueProvider implements CachedValueProvider<TemplateFileMap> {
-
+    private static class MyTwigOnlyTemplateFileMapCachedValueProvider implements CachedValueProvider<Map<String, Set<VirtualFile>>> {
+        @NotNull
         private final Project project;
 
-        public MyTwigOnlyTemplateFileMapCachedValueProvider(Project project) {
+        MyTwigOnlyTemplateFileMapCachedValueProvider(@NotNull Project project) {
             this.project = project;
         }
 
         @Nullable
         @Override
-        public Result<TemplateFileMap> compute() {
+        public Result<Map<String, Set<VirtualFile>>> compute() {
             return Result.create(getTemplateMapProxy(project, true, false), PsiModificationTracker.MODIFICATION_COUNT);
         }
     }
 
-    private static class MyAllTemplateFileMapCachedValueProvider implements CachedValueProvider<TemplateFileMap> {
-
+    private static class MyAllTemplateFileMapCachedValueProvider implements CachedValueProvider<Map<String, Set<VirtualFile>>> {
+        @NotNull
         private final Project project;
 
-        public MyAllTemplateFileMapCachedValueProvider(Project project) {
+        MyAllTemplateFileMapCachedValueProvider(@NotNull Project project) {
             this.project = project;
         }
 
         @Nullable
         @Override
-        public Result<TemplateFileMap> compute() {
+        public Result<Map<String, Set<VirtualFile>>> compute() {
             return Result.create(getTemplateMapProxy(project, true, true), PsiModificationTracker.MODIFICATION_COUNT);
         }
     }
