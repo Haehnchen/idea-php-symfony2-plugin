@@ -11,7 +11,6 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -26,26 +25,31 @@ public class TwigBlockParser {
 
     private boolean withSelfBlock = false;
 
-    private Map<String, VirtualFile> twigFilesByName;
-
-    public TwigBlockParser(Map<String, VirtualFile> twigFilesByName) {
-        this.twigFilesByName = twigFilesByName;
+    public TwigBlockParser() {
     }
 
+    public TwigBlockParser(boolean withSelfBlock) {
+        this.withSelfBlock = withSelfBlock;
+    }
+
+    @NotNull
     public List<TwigBlock> visit(@NotNull PsiFile[] file) {
         List<TwigBlock> blocks = new ArrayList<>();
+
         for (PsiFile psiFile : file) {
-            blocks.addAll(this.walk(psiFile, psiFile.getName(), new ArrayList<>(), 0));
+            blocks.addAll(walk(psiFile, psiFile.getName(), new ArrayList<>(), 0));
         }
+
         return blocks;
     }
 
+    @NotNull
     public List<TwigBlock> walk(@Nullable PsiFile file) {
-        return this.walk(file, "self", new ArrayList<>(), 0);
+        return walk(file, "self", new ArrayList<>(), 0);
     }
 
-    public List<TwigBlock> walk(@Nullable PsiFile file, String shortcutName, List<TwigBlock> current, int depth) {
-
+    @NotNull
+    private List<TwigBlock> walk(@Nullable PsiFile file, String shortcutName, List<TwigBlock> current, int depth) {
         if(file == null) {
             return current;
         }
@@ -72,10 +76,9 @@ public class TwigBlockParser {
         // {% extends 'foo' %}
         // find extend in self
         for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(file, TwigExtendsTag.class)) {
-            for (String s : TwigHelper.getTwigExtendsTagTemplates(extendsTag)) {
-                String templateName = TwigHelper.normalizeTemplateName(s);
-                if(twigFilesByName.containsKey(templateName)) {
-                    virtualFiles.put(twigFilesByName.get(templateName), templateName);
+            for (String templateName : TwigHelper.getTwigExtendsTagTemplates(extendsTag)) {
+                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(file.getProject(), templateName)) {
+                    virtualFiles.put(psiFile.getVirtualFile(), templateName);
                 }
             }
         }
@@ -86,17 +89,13 @@ public class TwigBlockParser {
                 twigCompositeElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-
                         if(TwigHelper.getTwigTagUseNamePattern().accepts(element)) {
-
                             String templateName = PsiElementUtils.trimQuote(element.getText());
                             if(StringUtils.isNotBlank(templateName)) {
-                                String templateNameNormalized = TwigHelper.normalizeTemplateName(TwigHelper.normalizeTemplateName(templateName));
-                                if(twigFilesByName.containsKey(templateNameNormalized)) {
-                                    virtualFiles.put(twigFilesByName.get(templateName), templateNameNormalized);
+                                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(file.getProject(), templateName)) {
+                                    virtualFiles.put(psiFile.getVirtualFile(), templateName);
                                 }
                             }
-
                         }
 
                         super.visitElement(element);
@@ -115,16 +114,10 @@ public class TwigBlockParser {
 
             PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(key);
             if(psiFile instanceof TwigFile) {
-                this.walk(psiFile, TwigUtil.getFoldingTemplateNameOrCurrent(entry.getValue()), current, depth);
+                walk(psiFile, entry.getValue(), current, depth);
             }
         }
 
         return current;
     }
-
-    public TwigBlockParser withSelfBlocks(boolean withSelfBlock) {
-        this.withSelfBlock = withSelfBlock;
-        return this;
-    }
-
 }

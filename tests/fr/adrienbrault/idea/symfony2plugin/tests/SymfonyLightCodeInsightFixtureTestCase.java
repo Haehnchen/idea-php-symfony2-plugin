@@ -51,6 +51,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.*;
 
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
 public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
 
     @Override

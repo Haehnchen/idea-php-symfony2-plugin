@@ -8,7 +8,6 @@ import com.intellij.ui.LayeredIcon;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +31,7 @@ public class TwigFileIconProvider extends com.intellij.ide.IconProvider {
             return wrapIcon(((TwigFile) psiElement), Symfony2Icons.TWIG_IMPLEMENTS_FILE);
         }
 
-        Collection<PsiFile> twigChild = TwigUtil.getTemplateFileReferences((TwigFile) psiElement, TwigHelper.getTemplateMap(psiElement.getProject(), true, false));
+        Collection<PsiFile> twigChild = TwigUtil.getTemplatesExtendingFile((TwigFile) psiElement);
         if(twigChild.size() > 0) {
             return wrapIcon((TwigFile) psiElement, Symfony2Icons.TWIG_EXTENDS_FILE);
         }

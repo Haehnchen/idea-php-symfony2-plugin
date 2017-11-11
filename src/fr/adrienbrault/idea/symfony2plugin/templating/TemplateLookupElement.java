@@ -6,19 +6,21 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.jetbrains.twig.TwigFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TemplateLookupElement extends LookupElement {
-
+    @NotNull
     private final VirtualFile virtualFile;
+
+    @NotNull
     private final VirtualFile projectBaseDir;
 
+    @NotNull
     private final String templateName;
 
     @Nullable
@@ -48,5 +50,4 @@ public class TemplateLookupElement extends LookupElement {
         presentation.setTypeText(VfsUtil.getRelativePath(this.virtualFile, this.projectBaseDir, '/'));
         presentation.setTypeGrayed(true);
     }
-
 }
