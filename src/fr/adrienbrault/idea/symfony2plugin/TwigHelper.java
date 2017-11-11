@@ -20,6 +20,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
@@ -36,7 +37,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServ
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathContentIterator;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -189,11 +189,12 @@ public class TwigHelper {
 
             VirtualFile virtualDirectoryFile = twigPath.getDirectory(project);
             if(virtualDirectoryFile != null) {
-                TwigPathContentIterator iterator = new TwigPathContentIterator(project, twigPath).setWithPhp(usePhp).setWithTwig(useTwig);
-                VfsUtil.visitChildrenRecursively(virtualDirectoryFile, new MyLimitedVirtualFileVisitor(iterator, 5, 150));
+                MyLimitedVirtualFileVisitor visitor = new MyLimitedVirtualFileVisitor(project, twigPath, usePhp, useTwig, 5, 150);
 
-                for (Map.Entry<String, VirtualFile> entry : iterator.getResults().entrySet()) {
-                    if(templateNames.containsKey(entry.getKey())) {
+                VfsUtil.visitChildrenRecursively(virtualDirectoryFile, visitor);
+
+                for (Map.Entry<String, VirtualFile> entry : visitor.getResults().entrySet()) {
+                    if(!templateNames.containsKey(entry.getKey())) {
                         templateNames.put(entry.getKey(), new HashSet<>());
                     }
 
@@ -374,49 +375,59 @@ public class TwigHelper {
         Collection<String> templates = new ArrayList<>();
 
         for (TwigPath twigPath : collect) {
-            VirtualFile directory = twigPath.getDirectory(project);
-            if(directory == null) {
+            String templateName = getTemplateNameForTwigPath(project, twigPath, virtualFile);
+            if(templateName == null) {
                 continue;
             }
 
-            String templatePath = VfsUtil.getRelativePath(virtualFile, directory, '/');
-            if(templatePath == null) {
-                continue;
-            }
-
-            String templateDirectory; // xxx:XXX:xxx
-            String templateFile; // xxx:xxx:XXX
-
-            if (templatePath.contains("/")) {
-                int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
-                templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
-                templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
-            } else {
-                templateDirectory = "";
-                templateFile = templatePath;
-            }
-
-            String namespace = twigPath.getNamespace().equals(TwigPathIndex.MAIN) ? "" : twigPath.getNamespace();
-
-            String templateFinalName;
-            if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
-                templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
-            } else {
-                templateFinalName = namespace + "/" + templateDirectory + "/" + templateFile;
-
-                // remove empty path and check for root (global namespace)
-                templateFinalName = templateFinalName.replace("//", "/");
-                if(templateFinalName.startsWith("/")) {
-                    templateFinalName = templateFinalName.substring(1);
-                } else {
-                    templateFinalName = "@" + templateFinalName;
-                }
-            }
-
-            templates.add(templateFinalName);
+            templates.add(templateName);
         }
 
         return templates;
+    }
+
+    @Nullable
+    static String getTemplateNameForTwigPath(@NotNull Project project, @NotNull TwigPath twigPath, @NotNull VirtualFile virtualFile) {
+        VirtualFile directory = twigPath.getDirectory(project);
+        if(directory == null) {
+            return null;
+        }
+
+        String templatePath = VfsUtil.getRelativePath(virtualFile, directory, '/');
+        if(templatePath == null) {
+            return null;
+        }
+
+        String templateDirectory; // xxx:XXX:xxx
+        String templateFile; // xxx:xxx:XXX
+
+        if (templatePath.contains("/")) {
+            int lastDirectorySeparatorIndex = templatePath.lastIndexOf("/");
+            templateDirectory = templatePath.substring(0, lastDirectorySeparatorIndex);
+            templateFile = templatePath.substring(lastDirectorySeparatorIndex + 1);
+        } else {
+            templateDirectory = "";
+            templateFile = templatePath;
+        }
+
+        String namespace = twigPath.getNamespace().equals(TwigPathIndex.MAIN) ? "" : twigPath.getNamespace();
+
+        String templateFinalName;
+        if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+            templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
+        } else {
+            templateFinalName = namespace + "/" + templateDirectory + "/" + templateFile;
+
+            // remove empty path and check for root (global namespace)
+            templateFinalName = templateFinalName.replace("//", "/");
+            if(templateFinalName.startsWith("/")) {
+                templateFinalName = templateFinalName.substring(1);
+            } else {
+                templateFinalName = "@" + templateFinalName;
+            }
+        }
+
+        return templateFinalName;
     }
 
     /**
@@ -2538,29 +2549,91 @@ public class TwigHelper {
         return blockTargets;
     }
 
+    /**
+     * Twig template visitor, which scan given TwigPath for template names
+     *
+     * "@Foo/foo.html.twig"
+     * "foo.html.twig"
+     * "FooBundle:foo:foo.html.twig"
+     */
     private static class MyLimitedVirtualFileVisitor extends VirtualFileVisitor {
         @NotNull
-        private final TwigPathContentIterator twigPathContentIterator;
+        private final TwigPath twigPath;
+
+        @NotNull
+        private final Project project;
+
+        @NotNull
+        private Map<String, VirtualFile> results = new HashMap<>();
+
+        private boolean withPhp = false;
+        private boolean withTwig = true;
         private int childrenAllowToVisit = 1000;
 
-        MyLimitedVirtualFileVisitor(@NotNull TwigPathContentIterator twigPathContentIterator, int maxDepth, int maxDirs) {
+        @NotNull
+        private Set<String> workedOn = new HashSet<>();
+
+        MyLimitedVirtualFileVisitor(@NotNull Project project, @NotNull TwigPath twigPath, boolean withPhp, boolean withTwig, int maxDepth, int maxDirs) {
             super(VirtualFileVisitor.limit(maxDepth));
-            this.twigPathContentIterator = twigPathContentIterator;
+
+            this.project = project;
+            this.twigPath = twigPath;
+            this.withPhp = withPhp;
+            this.withTwig = withTwig;
             this.childrenAllowToVisit = maxDirs;
         }
 
         @Override
         public boolean visitFile(@NotNull VirtualFile virtualFile) {
             // per path directory limit
-            if(virtualFile.isDirectory()) {
-                if(childrenAllowToVisit-- <= 0) {
-                    return false;
-                }
+            if (virtualFile.isDirectory() && childrenAllowToVisit-- <= 0) {
+                return false;
             }
 
-            twigPathContentIterator.processFile(virtualFile);
+            processFile(virtualFile);
 
             return super.visitFile(virtualFile);
+        }
+
+        private void processFile(VirtualFile virtualFile) {
+            // @TODO make file types more dynamically like eg js
+            if(!this.isProcessable(virtualFile)) {
+                return;
+            }
+
+            // prevent process double file if processCollection and ContentIterator is used in one instance
+            String filePath = virtualFile.getPath();
+            if(workedOn.contains(filePath)) {
+                return;
+            }
+
+            workedOn.add(filePath);
+
+            String templateName = TwigHelper.getTemplateNameForTwigPath(project, twigPath, virtualFile);
+            if(templateName != null) {
+                results.put(templateName, virtualFile);
+            }
+        }
+
+        private boolean isProcessable(VirtualFile virtualFile) {
+            if(virtualFile.isDirectory()) {
+                return false;
+            }
+
+            if(withTwig && virtualFile.getFileType() instanceof TwigFileType) {
+                return true;
+            }
+
+            if(withPhp && virtualFile.getFileType() instanceof PhpFileType) {
+                return true;
+            }
+
+            return false;
+        }
+
+        @NotNull
+        public Map<String, VirtualFile> getResults() {
+            return results;
         }
     }
 
