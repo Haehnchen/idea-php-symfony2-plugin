@@ -12,10 +12,11 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
@@ -31,7 +32,6 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
         if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
@@ -101,7 +101,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
                 }
 
                 MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element);
-                if (methodReference != null && new Symfony2InterfacesUtil().isContainerGetCall(methodReference)) {
+                if (methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
                     String serviceName = ((StringLiteralExpression) parent).getContents();
                     if(StringUtils.isNotBlank(serviceName) && !serviceName.equals(serviceName.toLowerCase())) {
                         holder.registerProblem(element, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);

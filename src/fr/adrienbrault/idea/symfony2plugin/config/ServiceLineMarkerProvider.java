@@ -11,10 +11,10 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
@@ -23,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -173,9 +172,9 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        if(new Symfony2InterfacesUtil().isCallTo(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
-
+        if(PhpElementsUtil.isMethodInstanceOf(method, "\\Symfony\\Component\\Form\\FormTypeInterface", "getParent")) {
             // get form string; on blank string we dont need any further action
+
             String contents = ((StringLiteralExpression) psiElement).getContents();
             if(StringUtils.isBlank(contents)) {
                 return;
@@ -194,7 +193,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    protected void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo> results) {
+    private void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo> results) {
         RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarkerInFolderScope(psiFile);
         if(lineMarker != null) {
             results.add(lineMarker);

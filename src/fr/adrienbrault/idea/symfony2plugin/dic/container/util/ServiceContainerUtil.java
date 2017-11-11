@@ -25,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -45,6 +46,11 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceContainerUtil {
+    public static MethodMatcher.CallToSignature[] SERVICE_GET_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
+        new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
+    };
 
     private static String[] LOWER_PRIORITY = new String[] {
         "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"

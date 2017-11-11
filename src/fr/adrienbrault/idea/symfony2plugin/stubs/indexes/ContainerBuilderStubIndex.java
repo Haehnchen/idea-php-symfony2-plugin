@@ -14,10 +14,10 @@ import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -199,7 +199,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
                 return;
             }
 
-            String value = Symfony2InterfacesUtil.getFirstArgumentStringValue(methodReference);
+            String value = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
             if(value == null) {
                 super.visitElement(element);
                 return;

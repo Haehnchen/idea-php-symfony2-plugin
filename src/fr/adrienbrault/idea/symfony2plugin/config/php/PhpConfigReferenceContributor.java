@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
@@ -123,19 +122,15 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    Symfony2InterfacesUtil interfacesUtil = new Symfony2InterfacesUtil();
-                    if (!interfacesUtil.isCallTo(method, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface", "getSubscribedEvents")) {
+                    if (!PhpElementsUtil.isMethodInstanceOf(method, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface", "getSubscribedEvents")) {
                         return new PsiReference[0];
                     }
-
 
                     return new PsiReference[] { new EventDispatcherEventReference((StringLiteralExpression) psiElement) };
                 }
 
             }
-
         );
-
     }
 
     private static boolean phpStringLiteralExpressionClassReference(String signature, int index, PsiElement psiElement) {

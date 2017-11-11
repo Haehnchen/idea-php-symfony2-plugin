@@ -8,7 +8,6 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,20 +39,18 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
     @NotNull
     @Override
     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
         if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
             return new PsiReference[0];
         }
-        ParameterList parameterList = (ParameterList) psiElement.getContext();
 
-        if (parameterList == null || !(parameterList.getContext() instanceof MethodReference)) {
+        ParameterList parameterList = (ParameterList) psiElement.getContext();
+        PsiElement methodReference = parameterList.getContext();
+        if (!(methodReference instanceof MethodReference)) {
             return new PsiReference[0];
         }
 
-        MethodReference method = (MethodReference) parameterList.getContext();
-        Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
         for(Call call: this.oneOfCall) {
-            if (symfony2InterfacesUtil.isCallTo(method, call.getClassName(), call.getMethodName()) && PsiElementUtils.getParameterIndexValue(psiElement) == call.getIndex()) {
+            if (PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, call.getClassName(), call.getMethodName()) && PsiElementUtils.getParameterIndexValue(psiElement) == call.getIndex()) {
                 return this.getPsiReferenceBase(psiElement);
             }
         }

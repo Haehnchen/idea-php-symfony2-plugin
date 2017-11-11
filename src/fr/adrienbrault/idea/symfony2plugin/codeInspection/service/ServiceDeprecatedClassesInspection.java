@@ -14,13 +14,14 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
@@ -150,22 +151,21 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
     }
 
     private class PhpClassWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
-
+        @NotNull
         private final ProblemsHolder holder;
-        private final ProblemRegistrar problemRegistrar;
-        Symfony2InterfacesUtil symfony2InterfacesUtil;
 
-        public PhpClassWalkingVisitor(ProblemsHolder holder, ProblemRegistrar problemRegistrar) {
+        @NotNull
+        private final ProblemRegistrar problemRegistrar;
+
+        private PhpClassWalkingVisitor(@NotNull ProblemsHolder holder, @NotNull ProblemRegistrar problemRegistrar) {
             this.holder = holder;
             this.problemRegistrar = problemRegistrar;
-            symfony2InterfacesUtil = new Symfony2InterfacesUtil();
         }
 
         @Override
         public void visitElement(PsiElement element) {
-
             MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element);
-            if (methodReference == null || !symfony2InterfacesUtil.isContainerGetCall(methodReference)) {
+            if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
                 super.visitElement(element);
                 return;
             }

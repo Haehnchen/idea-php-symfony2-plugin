@@ -5,9 +5,11 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.Variable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.io.File;
@@ -277,5 +279,20 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals(0, PhpElementsUtil.getConstructorArgumentByName(phpClass, "foo"));
         assertEquals(1, PhpElementsUtil.getConstructorArgumentByName(phpClass, "foobar"));
         assertEquals(-1, PhpElementsUtil.getConstructorArgumentByName(phpClass, "UNKNOWN"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isMethodInstanceOf
+     */
+    public void testIsMethodInstanceOf() {
+        assertTrue(PhpElementsUtil.isMethodInstanceOf(
+            PhpElementsUtil.getClassMethod(getProject(), "FooBar\\Bar", "getBar"),
+            new MethodMatcher.CallToSignature("FooBar\\Foo", "getBar"))
+        );
+
+        assertTrue(PhpElementsUtil.isMethodInstanceOf(
+            PhpElementsUtil.getClassMethod(getProject(), "FooBar\\Car", "getBar"),
+            new MethodMatcher.CallToSignature("FooBar\\Foo", "getBar"))
+        );
     }
 }

@@ -12,7 +12,6 @@ import com.jetbrains.php.lang.psi.PhpCodeEditUtil;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -100,7 +99,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
                 }
 
                 if (null == new MethodMatcher.StringParameterMatcher(element, 1)
-                    .withSignature(Symfony2InterfacesUtil.getFormBuilderInterface())
+                    .withSignature(FormUtil.PHP_FORM_BUILDER_SIGNATURES)
                     .match()) {
 
                     super.visitElement(element);

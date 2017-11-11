@@ -5,13 +5,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderParameter;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -154,7 +157,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider3 {
 
         for(MethodSignatureSetting matchedSignature: signatures) {
             for(PhpTypeSignatureInterface signatureTypeProvider: PhpTypeSignatureTypes.DEFAULT_PROVIDER) {
-                if( signatureTypeProvider.getName().equals(matchedSignature.getReferenceProviderName()) && new Symfony2InterfacesUtil().isCallTo((Method) phpNamedElement, matchedSignature.getCallTo(), matchedSignature.getMethodName())) {
+                if( signatureTypeProvider.getName().equals(matchedSignature.getReferenceProviderName()) && PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, matchedSignature.getCallTo(), matchedSignature.getMethodName())) {
                     Collection<? extends PhpNamedElement> namedElements = signatureTypeProvider.getByParameter(project, parameter);
                     if(namedElements != null) {
                         phpNamedElements.addAll(namedElements);

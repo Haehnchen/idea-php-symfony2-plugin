@@ -7,7 +7,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.completion.constant.ConstantEnumCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.completion.constant.EnumConstantFilter;
@@ -55,15 +54,11 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
                 for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-
                     if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.PARAMETER) {
-                        attachLookup(completionResultSet, (MethodReference) psiElement.getParent(), symfony2InterfacesUtil, enumProvider);
+                        attachLookup(completionResultSet, (MethodReference) psiElement.getParent(), enumProvider);
                     }
-
                 }
-
             }
 
         });
@@ -90,10 +85,9 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
                 for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
                     if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN) {
-                        attachLookup(completionResultSet, (MethodReference) leftOperand, symfony2InterfacesUtil, enumProvider);
+                        attachLookup(completionResultSet, (MethodReference) leftOperand, enumProvider);
                     }
                 }
 
@@ -122,13 +116,11 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
                 for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
                     if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN) {
-                        attachLookup(completionResultSet, (MethodReference) leftOperand, symfony2InterfacesUtil, enumProvider);
+                        attachLookup(completionResultSet, (MethodReference) leftOperand, enumProvider);
                     }
                 }
-
             }
 
         });
@@ -182,9 +174,8 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                Symfony2InterfacesUtil symfony2InterfacesUtil = new Symfony2InterfacesUtil();
                 for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN && enumProvider.getEnumConstantFilter().getStringValues() != null && symfony2InterfacesUtil.isCallTo((MethodReference) leftOperand, enumProvider.getCallToSignature().getInstance(), enumProvider.getCallToSignature().getMethod())) {
+                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN && enumProvider.getEnumConstantFilter().getStringValues() != null && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) leftOperand, enumProvider.getCallToSignature())) {
                         for(String stringValue: enumProvider.getEnumConstantFilter().getStringValues()) {
                             completionResultSet.addElement(LookupElementBuilder.create(stringValue));
                         }
@@ -197,14 +188,14 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
 
     }
 
-    private void attachLookup(CompletionResultSet completionResultSet, MethodReference psiElement, Symfony2InterfacesUtil symfony2InterfacesUtil, ConstantEnumCompletionProvider enumProvider) {
+    private void attachLookup(CompletionResultSet completionResultSet, MethodReference psiElement, ConstantEnumCompletionProvider enumProvider) {
 
         // we allow string values
         if(enumProvider.getEnumConstantFilter().getInstance() == null || enumProvider.getEnumConstantFilter().getField() == null) {
             return;
         }
 
-        if(!symfony2InterfacesUtil.isCallTo(psiElement, enumProvider.getCallToSignature().getInstance(), enumProvider.getCallToSignature().getMethod())) {
+        if(!PhpElementsUtil.isMethodReferenceInstanceOf(psiElement, enumProvider.getCallToSignature())) {
             return;
         }
 

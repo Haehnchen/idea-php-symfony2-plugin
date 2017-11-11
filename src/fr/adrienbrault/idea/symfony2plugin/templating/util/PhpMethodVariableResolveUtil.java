@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2InterfacesUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -95,7 +95,7 @@ public class PhpMethodVariableResolveUtil {
     }
 
     /**
-     *  search for possible variables which are possible accessible inside rendered twig template
+     *  search for variables which are possible accessible inside rendered twig template
      */
     @NotNull
     private static List<PsiElement> collectPossibleTemplateArrays(@NotNull Function method) {
@@ -119,7 +119,7 @@ public class PhpMethodVariableResolveUtil {
         // twig render calls:
         // $twig->render('foo', $vars);
         for(MethodReference methodReference : PsiTreeUtil.findChildrenOfType(method, MethodReference.class)) {
-            if(new Symfony2InterfacesUtil().isTemplatingRenderCall(methodReference)) {
+            if(PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES)) {
                 PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt((methodReference).getParameterList(), 1);
                 if(templateParameter != null) {
                     collectedTemplateVariables.add(templateParameter);
