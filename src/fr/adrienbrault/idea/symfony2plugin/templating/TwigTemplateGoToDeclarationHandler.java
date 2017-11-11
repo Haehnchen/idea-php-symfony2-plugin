@@ -4,6 +4,7 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -36,7 +37,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @Nullable
     @Override
-    public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
+    public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int offset, Editor editor) {
 
         if(!Symfony2ProjectComponent.isEnabled(psiElement) || !PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
             return null;
@@ -55,7 +56,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         // support: {% include() %}, {{ include() }}
         if(TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("include", "source").accepts(psiElement)) {
-            return this.getTwigFiles(psiElement);
+            Collection<PsiElement> twigFiles = this.getTwigFiles(psiElement, offset);
+            return twigFiles.toArray(new PsiElement[twigFiles.size()]);
         }
 
         if(TwigHelper.getAutocompletableRoutePattern().accepts(psiElement)) {
@@ -85,7 +87,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
             .withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
 
-            return this.getTwigFiles(psiElement);
+            Collection<PsiElement> twigFiles = this.getTwigFiles(psiElement, offset);
+            return twigFiles.toArray(new PsiElement[twigFiles.size()]);
         }
 
         if(TwigHelper.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigHelper.getStringAfterTagNamePattern("render").accepts(psiElement)) {
@@ -173,17 +176,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), text));
     }
 
-    @Nullable
-    private PsiElement[] getTwigFiles(PsiElement psiElement) {
-
-        String templateName = psiElement.getText();
-        PsiElement[] psiElements = TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName);
-
-        if(psiElements.length == 0) {
-            return null;
-        }
-
-        return psiElements;
+    @NotNull
+    private Collection<PsiElement> getTwigFiles(@NotNull PsiElement psiElement, int offset) {
+        return TwigHelper.getTemplateNavigationOnOffset(
+            psiElement.getProject(),
+            psiElement.getText(),
+            offset - psiElement.getTextRange().getStartOffset()
+        );
     }
 
     private PsiElement[] getFilterGoTo(PsiElement psiElement) {
