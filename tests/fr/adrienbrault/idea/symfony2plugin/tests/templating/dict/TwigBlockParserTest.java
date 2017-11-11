@@ -21,8 +21,8 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
      * fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser#visit
      */
     public void testVisit() {
-        VirtualFile file = createFile("res", "foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
-        createFile("res", "foo1.html.twig", "{% block foo1 %}{% endblock %}");
+        VirtualFile file = createFile("res/foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
+        createFile("res/foo1.html.twig", "{% block foo1 %}{% endblock %}");
 
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
@@ -40,8 +40,8 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
      * fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser#walk
      */
     public void testVisitNotForSelf() {
-        VirtualFile file = createFile("res", "foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
-        createFile("res", "foo1.html.twig", "{% block foo1 %}{% endblock %}");
+        VirtualFile file = createFile("res/foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
+        createFile("res/foo1.html.twig", "{% block foo1 %}{% endblock %}");
 
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
@@ -59,8 +59,8 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
      * fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser#walk
      */
     public void testWalkWithSelf() {
-        VirtualFile file = createFile("res", "foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
-        createFile("res", "foo1.html.twig", "{% block foo1 %}{% endblock %}");
+        VirtualFile file = createFile("res/foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
+        createFile("res/foo1.html.twig", "{% block foo1 %}{% endblock %}");
 
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 

@@ -20,7 +20,7 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTemplatePsiElements
      */
     public void testGetTemplatePsiElements() {
-        createFile("res", "foo.html.twig");
+        createFile("res/foo.html.twig");
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
             new TwigNamespaceSetting("Foo", "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
@@ -47,12 +47,12 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         assertContainsElements(
-            TwigHelper.getTemplateNamesForFile(getProject(), createFile("res", "test.html.twig")),
+            TwigHelper.getTemplateNamesForFile(getProject(), createFile("res/test.html.twig")),
             "@Foo/test.html.twig", "test.html.twig", "::test.html.twig", "FooBundle::test.html.twig"
         );
 
         assertContainsElements(
-            TwigHelper.getTemplateNamesForFile(getProject(), createFile("res/foobar", "test.html.twig")),
+            TwigHelper.getTemplateNamesForFile(getProject(), createFile("res/foobar/test.html.twig")),
             "@Foo/foobar/test.html.twig", "foobar/test.html.twig", ":foobar:test.html.twig", "FooBundle:foobar:test.html.twig"
         );
     }
@@ -61,7 +61,7 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTwigFileNames
      */
     public void testGetTwigFileNames() {
-        createFile("res/foobar", "foo.html.twig");
+        createFile("res/foobar/foo.html.twig");
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
@@ -75,8 +75,7 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTwigAndPhpTemplateFiles
      */
     public void testGetTwigAndPhpTemplateFiles() {
-        createFile("res/foobar", "foo.html.twig");
-        createFile("res/foobar", "foo.php");
+        createFiles("res/foobar/foo.html.twig", "res/foobar/foo.php");
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 

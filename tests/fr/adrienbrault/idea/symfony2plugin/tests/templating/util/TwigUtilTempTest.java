@@ -21,9 +21,11 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
      */
     public void testTemplateOverwriteNameGeneration() {
-        createFile("app/Resources/TwigUtilIntegrationBundle/views", "layout.html.twig");
-        createFile("app/Resources/TwigUtilIntegrationBundle/views/Foo", "layout.html.twig");
-        createFile("app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar", "layout.html.twig");
+        createFiles(
+            "app/Resources/TwigUtilIntegrationBundle/views/layout.html.twig",
+            "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig",
+            "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig"
+        );
 
         assertEquals(
             "TwigUtilIntegrationBundle:layout.html.twig",
@@ -45,14 +47,15 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getPresentableTemplateName
      */
     public void testGetPresentableTemplateName() {
-        VirtualFile res = createFile("res/foo", "foo.html.twig");
+        VirtualFile res = createFile("res/foo/foo.html.twig");
 
-        PsiFile file = PsiManager.getInstance(getProject()).findFile(res);
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Collections.singletonList(
             new TwigNamespaceSetting("Foobar", "res", true, TwigPathIndex.NamespaceType.BUNDLE, true)
         ));
 
+        PsiFile file = PsiManager.getInstance(getProject()).findFile(res);
         assertEquals("Foobar:foo:foo", TwigUtil.getPresentableTemplateName(file, true));
+        assertEquals("Foobar:foo:foo.html.twig", TwigUtil.getPresentableTemplateName(file, false));
     }
 }

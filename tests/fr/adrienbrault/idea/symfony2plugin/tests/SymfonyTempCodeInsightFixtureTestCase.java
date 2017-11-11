@@ -9,9 +9,14 @@ import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -50,31 +55,42 @@ abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCa
     }
 
     @NotNull
-    protected VirtualFile createFile(@NotNull String path, @NotNull String file) {
-        final VirtualFile[] childData = new VirtualFile[1];
-
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    childData[0] = VfsUtil.createDirectoryIfMissing(getProject().getBaseDir(), path).createChildData(this, file);
-                } catch (IOException ignored) {
-                }
-            }
-        });
-
-        return childData[0];
+    protected VirtualFile createFile(@NotNull String file) {
+        return createFile(file, null);
     }
 
-    protected VirtualFile createFile(@NotNull String path, @NotNull String file, @NotNull String content) {
+    @NotNull
+    protected VirtualFile[] createFiles(@NotNull String... files) {
+        List<VirtualFile> virtualFiles = new ArrayList<>();
+
+        for (String file : files) {
+            virtualFiles.add(createFile(file));
+        }
+
+        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
+    }
+
+    protected VirtualFile createFile(@NotNull String file, @Nullable String content) {
         final VirtualFile[] childData = new VirtualFile[1];
 
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             @Override
             public void run() {
                 try {
-                    childData[0] = VfsUtil.createDirectoryIfMissing(getProject().getBaseDir(), path).createChildData(this, file);
-                    childData[0].setBinaryContent(content.getBytes());
+                    String[] paths = file.split("/");
+
+                    if(paths.length == 0) {
+                        childData[0] = getProject().getBaseDir().createChildData(this, file);
+                    } else {
+                        childData[0] = VfsUtil.createDirectoryIfMissing(
+                            getProject().getBaseDir(),
+                            StringUtils.join(Arrays.copyOf(paths, paths.length - 1), "/")
+                        ).createChildData(this, paths[paths.length - 1]);
+                    }
+
+                    if(content != null) {
+                        childData[0].setBinaryContent(content.getBytes());
+                    }
                 } catch (IOException ignored) {
                 }
             }
