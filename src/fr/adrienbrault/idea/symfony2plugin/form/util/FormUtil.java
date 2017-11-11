@@ -505,8 +505,7 @@ public class FormUtil {
 
         // method not found so use class fqn
         if(method == null) {
-            String fqn = phpClass.getFQN();
-            return fqn != null ? StringUtils.stripStart(fqn, "\\") : null;
+            return StringUtils.stripStart(phpClass.getFQN(), "\\");
         }
 
         for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(method, PhpReturn.class)) {

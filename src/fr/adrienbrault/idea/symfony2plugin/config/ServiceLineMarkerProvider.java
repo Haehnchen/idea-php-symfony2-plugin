@@ -241,7 +241,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         String fqn = ((PhpClass) phpClass).getFQN();
-        if(fqn == null || !fqn.endsWith("Validator")) {
+        if(!fqn.endsWith("Validator")) {
             return;
         }
 

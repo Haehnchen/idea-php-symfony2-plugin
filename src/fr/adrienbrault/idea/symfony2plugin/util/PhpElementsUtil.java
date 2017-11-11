@@ -1055,12 +1055,7 @@ public class PhpElementsUtil {
             return null;
         }
 
-        String fqn = classReference.getFQN();
-        if(fqn == null) {
-            return null;
-        }
-
-        return fqn;
+        return classReference.getFQN();
     }
 
     /**
@@ -1211,12 +1206,7 @@ public class PhpElementsUtil {
     }
 
     public static void replaceElementWithClassConstant(@NotNull PhpClass phpClass, @NotNull PsiElement originElement) throws Exception{
-
         String fqn = phpClass.getFQN();
-        if(fqn == null) {
-            throw new Exception("Class fqn empty");
-        }
-
         if(!fqn.startsWith("\\")) {
             fqn = "\\" + fqn;
         }
