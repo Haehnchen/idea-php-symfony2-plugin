@@ -14,6 +14,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -49,8 +51,8 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
             return;
         }
 
-        Route route = RouteHelper.getRoute(element.getProject(), routeName);
-        if(route == null) {
+        Collection<Route> route = RouteHelper.getRoute(element.getProject(), routeName);
+        if(route.size() == 0) {
             holder.registerProblem(element, "Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
         }
     }

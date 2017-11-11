@@ -14,10 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -50,9 +47,9 @@ public class InspectionUtil {
             String parameters = "";
             String routeName = lazyControllerNameResolve.getRouteName();
             if(routeName != null) {
-                Route route = RouteHelper.getRoute(project, routeName);
-                if(route != null) {
-                    Set<String> vars = route.getVariables();
+                Collection<Route> routes = RouteHelper.getRoute(project, routeName);
+                if(routes.size() > 0) {
+                    Set<String> vars = routes.iterator().next().getVariables();
                     if(vars.size() > 0) {
 
                         // add dollar char for vars

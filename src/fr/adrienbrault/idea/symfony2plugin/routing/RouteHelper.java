@@ -79,32 +79,30 @@ public class RouteHelper {
     public static LookupElement[] getRouteParameterLookupElements(@NotNull Project project, @NotNull String routeName) {
         List<LookupElement> lookupElements = new ArrayList<>();
 
-        Route route = RouteHelper.getRoute(project, routeName);
-        if(route == null) {
-            return lookupElements.toArray(new LookupElement[lookupElements.size()]);
-        }
-
-        for(String values: route.getVariables()) {
-            lookupElements.add(LookupElementBuilder.create(values).withIcon(Symfony2Icons.ROUTE));
+        for (Route route : RouteHelper.getRoute(project, routeName)) {
+            for(String values: route.getVariables()) {
+                lookupElements.add(LookupElementBuilder.create(values).withIcon(Symfony2Icons.ROUTE));
+            }
         }
 
         return lookupElements.toArray(new LookupElement[lookupElements.size()]);
     }
 
-    @Nullable
-    public static Route getRoute(@NotNull Project project, @NotNull String routeName) {
+    @NotNull
+    public static Collection<Route> getRoute(@NotNull Project project, @NotNull String routeName) {
         Map<String, Route> compiledRoutes = RouteHelper.getCompiledRoutes(project);
         if(compiledRoutes.containsKey(routeName)) {
-            return compiledRoutes.get(routeName);
+            return Collections.singletonList(compiledRoutes.get(routeName));
         }
 
-        // @TODO: provide multiple ones
+        Collection<Route> routes = new ArrayList<>();
+
         Collection<VirtualFile> routeFiles = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
         for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
-            return new Route(route);
+            routes.add(new Route(route));
         }
 
-        return null;
+        return routes;
     }
 
     public static PsiElement[] getRouteParameterPsiElements(Project project, String routeName, String parameterName) {
@@ -127,17 +125,15 @@ public class RouteHelper {
 
     }
 
-    public static PsiElement[] getMethods(Project project, String routeName) {
+    @NotNull
+    public static PsiElement[] getMethods(@NotNull Project project, @NotNull String routeName) {
+        Collection<PsiElement> targets = new ArrayList<>();
 
-        Route route = getRoute(project, routeName);
-
-        if(route == null) {
-            return new PsiElement[0];
+        for (Route route : getRoute(project, routeName)) {
+            targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
         }
 
-        String controllerName = route.getController();
-        return getMethodsOnControllerShortcut(project, controllerName);
-
+        return targets.toArray(new PsiElement[targets.size()]);
     }
 
     /**

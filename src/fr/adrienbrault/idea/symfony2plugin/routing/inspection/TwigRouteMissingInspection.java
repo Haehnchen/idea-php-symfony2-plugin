@@ -39,7 +39,7 @@ public class TwigRouteMissingInspection extends LocalInspectionTool {
             return;
         }
 
-        if(RouteHelper.getRoute(element.getProject(), text) == null) {
+        if(RouteHelper.getRoute(element.getProject(), text).size() == 0) {
             holder.registerProblem(element, "Missing Route");
         }
     }
