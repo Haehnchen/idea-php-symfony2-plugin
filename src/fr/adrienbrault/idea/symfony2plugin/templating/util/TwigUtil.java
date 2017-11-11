@@ -516,7 +516,7 @@ public class TwigUtil {
      * {% import _self as foobar %}
      * {% import 'foobar.html.twig' as foobar %}
      */
-    public static void visitImportedMacrosNamespaces(@NotNull PsiFile psiFile, @NotNull Consumer<Pair<TwigMacro, PsiElement>> consumer) {
+    private static void visitImportedMacrosNamespaces(@NotNull PsiFile psiFile, @NotNull Consumer<Pair<TwigMacro, PsiElement>> consumer) {
         PsiElement[] importPsiElements = PsiTreeUtil.collectElements(psiFile, psiElement ->
             psiElement.getNode().getElementType() == TwigElementTypes.IMPORT_TAG
         );
@@ -822,7 +822,7 @@ public class TwigUtil {
     /**
      * Collections "extends" and "blocks" an path and and sort them on appearance
      */
-    public static TwigCreateContainer getOnCreateTemplateElements(@NotNull final Project project, @NotNull VirtualFile startDirectory) {
+    private static TwigCreateContainer getOnCreateTemplateElements(@NotNull final Project project, @NotNull VirtualFile startDirectory) {
 
         final TwigCreateContainer containerElement = new TwigCreateContainer();
 
@@ -994,35 +994,29 @@ public class TwigUtil {
     }
 
     /**
-     * Collects all files that include, extends, ... a given files
+     * Collects all files that extends a given files
      */
     @NotNull
-    public static Collection<PsiFile> getTemplateFileReferences(@NotNull final PsiFile psiFile, @NotNull TemplateFileMap files) {
-        List<PsiFile> twigChild = new ArrayList<>();
-        getTemplateFileReferences(files.getTemplates(), psiFile, twigChild, 8);
+    public static Collection<PsiFile> getTemplatesExtendingFile(@NotNull PsiFile psiFile) {
+        Set<PsiFile> twigChild = new HashSet<>();
+        getTemplatesExtendingFile(psiFile, twigChild, 8);
         return twigChild;
     }
 
-    private static void getTemplateFileReferences(@NotNull Map<String, VirtualFile> files, @NotNull final PsiFile psiFile, @NotNull final List<PsiFile> twigChild, int depth) {
+    private static void getTemplatesExtendingFile(@NotNull PsiFile psiFile, @NotNull final Set<PsiFile> twigChild, int depth) {
         if(depth <= 0) {
             return;
         }
 
         // use set here, we have multiple shortcut on one file, but only one is required
-        final HashSet<VirtualFile> virtualFiles = new LinkedHashSet<>();
+        HashSet<VirtualFile> virtualFiles = new LinkedHashSet<>();
 
-        for(Map.Entry<String, VirtualFile> entry: files.entrySet()) {
-
+        for(String templateName: TwigHelper.getTemplateNamesForFile(psiFile.getProject(), psiFile.getVirtualFile())) {
             // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
-            if(entry.getValue().equals(psiFile.getVirtualFile())) {
-                String key = entry.getKey();
-                FileBasedIndex.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
-                    virtualFiles.add(virtualFile);
-                    return true;
-                }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
-
-            }
-
+            FileBasedIndex.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
+                virtualFiles.add(virtualFile);
+                return true;
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
         }
 
         // finally resolve virtual file to twig files
@@ -1030,9 +1024,8 @@ public class TwigUtil {
             PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
             if(resolvedPsiFile != null) {
                 twigChild.add(resolvedPsiFile);
-                getTemplateFileReferences(files, resolvedPsiFile, twigChild, --depth);
+                getTemplatesExtendingFile(resolvedPsiFile, twigChild, --depth);
             }
-
         }
     }
 
@@ -1047,7 +1040,7 @@ public class TwigUtil {
         );
     }
 
-    public static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer, @NotNull TemplateInclude.TYPE... types) {
+    private static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer, @NotNull TemplateInclude.TYPE... types) {
         if(types.length == 0) {
             return;
         }
@@ -1277,7 +1270,6 @@ public class TwigUtil {
 
         // visit every trans or transchoice to get possible domain names
         PsiTreeUtil.collectElements(psiFile, psiElement -> {
-            String text1 = psiElement.getText();
             if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
                 PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
                 if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {

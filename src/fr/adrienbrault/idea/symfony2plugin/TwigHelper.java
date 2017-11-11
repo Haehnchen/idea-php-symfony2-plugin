@@ -2506,13 +2506,13 @@ public class TwigHelper {
      *  {% block foo<caret>bar %}
      */
     @NotNull
-    public static Collection<PsiElement> getBlocksByImplementations(@NotNull PsiElement blockPsiName, @NotNull TemplateFileMap fileMap) {
+    public static Collection<PsiElement> getBlocksByImplementations(@NotNull PsiElement blockPsiName) {
         PsiFile psiFile = blockPsiName.getContainingFile();
         if(psiFile == null) {
             return Collections.emptyList();
         }
 
-        Collection<PsiFile> twigChild = TwigUtil.getTemplateFileReferences(psiFile, fileMap);
+        Collection<PsiFile> twigChild = TwigUtil.getTemplatesExtendingFile(psiFile);
         if(twigChild.size() == 0) {
             return Collections.emptyList();
         }

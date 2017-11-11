@@ -196,9 +196,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo attachBlockImplements(@NotNull PsiElement psiElement) {
-        TemplateFileMap files = getTemplateFilesByName(psiElement.getProject());
-
-        Collection<PsiElement> blockTargets = TwigHelper.getBlocksByImplementations(psiElement, files);
+        Collection<PsiElement> blockTargets = TwigHelper.getBlocksByImplementations(psiElement);
         if(blockTargets.size() == 0) {
             return null;
         }

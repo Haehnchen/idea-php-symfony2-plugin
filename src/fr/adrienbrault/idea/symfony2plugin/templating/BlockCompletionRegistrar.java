@@ -53,7 +53,7 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
             ));
 
             psiElements.addAll(
-                TwigHelper.getBlocksByImplementations(element, TwigHelper.getTemplateMap(element.getProject(), true, false))
+                TwigHelper.getBlocksByImplementations(element)
             );
 
             // filter self navigation
