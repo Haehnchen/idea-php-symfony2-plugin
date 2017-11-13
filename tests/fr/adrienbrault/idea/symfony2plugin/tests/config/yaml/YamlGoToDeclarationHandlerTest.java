@@ -2,7 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -22,6 +25,11 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         myFixture.copyFileToProject("services.xml");
         myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
         myFixture.copyFileToProject("YamlGoToDeclarationHandler.env");
+
+        myFixture.copyFileToProject("YamlGoToKnownDeclarationHandlerConfig.php");
+        myFixture.copyFileToProject("classes.php");
+        myFixture.configureByText("config_foo.yml", "");
+        myFixture.configureByFile("tagged.services.xml");
     }
 
     public String getTestDataPath() {
@@ -93,6 +101,122 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     public void testEnvironmentParameter() {
         assertNavigationMatch(YAMLFileType.YML, "bar: %env(FOOBA<caret>R_ENV)%");
         assertNavigationMatch(YAMLFileType.YML, "bar: '%env(FOOBA<caret>R_ENV)%'");
+    }
+
+
+    public void testResourcesInsideSameDirectoryProvidesNavigation() {
+        assertNavigationContainsFile(YAMLFileType.YML, "imports:\n" +
+                "    - { resource: config_<caret>foo.yml }",
+            "config_foo.yml"
+        );
+
+        assertNavigationContainsFile(YAMLFileType.YML, "imports:\n" +
+                "    - { resource: 'config_<caret>foo.yml' }",
+            "config_foo.yml"
+        );
+
+        assertNavigationContainsFile(YAMLFileType.YML, "imports:\n" +
+                "    - { resource: \"config_<caret>foo.yml\" }",
+            "config_foo.yml"
+        );
+    }
+
+    public void testConfigKeyToTreeConfigurationNavigation() {
+        assertNavigationMatch("config.yml", "foobar<caret>_root:\n" +
+                "    foo: ~",
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
+        );
+
+        assertNavigationMatch("config.yaml", "foobar<caret>_root:\n" +
+                "    foo: ~",
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
+        );
+    }
+
+    public void testNavigateToTaggedServices() {
+        String[] values = {"my_nice<caret>_tag", "'my_nice<caret>_tag'", "\"my_nice<caret>_tag\""};
+
+        for (String value : values) {
+            assertNavigationMatch("services.yml", "" +
+                    "services:\n" +
+                    "    foo:\n" +
+                    "       tags: { name: " + value + " }\n",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+        }
+    }
+
+    public void testNavigateToTaggedServicesForSymfony33Shortcut() {
+        String[] values = {"my_nice<caret>_tag", "'my_nice<caret>_tag'", "\"my_nice<caret>_tag\""};
+
+        for (String value : values) {
+            assertNavigationMatch("services.yml", "" +
+                    "services:\n" +
+                    "    foo:\n" +
+                    "       tags: [ " + value +" ]\n",
+                PlatformPatterns.psiElement(PhpClass.class)
+            );
+        }
+    }
+
+    public void testNavigateToClassServiceAsKeyForSymfony33() {
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    Fo<caret>o\\Bar: ~\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testNavigateForCallsMethodIsProvided() {
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       calls:\n" +
+            "           - [ set<caret>Bar, [@foo]]\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testNavigateForCallsEventMethodIsProvided() {
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    foobar:\n" +
+            "       class: Foo\\Bar\n" +
+            "       tags:\n" +
+            "           - { method: set<caret>Bar }\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+
+        assertNavigationMatch("services.yml", "" +
+            "services:\n" +
+            "    Foo\\Bar:\n" +
+            "       tags:\n" +
+            "           - { method: set<caret>Bar }\n" +
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testThatNavigationForControllerInvokeMethodIsAvailable() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "   public function __invoke() {}\n" +
+            "}\n"
+        );
+
+        assertNavigationMatch("routing.yml", "" +
+                "foobar:\n" +
+                "    defaults:\n" +
+                "       _controller: Foo<caret>bar\n",
+            PlatformPatterns.psiElement(Method.class)
+        );
+
+        assertNavigationMatch("routing.yml", "" +
+            "foobar:\n" +
+            "    controller: Foo<caret>bar\n" +
+            PlatformPatterns.psiElement(Method.class)
+        );
     }
 
     @NotNull
