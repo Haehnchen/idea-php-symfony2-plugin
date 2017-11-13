@@ -4,30 +4,43 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.Field;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigBlockTag;
+import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -38,30 +51,27 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int offset, Editor editor) {
-
         if(!Symfony2ProjectComponent.isEnabled(psiElement) || !PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
             return null;
         }
 
+        Collection<PsiElement> targets = new ArrayList<>();
+
         if (TwigHelper.getBlockTagPattern().accepts(psiElement)) {
-            return getBlockGoTo(psiElement);
+            targets.addAll(getBlockGoTo(psiElement));
         }
 
         if (TwigHelper.getPathAfterLeafPattern().accepts(psiElement)) {
-            PsiElement[] psiElements = this.getRouteParameterGoTo(psiElement);
-            if(psiElements.length > 0) {
-                return psiElements;
-            }
+            targets.addAll(getRouteParameterGoTo(psiElement));
         }
 
         // support: {% include() %}, {{ include() }}
         if(TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("include", "source").accepts(psiElement)) {
-            Collection<PsiElement> twigFiles = this.getTwigFiles(psiElement, offset);
-            return twigFiles.toArray(new PsiElement[twigFiles.size()]);
+            targets.addAll(getTwigFiles(psiElement, offset));
         }
 
         if(TwigHelper.getAutocompletableRoutePattern().accepts(psiElement)) {
-            return this.getRouteGoTo(psiElement);
+            targets.addAll(getRouteGoTo(psiElement));
         }
 
         // find trans('', {}, '|')
@@ -69,64 +79,131 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
             PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
             if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
-                return getTranslationDomainGoto(psiElement);
+                targets.addAll(getTranslationDomainGoto(psiElement));
             }
         }
 
         // {% trans from "app" %}
         // {% transchoice from "app" %}
         if (TwigHelper.getTranslationTokenTagFromPattern().accepts(psiElement)) {
-            return getTranslationDomainGoto(psiElement);
+            targets.addAll(getTranslationDomainGoto(psiElement));
         }
 
         if (TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
-            return getTranslationKeyGoTo(psiElement);
+            targets.addAll(getTranslationKeyGoTo(psiElement));
         }
 
         // provide global twig file resolving
         if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
             .withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
 
-            Collection<PsiElement> twigFiles = this.getTwigFiles(psiElement, offset);
-            return twigFiles.toArray(new PsiElement[twigFiles.size()]);
+            targets.addAll(getTwigFiles(psiElement, offset));
         }
 
         if(TwigHelper.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigHelper.getStringAfterTagNamePattern("render").accepts(psiElement)) {
-            Collection<PsiElement> controllerMethod = this.getControllerGoTo(psiElement);
-            if(controllerMethod.size() > 0) {
-                return controllerMethod.toArray(new PsiElement[controllerMethod.size()]);
-            }
+            targets.addAll(getControllerGoTo(psiElement));
         }
 
         if(TwigHelper.getTransDefaultDomainPattern().accepts(psiElement)) {
-            List<PsiFile> domainPsiFiles = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText());
-            return domainPsiFiles.toArray(new PsiElement[domainPsiFiles.size()]);
+            targets.addAll(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText()));
         }
 
         if(TwigHelper.getFilterPattern().accepts(psiElement)) {
-            return getFilterGoTo(psiElement);
+            targets.addAll(getFilterGoTo(psiElement));
         }
 
         // {% if foo is ... %}
         // {% if foo is not ... %}
         if(PlatformPatterns.or(TwigHelper.getAfterIsTokenPattern(), TwigHelper.getAfterIsTokenWithOneIdentifierLeafPattern()).accepts(psiElement)) {
-            return getAfterIsToken(psiElement);
+            targets.addAll(getAfterIsToken(psiElement));
         }
 
-        return null;
+        // {{ goto_me() }}
+        if (TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)) {
+            targets.addAll(this.getMacros(psiElement));
+        }
+
+        // {% from 'boo.html.twig' import goto_me %}
+        if (TwigHelper.getTemplateImportFileReferenceTagPattern().accepts(psiElement)) {
+            targets.addAll(this.getMacros(psiElement));
+        }
+
+        // {% set foo  %}
+        // {% set foo = bar %}
+        if (PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)
+            ).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
+
+            targets.addAll(getSets(psiElement));
+        }
+
+        // {{ function( }}
+        // {{ function }}
+        if (PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .withParent(PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
+                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
+            )).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
+
+            targets.addAll(this.getFunctions(psiElement));
+        }
+
+        // {{ foo.fo<caret>o }}
+        if(TwigHelper.getTypeCompletionPattern().accepts(psiElement)
+            || TwigHelper.getPrintBlockFunctionPattern().accepts(psiElement)
+            || TwigHelper.getVariableTypePattern().accepts(psiElement))
+        {
+            targets.addAll(getTypeGoto(psiElement));
+        }
+
+        if(TwigHelper.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
+            targets.addAll(getControllerNameGoto(psiElement));
+        }
+
+        // {{ parent() }}
+        if(TwigHelper.getParentFunctionPattern().accepts(psiElement)) {
+            targets.addAll(getParentGoto(psiElement));
+        }
+
+        // constant('Post::PUBLISHED')
+        if(TwigHelper.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement)) {
+            targets.addAll(getConstantGoto(psiElement));
+        }
+
+        // {# @var user \Foo #}
+        if(TwigHelper.getTwigTypeDocBlock().accepts(psiElement)) {
+            targets.addAll(getVarClassGoto(psiElement));
+        }
+
+        // {# @see Foo.html.twig #}
+        // {# @see \Class #}
+        if(TwigHelper.getTwigDocSeePattern().accepts(psiElement)) {
+            targets.addAll(getSeeDocTagTargets(psiElement));
+        }
+
+        // {% FOO_TOKEN %}
+        if(TwigHelper.getTagTokenBlockPattern().accepts(psiElement)) {
+            targets.addAll(getTokenTargets(psiElement));
+        }
+
+        return targets.toArray(new PsiElement[targets.size()]);
     }
 
     /**
      * {% if foo is ... %}
      */
-    private PsiElement[] getAfterIsToken(@NotNull PsiElement psiElement) {
+    @NotNull
+    private Collection<PsiElement> getAfterIsToken(@NotNull PsiElement psiElement) {
         // find text after if statement
         String text = StringUtils.trim(
             PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, TwigHelper.getAfterIsTokenTextPattern(), false) + psiElement.getText()
         );
 
         if(StringUtils.isBlank(text)) {
-            return new PsiElement[0];
+            return Collections.emptyList();
         }
 
         Set<String> items = new HashSet<>(
@@ -158,19 +235,23 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             }
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements;
     }
 
-    private PsiElement[] getRouteParameterGoTo(PsiElement psiElement) {
-
+    @NotNull
+    private Collection<PsiElement> getRouteParameterGoTo(@NotNull PsiElement psiElement) {
         String routeName = TwigHelper.getMatchingRouteNameOnParameter(psiElement);
+
         if(routeName == null) {
-            return new PsiElement[0];
+            return Collections.emptyList();
         }
 
-        return RouteHelper.getRouteParameterPsiElements(psiElement.getProject(), routeName, psiElement.getText());
+        return Arrays.asList(
+            RouteHelper.getRouteParameterPsiElements(psiElement.getProject(), routeName, psiElement.getText())
+        );
     }
 
+    @NotNull
     private Collection<PsiElement> getControllerGoTo(@NotNull  PsiElement psiElement) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
         return Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), text));
@@ -185,84 +266,330 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         );
     }
 
-    private PsiElement[] getFilterGoTo(PsiElement psiElement) {
+    @NotNull
+    private Collection<PsiElement> getFilterGoTo(@NotNull  PsiElement psiElement) {
         Map<String, TwigExtension> filters = new TwigExtensionParser(psiElement.getProject()).getFilters();
+
         if(!filters.containsKey(psiElement.getText())) {
-            return new PsiElement[0];
+            return Collections.emptyList();
         }
 
         String signature = filters.get(psiElement.getText()).getSignature();
         if(signature == null) {
-            return new PsiElement[0];
+            return Collections.emptyList();
         }
 
-        return PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), signature);
+        return Arrays.asList(PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), signature));
     }
 
     @NotNull
-    static PsiElement[] getBlockGoTo(@NotNull PsiElement psiElement) {
+    static Collection<PsiElement> getBlockGoTo(@NotNull PsiElement psiElement) {
         String blockName = psiElement.getText();
+
         if(StringUtils.isBlank(blockName)) {
-            return new PsiElement[0];
+            return Collections.emptyList();
         }
 
         Collection<PsiElement> psiElements = new HashSet<>();
         Pair<PsiFile[], Boolean> scopedFile = TwigHelper.findScopedFile(psiElement);
+
         for (PsiFile psiFile : scopedFile.getFirst()) {
             ContainerUtil.addAll(psiElements, getBlockNameGoTo(psiFile, blockName, scopedFile.getSecond()));
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements;
     }
 
     @NotNull
-    static PsiElement[] getBlockNameGoTo(@NotNull PsiFile psiFile, @NotNull String blockName) {
+    private Collection<PsiElement> getBlockNameGoTo(@NotNull PsiFile psiFile, @NotNull String blockName) {
         return getBlockNameGoTo(psiFile, blockName, false);
     }
 
     @NotNull
-    static PsiElement[] getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
-        List<PsiElement> psiElements = new ArrayList<>();
+    static Collection<PsiElement> getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
+        Collection<PsiElement> psiElements = new ArrayList<>();
+
         for (TwigBlock block : new TwigBlockParser(withSelfBlocks).walk(psiFile)) {
             if(block.getName().equals(blockName)) {
                 Collections.addAll(psiElements, block.getBlock());
             }
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements;
     }
 
-    private PsiElement[] getRouteGoTo(PsiElement psiElement) {
-
+    @NotNull
+    private Collection<PsiElement> getRouteGoTo(@NotNull PsiElement psiElement) {
         String text = PsiElementUtils.getText(psiElement);
 
         if(StringUtils.isBlank(text)) {
-            return new PsiElement[0];
+            return Collections.emptyList();
         }
 
         PsiElement[] methods = RouteHelper.getMethods(psiElement.getProject(), text);
         if(methods.length > 0) {
-            return methods;
+            return Arrays.asList(methods);
         }
 
-        List<PsiElement> psiElementList = RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), text);
-        return psiElementList.toArray(new PsiElement[psiElementList.size()]);
+        return RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), text);
     }
 
-    private PsiElement[] getTranslationKeyGoTo(PsiElement psiElement) {
+    @NotNull
+    private Collection<PsiElement> getTranslationKeyGoTo(@NotNull PsiElement psiElement) {
         String translationKey = psiElement.getText();
-        return TranslationUtil.getTranslationPsiElements(psiElement.getProject(), translationKey, TwigUtil.getPsiElementTranslationDomain(psiElement));
+        return Arrays.asList(
+            TranslationUtil.getTranslationPsiElements(psiElement.getProject(), translationKey, TwigUtil.getPsiElementTranslationDomain(psiElement))
+        );
     }
 
-    private PsiElement[] getTranslationDomainGoto(PsiElement psiElement) {
+    @NotNull
+    private Collection<PsiElement> getTranslationDomainGoto(@NotNull PsiElement psiElement) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
-        
-        if(StringUtils.isNotBlank(text)) {
-            List<PsiFile> domainPsiFiles = TranslationUtil.getDomainPsiFiles(psiElement.getProject(), text);
-            return domainPsiFiles.toArray(new PsiElement[domainPsiFiles.size()]);
+
+        if(StringUtils.isBlank(text)) {
+            return Collections.emptyList();
         }
 
-        return new PsiElement[0];
+        return new ArrayList<>(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), text));
+    }
+
+    @NotNull
+    private Collection<PsiElement> getConstantGoto(@NotNull PsiElement psiElement) {
+        Collection<PsiElement> targetPsiElements = new ArrayList<>();
+
+        String contents = psiElement.getText();
+        if(StringUtils.isBlank(contents)) {
+            return targetPsiElements;
+        }
+
+        // global constant
+        if(!contents.contains(":")) {
+            targetPsiElements.addAll(PhpIndex.getInstance(psiElement.getProject()).getConstantsByName(contents));
+            return targetPsiElements;
+        }
+
+        // resolve class constants
+        String[] parts = contents.split("::");
+        if(parts.length != 2) {
+            return targetPsiElements;
+        }
+
+        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), parts[0].replace("\\\\", "\\"));
+        if(phpClass == null) {
+            return targetPsiElements;
+        }
+
+        Field field = phpClass.findFieldByName(parts[1], true);
+        if(field != null) {
+            targetPsiElements.add(field);
+        }
+
+        return targetPsiElements;
+    }
+
+    @NotNull
+    private Collection<PhpClass> getVarClassGoto(@NotNull PsiElement psiElement) {
+        String comment = psiElement.getText();
+
+        if(StringUtils.isBlank(comment)) {
+            return Collections.emptyList();
+        }
+
+        for(String pattern: new String[] {TwigTypeResolveUtil.DEPRECATED_DOC_TYPE_PATTERN, TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE}) {
+            Matcher matcher = Pattern.compile(pattern).matcher(comment);
+            if (matcher.find()) {
+                String className = matcher.group(2);
+                if(StringUtils.isNotBlank(className)) {
+                    return PhpElementsUtil.getClassesInterface(psiElement.getProject(), className);
+                }
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    private Collection<PsiElement> getSeeDocTagTargets(@NotNull PsiElement psiElement) {
+        String comment = psiElement.getText();
+        if(StringUtils.isBlank(comment)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> psiElements = new ArrayList<>();
+
+        for(String pattern: new String[] {TwigHelper.DOC_SEE_REGEX, TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE}) {
+            Matcher matcher = Pattern.compile(pattern).matcher(comment);
+            if (!matcher.find()) {
+                continue;
+            }
+
+            String content = matcher.group(1);
+
+            if(content.toLowerCase().endsWith(".twig")) {
+                ContainerUtil.addAll(psiElements, TwigHelper.getTemplatePsiElements(psiElement.getProject(), content));
+            }
+
+            psiElements.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), content));
+            ContainerUtil.addAll(psiElements, RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), content));
+
+            PsiDirectory parent = psiElement.getContainingFile().getParent();
+            if(parent != null) {
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(parent.getVirtualFile(), content.replace("\\", "/").split("/"));
+                if(relativeFile != null) {
+                    ContainerUtil.addIfNotNull(psiElements, PsiManager.getInstance(psiElement.getProject()).findFile(relativeFile));
+                }
+            }
+
+            Matcher methodMatcher = Pattern.compile("([\\w\\\\-]+):+([\\w_\\-]+)").matcher(content);
+            if (methodMatcher.find()) {
+                for (PhpClass phpClass : PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(methodMatcher.group(1))) {
+                    ContainerUtil.addIfNotNull(psiElements, phpClass.findMethodByName(methodMatcher.group(2)));
+                }
+            }
+        }
+
+        return psiElements;
+    }
+
+    @NotNull
+    private Collection<PsiElement> getTypeGoto(@NotNull PsiElement psiElement) {
+        Collection<PsiElement> targetPsiElements = new ArrayList<>();
+
+        // class, class.method, class.method.method
+        // click on first item is our class name
+        String[] beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+        if(beforeLeaf.length == 0) {
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement, true));
+            for(TwigTypeContainer twigTypeContainer: twigTypeContainers) {
+                if(twigTypeContainer.getPhpNamedElement() != null) {
+                    targetPsiElements.add(twigTypeContainer.getPhpNamedElement());
+                }
+            }
+
+        } else {
+            Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
+            String text = psiElement.getText();
+            if(StringUtils.isNotBlank(text)) {
+                // provide method / field goto
+                for(TwigTypeContainer twigTypeContainer: types) {
+                    if(twigTypeContainer.getPhpNamedElement() != null) {
+                        targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(twigTypeContainer.getPhpNamedElement(), text));
+                    }
+                }
+            }
+        }
+
+        return targetPsiElements;
+    }
+
+    @NotNull
+    private Collection<PsiElement> getFunctions(@NotNull PsiElement psiElement) {
+        Map<String, TwigExtension> functions = new TwigExtensionParser(psiElement.getProject()).getFunctions();
+
+        String funcName = psiElement.getText();
+        if(!functions.containsKey(funcName)) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.asList(PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), functions.get(funcName).getSignature()));
+    }
+
+    private Collection<PsiElement> getSets(@NotNull PsiElement psiElement) {
+        String funcName = psiElement.getText();
+        for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
+            if(twigSet.getName().equals(funcName)) {
+                return Arrays.asList(PsiTreeUtil.collectElements(psiElement.getContainingFile(), new RegexPsiElementFilter(
+                    TwigTagWithFileReference.class,
+                    "\\{%\\s?set\\s?" + Pattern.quote(funcName) + "\\s?.*")
+                ));
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    private Collection<PsiElement> getMacros(@NotNull PsiElement psiElement) {
+        String funcName = psiElement.getText();
+
+        // check for complete file as namespace import {% import "file" as foo %}
+        // {% import _self as foobar %}
+        // {{ foobar.bar }}
+        PsiElement prevSibling = psiElement.getPrevSibling();
+        if(prevSibling != null && prevSibling.getNode().getElementType() == TwigTokenTypes.DOT) {
+            PsiElement identifier = prevSibling.getPrevSibling();
+            if(identifier == null || identifier.getNode().getElementType() != TwigTokenTypes.IDENTIFIER) {
+                return Collections.emptyList();
+            }
+
+            return TwigUtil.getImportedMacrosNamespaces(
+                psiElement.getContainingFile(),
+                identifier.getText() + "." + funcName
+            );
+        }
+
+        // {% from _self import foobar as input, foobar %}
+        return TwigUtil.getImportedMacros(psiElement.getContainingFile(), funcName);
+    }
+
+    @NotNull
+    private Collection<PsiElement> getControllerNameGoto(@NotNull PsiElement psiElement) {
+        Pattern pattern = Pattern.compile(ControllerDocVariableCollector.DOC_PATTERN);
+
+        Matcher matcher = pattern.matcher(psiElement.getText());
+        if (!matcher.find()) {
+            return Collections.emptyList();
+        }
+
+        String controllerName = matcher.group(1);
+
+        return Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), controllerName));
+    }
+
+    @NotNull
+    private Collection<PsiElement> getParentGoto(@NotNull PsiElement psiElement) {
+        // find printblock
+        PsiElement printBlock = psiElement.getParent();
+        if(printBlock == null || !PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK).accepts(printBlock)) {
+            return Collections.emptyList();
+        }
+
+        // printblock need to be child block statement
+        PsiElement blockStatement = printBlock.getParent();
+        if(blockStatement == null || !PlatformPatterns.psiElement(TwigElementTypes.BLOCK_STATEMENT).accepts(blockStatement)) {
+            return Collections.emptyList();
+        }
+
+        // BlockTag is first child of block statement
+        PsiElement blockTag = blockStatement.getFirstChild();
+        if(!(blockTag instanceof TwigBlockTag)) {
+            return Collections.emptyList();
+        }
+
+        String blockName = ((TwigBlockTag) blockTag).getName();
+        if(blockName == null) {
+            return Collections.emptyList();
+        }
+
+        return getBlockNameGoTo(psiElement.getContainingFile(), blockName);
+    }
+
+    @NotNull
+    private Collection<? extends PsiElement> getTokenTargets(@NotNull PsiElement psiElement) {
+        String tagName = psiElement.getText();
+        if(StringUtils.isBlank(tagName)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> targets = new ArrayList<>();
+
+        TwigUtil.visitTokenParsers(psiElement.getProject(), pair -> {
+            if(tagName.equalsIgnoreCase(pair.getFirst())) {
+                targets.add(pair.getSecond());
+            }
+        });
+
+        return targets;
     }
 
     @Nullable

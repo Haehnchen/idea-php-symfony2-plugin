@@ -48,9 +48,9 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
 
             Collection<PsiElement> psiElements = new HashSet<>();
 
-            psiElements.addAll(Arrays.asList(
+            psiElements.addAll(
                 TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(element.getContainingFile(), blockName, true)
-            ));
+            );
 
             psiElements.addAll(
                 TwigHelper.getBlocksByImplementations(element)

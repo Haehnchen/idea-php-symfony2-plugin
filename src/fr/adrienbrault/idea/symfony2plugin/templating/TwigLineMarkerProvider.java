@@ -201,9 +201,8 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo attachBlockOverwrites(PsiElement psiElement) {
-
-        PsiElement[] blocks = TwigTemplateGoToDeclarationHandler.getBlockGoTo(psiElement);
-        if(blocks.length == 0) {
+        Collection<PsiElement> blocks = TwigTemplateGoToDeclarationHandler.getBlockGoTo(psiElement);
+        if(blocks.size() == 0) {
             return null;
         }
 
