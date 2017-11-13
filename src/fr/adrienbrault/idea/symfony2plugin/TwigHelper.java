@@ -247,7 +247,6 @@ public class TwigHelper {
      * todo: provide setting for that
      */
     public static String normalizeTemplateName(@NotNull String templateName) {
-
         // force linux path style
         templateName = templateName.replace("\\", "/");
 
@@ -336,14 +335,152 @@ public class TwigHelper {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/").replace("//", "/"), "/");
                     addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
                 }
-
             }
-
         }
 
         psiFiles.addAll(getTemplateOverwrites(project, normalizedTemplateName));
 
         return psiFiles.toArray(new PsiFile[psiFiles.size()]);
+    }
+
+    /**
+     * Switch template file or path target on caret offset "foo/bar.html.twig" or "foo"
+     *
+     * "foo" "bar.html.twig"
+     */
+    @NotNull
+    public static Collection<PsiElement> getTemplateNavigationOnOffset(@NotNull Project project, @NotNull String templateName, int offset) {
+        Collection<PsiElement> files = new ArrayList<>();
+
+        // try to find a path pattern on current offset after path normalization
+        if(offset < templateName.length()) {
+            String templateNameWithCaret = normalizeTemplateName(new StringBuilder(templateName).insert(offset, '\u0182').toString());
+            offset = templateNameWithCaret.indexOf('\u0182');
+
+            int i = StringUtils.strip(templateNameWithCaret.replace(String.valueOf('\u0182'), "").replace(":", "/"), "/").indexOf("/", offset);
+            if(i > 0) {
+                files.addAll(getTemplateTargetOnOffset(project, templateName, offset));
+            }
+        }
+
+        // full filepath fallback: "foo/foo<caret>.html.twig"
+        if(files.size() == 0) {
+            files.addAll(Arrays.asList(getTemplatePsiElements(project, templateName)));
+        }
+
+        return files;
+    }
+
+    /**
+     * Switch template target on caret offset "foo/bar.html.twig". Resolve template name or directory structure:
+     *
+     * "foo" "bar.html.twig"
+     */
+    @NotNull
+    public static Collection<PsiElement> getTemplateTargetOnOffset(@NotNull Project project, @NotNull String templateName, int offset) {
+        // no match for length
+        if(offset > templateName.length()) {
+            return Collections.emptyList();
+        }
+
+        // please give use a normalized path:
+        // Foo:foo:foo => foo/foo/foo
+        String templatePathWithFileName = normalizeTemplateName(new StringBuilder(templateName).insert(offset, '\u0182').toString());
+        offset = templatePathWithFileName.indexOf('\u0182');
+
+        int indexOf = templatePathWithFileName.replace(":", "/").indexOf("/", offset);
+        if(indexOf <= 0) {
+            return Collections.emptyList();
+        }
+
+        String templatePath = StringUtils.strip(templatePathWithFileName.substring(0, indexOf).replace(String.valueOf('\u0182'), ""), "/");
+
+        Collection<VirtualFile> virtualFiles = new ArrayList<>();
+
+        for (TwigPath twigPath : getTwigNamespaces(project)) {
+            if(!twigPath.isEnabled()) {
+                continue;
+            }
+
+            if(templatePath.startsWith("@")) {
+                // @Namespace/base.html.twig
+                // @Namespace/folder/base.html.twig
+                if(templatePath.length() > 1 && twigPath.getNamespaceType() != TwigPathIndex.NamespaceType.BUNDLE) {
+                    int x = templatePath.indexOf("/");
+
+                    if(x < 0 && templatePath.substring(1).equals(twigPath.getNamespace())) {
+                        // Click on namespace itself: "@Foobar"
+                        VirtualFile relativeFile = twigPath.getDirectory(project);
+                        if (relativeFile != null) {
+                            virtualFiles.add(relativeFile);
+                        }
+                    } else if (x > 0 && templatePath.substring(1, x).equals(twigPath.getNamespace())) {
+                        // Click on path: "@Foobar/Foo"
+                        VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), templatePath.substring(x + 1).split("/"));
+                        if (relativeFile != null) {
+                            virtualFiles.add(relativeFile);
+                        }
+                    }
+                }
+            } else if(templatePath.startsWith(":")) {
+                // ::base.html.twig
+                // :Foo:base.html.twig
+                if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
+                    String replace = StringUtils.strip(templatePath.replace(":", "/"), "/");
+
+                    VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), replace.split("/"));
+                    if(relativeFile != null) {
+                        virtualFiles.add(relativeFile);
+                    }
+                }
+            } else {
+                // FooBundle::base.html.twig
+                // FooBundle:Bar:base.html.twig
+                if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+                    templatePath = templatePath.replace(":", "/");
+                    int x = templatePath.indexOf("/");
+
+                    if(x < 0 && templatePath.equals(twigPath.getNamespace())) {
+                        // Click on namespace itself: "FooBundle"
+                        VirtualFile relativeFile = twigPath.getDirectory(project);
+                        if (relativeFile != null) {
+                            virtualFiles.add(relativeFile);
+                        }
+                    } else if(x > 0 && templatePath.substring(0, x).equals(twigPath.getNamespace())) {
+                        // Click on path: "FooBundle/Foo"
+                        VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), templatePath.substring(x + 1).split("/"));
+                        if (relativeFile != null) {
+                            virtualFiles.add(relativeFile);
+                        }
+                    }
+                }
+
+                // form_div_layout.html.twig
+                if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
+                    int i = templateName.indexOf("/", offset);
+                    if(i > 0) {
+                        String substring = templateName.substring(0, i);
+
+                        VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), substring);
+                        if(relativeFile != null) {
+                            virtualFiles.add(relativeFile);
+                        }
+                    }
+                }
+
+                // Bundle overwrite:
+                // FooBundle:index.html -> app/views/FooBundle:index.html
+                if(twigPath.isGlobalNamespace() && !templatePath.startsWith(":") && !templatePath.startsWith("@")) {
+                    // @TODO: support this later on; also its deprecated by Symfony
+                }
+            }
+        }
+
+        return virtualFiles
+            .stream()
+            .map(virtualFile -> PsiManager.getInstance(project).findDirectory(virtualFile))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     /**

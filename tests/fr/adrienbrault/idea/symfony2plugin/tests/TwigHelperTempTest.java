@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
@@ -8,7 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -84,6 +88,55 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
             "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig",
             "@Foo/foobar/foo.php", "FooBundle:foobar:foo.php", ":foobar:foo.php", "foobar/foo.php"
         );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTemplateNavigationOnOffset
+     */
+    public void testGetTemplateNavigationOnOffset() {
+        createFiles("res/foobar/foo.html.twig");
+
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
+
+        assertTrue(TwigHelper.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 3).stream().filter(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())).count() > 0);
+        assertTrue(TwigHelper.getTemplateNavigationOnOffset(getProject(), ":foobar:foo.html.twig", 3).stream().filter(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())).count() > 0);
+
+        assertTrue(TwigHelper.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 10).stream().filter(psiElement -> psiElement instanceof PsiFile && "foo.html.twig".equals(((PsiFile) psiElement).getName())).count() > 0);
+
+        assertTrue(TwigHelper.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).size() == 0);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTemplateTargetOnOffset
+     */
+    public void testGetTemplateTargetOnOffset() {
+        createFiles("res/foobar/foo.html.twig");
+        createFiles("res/foobar/apple/foo.html.twig");
+
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
+
+        assertIsDirectoryAtOffset("@Foo/foobar/foo.html.twig", 2, "res");
+        assertIsDirectoryAtOffset("@Foo/foobar\\foo.html.twig", 6, "foobar");
+
+        assertIsDirectoryAtOffset( "foobar/foo.html.twig", 3, "foobar");
+        assertIsDirectoryAtOffset("@Foo/foobar/foo.html.twig", 6, "foobar");
+        assertIsDirectoryAtOffset("@Foo/foobar\\foo.html.twig", 6, "foobar");
+
+        assertIsDirectoryAtOffset( "@Foo/foobar/foo.html.twig", 3, "res");
+        assertIsDirectoryAtOffset("FooBundle:foobar:foo.html.twig", 6, "res");
+        assertIsDirectoryAtOffset("FooBundle:foobar:foo.html.twig", 13, "foobar");
+        assertIsDirectoryAtOffset(":foobar:foo.php", 4, "foobar");
+
+        assertIsDirectoryAtOffset(":foobar/apple:foo.php", 10, "apple");
+        assertIsDirectoryAtOffset(":foobar\\apple:foo.php", 10, "apple");
+        assertIsDirectoryAtOffset(":foobar\\apple\\foo.php", 10, "apple");
+
+        assertTrue(TwigHelper.getTemplateTargetOnOffset(getProject(), "@Foo/foobar/foo.html.twig", 15).size() == 0);
+        assertTrue(TwigHelper.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).size() == 0);
+    }
+
+    private void assertIsDirectoryAtOffset(@NotNull String templateName, int offset, @NotNull String directory) {
+        assertTrue(TwigHelper.getTemplateTargetOnOffset(getProject(), templateName, offset).stream().filter(psiElement -> psiElement instanceof PsiDirectory && directory.equals(((PsiDirectory) psiElement).getName())).count() > 0);
     }
 
     @NotNull
