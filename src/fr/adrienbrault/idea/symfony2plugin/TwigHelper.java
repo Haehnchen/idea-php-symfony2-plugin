@@ -283,7 +283,7 @@ public class TwigHelper {
     public static PsiFile[] getTemplatePsiElements(@NotNull Project project, @NotNull String templateName) {
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
-        Collection<PsiFile> psiFiles = new HashSet<>();
+        Collection<VirtualFile> virtualFiles = new HashSet<>();
         for (TwigPath twigPath : getTwigNamespaces(project)) {
             if(!twigPath.isEnabled()) {
                 continue;
@@ -297,7 +297,7 @@ public class TwigHelper {
                     if(i > 0) {
                         String templateNs = normalizedTemplateName.substring(1, i);
                         if(twigPath.getNamespace().equals(templateNs)) {
-                            addFileInsideTwigPath(project, normalizedTemplateName.substring(i + 1), psiFiles, twigPath);
+                            addFileInsideTwigPath(project, normalizedTemplateName.substring(i + 1), virtualFiles, twigPath);
                         }
                     }
                 }
@@ -306,7 +306,7 @@ public class TwigHelper {
                 // :Foo:base.html.twig
                 if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
-                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                    addFileInsideTwigPath(project, templatePath, virtualFiles, twigPath);
                 }
             } else {
                 // FooBundle::base.html.twig
@@ -317,7 +317,7 @@ public class TwigHelper {
                         String templateNs = normalizedTemplateName.substring(0, i);
                         if(twigPath.getNamespace().equals(templateNs)) {
                             String templatePath = StringUtils.strip(normalizedTemplateName.substring(i + 1).replace(":", "/").replace("//", "/"), "/");
-                            addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                            addFileInsideTwigPath(project, templatePath, virtualFiles, twigPath);
                         }
 
                     }
@@ -326,20 +326,19 @@ public class TwigHelper {
                 // form_div_layout.html.twig
                 if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
-                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                    addFileInsideTwigPath(project, templatePath, virtualFiles, twigPath);
                 }
 
                 // Bundle overwrite:
                 // FooBundle:index.html -> app/views/FooBundle:index.html
                 if(twigPath.isGlobalNamespace() && !normalizedTemplateName.startsWith(":") && !normalizedTemplateName.startsWith("@")) {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/").replace("//", "/"), "/");
-                    addFileInsideTwigPath(project, templatePath, psiFiles, twigPath);
+                    addFileInsideTwigPath(project, templatePath, virtualFiles, twigPath);
                 }
             }
         }
 
-        psiFiles.addAll(getTemplateOverwrites(project, normalizedTemplateName));
-
+        Collection<PsiFile> psiFiles = PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFiles);
         return psiFiles.toArray(new PsiFile[psiFiles.size()]);
     }
 
@@ -350,7 +349,7 @@ public class TwigHelper {
      */
     @NotNull
     public static Collection<PsiElement> getTemplateNavigationOnOffset(@NotNull Project project, @NotNull String templateName, int offset) {
-        Collection<PsiElement> files = new ArrayList<>();
+        Set<PsiElement> files = new HashSet<>();
 
         // try to find a path pattern on current offset after path normalization
         if(offset < templateName.length()) {
@@ -395,7 +394,7 @@ public class TwigHelper {
 
         String templatePath = StringUtils.strip(templatePathWithFileName.substring(0, indexOf).replace(String.valueOf('\u0182'), ""), "/");
 
-        Collection<VirtualFile> virtualFiles = new ArrayList<>();
+        Set<VirtualFile> virtualFiles = new HashSet<>();
 
         for (TwigPath twigPath : getTwigNamespaces(project)) {
             if(!twigPath.isEnabled()) {
@@ -480,7 +479,7 @@ public class TwigHelper {
             .stream()
             .map(virtualFile -> PsiManager.getInstance(project).findDirectory(virtualFile))
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -619,14 +618,11 @@ public class TwigHelper {
         return PsiElementUtils.convertVirtualFilesToPsiFiles(project, files);
     }
 
-    private static void addFileInsideTwigPath(@NotNull Project project, @NotNull String templatePath, @NotNull Collection<PsiFile> psiFiles, @NotNull TwigPath twigPath) {
-        String[] split = templatePath.split("/");
-        VirtualFile virtualFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), split);
+    private static void addFileInsideTwigPath(@NotNull Project project, @NotNull String templatePath, @NotNull Collection<VirtualFile> virtualFiles, @NotNull TwigPath twigPath) {
+        VirtualFile virtualFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), templatePath.split("/"));
+
         if(virtualFile != null) {
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-            if(psiFile != null) {
-                psiFiles.add(psiFile);
-            }
+            virtualFiles.add(virtualFile);
         }
     }
 

@@ -65,8 +65,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getRouteParameterGoTo(psiElement));
         }
 
-        // support: {% include() %}, {{ include() }}
         if(TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("include", "source").accepts(psiElement)) {
+            // support: {% include() %}, {{ include() }}
+            targets.addAll(getTwigFiles(psiElement, offset));
+        } else if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT).withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
+            // provide global twig file resolving
+            // just if we dont match against known file references pattern
             targets.addAll(getTwigFiles(psiElement, offset));
         }
 
@@ -91,13 +95,6 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         if (TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
             targets.addAll(getTranslationKeyGoTo(psiElement));
-        }
-
-        // provide global twig file resolving
-        if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-            .withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
-
-            targets.addAll(getTwigFiles(psiElement, offset));
         }
 
         if(TwigHelper.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigHelper.getStringAfterTagNamePattern("render").accepts(psiElement)) {
