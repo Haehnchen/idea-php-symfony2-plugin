@@ -119,8 +119,12 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         assertIsDirectoryAtOffset("@Foo/foobar\\foo.html.twig", 6, "foobar");
 
         assertIsDirectoryAtOffset( "foobar/foo.html.twig", 3, "foobar");
+        assertIsDirectoryAtOffset( "foobar/apple/foo.html.twig", 9, "apple");
+        assertIsDirectoryAtOffset( "foobar\\apple\\foo.html.twig", 9, "apple");
+
         assertIsDirectoryAtOffset("@Foo/foobar/foo.html.twig", 6, "foobar");
         assertIsDirectoryAtOffset("@Foo/foobar\\foo.html.twig", 6, "foobar");
+        assertIsDirectoryAtOffset("@Foo/foobar/apple/foo.html.twig", 15, "apple");
 
         assertIsDirectoryAtOffset( "@Foo/foobar/foo.html.twig", 3, "res");
         assertIsDirectoryAtOffset("FooBundle:foobar:foo.html.twig", 6, "res");

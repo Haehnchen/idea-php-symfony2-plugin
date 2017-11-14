@@ -456,14 +456,9 @@ public class TwigHelper {
 
                 // form_div_layout.html.twig
                 if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
-                    int i = templateName.indexOf("/", offset);
-                    if(i > 0) {
-                        String substring = templateName.substring(0, i);
-
-                        VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), substring);
-                        if(relativeFile != null) {
-                            virtualFiles.add(relativeFile);
-                        }
+                    VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), templatePath.split("/"));
+                    if(relativeFile != null) {
+                        virtualFiles.add(relativeFile);
                     }
                 }
 
