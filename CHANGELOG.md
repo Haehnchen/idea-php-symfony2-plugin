@@ -10,6 +10,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.15.159
+* Provide completion for named key parameter in xml files [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
+* Reimplement Twig template name resolving to improve performance for large projects
+* Improve performance for instance check and drop very beginning Symfony2InterfacesUtil class
+* Allow multiple targets for routing name resolving
+* Add directory navigation for Twig templates [#1076](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076)
+* Merge twig and yaml goto / navigation handler into one extension
+
 ## 0.15.158
 * [Shopware #meetnext] Add service argument updater via PHP intention
 * [SymfonyLive] Add support for indexed and named arguments [#998](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/998)

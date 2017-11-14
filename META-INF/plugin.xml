@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.15.158</version>
+    <version>0.15.159</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,13 +101,12 @@
 <![CDATA[
 
 <ul>
-    <li>[Shopware #meetnext] Add service argument updater via PHP intention</li>
-    <li>[SymfonyLive] Add support for indexed and named arguments <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/998">#998</a></li>
-    <li>Improve support for class as id services in xml metadata</li>
-    <li>Fix NPE for call to TranslationUtil.getTranslationLookupElementsOnDomain <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1067">#1067</a></li>
-    <li>Allow array function like array_merge variables in template rendering variables completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052">#1052</a></li>
-    <li>Use Annotation plugin for template name DocBlock extraction and support "template" property</li>
-    <li>Support includes in template rendering variables and fix function calls was detected as variable <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052">#1052</a></li>
+    <li>Provide completion for named key parameter in xml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052">#1052</a></li>
+    <li>Reimplement Twig template name resolving to improve performance for large projects</li>
+    <li>Improve performance for instance check and drop very beginning Symfony2InterfacesUtil class</li>
+    <li>Allow multiple targets for routing name resolving</li>
+    <li>Add directory navigation for Twig templates <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076">#1076</a></li>
+    <li>Merge twig and yaml goto / navigation handler into one extension</li>
 </ul>
 
 <br/>
