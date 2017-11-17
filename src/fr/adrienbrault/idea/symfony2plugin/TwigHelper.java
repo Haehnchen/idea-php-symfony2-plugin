@@ -40,6 +40,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -149,35 +150,6 @@ public class TwigHelper {
         List<TwigPath> twigPaths = new ArrayList<>(getTwigNamespaces(project));
         if(twigPaths.size() == 0) {
             return Collections.emptyMap();
-        }
-
-        // app/Resources/ParentBundle/Resources/views
-        Map<String, SymfonyBundle> parentBundles = new SymfonyBundleUtil(project).getParentBundles();
-        if(parentBundles.size() > 0) {
-            for (Map.Entry<String, SymfonyBundle> entry : parentBundles.entrySet()) {
-                VirtualFile views = entry.getValue().getRelative("Resources/views");
-                if(views != null) {
-                    twigPaths.add(new TwigPath(views.getPath(), entry.getKey(), TwigPathIndex.NamespaceType.BUNDLE));
-                }
-            }
-        }
-
-        // app/Resources/FooBundle/views
-        VirtualFile relativeFile = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "Resources");
-        if(relativeFile != null) {
-            for (VirtualFile virtualFile : relativeFile.getChildren()) {
-
-                if(!virtualFile.isDirectory() || !virtualFile.getName().endsWith("Bundle")) {
-                    continue;
-                }
-
-                VirtualFile views = virtualFile.findChild("views");
-                if(views == null) {
-                    continue;
-                }
-
-                twigPaths.add(new TwigPath(views.getPath(), virtualFile.getName(), TwigPathIndex.NamespaceType.BUNDLE));
-            }
         }
 
         Map<String, Set<VirtualFile>> templateNames = new HashMap<>();
@@ -2547,8 +2519,9 @@ public class TwigHelper {
             String second = pair.getSecond();
 
             if(second.startsWith("%kernel.root_dir%")) {
-                VirtualFile appDir = VfsUtil.findRelativeFile(baseDir, "app");
-                if(appDir != null) {
+                // %kernel.root_dir%/../app
+                // %kernel.root_dir%/foo
+                for (VirtualFile appDir : FilesystemUtil.getAppDirectories(yamlFile.getProject())) {
                     String path = StringUtils.stripStart(second.substring("%kernel.root_dir%".length()), "/");
 
                     VirtualFile relativeFile = VfsUtil.findRelativeFile(appDir, path.split("/"));
@@ -2560,6 +2533,7 @@ public class TwigHelper {
                     }
                 }
             } else if(second.startsWith("%kernel.project_dir%")) {
+                // '%kernel.root_dir%/test'
                 String path = StringUtils.stripStart(second.substring("%kernel.project_dir%".length()), "/");
 
                 VirtualFile relativeFile = VfsUtil.findRelativeFile(yamlFile.getProject().getBaseDir(), path.split("/"));

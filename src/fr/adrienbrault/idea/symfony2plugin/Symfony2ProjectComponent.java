@@ -124,14 +124,6 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return validFiles;
     }
 
-    private String getPath(Project project, String path) {
-        if (!FileUtil.isAbsolute(path)) { // Project relative path
-            path = project.getBasePath() + "/" + path;
-        }
-
-        return path;
-    }
-
     private void checkProject() {
         if(!this.isEnabled()
             && !Settings.getInstance(project).dismissEnableNotification

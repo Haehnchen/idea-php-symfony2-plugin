@@ -11,6 +11,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -151,7 +152,7 @@ public class ConfigUtil {
     public static Collection<VirtualFile> getConfigurations(@NotNull Project project, @NotNull String packageName) {
         Collection<String[]> paths = Arrays.asList(
             new String[] {"config", "packages", packageName +".yml"},
-            new String[] {"config", "packages", packageName + "config.yaml"}
+            new String[] {"config", "packages", packageName, "config.yaml"}
         );
 
         Collection<VirtualFile> virtualFiles = new HashSet<>();
@@ -163,12 +164,15 @@ public class ConfigUtil {
             }
         }
 
-        VirtualFile configDir = VfsUtil.findRelativeFile(project.getBaseDir(), "app", "config");
-        if(configDir != null) {
-            for (VirtualFile configFile : configDir.getChildren()) {
-                // app/config/config*yml
-                if(configFile.getFileType() == YAMLFileType.YML && configFile.getName().startsWith("config")) {
-                    virtualFiles.add(configFile);
+        // note
+        for (VirtualFile virtualFile : FilesystemUtil.getAppDirectories(project)) {
+            VirtualFile configDir = VfsUtil.findRelativeFile(virtualFile, "config");
+            if(configDir != null) {
+                for (VirtualFile configFile : configDir.getChildren()) {
+                    // app/config/config*yml
+                    if(configFile.getFileType() == YAMLFileType.YML && configFile.getName().startsWith("config")) {
+                        virtualFiles.add(configFile);
+                    }
                 }
             }
         }
