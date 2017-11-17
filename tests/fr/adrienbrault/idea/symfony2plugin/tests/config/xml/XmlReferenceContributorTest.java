@@ -120,6 +120,18 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
                 "</container>\n",
             PlatformPatterns.psiElement()
         );
+
+        assertReferenceMatch(XmlFileType.INSTANCE, "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service>\n" +
+                "            <argument>%env(int:FOOB<caret>AR_ENV)%</argument>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            PlatformPatterns.psiElement()
+        );
     }
 
     public void testServiceIdAsClassReferences() {

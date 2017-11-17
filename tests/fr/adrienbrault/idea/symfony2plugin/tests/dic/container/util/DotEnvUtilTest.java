@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.container.util;
 
+import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -26,6 +27,24 @@ public class DotEnvUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public void testGetEnvironmentVariableTargets() {
-        assertTrue(DotEnvUtil.getEnvironmentVariableTargets(getProject(), "foobar").size() > 0);
+        assertEquals(1, DotEnvUtil.getEnvironmentVariableTargets(getProject(), "foobar")
+            .stream()
+            .filter(psiElement -> psiElement instanceof PsiFile && "env.env".equals(((PsiFile) psiElement).getName()))
+            .count()
+        );
+    }
+
+    public void testGetEnvironmentVariableTargetsForParameter() {
+        assertEquals(1, DotEnvUtil.getEnvironmentVariableTargetsForParameter(getProject(), "%env(int:foobar)%")
+            .stream()
+            .filter(psiElement -> psiElement instanceof PsiFile && "env.env".equals(((PsiFile) psiElement).getName()))
+            .count()
+        );
+
+        assertEquals(1, DotEnvUtil.getEnvironmentVariableTargetsForParameter(getProject(), "%env(foobar)%")
+            .stream()
+            .filter(psiElement -> psiElement instanceof PsiFile && "env.env".equals(((PsiFile) psiElement).getName()))
+            .count()
+        );
     }
 }

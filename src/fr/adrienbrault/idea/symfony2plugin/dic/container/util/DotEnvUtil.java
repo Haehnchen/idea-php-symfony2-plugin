@@ -41,19 +41,25 @@ public class DotEnvUtil {
     /**
      * Provide targets for "%env(FOOBAR)%"
      *
-     * @param parameter %env(FOOBAR)%
+     * @param parameter "%env(FOOBAR)%", "%env(resolve:DB)%"
      */
     @NotNull
     public static Collection<PsiElement> getEnvironmentVariableTargetsForParameter(@NotNull Project project, @NotNull String parameter) {
-        Collection<PsiElement> targets = new ArrayList<>();
-
-        if(parameter.length() > 7 && parameter.startsWith("%env(") && parameter.endsWith(")%")) {
-            targets.addAll(
-                DotEnvUtil.getEnvironmentVariableTargets(project, parameter.substring(5, parameter.length() - 2))
-            );
+        if(parameter.length() < 7 || !parameter.startsWith("%env(") || !parameter.endsWith(")%")) {
+            return Collections.emptyList();
         }
 
-        return targets;
+        String parameterName = parameter.substring(5, parameter.length() - 2);
+
+        // https://github.com/symfony/symfony/pull/23901 => RegisterEnvVarProcessorsPass
+        // '%env(int:DATABASE_PORT)%'
+        // '%env(resolve:DB)%'
+        Matcher matcher = Pattern.compile("^[\\w]+:(.*)$", Pattern.MULTILINE).matcher(parameterName);
+        if(matcher.find()){
+            parameterName = matcher.group(1);
+        }
+
+        return DotEnvUtil.getEnvironmentVariableTargets(project, parameterName);
     }
 
     @NotNull

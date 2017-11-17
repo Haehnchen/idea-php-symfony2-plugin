@@ -101,8 +101,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     public void testEnvironmentParameter() {
         assertNavigationMatch(YAMLFileType.YML, "bar: %env(FOOBA<caret>R_ENV)%");
         assertNavigationMatch(YAMLFileType.YML, "bar: '%env(FOOBA<caret>R_ENV)%'");
+        assertNavigationMatch(YAMLFileType.YML, "bar: '%env(resolve:FOOBA<caret>R_ENV)%'");
     }
-
 
     public void testResourcesInsideSameDirectoryProvidesNavigation() {
         assertNavigationContainsFile(YAMLFileType.YML, "imports:\n" +
