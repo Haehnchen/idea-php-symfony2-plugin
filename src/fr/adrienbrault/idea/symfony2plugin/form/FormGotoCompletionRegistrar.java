@@ -97,6 +97,10 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 2)
                 .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
+
+                // Symfony 3.3 / 3.4
+                .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm")
+
                 .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
                 .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
                 .match();

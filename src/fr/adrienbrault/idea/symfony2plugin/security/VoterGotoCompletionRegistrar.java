@@ -49,6 +49,11 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
                 .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "isGranted")
                 .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "denyAccessUnlessGranted")
+
+                // Symfony 3.3 / 3.4
+                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "isGranted")
+                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "denyAccessUnlessGranted")
+
                 .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
                 .match();
 

@@ -10,8 +10,8 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
@@ -25,12 +25,6 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyContainerTypeProvider implements PhpTypeProvider3 {
-    private static MethodMatcher.CallToSignature[] SERVICE_GET_SIGNATURES = new MethodMatcher.CallToSignature[] {
-        new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
-        new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
-        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
-    };
-
     private static char TRIM_KEY = '\u0182';
 
     @Override
@@ -86,7 +80,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider3 {
         }
 
         // finally search the classes
-        if(PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, SERVICE_GET_SIGNATURES)) {
+        if(PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
             ContainerService containerService = ContainerCollectionResolver.getService(project, parameter);
 
             if(containerService != null) {

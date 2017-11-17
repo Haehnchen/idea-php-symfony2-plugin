@@ -10,8 +10,10 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -78,8 +80,8 @@ public class FormFieldResolver implements TwigTypeResolver {
         }
     }
 
-    private static void attachFormFields(@Nullable MethodReference methodReference, Collection<TwigTypeContainer> targets) {
-        if(methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")) {
+    private static void attachFormFields(@Nullable MethodReference methodReference, @NotNull Collection<TwigTypeContainer> targets) {
+        if(methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm"), new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm"))) {
             PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
             if(formType != null) {
                 PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
