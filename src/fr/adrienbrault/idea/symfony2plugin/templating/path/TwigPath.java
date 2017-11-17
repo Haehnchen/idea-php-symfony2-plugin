@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -53,6 +54,7 @@ public class TwigPath implements Comparable<TwigPath> {
 
         TwigPath twigPath = new TwigPath(this.getPath(), this.getNamespace(), this.getNamespaceType(), this.isCustomPath());
         twigPath.setEnabled(this.isEnabled());
+
         return twigPath;
     }
 
@@ -72,11 +74,11 @@ public class TwigPath implements Comparable<TwigPath> {
 
     @Nullable
     public String getRelativePath(@NotNull Project project) {
-        if(this.isCustomPath()) {
-            return this.getPath();
+        if(!FileUtil.isAbsolute(path)) {
+            return path;
         }
 
-        VirtualFile virtualFile = this.getDirectory();
+        VirtualFile virtualFile = getDirectory();
         if(virtualFile == null) {
             return null;
         }
@@ -86,12 +88,16 @@ public class TwigPath implements Comparable<TwigPath> {
 
     @Nullable
     public VirtualFile getDirectory(@NotNull Project project) {
-        String relativePath = this.getRelativePath(project);
-        if(relativePath == null) {
-            return null;
+        if(!FileUtil.isAbsolute(path)) {
+            return VfsUtil.findRelativeFile(path, project.getBaseDir());
+        } else {
+            VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(path), true);
+            if(fileByIoFile != null) {
+                return fileByIoFile;
+            }
         }
 
-        return VfsUtil.findRelativeFile(relativePath, project.getBaseDir());
+        return null;
     }
 
     @NotNull
@@ -103,6 +109,7 @@ public class TwigPath implements Comparable<TwigPath> {
         return enabled;
     }
 
+    @Deprecated
     public TwigPath setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;

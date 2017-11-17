@@ -64,18 +64,12 @@ public class TwigNamespaceSetting {
     }
 
     public boolean equals(Project project, TwigPath twigPath) {
-
         if(!twigPath.getNamespaceType().equals(this.getNamespaceType()) || !twigPath.getNamespace().equals(this.getNamespace())) {
             return false;
         }
 
         String relativePath = twigPath.getRelativePath(project);
-        if(relativePath == null || !relativePath.equals(this.getPath())) {
-            return false;
-        }
-
-        return true;
-
+        return relativePath != null && relativePath.equals(this.getPath());
     }
 
     public TwigNamespaceSetting setEnabled(boolean disabled) {
