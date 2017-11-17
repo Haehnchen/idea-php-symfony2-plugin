@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -7,7 +8,9 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -137,6 +140,35 @@ public class TwigHelperTempTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         assertTrue(TwigHelper.getTemplateTargetOnOffset(getProject(), "@Foo/foobar/foo.html.twig", 15).size() == 0);
         assertTrue(TwigHelper.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).size() == 0);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTwigPathFromYamlConfigResolved
+     */
+    public void testGetTwigPathFromYamlConfigResolved() {
+        createFile("app/test/foo.yaml");
+
+        PsiFile dummyFile = YamlPsiElementFactory.createDummyFile(getProject(), "" +
+            "twig:\n" +
+            "   paths:\n" +
+            "       '%kernel.root_dir%/test': foo\n" +
+            "       '%kernel.project_dir%/app/test': project\n" +
+            "       '%kernel.root_dir%/../app': app\n"
+        );
+
+        Collection<Pair<String, String>> paths = TwigHelper.getTwigPathFromYamlConfigResolved((YAMLFile) dummyFile);
+
+        assertNotNull(
+            paths.stream().filter(pair -> "foo".equals(pair.getFirst()) && "app/test".equals(pair.getSecond())).findFirst()
+        );
+
+        assertNotNull(
+            paths.stream().filter(pair -> "project".equals(pair.getFirst()) && "app/test".equals(pair.getSecond())).findFirst()
+        );
+
+        assertNotNull(
+            paths.stream().filter(pair -> "app".equals(pair.getFirst()) && "app".equals(pair.getSecond())).findFirst()
+        );
     }
 
     private void assertIsDirectoryAtOffset(@NotNull String templateName, int offset, @NotNull String directory) {
