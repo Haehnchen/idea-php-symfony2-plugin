@@ -39,10 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -83,6 +80,10 @@ public class RouteHelper {
             for(String values: route.getVariables()) {
                 lookupElements.add(LookupElementBuilder.create(values).withIcon(Symfony2Icons.ROUTE));
             }
+        }
+
+        if (SymfonyUtil.isVersionGreaterThen(project, "3.2.0")) {
+            lookupElements.add(LookupElementBuilder.create("_fragment").withIcon(Symfony2Icons.ROUTE));
         }
 
         return lookupElements.toArray(new LookupElement[lookupElements.size()]);
