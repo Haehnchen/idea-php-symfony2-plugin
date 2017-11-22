@@ -6,6 +6,8 @@ import fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.util.Set;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector
@@ -21,7 +23,11 @@ public class DefaultServiceCollectorTest extends SymfonyLightCodeInsightFixtureT
         ContainerService servicContainer = ContainerCollectionResolver.getService(getProject(), "service_container");
 
         assertNotNull(servicContainer);
-        assertEquals("Symfony\\Component\\DependencyInjection\\ContainerInterface", servicContainer.getClassName());
+
+        Set<String> classNames = servicContainer.getClassNames();
+
+        assertTrue(classNames.contains("Symfony\\Component\\DependencyInjection\\ContainerInterface"));
+        //assertTrue(classNames.contains("Symfony\\Component\\DependencyInjection\\Container"));
     }
 
     /**
