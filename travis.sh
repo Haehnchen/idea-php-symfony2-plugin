@@ -98,8 +98,8 @@ else
 fi
 
 rm -f $travisCache/php-annotation.jar
-download "http://phpstorm.espend.de/files/proxy/plugins/php-annotation.jar"
-cp $travisCache/php-annotation.jar ./plugins
+download "http://phpstorm.espend.de/files/proxy/plugins/php-annotation-5.2.jar"
+cp $travisCache/php-annotation-5.2.jar ./plugins/php-annotation.jar
 
 rm -f $travisCache/php-toolbox.jar
 download "http://phpstorm.espend.de/files/proxy/plugins/php-toolbox.jar"

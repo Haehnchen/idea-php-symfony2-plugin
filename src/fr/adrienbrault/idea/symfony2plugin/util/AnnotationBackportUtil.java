@@ -234,92 +234,6 @@ public class AnnotationBackportUtil {
         return (Method) method;
     }
 
-    /**
-     * Extract property value or fallback on default annotation pattern
-     *
-     * TODO: Migrate to AnnotationUtil until plugin when all got the new API
-     *
-     * "@Template("foobar.html.twig")"
-     * "@Template(template="foobar.html.twig")"
-     *
-     * @see de.espend.idea.php.annotation.util.AnnotationUtil#getPropertyValueOrDefault
-     */
-    @Nullable
-    @Deprecated
-    public static String getPropertyValueOrDefault(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
-        PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
-        if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
-            return null;
-        }
-
-        String contents = null;
-        PsiElement lParen = attributeList.getFirstChild();
-        if(lParen == null) {
-            return null;
-        }
-
-        PsiElement defaultValue = lParen.getNextSibling();
-        if(defaultValue instanceof StringLiteralExpression) {
-            // @Template("foobar.html.twig")
-            contents = ((StringLiteralExpression) defaultValue).getContents();
-        } else {
-            // @Template(template="foobar.html.twig")
-            PsiElement psiProperty = Arrays.stream(attributeList.getChildren())
-                .filter(psiElement1 -> getPropertyIdentifierValue(property).accepts(psiElement1))
-                .findFirst()
-                .orElse(null);
-
-            if(psiProperty instanceof StringLiteralExpression) {
-                contents = ((StringLiteralExpression) psiProperty).getContents();
-            }
-        }
-
-        if(StringUtils.isNotBlank(contents)) {
-            return contents;
-        }
-
-        return contents;
-    }
-
-    /**
-     * Get the property value by given name
-     *
-     * "@Template(template="foobar.html.twig")"
-     *
-     * TODO: Migrate to AnnotationUtil until plugin when all got the new API
-     *
-     * @see de.espend.idea.php.annotation.util.AnnotationUtil#getPropertyValue
-     */
-    @Nullable
-    @Deprecated
-    public static String getPropertyValue(@NotNull PhpDocTag phpDocTag, @NotNull String property) {
-        PhpPsiElement attributeList = phpDocTag.getFirstPsiChild();
-        if(attributeList == null || attributeList.getNode().getElementType() != PhpDocElementTypes.phpDocAttributeList) {
-            return null;
-        }
-
-        PsiElement lParen = attributeList.getFirstChild();
-        if(lParen == null) {
-            return null;
-        }
-
-        PsiElement psiProperty = Arrays.stream(attributeList.getChildren())
-            .filter(psiElement1 -> getPropertyIdentifierValue(property).accepts(psiElement1))
-            .findFirst()
-            .orElse(null);
-
-        if(!(psiProperty instanceof StringLiteralExpression)) {
-            return null;
-        }
-
-        String contents = ((StringLiteralExpression) psiProperty).getContents();
-        if(StringUtils.isNotBlank(contents)) {
-            return contents;
-        }
-
-        return null;
-    }
-
     @Nullable
     public static String getClassNameReference(PhpDocTag phpDocTag, Map<String, String> useImports) {
 
@@ -354,20 +268,5 @@ public class AnnotationBackportUtil {
         }
 
         return annotationFqnName;
-    }
-
-    /**
-     * matches "@Callback(propertyName="<value>")"
-     */
-    private static PsiElementPattern.Capture<StringLiteralExpression> getPropertyIdentifierValue(String propertyName) {
-        return PlatformPatterns.psiElement(StringLiteralExpression.class)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(PhpDocTokenTypes.DOC_TEXT).withText("=")
-                ),
-                PlatformPatterns.psiElement(PhpDocTokenTypes.DOC_IDENTIFIER).withText(propertyName)
-            )
-            .withParent(PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
     }
 }

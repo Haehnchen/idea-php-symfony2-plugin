@@ -13,6 +13,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
@@ -77,7 +78,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             return;
         }
 
-        String routeName = AnnotationBackportUtil.getPropertyValue(phpDocTag, "name");
+        String routeName = AnnotationUtil.getPropertyValue(phpDocTag, "name");
         if(routeName == null) {
             routeName = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
         }
@@ -145,7 +146,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             }
 
             // extract "name" property
-            String annotationRouteName = AnnotationBackportUtil.getPropertyValue(docTag, "name");
+            String annotationRouteName = AnnotationUtil.getPropertyValue(docTag, "name");
             if(StringUtils.isNotBlank(annotationRouteName)) {
                 return annotationRouteName;
             }
