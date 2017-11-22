@@ -24,6 +24,7 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
@@ -34,7 +35,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -130,7 +130,7 @@ public class TwigUtil {
      */
     @Nullable
     public static Pair<String, PsiElement[]> getTemplateAnnotationFiles(@NotNull PhpDocTag phpDocTag) {
-        String template = AnnotationBackportUtil.getPropertyValueOrDefault(phpDocTag, "template");
+        String template = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template");
         if(template == null) {
             return null;
         }

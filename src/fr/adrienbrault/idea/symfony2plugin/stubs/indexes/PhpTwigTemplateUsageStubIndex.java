@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
@@ -122,7 +123,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                             return;
                         }
 
-                        String template = AnnotationBackportUtil.getPropertyValueOrDefault(phpDocTag, "template");
+                        String template = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template");
                         if(template != null && template.endsWith(".html.twig")) {
                             Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
                             if(methodScope != null) {
