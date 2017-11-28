@@ -10,6 +10,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.15.160
+* Support donenv type cast syntax [#1080](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1080)
+* Support finalized Symfony 3.4 ControllerTrait shortcuts
+* Provide add better "app" folder detection and add more tests for
+* Support absolute path in Twig templates; optimize path resolving
+* Add _fragment route parameter as always available [#1086](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1086) [#1071](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1071) @cedricziel
+
 ## 0.15.159
 * Provide completion for named key parameter in xml files [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
 * Reimplement Twig template name resolving to improve performance for large projects

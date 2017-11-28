@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.15.159</version>
+    <version>0.15.160</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,12 +101,11 @@
 <![CDATA[
 
 <ul>
-    <li>Provide completion for named key parameter in xml files <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052">#1052</a></li>
-    <li>Reimplement Twig template name resolving to improve performance for large projects</li>
-    <li>Improve performance for instance check and drop very beginning Symfony2InterfacesUtil class</li>
-    <li>Allow multiple targets for routing name resolving</li>
-    <li>Add directory navigation for Twig templates <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076">#1076</a></li>
-    <li>Merge twig and yaml goto / navigation handler into one extension</li>
+    <li>Support donenv type cast syntax <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1080">#1080</a></li>
+    <li>Support finalized Symfony 3.4 ControllerTrait shortcuts</li>
+    <li>Provide add better "app" folder detection and add more tests for</li>
+    <li>Support absolute path in Twig templates; optimize path resolving</li>
+    <li>Add _fragment route parameter as always available <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1086">#1086</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1071">#1071</a> @cedricziel</li>
 </ul>
 
 <br/>
