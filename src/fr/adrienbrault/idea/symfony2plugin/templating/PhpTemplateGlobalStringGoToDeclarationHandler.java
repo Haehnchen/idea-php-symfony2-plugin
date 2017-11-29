@@ -10,7 +10,6 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,16 +21,16 @@ public class PhpTemplateGlobalStringGoToDeclarationHandler implements GotoDeclar
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
-
-        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+        if(!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContainingFile() instanceof PhpFile)) {
             return null;
         }
 
-        if(!(psiElement.getContainingFile() instanceof PhpFile) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+        PsiElement stringLiteral = psiElement.getContext();
+        if(!(stringLiteral instanceof StringLiteralExpression)) {
             return new PsiElement[0];
         }
 
-        if(!Symfony2ProjectComponent.isEnabled(psiElement) || !PlatformPatterns.or(
+        if(!PlatformPatterns.or(
             PlatformPatterns
                 .psiElement(StringLiteralExpression.class)
                 .withText(PlatformPatterns.or(
@@ -46,17 +45,19 @@ public class PhpTemplateGlobalStringGoToDeclarationHandler implements GotoDeclar
                     PlatformPatterns.string().endsWith("twig\"")
                 ))
                 .withLanguage(PhpLanguage.INSTANCE)
-            ).accepts(psiElement.getContext())) {
+            ).accepts(stringLiteral)) {
 
             return new PsiElement[0];
         }
 
-        String templateName = PsiElementUtils.getText(psiElement);
+        String templateName = ((StringLiteralExpression) stringLiteral).getContents();
         if(StringUtils.isBlank(templateName)) {
             return new PsiElement[0];
         }
 
-        return TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName);
+        // file and directory navigation:
+        // foo.html.twig, foobar/foo.html.twig
+        return TwigHelper.getTemplateNavigationOnOffset(psiElement.getProject(), templateName, i - psiElement.getTextRange().getStartOffset()).toArray(new PsiElement[0]);
     }
 
     @Nullable
