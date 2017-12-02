@@ -8,9 +8,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class IndexUtil {
-
     public static void forceReindex() {
-
         ID<?,?>[] indexIds = new ID<?,?>[] {
             ContainerBuilderStubIndex.KEY,
             ContainerParameterStubIndex.KEY,
@@ -25,13 +23,12 @@ public class IndexUtil {
             TwigIncludeStubIndex.KEY,
             TwigMacroFunctionStubIndex.KEY,
             TranslationStubIndex.KEY,
+            TwigBlockIndexExtension.KEY
         };
 
         for(ID<?,?> id: indexIds) {
             FileBasedIndex.getInstance().requestRebuild(id);
             FileBasedIndex.getInstance().scheduleRebuild(id, new Throwable());
         }
-
     }
-
 }

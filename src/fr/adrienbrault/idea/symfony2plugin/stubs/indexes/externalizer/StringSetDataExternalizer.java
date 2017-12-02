@@ -19,6 +19,8 @@ import java.util.Set;
  */
 public class StringSetDataExternalizer implements DataExternalizer<Set<String>> {
 
+    public static StringSetDataExternalizer INSTANCE = new StringSetDataExternalizer();
+
     public synchronized void save(@NotNull DataOutput out, Set<String> value) throws IOException {
         out.writeInt(value.size());
         Iterator var = value.iterator();

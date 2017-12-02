@@ -28,6 +28,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
+import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,10 +45,12 @@ import java.util.*;
 public class TwigLineMarkerProvider implements LineMarkerProvider {
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
-
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
+
+        Map<VirtualFile, FileImplementsLazyLoader> implementsMap = new HashMap<>();
+        FileOverwritesLazyLoader fileOverwritesLazyLoader = null;
 
         for(PsiElement psiElement: psiElements) {
             // controller
@@ -67,12 +72,21 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             } else if (TwigPattern.getBlockTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
                 // blocks: {% block 'foobar' %}, {{ block('foobar') }}
 
-                LineMarkerInfo lineImpl = this.attachBlockImplements(psiElement);
+                VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
+                if(!implementsMap.containsKey(virtualFile)) {
+                    implementsMap.put(virtualFile, new FileImplementsLazyLoader(psiElement.getProject(), virtualFile));
+                }
+
+                LineMarkerInfo lineImpl = attachBlockImplements(psiElement, implementsMap.get(virtualFile));
                 if(lineImpl != null) {
                     results.add(lineImpl);
                 }
 
-                LineMarkerInfo lineOverwrites = this.attachBlockOverwrites(psiElement);
+                if(fileOverwritesLazyLoader == null) {
+                    fileOverwritesLazyLoader = new FileOverwritesLazyLoader(psiElements.get(0).getProject());
+                }
+
+                LineMarkerInfo lineOverwrites = attachBlockOverwrites(psiElement, fileOverwritesLazyLoader);
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
@@ -179,52 +193,64 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachBlockImplements(@NotNull PsiElement psiElement) {
-        Collection<PsiElement> blockTargets = TwigUtil.getBlocksByImplementations(psiElement);
-        if(blockTargets.size() == 0) {
+    private LineMarkerInfo attachBlockImplements(@NotNull PsiElement psiElement, @NotNull FileImplementsLazyLoader implementsLazyLoader) {
+        if(!TwigBlockUtil.hasBlockImplementations(psiElement, implementsLazyLoader)) {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
-        for(PsiElement blockTag: blockTargets) {
-            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
+            .setTargets(new BlockImplementationLazyValue(psiElement))
+            .setTooltipText("Implementations")
+            .setCellRenderer(new MyBlockListCellRenderer());
+
+        return builder.createLineMarkerInfo(psiElement);
+    }
+
+    private static class BlockImplementationLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+        @NotNull
+        private final PsiElement psiElement;
+
+        BlockImplementationLazyValue(@NotNull PsiElement psiElement) {
+            this.psiElement = psiElement;
         }
 
-        return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems, PhpIcons.IMPLEMENTED);
+        @NotNull
+        @Override
+        protected Collection<? extends PsiElement> compute() {
+            return TwigBlockUtil.getBlockImplementationTargets(psiElement);
+        }
+    }
+
+    /**
+     * Provides lazy targets for given template scope
+     */
+    private static class BlockOverwriteLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+        @NotNull
+        private final PsiElement psiElement;
+
+        BlockOverwriteLazyValue(@NotNull PsiElement psiElement) {
+            this.psiElement = psiElement;
+        }
+
+        @NotNull
+        @Override
+        protected Collection<? extends PsiElement> compute() {
+            return TwigBlockUtil.getBlockOverwriteTargets(psiElement);
+        }
     }
 
     @Nullable
-    private LineMarkerInfo attachBlockOverwrites(PsiElement psiElement) {
-        Collection<PsiElement> blocks = TwigTemplateGoToDeclarationHandler.getBlockGoTo(psiElement);
-        if(blocks.size() == 0) {
+    private LineMarkerInfo attachBlockOverwrites(PsiElement psiElement, @NotNull FileOverwritesLazyLoader loader) {
+        if(!TwigBlockUtil.hasBlockOverwrites(psiElement, loader)) {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
-        for(PsiElement blockTag: blocks) {
-            gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(
-                blockTag,
-                TwigUtil.getPresentableTemplateName(blockTag, true)
-            ).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
-        }
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDES)
+            .setTargets(new BlockOverwriteLazyValue(psiElement))
+            .setTooltipText("Overwrites")
+            .setCellRenderer(new MyBlockListCellRenderer());
 
-        // single item has no popup
-        String title = "Overwrites";
-        if(gotoRelatedItems.size() == 1) {
-            String customName = gotoRelatedItems.get(0).getCustomName();
-            if(customName != null) {
-                title = title.concat(": ").concat(customName);
-            }
-        }
-
-        return new LineMarkerInfo<>(
-            psiElement,
-            psiElement.getTextRange(),
-            PhpIcons.OVERRIDES, 6,
-            new ConstantFunction<>(title),
-            new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
-            GutterIconRenderer.Alignment.RIGHT
-        );
+        return builder.createLineMarkerInfo(psiElement);
     }
 
     @Nullable
@@ -321,6 +347,31 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
 
             return targets;
+        }
+    }
+
+    private static class MyBlockListCellRenderer extends PsiElementListCellRenderer {
+        @Override
+        public String getElementText(PsiElement psiElement) {
+            return StringUtils.abbreviate(
+                SymbolPresentationUtil.getSymbolPresentableText(psiElement),
+                50
+            );
+        }
+
+        @Override
+        protected String getContainerText(PsiElement psiElement, String s) {
+            return TwigUtil.getPresentableTemplateName(psiElement, true);
+        }
+
+        @Override
+        protected int getIconFlags() {
+            return 1;
+        }
+
+        @Override
+        protected Icon getIcon(PsiElement psiElement) {
+            return TwigIcons.TwigFileIcon;
         }
     }
 }

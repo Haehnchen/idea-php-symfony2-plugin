@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -20,15 +19,14 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
@@ -56,7 +54,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         Collection<PsiElement> targets = new ArrayList<>();
 
         if (TwigPattern.getBlockTagPattern().accepts(psiElement)) {
-            targets.addAll(getBlockGoTo(psiElement));
+            targets.addAll(TwigBlockUtil.getBlockOverwriteTargets(psiElement));
         }
 
         if (TwigPattern.getPathAfterLeafPattern().accepts(psiElement)) {
@@ -275,42 +273,6 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return Arrays.asList(PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), signature));
-    }
-
-    @NotNull
-    static Collection<PsiElement> getBlockGoTo(@NotNull PsiElement psiElement) {
-        String blockName = psiElement.getText();
-
-        if(StringUtils.isBlank(blockName)) {
-            return Collections.emptyList();
-        }
-
-        Collection<PsiElement> psiElements = new HashSet<>();
-        Pair<PsiFile[], Boolean> scopedFile = TwigUtil.findScopedFile(psiElement);
-
-        for (PsiFile psiFile : scopedFile.getFirst()) {
-            ContainerUtil.addAll(psiElements, getBlockNameGoTo(psiFile, blockName, scopedFile.getSecond()));
-        }
-
-        return psiElements;
-    }
-
-    @NotNull
-    private Collection<PsiElement> getBlockNameGoTo(@NotNull PsiFile psiFile, @NotNull String blockName) {
-        return getBlockNameGoTo(psiFile, blockName, false);
-    }
-
-    @NotNull
-    static Collection<PsiElement> getBlockNameGoTo(PsiFile psiFile, String blockName, boolean withSelfBlocks) {
-        Collection<PsiElement> psiElements = new ArrayList<>();
-
-        for (TwigBlock block : new TwigBlockParser(withSelfBlocks).walk(psiFile)) {
-            if(block.getName().equals(blockName)) {
-                Collections.addAll(psiElements, block.getTarget());
-            }
-        }
-
-        return psiElements;
     }
 
     @NotNull
@@ -566,7 +528,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return Collections.emptyList();
         }
 
-        return getBlockNameGoTo(psiElement.getContainingFile(), blockName);
+        return TwigBlockUtil.getBlockOverwriteTargets(psiElement.getContainingFile(), blockName, false);
     }
 
     @NotNull

@@ -1,0 +1,13 @@
+{% block foo %}
+    {% block foo_inner 'foo' %}
+{% endblock %}
+
+{{ block('foobar_print') }}
+
+{% embed "teasers\skeleton.html.twig" %}
+    {% block left_teaser %}
+        {{ block('foobar_print_embed') }}
+    {% endblock %}
+    {% block right_teaser %}
+    {% endblock %}
+{% endembed %}

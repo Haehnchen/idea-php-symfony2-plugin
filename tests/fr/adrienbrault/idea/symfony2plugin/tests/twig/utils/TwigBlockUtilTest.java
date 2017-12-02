@@ -1,24 +1,26 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.dict;
+package fr.adrienbrault.idea.symfony2plugin.tests.twig.utils;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @see fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil
  */
-public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class TwigBlockUtilTest extends SymfonyTempCodeInsightFixtureTestCase {
     /**
-     * fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser#visit
+     * fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil#collectParentBlocks
      */
     public void testVisit() {
         VirtualFile file = createFile("res/foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
@@ -26,18 +28,18 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
-        Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
+        Settings.getInstance(getProject()).twigNamespaces.addAll(Collections.singletonList(
             new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true)
         ));
 
-        List<TwigBlock> walk = new TwigBlockParser(true).visit(new PsiFile[] {psiFile});
+        Collection<TwigBlock> walk = TwigBlockUtil.collectParentBlocks(true, psiFile);
 
         assertNotNull(walk.stream().filter(twigBlock -> "foo".equals(twigBlock.getName())).findFirst().get());
         assertNotNull(walk.stream().filter(twigBlock -> "foo1".equals(twigBlock.getName())).findFirst().get());
     }
 
     /**
-     * fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser#walk
+     * fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil#collectParentBlocks
      */
     public void testVisitNotForSelf() {
         VirtualFile file = createFile("res/foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
@@ -45,18 +47,18 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
-        Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
+        Settings.getInstance(getProject()).twigNamespaces.addAll(Collections.singletonList(
             new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true)
         ));
 
-        List<TwigBlock> walk = new TwigBlockParser().visit(new PsiFile[] {psiFile});
+        Collection<TwigBlock> walk = TwigBlockUtil.collectParentBlocks(false, psiFile);
 
         assertEquals(0, walk.stream().filter(twigBlock -> "foo".equals(twigBlock.getName())).count());
         assertNotNull(walk.stream().filter(twigBlock -> "foo1".equals(twigBlock.getName())).findFirst().get());
     }
 
     /**
-     * fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser#walk
+     * fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil#collectParentBlocks
      */
     public void testWalkWithSelf() {
         VirtualFile file = createFile("res/foo.html.twig", "{% extends \"foo1.html.twig\" %}{% block foo %}{% endblock %}");
@@ -64,11 +66,11 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
-        Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
+        Settings.getInstance(getProject()).twigNamespaces.addAll(Collections.singletonList(
             new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true)
         ));
 
-        List<TwigBlock> walk = new TwigBlockParser(true).walk(psiFile);
+        Collection<TwigBlock> walk = TwigBlockUtil.collectParentBlocks(true, psiFile);
 
         assertEquals(1, walk.stream().filter(twigBlock -> "foo".equals(twigBlock.getName())).count());
         assertNotNull(walk.stream().filter(twigBlock -> "foo1".equals(twigBlock.getName())).findFirst().get());

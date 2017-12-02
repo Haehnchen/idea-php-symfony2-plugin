@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -831,6 +832,39 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNull(
             macros.stream().filter(twigMacroTag -> "foobar_if".equals(twigMacroTag.getName())).findFirst().get().getParameters()
         );
+    }
+
+    public void testGetBlocksForFile() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "{% block name %}{% endblock %}");
+        PsiFile psiFile2 = myFixture.configureByText("foo_2.html.twig", "{% block foobar %}{% endblock %}");
+        myFixture.configureByText("foo_3.html.twig", "{% block foobar_2 %}{% endblock %}");
+
+        Collection<String> blocks = new HashSet<>();
+        TwigUtil.getBlockNamesForFiles(getProject(), Collections.singletonList(psiFile.getVirtualFile())).values()
+            .forEach(blocks::addAll);
+
+        assertContainsElements(blocks, "name");
+        assertDoesntContain(blocks, "foobar");
+
+        Collection<String> blocks2 = new HashSet<>();
+        TwigUtil.getBlockNamesForFiles(getProject(), Arrays.asList(psiFile.getVirtualFile(), psiFile2.getVirtualFile())).values()
+            .forEach(blocks2::addAll);
+
+        assertContainsElements(blocks2, "name");
+        assertContainsElements(blocks2, "foobar");
+        assertDoesntContain(blocks, "foobar_2");
+    }
+
+    public void testGetBlockLookupElements() {
+        PsiFile psiFile = myFixture.configureByText("foo.html.twig", "{% block name %}{% endblock %}");
+        PsiFile psiFile2 = myFixture.configureByText("foo_2.html.twig", "{% block foobar %}{% endblock %}");
+        myFixture.configureByText("foo_3.html.twig", "{% block foobar_2 %}{% endblock %}");
+
+        Collection<LookupElement> lookupElements = TwigUtil.getBlockLookupElements(getProject(), Arrays.asList(psiFile.getVirtualFile(), psiFile2.getVirtualFile()));
+        assertSize(2, lookupElements);
+
+        assertNotNull(lookupElements.stream().filter(lookupElement -> "name".equals(lookupElement.getLookupString())).findFirst().orElse(null));
+        assertNotNull(lookupElements.stream().filter(lookupElement -> "foobar".equals(lookupElement.getLookupString())).findFirst().orElse(null));
     }
 
     private void assertEqual(Collection<String> c, String... values) {
