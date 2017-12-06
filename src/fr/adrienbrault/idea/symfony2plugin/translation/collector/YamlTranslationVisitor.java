@@ -14,13 +14,12 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class YamlTranslationVistor {
+public class YamlTranslationVisitor {
 
     public static void collectFileTranslations(@NotNull YAMLFile yamlFile, @NotNull YamlTranslationCollector translationCollector) {
         for(YAMLKeyValue yamlKeyValue: YamlHelper.getTopLevelKeyValues(yamlFile)) {
             collectItems(yamlKeyValue, translationCollector);
         }
-
     }
 
     private static void collectNextLevelElements(@NotNull YAMLCompoundValue yamlCompoundValue, @NotNull List<String> levels, @NotNull YamlTranslationCollector translationCollector) {

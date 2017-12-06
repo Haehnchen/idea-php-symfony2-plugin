@@ -19,7 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
+import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -134,7 +134,7 @@ public class TranslationUtil {
             }
 
             if(psiFile instanceof YAMLFile) {
-                YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
+                YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
             } else if(isSupportedXlfFile(psiFile)) {
                 // fine: xlf registered as XML file. try to find source value
                 psiFoundElements.addAll(getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));

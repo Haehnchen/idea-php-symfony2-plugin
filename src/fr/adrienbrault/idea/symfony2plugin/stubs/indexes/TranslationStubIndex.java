@@ -8,7 +8,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVistor;
+import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
@@ -64,7 +64,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 }
 
                 Set<String> translationKeySet = new HashSet<>();
-                YamlTranslationVistor.collectFileTranslations((YAMLFile) psiFile, (keyName, yamlKeyValue) -> {
+                YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, (keyName, yamlKeyValue) -> {
                     translationKeySet.add(keyName);
                     return true;
                 });
