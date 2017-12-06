@@ -19,17 +19,18 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("messages.fr.xlf"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("messages_two.fr.xlf"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("foo.fr.xliff"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf","foo.bar.de.xlf"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("fr.xlf",".de.xlf"));
+        myFixture.copyFileToProject("messages.fr.xlf");
+        myFixture.copyFileToProject("messages_two.fr.xlf");
+        myFixture.copyFileToProject("foo.fr.xliff");
+        myFixture.copyFileToProject("fr.xlf");
+        myFixture.copyFileToProject("fr.xlf","foo.bar.de.xlf");
+        myFixture.copyFileToProject("fr.xlf",".de.xlf");
+        myFixture.copyFileToProject("fr.xlf", "car_xlf_flex.fr.xlf");
 
         myFixture.copyFileToProject("apple.de.yml", "Resources/translations/apple.de.yml");
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
+        myFixture.copyFileToProject("car.de.yml", "translations/car_flex_yml.de.yml");
+        myFixture.copyFileToProject("car.de.yml", "translations/car_flex_yaml.de.yaml");
     }
 
     public String getTestDataPath() {
@@ -82,6 +83,12 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
 
     public void testThatResnameXliffShouldBeUsedForKey() {
         assertContainsElements(getDomainKeys("messages"), "resname.symfony_is_great");
+    }
+
+    public void testThatTranslationsInRootForSymfonyFlexIsInIndex() {
+        assertContainsElements(getDomainKeys("car_flex_yml"), "foo_yaml.symfony.great");
+        assertContainsElements(getDomainKeys("car_flex_yaml"), "foo_yaml.symfony.great");
+        assertContainsElements(getDomainKeys("car_xlf_flex"), "Symfony is great");
     }
 
     @NotNull

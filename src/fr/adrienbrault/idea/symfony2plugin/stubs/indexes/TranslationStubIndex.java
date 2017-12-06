@@ -25,8 +25,8 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<String>> {
-
     public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.translations");
+    private static final StringSetDataExternalizer DATA_EXTERNALIZER = new StringSetDataExternalizer();
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
@@ -43,9 +43,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
 
                 String extension = inputData.getFile().getExtension();
                 if("xlf".equalsIgnoreCase(extension) || "xliff".equalsIgnoreCase(extension)) {
-                    Map<String, Set<String>> map = new THashMap<>();
-                    getXlfStringMap(inputData, map);
-                    return map;
+                    return getXlfStringMap(inputData);
                 }
 
                 PsiFile psiFile = inputData.getPsiFile();
@@ -80,48 +78,51 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 return map;
             }
 
-            private boolean isValidTranslationFile(FileContent inputData, PsiFile psiFile) {
-
-                // dont index all yaml files; "Resources/translations" should be good for now
+            private boolean isValidTranslationFile(@NotNull FileContent inputData, @NotNull PsiFile psiFile) {
+                // dont index all yaml files; valid:
+                //  - "Resources/translations"
+                //  - "translations/[.../]foo.de.yml"
                 String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
                 if(relativePath != null) {
-                    return relativePath.contains("/translations");
+                    return relativePath.contains("/translations") || relativePath.startsWith("translations/");
                 }
 
                 // Resources/translations/messages.de.yml
                 // @TODO: Resources/translations/de/messages.yml
                 String path = inputData.getFile().getPath();
-                if(path.endsWith("/translations/" + inputData.getFileName())) {
-                    return true;
-                }
-
-                return false;
+                return path.endsWith("/translations/" + inputData.getFileName());
             }
 
-            private void getXlfStringMap(FileContent inputData, Map<String, Set<String>> map) {
-
+            @NotNull
+            private Map<String, Set<String>> getXlfStringMap(@NotNull FileContent inputData) {
                 // testing files are not that nice
                 String relativePath = VfsUtil.getRelativePath(inputData.getFile(), inputData.getProject().getBaseDir(), '/');
                 if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
-                    return;
+                    return Collections.emptyMap();
                 }
 
-                String domainName = this.getDomainName(inputData.getFileName());
+                // extract domain name
+                String domainName = getDomainName(inputData.getFileName());
                 if(domainName == null) {
-                    return;
+                    return Collections.emptyMap();
                 }
 
                 InputStream inputStream;
                 try {
                     inputStream = inputData.getFile().getInputStream();
                 } catch (IOException e) {
-                    return;
+                    return Collections.emptyMap();
                 }
 
                 Set<String> set = TranslationUtil.getXliffTranslations(inputStream);
-                if(set.size() > 0) {
-                    map.put(domainName, set);
+                if(set.size() == 0) {
+                    return Collections.emptyMap();
                 }
+
+                // wrap with domain
+                Map<String, Set<String>> map = new THashMap<>();
+                map.put(domainName, set);
+                return map;
             }
 
             @Nullable
@@ -149,7 +150,6 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
         return KEY;
     }
 
-
     @NotNull
     @Override
     public KeyDescriptor<String> getKeyDescriptor() {
@@ -158,7 +158,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
 
     @NotNull
     public DataExternalizer<Set<String>> getValueExternalizer() {
-        return new StringSetDataExternalizer();
+        return DATA_EXTERNALIZER;
     }
 
     @NotNull
@@ -177,5 +177,4 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
     public int getVersion() {
         return 6;
     }
-
 }
