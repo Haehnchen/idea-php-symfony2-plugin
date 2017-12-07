@@ -239,5 +239,25 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertContainsElements(FormUtil.getFormExtendedType(phpClass), "foobar", "Foobar");
+
+        phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "namespace Car {\n" +
+            "   class Foo {}\n" +
+            "}" +
+            "" +
+            "namespace Bar {\n" +
+            "   use Car\n" +
+            "   \n" +
+            "   class Foobar\n" +
+            "   {\n" +
+            "       public function getExtendedType()\n" +
+            "       {\n" +
+            "           return Foo::class;" +
+            "      }\n" +
+            "   }\n" +
+            "}"
+        );
+
+        assertContainsElements(FormUtil.getFormExtendedType(phpClass), "Bar\\Foo");
     }
 }

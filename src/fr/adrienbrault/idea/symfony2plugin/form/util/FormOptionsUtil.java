@@ -102,7 +102,7 @@ public class FormOptionsUtil {
         Map<String, FormOption> extensionClassMap = new HashMap<>();
 
         for(FormClass extensionClass: typeClasses) {
-            extensionClassMap.putAll(getDefaultOptions(project, extensionClass.getPhpClass(), extensionClass));
+            extensionClassMap.putAll(getDefaultOptions(extensionClass.getPhpClass(), extensionClass));
         }
 
         return extensionClassMap;
@@ -223,9 +223,9 @@ public class FormOptionsUtil {
             return defaultValues;
         }
 
-        getDefaultOptions(project, phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
+        getDefaultOptions(phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
         for (FormClass formClass : getExtendedTypeClasses(project, formTypeName)) {
-            getDefaultOptions(project, formClass.getPhpClass(), new FormClass(FormClassEnum.EXTENSION, formClass.getPhpClass(), false), visitor);
+            getDefaultOptions(formClass.getPhpClass(), new FormClass(FormClassEnum.EXTENSION, formClass.getPhpClass(), false), visitor);
         }
 
         // recursive search for parent form types
@@ -239,21 +239,21 @@ public class FormOptionsUtil {
     }
 
     private static void getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
-        getFormDefaultKeys(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
+        getFormDefaultKeys(formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
     }
 
-    private static Map<String, String> getFormDefaultKeys(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
+    private static Map<String, String> getFormDefaultKeys(String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
         PhpClass phpClass = collector.getFormTypeToClass(formTypeName);
         if(phpClass == null) {
             return defaultValues;
         }
 
-        getDefaultOptions(project, phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
+        getDefaultOptions(phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
 
         // recursive search for parent form types
         if (depth < 10) {
             for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
-                getFormDefaultKeys(project, formParent, defaultValues, collector, ++depth, visitor);
+                getFormDefaultKeys(formParent, defaultValues, collector, ++depth, visitor);
             }
         }
 
@@ -261,26 +261,29 @@ public class FormOptionsUtil {
     }
 
     @NotNull
-    private static Map<String, FormOption> getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass) {
+    private static Map<String, FormOption> getDefaultOptions(@NotNull PhpClass phpClass, @NotNull FormClass formClass) {
         final Map<String, FormOption> options = new HashMap<>();
 
-        getDefaultOptions(project, phpClass, formClass, (psiElement, option, formClass1, optionEnum) -> {
+        getDefaultOptions(phpClass, formClass, (psiElement, option, formClass1, optionEnum) -> {
             // append REQUIRED, if we already know this value
             if(options.containsKey(option)) {
-                options.get(option).addOptionEnum(optionEnum);
+                FormOption formOption = options.get(option);
+
+                formOption.addOptionEnum(optionEnum);
+                formOption.addTarget(psiElement);
             } else {
-                options.put(option, new FormOption(option, formClass1, optionEnum));
+                options.put(option, new FormOption(option, formClass1, optionEnum, psiElement));
             }
         });
 
         return options;
     }
 
-    private static void getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor) {
-        getDefaultOptions(project, phpClass, formClass, visitor, 10);
+    private static void getDefaultOptions(@NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor) {
+        getDefaultOptions(phpClass, formClass, visitor, 10);
     }
 
-    private static void getDefaultOptions(@NotNull Project project, @NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor, int depth) {
+    private static void getDefaultOptions(@NotNull PhpClass phpClass, @NotNull FormClass formClass, @NotNull FormOptionVisitor visitor, int depth) {
         if(depth-- < 0) {
             return;
         }
@@ -303,15 +306,28 @@ public class FormOptionsUtil {
 
                 } else {
                     // ->setRequired(['test', 'test2'])
+                    // ->setRequired('test')
                     for(String currentMethod: OPTIONS_VIA_METHOD_PARAMETER) {
-                        if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, currentMethod)) {
-                            PsiElement[] parameters = methodReference.getParameters();
-                            if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                                for (Map.Entry<String, PsiElement> entry : PhpElementsUtil.getArrayValuesAsMap((ArrayCreationExpression) parameters[0]).entrySet()) {
-                                    visitor.visit(entry.getValue(), entry.getKey(), formClass, FormOptionEnum.getEnum(currentMethod));
-                                }
+                        if(!PhpElementsUtil.isEqualMethodReferenceName(methodReference, currentMethod)) {
+                            continue;
+                        }
+
+                        PsiElement[] parameters = methodReference.getParameters();
+                        if(parameters.length == 0) {
+                            continue;
+                        }
+
+                        if(parameters[0] instanceof ArrayCreationExpression) {
+                            // ->setRequired(['test', 'test2'])
+                            for (Map.Entry<String, PsiElement> entry : PhpElementsUtil.getArrayValuesAsMap((ArrayCreationExpression) parameters[0]).entrySet()) {
+                                visitor.visit(entry.getValue(), entry.getKey(), formClass, FormOptionEnum.getEnum(currentMethod));
                             }
-                            break;
+                        } else {
+                            // ->setRequired('test')
+                            String stringValue = PhpElementsUtil.getStringValue(parameters[0]);
+                            if(stringValue != null) {
+                                visitor.visit(parameters[0], stringValue, formClass, FormOptionEnum.getEnum(currentMethod));
+                            }
                         }
                     }
                 }
@@ -319,12 +335,12 @@ public class FormOptionsUtil {
                 // support: parent::setDefaultOptions($resolver)
                 // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
                 if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName) && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
-                    PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
+                    PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(phpClass.getProject(), methodReference.getSignature());
                     if(parentMethod instanceof Method) {
                         PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
                         if(phpClassInner != null) {
                             // @TODO only use setDefaultOptions, recursive call get setDefaults again
-                            getDefaultOptions(project, phpClassInner, formClass, visitor, depth);
+                            getDefaultOptions(phpClassInner, formClass, visitor, depth);
                         }
                     }
                 }
@@ -339,9 +355,9 @@ public class FormOptionsUtil {
      * @param formOption Extension or a default option
      * @return lookup element
      */
-    public static LookupElement getOptionLookupElement(FormOption formOption) {
-
+    private static LookupElement getOptionLookupElement(FormOption formOption) {
         String typeText = formOption.getFormClass().getPhpClass().getPresentableFQN();
+
         if(typeText.lastIndexOf("\\") != -1) {
             typeText = typeText.substring(typeText.lastIndexOf("\\") + 1);
             if(typeText.endsWith("Extension")) {
@@ -357,29 +373,13 @@ public class FormOptionsUtil {
     @NotNull
     public static Collection<PsiElement> getFormExtensionsKeysTargets(@NotNull StringLiteralExpression psiElement, String... formTypes) {
         Map<String, FormOption> extensionKeys = FormOptionsUtil.getFormExtensionKeys(psiElement.getProject(), formTypes);
-        String value = psiElement.getContents();
+        String optionName = psiElement.getContents();
 
-        if(!extensionKeys.containsKey(value)) {
+        if(StringUtils.isBlank(optionName) || !extensionKeys.containsKey(optionName)) {
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new HashSet<>();
-        PhpClass phpClass = extensionKeys.get(value).getFormClass().getPhpClass();
-
-        // Symfony <= 2.7 and > 2.7 api level search
-        for (String methodName : FORM_OPTION_METHODS) {
-            Method method = phpClass.findMethodByName(methodName);
-            if(method == null) {
-                continue;
-            }
-
-             ContainerUtil.addIfNotNull(
-                 psiElements,
-                 PhpElementsUtil.findArrayKeyValueInsideReference(method, "setDefaults", value)
-             );
-        }
-
-        return psiElements;
+        return extensionKeys.get(optionName).getPsiTargets();
     }
 
     public static Collection<LookupElement> getFormExtensionKeysLookupElements(Project project, String... formTypes) {

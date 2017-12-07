@@ -243,7 +243,7 @@ public class FormUtil {
             return map;
         }
 
-        /**
+        /*
          * <services>
          *   <service id="espend_form.foo_type" class="%espend_form.foo_type.class%">
          *     <tag name="form.type" alias="foo_type_alias" />
@@ -334,7 +334,7 @@ public class FormUtil {
         private final Map<String, FormTypeClass> formTypesMap;
         private final Project project;
 
-        public FormTypeCollector(Project project) {
+        FormTypeCollector(Project project) {
             this.project = project;
             this.formTypesMap = new HashMap<>();
         }
@@ -352,16 +352,6 @@ public class FormUtil {
             }
 
             return this;
-        }
-
-        @Nullable
-        public FormTypeClass getFormType(String formTypeName) {
-
-            if(this.formTypesMap.containsKey(formTypeName)) {
-                return this.formTypesMap.get(formTypeName);
-            }
-
-            return null;
         }
 
         @Nullable
@@ -410,7 +400,6 @@ public class FormUtil {
         public Map<String, FormTypeClass> getFormTypesMap() {
             return formTypesMap;
         }
-
     }
 
     /**
@@ -532,6 +521,7 @@ public class FormUtil {
                         }
                     }
                 }
+
                 continue;
             }
 
@@ -575,5 +565,22 @@ public class FormUtil {
         }
 
         return types;
+    }
+
+    /**
+     * Find form php class scope: FormType or FormExtension
+     */
+    @Nullable
+    public static String getFormTypeClassFromScope(@NotNull PsiElement psiElement) {
+        Method methodScope = PsiTreeUtil.getParentOfType(psiElement, Method.class);
+
+        if(methodScope != null) {
+            PhpClass phpClass = methodScope.getContainingClass();
+            if(phpClass != null && (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface") || PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormExtensionInterface"))) {
+                return phpClass.getFQN();
+            }
+        }
+
+        return null;
     }
 }

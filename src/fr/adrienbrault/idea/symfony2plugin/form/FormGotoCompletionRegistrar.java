@@ -60,7 +60,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             return new FormBuilderAddGotoCompletionProvider(parent);
         });
 
-        /**
+        /*
          * $options lookup
          * public function createNamedBuilder($name, $type = 'form', $data = null, array $options = array())
          */
@@ -80,11 +80,9 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             return getFormProvider((StringLiteralExpression) parent, methodMatchParameter.getParameters()[1]);
-
         });
 
-
-        /**
+        /*
          * $this->createForm(new FormType(), $entity, array('<foo_key>' => ''));
          * $this->createForm('foo', $entity, array('<foo_key>'));
          */
@@ -229,11 +227,13 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
      * Form options on extension or form type default options
      */
     private static class FormOptionsGotoCompletionProvider extends GotoCompletionProvider {
-
+        @NotNull
         private final String formType;
+
+        @NotNull
         private final Collection<FormOption> options;
 
-        public FormOptionsGotoCompletionProvider(@NotNull PsiElement element, @NotNull String formType, FormOption... options) {
+        FormOptionsGotoCompletionProvider(@NotNull PsiElement element, @NotNull String formType, FormOption... options) {
             super(element);
             this.formType = formType;
             this.options = Arrays.asList(options);
@@ -242,7 +242,6 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
             if(options.contains(FormOption.EXTENSION)) {
@@ -259,7 +258,6 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement psiElement) {
-
             PsiElement element = psiElement.getParent();
             if(!(element instanceof StringLiteralExpression)) {
                 return Collections.emptyList();
@@ -276,7 +274,6 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             return targets;
-
         }
     }
 
@@ -284,8 +281,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
      * All registered form type with their getName() return alias name
      */
     private static class FormBuilderAddGotoCompletionProvider extends GotoCompletionProvider {
-
-        public FormBuilderAddGotoCompletionProvider(PsiElement element) {
+        FormBuilderAddGotoCompletionProvider(PsiElement element) {
             super(element);
         }
 
@@ -298,7 +294,6 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement psiElement) {
-
             PsiElement element = psiElement.getParent();
             if(!(element instanceof StringLiteralExpression)) {
                 return Collections.emptyList();
