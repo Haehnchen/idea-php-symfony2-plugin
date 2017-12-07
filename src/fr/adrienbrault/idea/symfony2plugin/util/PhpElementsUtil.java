@@ -537,33 +537,29 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public PsiElement getArrayKeyValueInsideSignaturePsi(Project project, String signature, String methodName, String keyName) {
-
+    static private PsiElement getArrayKeyValueInsideSignaturePsi(Project project, String signature, String methodName, String keyName) {
         PsiElement psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(project, signature);
+
         if(psiElement == null) {
             return null;
         }
 
         for(MethodReference methodReference: PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class)) {
-
             if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName)) {
                 PsiElement[] parameters = methodReference.getParameters();
                 if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
                     return PhpElementsUtil.getArrayValue((ArrayCreationExpression) parameters[0], keyName);
                 }
-
             }
         }
 
         return null;
     }
 
-
     public static Method[] getImplementedMethods(@NotNull Method method) {
         ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<>());
         return items.toArray(new Method[items.size()]);
     }
-
 
     private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, @NotNull Method method, ArrayList<Method> implementedMethods) {
         if (phpClass == null) {
@@ -1058,33 +1054,6 @@ public class PhpElementsUtil {
     }
 
     /**
-     * "DateTime", DateTime::class
-     */
-    @Nullable
-    public static PhpClass resolvePhpClassOnPsiElement(@NotNull PsiElement psiElement) {
-
-        String dataClass = null;
-        if(psiElement instanceof ClassConstantReference) {
-            PsiElement lastChild = psiElement.getLastChild();
-            // @TODO: FOO::class find PhpElementTyp: toString provides "class"
-            if("class".equals(lastChild.getText())) {
-                PhpExpression classReference = ((ClassConstantReference) psiElement).getClassReference();
-                if(classReference instanceof PhpReference) {
-                    dataClass = ((PhpReference) classReference).getFQN();
-                }
-            }
-        } else {
-            dataClass = getStringValue(psiElement);
-        }
-
-        if(dataClass == null) {
-            return null;
-        }
-
-        return getClassInterface(psiElement.getProject(), dataClass);
-    }
-
-    /**
      * Find first variable declaration in parent scope of a given variable:
      *
      * function() {
@@ -1473,16 +1442,35 @@ public class PhpElementsUtil {
         return new Method[0];
     }
 
+    /**
+     * Get first string value of MethodReference; Not index access allowed!
+     * see getMethodReferenceStringValueParameter for resolving value in detail
+     */
     @Nullable
-    public static String getFirstArgumentStringValue(@NotNull MethodReference e) {
+    public static String getFirstArgumentStringValue(@NotNull MethodReference methodReference) {
         String stringValue = null;
 
-        PsiElement[] parameters = e.getParameters();
+        PsiElement[] parameters = methodReference.getParameters();
         if (parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
             stringValue = ((StringLiteralExpression) parameters[0]).getContents();
         }
 
         return stringValue;
+    }
+
+    /**
+     * Get resolved string value
+     *
+     * $f->foo('index_0', 'index_1');
+     */
+    @Nullable
+    public static String getMethodReferenceStringValueParameter(@NotNull MethodReference methodReference, int parameter) {
+        PsiElement[] parameters = methodReference.getParameters();
+        if (parameters.length > parameter) {
+            return getStringValue(parameters[parameter]);
+        }
+
+        return null;
     }
 
     /**

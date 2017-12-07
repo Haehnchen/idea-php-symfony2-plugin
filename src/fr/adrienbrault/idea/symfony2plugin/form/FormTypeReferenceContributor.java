@@ -18,6 +18,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -160,13 +164,27 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
+                    Collection<String> classes = new ArrayList<>();
+
+                    // $resolver->setDefaults(['data_class' => User::class]);
                     PsiElement className = PhpElementsUtil.getArrayKeyValueInsideSignaturePsi(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "data_class");
-                    if(className == null) {
-                        return new PsiReference[0];
+                    if(className != null) {
+                        String stringValue = PhpElementsUtil.getStringValue(className);
+                        if(stringValue != null) {
+                            classes.add(stringValue);
+                        }
                     }
 
-                    PhpClass phpClass = PhpElementsUtil.resolvePhpClassOnPsiElement(className);
-                    if (phpClass == null) {
+                    // $resolver->setDefault('data_class', User::class);
+                    classes.addAll(FormOptionsUtil.getMethodReferenceStringParameter(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefault", "data_class"));
+
+                    // find first class
+                    PhpClass phpClass = classes.stream()
+                        .map(clazz -> PhpElementsUtil.getClassInterface(psiElement.getProject(), clazz))
+                        .filter(Objects::nonNull).findFirst()
+                        .orElse(null);
+
+                    if(phpClass == null) {
                         return new PsiReference[0];
                     }
 
