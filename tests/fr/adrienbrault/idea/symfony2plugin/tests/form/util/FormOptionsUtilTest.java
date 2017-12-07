@@ -4,6 +4,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClassEnum;
@@ -108,5 +109,14 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         StringLiteralExpression contents = PhpPsiElementFactory.createFromText(getProject(), StringLiteralExpression.class, "<?php 'BarType';");
         Collection<PsiElement> formExtensionsKeysTargets = FormOptionsUtil.getFormExtensionsKeysTargets(contents, "Options\\Bar\\Foobar");
         assertTrue(formExtensionsKeysTargets.size() > 0);
+    }
+
+
+    /**
+     * @see FormOptionsUtil#getMethodReferenceStringParameter
+     */
+    public void testGetMethodReferenceStringParameter() {
+        MethodReference methodReference = PhpPsiElementFactory.createFromText(getProject(), MethodReference.class, "<?php class Foobar { function foo() { $this->bar('test', 'my_value'); } };\n");
+        assertContainsElements(FormOptionsUtil.getMethodReferenceStringParameter(methodReference, new String[] {"foo"}, "bar", "test"), "my_value");
     }
 }

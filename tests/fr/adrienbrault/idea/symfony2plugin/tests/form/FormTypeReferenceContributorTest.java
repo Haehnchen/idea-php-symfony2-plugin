@@ -94,6 +94,24 @@ public class FormTypeReferenceContributorTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testDataClassPropertyCompletionForSetDefault() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "\n" +
+                "class FormType\n" +
+                "{\n" +
+                "    protected $foo = 'DateTime';\n" +
+                "    public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
+                "        $builder->add('<caret>');\n" +
+                "    }\n" +
+                "    public function setDefaultOptions(OptionsResolverInterface $resolver)\n" +
+                "    {\n" +
+                "        $resolver->setDefault('data_class', \\Form\\DataClass\\Model::class);\n" +
+                "    }\n" +
+                "}",
+            "fooBar"
+        );
+    }
+
     public void testDataClassWithPublicPropertyCompletion() {
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "\n" +

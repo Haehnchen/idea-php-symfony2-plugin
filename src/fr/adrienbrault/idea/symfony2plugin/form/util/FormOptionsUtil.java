@@ -426,4 +426,49 @@ public class FormOptionsUtil {
 
         return translationDomain;
     }
+
+    /**
+     * Find methodReferences in scope by its name and method scope and give string value of matching parameter
+     *
+     * $resolver->setDefault('data_class', User::class);
+     */
+    @NotNull
+    public static Collection<String> getMethodReferenceStringParameter(@NotNull PsiElement scope, String[] scopeMethods, @NotNull String methodName, @NotNull String key) {
+        PhpClass phpClass = PsiTreeUtil.getParentOfType(scope, PhpClass.class);
+        if(phpClass == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<String> values = new HashSet<>();
+
+        for (String scopeMethod : scopeMethods) {
+            Method method = phpClass.findMethodByName(scopeMethod);
+
+            if(method == null) {
+                continue;
+            }
+
+            for (MethodReference methodReference : PsiTreeUtil.collectElementsOfType(method, MethodReference.class)) {
+                if(!methodName.equals(methodReference.getName())) {
+                    continue;
+                }
+
+                // our key to find
+                String argument = PhpElementsUtil.getMethodReferenceStringValueParameter(methodReference, 0);
+                if(!key.equals(argument)) {
+                    continue;
+                }
+
+                // resolve value
+                String value = PhpElementsUtil.getMethodReferenceStringValueParameter(methodReference, 1);
+                if(StringUtils.isBlank(value)) {
+                    continue;
+                }
+
+                values.add(value);
+            }
+        }
+
+        return values;
+    }
 }
