@@ -14,11 +14,13 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormDefaultOptionsKeyReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+    @NotNull
+    final private StringLiteralExpression element;
 
-    private StringLiteralExpression element;
-    private String formType;
+    @NotNull
+    final private String formType;
 
-    public FormDefaultOptionsKeyReference(@NotNull StringLiteralExpression element, String formType) {
+    public FormDefaultOptionsKeyReference(@NotNull StringLiteralExpression element, @NotNull String formType) {
         super(element);
         this.element = element;
         this.formType = formType;
@@ -27,8 +29,7 @@ public class FormDefaultOptionsKeyReference extends PsiReferenceBase<PsiElement>
     @Nullable
     @Override
     public PsiElement resolve() {
-
-        Collection<PsiElement> defaultOptionTargets = FormOptionsUtil.getDefaultOptionTargets(element, this.formType);
+        Collection<PsiElement> defaultOptionTargets = FormOptionsUtil.getDefaultOptionTargets(element, formType);
         if(defaultOptionTargets.size() > 0) {
             return defaultOptionTargets.iterator().next();
         }
@@ -40,7 +41,7 @@ public class FormDefaultOptionsKeyReference extends PsiReferenceBase<PsiElement>
     @NotNull
     @Override
     public Object[] getVariants() {
-        return FormOptionsUtil.getDefaultOptionLookupElements(getElement().getProject(), this.formType).toArray();
+        return FormOptionsUtil.getDefaultOptionLookupElements(getElement().getProject(), formType).toArray();
     }
 
 }

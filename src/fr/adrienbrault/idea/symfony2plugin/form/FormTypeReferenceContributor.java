@@ -60,8 +60,8 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     ArrayHashElement arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
                     if(arrayHash != null && arrayHash.getKey() instanceof StringLiteralExpression) {
-
                         ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+
                         if(arrayCreation == null) {
                             return new PsiReference[0];
                         }
@@ -81,8 +81,8 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                         // @TODO: how to handle custom bundle fields like help_block
                         if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline") || keyString.equals("placeholder")) {
-
                             // translation_domain in current array block
+
                             String translationDomain = FormOptionsUtil.getTranslationFromScope(arrayCreation);
                             if(translationDomain == null) {
                                 translationDomain = "messages";
@@ -94,15 +94,11 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         if(keyString.equals("class")) {
                             return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, true)};
                         }
-
                     }
 
                     return new PsiReference[0];
-
                 }
-
             }
-
         );
 
         /*
@@ -115,7 +111,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
                     // match add('foo', 'type name')
                     MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
                         .withSignature(FormUtil.PHP_FORM_BUILDER_SIGNATURES)
@@ -133,11 +128,8 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[]{ new FormTypeReferenceRef((StringLiteralExpression) psiElement) };
-
                 }
-
             }
-
         );
 
         // FormBuilderInterface::add('underscore_method')
@@ -180,9 +172,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[]{new FormUnderscoreMethodReference((StringLiteralExpression) psiElement, phpClass)};
                 }
-
             }
-
         );
 
         // TODO: migrate to FormGotoCompletionRegistrar for better performance as lazy condition
@@ -228,7 +218,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     if(PhpElementsUtil.getCompletableArrayCreationElement(psiElement) != null) {
                         return new PsiReference[]{
-                            new FormExtensionKeyReference((StringLiteralExpression) psiElement),
+                            new FormExtensionKeyReference((StringLiteralExpression) psiElement, FormUtil.getFormTypeClassFromScope(psiElement)),
                             new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "form"),
                             new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"),
                         };
@@ -248,8 +238,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-
                     MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
                         .withSignature("\\Symfony\\Component\\Form\\FormInterface", "get")
                         .withSignature("\\Symfony\\Component\\Form\\FormInterface", "has")
@@ -268,23 +256,20 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         new FormFieldNameReference((StringLiteralExpression) psiElement, method)
                     };
                 }
-
             }
-
         );
 
-        /**
+        /*
          * $options
          * public function buildForm(FormBuilderInterface $builder, array $options) {
          *   $options['foo']
          * }
          *
          * public function setDefaultOptions(OptionsResolverInterface $resolver) {
-         *   $resolver->setDefaults(array(
+         *   $resolver->setDefaults([
          *    'foo' => 'bar',
-         * ));
-         }
-
+         * ]);
+         * }
          */
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class),
@@ -334,21 +319,15 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[]{
-                        new FormExtensionKeyReference((StringLiteralExpression) psiElement),
+                        new FormExtensionKeyReference((StringLiteralExpression) psiElement, FormUtil.getFormTypeClassFromScope(psiElement)),
                         new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN())
                     };
-
                 }
-
             }
-
         );
-
-
     }
 
     private static class FormTypeReferenceRef extends FormTypeReference {
-
         public FormTypeReferenceRef(@NotNull StringLiteralExpression element) {
             super(element);
         }
@@ -358,6 +337,5 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
         public Object[] getVariants() {
             return new Object[0];
         }
-
     }
 }
