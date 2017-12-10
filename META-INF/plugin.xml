@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.15.160</version>
+    <version>0.15.161</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,11 +101,10 @@
 <![CDATA[
 
 <ul>
-    <li>Support donenv type cast syntax <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1080">#1080</a></li>
-    <li>Support finalized Symfony 3.4 ControllerTrait shortcuts</li>
-    <li>Provide add better "app" folder detection and add more tests for</li>
-    <li>Support absolute path in Twig templates; optimize path resolving</li>
-    <li>Add _fragment route parameter as always available <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1086">#1086</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1071">#1071</a> @cedricziel</li>
+    <li>Allow path navigation for Twig templates in all php related navigation handler <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076">#1076</a></li>
+    <li>Fix translation auto-complete not working in Symfony Flex directory structure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1096">#1096</a></li>
+    <li>Refactoring form component to support more usages like extension navigation and self inheritance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1098">#1098</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/695">#695</a></li>
+    <li>[Form] Calling setDefault for data class does not associates form with binded class <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1048">#1048</a></li>
 </ul>
 
 <br/>

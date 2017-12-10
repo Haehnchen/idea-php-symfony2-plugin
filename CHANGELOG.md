@@ -10,6 +10,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.15.161
+* Allow path navigation for Twig templates in all php related navigation handler [#1076](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076)
+* Fix translation auto-complete not working in Symfony Flex directory structure [#1096](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1096)
+* Refactoring form component to support more usages like extension navigation and self inheritance [#1098](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1098) [#695](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/695)
+* [Form] Calling setDefault for data class does not associates form with binded class [#1048](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1048)
+
 ## 0.15.160
 * Support donenv type cast syntax [#1080](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1080)
 * Support finalized Symfony 3.4 ControllerTrait shortcuts
