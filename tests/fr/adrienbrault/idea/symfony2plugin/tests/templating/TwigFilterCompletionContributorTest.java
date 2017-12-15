@@ -5,6 +5,7 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getAfterIsTokenPattern
+     * @see TwigHelper#getAfterIsTokenPattern
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
      */
     public void testSimpleTestExtension() {
@@ -66,7 +67,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getAfterOperatorPattern
+     * @see TwigHelper#getAfterOperatorPattern
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
      */
     public void testOperatorExtension() {

@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.translation;
 
 import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -8,7 +9,7 @@ import com.jetbrains.twig.TwigFileType;
 public class TwigTranslationNavigationTest extends TwigTranslationFixturesTestCase {
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTransDefaultDomainPattern
+     * @see TwigHelper#getTransDefaultDomainPattern
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
      */
     public void testTwigTransDefaultDomainDomainNavigation() {
@@ -18,7 +19,7 @@ public class TwigTranslationNavigationTest extends TwigTranslationFixturesTestCa
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getTranslationTokenTagFromPattern
+     * @see TwigHelper#getTranslationTokenTagFromPattern
      */
     public void testTranslationTokenTagFromCompletionNavigation() {
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% trans from \"inter<caret>change\" %}", "interchange.en.xlf");

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests;
+package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiFile;
@@ -8,14 +8,13 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -28,8 +27,8 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getIncludeTagStrings
- * @see fr.adrienbrault.idea.symfony2plugin.TwigHelper#getBlocksInFile
+ * @see TwigHelper#getIncludeTagStrings
+ * @see TwigHelper#getBlocksInFile
  */
 public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testSingleExtends() {

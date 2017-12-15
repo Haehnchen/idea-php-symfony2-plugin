@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement;
 import de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator;
 import de.espend.idea.php.toolbox.navigation.locator.TargetLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
