@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  */
 public class TranslationPlaceholderGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {{ 'symfony.great'|trans({'fo<caret>f'}, 'symfony')) }}
         registrar.register(
             TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("trans"),

@@ -23,7 +23,7 @@ import java.util.Collections;
 public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         registrar.register(XmlPatterns.psiElement().withParent(PlatformPatterns.or(
             DoctrineMetadataPattern.getXmlModelClass(),

@@ -157,10 +157,6 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         return getRelatedPopover("Overwrites", "Overwrite", twigFile, gotoRelatedItems, Symfony2Icons.TWIG_LINE_OVERWRITE);
     }
 
-    private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems) {
-        return getRelatedPopover(singleItemTitle, singleItemTooltipPrefix, lineMarkerTarget, gotoRelatedItems, PhpIcons.IMPLEMENTED);
-    }
-
     private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems, Icon icon) {
 
         // single item has no popup
@@ -195,8 +191,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
 
-        return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems);
-
+        return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems, PhpIcons.IMPLEMENTED);
     }
 
     @Nullable

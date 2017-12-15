@@ -32,7 +32,7 @@ import java.util.*;
 public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // <field type="string" />
         registrar.register(

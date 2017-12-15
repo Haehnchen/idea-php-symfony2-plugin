@@ -1,18 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.templating.FilterGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.FilterCompletionRegistrar
+ * @see FilterGotoCompletionRegistrar
  */
-public class FilterCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class FilterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.copyFileToProject("FilterCompletionRegistrarTest.php");
+        myFixture.copyFileToProject("FilterGotoCompletionRegistrarTest.php");
     }
 
     public String getTestDataPath() {

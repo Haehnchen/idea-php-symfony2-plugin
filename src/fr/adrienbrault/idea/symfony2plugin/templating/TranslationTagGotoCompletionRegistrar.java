@@ -23,11 +23,14 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
+  * {% trans from "app" %}<caret>{% endtrans %}
+ *  {% trans_default_domain "app" %}{% trans %}<caret>{% endtrans %}
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TranslationTagCompletionRegistrar implements GotoCompletionRegistrar {
+public class TranslationTagGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {% trans from "app" %}<caret>{% endtrans %}
         registrar.register(
             getTranslationTagValuePattern(), psiElement -> {

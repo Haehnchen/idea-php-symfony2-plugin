@@ -19,7 +19,7 @@ import org.jetbrains.yaml.psi.YAMLMapping;
 public class YamlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // defaults:
         //   route: <caret>
         registrar.register(

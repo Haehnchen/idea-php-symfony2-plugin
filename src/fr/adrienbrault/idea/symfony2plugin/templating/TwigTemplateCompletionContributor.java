@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
 public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     public TwigTemplateCompletionContributor() {
-
         extend(CompletionType.BASIC, PlatformPatterns.or(
             TwigHelper.getTemplateFileReferenceTagPattern(),
             TwigHelper.getTagTernaryPattern(TwigElementTypes.EXTENDS_TAG)
@@ -76,10 +75,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getTranslationPattern("trans", "transchoice"),
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
@@ -88,10 +84,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     String domainName =  TwigUtil.getPsiElementTranslationDomain(psiElement);
 
                     resultSet.addAllElements(TranslationUtil.getTranslationLookupElementsOnDomain(psiElement.getProject(), domainName));
-
                 }
             }
-
         );
 
         // provides support for 'a'|trans({'%foo%' : bar|default}, '<xxx>')
@@ -100,10 +94,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getTransDomainPattern(),
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
@@ -115,12 +106,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     resultSet.addAllElements(
                         TranslationUtil.getTranslationDomainLookupElements(parameters.getPosition().getProject())
                     );
-
                 }
-
-
             }
-
         );
 
         // provides support for {% block |
@@ -132,9 +119,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             TwigHelper.getTemplateImportFileReferenceTagPattern(),
 
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
@@ -188,9 +173,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getCompletablePattern(),
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
@@ -230,7 +213,6 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
                 }
             }
-
         );
 
         // {% for user in "users" %}
@@ -238,10 +220,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getVariableTypePattern(),
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
@@ -254,10 +233,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue().getTypes())).withIcon(PhpIcons.CLASS));
                     }
-
                 }
             }
-
         );
 
         // {% trans_default_domain <> %}
@@ -290,16 +267,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new AssetDirectoryReader().setFilterExtension(TwigHelper.JS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
-
         // routing completion like path() function
         extend(
             CompletionType.BASIC,
             TwigHelper.getAutocompletableRoutePattern(),
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
@@ -378,10 +351,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigHelper.getPrintBlockOrTagFunctionPattern("constant"),
             new CompletionProvider<CompletionParameters>() {
-                public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
-                                           @NotNull CompletionResultSet resultSet) {
-
+                public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     PsiElement position = parameters.getPosition();
                     if(!Symfony2ProjectComponent.isEnabled(position)) {
                         return;
@@ -410,10 +380,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     }
 
     private static class FilterCompletionProvider extends CompletionProvider<CompletionParameters> {
-        public void addCompletions(@NotNull CompletionParameters parameters,
-                                   ProcessingContext context,
-                                   @NotNull CompletionResultSet resultSet) {
-
+        public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
             if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                 return;
             }
@@ -428,14 +395,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     resultSet.addElement(new TwigExtensionLookupElement(currElement.getProject(), entry.getKey(), entry.getValue()));
                 }
             }
-
         }
-
     }
 
     /**
-     * Parse all classes that implements Twig_TokenParserInterface::getTag
-     * and provide completion on string
+     * Parse all classes that implements Twig_TokenParserInterface::getTag and provide completion on string
      */
     private static class TagTokenParserCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
@@ -475,9 +439,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     }
 
     private static class TwigSimpleTestParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
-
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-
             PsiElement position = parameters.getPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
                 return;
@@ -491,9 +453,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     }
 
     private static class TwigOperatorCompletionProvider extends CompletionProvider<CompletionParameters> {
-
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-
             PsiElement position = parameters.getPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
                 return;
@@ -503,15 +463,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             for (Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(project).getOperators().entrySet()) {
                 resultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
             }
-
         }
     }
 
     private class FormThemeCompletionProvider extends CompletionProvider<CompletionParameters> {
-
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-
             PsiElement psiElement = parameters.getOriginalPosition();
 
             if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
@@ -519,15 +476,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             resultSet.addAllElements(TwigHelper.getTwigLookupElements(parameters.getPosition().getProject()));
-
         }
     }
 
     private class TypeCompletionProvider extends CompletionProvider<CompletionParameters> {
-
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet resultSet) {
-
             PsiElement psiElement = parameters.getOriginalPosition();
             if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
@@ -550,23 +504,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             resultSet.addElement(new PhpTwigMethodLookupElement(field));
                         }
                     }
-
                 }
 
                 if(twigTypeContainer.getStringElement() != null) {
                     resultSet.addElement(LookupElementBuilder.create(twigTypeContainer.getStringElement()));
                 }
             }
-
         }
-
     }
 
     private class PathParameterCompletionProvider extends CompletionProvider<CompletionParameters> {
-
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext paramProcessingContext, @NotNull CompletionResultSet paramCompletionResultSet) {
-
             PsiElement psiElement = parameters.getOriginalPosition();
             if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;

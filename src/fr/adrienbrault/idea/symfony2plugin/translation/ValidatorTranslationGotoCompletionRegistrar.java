@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationGotoCo
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpPsiMatcher;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -21,7 +22,7 @@ public class ValidatorTranslationGotoCompletionRegistrar implements GotoCompleti
     );
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // new Constraint(['message' => '<caret>'])
         registrar.register(
             PhpPsiMatcher.ArrayValueWithKeyAndNewExpression.pattern(), psiElement -> {

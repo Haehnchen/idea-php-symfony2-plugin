@@ -26,7 +26,7 @@ import java.util.*;
  */
 public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {% is_granted('foobar') %}
         // {% is_granted({'foobar'}) %}
         // {% is_granted(['foobar']) %}

@@ -39,7 +39,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"
     };
 
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         registrar.register(
             PlatformPatterns.psiElement().withLanguage(PhpLanguage.INSTANCE),
             new FormOptionBuilderCompletionContributor()

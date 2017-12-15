@@ -22,8 +22,8 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FilterCompletionRegistrar implements GotoCompletionRegistrar {
-    public void register(GotoCompletionRegistrarParameter registrar) {
+public class FilterGotoCompletionRegistrar implements GotoCompletionRegistrar {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {% trans foo<caret>bar %}
         registrar.register(TwigHelper.getFilterTagPattern(), psiElement -> {
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {

@@ -29,7 +29,7 @@ public class ConsoleHelperGotoCompletionRegistrar implements GotoCompletionRegis
     };
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
             PsiElement context = psiElement.getContext();
             if (!(context instanceof StringLiteralExpression)) {

@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // table name completion on method eg:
         // Doctrine\DBAL\Connection::insert

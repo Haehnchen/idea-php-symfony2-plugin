@@ -1369,6 +1369,7 @@ public class TwigHelper {
             PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
         };
 
+        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(

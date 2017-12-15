@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // <import resource="config_foo.xml"/>
         registrar.register(
             XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()),

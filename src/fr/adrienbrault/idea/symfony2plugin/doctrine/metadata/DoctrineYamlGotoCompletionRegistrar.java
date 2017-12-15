@@ -22,7 +22,7 @@ import java.util.Collections;
  */
 public class DoctrineYamlGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         registrar.register(PlatformPatterns.or(
             YamlElementPatternHelper.getOrmSingleLineScalarKey("repositoryClass")
         ), ClassGotoCompletionProvider::new);

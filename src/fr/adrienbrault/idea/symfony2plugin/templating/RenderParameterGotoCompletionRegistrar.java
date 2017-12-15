@@ -40,7 +40,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
     ));
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         registrar.register(
             PlatformPatterns.psiElement().withParent(StringLiteralExpression.class),
             MyTemplateVariablesGotoCompletionProvider::new

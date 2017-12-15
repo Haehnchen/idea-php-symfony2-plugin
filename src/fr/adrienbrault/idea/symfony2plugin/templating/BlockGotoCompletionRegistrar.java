@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
+public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // {{ block('foo_block') }}
         registrar.register(TwigHelper.getPrintBlockFunctionPattern("block"), psiElement -> {
@@ -77,6 +77,5 @@ public class BlockCompletionRegistrar implements GotoCompletionRegistrar {
 
             return lookupElements;
         }
-
     }
 }

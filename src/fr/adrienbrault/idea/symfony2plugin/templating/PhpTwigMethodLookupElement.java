@@ -46,5 +46,4 @@ public class PhpTwigMethodLookupElement extends PhpLookupElement {
 
         return lookupString;
     }
-
 }
