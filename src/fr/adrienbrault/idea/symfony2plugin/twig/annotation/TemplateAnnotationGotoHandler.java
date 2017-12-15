@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
+package fr.adrienbrault.idea.symfony2plugin.twig.annotation;
 
 import com.intellij.psi.PsiElement;
 import de.espend.idea.php.annotation.extension.PhpAnnotationDocTagGotoHandler;

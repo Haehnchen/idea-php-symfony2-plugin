@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
+package fr.adrienbrault.idea.symfony2plugin.twig.annotation;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
