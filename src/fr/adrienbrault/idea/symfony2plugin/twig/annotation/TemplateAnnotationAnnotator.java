@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
+package fr.adrienbrault.idea.symfony2plugin.twig.annotation;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -9,7 +9,6 @@ import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import de.espend.idea.php.annotation.extension.PhpAnnotationDocTagAnnotator;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -29,7 +28,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
     public void annotate(PhpAnnotationDocTagAnnotatorParameter parameter) {
 
         if(!Symfony2ProjectComponent.isEnabled(parameter.getProject()) ||
-           !PhpElementsUtil.isEqualClassName(parameter.getAnnotationClass(), TwigHelper.TEMPLATE_ANNOTATION_CLASS))
+           !PhpElementsUtil.isEqualClassName(parameter.getAnnotationClass(), TwigUtil.TEMPLATE_ANNOTATION_CLASS))
         {
             return;
         }
@@ -69,7 +68,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
         }
 
         for (String templateName : templateNames) {
-            if (TwigHelper.getTemplatePsiElements(parameter.getProject(), templateName).length > 0) {
+            if (TwigUtil.getTemplatePsiElements(parameter.getProject(), templateName).length > 0) {
                 return;
             }
         }

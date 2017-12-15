@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,8 +24,8 @@ public class TwigPathServiceParserTest extends Assert {
         assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bundle\\FrameworkBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(0).getPath());
         assertEquals("vendor\\foo\\bar\\FooBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(1).getPath());
 
-        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bridge\\Twig/Resources/views/Form", parser.getTwigPathIndex().getNamespacePaths(TwigPathIndex.MAIN).get(0).getPath());
-        assertEquals("app/Resources/views", parser.getTwigPathIndex().getNamespacePaths(TwigPathIndex.MAIN).get(1).getPath());
+        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bridge\\Twig/Resources/views/Form", parser.getTwigPathIndex().getNamespacePaths(TwigUtil.MAIN).get(0).getPath());
+        assertEquals("app/Resources/views", parser.getTwigPathIndex().getNamespacePaths(TwigUtil.MAIN).get(1).getPath());
 
     }
 

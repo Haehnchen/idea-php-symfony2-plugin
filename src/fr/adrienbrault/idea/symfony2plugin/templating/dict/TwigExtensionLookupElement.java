@@ -22,12 +22,16 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigExtensionLookupElement extends LookupElement {
-
+    @NotNull
     final private TwigExtension twigExtension;
+
+    @NotNull
     final private String name;
+
+    @NotNull
     final private Project project;
 
-    public TwigExtensionLookupElement(Project project, String name, TwigExtension twigExtension) {
+    public TwigExtensionLookupElement(@NotNull Project project, @NotNull String name, @NotNull TwigExtension twigExtension) {
         this.project = project;
         this.name = name;
         this.twigExtension = twigExtension;
@@ -59,7 +63,7 @@ public class TwigExtensionLookupElement extends LookupElement {
         presentation.setTypeGrayed(true);
     }
 
-    private void buildTailText(LookupElementPresentation presentation) {
+    private void buildTailText(@NotNull LookupElementPresentation presentation) {
         if(this.twigExtension.getTwigExtensionType() == TwigExtensionParser.TwigExtensionType.SIMPLE_TEST) {
             return;
         }

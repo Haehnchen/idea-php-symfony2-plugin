@@ -7,7 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 import java.util.Arrays;
@@ -27,7 +27,7 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true)
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true)
         ));
 
         List<TwigBlock> walk = new TwigBlockParser(true).visit(new PsiFile[] {psiFile});
@@ -46,7 +46,7 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true)
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true)
         ));
 
         List<TwigBlock> walk = new TwigBlockParser().visit(new PsiFile[] {psiFile});
@@ -65,7 +65,7 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(file);
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true)
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true)
         ));
 
         List<TwigBlock> walk = new TwigBlockParser(true).walk(psiFile);

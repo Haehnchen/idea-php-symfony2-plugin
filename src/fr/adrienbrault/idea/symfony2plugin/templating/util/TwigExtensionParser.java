@@ -404,13 +404,15 @@ public class TwigExtensionParser  {
                             signature = getCallableSignature(psiElement[1], method);
                         }
 
-                        TwigExtension twigExtension = new TwigExtension(TwigExtensionType.FILTER, signature);
-
+                        // creation options like: needs_environment
+                        Map<String, String> options;
                         if(psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression) {
-                            decorateOptions((ArrayCreationExpression) psiElement[2], twigExtension);
+                            options = getOptions((ArrayCreationExpression) psiElement[2]);
+                        } else {
+                            options = new HashMap<>();
                         }
 
-                        filters.put(funcName, twigExtension);
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, options));
                     }
                 }
 
@@ -474,16 +476,20 @@ public class TwigExtensionParser  {
     /**
      * Add needs_environment, needs_context values to twig extension object
      */
-    private static void decorateOptions(@NotNull ArrayCreationExpression arrayCreationExpression, @NotNull TwigExtension twigExtension) {
+    static private Map<String, String> getOptions(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        Map<String, String> options = new HashMap<>();
+
         for(String optionTrue: new String[] {"needs_environment", "needs_context"}) {
             PhpPsiElement phpPsiElement = PhpElementsUtil.getArrayValue(arrayCreationExpression, optionTrue);
             if(phpPsiElement instanceof ConstantReference) {
                 String value = phpPsiElement.getName();
                 if(value != null && value.toLowerCase().equals("true")) {
-                    twigExtension.putOption(optionTrue, "true");
+                    options.put(optionTrue, "true");
                 }
             }
         }
+
+        return options;
     }
 
     private static class TwigFunctionVisitor extends PsiRecursiveElementWalkingVisitor {
@@ -524,12 +530,15 @@ public class TwigExtensionParser  {
                             signature = getCallableSignature(psiElement[1], method);
                         }
 
-                        TwigExtension twigExtension = new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, signature);
+                        // creation options like: needs_environment
+                        Map<String, String> options;
                         if(psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression) {
-                            decorateOptions((ArrayCreationExpression) psiElement[2], twigExtension);
+                            options = getOptions((ArrayCreationExpression) psiElement[2]);
+                        } else {
+                            options = new HashMap<>();
                         }
 
-                        filters.put(funcName, twigExtension);
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, signature, options));
                     }
                 }
 

@@ -9,7 +9,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -23,11 +22,14 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
+  * {% trans from "app" %}<caret>{% endtrans %}
+ *  {% trans_default_domain "app" %}{% trans %}<caret>{% endtrans %}
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TranslationTagCompletionRegistrar implements GotoCompletionRegistrar {
+public class TranslationTagGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {% trans from "app" %}<caret>{% endtrans %}
         registrar.register(
             getTranslationTagValuePattern(), psiElement -> {
@@ -36,7 +38,7 @@ public class TranslationTagCompletionRegistrar implements GotoCompletionRegistra
                     return null;
                 }
 
-                String domain = TwigHelper.getDomainFromTranslationTag(element);
+                String domain = TwigUtil.getDomainFromTranslationTag(element);
                 if(domain == null) {
                     domain = TwigUtil.getTransDefaultDomainOnScope(element);
                 }

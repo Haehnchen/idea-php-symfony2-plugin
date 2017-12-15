@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
+package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -9,9 +9,9 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -31,12 +31,12 @@ import java.util.Map;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollector {
 
     private static final Key<CachedValue<Map<String, PsiVariable>>> CACHE = new Key<>("TWIG_CONFIGURATION_GLOBALS");
 
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
+    public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
         variables.putAll(getGlobals(parameter.getProject()));
     }
 
@@ -64,7 +64,7 @@ public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollec
                 continue;
             }
 
-            for (Map.Entry<String, String> entry : TwigHelper.getTwigGlobalsFromYamlConfig((YAMLFile) file).entrySet()) {
+            for (Map.Entry<String, String> entry : TwigUtil.getTwigGlobalsFromYamlConfig((YAMLFile) file).entrySet()) {
                 String value = entry.getValue();
 
                 String serviceClass = ContainerCollectionResolver.resolveService(

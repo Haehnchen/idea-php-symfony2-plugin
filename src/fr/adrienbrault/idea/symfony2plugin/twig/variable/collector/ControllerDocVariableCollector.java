@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
+package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
 
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiFile;
@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,13 +21,13 @@ import java.util.regex.Pattern;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ControllerDocVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class ControllerDocVariableCollector implements TwigFileVariableCollector {
 
     public static String DOC_PATTERN  = "\\{#[\\s]+@[C|c]ontroller[\\s]+([\\w\\\\\\[\\]:]+)[\\s]+#}";
     public static String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@[C|c]ontroller[\\s]+.*#}";
 
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
+    public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
 
         PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile)) {
@@ -61,10 +62,5 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
         }
 
         return controller;
-    }
-
-    @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
-
     }
 }

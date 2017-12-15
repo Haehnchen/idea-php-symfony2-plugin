@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Map;
@@ -19,7 +20,7 @@ import java.util.Set;
  */
 public class MarcoScopeVariableCollector implements TwigFileVariableCollector {
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
+    public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
         ASTNode macroStatement = TreeUtil.findParent(parameter.getElement().getNode(), TwigElementTypes.MACRO_STATEMENT);
         if(macroStatement == null) {
             return;

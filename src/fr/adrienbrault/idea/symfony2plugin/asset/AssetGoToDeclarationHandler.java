@@ -7,7 +7,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +34,7 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         List<PsiElement> psiElements = new ArrayList<>();
-        for (VirtualFile virtualFile : TwigHelper.resolveAssetsFiles(psiElement.getProject(), psiElement.getText(), fileExtensionFilterIfValidTag)) {
+        for (VirtualFile virtualFile : TwigUtil.resolveAssetsFiles(psiElement.getProject(), psiElement.getText(), fileExtensionFilterIfValidTag)) {
             psiElements.add(PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile));
         }
 
@@ -49,8 +50,8 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         // asset / absolute_url dont have pre filter
-        if(TwigHelper.getPrintBlockOrTagFunctionPattern("asset", "absolute_url").accepts(psiElement)) {
-            return (String[]) ArrayUtils.addAll(TwigHelper.CSS_FILES_EXTENSIONS, TwigHelper.JS_FILES_EXTENSIONS);
+        if(TwigPattern.getPrintBlockOrTagFunctionPattern("asset", "absolute_url").accepts(psiElement)) {
+            return (String[]) ArrayUtils.addAll(TwigUtil.CSS_FILES_EXTENSIONS, TwigUtil.JS_FILES_EXTENSIONS);
         }
 
         return null;
@@ -59,15 +60,15 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
     @Nullable
     private String[] getFileExtensionFilterIfValidTag(PsiElement psiElement) {
         for (String tag: new String[] {"stylesheets", "javascripts"}) {
-            if (!TwigHelper.getAutocompletableAssetTag(tag).accepts(psiElement)) {
+            if (!TwigPattern.getAutocompletableAssetTag(tag).accepts(psiElement)) {
                 continue;
             }
 
             switch (tag) {
                 case "stylesheets":
-                    return TwigHelper.CSS_FILES_EXTENSIONS;
+                    return TwigUtil.CSS_FILES_EXTENSIONS;
                 case "javascripts":
-                    return TwigHelper.JS_FILES_EXTENSIONS;
+                    return TwigUtil.JS_FILES_EXTENSIONS;
                 default:
                     return null;
             }

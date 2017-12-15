@@ -27,7 +27,7 @@ import java.util.Map;
 public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // getParameter('FOO')
         registrar.register(

@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -17,9 +16,10 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -34,12 +34,11 @@ import java.util.regex.Pattern;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class IncludeVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class IncludeVariableCollector implements TwigFileVariableCollector {
 
     @Override
-    public void collectVars(final TwigFileVariableCollectorParameter parameter, final Map<String, PsiVariable> variables) {
-
-        final PsiFile psiFile = parameter.getElement().getContainingFile();
+    public void collectPsiVariables(@NotNull final TwigFileVariableCollectorParameter parameter, @NotNull final Map<String, PsiVariable> variables) {
+        PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile) || PsiTreeUtil.getChildOfType(psiFile, TwigExtendsTag.class) != null) {
             return;
         }
@@ -50,7 +49,6 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         }
 
         for(VirtualFile virtualFile: files) {
-
             PsiFile twigFile = PsiManager.getInstance(parameter.getProject()).findFile(virtualFile);
             if(!(twigFile instanceof TwigFile)) {
                 continue;
@@ -58,7 +56,6 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
             twigFile.acceptChildren(new MyPsiRecursiveElementWalkingVisitor(psiFile, variables, parameter));
         }
-
     }
 
     private void collectIncludeContextVars(IElementType iElementType, PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
@@ -71,7 +68,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
             // {% include 'template.html' with {'foo': 'bar'} only %}
             // {% embed "template.html.twig" with {'foo': 'bar'} only %}
 
-            PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
+            PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigPattern.getIncludeOnlyPattern());
             if(onlyElement != null) {
                 addContextVar = false;
             }
@@ -135,10 +132,10 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                 }
             }
         }
-
     }
 
-    public static Map<String, String> getIncludeWithVarNames(String includeText) {
+    @NotNull
+    private static Map<String, String> getIncludeWithVarNames(String includeText) {
 
         String regex = "with\\s*\\{\\s*(.*[^%])\\}\\s*";
         Matcher matcher = Pattern.compile(regex).matcher(includeText.replace("\r\n", " ").replace("\n", " "));
@@ -151,7 +148,8 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         return new HashMap<>();
     }
 
-    private static Map<String, String> getVariableAliasMap(String jsonLike) {
+    @NotNull
+    private static Map<String, String> getVariableAliasMap(@NotNull String jsonLike) {
         Map<String, String> map = new HashMap<>();
 
         String[] parts = jsonLike.replaceAll("^\\{|\\}$","").split("\"?(:|,)(?![^\\{]*\\})\"?");
@@ -165,13 +163,13 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
+    public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
     }
 
     private Collection<VirtualFile> getImplements(TwigFile twigFile) {
         final Set<VirtualFile> targets = new HashSet<>();
 
-        for(String templateName: TwigHelper.getTemplateNamesForFile(twigFile)) {
+        for(String templateName: TwigUtil.getTemplateNamesForFile(twigFile)) {
             FileBasedIndex.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
                 targets.add(virtualFile);
                 return true;
@@ -191,7 +189,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         @NotNull
         private final TwigFileVariableCollectorParameter parameter;
 
-        private MyPsiRecursiveElementWalkingVisitor(@NotNull PsiFile psiFile, Map<String, PsiVariable> variables, @NotNull TwigFileVariableCollectorParameter parameter) {
+        private MyPsiRecursiveElementWalkingVisitor(@NotNull PsiFile psiFile, @NotNull Map<String, PsiVariable> variables, @NotNull TwigFileVariableCollectorParameter parameter) {
             this.psiFile = psiFile;
             this.variables = variables;
             this.parameter = parameter;
@@ -202,7 +200,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
             // {% include 'template.html' %}
             if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getTemplateFileReferenceTagPattern("include"));
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getTemplateFileReferenceTagPattern("include"));
                 if(includeTag != null) {
                     collectContextVars(TwigElementTypes.INCLUDE_TAG, element, includeTag);
                 }
@@ -210,13 +208,13 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
             if(element instanceof TwigCompositeElement) {
                 // {{ include('template.html') }}
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getPrintBlockFunctionPattern("include"));
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getPrintBlockFunctionPattern("include"));
                 if(includeTag != null) {
                     collectContextVars(TwigTokenTypes.IDENTIFIER, element, includeTag);
                 }
 
                 // {% embed "foo.html.twig"
-                PsiElement embedTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getEmbedPattern());
+                PsiElement embedTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getEmbedPattern());
                 if(embedTag != null) {
                     collectContextVars(TwigElementTypes.EMBED_TAG, element, embedTag);
                 }
@@ -226,17 +224,15 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         }
 
         private void collectContextVars(IElementType iElementType, @NotNull PsiElement element, @NotNull PsiElement includeTag) {
-
             String templateName = includeTag.getText();
+
             if(StringUtils.isNotBlank(templateName)) {
-                for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
+                for(PsiFile templateFile: TwigUtil.getTemplatePsiElements(element.getProject(), templateName)) {
                     if(templateFile.equals(psiFile)) {
                         collectIncludeContextVars(iElementType, element, includeTag, variables, parameter.getVisitedFiles());
                     }
                 }
-
             }
-
         }
     }
 }

@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -26,7 +26,7 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(PsiElement element) {
-                if(TwigHelper.getAutocompletableAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+                if(TwigPattern.getAutocompletableAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                     invoke(element, holder);
                 }
 
@@ -36,7 +36,7 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
     }
 
     private void invoke(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
-        for (final AssetFile assetFile : new AssetDirectoryReader().setProject(element.getProject()).getAssetFiles()) {
+        for (final AssetFile assetFile : new AssetDirectoryReader().getAssetFiles(element.getProject())) {
             if(assetFile.toString().equals(element.getText())) {
                 return;
             }

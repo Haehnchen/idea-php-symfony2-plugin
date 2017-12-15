@@ -176,10 +176,6 @@
                              nonDefaultProject="true"
         />
 
-        <!--
-        <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigFileIconProvider" />
-        -->
-
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor"/>
@@ -565,9 +561,9 @@
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
 
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.FilterCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.TranslationTagCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.FilterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.TranslationTagGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpEventDispatcherGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.command.PhpCommandGotoCompletionRegistrar"/>
@@ -597,13 +593,13 @@
 
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.GlobalExtensionVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ServiceContainerVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ServiceContainerGlobalVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.GlobalTwigConfigVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>
@@ -616,12 +612,12 @@
     <depends optional="true" config-file="deployment-aware.xml">com.jetbrains.plugins.webDeployment</depends>
 
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
-        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationReferences"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyAnnotationReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationReferencedColumnReferences"/>
-        <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator"/>
-        <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationGotoHandler"/>
+        <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator"/>
+        <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationGotoHandler"/>
     </extensions>
 
     <extensions defaultExtensionNs="de.espend.idea.php.toolbox.extension">
@@ -671,7 +667,7 @@
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <action id="Symfony.TwigTranslationGenerator" class="fr.adrienbrault.idea.symfony2plugin.templating.TwigTranslationGeneratorAction" text="Translation" icon="SymfonyIcons.Translation">
+        <action id="Symfony.TwigTranslationGenerator" class="fr.adrienbrault.idea.symfony2plugin.twig.action.TwigTranslationGeneratorAction" text="Translation" icon="SymfonyIcons.Translation">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 

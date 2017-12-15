@@ -17,7 +17,6 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.completion.DecoratedServiceCompletionProvider;
@@ -26,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // <import resource="config_foo.xml"/>
         registrar.register(
             XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()),
@@ -313,7 +313,7 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                     }
 
                     return Arrays.asList(
-                        TwigHelper.getTemplatePsiElements(getElement().getProject(), xmlAttributeValue)
+                        TwigUtil.getTemplatePsiElements(getElement().getProject(), xmlAttributeValue)
                     );
                 }
             };

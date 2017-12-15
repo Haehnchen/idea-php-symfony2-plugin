@@ -37,7 +37,7 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
      * ');
      *
      */
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
             PsiElement parent = psiElement.getParent();

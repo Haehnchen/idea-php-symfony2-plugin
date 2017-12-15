@@ -48,6 +48,5 @@ public class TwigBlock {
         // @TODO: remove this
         this.shortcutName = shortcutName;
     }
-
 }
 

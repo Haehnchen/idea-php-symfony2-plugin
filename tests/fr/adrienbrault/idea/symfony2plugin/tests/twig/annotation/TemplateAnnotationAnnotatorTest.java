@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.annotation;
+package fr.adrienbrault.idea.symfony2plugin.tests.twig.annotation;
 
 import com.intellij.codeInsight.daemon.impl.AnnotationHolderImpl;
 import com.intellij.lang.annotation.AnnotationSession;
@@ -8,15 +8,15 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.annotation.TemplateAnnotationAnnotator
+ * @see TemplateAnnotationAnnotator
  */
 public class TemplateAnnotationAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -53,7 +53,7 @@ public class TemplateAnnotationAnnotatorTest extends SymfonyLightCodeInsightFixt
         AnnotationHolderImpl annotations = new AnnotationHolderImpl(new AnnotationSession(psiFile));
 
         new TemplateAnnotationAnnotator().annotate(new PhpAnnotationDocTagAnnotatorParameter(
-            PhpIndex.getInstance(getProject()).getAnyByFQN(TwigHelper.TEMPLATE_ANNOTATION_CLASS).iterator().next(),
+            PhpIndex.getInstance(getProject()).getAnyByFQN(TwigUtil.TEMPLATE_ANNOTATION_CLASS).iterator().next(),
             (PhpDocTag) phpDocTag,
             annotations
         ));
@@ -99,7 +99,7 @@ public class TemplateAnnotationAnnotatorTest extends SymfonyLightCodeInsightFixt
         AnnotationHolderImpl annotations = new AnnotationHolderImpl(new AnnotationSession(psiFile));
 
         new TemplateAnnotationAnnotator().annotate(new PhpAnnotationDocTagAnnotatorParameter(
-            PhpIndex.getInstance(getProject()).getAnyByFQN(TwigHelper.TEMPLATE_ANNOTATION_CLASS).iterator().next(),
+            PhpIndex.getInstance(getProject()).getAnyByFQN(TwigUtil.TEMPLATE_ANNOTATION_CLASS).iterator().next(),
             (PhpDocTag) phpDocTag,
             annotations
         ));

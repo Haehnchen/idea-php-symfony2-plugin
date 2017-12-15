@@ -7,7 +7,7 @@ import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +28,7 @@ public class TwigToolboxProvider implements PhpToolboxProviderInterface {
             return Collections.emptyList();
         }
 
-        return TwigHelper.getAllTemplateLookupElements(parameter.getProject());
+        return TwigUtil.getAllTemplateLookupElements(parameter.getProject());
     }
 
     @NotNull
@@ -39,7 +39,7 @@ public class TwigToolboxProvider implements PhpToolboxProviderInterface {
         }
 
         Collection<PsiElement> psiElements = new HashSet<>();
-        Collections.addAll(psiElements, TwigHelper.getTemplatePsiElements(parameter.getProject(), parameter.getContents()));
+        Collections.addAll(psiElements, TwigUtil.getTemplatePsiElements(parameter.getProject(), parameter.getContents()));
         return psiElements;
     }
 

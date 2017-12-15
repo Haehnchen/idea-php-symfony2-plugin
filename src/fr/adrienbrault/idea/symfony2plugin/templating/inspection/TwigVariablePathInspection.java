@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -41,7 +41,7 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(TwigHelper.getTypeCompletionPattern().accepts(element)) {
+            if(TwigPattern.getTypeCompletionPattern().accepts(element)) {
                 visit(element);
             }
             super.visitElement(element);

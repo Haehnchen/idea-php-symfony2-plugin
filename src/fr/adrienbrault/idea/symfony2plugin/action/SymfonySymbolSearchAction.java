@@ -22,7 +22,6 @@ import com.intellij.util.indexing.IdFilter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.action.model.SymfonySymbolSearchModel;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
@@ -33,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
@@ -94,7 +94,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         private Map<String, Set<VirtualFile>> getTemplateMap() {
             if(this.templateMap == null) {
-                this.templateMap = TwigHelper.getTwigAndPhpTemplateFiles(this.project);
+                this.templateMap = TwigUtil.getTwigAndPhpTemplateFiles(this.project);
             }
 
             return this.templateMap;
@@ -110,7 +110,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         private Set<String> getTwigMacroSet() {
             if(this.twigMacroSet == null) {
-                this.twigMacroSet = TwigHelper.getTwigMacroSet(this.project);
+                this.twigMacroSet = TwigUtil.getTwigMacroSet(this.project);
             }
 
             return this.twigMacroSet;
@@ -193,7 +193,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
             // @TODO name filter
             if(getTemplateMap().containsKey(name)) {
-                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(project, name)) {
+                for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(project, name)) {
                     processor.process(new NavigationItemEx(psiFile, name, psiFile.getFileType().getIcon(), "Template"));
                 }
             }
@@ -227,7 +227,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             }
 
             if(getTwigMacroSet().contains(name)) {
-                for(PsiElement macroTarget: TwigHelper.getTwigMacroTargets(project, name)) {
+                for(PsiElement macroTarget: TwigUtil.getTwigMacroTargets(project, name)) {
                     processor.process(new NavigationItemEx(macroTarget, name, TwigIcons.TwigFileIcon, "Macro"));
                 }
             }

@@ -11,7 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,21 +19,28 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class AssetCompletionProvider extends CompletionProvider<CompletionParameters> {
+    @NotNull
+    final private AssetDirectoryReader assetParser;
 
-    protected AssetDirectoryReader assetParser;
-    protected boolean includeCustom = false;
+    final private boolean includeCustom;
 
-    public void addCompletions(@NotNull CompletionParameters parameters,
-                               ProcessingContext context,
-                               @NotNull final CompletionResultSet resultSet) {
+    public AssetCompletionProvider(@NotNull AssetDirectoryReader assetParser, boolean includeCustom) {
+        this.assetParser = assetParser;
+        this.includeCustom = includeCustom;
+    }
+
+    public AssetCompletionProvider(@NotNull AssetDirectoryReader assetParser) {
+        this(assetParser, false);
+    }
+
+    public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull final CompletionResultSet resultSet) {
         Project project = parameters.getPosition().getProject();
 
         if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
             return;
         }
 
-        this.assetParser.setProject(project);
-        for (final AssetFile assetFile : this.assetParser.getAssetFiles()) {
+        for (AssetFile assetFile : assetParser.getAssetFiles(project)) {
             resultSet.addElement(new AssetLookupElement(assetFile, project));
         }
 
@@ -43,17 +50,5 @@ public class AssetCompletionProvider extends CompletionProvider<CompletionParame
                 resultSet.addElement(LookupElementBuilder.create("@" + s).withIcon(PlatformIcons.FOLDER_ICON).withTypeText("Custom Assets", true));
             }
         }
-
     }
-
-    public AssetCompletionProvider setAssetParser(AssetDirectoryReader assetParser) {
-       this.assetParser = assetParser;
-       return this;
-    }
-
-    public AssetCompletionProvider setIncludeCustom(boolean includeCustom) {
-        this.includeCustom = includeCustom;
-        return this;
-    }
-
 }

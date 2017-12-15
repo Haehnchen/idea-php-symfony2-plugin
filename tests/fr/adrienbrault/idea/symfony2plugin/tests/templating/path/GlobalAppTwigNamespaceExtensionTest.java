@@ -4,7 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 import java.util.Collection;
@@ -22,12 +22,12 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
         assertNotNull(namespaces.stream()
-            .filter(twigPath -> TwigPathIndex.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
+            .filter(twigPath -> TwigUtil.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
             .findFirst()
         );
 
         assertNotNull(namespaces.stream()
-            .filter(twigPath -> TwigPathIndex.MAIN.equals(twigPath.getNamespace()) && "templates".endsWith(twigPath.getPath()))
+            .filter(twigPath -> TwigUtil.MAIN.equals(twigPath.getNamespace()) && "templates".endsWith(twigPath.getPath()))
             .findFirst()
         );
     }
@@ -40,7 +40,7 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
         assertNotNull(namespaces.stream()
-            .filter(twigPath -> TwigPathIndex.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
+            .filter(twigPath -> TwigUtil.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
             .findFirst()
         );
     }
@@ -53,7 +53,7 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
         assertNotNull(namespaces.stream()
-            .filter(twigPath -> TwigPathIndex.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
+            .filter(twigPath -> TwigUtil.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
             .findFirst()
         );
     }
@@ -66,7 +66,7 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
         assertNotNull(namespaces.stream()
-            .filter(twigPath -> TwigPathIndex.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
+            .filter(twigPath -> TwigUtil.MAIN.equals(twigPath.getNamespace()) && "app/Resources/views".endsWith(twigPath.getPath()))
             .findFirst()
         );
     }

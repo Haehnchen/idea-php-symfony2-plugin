@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompletionRegistrar {
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // "@var $om \Doctrine\Common\Persistence\ObjectManager"
         // "$om->getRepository('Foo\Bar')->" + s + "(['foo' => 'foo', '<caret>' => 'foo'])"

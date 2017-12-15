@@ -1,7 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.assets;
+package fr.adrienbrault.idea.symfony2plugin.twig.assets;
 
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -15,8 +16,8 @@ import java.util.Set;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
-
-    protected Map<String, String[]> namedAssets = new HashMap<>();
+    @NotNull
+    private Map<String, String[]> namedAssets = new HashMap<>();
 
     @Override
     public String getXPathFilter() {
@@ -25,7 +26,6 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
 
     public void parser(InputStream file) {
         NodeList nodeList = this.parserer(file);
-
         if(nodeList == null) {
             return;
         }
@@ -34,8 +34,6 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
             Element node = (Element) nodeList.item(i);
             String key = node.getAttribute("key");
             if(key != null && StringUtils.isNotBlank(key)) {
-
-
                 Set<String> files = new HashSet<>();
                 NodeList argument1 = node.getElementsByTagName("argument");
                 if(argument1.getLength() > 1) {
@@ -57,8 +55,8 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
         }
     }
 
+    @NotNull
     public Map<String, String[]> getNamedAssets() {
         return namedAssets;
     }
-
 }

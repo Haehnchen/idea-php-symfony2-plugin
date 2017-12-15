@@ -52,7 +52,6 @@ public class TwigMacro {
     @NotNull
     public TwigMacro withParameter(@Nullable String parameter) {
         this.parameter = parameter;
-
         return this;
     }
 }

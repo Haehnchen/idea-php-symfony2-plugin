@@ -10,7 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -56,7 +56,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
     private void attachTemplateFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
         // find path calls in file
         PsiElement[] fileReferences = PsiTreeUtil.collectElements(psiElement, psiElement1 ->
-            TwigHelper.getTemplateFileReferenceTagPattern().accepts(psiElement1) || TwigHelper.getFormThemeFileTag().accepts(psiElement1)
+            TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement1) || TwigPattern.getFormThemeFileTagPattern().accepts(psiElement1)
         );
 
         if(fileReferences.length == 0) {
@@ -68,7 +68,6 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             if(templateShortcutName != null) {
                 descriptors.add(new FoldingDescriptor(fileReference.getNode(),
                     new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset())) {
-                    @Nullable
                     @Override
                     public String getPlaceholderText() {
                         return templateShortcutName;
@@ -83,7 +82,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
         // find path calls in file
         PsiElement[] psiElements = PsiTreeUtil.collectElements(psiElement, psiElement12 ->
-            TwigHelper.getAutocompletableRoutePattern().accepts(psiElement12)
+            TwigPattern.getAutocompletableRoutePattern().accepts(psiElement12)
         );
 
         if(psiElements.length == 0) {
@@ -122,7 +121,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
     private void attachConstantFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
         // find path calls in file
         PsiElement[] constantReferences = PsiTreeUtil.collectElements(psiElement, psiElement1 ->
-            TwigHelper.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement1)
+            TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement1)
         );
 
         if(constantReferences.length == 0) {

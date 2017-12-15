@@ -17,9 +17,9 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -133,7 +133,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                     }
 
                     private void addTemplateWithScope(@NotNull String contents, @NotNull String fqn) {
-                        String s = TwigHelper.normalizeTemplateName(contents);
+                        String s = TwigUtil.normalizeTemplateName(contents);
                         if(!items.containsKey(s)) {
                             items.put(s, new HashSet<>());
                         }

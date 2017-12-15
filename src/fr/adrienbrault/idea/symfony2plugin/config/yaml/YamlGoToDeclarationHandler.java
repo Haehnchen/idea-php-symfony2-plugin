@@ -13,7 +13,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
@@ -21,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -226,7 +226,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     @NotNull
     private Collection<PsiFile> templateGoto(@NotNull PsiElement psiElement, @NotNull String templateName) {
-        return Arrays.asList(TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName));
+        return Arrays.asList(TwigUtil.getTemplatePsiElements(psiElement.getProject(), templateName));
     }
 
     @NotNull

@@ -25,7 +25,6 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -65,7 +64,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
-            } else if (TwigHelper.getBlockTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
+            } else if (TwigPattern.getBlockTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
                 // blocks: {% block 'foobar' %}, {{ block('foobar') }}
 
                 LineMarkerInfo lineImpl = this.attachBlockImplements(psiElement);
@@ -101,7 +100,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     private LineMarkerInfo attachIncludes(@NotNull TwigFile twigFile) {
-        Collection<String> templateNames = TwigHelper.getTemplateNamesForFile(twigFile);
+        Collection<String> templateNames = TwigUtil.getTemplateNamesForFile(twigFile);
 
         boolean found = false;
         for(String templateName: templateNames) {
@@ -134,8 +133,8 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     private LineMarkerInfo attachOverwrites(@NotNull TwigFile twigFile) {
         Collection<PsiFile> targets = new ArrayList<>();
 
-        for (String templateName: TwigHelper.getTemplateNamesForFile(twigFile)) {
-            for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(twigFile.getProject(), templateName)) {
+        for (String templateName: TwigUtil.getTemplateNamesForFile(twigFile)) {
+            for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(twigFile.getProject(), templateName)) {
                 if(!psiFile.getVirtualFile().equals(twigFile.getVirtualFile()) && !targets.contains(psiFile)) {
                     targets.add(psiFile);
                 }
@@ -155,10 +154,6 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         return getRelatedPopover("Overwrites", "Overwrite", twigFile, gotoRelatedItems, Symfony2Icons.TWIG_LINE_OVERWRITE);
-    }
-
-    private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems) {
-        return getRelatedPopover(singleItemTitle, singleItemTooltipPrefix, lineMarkerTarget, gotoRelatedItems, PhpIcons.IMPLEMENTED);
     }
 
     private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems, Icon icon) {
@@ -185,7 +180,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo attachBlockImplements(@NotNull PsiElement psiElement) {
-        Collection<PsiElement> blockTargets = TwigHelper.getBlocksByImplementations(psiElement);
+        Collection<PsiElement> blockTargets = TwigUtil.getBlocksByImplementations(psiElement);
         if(blockTargets.size() == 0) {
             return null;
         }
@@ -195,8 +190,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(blockTag, TwigUtil.getPresentableTemplateName(blockTag, true)).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
         }
 
-        return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems);
-
+        return getRelatedPopover("Implementations", "Impl: ", psiElement, gotoRelatedItems, PhpIcons.IMPLEMENTED);
     }
 
     @Nullable
@@ -312,7 +306,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 Collection<PsiElement> fileTargets = new ArrayList<>();
 
                 TwigUtil.visitTemplateIncludes((TwigFile) myTwigFile, templateInclude -> {
-                        if(this.templateNames.contains(templateInclude.getTemplateName()) || this.templateNames.contains(TwigHelper.normalizeTemplateName(templateInclude.getTemplateName()))) {
+                        if(this.templateNames.contains(templateInclude.getTemplateName()) || this.templateNames.contains(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()))) {
                             fileTargets.add(templateInclude.getPsiElement());
                         }
                     }

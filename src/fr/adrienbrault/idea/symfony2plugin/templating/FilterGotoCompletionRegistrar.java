@@ -4,7 +4,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -22,10 +21,10 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FilterCompletionRegistrar implements GotoCompletionRegistrar {
-    public void register(GotoCompletionRegistrarParameter registrar) {
+public class FilterGotoCompletionRegistrar implements GotoCompletionRegistrar {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {% trans foo<caret>bar %}
-        registrar.register(TwigHelper.getFilterTagPattern(), psiElement -> {
+        registrar.register(TwigPattern.getFilterTagPattern(), psiElement -> {
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }

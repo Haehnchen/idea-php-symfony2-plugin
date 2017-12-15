@@ -8,7 +8,6 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
@@ -58,7 +57,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
                 String resolveString = PhpElementsUtil.getStringValue(psiElement);
                 if(resolveString != null && !uniqueTemplates.contains(resolveString)) {
                     uniqueTemplates.add(resolveString);
-                    for(PsiElement templateTarget: TwigHelper.getTemplatePsiElements(parameter.getProject(), resolveString)) {
+                    for(PsiElement templateTarget: TwigUtil.getTemplatePsiElements(parameter.getProject(), resolveString)) {
                         parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                     }
                 }
@@ -81,7 +80,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
                     for(PhpDocTag phpDocTag: phpDocTags) {
                         // resolve annotation and check for template
                         PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag, importMap);
-                        if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
+                        if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
                             Pair<String, PsiElement[]> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
                             if(templateAnnotationFiles != null) {
                                 consumer.accept(Pair.create(templateAnnotationFiles.getFirst(), templateAnnotationFiles.getSecond()));
@@ -94,7 +93,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
 
         // on method name
         for (String templateName : TwigUtil.getControllerMethodShortcut(method)) {
-            consumer.accept(Pair.create(templateName, TwigHelper.getTemplatePsiElements(method.getProject(), templateName)));
+            consumer.accept(Pair.create(templateName, TwigUtil.getTemplatePsiElements(method.getProject(), templateName)));
         }
     }
 }

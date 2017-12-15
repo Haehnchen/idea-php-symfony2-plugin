@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
+package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Set;
@@ -13,9 +14,9 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ControllerVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class ControllerVariableCollector implements TwigFileVariableCollector {
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
+    public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
         PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile)) {
             return;

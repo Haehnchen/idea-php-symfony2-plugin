@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Map;
@@ -17,9 +18,9 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class GlobalExtensionVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class GlobalExtensionVariableCollector implements TwigFileVariableCollector {
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
+    public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
         for(PhpClass phpClass : TwigUtil.getTwigExtensionClasses(parameter.getProject())) {
             if(!PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile())) {
                 Method method = phpClass.findMethodByName("getGlobals");

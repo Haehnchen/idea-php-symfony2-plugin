@@ -24,7 +24,7 @@ import java.util.Collections;
  */
 public class TaggedParameterGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // arguments: [!tagged twig.extension]
         // <argument type="tagged" tag="foobar" />
         registrar.register(

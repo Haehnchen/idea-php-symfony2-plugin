@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
+package fr.adrienbrault.idea.symfony2plugin.twig.annotation;
 
 import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -6,8 +6,8 @@ import de.espend.idea.php.annotation.extension.PhpAnnotationReferenceProvider;
 import de.espend.idea.php.annotation.extension.parameter.AnnotationPropertyParameter;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationReferenceProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +19,7 @@ public class TemplateAnnotationReferences implements PhpAnnotationReferenceProvi
     @Override
     public PsiReference[] getPropertyReferences(AnnotationPropertyParameter annotationPropertyParameter, PhpAnnotationReferenceProviderParameter phpAnnotationReferenceProviderParameter) {
 
-        if(!Symfony2ProjectComponent.isEnabled(annotationPropertyParameter.getProject()) || !(annotationPropertyParameter.getElement() instanceof StringLiteralExpression) || !PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
+        if(!Symfony2ProjectComponent.isEnabled(annotationPropertyParameter.getProject()) || !(annotationPropertyParameter.getElement() instanceof StringLiteralExpression) || !PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
             return new PsiReference[0];
         }
 

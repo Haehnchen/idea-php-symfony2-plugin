@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
@@ -30,16 +30,16 @@ import java.util.stream.Collectors;
  */
 public class TranslationPlaceholderGotoCompletionRegistrar implements GotoCompletionRegistrar {
     @Override
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {{ 'symfony.great'|trans({'fo<caret>f'}, 'symfony')) }}
         registrar.register(
-            TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("trans"),
+            TwigPattern.getFunctionWithFirstParameterAsKeyLiteralPattern("trans"),
             new MyTwigTransFilterCompletionContributor("trans")
         );
 
         // {{ 'symfony.great'|transchoice(12, {'fo<caret>f'}, 'symfony')) }}
         registrar.register(
-            TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("transchoice"),
+            TwigPattern.getFunctionWithSecondParameterAsKeyLiteralPattern("transchoice"),
             new MyTwigTransFilterCompletionContributor("transchoice")
         );
 
@@ -146,7 +146,7 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
                 return null;
             }
 
-            PsiElement function = PsiElementUtils.getPrevSiblingOfType(parent, TwigHelper.getTranslationPattern(this.filter));
+            PsiElement function = PsiElementUtils.getPrevSiblingOfType(parent, TwigPattern.getTranslationPattern(this.filter));
             if(function == null) {
                 return null;
             }

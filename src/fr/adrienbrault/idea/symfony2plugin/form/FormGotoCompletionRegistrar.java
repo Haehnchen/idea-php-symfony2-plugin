@@ -40,7 +40,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormInterface", 2, "add", "create")
     );
 
-    public void register(GotoCompletionRegistrarParameter registrar) {
+    public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // FormBuilderInterface:add("", "type")
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {

@@ -12,21 +12,26 @@ import java.util.Map;
  */
 public class TwigExtension {
     @Nullable
-    private String signature = null;
+    final private String signature;
 
     @NotNull
-    private TwigExtensionParser.TwigExtensionType twigExtensionType;
+    final private TwigExtensionParser.TwigExtensionType twigExtensionType;
 
     @NotNull
-    private Map<String, String> options = new HashMap<>();
+    final private Map<String, String> options = new HashMap<>();
 
     public TwigExtension(@NotNull TwigExtensionParser.TwigExtensionType twigExtensionType) {
-        this.twigExtensionType = twigExtensionType;
+        this(twigExtensionType, null);
     }
 
     public TwigExtension(@NotNull TwigExtensionParser.TwigExtensionType twigExtensionType, @Nullable String signature) {
-        this(twigExtensionType);
+        this.twigExtensionType = twigExtensionType;
         this.signature = signature;
+    }
+
+    public TwigExtension(@NotNull TwigExtensionParser.TwigExtensionType twigExtensionType, @Nullable String signature, @NotNull Map<String, String> options) {
+        this(twigExtensionType, signature);
+        this.options.putAll(options);
     }
 
     @NotNull
@@ -44,14 +49,8 @@ public class TwigExtension {
         return signature;
     }
 
-    @NotNull
-    public TwigExtension putOption(@NotNull String key, @NotNull String value) {
-        options.put(key, value);
-        return this;
-    }
-
     @Nullable
-    public String getOption(String key) {
-        return options.containsKey(key) ? options.get(key) : null;
+    String getOption(String key) {
+        return options.getOrDefault(key, null);
     }
 }

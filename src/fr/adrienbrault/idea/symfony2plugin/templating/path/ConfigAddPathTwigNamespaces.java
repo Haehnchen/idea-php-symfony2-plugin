@@ -9,10 +9,10 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -59,14 +59,14 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
                 continue;
             }
 
-            for (Pair<String, String> stringStringPair : TwigHelper.getTwigPathFromYamlConfigResolved((YAMLFile) psiFile)) {
+            for (Pair<String, String> stringStringPair : TwigUtil.getTwigPathFromYamlConfigResolved((YAMLFile) psiFile)) {
                 // default path
                 String first = stringStringPair.getFirst();
                 if(first == null || first.equals("")) {
-                    first = TwigPathIndex.MAIN;
+                    first = TwigUtil.MAIN;
                 }
 
-                twigPaths.add(new TwigPath(stringStringPair.getSecond(), first, TwigPathIndex.NamespaceType.ADD_PATH, true));
+                twigPaths.add(new TwigPath(stringStringPair.getSecond(), first, TwigUtil.NamespaceType.ADD_PATH, true));
             }
         }
 

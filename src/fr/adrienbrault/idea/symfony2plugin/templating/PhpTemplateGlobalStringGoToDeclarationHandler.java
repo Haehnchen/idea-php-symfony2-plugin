@@ -9,7 +9,7 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,7 +57,7 @@ public class PhpTemplateGlobalStringGoToDeclarationHandler implements GotoDeclar
 
         // file and directory navigation:
         // foo.html.twig, foobar/foo.html.twig
-        return TwigHelper.getTemplateNavigationOnOffset(psiElement.getProject(), templateName, i - psiElement.getTextRange().getStartOffset()).toArray(new PsiElement[0]);
+        return TwigUtil.getTemplateNavigationOnOffset(psiElement.getProject(), templateName, i - psiElement.getTextRange().getStartOffset()).toArray(new PsiElement[0]);
     }
 
     @Nullable
