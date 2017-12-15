@@ -2,9 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -22,7 +22,7 @@ public class TemplateGotoCompletionRegistrar extends GotoCompletionProvider {
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements() {
-        return TwigHelper.getAllTemplateLookupElements(getElement().getProject());
+        return TwigUtil.getAllTemplateLookupElements(getElement().getProject());
     }
 
     @NotNull
@@ -34,7 +34,7 @@ public class TemplateGotoCompletionRegistrar extends GotoCompletionProvider {
         }
 
         return Arrays.asList(
-            TwigHelper.getTemplatePsiElements(getElement().getProject(), templateName)
+            TwigUtil.getTemplatePsiElements(getElement().getProject(), templateName)
         );
     }
 }

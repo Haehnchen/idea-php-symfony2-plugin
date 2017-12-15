@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -24,13 +24,13 @@ public class TemplateReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
     @Override
     public Object[] getVariants() {
-        return TwigHelper.getAllTemplateLookupElements(getElement().getProject()).toArray();
+        return TwigUtil.getAllTemplateLookupElements(getElement().getProject()).toArray();
     }
 
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         return PsiElementResolveResult
-            .createResults(TwigHelper.getTemplatePsiElements(getElement().getProject(), templateName));
+            .createResults(TwigUtil.getTemplatePsiElements(getElement().getProject(), templateName));
     }
 }

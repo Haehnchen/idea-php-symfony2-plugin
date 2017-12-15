@@ -11,7 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -155,8 +155,8 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             assertTrue(Pattern.compile(TwigPattern.DOC_SEE_REGEX).matcher("{# @see " + s + " #}").find());
             assertTrue(Pattern.compile(TwigPattern.DOC_SEE_REGEX).matcher("{# @see " + s + "#}").find());
 
-            assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + " #}").find());
-            assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + "#}").find());
+            assertTrue(Pattern.compile(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + " #}").find());
+            assertTrue(Pattern.compile(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + "#}").find());
         }
     }
 

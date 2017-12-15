@@ -9,7 +9,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -39,7 +38,7 @@ public class TranslationTagGotoCompletionRegistrar implements GotoCompletionRegi
                     return null;
                 }
 
-                String domain = TwigHelper.getDomainFromTranslationTag(element);
+                String domain = TwigUtil.getDomainFromTranslationTag(element);
                 if(domain == null) {
                     domain = TwigUtil.getTransDefaultDomainOnScope(element);
                 }

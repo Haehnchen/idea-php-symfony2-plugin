@@ -4,7 +4,6 @@ import com.intellij.psi.PsiElement;
 import de.espend.idea.php.annotation.extension.PhpAnnotationDocTagGotoHandler;
 import de.espend.idea.php.annotation.extension.parameter.AnnotationDocTagGotoHandlerParameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
@@ -20,7 +19,7 @@ public class TemplateAnnotationGotoHandler implements PhpAnnotationDocTagGotoHan
             return;
         }
 
-        if(!PhpElementsUtil.isEqualClassName(parameter.getPhpClass(), TwigHelper.TEMPLATE_ANNOTATION_CLASS)) {
+        if(!PhpElementsUtil.isEqualClassName(parameter.getPhpClass(), TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
             return;
         }
 

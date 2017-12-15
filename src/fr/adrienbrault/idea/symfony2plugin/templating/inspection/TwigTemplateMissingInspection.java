@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,7 +40,7 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
     private void invoke(@NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
         String templateName = element.getText();
 
-        PsiElement[] psiElements = TwigHelper.getTemplatePsiElements(element.getProject(), templateName);
+        PsiElement[] psiElements = TwigUtil.getTemplatePsiElements(element.getProject(), templateName);
         if(psiElements.length > 0)  {
             return;
         }

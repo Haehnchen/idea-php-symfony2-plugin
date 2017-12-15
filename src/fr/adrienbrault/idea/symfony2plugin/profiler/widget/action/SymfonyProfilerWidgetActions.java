@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
@@ -42,7 +41,7 @@ public class SymfonyProfilerWidgetActions {
 
         @Override
         public void actionPerformed(AnActionEvent e) {
-            List<PsiFile> psiFiles = Arrays.asList(TwigHelper.getTemplatePsiElements(project, templateName));
+            List<PsiFile> psiFiles = Arrays.asList(TwigUtil.getTemplatePsiElements(project, templateName));
 
             // @TODO: multiple targets?
             if(psiFiles.size() > 0) {

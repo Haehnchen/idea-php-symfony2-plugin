@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement;
 import de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator;
 import de.espend.idea.php.toolbox.navigation.locator.TargetLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -28,7 +28,7 @@ public class TwigFileToolboxTargetLocator implements PhpToolboxTargetLocator {
         }
 
         Collection<PsiElement> psiElements = new HashSet<>();
-        Collections.addAll(psiElements, TwigHelper.getTemplatePsiElements(parameter.getProject(), target));
+        Collections.addAll(psiElements, TwigUtil.getTemplatePsiElements(parameter.getProject(), target));
         return psiElements;
     }
 }

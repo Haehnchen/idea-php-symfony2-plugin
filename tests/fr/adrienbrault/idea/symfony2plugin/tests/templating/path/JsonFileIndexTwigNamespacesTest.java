@@ -2,9 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +26,7 @@ public class JsonFileIndexTwigNamespacesTest extends SymfonyLightCodeInsightFixt
 
     public void testThatNamespaceAndPathIsAddedToNamespaceList() {
 
-        List<TwigPath> twigNamespaces = TwigHelper.getTwigNamespaces(getProject());
+        List<TwigPath> twigNamespaces = TwigUtil.getTwigNamespaces(getProject());
         TwigPath foo = ContainerUtil.find(twigNamespaces, new MyTwigPathNamespaceCondition("foo"));
 
         assertNotNull(foo);
@@ -38,13 +38,13 @@ public class JsonFileIndexTwigNamespacesTest extends SymfonyLightCodeInsightFixt
     }
 
     public void testThatPathValueIsNormalized() {
-        List<TwigPath> twigNamespaces = TwigHelper.getTwigNamespaces(getProject());
+        List<TwigPath> twigNamespaces = TwigUtil.getTwigNamespaces(getProject());
         assertEquals("src/foo/res", ContainerUtil.find(twigNamespaces, new MyTwigPathNamespaceCondition("foo1")).getPath());
         assertEquals("src/foo", ContainerUtil.find(twigNamespaces, new MyTwigPathNamespaceCondition("bar")).getPath());
     }
 
     public void testThatBundleNamespaceIsSupported() {
-        TwigPath fooBundle = ContainerUtil.find(TwigHelper.getTwigNamespaces(getProject()), new MyTwigPathNamespaceCondition("FooBundle"));
+        TwigPath fooBundle = ContainerUtil.find(TwigUtil.getTwigNamespaces(getProject()), new MyTwigPathNamespaceCondition("FooBundle"));
         assertNotNull(fooBundle);
         assertEquals("src/foo/res", fooBundle.getPath());
         assertEquals("FooBundle", fooBundle.getNamespace());

@@ -7,7 +7,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
@@ -77,7 +76,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.CSS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigUtil.CSS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
             }
@@ -91,7 +90,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.JS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigUtil.JS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
             }
@@ -105,7 +104,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigHelper.IMG_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigUtil.IMG_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
             }

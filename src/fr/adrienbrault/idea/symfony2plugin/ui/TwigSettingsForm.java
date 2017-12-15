@@ -9,9 +9,9 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +51,7 @@ public class TwigSettingsForm implements Configurable {
         }
 
         List<TwigPath> sortableLookupItems = new ArrayList<>();
-        sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(this.project, true));
+        sortableLookupItems.addAll(TwigUtil.getTwigNamespaces(this.project, true));
         Collections.sort(sortableLookupItems);
 
         for (TwigPath twigPath : sortableLookupItems) {
@@ -98,7 +98,7 @@ public class TwigSettingsForm implements Configurable {
                 TwigSettingsForm.this.resetList();
 
                 List<TwigPath> sortableLookupItems = new ArrayList<>();
-                sortableLookupItems.addAll(TwigHelper.getTwigNamespaces(TwigSettingsForm.this.project, false));
+                sortableLookupItems.addAll(TwigUtil.getTwigNamespaces(TwigSettingsForm.this.project, false));
                 Collections.sort(sortableLookupItems);
 
                 for (TwigPath twigPath : sortableLookupItems) {

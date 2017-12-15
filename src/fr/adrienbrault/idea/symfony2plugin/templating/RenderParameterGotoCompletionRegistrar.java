@@ -8,7 +8,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -63,7 +62,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             Collection<LookupElement> elements = new ArrayList<>();
 
             for (String templateName : templateNames) {
-                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(getProject(), templateName)) {
+                for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(getProject(), templateName)) {
                     if(!(psiFile instanceof TwigFile)) {
                         continue;
                     }
@@ -103,7 +102,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             Collection<PsiElement> elements = new ArrayList<>();
 
             for (String templateName : templateNames) {
-                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(getProject(), templateName)) {
+                for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(getProject(), templateName)) {
                     if(!(psiFile instanceof TwigFile)) {
                         continue;
                     }
@@ -166,7 +165,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             Method method = PsiTreeUtil.getParentOfType(parentArrayCreation, Method.class);
             if(method != null) {
                 TemplatesControllerRelatedGotoCollector.visitMethodTemplateNames(method, pair -> templates.add(
-                    TwigHelper.normalizeTemplateName(pair.getFirst())
+                    TwigUtil.normalizeTemplateName(pair.getFirst())
                 ));
             }
         } else {
@@ -176,7 +175,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
                 String stringValue = PhpElementsUtil.getStringValue(prevSibling);
                 if(stringValue != null && stringValue.toLowerCase().endsWith(".twig")) {
                     templates.add(
-                        TwigHelper.normalizeTemplateName(stringValue)
+                        TwigUtil.normalizeTemplateName(stringValue)
                     );
                 }
             }

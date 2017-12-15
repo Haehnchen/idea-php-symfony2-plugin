@@ -11,7 +11,7 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +58,7 @@ public class TwigBlockParser {
         // dont match on self file !?
         if(depth > 0 || (withSelfBlock && depth == 0)) {
             if(file instanceof TwigFile) {
-                Collection<TwigBlock> blocksInFile = TwigHelper.getBlocksInFile((TwigFile) file);
+                Collection<TwigBlock> blocksInFile = TwigUtil.getBlocksInFile((TwigFile) file);
                 // @TODO: remove this here just presentation
                 for (TwigBlock twigBlock : blocksInFile) {
                     twigBlock.setShortcutName(shortcutName);
@@ -77,8 +77,8 @@ public class TwigBlockParser {
         // {% extends 'foo' %}
         // find extend in self
         for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(file, TwigExtendsTag.class)) {
-            for (String templateName : TwigHelper.getTwigExtendsTagTemplates(extendsTag)) {
-                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(file.getProject(), templateName)) {
+            for (String templateName : TwigUtil.getTwigExtendsTagTemplates(extendsTag)) {
+                for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(file.getProject(), templateName)) {
                     virtualFiles.put(psiFile.getVirtualFile(), templateName);
                 }
             }
@@ -93,7 +93,7 @@ public class TwigBlockParser {
                         if(TwigPattern.getTwigTagUseNamePattern().accepts(element)) {
                             String templateName = PsiElementUtils.trimQuote(element.getText());
                             if(StringUtils.isNotBlank(templateName)) {
-                                for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(file.getProject(), templateName)) {
+                                for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(file.getProject(), templateName)) {
                                     virtualFiles.put(psiFile.getVirtualFile(), templateName);
                                 }
                             }

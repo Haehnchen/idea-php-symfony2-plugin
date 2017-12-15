@@ -4,7 +4,7 @@ import com.intellij.navigation.ChooseByNameContributor;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +22,7 @@ public class TemplateFileContributor implements ChooseByNameContributor {
             return new String[0];
         }
 
-        Collection<String> twigFileNames = TwigHelper.getTwigFileNames(project);
+        Collection<String> twigFileNames = TwigUtil.getTwigFileNames(project);
         return twigFileNames.toArray(new String[twigFileNames.size()]);
     }
 
@@ -33,7 +33,7 @@ public class TemplateFileContributor implements ChooseByNameContributor {
             return new NavigationItem[0];
         }
 
-        return Arrays.stream(TwigHelper.getTemplatePsiElements(project, templateName))
+        return Arrays.stream(TwigUtil.getTemplatePsiElements(project, templateName))
             .map(psiFile ->
                 new NavigationItemEx(psiFile, templateName, TwigIcons.TwigFileIcon, "Template", false)
             )

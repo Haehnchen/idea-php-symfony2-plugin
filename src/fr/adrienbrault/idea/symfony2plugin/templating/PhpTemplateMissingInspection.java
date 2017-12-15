@@ -7,9 +7,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -68,7 +68,7 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
             return null;
         }
 
-        if(TwigHelper.getTemplatePsiElements(psiElement.getProject(), templateName).length > 0) {
+        if(TwigUtil.getTemplatePsiElements(psiElement.getProject(), templateName).length > 0) {
             return null;
         }
 

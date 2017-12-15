@@ -17,9 +17,9 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -169,7 +169,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
     private Collection<VirtualFile> getImplements(TwigFile twigFile) {
         final Set<VirtualFile> targets = new HashSet<>();
 
-        for(String templateName: TwigHelper.getTemplateNamesForFile(twigFile)) {
+        for(String templateName: TwigUtil.getTemplateNamesForFile(twigFile)) {
             FileBasedIndex.getInstance().getFilesWithKey(TwigIncludeStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
                 targets.add(virtualFile);
                 return true;
@@ -227,7 +227,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
             String templateName = includeTag.getText();
 
             if(StringUtils.isNotBlank(templateName)) {
-                for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
+                for(PsiFile templateFile: TwigUtil.getTemplatePsiElements(element.getProject(), templateName)) {
                     if(templateFile.equals(psiFile)) {
                         collectIncludeContextVars(iElementType, element, includeTag, variables, parameter.getVisitedFiles());
                     }

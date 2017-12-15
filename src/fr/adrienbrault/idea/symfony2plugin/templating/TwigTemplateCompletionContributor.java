@@ -20,7 +20,6 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -142,7 +141,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    PsiFile[] twigFilesByName = TwigHelper.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
+                    PsiFile[] twigFilesByName = TwigUtil.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
                     if(twigFilesByName.length == 0) {
                         return;
                     }
@@ -260,11 +259,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         ));
 
         extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
-            new AssetDirectoryReader().setFilterExtension(TwigHelper.CSS_FILES_EXTENSIONS).setIncludeBundleDir(true)
+            new AssetDirectoryReader().setFilterExtension(TwigUtil.CSS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
         extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
-            new AssetDirectoryReader().setFilterExtension(TwigHelper.JS_FILES_EXTENSIONS).setIncludeBundleDir(true)
+            new AssetDirectoryReader().setFilterExtension(TwigUtil.JS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
         // routing completion like path() function
@@ -315,14 +314,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {# @Container Foo:Bar #}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN_COMPLETION),
+            TwigUtil.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN_COMPLETION),
             new ControllerCompletionProvider()
         );
 
         // {% form_theme * %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getFormThemeFileTag(),
+            TwigUtil.getFormThemeFileTag(),
             new FormThemeCompletionProvider()
         );
 
@@ -475,7 +474,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            resultSet.addAllElements(TwigHelper.getTwigLookupElements(parameters.getPosition().getProject()));
+            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject()));
         }
     }
 
@@ -521,7 +520,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            String routeName = TwigHelper.getMatchingRouteNameOnParameter(parameters.getOriginalPosition());
+            String routeName = TwigUtil.getMatchingRouteNameOnParameter(parameters.getOriginalPosition());
             if(routeName == null) {
                 return;
             }
@@ -543,7 +542,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            resultSet.addAllElements(TwigHelper.getTwigLookupElements(parameters.getPosition().getProject()));
+            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject()));
         }
     }
 
@@ -563,7 +562,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionResultSet myResultSet = resultSet.withPrefixMatcher(blockNamePrefix);
 
             // collect blocks in all related files
-            Pair<PsiFile[], Boolean> scopedContext = TwigHelper.findScopedFile(position);
+            Pair<PsiFile[], Boolean> scopedContext = TwigUtil.findScopedFile(position);
 
             Set<String> uniqueList = new HashSet<>();
             for (TwigBlock block : new TwigBlockParser(scopedContext.getSecond()).visit(scopedContext.getFirst())) {

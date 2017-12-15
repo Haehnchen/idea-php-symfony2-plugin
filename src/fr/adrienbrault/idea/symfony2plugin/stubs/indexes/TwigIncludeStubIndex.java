@@ -9,7 +9,6 @@ import com.intellij.util.io.VoidDataExternalizer;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +45,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
             }
 
             TwigUtil.visitTemplateIncludes((TwigFile) psiFile, templateInclude ->
-                map.put(TwigHelper.normalizeTemplateName(templateInclude.getTemplateName()), null)
+                map.put(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()), null)
             );
 
             return map;

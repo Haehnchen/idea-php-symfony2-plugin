@@ -19,7 +19,6 @@ import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
@@ -82,7 +81,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         // tricky way to get the function string trans(...)
         if (TwigPattern.getTransDomainPattern().accepts(psiElement)) {
             PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
-            if(psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
+            if(psiElementTrans != null && TwigUtil.getTwigMethodString(psiElementTrans) != null) {
                 targets.addAll(getTranslationDomainGoto(psiElement));
             }
         }
@@ -156,7 +155,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getTypeGoto(psiElement));
         }
 
-        if(TwigHelper.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
+        if(TwigUtil.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
             targets.addAll(getControllerNameGoto(psiElement));
         }
 
@@ -237,7 +236,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getRouteParameterGoTo(@NotNull PsiElement psiElement) {
-        String routeName = TwigHelper.getMatchingRouteNameOnParameter(psiElement);
+        String routeName = TwigUtil.getMatchingRouteNameOnParameter(psiElement);
 
         if(routeName == null) {
             return Collections.emptyList();
@@ -256,7 +255,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getTwigFiles(@NotNull PsiElement psiElement, int offset) {
-        return TwigHelper.getTemplateNavigationOnOffset(
+        return TwigUtil.getTemplateNavigationOnOffset(
             psiElement.getProject(),
             psiElement.getText(),
             offset - psiElement.getTextRange().getStartOffset()
@@ -288,7 +287,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         Collection<PsiElement> psiElements = new HashSet<>();
-        Pair<PsiFile[], Boolean> scopedFile = TwigHelper.findScopedFile(psiElement);
+        Pair<PsiFile[], Boolean> scopedFile = TwigUtil.findScopedFile(psiElement);
 
         for (PsiFile psiFile : scopedFile.getFirst()) {
             ContainerUtil.addAll(psiElements, getBlockNameGoTo(psiFile, blockName, scopedFile.getSecond()));
@@ -414,7 +413,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         Collection<PsiElement> psiElements = new ArrayList<>();
 
-        for(String pattern: new String[] {TwigPattern.DOC_SEE_REGEX, TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE}) {
+        for(String pattern: new String[] {TwigPattern.DOC_SEE_REGEX, TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE}) {
             Matcher matcher = Pattern.compile(pattern).matcher(comment);
             if (!matcher.find()) {
                 continue;
@@ -423,7 +422,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             String content = matcher.group(1);
 
             if(content.toLowerCase().endsWith(".twig")) {
-                ContainerUtil.addAll(psiElements, TwigHelper.getTemplatePsiElements(psiElement.getProject(), content));
+                ContainerUtil.addAll(psiElements, TwigUtil.getTemplatePsiElements(psiElement.getProject(), content));
             }
 
             psiElements.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), content));

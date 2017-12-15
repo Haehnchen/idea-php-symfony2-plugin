@@ -15,8 +15,8 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -887,7 +887,7 @@ public class TwigPattern {
     public static ElementPattern<PsiComment> getTwigDocSeePattern() {
         return PlatformPatterns.or(
             PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(DOC_SEE_REGEX)).withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
+            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
         );
     }
 

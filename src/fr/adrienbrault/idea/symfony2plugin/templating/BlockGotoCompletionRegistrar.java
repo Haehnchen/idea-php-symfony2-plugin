@@ -3,13 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +53,7 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
             );
 
             psiElements.addAll(
-                TwigHelper.getBlocksByImplementations(element)
+                TwigUtil.getBlocksByImplementations(element)
             );
 
             // filter self navigation

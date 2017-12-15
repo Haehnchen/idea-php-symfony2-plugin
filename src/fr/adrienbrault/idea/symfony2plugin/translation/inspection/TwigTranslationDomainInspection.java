@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
@@ -62,7 +62,7 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
                 return true;
             });
 
-            if(psiElementTrans[0] != null && TwigHelper.getTwigMethodString(psiElementTrans[0]) != null) {
+            if(psiElementTrans[0] != null && TwigUtil.getTwigMethodString(psiElementTrans[0]) != null) {
                 String text = psiElement.getText();
                 if(StringUtils.isNotBlank(text) && !TranslationUtil.hasDomain(psiElement.getProject(), text)) {
                     holder.registerProblem(
