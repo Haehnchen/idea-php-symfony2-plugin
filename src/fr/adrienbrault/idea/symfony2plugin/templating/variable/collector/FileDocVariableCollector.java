@@ -12,7 +12,6 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FileDocVariableCollector implements TwigFileVariableCollector {
-
     @Override
     public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
         if(!(parameter.getElement().getContainingFile() instanceof TwigFile)) {
@@ -30,5 +29,4 @@ public class FileDocVariableCollector implements TwigFileVariableCollector {
 
         return globalVars;
     }
-
 }

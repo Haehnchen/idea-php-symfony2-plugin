@@ -230,10 +230,7 @@ public class TwigTypeResolveUtil {
         TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, visitedFiles);
         for(TwigFileVariableCollector collector: TWIG_FILE_VARIABLE_COLLECTORS.getExtensions()) {
             collector.collect(collectorParameter, globalVars);
-
-            if(collector instanceof TwigFileVariableCollector.TwigFileVariableCollectorExt) {
-                ((TwigFileVariableCollector.TwigFileVariableCollectorExt) collector).collectVars(collectorParameter, controllerVars);
-            }
+            collector.collectPsiVariables(collectorParameter, controllerVars);
         }
 
         // globals first

@@ -21,13 +21,13 @@ import java.util.regex.Pattern;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ControllerDocVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class ControllerDocVariableCollector implements TwigFileVariableCollector {
 
     public static String DOC_PATTERN  = "\\{#[\\s]+@[C|c]ontroller[\\s]+([\\w\\\\\\[\\]:]+)[\\s]+#}";
     public static String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@[C|c]ontroller[\\s]+.*#}";
 
     @Override
-    public void collectVars(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
+    public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
 
         PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile)) {
@@ -62,10 +62,5 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
         }
 
         return controller;
-    }
-
-    @Override
-    public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
-
     }
 }

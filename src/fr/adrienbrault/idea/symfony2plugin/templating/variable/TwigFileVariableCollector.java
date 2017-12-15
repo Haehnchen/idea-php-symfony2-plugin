@@ -13,7 +13,5 @@ public interface TwigFileVariableCollector {
 
     default void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {}
 
-    interface TwigFileVariableCollectorExt {
-        void collectVars(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables);
-    }
+    default void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {}
 }

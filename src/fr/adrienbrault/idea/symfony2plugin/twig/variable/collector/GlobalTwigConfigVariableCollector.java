@@ -31,12 +31,12 @@ import java.util.Map;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollector {
 
     private static final Key<CachedValue<Map<String, PsiVariable>>> CACHE = new Key<>("TWIG_CONFIGURATION_GLOBALS");
 
     @Override
-    public void collectVars(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
+    public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
         variables.putAll(getGlobals(parameter.getProject()));
     }
 

@@ -33,12 +33,11 @@ import java.util.regex.Pattern;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class IncludeVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
+public class IncludeVariableCollector implements TwigFileVariableCollector {
 
     @Override
-    public void collectVars(@NotNull final TwigFileVariableCollectorParameter parameter, @NotNull final Map<String, PsiVariable> variables) {
-
-        final PsiFile psiFile = parameter.getElement().getContainingFile();
+    public void collectPsiVariables(@NotNull final TwigFileVariableCollectorParameter parameter, @NotNull final Map<String, PsiVariable> variables) {
+        PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile) || PsiTreeUtil.getChildOfType(psiFile, TwigExtendsTag.class) != null) {
             return;
         }
