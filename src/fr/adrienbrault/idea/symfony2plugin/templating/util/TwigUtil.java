@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
@@ -46,12 +45,12 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -616,8 +615,8 @@ public class TwigUtil {
      * TODO: {% set foo, bar = 'foo', 'bar' %}
      */
     @NotNull
-    public static Collection<TwigSet> getSetDeclaration(@NotNull PsiFile psiFile) {
-        Collection<TwigSet> sets = new ArrayList<>();
+    public static Collection<String> getSetDeclaration(@NotNull PsiFile psiFile) {
+        Collection<String> sets = new ArrayList<>();
 
         PsiElement[] psiElements = PsiTreeUtil.collectElements(psiFile, psiElement ->
             psiElement.getNode().getElementType() == TwigElementTypes.SET_TAG
@@ -641,7 +640,7 @@ public class TwigUtil {
 
             String text = setVariable.getText();
             if(StringUtils.isNotBlank(text)) {
-                sets.add(new TwigSet(text));
+                sets.add(text);
             }
         }
 
@@ -1416,22 +1415,7 @@ public class TwigUtil {
         return null;
     }
 
-    public static PsiElementPattern.Capture<PsiComment> getTwigDocBlockMatchPattern(String pattern) {
-        return PlatformPatterns
-            .psiComment().withText(PlatformPatterns.string().matches(pattern))
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    public static PsiElementPattern.Capture<PsiElement> getFormThemeFileTag() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().matches("\\{%\\s+form_theme.*")))
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    public static Set<VirtualFile> resolveAssetsFiles(Project project, String templateName, String... fileTypes) {
-
-
+    public static Set<VirtualFile> resolveAssetsFiles(@NotNull Project project, @NotNull String templateName, @NotNull String... fileTypes) {
         Set<VirtualFile> virtualFiles = new HashSet<>();
 
         // {% javascripts [...] @jquery_js2'%}
@@ -1465,7 +1449,7 @@ public class TwigUtil {
                 }
             }
 
-            for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(project).getAssetFiles()) {
+            for (final AssetFile assetFile : new AssetDirectoryReader(fileTypes, true).getAssetFiles(project)) {
                 if(assetFile.toString().equals(templateName)) {
                     virtualFiles.add(assetFile.getFile());
                 }
@@ -1477,7 +1461,7 @@ public class TwigUtil {
         String pathName = matcher.group(1);
         String fileExtension = matcher.group(2).length() > 0 ? matcher.group(2) : null;
 
-        for (final AssetFile assetFile : new AssetDirectoryReader().setFilterExtension(fileTypes).setIncludeBundleDir(true).setProject(project).getAssetFiles()) {
+        for (final AssetFile assetFile : new AssetDirectoryReader(fileTypes, true).getAssetFiles(project)) {
             if(fileExtension == null && assetFile.toString().matches(Pattern.quote(pathName) + "(?!.*[/\\\\]).*\\.\\w+")) {
                 virtualFiles.add(assetFile.getFile());
             } else if(fileExtension != null && assetFile.toString().matches(Pattern.quote(pathName) + "(?!.*[/\\\\]).*" + Pattern.quote(fileExtension))) {

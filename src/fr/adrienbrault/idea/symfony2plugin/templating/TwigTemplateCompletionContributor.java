@@ -197,8 +197,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         );
                     }
 
-                    for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
-                        resultSet.addElement(LookupElementBuilder.create(twigSet.getName()).withTypeText("set", true));
+                    for(String twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
+                        resultSet.addElement(LookupElementBuilder.create(twigSet).withTypeText("set", true));
                     }
 
                     for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
@@ -254,17 +254,25 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // assets completion:
         // stylesheets and javascripts tags
 
-        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetPattern(), new AssetCompletionProvider().setAssetParser(
+        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetPattern(), new AssetCompletionProvider(
             new AssetDirectoryReader()
         ));
 
-        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
-            new AssetDirectoryReader().setFilterExtension(TwigUtil.CSS_FILES_EXTENSIONS).setIncludeBundleDir(true)
-        ));
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider(
+                new AssetDirectoryReader(TwigUtil.CSS_FILES_EXTENSIONS, true),
+                true
+            )
+        );
 
-        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
-            new AssetDirectoryReader().setFilterExtension(TwigUtil.JS_FILES_EXTENSIONS).setIncludeBundleDir(true)
-        ));
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider(
+                new AssetDirectoryReader(TwigUtil.JS_FILES_EXTENSIONS, true),
+                true
+            )
+        );
 
         // routing completion like path() function
         extend(
@@ -314,14 +322,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {# @Container Foo:Bar #}
         extend(
             CompletionType.BASIC,
-            TwigUtil.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN_COMPLETION),
+            TwigPattern.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN_COMPLETION),
             new ControllerCompletionProvider()
         );
 
         // {% form_theme * %}
         extend(
             CompletionType.BASIC,
-            TwigUtil.getFormThemeFileTag(),
+            TwigPattern.getFormThemeFileTagPattern(),
             new FormThemeCompletionProvider()
         );
 

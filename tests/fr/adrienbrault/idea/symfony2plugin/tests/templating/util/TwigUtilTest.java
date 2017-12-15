@@ -19,7 +19,6 @@ import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -354,15 +353,10 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "{% set footag %}{% endset %}\n"
         );
 
-        Collection<TwigSet> setDeclaration = TwigUtil.getSetDeclaration(psiFile);
+        Collection<String> setDeclaration = TwigUtil.getSetDeclaration(psiFile);
 
-        assertTrue(
-            setDeclaration.stream().anyMatch(twigMacro -> "foobar".equals(twigMacro.getName()))
-        );
-
-        assertTrue(
-            setDeclaration.stream().anyMatch(twigMacro -> "footag".equals(twigMacro.getName()))
-        );
+        assertContainsElements(setDeclaration, "foobar");
+        assertContainsElements(setDeclaration, "footag");
     }
 
     /**

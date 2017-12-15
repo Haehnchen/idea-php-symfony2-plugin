@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.assets;
 
 import com.intellij.testFramework.UsefulTestCase;
-import fr.adrienbrault.idea.symfony2plugin.templating.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 
 import java.io.File;
 import java.io.FileInputStream;

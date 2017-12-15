@@ -23,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigSet;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -155,7 +154,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getTypeGoto(psiElement));
         }
 
-        if(TwigUtil.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
+        if(TwigPattern.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
             targets.addAll(getControllerNameGoto(psiElement));
         }
 
@@ -492,8 +491,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     private Collection<PsiElement> getSets(@NotNull PsiElement psiElement) {
         String funcName = psiElement.getText();
-        for(TwigSet twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
-            if(twigSet.getName().equals(funcName)) {
+        for(String twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
+            if(twigSet.equals(funcName)) {
                 return Arrays.asList(PsiTreeUtil.collectElements(psiElement.getContainingFile(), new RegexPsiElementFilter(
                     TwigTagWithFileReference.class,
                     "\\{%\\s?set\\s?" + Pattern.quote(funcName) + "\\s?.*")

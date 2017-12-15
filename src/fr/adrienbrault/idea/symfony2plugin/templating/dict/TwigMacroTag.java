@@ -23,7 +23,6 @@ public class TwigMacroTag implements TwigMacroTagInterface {
      * @param parameters Raw parameter string (name, value, type, size)
      */
     public TwigMacroTag(@NotNull String name, @Nullable String parameters) {
-
         this.name = name;
         this.parameters = parameters;
     }

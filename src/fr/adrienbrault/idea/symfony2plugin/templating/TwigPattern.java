@@ -1347,6 +1347,22 @@ public class TwigPattern {
             .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA));
     }
 
+    public static PsiElementPattern.Capture<PsiComment> getTwigDocBlockMatchPattern(@NotNull String pattern) {
+        return PlatformPatterns
+            .psiComment().withText(PlatformPatterns.string().matches(pattern))
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {% form_theme form 'foobar.html.twig' %}
+     */
+    public static PsiElementPattern.Capture<PsiElement> getFormThemeFileTagPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().matches("\\{%\\s+form_theme.*")))
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     /**
      * trans({
      *  %some%': "button.reserve"|trans,

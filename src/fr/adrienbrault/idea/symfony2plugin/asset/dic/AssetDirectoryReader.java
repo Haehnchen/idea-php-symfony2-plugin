@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.asset.dic;
 
-
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -13,32 +12,24 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class AssetDirectoryReader {
+    final private boolean includeBundleDir;
 
-    protected Project project;
-    protected boolean includeBundleDir = false;
-    protected String[] filterExtension;
+    @NotNull
+    final private Collection<String> filterExtension = new HashSet<>();
 
-    public AssetDirectoryReader setProject(Project project) {
-        this.project = project;
-        return this;
+    public AssetDirectoryReader() {
+        includeBundleDir = false;
     }
 
-    public AssetDirectoryReader setIncludeBundleDir(boolean includeBundleDir) {
+    public AssetDirectoryReader(@NotNull String[] filterExtension, boolean includeBundleDir) {
         this.includeBundleDir = includeBundleDir;
-        return this;
-    }
-
-    public AssetDirectoryReader setFilterExtension(String... filterExtension) {
-        this.filterExtension = filterExtension;
-        return this;
+        this.filterExtension.addAll(Arrays.asList(filterExtension));
     }
 
     @Nullable
@@ -48,10 +39,10 @@ public class AssetDirectoryReader {
         return VfsUtil.findRelativeFile(projectDirectory, webDirectoryName.split("/"));
     }
 
-    public List<AssetFile> getAssetFiles() {
-        final List<AssetFile> files = new ArrayList<>();
+    public List<AssetFile> getAssetFiles(@NotNull Project project) {
+        List<AssetFile> files = new ArrayList<>();
 
-        final VirtualFile webDirectory = getProjectAssetRoot(project);
+        VirtualFile webDirectory = getProjectAssetRoot(project);
         if (null == webDirectory) {
             return files;
         }
@@ -70,19 +61,17 @@ public class AssetDirectoryReader {
             return files;
         }
 
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(this.project));
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(project));
         for(final SymfonyBundle bundle : symfonyBundleUtil.getBundles()) {
-
             PsiDirectory bundleDirectory = bundle.getDirectory();
             if(null == bundleDirectory) {
                 continue;
             }
 
-            final VirtualFile bundleDirectoryVirtual = bundleDirectory.getVirtualFile();
+            VirtualFile bundleDirectoryVirtual = bundleDirectory.getVirtualFile();
             VirtualFile resourceDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources");
 
             if (null != resourceDirectory) {
-
                 VfsUtil.visitChildrenRecursively(resourceDirectory, new VirtualFileVisitor() {
                     @Override
                     public boolean visitFile(@NotNull VirtualFile virtualFile) {
@@ -92,29 +81,18 @@ public class AssetDirectoryReader {
                         return super.visitFile(virtualFile);
                     }
                 });
-
             }
-
         }
 
         return files;
     }
 
-    private boolean isValidFile(VirtualFile virtualFile) {
-
-        if (virtualFile.isDirectory()) {
+    private boolean isValidFile(@NotNull VirtualFile virtualFile) {
+        if (this.filterExtension.size() == 0 || virtualFile.isDirectory()) {
             return false;
         }
 
-        if (this.filterExtension != null) {
-            String extension = virtualFile.getExtension();
-
-            // file need extension and it must be in list
-            return null != extension && Arrays.asList(this.filterExtension).contains(extension);
-
-        }
-
-        return true;
+        String extension = virtualFile.getExtension();
+        return extension != null && this.filterExtension.contains(extension);
     }
-
 }

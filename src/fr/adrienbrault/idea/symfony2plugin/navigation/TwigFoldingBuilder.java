@@ -56,7 +56,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
     private void attachTemplateFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
         // find path calls in file
         PsiElement[] fileReferences = PsiTreeUtil.collectElements(psiElement, psiElement1 ->
-            TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement1) || TwigUtil.getFormThemeFileTag().accepts(psiElement1)
+            TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement1) || TwigPattern.getFormThemeFileTagPattern().accepts(psiElement1)
         );
 
         if(fileReferences.length == 0) {
@@ -68,7 +68,6 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             if(templateShortcutName != null) {
                 descriptors.add(new FoldingDescriptor(fileReference.getNode(),
                     new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset())) {
-                    @Nullable
                     @Override
                     public String getPlaceholderText() {
                         return templateShortcutName;
