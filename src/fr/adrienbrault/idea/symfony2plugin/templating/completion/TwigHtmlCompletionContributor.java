@@ -76,7 +76,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigUtil.CSS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                for (AssetFile assetFile : new AssetDirectoryReader(TwigUtil.CSS_FILES_EXTENSIONS, false).getAssetFiles(parameters.getPosition().getProject())) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
             }
@@ -90,7 +90,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigUtil.JS_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                for (AssetFile assetFile : new AssetDirectoryReader(TwigUtil.JS_FILES_EXTENSIONS, false).getAssetFiles(parameters.getPosition().getProject())) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
             }
@@ -104,7 +104,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (AssetFile assetFile : new AssetDirectoryReader().setProject(parameters.getPosition().getProject()).setFilterExtension(TwigUtil.IMG_FILES_EXTENSIONS).setIncludeBundleDir(false).getAssetFiles()) {
+                for (AssetFile assetFile : new AssetDirectoryReader(TwigUtil.IMG_FILES_EXTENSIONS, false).getAssetFiles(parameters.getPosition().getProject())) {
                     resultSet.addElement(new AssetLookupElement(assetFile, parameters.getPosition().getProject()).withInsertHandler(TwigAssetFunctionInsertHandler.getInstance()));
                 }
             }

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.path;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -11,19 +12,19 @@ import com.intellij.util.xmlb.annotations.Tag;
 public class TwigNamespaceSetting {
 
     private String path;
-    private String namespace = TwigPathIndex.MAIN;
+    private String namespace = TwigUtil.MAIN;
     private boolean isEnabled = true;
-    private TwigPathIndex.NamespaceType namespaceType;
+    private TwigUtil.NamespaceType namespaceType;
     private boolean custom = false;
 
-    public TwigNamespaceSetting(String namespace, String path, Boolean enabled, TwigPathIndex.NamespaceType namespaceType) {
+    public TwigNamespaceSetting(String namespace, String path, Boolean enabled, TwigUtil.NamespaceType namespaceType) {
         this.namespace = namespace;
         this.path = path;
         this.isEnabled = enabled;
         this.namespaceType = namespaceType;
     }
 
-    public TwigNamespaceSetting(String namespace, String path, Boolean enabled, TwigPathIndex.NamespaceType namespaceType, boolean custom) {
+    public TwigNamespaceSetting(String namespace, String path, Boolean enabled, TwigUtil.NamespaceType namespaceType, boolean custom) {
         this(namespace, path, enabled,namespaceType);
         this.custom = custom;
     }
@@ -32,11 +33,11 @@ public class TwigNamespaceSetting {
     }
 
     @Attribute("namespaceType")
-    public TwigPathIndex.NamespaceType getNamespaceType() {
+    public TwigUtil.NamespaceType getNamespaceType() {
         return namespaceType;
     }
 
-    public void setNamespaceType(TwigPathIndex.NamespaceType namespaceType) {
+    public void setNamespaceType(TwigUtil.NamespaceType namespaceType) {
         this.namespaceType = namespaceType;
     }
 

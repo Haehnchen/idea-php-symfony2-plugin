@@ -4,6 +4,7 @@ import com.intellij.psi.PsiDirectory;
 import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
@@ -35,9 +36,9 @@ public class BundleTwigNamespaceExtension implements TwigNamespaceExtension {
 
             String bundleName = bundle.getName();
 
-            twigPaths.add(new TwigPath(path, bundleName, TwigPathIndex.NamespaceType.BUNDLE));
+            twigPaths.add(new TwigPath(path, bundleName, TwigUtil.NamespaceType.BUNDLE));
             if(bundleName.endsWith("Bundle")) {
-                twigPaths.add(new TwigPath(path, bundleName.substring(0, bundleName.length() - 6), TwigPathIndex.NamespaceType.ADD_PATH));
+                twigPaths.add(new TwigPath(path, bundleName.substring(0, bundleName.length() - 6), TwigUtil.NamespaceType.ADD_PATH));
             }
         }
 

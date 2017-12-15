@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +32,7 @@ public class JsonFileIndexTwigNamespacesTest extends SymfonyLightCodeInsightFixt
         assertEquals("src/foo/res", foo.getPath());
         assertEquals("foo", foo.getNamespace());
         assertEquals(true, foo.isEnabled());
-        assertEquals(TwigPathIndex.NamespaceType.ADD_PATH, foo.getNamespaceType());
+        assertEquals(TwigUtil.NamespaceType.ADD_PATH, foo.getNamespaceType());
         assertEquals(true, foo.isCustomPath());
     }
 
@@ -48,7 +47,7 @@ public class JsonFileIndexTwigNamespacesTest extends SymfonyLightCodeInsightFixt
         assertNotNull(fooBundle);
         assertEquals("src/foo/res", fooBundle.getPath());
         assertEquals("FooBundle", fooBundle.getNamespace());
-        assertEquals(TwigPathIndex.NamespaceType.BUNDLE, fooBundle.getNamespaceType());
+        assertEquals(TwigUtil.NamespaceType.BUNDLE, fooBundle.getNamespaceType());
     }
 
     private static class MyTwigPathNamespaceCondition implements Condition<TwigPath> {

@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.tree.IElementType;
@@ -20,7 +19,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.apache.commons.lang.StringUtils;
@@ -761,7 +759,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         )));
 
         assertSize(2, TwigUtil.getUniqueTwigTemplatesList(Arrays.asList(
-            new TwigPath("path", "path", TwigPathIndex.NamespaceType.BUNDLE),
+            new TwigPath("path", "path", TwigUtil.NamespaceType.BUNDLE),
             new TwigPath("path", "path")
         )));
     }

@@ -48,7 +48,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
@@ -78,6 +77,18 @@ import java.util.stream.Collectors;
  */
 public class TwigUtil {
     public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "\\{#[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
+
+    /**
+     * Twig namespace for "non namespace"; its also a reserved value in Twig library
+     */
+    public static final String MAIN = "__main__";
+
+    /**
+     * Twig namespace types; mainly switch for its prefix
+     */
+    public enum NamespaceType {
+        BUNDLE, ADD_PATH
+    }
 
     private static final ExtensionPointName<TwigNamespaceExtension> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
@@ -1004,7 +1015,7 @@ public class TwigUtil {
             if(normalizedTemplateName.startsWith("@")) {
                 // @Namespace/base.html.twig
                 // @Namespace/folder/base.html.twig
-                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() != TwigPathIndex.NamespaceType.BUNDLE) {
+                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() != NamespaceType.BUNDLE) {
                     int i = normalizedTemplateName.indexOf("/");
                     if(i > 0) {
                         String templateNs = normalizedTemplateName.substring(1, i);
@@ -1016,14 +1027,14 @@ public class TwigUtil {
             } else if(normalizedTemplateName.startsWith(":")) {
                 // ::base.html.twig
                 // :Foo:base.html.twig
-                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
+                if(normalizedTemplateName.length() > 1 && twigPath.getNamespaceType() == NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
                     addFileInsideTwigPath(project, templatePath, virtualFiles, twigPath);
                 }
             } else {
                 // FooBundle::base.html.twig
                 // FooBundle:Bar:base.html.twig
-                if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+                if(twigPath.getNamespaceType() == NamespaceType.BUNDLE) {
                     int i = normalizedTemplateName.indexOf(":");
                     if(i > 0) {
                         String templateNs = normalizedTemplateName.substring(0, i);
@@ -1036,7 +1047,7 @@ public class TwigUtil {
                 }
 
                 // form_div_layout.html.twig
-                if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
+                if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == NamespaceType.ADD_PATH) {
                     String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/"), "/");
                     addFileInsideTwigPath(project, templatePath, virtualFiles, twigPath);
                 }
@@ -1116,7 +1127,7 @@ public class TwigUtil {
             if(templatePath.startsWith("@")) {
                 // @Namespace/base.html.twig
                 // @Namespace/folder/base.html.twig
-                if(templatePath.length() > 1 && twigPath.getNamespaceType() != TwigPathIndex.NamespaceType.BUNDLE) {
+                if(templatePath.length() > 1 && twigPath.getNamespaceType() != NamespaceType.BUNDLE) {
                     int x = templatePath.indexOf("/");
 
                     if(x < 0 && templatePath.substring(1).equals(twigPath.getNamespace())) {
@@ -1136,7 +1147,7 @@ public class TwigUtil {
             } else if(templatePath.startsWith(":")) {
                 // ::base.html.twig
                 // :Foo:base.html.twig
-                if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
+                if(twigPath.getNamespaceType() == NamespaceType.BUNDLE && twigPath.isGlobalNamespace()) {
                     String replace = StringUtils.strip(templatePath.replace(":", "/"), "/");
 
                     VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), replace.split("/"));
@@ -1147,7 +1158,7 @@ public class TwigUtil {
             } else {
                 // FooBundle::base.html.twig
                 // FooBundle:Bar:base.html.twig
-                if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+                if(twigPath.getNamespaceType() == NamespaceType.BUNDLE) {
                     templatePath = templatePath.replace(":", "/");
                     int x = templatePath.indexOf("/");
 
@@ -1167,7 +1178,7 @@ public class TwigUtil {
                 }
 
                 // form_div_layout.html.twig
-                if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.ADD_PATH) {
+                if(twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == NamespaceType.ADD_PATH) {
                     VirtualFile relativeFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), templatePath.split("/"));
                     if(relativeFile != null) {
                         virtualFiles.add(relativeFile);
@@ -1253,10 +1264,10 @@ public class TwigUtil {
             templateFile = templatePath;
         }
 
-        String namespace = twigPath.getNamespace().equals(TwigPathIndex.MAIN) ? "" : twigPath.getNamespace();
+        String namespace = twigPath.getNamespace().equals(MAIN) ? "" : twigPath.getNamespace();
 
         String templateFinalName;
-        if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE) {
+        if(twigPath.getNamespaceType() == NamespaceType.BUNDLE) {
             templateFinalName = namespace + ":" + templateDirectory + ":" + templateFile;
         } else {
             templateFinalName = namespace + "/" + templateDirectory + "/" + templateFile;
@@ -2221,7 +2232,7 @@ public class TwigUtil {
                 if(i > 0 && templateName.substring(1, i).equals(twigPath.getNamespace())) {
                     paths.add(twigPath.getRelativePath(project) + "/" + templateName.substring(i + 1));
                 }
-            } else if(twigPath.getNamespaceType() == TwigPathIndex.NamespaceType.BUNDLE && templateName.matches("^\\w+Bundle:.*")) {
+            } else if(twigPath.getNamespaceType() == NamespaceType.BUNDLE && templateName.matches("^\\w+Bundle:.*")) {
 
                 int i = templateName.indexOf("Bundle:");
                 String substring = templateName.substring(0, i + 6);

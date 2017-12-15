@@ -36,7 +36,7 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
     }
 
     private void invoke(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
-        for (final AssetFile assetFile : new AssetDirectoryReader().setProject(element.getProject()).getAssetFiles()) {
+        for (final AssetFile assetFile : new AssetDirectoryReader().getAssetFiles(element.getProject())) {
             if(assetFile.toString().equals(element.getText())) {
                 return;
             }

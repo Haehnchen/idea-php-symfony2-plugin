@@ -8,7 +8,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
@@ -59,7 +58,7 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
 
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Collections.singletonList(
-            new TwigNamespaceSetting("Foobar", "res", true, TwigPathIndex.NamespaceType.BUNDLE, true)
+            new TwigNamespaceSetting("Foobar", "res", true, TwigUtil.NamespaceType.BUNDLE, true)
         ));
 
         PsiFile file = PsiManager.getInstance(getProject()).findFile(res);
@@ -74,9 +73,9 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         createFile("res/foo.html.twig");
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(Arrays.asList(
-            new TwigNamespaceSetting("Foo", "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.BUNDLE, true)
+            new TwigNamespaceSetting("Foo", "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.BUNDLE, true)
         ));
 
         String[] strings = {
@@ -222,10 +221,10 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
     @NotNull
     private List<TwigNamespaceSetting> createTwigNamespaceSettings() {
         return Arrays.asList(
-            new TwigNamespaceSetting("Foo", "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.ADD_PATH, true),
-            new TwigNamespaceSetting(TwigPathIndex.MAIN, "res", true, TwigPathIndex.NamespaceType.BUNDLE, true),
-            new TwigNamespaceSetting("FooBundle", "res", true, TwigPathIndex.NamespaceType.BUNDLE, true)
+            new TwigNamespaceSetting("Foo", "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.BUNDLE, true),
+            new TwigNamespaceSetting("FooBundle", "res", true, TwigUtil.NamespaceType.BUNDLE, true)
         );
     }
 }

@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.table.TableView;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -85,7 +85,7 @@ public class TwigNamespaceDialog extends JDialog {
 
         String namespacePath = this.namespacePath.getText();
 
-        TwigPath twigPath = new TwigPath(namespacePath, namespace, TwigPathIndex.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
+        TwigPath twigPath = new TwigPath(namespacePath, namespace, TwigUtil.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
         if(namespacePath.length() == 0) {
             dispose();
             return;

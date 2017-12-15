@@ -63,10 +63,10 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
                 // default path
                 String first = stringStringPair.getFirst();
                 if(first == null || first.equals("")) {
-                    first = TwigPathIndex.MAIN;
+                    first = TwigUtil.MAIN;
                 }
 
-                twigPaths.add(new TwigPath(stringStringPair.getSecond(), first, TwigPathIndex.NamespaceType.ADD_PATH, true));
+                twigPaths.add(new TwigPath(stringStringPair.getSecond(), first, TwigUtil.NamespaceType.ADD_PATH, true));
             }
         }
 

@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,16 +19,16 @@ public class TwigPath implements Comparable<TwigPath> {
     private String path;
 
     @NotNull
-    private String namespace = TwigPathIndex.MAIN;
+    private String namespace = TwigUtil.MAIN;
 
     @NotNull
-    private TwigPathIndex.NamespaceType namespaceType = TwigPathIndex.NamespaceType.ADD_PATH;
+    private TwigUtil.NamespaceType namespaceType = TwigUtil.NamespaceType.ADD_PATH;
 
     private boolean enabled = true;
     private boolean customPath = false;
 
     @NotNull
-    public TwigPathIndex.NamespaceType getNamespaceType() {
+    public TwigUtil.NamespaceType getNamespaceType() {
         return namespaceType;
     }
 
@@ -40,7 +41,7 @@ public class TwigPath implements Comparable<TwigPath> {
         this.namespace = namespace;
     }
 
-    public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigPathIndex.NamespaceType namespaceType, boolean customPath) {
+    public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigUtil.NamespaceType namespaceType, boolean customPath) {
         this(path, namespace, namespaceType);
         this.customPath = customPath;
     }
@@ -58,7 +59,7 @@ public class TwigPath implements Comparable<TwigPath> {
         return twigPath;
     }
 
-    public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigPathIndex.NamespaceType namespaceType) {
+    public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigUtil.NamespaceType namespaceType) {
         this(path, namespace);
         this.namespaceType = namespaceType;
     }
@@ -69,7 +70,7 @@ public class TwigPath implements Comparable<TwigPath> {
     }
 
     public boolean isGlobalNamespace() {
-        return getNamespace().equals(TwigPathIndex.MAIN);
+        return getNamespace().equals(TwigUtil.MAIN);
     }
 
     @Nullable
