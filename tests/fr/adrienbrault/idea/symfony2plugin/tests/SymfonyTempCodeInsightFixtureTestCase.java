@@ -41,6 +41,8 @@ abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCa
     }
 
     protected void tearDown() throws Exception {
+        this.project = null;
+
         try {
             this.myFixture.tearDown();
         } finally {
