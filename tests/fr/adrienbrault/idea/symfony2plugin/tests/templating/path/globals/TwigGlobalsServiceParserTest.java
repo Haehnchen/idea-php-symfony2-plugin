@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.path.globals;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalEnum;
-import fr.adrienbrault.idea.symfony2plugin.templating.globals.TwigGlobalsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
 import org.junit.Assert;
 import org.junit.Test;
 

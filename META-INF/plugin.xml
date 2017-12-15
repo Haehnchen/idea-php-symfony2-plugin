@@ -597,13 +597,13 @@
 
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.GlobalExtensionVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerDocVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ServiceContainerVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ServiceContainerGlobalVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.ControllerVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.GlobalTwigConfigVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>

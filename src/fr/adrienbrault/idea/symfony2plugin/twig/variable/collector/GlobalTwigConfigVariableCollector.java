@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
+package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -36,7 +36,7 @@ public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollec
     private static final Key<CachedValue<Map<String, PsiVariable>>> CACHE = new Key<>("TWIG_CONFIGURATION_GLOBALS");
 
     @Override
-    public void collectVars(TwigFileVariableCollectorParameter parameter, Map<String, PsiVariable> variables) {
+    public void collectVars(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
         variables.putAll(getGlobals(parameter.getProject()));
     }
 

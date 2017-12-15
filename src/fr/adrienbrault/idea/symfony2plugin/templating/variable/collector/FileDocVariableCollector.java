@@ -4,6 +4,7 @@ import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -13,7 +14,7 @@ import java.util.*;
 public class FileDocVariableCollector implements TwigFileVariableCollector {
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
+    public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
         if(!(parameter.getElement().getContainingFile() instanceof TwigFile)) {
             return;
         }

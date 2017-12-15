@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpTwigMethodLookupElement extends PhpLookupElement {
+    PhpTwigMethodLookupElement(@NotNull PhpNamedElement namedElement) {
+        super(namedElement);
+    }
 
     @Override
     public void handleInsert(InsertionContext context) {
@@ -30,10 +33,6 @@ public class PhpTwigMethodLookupElement extends PhpLookupElement {
             presentation.setItemText(phpNamedElement.getName());
         }
 
-    }
-
-    public PhpTwigMethodLookupElement(@NotNull PhpNamedElement namedElement) {
-        super(namedElement);
     }
 
     @NotNull

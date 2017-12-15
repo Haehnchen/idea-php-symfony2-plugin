@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 public class IncludeVariableCollector implements TwigFileVariableCollector, TwigFileVariableCollector.TwigFileVariableCollectorExt {
 
     @Override
-    public void collectVars(final TwigFileVariableCollectorParameter parameter, final Map<String, PsiVariable> variables) {
+    public void collectVars(@NotNull final TwigFileVariableCollectorParameter parameter, @NotNull final Map<String, PsiVariable> variables) {
 
         final PsiFile psiFile = parameter.getElement().getContainingFile();
         if(!(psiFile instanceof TwigFile) || PsiTreeUtil.getChildOfType(psiFile, TwigExtendsTag.class) != null) {
@@ -49,7 +49,6 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         }
 
         for(VirtualFile virtualFile: files) {
-
             PsiFile twigFile = PsiManager.getInstance(parameter.getProject()).findFile(virtualFile);
             if(!(twigFile instanceof TwigFile)) {
                 continue;
@@ -57,7 +56,6 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
             twigFile.acceptChildren(new MyPsiRecursiveElementWalkingVisitor(psiFile, variables, parameter));
         }
-
     }
 
     private void collectIncludeContextVars(IElementType iElementType, PsiElement tag, PsiElement templatePsiName, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
@@ -134,10 +132,10 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
                 }
             }
         }
-
     }
 
-    public static Map<String, String> getIncludeWithVarNames(String includeText) {
+    @NotNull
+    private static Map<String, String> getIncludeWithVarNames(String includeText) {
 
         String regex = "with\\s*\\{\\s*(.*[^%])\\}\\s*";
         Matcher matcher = Pattern.compile(regex).matcher(includeText.replace("\r\n", " ").replace("\n", " "));
@@ -150,7 +148,8 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         return new HashMap<>();
     }
 
-    private static Map<String, String> getVariableAliasMap(String jsonLike) {
+    @NotNull
+    private static Map<String, String> getVariableAliasMap(@NotNull String jsonLike) {
         Map<String, String> map = new HashMap<>();
 
         String[] parts = jsonLike.replaceAll("^\\{|\\}$","").split("\"?(:|,)(?![^\\{]*\\})\"?");
@@ -164,7 +163,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
 
 
     @Override
-    public void collect(TwigFileVariableCollectorParameter parameter, Map<String, Set<String>> variables) {
+    public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
     }
 
     private Collection<VirtualFile> getImplements(TwigFile twigFile) {
@@ -190,7 +189,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         @NotNull
         private final TwigFileVariableCollectorParameter parameter;
 
-        private MyPsiRecursiveElementWalkingVisitor(@NotNull PsiFile psiFile, Map<String, PsiVariable> variables, @NotNull TwigFileVariableCollectorParameter parameter) {
+        private MyPsiRecursiveElementWalkingVisitor(@NotNull PsiFile psiFile, @NotNull Map<String, PsiVariable> variables, @NotNull TwigFileVariableCollectorParameter parameter) {
             this.psiFile = psiFile;
             this.variables = variables;
             this.parameter = parameter;
@@ -225,17 +224,15 @@ public class IncludeVariableCollector implements TwigFileVariableCollector, Twig
         }
 
         private void collectContextVars(IElementType iElementType, @NotNull PsiElement element, @NotNull PsiElement includeTag) {
-
             String templateName = includeTag.getText();
+
             if(StringUtils.isNotBlank(templateName)) {
                 for(PsiFile templateFile: TwigHelper.getTemplatePsiElements(element.getProject(), templateName)) {
                     if(templateFile.equals(psiFile)) {
                         collectIncludeContextVars(iElementType, element, includeTag, variables, parameter.getVisitedFiles());
                     }
                 }
-
             }
-
         }
     }
 }

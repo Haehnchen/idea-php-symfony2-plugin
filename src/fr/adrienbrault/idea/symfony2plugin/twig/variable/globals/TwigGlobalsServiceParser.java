@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.globals;
+package fr.adrienbrault.idea.symfony2plugin.twig.variable.globals;
 
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
@@ -12,8 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigGlobalsServiceParser extends AbstractServiceParser {
-
-    protected Map<String, TwigGlobalVariable> twigGlobals = new ConcurrentHashMap<>();
+    private Map<String, TwigGlobalVariable> twigGlobals = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {
@@ -45,11 +44,9 @@ public class TwigGlobalsServiceParser extends AbstractServiceParser {
             }
 
         }
-
     }
 
     public Map<String, TwigGlobalVariable> getTwigGlobals() {
         return twigGlobals;
     }
-
 }
