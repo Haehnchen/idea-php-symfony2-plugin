@@ -9,7 +9,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAndQuickFixAction;
@@ -59,7 +59,7 @@ public class TwigTranslationKeyIntention extends PsiElementBaseIntentionAction {
 
     @Nullable
     private Pair<String, String> getKeyAndDomain(@NotNull PsiElement psiElement) {
-        if(!TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
+        if(!TwigPattern.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
             return null;
         }
 

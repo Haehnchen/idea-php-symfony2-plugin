@@ -10,6 +10,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
@@ -89,7 +90,7 @@ public class TwigBlockParser {
                 twigCompositeElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-                        if(TwigHelper.getTwigTagUseNamePattern().accepts(element)) {
+                        if(TwigPattern.getTwigTagUseNamePattern().accepts(element)) {
                             String templateName = PsiElementUtils.trimQuote(element.getText());
                             if(StringUtils.isNotBlank(templateName)) {
                                 for (PsiFile psiFile : TwigHelper.getTemplatePsiElements(file.getProject(), templateName)) {

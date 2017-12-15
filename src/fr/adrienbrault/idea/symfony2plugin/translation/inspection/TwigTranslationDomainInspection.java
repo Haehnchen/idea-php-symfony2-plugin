@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -43,7 +44,7 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement psiElement) {
-            if(!TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+            if(!TwigPattern.getTransDomainPattern().accepts(psiElement)) {
                 return;
             }
 

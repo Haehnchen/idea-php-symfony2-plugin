@@ -19,6 +19,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
@@ -284,7 +285,7 @@ public class TwigTypeResolveUtil {
 
         // {% for user in "users" %}
         PsiElement forTag = twigCompositeElement.getFirstChild();
-        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagInVariablePattern());
+        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagInVariablePattern());
         if(inVariable == null) {
             return;
         }
@@ -295,7 +296,7 @@ public class TwigTypeResolveUtil {
         }
 
         // {% for "user" in users %}
-        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigHelper.getForTagVariablePattern());
+        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagVariablePattern());
         if(forScopeVariable == null) {
             return;
         }

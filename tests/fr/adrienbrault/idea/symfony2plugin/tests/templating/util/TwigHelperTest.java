@@ -8,11 +8,11 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.apache.commons.lang.StringUtils;
@@ -215,40 +215,6 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see TwigHelper#getBlockTagPattern
-     */
-    public void testGetBlockTagPattern() {
-        String[] blocks = {
-            "{% block 'a<caret>a' %}",
-            "{% block \"a<caret>a\" %}",
-            "{% block a<caret>a %}"
-        };
-
-        for (String s : blocks) {
-            myFixture.configureByText(TwigFileType.INSTANCE, s);
-
-            assertTrue(TwigHelper.getBlockTagPattern().accepts(
-                myFixture.getFile().findElementAt(myFixture.getCaretOffset()))
-            );
-        }
-    }
-
-    /**
-     * @see TwigHelper#getBlockTagPattern
-     */
-    public void testGetAutocompletableAssetPattern() {
-        myFixture.configureByText(TwigFileType.INSTANCE, "{{ asset('bundles/<caret>test/img/' ~ entity.img ~ '.png') }}");
-        assertFalse(TwigHelper.getAutocompletableAssetPattern().accepts(
-            myFixture.getFile().findElementAt(myFixture.getCaretOffset()
-        )));
-
-        myFixture.configureByText(TwigFileType.INSTANCE, "{{ asset('bundles/<caret>test/img/') }}");
-        assertTrue(TwigHelper.getAutocompletableAssetPattern().accepts(
-            myFixture.getFile().findElementAt(myFixture.getCaretOffset())
-        ));
-    }
-
-    /**
      * @see TwigHelper#getUniqueTwigTemplatesList
      */
     public void testGetUniqueTwigTemplatesList() {
@@ -274,156 +240,6 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see TwigHelper#getPrintBlockOrTagFunctionPattern
-     */
-    public void testGetPrintBlockOrTagFunctionPattern() {
-        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar('f<caret>o') }}")
-        ));
-
-        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% if foobar('f<caret>o') %}")
-        ));
-
-        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% set foo = foobar('f<caret>o') %}")
-        ));
-
-        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% elseif foobar('f<caret>o') %}")
-        ));
-
-        assertTrue(TwigHelper.getPrintBlockOrTagFunctionPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% else foobar('f<caret>o') %}")
-        ));
-    }
-
-    /**
-     * @see TwigHelper#getFunctionWithFirstParameterAsArrayPattern
-     */
-    public void testGetFunctionWithFirstParameterAsArrayPattern() {
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar(['fo<caret>o']) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar(['foo', 'fo<caret>o']) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar([\"foo\", \"fo<caret>o\"]) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsArrayPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar       (       [ 'foo'     , 'fo<caret>o']) }}")
-        ));
-    }
-
-    /**
-     * @see TwigHelper#getFunctionWithFirstParameterAsLiteralPattern
-     */
-    public void testFunctionWithFirstParameterAsLiteralPattern() {
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'f<caret>o'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar    (       {     'f<caret>o'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo', 'f<caret>o'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({\"f<caret>o\"}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({\"foo\", \"f<caret>o\"}) }}")
-        ));
-    }
-
-    /**
-     * @see TwigHelper#getFunctionWithFirstParameterAsKeyLiteralPattern
-     */
-    public void testGetFunctionWithFirstParameterAsKeyLiteralPattern() {
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo': 'foobar', 'fo': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'foo': 'foobar'  ~ 'foobar' , 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({'fo': 'f<caret>d'}) }}")
-        ));
-
-        assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar({}, 'a<caret>a'}")
-        ));
-
-        assertFalse(TwigHelper.getFunctionWithFirstParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar( {foo({}, 'a<caret>a'}} )")
-        ));
-    }
-
-    /**
-     * @see TwigHelper#getFunctionWithSecondParameterAsKeyLiteralPattern
-     */
-    public void testGetFunctionWithSecondParameterAsKeyLiteralPattern() {
-        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar(12, {'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar(12, {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar(foo.foo, {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar('foo', {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar(\"foo\", {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getFunctionWithSecondParameterAsKeyLiteralPattern("foobar").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ foobar('f' ~ 'oo', {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-    }
-
-    /**
-     * @see TwigHelper#getPathAfterLeafPattern
-     */
-    public void testGetPathAfterLeafPattern() {
-        assertTrue(TwigHelper.getPathAfterLeafPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'f<caret>o'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getPathAfterLeafPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'foobar': 'foobar', 'f<caret>o': 'foobar'}) }}")
-        ));
-
-        assertTrue(TwigHelper.getPathAfterLeafPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'f': 'f', 'f': 'f', 'f<caret>a': 'f'}) }}")
-        ));
-    }
-
-    /**
      * @see TwigHelper#getMatchingRouteNameOnParameter
      */
     public void testGetMatchingRouteNameOnParameter() {
@@ -439,59 +255,6 @@ public class TwigHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNull(
             TwigHelper.getMatchingRouteNameOnParameter(findElementAt(TwigFileType.INSTANCE, "{{ path('foo' ~ 'foo', {'f<caret>o'}) }}"))
-        );
-    }
-
-    /**
-     * @see TwigHelper#getParameterAsStringPattern
-     */
-    public void testGetParameterAsStringPattern() {
-        assertTrue(
-            TwigHelper.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('foo', 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('foo', 'f<caret>o', null) }}"))
-        );
-
-        assertFalse(
-            TwigHelper.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('f<caret>o') }}"))
-        );
-    }
-    /**
-     * @see TwigHelper#getTransDomainPattern
-     */
-    public void testGetTransDomainPattern() {
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans({}, 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans([], 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans(null, 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(2, {}, 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(2, null, 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(2, [], 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(test.test, [], 'f<caret>o') }}"))
-        );
-
-        assertTrue(
-            TwigHelper.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(test ~ 'test', [], 'f<caret>o') }}"))
         );
     }
 

@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathIndex;
@@ -203,7 +204,7 @@ public class TwigUtil {
                 psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-                        if(TwigHelper.getTransDefaultDomainPattern().accepts(element)) {
+                        if(TwigPattern.getTransDefaultDomainPattern().accepts(element)) {
                             String text = PsiElementUtils.trimQuote(element.getText());
                             if(StringUtils.isNotBlank(text)) {
                                 fileTransDomain[0] = text;
@@ -340,7 +341,7 @@ public class TwigUtil {
             PsiElement quote = PsiTreeUtil.nextVisibleLeaf(comma);
             if (PsiElementAssertUtil.isNotNullAndIsElementType(quote, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE)) {
                 PsiElement text = PsiTreeUtil.nextVisibleLeaf(quote);
-                if (text != null && TwigHelper.getParameterAsStringPattern().accepts(text)) {
+                if (text != null && TwigPattern.getParameterAsStringPattern().accepts(text)) {
                     return text.getText();
                 }
             }
@@ -951,11 +952,11 @@ public class TwigUtil {
 
         return !(PlatformPatterns.psiElement()
             .afterLeafSkipping(
-                TwigHelper.STRING_WRAP_PATTERN,
+                TwigPattern.STRING_WRAP_PATTERN,
                 PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
             ).accepts(element) ||
             PlatformPatterns.psiElement().beforeLeafSkipping(
-                TwigHelper.STRING_WRAP_PATTERN,
+                TwigPattern.STRING_WRAP_PATTERN,
                 PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)
             ).accepts(element));
     }
@@ -1061,7 +1062,7 @@ public class TwigUtil {
 
                 // {% import "foo.html.twig"
                 if(myTypes.contains(TemplateInclude.TYPE.IMPORT)) {
-                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import"));
+                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import"));
                     if(embedTag != null) {
                         String templateName = embedTag.getText();
                         if(StringUtils.isNotBlank(templateName)) {
@@ -1072,7 +1073,7 @@ public class TwigUtil {
 
                 // {% from 'forms.html' import ... %}
                 if(myTypes.contains(TemplateInclude.TYPE.FROM)) {
-                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from"));
+                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from"));
                     if(embedTag != null) {
                         String templateName = embedTag.getText();
                         if(StringUtils.isNotBlank(templateName)) {
@@ -1084,7 +1085,7 @@ public class TwigUtil {
                 // {{ include() }}
                 // {{ source() }}
                 if(myTypes.contains(TemplateInclude.TYPE.INCLUDE_FUNCTION)) {
-                    PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getPrintBlockFunctionPattern("include", "source"));
+                    PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getPrintBlockFunctionPattern("include", "source"));
                     if(includeTag != null) {
                         String templateName = includeTag.getText();
                         if(StringUtils.isNotBlank(templateName)) {
@@ -1095,7 +1096,7 @@ public class TwigUtil {
 
                 // {% embed "foo.html.twig"
                 if(myTypes.contains(TemplateInclude.TYPE.EMBED)) {
-                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigHelper.getEmbedPattern());
+                    PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getEmbedPattern());
                     if(embedTag != null) {
                         String templateName = embedTag.getText();
                         if(StringUtils.isNotBlank(templateName)) {
@@ -1269,7 +1270,7 @@ public class TwigUtil {
 
         // visit every trans or transchoice to get possible domain names
         PsiTreeUtil.collectElements(psiFile, psiElement -> {
-            if (TwigHelper.getTransDomainPattern().accepts(psiElement)) {
+            if (TwigPattern.getTransDomainPattern().accepts(psiElement)) {
                 PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
                 if (psiElementTrans != null && TwigHelper.getTwigMethodString(psiElementTrans) != null) {
                     String text = psiElement.getText();
@@ -1424,7 +1425,7 @@ public class TwigUtil {
                 if(firstChild.getNode().getElementType() == TwigElementTypes.FOR_TAG) {
                     PsiElement afterIn = PsiElementUtils.getNextSiblingOfType(
                         firstChild.getFirstChild(),
-                        TwigHelper.getForTagInVariablePattern()
+                        TwigPattern.getForTagInVariablePattern()
                     );
 
                     visitTemplateVariablesConsumer(afterIn, consumer);

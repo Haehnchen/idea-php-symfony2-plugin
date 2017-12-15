@@ -58,22 +58,22 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     public TwigTemplateCompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.or(
-            TwigHelper.getTemplateFileReferenceTagPattern(),
-            TwigHelper.getTagTernaryPattern(TwigElementTypes.EXTENDS_TAG)
+            TwigPattern.getTemplateFileReferenceTagPattern(),
+            TwigPattern.getTagTernaryPattern(TwigElementTypes.EXTENDS_TAG)
         ), new TemplateCompletionProvider());
 
         // all file template "include" pattern
         extend(CompletionType.BASIC, PlatformPatterns.or(
-            TwigHelper.getPrintBlockFunctionPattern("include", "source"),
-            TwigHelper.getIncludeTagArrayPattern(),
-            TwigHelper.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
+            TwigPattern.getPrintBlockFunctionPattern("include", "source"),
+            TwigPattern.getIncludeTagArrayPattern(),
+            TwigPattern.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
         ),  new TemplateCompletionProvider());
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTranslationPattern("trans", "transchoice"),
+            TwigPattern.getTranslationPattern("trans", "transchoice"),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
@@ -92,7 +92,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // provides support for 'a'|transchoice(2, {'%foo%' : bar|default}, '<xxx>')
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTransDomainPattern(),
+            TwigPattern.getTransDomainPattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
@@ -111,12 +111,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         );
 
         // provides support for {% block |
-        extend(CompletionType.BASIC, TwigHelper.getBlockTagPattern(), new BlockCompletionProvider());
+        extend(CompletionType.BASIC, TwigPattern.getBlockTagPattern(), new BlockCompletionProvider());
 
         // provides support for {% from 'twig..' import |
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTemplateImportFileReferenceTagPattern(),
+            TwigPattern.getTemplateImportFileReferenceTagPattern(),
 
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
@@ -126,7 +126,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     // find {% from "<template.name>"
-                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), TwigHelper.getFromTemplateElement());
+                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), TwigPattern.getFromTemplateElementPattern());
                     if(psiElement == null) {
                         return;
                     }
@@ -164,14 +164,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {{ 'test'|<caret> }}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getFilterPattern(),
+            TwigPattern.getFilterPattern(),
             new FilterCompletionProvider()
         );
 
         // provides support for {{ '<xxx>' }}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getCompletablePattern(),
+            TwigPattern.getCompletablePattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
@@ -218,7 +218,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {% for user in "users" %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getVariableTypePattern(),
+            TwigPattern.getVariableTypePattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
@@ -239,38 +239,38 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         // {% trans_default_domain <> %}
         // {% trans_default_domain '<>' %}
-        extend(CompletionType.BASIC, TwigHelper.getTransDefaultDomainPattern(), new TranslationDomainCompletionProvider());
+        extend(CompletionType.BASIC, TwigPattern.getTransDefaultDomainPattern(), new TranslationDomainCompletionProvider());
 
         // {% trans from "<carpet>" %}
         // {% transchoice from "<carpet>" %}
-        extend(CompletionType.BASIC, TwigHelper.getTranslationTokenTagFromPattern(), new TranslationDomainCompletionProvider());
+        extend(CompletionType.BASIC, TwigPattern.getTranslationTokenTagFromPattern(), new TranslationDomainCompletionProvider());
 
         // {{ controller('<caret>') }}
         // {% render(controller('<caret>')) %}
-        extend(CompletionType.BASIC, TwigHelper.getPrintBlockOrTagFunctionPattern("controller"), new ControllerCompletionProvider());
+        extend(CompletionType.BASIC, TwigPattern.getPrintBlockOrTagFunctionPattern("controller"), new ControllerCompletionProvider());
 
         // {% render '<caret>' %}"
-        extend(CompletionType.BASIC, TwigHelper.getStringAfterTagNamePattern("render"), new ControllerCompletionProvider());
+        extend(CompletionType.BASIC, TwigPattern.getStringAfterTagNamePattern("render"), new ControllerCompletionProvider());
 
         // assets completion:
         // stylesheets and javascripts tags
 
-        extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetPattern(), new AssetCompletionProvider().setAssetParser(
+        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetPattern(), new AssetCompletionProvider().setAssetParser(
             new AssetDirectoryReader()
         ));
 
-        extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
+        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetTag("stylesheets"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
             new AssetDirectoryReader().setFilterExtension(TwigHelper.CSS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
-        extend(CompletionType.BASIC, TwigHelper.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
+        extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetTag("javascripts"), new AssetCompletionProvider().setIncludeCustom(true).setAssetParser(
             new AssetDirectoryReader().setFilterExtension(TwigHelper.JS_FILES_EXTENSIONS).setIncludeBundleDir(true)
         ));
 
         // routing completion like path() function
         extend(
             CompletionType.BASIC,
-            TwigHelper.getAutocompletableRoutePattern(),
+            TwigPattern.getAutocompletableRoutePattern(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
@@ -285,14 +285,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // routing parameter completion
         extend(
             CompletionType.BASIC,
-            TwigHelper.getPathAfterLeafPattern(),
+            TwigPattern.getPathAfterLeafPattern(),
             new PathParameterCompletionProvider()
         );
 
         // simulated php completion var.<foo>
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTypeCompletionPattern(),
+            TwigPattern.getTypeCompletionPattern(),
             new TypeCompletionProvider()
         );
 
@@ -300,7 +300,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {{ foobar.<caret> }}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTypeCompletionPattern(),
+            TwigPattern.getTypeCompletionPattern(),
             new MyMacroImportAsCompletionProvider()
         );
 
@@ -308,7 +308,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {# variable \Foo\ClassName #}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getTwigTypeDocBlock(),
+            TwigPattern.getTwigTypeDocBlockPattern(),
             new PhpClassCompletionProvider(true).withTrimLeadBackslash(true)
         );
 
@@ -328,28 +328,28 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         // {% <carpet> %}
         extend(CompletionType.BASIC,
-            TwigHelper.getTagTokenParserPattern(),
+            TwigPattern.getTagTokenParserPattern(),
             new TagTokenParserCompletionProvider()
         );
 
         // {% if foo is defined %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getAfterIsTokenPattern(),
+            TwigPattern.getAfterIsTokenPattern(),
             new TwigSimpleTestParametersCompletionProvider()
         );
 
         // {% if foo.bar <carpet> %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getAfterOperatorPattern(),
+            TwigPattern.getAfterOperatorPattern(),
             new TwigOperatorCompletionProvider()
         );
 
         // {% constant('FOO') %}
         extend(
             CompletionType.BASIC,
-            TwigHelper.getPrintBlockOrTagFunctionPattern("constant"),
+            TwigPattern.getPrintBlockOrTagFunctionPattern("constant"),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     PsiElement position = parameters.getPosition();

@@ -25,7 +25,7 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
 
         // {{ block('foo_block') }}
-        registrar.register(TwigHelper.getPrintBlockFunctionPattern("block"), psiElement -> {
+        registrar.register(TwigPattern.getPrintBlockFunctionPattern("block"), psiElement -> {
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }

@@ -9,7 +9,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +41,7 @@ public class TwigVariableDeprecatedInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(TwigHelper.getTypeCompletionPattern().accepts(element)) {
+            if(TwigPattern.getTypeCompletionPattern().accepts(element)) {
                 visit(element);
             }
             super.visitElement(element);

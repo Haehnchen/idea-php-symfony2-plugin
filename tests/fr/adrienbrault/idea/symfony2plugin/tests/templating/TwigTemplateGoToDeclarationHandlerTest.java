@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigBlockTag;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -151,8 +152,8 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
 
     public void testSeeTagGotoRegexMatch() {
         for (String s : new String[]{"\\DateTime", "\\DateTime::format", "foo/foo.html.twig", "@foo/foo.html.twig", "@foo/fo-o.html.twig", "@foo\\fo-o.html.twig", "Include/type_embed.html.twig"}) {
-            assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX).matcher("{# @see " + s + " #}").find());
-            assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX).matcher("{# @see " + s + "#}").find());
+            assertTrue(Pattern.compile(TwigPattern.DOC_SEE_REGEX).matcher("{# @see " + s + " #}").find());
+            assertTrue(Pattern.compile(TwigPattern.DOC_SEE_REGEX).matcher("{# @see " + s + "#}").find());
 
             assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + " #}").find());
             assertTrue(Pattern.compile(TwigHelper.DOC_SEE_REGEX_WITHOUT_SEE).matcher("{# " + s + "#}").find());

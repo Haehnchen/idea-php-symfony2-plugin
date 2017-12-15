@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +50,7 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         // asset / absolute_url dont have pre filter
-        if(TwigHelper.getPrintBlockOrTagFunctionPattern("asset", "absolute_url").accepts(psiElement)) {
+        if(TwigPattern.getPrintBlockOrTagFunctionPattern("asset", "absolute_url").accepts(psiElement)) {
             return (String[]) ArrayUtils.addAll(TwigHelper.CSS_FILES_EXTENSIONS, TwigHelper.JS_FILES_EXTENSIONS);
         }
 
@@ -59,7 +60,7 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
     @Nullable
     private String[] getFileExtensionFilterIfValidTag(PsiElement psiElement) {
         for (String tag: new String[] {"stylesheets", "javascripts"}) {
-            if (!TwigHelper.getAutocompletableAssetTag(tag).accepts(psiElement)) {
+            if (!TwigPattern.getAutocompletableAssetTag(tag).accepts(psiElement)) {
                 continue;
             }
 

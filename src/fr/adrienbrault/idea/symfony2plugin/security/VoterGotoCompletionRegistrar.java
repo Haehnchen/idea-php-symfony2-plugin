@@ -9,7 +9,7 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -32,9 +32,9 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         // {% is_granted(['foobar']) %}
         registrar.register(
             PlatformPatterns.or(
-                TwigHelper.getPrintBlockOrTagFunctionPattern("is_granted"),
-                TwigHelper.getFunctionWithFirstParameterAsArrayPattern("is_granted"),
-                TwigHelper.getFunctionWithFirstParameterAsLiteralPattern("is_granted")
+                TwigPattern.getPrintBlockOrTagFunctionPattern("is_granted"),
+                TwigPattern.getFunctionWithFirstParameterAsArrayPattern("is_granted"),
+                TwigPattern.getFunctionWithFirstParameterAsLiteralPattern("is_granted")
             ),
             MyVisitorGotoCompletionProvider::new
         );

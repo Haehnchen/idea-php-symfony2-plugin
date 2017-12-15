@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAndQuickFixAction;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
@@ -37,7 +37,7 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement psiElement) {
-            if(!TwigHelper.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
+            if(!TwigPattern.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
                 super.visitElement(psiElement);
                 return;
             }

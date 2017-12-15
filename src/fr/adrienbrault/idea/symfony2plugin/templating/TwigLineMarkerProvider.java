@@ -65,7 +65,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
-            } else if (TwigHelper.getBlockTagPattern().accepts(psiElement) || TwigHelper.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
+            } else if (TwigPattern.getBlockTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
                 // blocks: {% block 'foobar' %}, {{ block('foobar') }}
 
                 LineMarkerInfo lineImpl = this.attachBlockImplements(psiElement);

@@ -16,6 +16,7 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -67,7 +68,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
             // {% include 'template.html' with {'foo': 'bar'} only %}
             // {% embed "template.html.twig" with {'foo': 'bar'} only %}
 
-            PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigHelper.getIncludeOnlyPattern());
+            PsiElement onlyElement = PsiElementUtils.getChildrenOfType(tag, TwigPattern.getIncludeOnlyPattern());
             if(onlyElement != null) {
                 addContextVar = false;
             }
@@ -199,7 +200,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
 
             // {% include 'template.html' %}
             if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getTemplateFileReferenceTagPattern("include"));
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getTemplateFileReferenceTagPattern("include"));
                 if(includeTag != null) {
                     collectContextVars(TwigElementTypes.INCLUDE_TAG, element, includeTag);
                 }
@@ -207,13 +208,13 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
 
             if(element instanceof TwigCompositeElement) {
                 // {{ include('template.html') }}
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getPrintBlockFunctionPattern("include"));
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getPrintBlockFunctionPattern("include"));
                 if(includeTag != null) {
                     collectContextVars(TwigTokenTypes.IDENTIFIER, element, includeTag);
                 }
 
                 // {% embed "foo.html.twig"
-                PsiElement embedTag = PsiElementUtils.getChildrenOfType(element, TwigHelper.getEmbedPattern());
+                PsiElement embedTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getEmbedPattern());
                 if(embedTag != null) {
                     collectContextVars(TwigElementTypes.EMBED_TAG, element, embedTag);
                 }
