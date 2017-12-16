@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -58,6 +59,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -1208,8 +1210,13 @@ public class TwigUtil {
      * "::test.html.twig"
      */
     @NotNull
-    public static Collection<String> getTemplateNamesForFile(@NotNull TwigFile twigFile) {
-        return getTemplateNamesForFile(twigFile.getProject(), twigFile.getVirtualFile());
+    public static Collection<String> getTemplateNamesForFile(@NotNull PsiFile twigFile) {
+        VirtualFile virtualFile = twigFile.getVirtualFile();
+        if(virtualFile == null) {
+            return Collections.emptyList();
+        }
+
+        return getTemplateNamesForFile(twigFile.getProject(), virtualFile);
     }
 
     /**
@@ -1226,18 +1233,10 @@ public class TwigUtil {
             .filter(TwigPath::isEnabled)
             .collect(Collectors.toList());
 
-        Collection<String> templates = new ArrayList<>();
-
-        for (TwigPath twigPath : collect) {
-            String templateName = getTemplateNameForTwigPath(project, twigPath, virtualFile);
-            if(templateName == null) {
-                continue;
-            }
-
-            templates.add(templateName);
-        }
-
-        return templates;
+        return collect.stream()
+            .map(twigPath -> getTemplateNameForTwigPath(project, twigPath, virtualFile))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     @Nullable
@@ -2764,6 +2763,48 @@ public class TwigUtil {
         }
 
         return templates;
+    }
+
+    /**
+     * Convert a given TwigBlock list into LookupElements
+     */
+    @NotNull
+    public static Collection<LookupElement> getBlockLookupElements(@NotNull Project project, @NotNull Collection<TwigBlock> twigBlocks) {
+        Collection<LookupElement> lookupElements = new ArrayList<>();
+
+        Map<VirtualFile, Collection<String>> templateNames = new HashMap<>();
+
+        // dont visit a block twice
+        List<String> uniqueList = new ArrayList<>();
+
+        for (TwigBlock block : twigBlocks) {
+            if(uniqueList.contains(block.getName())) {
+                continue;
+            }
+
+            // add block name to known list
+            uniqueList.add(block.getName());
+
+            // performance optimize to not resolve too many elements
+            VirtualFile virtualFile = block.getTarget().getContainingFile().getVirtualFile();
+            if(virtualFile != null && !templateNames.containsKey(virtualFile)) {
+                templateNames.put(virtualFile, TwigUtil.getTemplateNamesForFile(project, virtualFile));
+            }
+
+            LookupElementBuilder lookupElementBuilder = LookupElementBuilder
+                .create(block.getName())
+                .withIcon(TwigIcons.TwigFileIcon);
+
+            // decorate with template name
+            Collection<String> names = templateNames.getOrDefault(virtualFile, Collections.emptyList());
+            if(names.size() > 0) {
+                lookupElementBuilder = lookupElementBuilder.withTypeText(names.iterator().next(), true);
+            }
+
+            lookupElements.add(lookupElementBuilder);
+        }
+
+        return lookupElements;
     }
 
     public static class DomainScope {

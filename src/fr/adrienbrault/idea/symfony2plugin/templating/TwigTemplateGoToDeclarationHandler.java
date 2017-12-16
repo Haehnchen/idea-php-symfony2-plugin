@@ -306,7 +306,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         for (TwigBlock block : new TwigBlockParser(withSelfBlocks).walk(psiFile)) {
             if(block.getName().equals(blockName)) {
-                Collections.addAll(psiElements, block.getBlock());
+                Collections.addAll(psiElements, block.getTarget());
             }
         }
 

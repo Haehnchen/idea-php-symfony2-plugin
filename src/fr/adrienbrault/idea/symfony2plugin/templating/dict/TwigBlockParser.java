@@ -23,7 +23,6 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigBlockParser {
-
     private boolean withSelfBlock = false;
 
     public TwigBlockParser() {
@@ -38,7 +37,7 @@ public class TwigBlockParser {
         List<TwigBlock> blocks = new ArrayList<>();
 
         for (PsiFile psiFile : file) {
-            blocks.addAll(walk(psiFile, psiFile.getName(), new ArrayList<>(), 0));
+            blocks.addAll(walk(psiFile, new ArrayList<>(), 0));
         }
 
         return blocks;
@@ -46,11 +45,11 @@ public class TwigBlockParser {
 
     @NotNull
     public List<TwigBlock> walk(@Nullable PsiFile file) {
-        return walk(file, "self", new ArrayList<>(), 0);
+        return walk(file, new ArrayList<>(), 0);
     }
 
     @NotNull
-    private List<TwigBlock> walk(@Nullable PsiFile file, String shortcutName, List<TwigBlock> current, int depth) {
+    private List<TwigBlock> walk(@Nullable PsiFile file, @NotNull List<TwigBlock> current, int depth) {
         if(file == null) {
             return current;
         }
@@ -58,12 +57,7 @@ public class TwigBlockParser {
         // dont match on self file !?
         if(depth > 0 || (withSelfBlock && depth == 0)) {
             if(file instanceof TwigFile) {
-                Collection<TwigBlock> blocksInFile = TwigUtil.getBlocksInFile((TwigFile) file);
-                // @TODO: remove this here just presentation
-                for (TwigBlock twigBlock : blocksInFile) {
-                    twigBlock.setShortcutName(shortcutName);
-                }
-                current.addAll(blocksInFile);
+                current.addAll(TwigUtil.getBlocksInFile((TwigFile) file));
             }
         }
 
@@ -106,7 +100,6 @@ public class TwigBlockParser {
         }
 
         for(Map.Entry<VirtualFile, String> entry : virtualFiles.entrySet()) {
-
             // can be null if deleted during iteration
             VirtualFile key = entry.getKey();
             if(key == null) {
@@ -115,7 +108,7 @@ public class TwigBlockParser {
 
             PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(key);
             if(psiFile instanceof TwigFile) {
-                walk(psiFile, entry.getValue(), current, depth);
+                walk(psiFile, current, depth);
             }
         }
 

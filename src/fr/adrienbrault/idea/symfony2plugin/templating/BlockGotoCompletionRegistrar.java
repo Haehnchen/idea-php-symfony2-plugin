@@ -6,24 +6,24 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 /**
+ * {{ block('foo_block') }}
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
-
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
-
         // {{ block('foo_block') }}
         registrar.register(TwigPattern.getPrintBlockFunctionPattern("block"), psiElement -> {
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
@@ -64,18 +64,10 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         @NotNull
         public Collection<LookupElement> getLookupElements() {
-
-            Collection<LookupElement> lookupElements = new ArrayList<>();
-
-            List<String> uniqueList = new ArrayList<>();
-            for (TwigBlock block : new TwigBlockParser(true).walk(getElement().getContainingFile())) {
-                if(!uniqueList.contains(block.getName())) {
-                    uniqueList.add(block.getName());
-                    lookupElements.add(new TwigBlockLookupElement(block));
-                }
-            }
-
-            return lookupElements;
+            return TwigUtil.getBlockLookupElements(
+                getProject(),
+                new TwigBlockParser(true).walk(getElement().getContainingFile())
+            );
         }
     }
 }

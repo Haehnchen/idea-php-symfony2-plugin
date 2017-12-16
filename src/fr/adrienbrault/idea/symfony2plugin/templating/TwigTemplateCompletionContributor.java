@@ -25,16 +25,16 @@ import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvide
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalVariable;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalVariable;
+import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
@@ -45,7 +45,9 @@ import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -572,15 +574,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             // collect blocks in all related files
             Pair<PsiFile[], Boolean> scopedContext = TwigUtil.findScopedFile(position);
 
-            Set<String> uniqueList = new HashSet<>();
-            for (TwigBlock block : new TwigBlockParser(scopedContext.getSecond()).visit(scopedContext.getFirst())) {
-                if(uniqueList.contains(block.getName())) {
-                    continue;
-                }
-
-                uniqueList.add(block.getName());
-                myResultSet.addElement(new TwigBlockLookupElement(block));
-            }
+            myResultSet.addAllElements(TwigUtil.getBlockLookupElements(
+                position.getProject(),
+                new TwigBlockParser(scopedContext.getSecond()).visit(scopedContext.getFirst())
+            ));
         }
     }
 

@@ -621,8 +621,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("foo", buildBlocks("{%- block \"foo\" -%}").iterator().next().getName());
         assertEquals("foo", buildBlocks("{%- block 'foo' -%}").iterator().next().getName());
 
-        assertNotNull(buildBlocks("{%- block 'foo' -%}").iterator().next().getPsiFile());
-        assertSize(1, buildBlocks("{%- block 'foo' -%}").iterator().next().getBlock());
+        assertNotNull(buildBlocks("{%- block 'foo' -%}").iterator().next().getTarget());
 
         assertEquals("foobar_block", buildBlocks("{{ block('foobar_block') }}").iterator().next().getName());
         assertEquals("foobar_block", buildBlocks("{{ block(\"foobar_block\") }}").iterator().next().getName());
