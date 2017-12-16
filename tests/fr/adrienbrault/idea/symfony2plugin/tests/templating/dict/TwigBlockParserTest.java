@@ -70,7 +70,7 @@ public class TwigBlockParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         List<TwigBlock> walk = new TwigBlockParser(true).walk(psiFile);
 
-        assertEquals(1, walk.stream().filter(twigBlock -> "foo".equals(twigBlock.getName()) && "self".equals(twigBlock.getShortcutName())).count());
+        assertEquals(1, walk.stream().filter(twigBlock -> "foo".equals(twigBlock.getName())).count());
         assertNotNull(walk.stream().filter(twigBlock -> "foo1".equals(twigBlock.getName())).findFirst().get());
     }
 }
