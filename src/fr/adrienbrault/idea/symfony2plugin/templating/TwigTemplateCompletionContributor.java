@@ -24,13 +24,17 @@ import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtensionLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalVariable;
@@ -576,7 +580,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             myResultSet.addAllElements(TwigUtil.getBlockLookupElements(
                 position.getProject(),
-                new TwigBlockParser(scopedContext.getSecond()).visit(scopedContext.getFirst())
+                TwigFileUtil.collectParentFiles(scopedContext.getSecond(), scopedContext.getFirst())
             ));
         }
     }

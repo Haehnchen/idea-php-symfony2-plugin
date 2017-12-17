@@ -41,15 +41,14 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -1818,19 +1817,10 @@ public class TwigUtil {
         // {% embed "template.twig" %}
         if(firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
             PsiElement embedTag = firstParent.getFirstChild();
-            if(embedTag.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
-                PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), psiElement12 ->
-                    TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement12)
-                );
-
-                if(fileReference != null && isValidStringWithoutInterpolatedOrConcat(fileReference)) {
-                    String text = fileReference.getText();
-                    if(StringUtils.isNotBlank(text)) {
-                        return Pair.create(
-                            getTemplatePsiElements(psiElement.getProject(), text),
-                            true
-                        );
-                    }
+            if(embedTag != null) {
+                String templateName = getTemplateNameForEmbedTag(embedTag);
+                if(templateName != null) {
+                    return Pair.create(getTemplatePsiElements(psiElement.getProject(), templateName), true);
                 }
             }
 
@@ -1838,6 +1828,29 @@ public class TwigUtil {
         }
 
         return Pair.create(new PsiFile[] {psiElement.getContainingFile()}, false);
+    }
+
+    /**
+     * Extract template name from embed tag
+     *
+     * {% embed "teasers_skeleton.html.twig" %}
+     */
+    @Nullable
+    private static String getTemplateNameForEmbedTag(@NotNull PsiElement embedTag) {
+        if(embedTag.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
+            PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), psiElement ->
+                TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement)
+            );
+
+            if(fileReference != null && TwigUtil.isValidStringWithoutInterpolatedOrConcat(fileReference)) {
+                String text = fileReference.getText();
+                if(StringUtils.isNotBlank(text)) {
+                    return text;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -2021,40 +2034,6 @@ public class TwigUtil {
         }
 
         return text;
-    }
-
-    /**
-     *  {% extends 'foobar.html.twig' %}
-     *
-     *  {{ block('foo<caret>bar') }}
-     *  {% block 'foo<caret>bar' %}
-     *  {% block foo<caret>bar %}
-     */
-    @NotNull
-    public static Collection<PsiElement> getBlocksByImplementations(@NotNull PsiElement blockPsiName) {
-        PsiFile psiFile = blockPsiName.getContainingFile();
-        if(psiFile == null) {
-            return Collections.emptyList();
-        }
-
-        Collection<PsiFile> twigChild = getTemplatesExtendingFile(psiFile);
-        if(twigChild.size() == 0) {
-            return Collections.emptyList();
-        }
-
-        String blockName = blockPsiName.getText();
-        if(StringUtils.isBlank(blockName)) {
-            return Collections.emptyList();
-        }
-
-        Collection<PsiElement> blockTargets = new ArrayList<>();
-        for(PsiFile psiFile1: twigChild) {
-            blockTargets.addAll(Arrays.asList(PsiTreeUtil.collectElements(psiFile1, psiElement1 ->
-                (TwigPattern.getBlockTagPattern().accepts(psiElement1) || TwigPattern.getPrintBlockFunctionPattern("block").accepts(psiElement1)) && blockName.equals(psiElement1.getText())))
-            );
-        }
-
-        return blockTargets;
     }
 
     private static class TemplateStringComparator implements Comparator<String> {
@@ -2251,13 +2230,13 @@ public class TwigUtil {
      * Collects all files that extends a given files
      */
     @NotNull
-    public static Collection<PsiFile> getTemplatesExtendingFile(@NotNull PsiFile psiFile) {
-        Set<PsiFile> twigChild = new HashSet<>();
-        getTemplatesExtendingFile(psiFile, twigChild, 8);
+    public static Collection<VirtualFile> getTemplatesExtendingFile(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        Set<VirtualFile> twigChild = new HashSet<>();
+        getTemplatesExtendingFile(project, virtualFile, twigChild, 8);
         return twigChild;
     }
 
-    private static void getTemplatesExtendingFile(@NotNull PsiFile psiFile, @NotNull final Set<PsiFile> twigChild, int depth) {
+    private static void getTemplatesExtendingFile(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull Set<VirtualFile> twigChild, int depth) {
         if(depth <= 0) {
             return;
         }
@@ -2265,22 +2244,39 @@ public class TwigUtil {
         // use set here, we have multiple shortcut on one file, but only one is required
         HashSet<VirtualFile> virtualFiles = new LinkedHashSet<>();
 
-        for(String templateName: getTemplateNamesForFile(psiFile.getProject(), psiFile.getVirtualFile())) {
+        for(String templateName: getTemplateNamesForFile(project, virtualFile)) {
             // getFilesWithKey dont support keyset with > 1 items (bug?), so we cant merge calls
-            FileBasedIndex.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), virtualFile -> {
-                virtualFiles.add(virtualFile);
+            FileBasedIndex.getInstance().getFilesWithKey(TwigExtendsStubIndex.KEY, new HashSet<>(Collections.singletonList(templateName)), myVirtualFile -> {
+                virtualFiles.add(myVirtualFile);
                 return true;
-            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(psiFile.getProject()), TwigFileType.INSTANCE));
+            }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE));
         }
 
         // finally resolve virtual file to twig files
-        for(VirtualFile virtualFile: virtualFiles) {
-            PsiFile resolvedPsiFile = PsiManager.getInstance(psiFile.getProject()).findFile(virtualFile);
-            if(resolvedPsiFile != null) {
-                twigChild.add(resolvedPsiFile);
-                getTemplatesExtendingFile(resolvedPsiFile, twigChild, --depth);
+        for(VirtualFile myVirtualFile: virtualFiles) {
+            // stop if already inside
+            if(twigChild.contains(myVirtualFile)) {
+                continue;
             }
+
+            twigChild.add(myVirtualFile);
+            getTemplatesExtendingFile(project, myVirtualFile, twigChild, --depth);
         }
+    }
+
+    @NotNull
+    public static Map<VirtualFile, Collection<String>> getBlockNamesForFiles(@NotNull Project project, @NotNull Collection<VirtualFile> virtualFiles) {
+        Map<VirtualFile, Collection<String>> blocks = new HashMap<>();
+
+        for (VirtualFile virtualFile : virtualFiles) {
+            FileBasedIndex.getInstance().getValues(TwigBlockIndexExtension.KEY, "block", GlobalSearchScope.fileScope(project, virtualFile))
+                .forEach(strings -> {
+                    blocks.putIfAbsent(virtualFile, new HashSet<>());
+                    blocks.get(virtualFile).addAll(strings);
+                });
+        }
+
+        return blocks;
     }
 
     /**
@@ -2766,42 +2762,33 @@ public class TwigUtil {
     }
 
     /**
-     * Convert a given TwigBlock list into LookupElements
+     * Collect block in virtual files via index
      */
     @NotNull
-    public static Collection<LookupElement> getBlockLookupElements(@NotNull Project project, @NotNull Collection<TwigBlock> twigBlocks) {
+    public static Collection<LookupElement> getBlockLookupElements(@NotNull Project project, @NotNull Collection<VirtualFile> files) {
         Collection<LookupElement> lookupElements = new ArrayList<>();
 
         Map<VirtualFile, Collection<String>> templateNames = new HashMap<>();
 
-        // dont visit a block twice
-        List<String> uniqueList = new ArrayList<>();
-
-        for (TwigBlock block : twigBlocks) {
-            if(uniqueList.contains(block.getName())) {
-                continue;
-            }
-
-            // add block name to known list
-            uniqueList.add(block.getName());
-
+        for (Map.Entry<VirtualFile, Collection<String>> block : getBlockNamesForFiles(project, files).entrySet()) {
             // performance optimize to not resolve too many elements
-            VirtualFile virtualFile = block.getTarget().getContainingFile().getVirtualFile();
-            if(virtualFile != null && !templateNames.containsKey(virtualFile)) {
+            VirtualFile virtualFile = block.getKey();
+            if(!templateNames.containsKey(virtualFile)) {
                 templateNames.put(virtualFile, TwigUtil.getTemplateNamesForFile(project, virtualFile));
             }
 
-            LookupElementBuilder lookupElementBuilder = LookupElementBuilder
-                .create(block.getName())
-                .withIcon(TwigIcons.TwigFileIcon);
+            for (String blockName : block.getValue()) {
+                LookupElementBuilder lookupElementBuilder = LookupElementBuilder
+                    .create(blockName)
+                    .withIcon(TwigIcons.TwigFileIcon);
 
-            // decorate with template name
-            Collection<String> names = templateNames.getOrDefault(virtualFile, Collections.emptyList());
-            if(names.size() > 0) {
-                lookupElementBuilder = lookupElementBuilder.withTypeText(names.iterator().next(), true);
+                Collection<String> names = templateNames.getOrDefault(virtualFile, Collections.emptyList());
+                if(names.size() > 0) {
+                    lookupElementBuilder = lookupElementBuilder.withTypeText(names.iterator().next(), true);
+                }
+
+                lookupElements.add(lookupElementBuilder);
             }
-
-            lookupElements.add(lookupElementBuilder);
         }
 
         return lookupElements;

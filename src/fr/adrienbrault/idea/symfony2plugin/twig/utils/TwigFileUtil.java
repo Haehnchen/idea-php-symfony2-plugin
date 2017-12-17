@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.dict;
+package fr.adrienbrault.idea.symfony2plugin.twig.utils;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -15,65 +15,50 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigBlockParser {
-    private boolean withSelfBlock = false;
-
-    public TwigBlockParser() {
-    }
-
-    public TwigBlockParser(boolean withSelfBlock) {
-        this.withSelfBlock = withSelfBlock;
-    }
-
+public class TwigFileUtil {
+    /**
+     * Visit parent Twig files eg on "embed" tag and provide all files in this path until root file
+     */
     @NotNull
-    public List<TwigBlock> visit(@NotNull PsiFile[] file) {
-        List<TwigBlock> blocks = new ArrayList<>();
+    public static Collection<VirtualFile> collectParentFiles(boolean includeSelf, @NotNull PsiFile... psiFiles) {
+        Set<VirtualFile> virtualFiles = new HashSet<>();
 
-        for (PsiFile psiFile : file) {
-            blocks.addAll(walk(psiFile, new ArrayList<>(), 0));
-        }
-
-        return blocks;
-    }
-
-    @NotNull
-    public List<TwigBlock> walk(@Nullable PsiFile file) {
-        return walk(file, new ArrayList<>(), 0);
-    }
-
-    @NotNull
-    private List<TwigBlock> walk(@Nullable PsiFile file, @NotNull List<TwigBlock> current, int depth) {
-        if(file == null) {
-            return current;
-        }
-
-        // dont match on self file !?
-        if(depth > 0 || (withSelfBlock && depth == 0)) {
-            if(file instanceof TwigFile) {
-                current.addAll(TwigUtil.getBlocksInFile((TwigFile) file));
+        for (PsiFile psiFile : psiFiles) {
+            VirtualFile sourceFile = psiFile.getVirtualFile();
+            if(includeSelf) {
+                virtualFiles.add(sourceFile);
             }
+
+            visitParentFiles(psiFile, 0, virtualFiles);
         }
 
+        return virtualFiles;
+    }
+
+    private static void visitParentFiles(@NotNull PsiFile file, int depth, Collection<VirtualFile> virtualFiles) {
         // limit recursive calls
         if(depth++ > 20) {
-            return current;
+            return;
         }
 
-        final Map<VirtualFile, String> virtualFiles = new HashMap<>();
+        Set<VirtualFile> myVirtualFiles = new HashSet<>();
 
         // {% extends 'foo' %}
         // find extend in self
         for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(file, TwigExtendsTag.class)) {
             for (String templateName : TwigUtil.getTwigExtendsTagTemplates(extendsTag)) {
                 for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(file.getProject(), templateName)) {
-                    virtualFiles.put(psiFile.getVirtualFile(), templateName);
+                    VirtualFile virtualFile = psiFile.getVirtualFile();
+                    if(!virtualFiles.contains(virtualFile)) {
+                        myVirtualFiles.add(virtualFile);
+                        virtualFiles.add(virtualFile);
+                    }
                 }
             }
         }
@@ -88,7 +73,11 @@ public class TwigBlockParser {
                             String templateName = PsiElementUtils.trimQuote(element.getText());
                             if(StringUtils.isNotBlank(templateName)) {
                                 for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(file.getProject(), templateName)) {
-                                    virtualFiles.put(psiFile.getVirtualFile(), templateName);
+                                    VirtualFile virtualFile = psiFile.getVirtualFile();
+                                    if(!virtualFiles.contains(virtualFile)) {
+                                        myVirtualFiles.add(virtualFile);
+                                        virtualFiles.add(virtualFile);
+                                    }
                                 }
                             }
                         }
@@ -99,19 +88,12 @@ public class TwigBlockParser {
             }
         }
 
-        for(Map.Entry<VirtualFile, String> entry : virtualFiles.entrySet()) {
-            // can be null if deleted during iteration
-            VirtualFile key = entry.getKey();
-            if(key == null) {
-                continue;
-            }
-
-            PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(key);
+        // visit files in this scope
+        for(VirtualFile virtualFile : myVirtualFiles) {
+            PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(virtualFile);
             if(psiFile instanceof TwigFile) {
-                walk(psiFile, current, depth);
+                visitParentFiles(psiFile, depth, virtualFiles);
             }
         }
-
-        return current;
     }
 }

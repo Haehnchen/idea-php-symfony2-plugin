@@ -293,7 +293,7 @@ public class PsiElementUtils {
             IElementType elementType = element.getNode().getElementType();
             if (elementType == iElementType) {
                 //noinspection unchecked
-                return lastElement;
+                return element;
             }
 
             if (element instanceof PsiFile) {

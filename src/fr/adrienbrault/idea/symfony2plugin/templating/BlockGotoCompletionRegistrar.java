@@ -1,13 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlockParser;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +32,7 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
         });
     }
 
-    private static class BlockFunctionReferenceCompletionProvider extends GotoCompletionProvider {
+    private static class BlockFunctionReferenceCompletionProvider extends GotoCompletionProvider implements GotoCompletionProviderInterfaceEx {
         private BlockFunctionReferenceCompletionProvider(@NotNull PsiElement element) {
             super(element);
         }
@@ -49,11 +47,11 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
             Collection<PsiElement> psiElements = new HashSet<>();
 
             psiElements.addAll(
-                TwigTemplateGoToDeclarationHandler.getBlockNameGoTo(element.getContainingFile(), blockName, true)
+                TwigBlockUtil.getBlockOverwriteTargets(element.getContainingFile(), blockName, true)
             );
 
             psiElements.addAll(
-                TwigUtil.getBlocksByImplementations(element)
+                TwigBlockUtil.getBlockImplementationTargets(element)
             );
 
             // filter self navigation
@@ -62,12 +60,12 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 .collect(Collectors.toSet());
         }
 
-        @NotNull
-        public Collection<LookupElement> getLookupElements() {
-            return TwigUtil.getBlockLookupElements(
+        @Override
+        public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
+            arguments.addAllElements(TwigUtil.getBlockLookupElements(
                 getProject(),
-                new TwigBlockParser(true).walk(getElement().getContainingFile())
-            );
+                TwigFileUtil.collectParentFiles(true, arguments.getParameters().getOriginalFile())
+            ));
         }
     }
 }
