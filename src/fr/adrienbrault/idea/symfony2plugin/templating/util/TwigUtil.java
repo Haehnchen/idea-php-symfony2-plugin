@@ -41,14 +41,16 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -183,25 +185,25 @@ public class TwigUtil {
      * "@Template(template="foo.html.twig")"
      */
     @Nullable
-    public static Pair<String, PsiElement[]> getTemplateAnnotationFiles(@NotNull PhpDocTag phpDocTag) {
+    public static Pair<String, Collection<PsiElement>> getTemplateAnnotationFiles(@NotNull PhpDocTag phpDocTag) {
         String template = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template");
         if(template == null) {
             return null;
         }
 
         template = normalizeTemplateName(template);
-        return Pair.create(template, getTemplatePsiElements(phpDocTag.getProject(), template));
+        return Pair.create(template, new HashSet<>(getTemplatePsiElements(phpDocTag.getProject(), template)));
     }
 
     /**
      * Get templates on "@Template()" and on method attached to given PhpDocTag
      */
     @NotNull
-    public static Map<String, PsiElement[]> getTemplateAnnotationFilesWithSiblingMethod(@NotNull PhpDocTag phpDocTag) {
-        Map<String, PsiElement[]> targets = new HashMap<>();
+    public static Map<String, Collection<PsiElement>> getTemplateAnnotationFilesWithSiblingMethod(@NotNull PhpDocTag phpDocTag) {
+        Map<String, Collection<PsiElement>> targets = new HashMap<>();
 
         // template on direct PhpDocTag
-        Pair<String, PsiElement[]> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
+        Pair<String, Collection<PsiElement>> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
         if(templateAnnotationFiles != null) {
             targets.put(templateAnnotationFiles.getFirst(), templateAnnotationFiles.getSecond());
         }
@@ -212,7 +214,7 @@ public class TwigUtil {
             PsiElement method = phpDocComment.getNextPsiSibling();
             if(method instanceof Method) {
                 for (String name : TwigUtil.getControllerMethodShortcut((Method) method)) {
-                    targets.put(name, getTemplatePsiElements(method.getProject(), name));
+                    targets.put(name, new HashSet<>(getTemplatePsiElements(method.getProject(), name)));
                 }
             }
         }
@@ -517,11 +519,11 @@ public class TwigUtil {
             // switch to alias mode
             String macroName = twigMacro.getOriginalName() == null ? funcName : twigMacro.getOriginalName();
 
-            PsiFile[] foreignPsiFile;
+            Collection<PsiFile> foreignPsiFile = new HashSet<>();
             if ("_self".equals(twigMacro.getTemplate())) {
-                foreignPsiFile = new PsiFile[] {psiFile};
+                foreignPsiFile.add(psiFile);
             } else {
-                foreignPsiFile = getTemplatePsiElements(psiFile.getProject(), twigMacro.getTemplate());
+                foreignPsiFile.addAll(getTemplatePsiElements(psiFile.getProject(), twigMacro.getTemplate()));
             }
 
             for (PsiFile file : foreignPsiFile) {
@@ -606,7 +608,7 @@ public class TwigUtil {
             if(template.equals("_self")) {
                 macroFiles.add(psiFile);
             } else {
-                macroFiles.addAll(Arrays.asList(getTemplatePsiElements(psiFile.getProject(), template)));
+                macroFiles.addAll(getTemplatePsiElements(psiFile.getProject(), template));
             }
 
             if(macroFiles.size() > 0) {
@@ -1073,9 +1075,8 @@ public class TwigUtil {
      * @return target files
      */
     @NotNull
-    public static PsiFile[] getTemplatePsiElements(@NotNull Project project, @NotNull String templateName) {
-        Collection<PsiFile> psiFiles = PsiElementUtils.convertVirtualFilesToPsiFiles(project, getTemplateFiles(project, templateName));
-        return psiFiles.toArray(new PsiFile[psiFiles.size()]);
+    public static Collection<PsiFile> getTemplatePsiElements(@NotNull Project project, @NotNull String templateName) {
+        return PsiElementUtils.convertVirtualFilesToPsiFiles(project, getTemplateFiles(project, templateName));
     }
 
     /**
@@ -1100,7 +1101,7 @@ public class TwigUtil {
 
         // full filepath fallback: "foo/foo<caret>.html.twig"
         if(files.size() == 0) {
-            files.addAll(Arrays.asList(getTemplatePsiElements(project, templateName)));
+            files.addAll(getTemplatePsiElements(project, templateName));
         }
 
         return files;
@@ -1821,7 +1822,7 @@ public class TwigUtil {
      * {% block <caret> %}
      */
     @NotNull
-    public static Pair<PsiFile[], Boolean> findScopedFile(@NotNull PsiElement psiElement) {
+    public static Pair<Collection<PsiFile>, Boolean> findScopedFile(@NotNull PsiElement psiElement) {
 
         // {% embed "template.twig" %}{% block <caret> %}
         PsiElement firstParent = getTransDefaultDomainScope(psiElement);
@@ -1836,10 +1837,10 @@ public class TwigUtil {
                 }
             }
 
-            return Pair.create(new PsiFile[] {}, true);
+            return Pair.create(Collections.emptyList(), true);
         }
 
-        return Pair.create(new PsiFile[] {psiElement.getContainingFile()}, false);
+        return Pair.create(Collections.singletonList(psiElement.getContainingFile()), false);
     }
 
     /**
@@ -2714,7 +2715,7 @@ public class TwigUtil {
                     // collect includes unique and visit until given "includeDepth"
 
                     Set<TwigFile> files = getIncludeTagStrings((TwigTagWithFileReference) psiElement).stream()
-                        .flatMap(template -> Arrays.stream(getTemplatePsiElements(psiElement.getProject(), template)))
+                        .map(template -> getTemplatePsiElements(psiElement.getProject(), template))
                         .filter(psiFile -> psiFile instanceof TwigFile)
                         .map(psiFile -> (TwigFile) psiFile)
                         .collect(Collectors.toCollection(ArrayListSet::new));

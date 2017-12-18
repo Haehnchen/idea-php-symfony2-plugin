@@ -7,6 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,8 +28,6 @@ public class TwigFileToolboxTargetLocator implements PhpToolboxTargetLocator {
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new HashSet<>();
-        Collections.addAll(psiElements, TwigUtil.getTemplatePsiElements(parameter.getProject(), target));
-        return psiElements;
+        return new HashSet<>(TwigUtil.getTemplatePsiElements(parameter.getProject(), target));
     }
 }

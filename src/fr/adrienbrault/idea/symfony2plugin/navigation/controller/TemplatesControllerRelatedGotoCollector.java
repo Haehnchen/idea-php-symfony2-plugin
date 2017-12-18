@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.navigation.controller;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
@@ -19,10 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -57,7 +55,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
                 String resolveString = PhpElementsUtil.getStringValue(psiElement);
                 if(resolveString != null && !uniqueTemplates.contains(resolveString)) {
                     uniqueTemplates.add(resolveString);
-                    for(PsiElement templateTarget: TwigUtil.getTemplatePsiElements(parameter.getProject(), resolveString)) {
+                    for(PsiFile templateTarget: TwigUtil.getTemplatePsiElements(parameter.getProject(), resolveString)) {
                         parameter.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templateTarget, resolveString).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_MARKER));
                     }
                 }
@@ -68,7 +66,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
     /**
      *  Visit every possible template on given method: eg Annotations @Template()
      */
-    public static void visitMethodTemplateNames(@NotNull Method method, @NotNull Consumer<Pair<String, PsiElement[]>> consumer) {
+    public static void visitMethodTemplateNames(@NotNull Method method, @NotNull Consumer<Pair<String, Collection<PsiElement>>> consumer) {
         // on @Template annotation
         PhpDocComment phpDocComment = method.getDocComment();
         if(phpDocComment != null) {
@@ -81,7 +79,7 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
                         // resolve annotation and check for template
                         PhpClass phpClass = AnnotationBackportUtil.getAnnotationReference(phpDocTag, importMap);
                         if(phpClass != null && PhpElementsUtil.isEqualClassName(phpClass, TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
-                            Pair<String, PsiElement[]> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
+                            Pair<String, Collection<PsiElement>> templateAnnotationFiles = TwigUtil.getTemplateAnnotationFiles(phpDocTag);
                             if(templateAnnotationFiles != null) {
                                 consumer.accept(Pair.create(templateAnnotationFiles.getFirst(), templateAnnotationFiles.getSecond()));
                             }
@@ -93,7 +91,10 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
 
         // on method name
         for (String templateName : TwigUtil.getControllerMethodShortcut(method)) {
-            consumer.accept(Pair.create(templateName, TwigUtil.getTemplatePsiElements(method.getProject(), templateName)));
+            consumer.accept(Pair.create(
+                templateName,
+                new HashSet<>(TwigUtil.getTemplatePsiElements(method.getProject(), templateName))
+            ));
         }
     }
 }

@@ -7,7 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
-import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -23,8 +23,8 @@ public class TemplateAnnotationGotoHandler implements PhpAnnotationDocTagGotoHan
             return;
         }
 
-        for (PsiElement[] psiElements : TwigUtil.getTemplateAnnotationFilesWithSiblingMethod(parameter.getPhpDocTag()).values()) {
-            parameter.addTargets(Arrays.asList(psiElements));
+        for (Collection<PsiElement> psiElements : TwigUtil.getTemplateAnnotationFilesWithSiblingMethod(parameter.getPhpDocTag()).values()) {
+            parameter.addTargets(psiElements);
         }
     }
 }

@@ -34,10 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -312,9 +309,7 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                         return Collections.emptyList();
                     }
 
-                    return Arrays.asList(
-                        TwigUtil.getTemplatePsiElements(getElement().getProject(), xmlAttributeValue)
-                    );
+                    return new HashSet<>(TwigUtil.getTemplatePsiElements(getElement().getProject(), xmlAttributeValue));
                 }
             };
         }

@@ -20,8 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -41,11 +40,11 @@ public class SymfonyProfilerWidgetActions {
 
         @Override
         public void actionPerformed(AnActionEvent e) {
-            List<PsiFile> psiFiles = Arrays.asList(TwigUtil.getTemplatePsiElements(project, templateName));
+            Collection<PsiFile> psiFiles = TwigUtil.getTemplatePsiElements(project, templateName);
 
             // @TODO: multiple targets?
             if(psiFiles.size() > 0) {
-                IdeHelper.navigateToPsiElement(psiFiles.get(0));
+                IdeHelper.navigateToPsiElement(psiFiles.iterator().next());
             }
         }
     }

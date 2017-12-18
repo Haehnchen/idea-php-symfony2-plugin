@@ -2,12 +2,15 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 /**
  * {% include 'f<caret>.html.twig' %}
@@ -40,8 +43,8 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
     private void invoke(@NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
         String templateName = element.getText();
 
-        PsiElement[] psiElements = TwigUtil.getTemplatePsiElements(element.getProject(), templateName);
-        if(psiElements.length > 0)  {
+        Collection<VirtualFile> psiElements = TwigUtil.getTemplateFiles(element.getProject(), templateName);
+        if(psiElements.size() > 0)  {
             return;
         }
 
