@@ -11,3 +11,11 @@
     {% block right_teaser %}
     {% endblock %}
 {% endembed %}
+
+{% extends 'extends/foo.html.twig' %}
+{% use 'use/foo.html.twig' %}
+
+{% embed "teasers\skeleton.html.twig" %}
+    {% extends 'embed_extends\foo.html.twig' %}
+    {% use 'embed_use\foo.html.twig' %}
+{% endembed %}

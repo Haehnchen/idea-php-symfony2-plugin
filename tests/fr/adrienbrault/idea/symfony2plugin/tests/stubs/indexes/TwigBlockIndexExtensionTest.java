@@ -27,5 +27,11 @@ public class TwigBlockIndexExtensionTest extends SymfonyLightCodeInsightFixtureT
         assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "block", value -> !value.contains("left_teaser"));
         assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "block", value -> !value.contains("right_teaser"));
         assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "block", value -> !value.contains("foobar_print_embed"));
+
+        assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "extends", value -> value.contains("extends/foo.html.twig"));
+        assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "use", value -> value.contains("use/foo.html.twig"));
+
+        assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "extends", value -> !value.contains("embed_extends/foo.html.twig"));
+        assertIndexContainsKeyWithValue(TwigBlockIndexExtension.KEY, "use", value -> !value.contains("embed_use/foo.html.twig"));
     }
 }
