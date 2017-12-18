@@ -2694,13 +2694,14 @@ public class TwigUtil {
                 }
             } else if (psiElement instanceof PsiComment) {
                 // {# @var foobar Class #}
+                // {# @var Class foobar #}
                 String text = psiElement.getText();
 
                 if(StringUtils.isNotBlank(text)) {
                     for (Pattern pattern : TwigTypeResolveUtil.INLINE_DOC_REGEX) {
                         Matcher matcher = pattern.matcher(text);
                         while (matcher.find()) {
-                            consumer.consume(Pair.create(matcher.group(1), psiElement));
+                            consumer.consume(Pair.create(matcher.group("var"), psiElement));
                         }
                     }
                 }

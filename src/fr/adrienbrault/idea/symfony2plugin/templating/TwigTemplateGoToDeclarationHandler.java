@@ -344,6 +344,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return targetPsiElements;
     }
 
+    /**
+     * Extract class from inline variables
+     *
+     * {# @var \AppBundle\Entity\Foo variable #}
+     * {# @var variable \AppBundle\Entity\Foo #}
+     */
     @NotNull
     private Collection<PhpClass> getVarClassGoto(@NotNull PsiElement psiElement) {
         String comment = psiElement.getText();
@@ -352,10 +358,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             return Collections.emptyList();
         }
 
-        for(String pattern: new String[] {TwigTypeResolveUtil.DEPRECATED_DOC_TYPE_PATTERN, TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE}) {
+        for(String pattern: TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE) {
             Matcher matcher = Pattern.compile(pattern).matcher(comment);
             if (matcher.find()) {
-                String className = matcher.group(2);
+                String className = matcher.group("class");
                 if(StringUtils.isNotBlank(className)) {
                     return PhpElementsUtil.getClassesInterface(psiElement.getProject(), className);
                 }

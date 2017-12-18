@@ -491,6 +491,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         // file doc
         assertContainsElements(elementMap.keySet(), "inline_foo");
+        assertContainsElements(elementMap.keySet(), "inline_foo_2");
 
         // if
         assertContainsElements(elementMap.keySet(), "if_foo");
