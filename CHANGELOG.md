@@ -10,6 +10,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.15.162
+* Refactored Twig api in preparation for plugin split
+* Add Twig block name indexer to improve performance [#1091](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1091)
+* Rely on index for all block name relevant file visiting [#1091](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1091)
+* Improve Twig types support for inline type declaration {# @var Class variable #} and {# @var variable Class #} [#1035](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035)
+
 ## 0.15.161
 * Allow path navigation for Twig templates in all php related navigation handler [#1076](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076)
 * Fix translation auto-complete not working in Symfony Flex directory structure [#1096](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1096)

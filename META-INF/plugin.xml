@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.15.161</version>
+    <version>0.15.162</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,10 +101,10 @@
 <![CDATA[
 
 <ul>
-    <li>Allow path navigation for Twig templates in all php related navigation handler <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1076">#1076</a></li>
-    <li>Fix translation auto-complete not working in Symfony Flex directory structure <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1096">#1096</a></li>
-    <li>Refactoring form component to support more usages like extension navigation and self inheritance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1098">#1098</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/695">#695</a></li>
-    <li>[Form] Calling setDefault for data class does not associates form with binded class <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1048">#1048</a></li>
+    <li>Refactored Twig api in preparation for plugin split</li>
+    <li>Add Twig block name indexer to improve performance <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1091">#1091</a></li>
+    <li>Rely on index for all block name relevant file visiting <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1091">#1091</a></li>
+    <li>Improve Twig types support for inline type declaration {# @var Class variable #} and {# @var variable Class #} <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035">#1035</a></li>
 </ul>
 
 <br/>
