@@ -645,7 +645,7 @@ public class ServiceUtil {
      *  <service id="foo_bar_main" decorates="app.mailer"/>
      */
     @NotNull
-    public static RelatedItemLineMarkerInfo<PsiElement> getLineMarkerForDecoratesServiceId(@NotNull PsiElement psiElement, @NotNull String decorates, @NotNull Collection<LineMarkerInfo> result) {
+    public static RelatedItemLineMarkerInfo<PsiElement> getLineMarkerForDecoratesServiceId(@NotNull PsiElement psiElement, @NotNull String decorates) {
         return NavigationGutterIconBuilder.create(PhpIcons.OVERRIDEN)
             .setTargets(ServiceIndexUtil.getServiceIdDefinitionLazyValue(psiElement.getProject(), Collections.singletonList(decorates)))
             .setTooltipText("Navigate to decorated service")

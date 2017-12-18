@@ -597,26 +597,6 @@ public class YamlElementPatternHelper {
     }
 
     /**
-     * Get service before comma
-     *
-     * ["@service', createNewsletterManager|]
-     * [@service, createNewsletterManager|]
-     * ['@service', createNewsletterManager|]
-     */
-    public static ElementPattern<? extends PsiElement> getPreviousCommaSibling() {
-
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(YAMLScalar.class)
-                .beforeLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withText(",")
-                )
-        );
-
-    }
-
-    /**
      * parameters:
      *    foo.example.class: |
      *
@@ -657,22 +637,6 @@ public class YamlElementPatternHelper {
                         PlatformPatterns.string().oneOf(keys)
                     )
             );
-    }
-
-    /**
-     * services:
-     *   i<caret>d: []
-     */
-    public static PsiElementPattern.Capture<PsiElement> getServiceIdKeyPattern() {
-        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
-             .withParent(PlatformPatterns.psiElement(YAMLKeyValue.class)
-                 .withParent(PlatformPatterns.psiElement(YAMLCompoundValue.class)
-                     .withParent(
-                          PlatformPatterns.psiElement(YAMLKeyValue.class)
-                              .withName(PlatformPatterns.string().oneOfIgnoreCase("services"))
-                     )
-                 )
-             );
     }
 
     /**

@@ -23,10 +23,6 @@ import java.util.Map;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class XmlLineMarkerProvider implements LineMarkerProvider {
-
-    @Nullable
-    private Map<String, Collection<ContainerService>> decoratedServiceCache;
-
     @Nullable
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
@@ -65,7 +61,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
         // <service id="foo" decorates=foobar" />
         String decorates = xmlTag.getAttributeValue("decorates");
         if(decorates != null && StringUtils.isNotBlank(decorates)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(xmlTag, decorates, result));
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(xmlTag, decorates));
         }
 
         NavigationGutterIconBuilder<PsiElement> lineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(

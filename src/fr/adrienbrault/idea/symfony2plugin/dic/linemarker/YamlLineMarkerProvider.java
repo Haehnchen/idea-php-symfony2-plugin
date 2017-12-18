@@ -22,10 +22,6 @@ import java.util.Map;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlLineMarkerProvider implements LineMarkerProvider {
-
-    @Nullable
-    private Map<String, Collection<ContainerService>> decoratedServiceCache;
-
     @Nullable
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
@@ -61,7 +57,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         // decorates: @foobar
         String decorates = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates");
         if(decorates != null && StringUtils.isNotBlank(decorates)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(yamlKeyValue, decorates, result));
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(yamlKeyValue, decorates));
         }
 
         NavigationGutterIconBuilder<PsiElement> lineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(

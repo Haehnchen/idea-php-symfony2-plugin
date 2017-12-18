@@ -897,20 +897,6 @@ public class TwigPattern {
         );
     }
 
-    public static ElementPattern<PsiElement> getRoutePattern() {
-        //noinspection unchecked
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER).withText("path")
-            .beforeLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
         //noinspection unchecked
         return PlatformPatterns
@@ -1167,26 +1153,6 @@ public class TwigPattern {
             )
             .withParent(
                 PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    public static ElementPattern<PsiElement> getTwigMacroNamePattern() {
-
-        // {% macro <foo>(user) %}
-
-        //noinspection unchecked
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .withParent(PlatformPatterns.psiElement(
-                TwigElementTypes.MACRO_TAG
-            ))
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("macro")
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }

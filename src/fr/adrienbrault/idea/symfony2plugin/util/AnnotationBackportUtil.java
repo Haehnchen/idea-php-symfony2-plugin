@@ -1,16 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
-import com.jetbrains.php.lang.documentation.phpdoc.lexer.PhpDocTokenTypes;
-import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;

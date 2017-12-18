@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup;
 
-import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -15,10 +14,8 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DoctrineRepositoryLookupElement extends LookupElement {
-
     @NotNull
     private final PhpClass phpClass;
-    private InsertHandler<DoctrineRepositoryLookupElement> insertHandler;
 
     private DoctrineRepositoryLookupElement(@NotNull PhpClass phpClass) {
         this.phpClass = phpClass;

@@ -182,7 +182,7 @@ public class TwigExtensionParser  {
         for(PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("getTests");
             if(method != null) {
-                parseSimpleTest(method, extensions);
+                method.acceptChildren(new TwigSimpleTestVisitor(extensions));
             }
         }
 
@@ -310,15 +310,6 @@ public class TwigExtensionParser  {
                 }
             }
         }
-    }
-
-    private void parseSimpleTest(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
-        final PhpClass containingClass = method.getContainingClass();
-        if(containingClass == null) {
-            return;
-        }
-
-        method.acceptChildren(new TwigSimpleTestVisitor(method, filters));
     }
 
     @NotNull
@@ -604,13 +595,9 @@ public class TwigExtensionParser  {
 
     private static class TwigSimpleTestVisitor extends PsiRecursiveElementWalkingVisitor {
         @NotNull
-        private final Method method;
-
-        @NotNull
         private final Map<String, TwigExtension> filters;
 
-        TwigSimpleTestVisitor(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
-            this.method = method;
+        TwigSimpleTestVisitor(@NotNull Map<String, TwigExtension> filters) {
             this.filters = filters;
         }
 

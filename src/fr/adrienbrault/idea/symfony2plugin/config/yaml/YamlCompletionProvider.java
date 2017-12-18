@@ -9,6 +9,7 @@ import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -18,25 +19,21 @@ import java.util.Map;
  */
 public class YamlCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-
+    @Nullable
     private List<LookupElement> lookupList;
-    private Map<String, String> lookupMap;
-    private String[] lookupArray;
 
-    public YamlCompletionProvider(List<LookupElement> lookups) {
+    @Nullable
+    private Map<String, String> lookupMap;
+
+    public YamlCompletionProvider(@Nullable List<LookupElement> lookups) {
         this.lookupList = lookups;
     }
 
-    public YamlCompletionProvider(Map<String, String> lookups) {
+    public YamlCompletionProvider(@Nullable Map<String, String> lookups) {
         this.lookupMap = lookups;
     }
 
-    public YamlCompletionProvider(String[] lookups) {
-        this.lookupArray = lookups;
-    }
-
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-
         if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
             return;
         }
@@ -52,12 +49,6 @@ public class YamlCompletionProvider extends CompletionProvider<CompletionParamet
 
                 resultSet.addElement(lookupElement);
             }
-        } else if(lookupArray != null) {
-            for (String lookup : lookupArray) {
-                resultSet.addElement(LookupElementBuilder.create(lookup).withIcon(Symfony2Icons.SYMFONY));
-            }
         }
-
-
     }
 }
