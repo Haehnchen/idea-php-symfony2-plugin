@@ -1,10 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigLanguage;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -15,6 +21,49 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
         assertEquals("foo", TwigTypeResolveUtil.getPropertyShortcutMethodName(createMethod("getFoo")));
         assertEquals("foo", TwigTypeResolveUtil.getPropertyShortcutMethodName(createMethod("hasFoo")));
         assertEquals("foo", TwigTypeResolveUtil.getPropertyShortcutMethodName(createMethod("isFoo")));
+    }
+
+    /**
+     * @see TwigTypeResolveUtil#findFileVariableDocBlock
+     */
+    public void testFindFileVariableDocBlock() {
+        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+            "{# @var foo_1 \\AppBundle\\Entity\\MeterValueDTO #}\n" +
+            "{# @var foo_2 \\AppBundle\\Entity\\MeterValueDTO[] #}\n" +
+            "{# @var \\AppBundle\\Entity\\MeterValueDTO foo_3 #}\n" +
+            "{# @var \\AppBundle\\Entity\\MeterValueDTO[] foo_4 #}\n" +
+            "" +
+            "{#\n" +
+            "@var \\AppBundle\\Entity\\MeterValueDTO foo_5\n" +
+            "@var foo_6 \\AppBundle\\Entity\\MeterValueDTO\n" +
+            "#}\n"
+        );
+
+        Map<String, String> fileVariableDocBlock = TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) fileFromText);
+
+        assertEquals("\\AppBundle\\Entity\\MeterValueDTO", fileVariableDocBlock.get("foo_1"));
+        assertEquals("\\AppBundle\\Entity\\MeterValueDTO[]", fileVariableDocBlock.get("foo_2"));
+        assertEquals("\\AppBundle\\Entity\\MeterValueDTO", fileVariableDocBlock.get("foo_3"));
+        assertEquals("\\AppBundle\\Entity\\MeterValueDTO[]", fileVariableDocBlock.get("foo_4"));
+
+        assertEquals("\\AppBundle\\Entity\\MeterValueDTO", fileVariableDocBlock.get("foo_5"));
+        assertEquals("\\AppBundle\\Entity\\MeterValueDTO", fileVariableDocBlock.get("foo_6"));
+    }
+
+    public void testReqExForInlineDocVariables() {
+        assertMatches("{# @var foo_1 \\AppBundle\\Entity\\MeterValueDTO #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+        assertMatches("{# @var \\AppBundle\\Entity\\MeterValueDTO foo_1 #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+        assertMatches("{# foo_1 \\AppBundle\\Entity\\MeterValueDTO #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+    }
+
+    private void assertMatches(@NotNull String content, @NotNull String... regularExpressions) {
+        for (String regularExpression : regularExpressions) {
+            if(content.matches(regularExpression)) {
+                return;
+            }
+        }
+
+        fail("invalid regular expression: " + content);
     }
 
     @NotNull

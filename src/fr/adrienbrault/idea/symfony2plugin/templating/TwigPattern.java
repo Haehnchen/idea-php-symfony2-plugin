@@ -19,6 +19,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -872,10 +875,13 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiComment> getTwigTypeDocBlockPattern() {
-        return PlatformPatterns.or(
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DEPRECATED_DOC_TYPE_PATTERN)).withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE)).withLanguage(TwigLanguage.INSTANCE)
-        );
+        Collection<ElementPattern> patterns = new ArrayList<>();
+
+        for (String s : TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE) {
+            patterns.add(PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(s)).withLanguage(TwigLanguage.INSTANCE));
+        }
+
+        return PlatformPatterns.or(patterns.toArray(new ElementPattern[patterns.size()]));
     }
 
     /**

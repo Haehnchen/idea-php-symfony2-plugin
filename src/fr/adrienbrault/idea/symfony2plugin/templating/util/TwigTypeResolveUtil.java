@@ -43,16 +43,35 @@ import java.util.regex.Pattern;
  */
 public class TwigTypeResolveUtil {
 
-    public static final String DEPRECATED_DOC_TYPE_PATTERN = "\\{#[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
-    public static final String DOC_TYPE_PATTERN = "@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]*";
+    /**
+     * {# variable \AppBundle\Entity\Foo[] #}
+     */
+    public static final String DEPRECATED_DOC_TYPE_PATTERN = "\\{#[\\s]+(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]+#}";
+
+    /**
+     * {# @var variable \AppBundle\Entity\Foo[] #}
+     * {# @var variable \AppBundle\Entity\Foo #}
+     */
+    private static final String DOC_TYPE_PATTERN_CLASS_SECOND = "@var[\\s]+(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]*";
+
+    /**
+     * {# @var \AppBundle\Entity\Foo[] variable #}
+     * {# @var \AppBundle\Entity\Foo variable #}
+     */
+    private static final String DOC_TYPE_PATTERN_CLASS_FIRST = "@var[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]+(?<var>[\\w]+)[\\s]*";
 
     public static final Pattern[] INLINE_DOC_REGEX = {
-        Pattern.compile(DOC_TYPE_PATTERN, Pattern.MULTILINE),
+        Pattern.compile(DOC_TYPE_PATTERN_CLASS_SECOND, Pattern.MULTILINE),
+        Pattern.compile(DOC_TYPE_PATTERN_CLASS_FIRST, Pattern.MULTILINE),
         Pattern.compile(DEPRECATED_DOC_TYPE_PATTERN),
     };
 
     // for supporting completion and navigation of one line element
-    public static final String DOC_TYPE_PATTERN_SINGLE  = "\\{#[\\s]+@var[\\s]+([\\w]+)[\\s]+([\\w\\\\\\[\\]]+)[\\s]+#}";
+    public static final String[] DOC_TYPE_PATTERN_SINGLE  = new String[] {
+        "\\{#[\\s]+(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]+#}",
+        "\\{#[\\s]+"+ DOC_TYPE_PATTERN_CLASS_SECOND + "[\\s]+#}",
+        "\\{#[\\s]+"+ DOC_TYPE_PATTERN_CLASS_FIRST + "[\\s]+#}",
+    };
 
     private static String[] PROPERTY_SHORTCUTS = new String[] {"get", "is", "has"};
 
@@ -192,7 +211,7 @@ public class TwigTypeResolveUtil {
             for (Pattern pattern : INLINE_DOC_REGEX) {
                 Matcher matcher = pattern.matcher(text);
                 while (matcher.find()) {
-                    variables.put(matcher.group(1), matcher.group(2));
+                    variables.put(matcher.group("var"), matcher.group("class"));
                 }
             }
         }
