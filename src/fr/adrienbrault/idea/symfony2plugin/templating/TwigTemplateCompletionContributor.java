@@ -49,9 +49,7 @@ import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -138,7 +136,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     // {% from _self
                     if(psiElement.getNode().getElementType() == TwigTokenTypes.RESERVED_ID) {
-                        attachLookupElements(resultSet, new PsiFile[]{psiElement.getContainingFile()});
+                        attachLookupElements(resultSet, Collections.singletonList(psiElement.getContainingFile()));
                         return;
                     }
 
@@ -147,15 +145,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    PsiFile[] twigFilesByName = TwigUtil.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
-                    if(twigFilesByName.length == 0) {
+                    Collection<PsiFile> twigFilesByName = TwigUtil.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
+                    if(twigFilesByName.size() == 0) {
                         return;
                     }
 
                     attachLookupElements(resultSet, twigFilesByName);
                 }
 
-                private void attachLookupElements(@NotNull CompletionResultSet resultSet, PsiFile[] psiFiles) {
+                private void attachLookupElements(@NotNull CompletionResultSet resultSet, Collection<PsiFile> psiFiles) {
                     for (PsiFile psiFile : psiFiles) {
                         for (TwigMacroTagInterface entry: TwigUtil.getMacros(psiFile)) {
                             resultSet.addElement(LookupElementBuilder.create(entry.getName()).withTypeText(entry.getParameters(), true).withIcon(TwigIcons.TwigFileIcon));
@@ -576,7 +574,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionResultSet myResultSet = resultSet.withPrefixMatcher(blockNamePrefix);
 
             // collect blocks in all related files
-            Pair<PsiFile[], Boolean> scopedContext = TwigUtil.findScopedFile(position);
+            Pair<Collection<PsiFile>, Boolean> scopedContext = TwigUtil.findScopedFile(position);
 
             myResultSet.addAllElements(TwigUtil.getBlockLookupElements(
                 position.getProject(),

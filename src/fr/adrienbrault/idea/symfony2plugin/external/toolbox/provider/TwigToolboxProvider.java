@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,9 +39,7 @@ public class TwigToolboxProvider implements PhpToolboxProviderInterface {
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new HashSet<>();
-        Collections.addAll(psiElements, TwigUtil.getTemplatePsiElements(parameter.getProject(), parameter.getContents()));
-        return psiElements;
+        return new HashSet<>(TwigUtil.getTemplatePsiElements(parameter.getProject(), parameter.getContents()));
     }
 
     @NotNull
@@ -59,7 +58,6 @@ public class TwigToolboxProvider implements PhpToolboxProviderInterface {
                 return TwigIcons.TwigFileIcon;
             }
 
-            @Nullable
             @Override
             public String getDescription() {
                 return "Templates";

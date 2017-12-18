@@ -68,7 +68,7 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
         }
 
         for (String templateName : templateNames) {
-            if (TwigUtil.getTemplatePsiElements(parameter.getProject(), templateName).length > 0) {
+            if (TwigUtil.getTemplateFiles(parameter.getProject(), templateName).size() > 0) {
                 return;
             }
         }

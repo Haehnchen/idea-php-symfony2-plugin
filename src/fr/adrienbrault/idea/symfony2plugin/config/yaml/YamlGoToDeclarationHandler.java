@@ -74,7 +74,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
                 }
 
                 if(psiText.endsWith(".twig") || psiText.endsWith(".php")) {
-                    targets.addAll(templateGoto(psiElement, psiText));
+                    targets.addAll(TwigUtil.getTemplatePsiElements(psiElement.getProject(), psiText));
                 }
 
                 if(psiText.matches("^[\\w_.]+") && getGlobalServiceStringPattern().accepts(psiElement)) {
@@ -222,11 +222,6 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         targets.addAll(ServiceUtil.getServiceClassTargets(psiElement.getProject(), psiParameterName));
 
         return targets;
-    }
-
-    @NotNull
-    private Collection<PsiFile> templateGoto(@NotNull PsiElement psiElement, @NotNull String templateName) {
-        return Arrays.asList(TwigUtil.getTemplatePsiElements(psiElement.getProject(), templateName));
     }
 
     @NotNull

@@ -124,7 +124,7 @@ public class TwigBlockUtil {
             return Collections.emptyList();
         }
 
-        Pair<PsiFile[], Boolean> scopedFile = TwigUtil.findScopedFile(psiElement);
+        Pair<Collection<PsiFile>, Boolean> scopedFile = TwigUtil.findScopedFile(psiElement);
 
         Collection<PsiElement> psiElements = new HashSet<>();
         for (PsiFile psiFile : scopedFile.getFirst()) {
@@ -144,11 +144,11 @@ public class TwigBlockUtil {
             return false;
         }
 
-        Pair<PsiFile[], Boolean> scopedFile = TwigUtil.findScopedFile(psiElement);
+        Pair<Collection<PsiFile>, Boolean> scopedFile = TwigUtil.findScopedFile(psiElement);
 
         Collection<VirtualFile> virtualFiles = fileOverwritesLazyLoader.getFiles(
             scopedFile.second,
-            Arrays.stream(scopedFile.first).map(PsiFile::getVirtualFile).collect(Collectors.toSet())
+            scopedFile.first.stream().map(PsiFile::getVirtualFile).collect(Collectors.toSet())
         );
 
         return hasBlockNamesForFiles(psiElement.getProject(), blockName, virtualFiles);

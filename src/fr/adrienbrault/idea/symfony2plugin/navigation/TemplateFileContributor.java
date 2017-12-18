@@ -8,7 +8,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -33,7 +32,8 @@ public class TemplateFileContributor implements ChooseByNameContributor {
             return new NavigationItem[0];
         }
 
-        return Arrays.stream(TwigUtil.getTemplatePsiElements(project, templateName))
+        return TwigUtil.getTemplatePsiElements(project, templateName)
+            .stream()
             .map(psiFile ->
                 new NavigationItemEx(psiFile, templateName, TwigIcons.TwigFileIcon, "Template", false)
             )

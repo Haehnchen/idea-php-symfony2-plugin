@@ -6,7 +6,10 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
@@ -389,7 +392,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             String content = matcher.group(1);
 
             if(content.toLowerCase().endsWith(".twig")) {
-                ContainerUtil.addAll(psiElements, TwigUtil.getTemplatePsiElements(psiElement.getProject(), content));
+                psiElements.addAll(TwigUtil.getTemplatePsiElements(psiElement.getProject(), content));
             }
 
             psiElements.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), content));

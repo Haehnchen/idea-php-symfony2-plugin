@@ -22,6 +22,14 @@ public class TwigFileUtil {
      * Visit parent Twig files eg on "embed" tag and provide all files in this path until root file
      */
     @NotNull
+    public static Collection<VirtualFile> collectParentFiles(boolean includeSelf, @NotNull Collection<PsiFile> psiFiles) {
+        return collectParentFiles(includeSelf, psiFiles.toArray(new PsiFile[psiFiles.size()]));
+    }
+
+    /**
+     * Visit parent Twig files eg on "embed" tag and provide all files in this path until root file
+     */
+    @NotNull
     public static Collection<VirtualFile> collectParentFiles(boolean includeSelf, @NotNull PsiFile... psiFiles) {
         Set<VirtualFile> virtualFiles = new HashSet<>();
 

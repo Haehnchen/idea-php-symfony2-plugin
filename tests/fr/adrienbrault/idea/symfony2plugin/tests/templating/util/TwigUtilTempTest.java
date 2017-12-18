@@ -83,10 +83,10 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         };
 
         for (String file : strings) {
-            PsiFile[] templatePsiElements = TwigUtil.getTemplatePsiElements(getProject(), file);
+            Collection<PsiFile> templatePsiElements = TwigUtil.getTemplatePsiElements(getProject(), file);
 
-            assertTrue(templatePsiElements.length > 0);
-            assertEquals("foo.html.twig", templatePsiElements[0].getName());
+            assertTrue(templatePsiElements.size() > 0);
+            assertEquals("foo.html.twig", templatePsiElements.iterator().next().getName());
         }
     }
 
