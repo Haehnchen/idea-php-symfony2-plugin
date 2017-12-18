@@ -562,7 +562,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     private class BlockCompletionProvider extends CompletionProvider<CompletionParameters> {
         public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-            PsiElement position = parameters.getPosition();
+            PsiElement position = parameters.getOriginalPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
                 return;
             }

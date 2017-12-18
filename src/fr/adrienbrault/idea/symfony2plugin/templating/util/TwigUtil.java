@@ -1004,7 +1004,7 @@ public class TwigUtil {
      * @return target files
      */
     @NotNull
-    public static PsiFile[] getTemplatePsiElements(@NotNull Project project, @NotNull String templateName) {
+    public static Collection<VirtualFile> getTemplateFiles(@NotNull Project project, @NotNull String templateName) {
         String normalizedTemplateName = normalizeTemplateName(templateName);
 
         Collection<VirtualFile> virtualFiles = new HashSet<>();
@@ -1062,7 +1062,19 @@ public class TwigUtil {
             }
         }
 
-        Collection<PsiFile> psiFiles = PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFiles);
+        return virtualFiles;
+    }
+
+    /**
+     * Find file in a twig path collection
+     *
+     * @param project current project
+     * @param templateName path known, should not be normalized
+     * @return target files
+     */
+    @NotNull
+    public static PsiFile[] getTemplatePsiElements(@NotNull Project project, @NotNull String templateName) {
+        Collection<PsiFile> psiFiles = PsiElementUtils.convertVirtualFilesToPsiFiles(project, getTemplateFiles(project, templateName));
         return psiFiles.toArray(new PsiFile[psiFiles.size()]);
     }
 
