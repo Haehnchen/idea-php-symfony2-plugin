@@ -1295,58 +1295,6 @@ public class TwigUtil {
         return templateFinalName;
     }
 
-    /**
-     * Collects overwritten templates
-     *
-     * app/Resources/MyUserBundle/views/layout.html.twig
-     * src/Acme/UserBundle/Resources/views/layout.html.twig <- getParent = MyUserBundle
-     */
-    private static Collection<PsiFile> getTemplateOverwrites(@NotNull Project project, @NotNull String normalizedTemplateName) {
-
-        // Bundle overwrite:
-        if(normalizedTemplateName.startsWith(":") || normalizedTemplateName.startsWith("@")) {
-            return Collections.emptyList();
-        }
-
-        String templatePath = StringUtils.strip(normalizedTemplateName.replace(":", "/").replace("//", "/"), "/");
-
-        int i = templatePath.indexOf("Bundle/");
-        if( i == -1) {
-            return Collections.emptyList();
-        }
-
-        Collection<VirtualFile> files = new HashSet<>();
-
-        String bundle = templatePath.substring(0, i + 6);
-
-        // invalid Bundle in path condition
-        if(bundle.contains("/")) {
-            return Collections.emptyList();
-        }
-
-        VirtualFile relativeFile = VfsUtil.findRelativeFile(
-            project.getBaseDir(),
-            String.format("app/Resources/%s/views/%s", bundle, templatePath.substring(i + 7)).split("/")
-        );
-
-        if(relativeFile != null) {
-            files.add(relativeFile);
-        }
-
-        // find parent bundles
-        for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundles()) {
-            String parentBundle = symfonyBundle.getParentBundleName();
-            if(parentBundle != null && bundle.equals(parentBundle)) {
-                relativeFile = symfonyBundle.getRelative(String.format("Resources/views/%s", templatePath.substring(i + 7)));
-                if(relativeFile != null) {
-                    files.add(relativeFile);
-                }
-            }
-        }
-
-        return PsiElementUtils.convertVirtualFilesToPsiFiles(project, files);
-    }
-
     private static void addFileInsideTwigPath(@NotNull Project project, @NotNull String templatePath, @NotNull Collection<VirtualFile> virtualFiles, @NotNull TwigPath twigPath) {
         VirtualFile virtualFile = VfsUtil.findRelativeFile(twigPath.getDirectory(project), templatePath.split("/"));
 

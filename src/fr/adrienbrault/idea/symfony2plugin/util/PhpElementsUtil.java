@@ -198,29 +198,6 @@ public class PhpElementsUtil {
         return null;
     }
 
-    static public boolean isMethodWithFirstString(PsiElement psiElement, String... methodName) {
-
-        // filter out method calls without parameter
-        // $this->methodName('service_name')
-        // withName is not working, so simulate it in a hack
-        if(!PlatformPatterns
-            .psiElement(PhpElementTypes.METHOD_REFERENCE)
-            .withChild(PlatformPatterns
-                .psiElement(PhpElementTypes.PARAMETER_LIST)
-                .withFirstChild(PlatformPatterns
-                    .psiElement(PhpElementTypes.STRING)
-                )
-            ).accepts(psiElement)) {
-
-            return false;
-        }
-
-        // cant we move it up to PlatformPatterns? withName condition dont looks working
-        String methodRefName = ((MethodReference) psiElement).getName();
-
-        return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
-    }
-
     /**
      * $this->methodName('service_name')
      * $this->methodName(SERVICE::NAME)
@@ -296,22 +273,6 @@ public class PhpElementsUtil {
     }
 
     /**
-     * public function indexAction()
-     */
-    static public PsiElementPattern.Capture<PsiElement> getActionMethodPattern() {
-        return PlatformPatterns
-            .psiElement(PhpTokenTypes.IDENTIFIER).withText(
-                PlatformPatterns.string().endsWith("Action")
-            )
-            .afterLeafSkipping(
-                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                PlatformPatterns.psiElement(PhpTokenTypes.kwFUNCTION)
-            )
-            .inside(Method.class)
-            .withLanguage(PhpLanguage.INSTANCE);
-    }
-
-    /**
      * return 'value' inside class method
      */
     static public ElementPattern<PhpExpression> getMethodReturnPattern() {
@@ -323,20 +284,6 @@ public class PhpElementsUtil {
                 .withParent(PlatformPatterns.psiElement(PhpReturn.class).inside(Method.class))
                 .withLanguage(PhpLanguage.INSTANCE)
         );
-    }
-
-    /**
-     * Search for class with returns a string on a given method name
-     */
-    @Nullable
-    static public PhpClass findSubclassWithMethodReturnString(@NotNull Project project, @NotNull String subClass, @NotNull String methodName, @NotNull String returnString) {
-        for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses(subClass)) {
-            if(returnString.equals(getMethodReturnAsString(phpClass, methodName))) {
-                return phpClass;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -483,33 +430,6 @@ public class PhpElementsUtil {
     static public boolean isEqualMethodReferenceName(MethodReference methodReference, String methodName) {
         String name = methodReference.getName();
         return name != null && name.equals(methodName);
-    }
-
-    static public PsiElement findArrayKeyValueInsideReference(PsiElement psiElement, String methodReferenceName, String keyName) {
-
-        if(psiElement == null) {
-            return null;
-        }
-
-        Collection<MethodReference> tests = PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class);
-        for(MethodReference methodReference: tests) {
-
-            // instance check
-            // methodReference.getSignature().equals("#M#C\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface.setDefaults")
-            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodReferenceName)) {
-                PsiElement[] parameters = methodReference.getParameters();
-                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                    PsiElement keyValue = PhpElementsUtil.getArrayValue((ArrayCreationExpression) parameters[0], keyName);
-                    if(keyValue != null) {
-                        return keyValue;
-                    }
-                }
-
-            }
-
-        }
-
-        return null;
     }
 
     @Nullable
@@ -1327,11 +1247,6 @@ public class PhpElementsUtil {
     @NotNull
     public static Set<Variable> getVariablesInScope(@NotNull PsiElement psiElement, @NotNull PhpNamedElement variable) {
         return MyVariableRecursiveElementVisitor.visit(psiElement, variable.getName());
-    }
-
-    @NotNull
-    public static Set<Variable> getVariablesInScope(@NotNull PsiElement psiElement, @NotNull String name) {
-        return MyVariableRecursiveElementVisitor.visit(psiElement, name);
     }
 
     /**

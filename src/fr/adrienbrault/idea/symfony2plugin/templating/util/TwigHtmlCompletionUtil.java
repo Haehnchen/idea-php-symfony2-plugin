@@ -3,9 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.html.HtmlTag;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
-import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 /**

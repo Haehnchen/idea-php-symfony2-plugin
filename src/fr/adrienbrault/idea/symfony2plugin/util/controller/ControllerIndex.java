@@ -68,17 +68,6 @@ public class ControllerIndex {
         return new ControllerAction(serviceId, method);
     }
 
-    @Nullable
-    private ControllerAction getControllerAction(String shortcutName) {
-        for(ControllerAction controllerAction: this.getActions()) {
-            if(controllerAction.getShortcutName().equals(shortcutName)) {
-                return controllerAction;
-            }
-        }
-
-        return null;
-    }
-
     private List<ControllerAction> getActionMethods(SymfonyBundle symfonyBundle) {
 
         String namespaceName = symfonyBundle.getNamespaceName();

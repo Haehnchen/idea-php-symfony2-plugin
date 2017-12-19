@@ -32,7 +32,6 @@ import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.RegexPsiElementFilter;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -460,14 +459,17 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         return Arrays.asList(PhpElementsUtil.getPsiElementsBySignature(psiElement.getProject(), functions.get(funcName).getSignature()));
     }
 
+    @NotNull
     private Collection<PsiElement> getSets(@NotNull PsiElement psiElement) {
         String funcName = psiElement.getText();
         for(String twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
             if(twigSet.equals(funcName)) {
-                return Arrays.asList(PsiTreeUtil.collectElements(psiElement.getContainingFile(), new RegexPsiElementFilter(
-                    TwigTagWithFileReference.class,
-                    "\\{%\\s?set\\s?" + Pattern.quote(funcName) + "\\s?.*")
-                ));
+                // @TODO: drop regex
+                return Arrays.asList(PsiTreeUtil.collectElements(psiElement.getContainingFile(), psiElement1 ->
+                    PlatformPatterns.psiElement(TwigTagWithFileReference.class)
+                    .accepts(psiElement1) && psiElement1.getText()
+                    .matches("\\{%\\s?set\\s?" + Pattern.quote(funcName) + "\\s?.*"))
+                );
             }
         }
 
