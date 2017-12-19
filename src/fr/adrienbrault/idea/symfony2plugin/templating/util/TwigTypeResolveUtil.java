@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -259,7 +260,13 @@ public class TwigTypeResolveUtil {
         globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
 
         for(Map.Entry<String, Set<String>> entry: globalVars.entrySet()) {
-            controllerVars.put(entry.getKey(), new PsiVariable(entry.getValue(), null));
+            Set<String> types = entry.getValue();
+
+            // collect iterator
+            types.addAll(collectIteratorReturns(psiElement, entry.getValue()));
+
+            // convert to variable model
+            controllerVars.put(entry.getKey(), new PsiVariable(types, null));
         }
 
         // check if we are in "for" scope and resolve types ending with []
@@ -268,6 +275,47 @@ public class TwigTypeResolveUtil {
         return controllerVars;
     }
 
+    /**
+     * Extract magic iterator implementation like "getIterator" or "__iterator"
+     *
+     * "@TODO find core stuff for resolve possible class return values"
+     *
+     * "getIterator", "@method Foo __iterator", "@method Foo[] __iterator"
+     */
+    @NotNull
+    private static Set<String> collectIteratorReturns(@NotNull PsiElement psiElement, @NotNull Set<String> types) {
+        Set<String> arrayValues = new HashSet<>();
+        for (String type : types) {
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), type);
+
+            if(phpClass == null) {
+                continue;
+            }
+
+            for (String methodName : new String[]{"getIterator", "__iterator", "current"}) {
+                Method method = phpClass.findMethodByName(methodName);
+                if(method != null) {
+                    // @method Foo __iterator
+                    // @method Foo[] __iterator
+                    Set<String> iteratorTypes = method.getType().getTypes();
+                    if("__iterator".equals(methodName) || "current".equals(methodName)) {
+                        arrayValues.addAll(iteratorTypes.stream().map(x ->
+                            !x.endsWith("[]") ? x + "[]" : x
+                        ).collect(Collectors.toSet()));
+                    } else {
+                        // Foobar[]
+                        for (String iteratorType : iteratorTypes) {
+                            if(iteratorType.endsWith("[]")) {
+                                arrayValues.add(iteratorType);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return arrayValues;
+    }
 
     private static Collection<String> collectForArrayScopeVariablesFoo(Project project, String[] typeName, PsiVariable psiVariable) {
 
