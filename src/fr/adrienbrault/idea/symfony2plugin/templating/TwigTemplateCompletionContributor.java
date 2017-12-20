@@ -20,7 +20,7 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
@@ -258,6 +258,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // assets completion:
         // stylesheets and javascripts tags
 
+        // {{ asset('<caret>') }}
         extend(CompletionType.BASIC, TwigPattern.getAutocompletableAssetPattern(), new AssetCompletionProvider(
             new AssetDirectoryReader()
         ));
