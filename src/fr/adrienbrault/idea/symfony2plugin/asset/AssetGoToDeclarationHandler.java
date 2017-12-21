@@ -12,8 +12,8 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -23,7 +23,6 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
-
         if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
             return null;
         }
@@ -33,9 +32,18 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        List<PsiElement> psiElements = new ArrayList<>();
+        Collection<PsiElement> psiElements = new HashSet<>();
         for (VirtualFile virtualFile : TwigUtil.resolveAssetsFiles(psiElement.getProject(), psiElement.getText(), fileExtensionFilterIfValidTag)) {
-            psiElements.add(PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile));
+            PsiElement target;
+            if(virtualFile.isDirectory()) {
+                target = PsiManager.getInstance(psiElement.getProject()).findDirectory(virtualFile);
+            } else {
+                target = PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile);
+            }
+
+            if(target != null) {
+                psiElements.add(target);
+            }
         }
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);

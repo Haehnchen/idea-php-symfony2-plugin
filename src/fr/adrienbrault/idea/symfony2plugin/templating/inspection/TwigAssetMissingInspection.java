@@ -6,9 +6,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -23,25 +22,34 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if(TwigPattern.getAutocompletableAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
-                    invoke(element, holder);
-                }
-
-                super.visitElement(element);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private void invoke(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
-        for (final AssetFile assetFile : new AssetDirectoryReader().getAssetFiles(element.getProject())) {
-            if(assetFile.toString().equals(element.getText())) {
-                return;
-            }
+    private class MyPsiElementVisitor extends PsiElementVisitor {
+
+        private final ProblemsHolder holder;
+
+        MyPsiElementVisitor(ProblemsHolder holder) {
+            this.holder = holder;
         }
 
-        holder.registerProblem(element, "Missing asset");
+        @Override
+        public void visitElement(PsiElement element) {
+            if(TwigPattern.getAutocompletableAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+                invoke(element, holder);
+            }
+
+            super.visitElement(element);
+        }
+
+        private void invoke(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
+            String asset = element.getText();
+
+            if(StringUtils.isBlank(asset) || TwigUtil.resolveAssetsFiles(element.getProject(), asset).size() > 0) {
+                return;
+            }
+
+            holder.registerProblem(element, "Missing asset");
+        }
     }
 }

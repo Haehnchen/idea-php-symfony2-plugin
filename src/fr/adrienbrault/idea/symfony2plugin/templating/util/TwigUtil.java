@@ -35,8 +35,7 @@ import com.jetbrains.twig.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.asset.dic.AssetFile;
+import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -1385,15 +1384,16 @@ public class TwigUtil {
         return null;
     }
 
-    public static Set<VirtualFile> resolveAssetsFiles(@NotNull Project project, @NotNull String templateName, @NotNull String... fileTypes) {
-        Set<VirtualFile> virtualFiles = new HashSet<>();
+    @NotNull
+    public static Collection<VirtualFile> resolveAssetsFiles(@NotNull Project project, @NotNull String assetName, @NotNull String... fileTypes) {
+        Collection<VirtualFile> virtualFiles = new HashSet<>();
 
         // {% javascripts [...] @jquery_js2'%}
-        if(templateName.startsWith("@") && templateName.length() > 1) {
+        if(assetName.startsWith("@") && assetName.length() > 1) {
             TwigNamedAssetsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(project, TwigNamedAssetsServiceParser.class);
-            String assetName = templateName.substring(1);
-            if(twigPathServiceParser.getNamedAssets().containsKey(assetName)) {
-                for (String s : twigPathServiceParser.getNamedAssets().get(assetName)) {
+            String assetNameShortcut = assetName.substring(1);
+            if(twigPathServiceParser.getNamedAssets().containsKey(assetNameShortcut)) {
+                for (String s : twigPathServiceParser.getNamedAssets().get(assetNameShortcut)) {
                     VirtualFile fileByURL = VfsUtil.findFileByIoFile(new File(s), false);
                     if(fileByURL != null) {
                         virtualFiles.add(fileByURL);
@@ -1403,41 +1403,7 @@ public class TwigUtil {
 
         }
 
-        // dont matches wildcard:
-        // {% javascripts '@SampleBundle/Resources/public/js/*' %}
-        // {% javascripts 'assets/js/*' %}
-        // {% javascripts 'assets/js/*.js' %}
-        Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(templateName);
-        if (!matcher.find()) {
-
-            // directly resolve
-            VirtualFile projectAssetRoot = AssetDirectoryReader.getProjectAssetRoot(project);
-            if(projectAssetRoot != null) {
-                VirtualFile relativeFile = VfsUtil.findRelativeFile(projectAssetRoot, templateName);
-                if(relativeFile != null) {
-                    virtualFiles.add(relativeFile);
-                }
-            }
-
-            for (final AssetFile assetFile : new AssetDirectoryReader(fileTypes, true).getAssetFiles(project)) {
-                if(assetFile.toString().equals(templateName)) {
-                    virtualFiles.add(assetFile.getFile());
-                }
-            }
-
-            return virtualFiles;
-        }
-
-        String pathName = matcher.group(1);
-        String fileExtension = matcher.group(2).length() > 0 ? matcher.group(2) : null;
-
-        for (final AssetFile assetFile : new AssetDirectoryReader(fileTypes, true).getAssetFiles(project)) {
-            if(fileExtension == null && assetFile.toString().matches(Pattern.quote(pathName) + "(?!.*[/\\\\]).*\\.\\w+")) {
-                virtualFiles.add(assetFile.getFile());
-            } else if(fileExtension != null && assetFile.toString().matches(Pattern.quote(pathName) + "(?!.*[/\\\\]).*" + Pattern.quote(fileExtension))) {
-                virtualFiles.add(assetFile.getFile());
-            }
-        }
+        virtualFiles.addAll(new AssetDirectoryReader(fileTypes, true).resolveAssetFile(project, assetName));
 
         return virtualFiles;
     }
