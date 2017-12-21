@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.variable.collector;
 
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -25,9 +26,10 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
             "  private function privateBar() {}\n" +
             "  /** @return FooClass[] */\n" +
             "  public function getNested() {}\n" +
+            "  /** @return FooClass[] */\n" +
+            "  public function getIterator() {}\n" +
             "}"
         );
-
     }
 
     public void testFileBasedVarDocPhpTypes() {
@@ -91,7 +93,70 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
                 "{% endfor %}\n"
             , "fooBar"
         );
+    }
 
+    public void testVarArrayIterationViaIterationClassImplementations() {
+        myFixture.configureByText("class1.php", "<?php\n" +
+            "namespace Bar;\n" +
+            "/**\n" +
+            " * @method FooClassIteratorArray[] __iterator\n" +
+            " */\n" +
+            "class FooClassIteratorArray {\n" +
+            "  public function getFooBar() {}\n" +
+            "}"
+        );
+
+        myFixture.configureByText("class2.php", "<?php\n" +
+            "namespace Bar;\n" +
+            "/**\n" +
+            " * @method FooClassIterator __iterator\n" +
+            " */\n" +
+            "class FooClassIterator {\n" +
+            "  public function getFooBar() {}\n" +
+            "}"
+        );
+
+        myFixture.configureByText("class3.php", "<?php\n" +
+            "namespace Bar;\n" +
+            "/**\n" +
+            " * @method FooClassCurrent current\n" +
+            " */\n" +
+            "class FooClassCurrent {\n" +
+            "  public function getFooBar() {}\n" +
+            "}"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClass #}\n" +
+                "{% for bar in bars %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClassIteratorArray #}\n" +
+                "{% for bar in bars %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClassIterator #}\n" +
+                "{% for bar in bars %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var bars \\Bar\\FooClassCurrent #}\n" +
+                "{% for bar in bars %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "fooBar"
+        );
     }
 
     /**
