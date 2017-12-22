@@ -6,6 +6,7 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -30,7 +31,6 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
-
         // we need project element; so get it from first item
         if(psiElements.size() == 0) {
             return;
@@ -42,13 +42,18 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
         }
 
         for(PsiElement psiElement: psiElements) {
-            if(psiElement instanceof XmlAttributeValue && (DoctrineMetadataPattern.getXmlTargetDocumentClass().accepts(psiElement) || DoctrineMetadataPattern.getXmlTargetEntityClass().accepts(psiElement) || DoctrineMetadataPattern.getEmbeddableNameClassPattern().accepts(psiElement))) {
-                attachXmlRelationMarker((XmlAttributeValue) psiElement, results);
+            if(psiElement.getNode().getElementType() != XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN) {
+                continue;
+            }
+
+            PsiElement xmlAttributeValue = psiElement.getParent();
+            if(xmlAttributeValue instanceof XmlAttributeValue && (DoctrineMetadataPattern.getXmlTargetDocumentClass().accepts(xmlAttributeValue) || DoctrineMetadataPattern.getXmlTargetEntityClass().accepts(xmlAttributeValue) || DoctrineMetadataPattern.getEmbeddableNameClassPattern().accepts(xmlAttributeValue))) {
+                attachXmlRelationMarker(psiElement, (XmlAttributeValue) xmlAttributeValue, results);
             }
         }
     }
 
-    private void attachXmlRelationMarker(@NotNull XmlAttributeValue psiElement, @NotNull Collection<LineMarkerInfo> results) {
+    private void attachXmlRelationMarker(@NotNull PsiElement target, @NotNull XmlAttributeValue psiElement, @NotNull Collection<LineMarkerInfo> results) {
         String value = psiElement.getValue();
         if(StringUtils.isBlank(value)) {
             return;
@@ -63,7 +68,7 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
             setTargets(classesInterface).
             setTooltipText("Navigate to class");
 
-        results.add(builder.createLineMarkerInfo(psiElement));
+        results.add(builder.createLineMarkerInfo(target));
     }
 
 }

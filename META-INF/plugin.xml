@@ -687,7 +687,8 @@
         </group>
 
         <action id="SymfonyWebTestCaseGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction">
-            <add-to-group group-id="PhpUnitNewGroup" anchor="last"/>
+            <!-- <add-to-group group-id="PhpUnitNewGroup" anchor="last"/> DROP in Phpstorm 2017.3 -->
+            <add-to-group group-id="NewGroup" anchor="last"/>
         </action>
 
         <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony Symbol..." icon="SymfonyIcons.Symfony">

@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ConstantFunction;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -36,16 +37,16 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     public LineMarkerInfo collect(PsiElement psiElement) {
-
-        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+        if(!Symfony2ProjectComponent.isEnabled(psiElement) || psiElement.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
             return null;
         }
 
-        if(!(psiElement instanceof Method) || !((Method) psiElement).getAccess().isPublic()) {
+        PsiElement method = psiElement.getParent();
+        if(!(method instanceof Method) || !((Method) method).getAccess().isPublic()) {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems((Method) psiElement);
+        List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems((Method) method);
 
         if(gotoRelatedItems.size() == 0) {
             return null;

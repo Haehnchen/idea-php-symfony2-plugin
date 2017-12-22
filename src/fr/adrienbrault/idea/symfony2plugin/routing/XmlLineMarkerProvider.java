@@ -8,6 +8,7 @@ import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -33,8 +34,8 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
         }
 
         for(PsiElement psiElement: psiElements) {
-            if(psiElement instanceof XmlTag) {
-                attachRouteActions((XmlTag) psiElement, lineMarkerInfos);
+            if(psiElement.getNode().getElementType() == XmlElementType.XML_NAME) {
+                attachRouteActions(psiElement, lineMarkerInfos);
             } else if(psiElement instanceof XmlFile) {
                 RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarker((PsiFile) psiElement);
                 if(lineMarker != null) {
@@ -45,12 +46,13 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void attachRouteActions(@NotNull XmlTag xmlTag, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
-        if(!Pattern.getRouteTag().accepts(xmlTag)) {
+    private void attachRouteActions(@NotNull PsiElement psiElement, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
+        PsiElement xmlTag = psiElement.getParent();
+        if(!(xmlTag instanceof XmlTag) || !Pattern.getRouteTag().accepts(xmlTag)) {
             return;
         }
 
-        String controller = RouteHelper.getXmlController(xmlTag);
+        String controller = RouteHelper.getXmlController((XmlTag) xmlTag);
         if(controller != null) {
             PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(xmlTag.getProject(), controller);
             if(methods.length > 0) {
@@ -58,7 +60,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                     setTargets(methods).
                     setTooltipText("Navigate to action");
 
-                lineMarkerInfos.add(builder.createLineMarkerInfo(xmlTag));
+                lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
             }
         }
     }
