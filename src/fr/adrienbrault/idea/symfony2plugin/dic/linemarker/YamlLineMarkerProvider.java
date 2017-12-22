@@ -6,17 +6,16 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -34,21 +33,29 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        final LazyDecoratedServiceValues[] lazyDecoratedServices = {null};
+        LazyDecoratedServiceValues lazyDecoratedServices = null;
 
-        // services -> service_name
-        psiElements.stream()
-            .filter(psiElement -> psiElement instanceof YAMLKeyValue && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement))
-            .forEach((PsiElement psiElement) -> {
-                if(lazyDecoratedServices[0] == null) {
-                    lazyDecoratedServices[0] = new LazyDecoratedServiceValues(psiElements.get(0).getProject());
-                }
 
-                visitServiceId((YAMLKeyValue) psiElement, result, lazyDecoratedServices[0]);
-            });
+        for (PsiElement psiElement : psiElements) {
+            if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
+                continue;
+            }
+
+            PsiElement yamlKeyValue = psiElement.getParent();
+            if(!(yamlKeyValue instanceof YAMLKeyValue) || !YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(yamlKeyValue)) {
+                continue;
+            }
+
+            if(lazyDecoratedServices == null) {
+                lazyDecoratedServices = new LazyDecoratedServiceValues(psiElement.getProject());
+            }
+
+            // services -> service_name
+            visitServiceId(psiElement, (YAMLKeyValue) yamlKeyValue, result, lazyDecoratedServices);
+        }
     }
 
-    private void visitServiceId(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedServiceValues lazyDecoratedServices) {
+    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedServiceValues lazyDecoratedServices) {
         String id = yamlKeyValue.getKeyText();
         if(StringUtils.isBlank(id)) {
             return;
@@ -57,17 +64,19 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         // decorates: @foobar
         String decorates = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates");
         if(decorates != null && StringUtils.isNotBlank(decorates)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(yamlKeyValue, decorates));
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, decorates));
         }
 
         NavigationGutterIconBuilder<PsiElement> lineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            yamlKeyValue.getProject(), lazyDecoratedServices.getDecoratedServices(), id
+            yamlKeyValue.getProject(),
+            lazyDecoratedServices.getDecoratedServices(),
+            id
         );
 
         if(lineMarker == null) {
             return;
         }
 
-        result.add(lineMarker.createLineMarkerInfo(yamlKeyValue));
+        result.add(lineMarker.createLineMarkerInfo(leafTarget));
     }
 }

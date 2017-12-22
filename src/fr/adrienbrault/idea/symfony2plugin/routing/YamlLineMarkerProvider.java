@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.Collection;
@@ -28,7 +29,6 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
-
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
@@ -45,23 +45,29 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
                 }
             }
         }
-
     }
 
-    private void attachEntityClass(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
+    private void attachEntityClass(@NotNull Collection<LineMarkerInfo> lineMarkerInfos, @NotNull PsiElement psiElement) {
+        if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
+            return;
+        }
 
-        if(psiElement instanceof YAMLKeyValue && psiElement.getParent() instanceof YAMLMapping && psiElement.getParent().getParent() instanceof YAMLDocument) {
+        PsiElement yamlKeyValue = psiElement.getParent();
+        if(!(yamlKeyValue instanceof YAMLKeyValue)) {
+            return;
+        }
 
+        if(yamlKeyValue.getParent() instanceof YAMLMapping && yamlKeyValue.getParent().getParent() instanceof YAMLDocument) {
             PsiFile containingFile;
             try {
-                containingFile = psiElement.getContainingFile();
+                containingFile = yamlKeyValue.getContainingFile();
             } catch (PsiInvalidElementAccessException e) {
                 return;
             }
 
             String fileName = containingFile.getName();
             if(isMetadataFile(fileName)) {
-                String keyText = ((YAMLKeyValue) psiElement).getKeyText();
+                String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
                 if(StringUtils.isNotBlank(keyText)) {
                     Collection<PhpClass> phpClasses = PhpElementsUtil.getClassesInterface(psiElement.getProject(), keyText);
                     if(phpClasses.size() > 0) {
@@ -83,18 +89,25 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
      *   defaults: { _controller: "Bundle:Foo:Bar" }
      *   controller: "Bundle:Foo:Bar"
      */
-    private void attachRouteActions(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
-        if(psiElement instanceof YAMLKeyValue) {
-            String yamlController = RouteHelper.getYamlController((YAMLKeyValue) psiElement);
-            if(yamlController != null) {
-                PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlController);
-                if(methods.length > 0) {
-                    NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                        setTargets(methods).
-                        setTooltipText("Navigate to action");
+    private void attachRouteActions(@NotNull Collection<LineMarkerInfo> lineMarkerInfos, @NotNull PsiElement psiElement) {
+        if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
+            return;
+        }
 
-                    lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
-                }
+        PsiElement yamlKeyValue = psiElement.getParent();
+        if(!(yamlKeyValue instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        String yamlController = RouteHelper.getYamlController((YAMLKeyValue) yamlKeyValue);
+        if(yamlController != null) {
+            PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlController);
+            if(methods.length > 0) {
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
+                    setTargets(methods).
+                    setTooltipText("Navigate to action");
+
+                lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
             }
         }
     }
@@ -111,37 +124,44 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
      * foo:
      *   targetEntity: Class
      */
-    private void attachRelationClass(Collection<LineMarkerInfo> lineMarkerInfos, PsiElement psiElement) {
-
-        if(!(psiElement instanceof YAMLKeyValue)) {
+    private void attachRelationClass(@NotNull Collection<LineMarkerInfo> lineMarkerInfos, @NotNull PsiElement psiElement) {
+        if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
             return;
         }
 
-        String keyText = ((YAMLKeyValue) psiElement).getKeyText();
+        PsiElement yamlKeyValue = psiElement.getParent();
+        if(!(yamlKeyValue instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
         if(!(keyText.equalsIgnoreCase("targetEntity") || keyText.equalsIgnoreCase("targetDocument"))) {
             return;
         }
 
-        String valueText = ((YAMLKeyValue) psiElement).getValueText();
+        String valueText = ((YAMLKeyValue) yamlKeyValue).getValueText();
         if(StringUtils.isBlank(valueText)) {
             return;
         }
 
-        Collection<PhpClass> classesInterface = DoctrineMetadataUtil.getClassInsideScope(psiElement, valueText);
+        Collection<PhpClass> classesInterface = DoctrineMetadataUtil.getClassInsideScope(yamlKeyValue, valueText);
         if(classesInterface.size() == 0) {
             return;
         }
 
         // get relation key
-        PsiElement parent = psiElement.getParent();
+        PsiElement parent = yamlKeyValue.getParent();
         if(parent != null) {
-            PsiElement parent1 = parent.getParent();
-            if(parent1 != null) {
+            PsiElement yamlKeyValueTarget = parent.getParent();
+            if(yamlKeyValueTarget instanceof YAMLKeyValue) {
                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
                     setTargets(classesInterface).
                     setTooltipText("Navigate to file");
 
-                lineMarkerInfos.add(builder.createLineMarkerInfo(parent1));
+                PsiElement key = ((YAMLKeyValue) yamlKeyValueTarget).getKey();
+                if(key != null) {
+                    lineMarkerInfos.add(builder.createLineMarkerInfo(key));
+                }
             }
         }
     }

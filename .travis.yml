@@ -16,8 +16,9 @@ env:
   - PHPSTORM_ENV=2017.2
   - PHPSTORM_ENV=2017.2.4
   - PHPSTORM_ENV=2017.3.2
-  - PHPSTORM_ENV=eap
+  #- PHPSTORM_ENV=eap # disabled never used
 
 matrix:
   allow_failures:
     - env: PHPSTORM_ENV=eap
+    - env: PHPSTORM_ENV=2017.3.2
