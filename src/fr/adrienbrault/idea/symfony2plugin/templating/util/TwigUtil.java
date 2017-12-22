@@ -233,14 +233,17 @@ public class TwigUtil {
     public static String getTransDefaultDomainOnScope(@NotNull PsiElement position) {
         // {% embed 'foo.html.twig' with { foo: '<caret>'|trans } %}
         PsiElement parent = position.getParent();
-        if(parent != null && parent.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
-            PsiElement firstParent = PsiTreeUtil.findFirstParent(position, true, psiElement -> {
-                IElementType elementType = psiElement.getNode().getElementType();
-                return elementType != TwigElementTypes.EMBED_TAG && elementType != TwigElementTypes.EMBED_STATEMENT;
-            });
+        if(parent != null && parent.getNode().getElementType() == TwigElementTypes.LITERAL) {
+            PsiElement parent2 = parent.getParent();
+            if(parent2 != null && parent2.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
+                PsiElement firstParent = PsiTreeUtil.findFirstParent(parent, true, psiElement -> {
+                    IElementType elementType = psiElement.getNode().getElementType();
+                    return elementType != TwigElementTypes.EMBED_TAG && elementType != TwigElementTypes.EMBED_STATEMENT;
+                });
 
-            if(firstParent != null) {
-                position = firstParent;
+                if(firstParent != null) {
+                    position = firstParent;
+                }
             }
         }
 
@@ -1556,23 +1559,27 @@ public class TwigUtil {
 
     /**
      * Visit string values of given array start brace
-     * ["foobar"]
+     *
+     * ["foobar", "foobar"]
+     * {"foobar", "foobar"}
      */
-    public static void visitStringInArray(@NotNull PsiElement arrayStartBrace, @NotNull Consumer<Pair<String, PsiElement>> pair) {
+    private static void visitStringInArray(@NotNull PsiElement arrayStartBrace, @NotNull Consumer<Pair<String, PsiElement>> pair) {
         // match: "([,)''(,])"
         Collection<PsiElement> questString = PsiElementUtils.getNextSiblingOfTypes(arrayStartBrace, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
                 .afterLeafSkipping(
                     TwigPattern.STRING_WRAP_PATTERN,
                     PlatformPatterns.or(
                         PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
-                    )
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
+                   )
                 )
                 .beforeLeafSkipping(
                     TwigPattern.STRING_WRAP_PATTERN,
                     PlatformPatterns.or(
                         PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
+                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_CURL)
                     )
                 )
         );
@@ -1620,7 +1627,7 @@ public class TwigUtil {
                 psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-                        if(target[0] == null && TwigPattern.getPrintBlockFunctionPattern("block").accepts(element)) {
+                        if(target[0] == null && TwigPattern.getPrintBlockOrTagFunctionPattern("block").accepts(element)) {
                             target[0] = element;
                         }
                         super.visitElement(element);
@@ -2213,7 +2220,12 @@ public class TwigUtil {
         visitTemplateIncludes(
             twigFile,
             consumer,
-            TemplateInclude.TYPE.EMBED, TemplateInclude.TYPE.INCLUDE, TemplateInclude.TYPE.INCLUDE_FUNCTION, TemplateInclude.TYPE.FROM, TemplateInclude.TYPE.IMPORT, TemplateInclude.TYPE.FORM_THEME
+            TemplateInclude.TYPE.EMBED,
+            TemplateInclude.TYPE.INCLUDE,
+            TemplateInclude.TYPE.INCLUDE_FUNCTION,
+            TemplateInclude.TYPE.FROM,
+            TemplateInclude.TYPE.IMPORT,
+            TemplateInclude.TYPE.FORM_THEME
         );
     }
 
@@ -2262,7 +2274,7 @@ public class TwigUtil {
                 // {{ include() }}
                 // {{ source() }}
                 if(myTypes.contains(TemplateInclude.TYPE.INCLUDE_FUNCTION)) {
-                    PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getPrintBlockFunctionPattern("include", "source"));
+                    PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"));
                     if(includeTag != null) {
                         String templateName = includeTag.getText();
                         if(StringUtils.isNotBlank(templateName)) {
@@ -2299,17 +2311,21 @@ public class TwigUtil {
                                 }
                             }
 
-                            // {% form_theme form.child 'form/fields_child.html.twig' %}
+                            // {% form_theme form.child with ['form/fields_child.html.twig'] %}
                             PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with"));
                             if(withElement != null) {
-                                PsiElement arrayStart = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigTokenTypes.LBRACE_SQ,
+                                // find LITERAL "[", "{"
+                                PsiElement arrayStart = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigElementTypes.LITERAL,
                                     TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
                                 );
 
                                 if(arrayStart != null) {
-                                    visitStringInArray(arrayStart, pair ->
-                                        consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
-                                    );
+                                    PsiElement firstChild = arrayStart.getFirstChild();
+                                    if(firstChild != null) {
+                                        visitStringInArray(firstChild, pair ->
+                                            consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
+                                        );
+                                    }
                                 }
                             }
                         }

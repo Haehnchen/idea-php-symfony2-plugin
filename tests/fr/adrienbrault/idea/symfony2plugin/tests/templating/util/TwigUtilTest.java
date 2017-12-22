@@ -274,7 +274,8 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
             "{% form_theme form ':Foobar:fields.html.twig' %}" +
             "{% form_theme form.foobar \":Foobar:fields_foobar.html.twig\" %}" +
-            "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}"
+            "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}" +
+            "{% form_theme form.foobar with {\":Foobar:fields_foobar_2.html.twig\", \":Foobar:fields_foobar_3.html.twig\", \":Foobar:fields_foobar_4.html.twig\"} %}"
         );
 
         TwigUtil.visitTemplateIncludes((TwigFile) fileFromText, templateInclude ->
@@ -282,6 +283,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertContainsElements(includes, ":Foobar:fields.html.twig", ":Foobar:fields_foobar.html.twig", ":Foobar:fields_foobar_1.html.twig");
+        assertContainsElements(includes, ":Foobar:fields_foobar_2.html.twig", ":Foobar:fields_foobar_3.html.twig", ":Foobar:fields_foobar_4.html.twig");
     }
 
     /**

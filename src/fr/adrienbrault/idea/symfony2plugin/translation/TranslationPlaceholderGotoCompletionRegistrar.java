@@ -130,6 +130,9 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         }
     }
 
+    /**
+     * {{ 'symfony.great'|trans({'fo<caret>f'}, 'symfony')) }}
+     */
     private static class MyTwigTransFilterCompletionContributor implements GotoCompletionContributor {
         @NotNull
         private final String filter;
@@ -146,7 +149,13 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
                 return null;
             }
 
-            PsiElement function = PsiElementUtils.getPrevSiblingOfType(parent, TwigPattern.getTranslationPattern(this.filter));
+            PsiElement functionCall = parent.getParent();
+            if(functionCall.getNode().getElementType() != TwigElementTypes.FUNCTION_CALL) {
+                return null;
+            }
+
+            // find translation key: 'symfony.great'
+            PsiElement function = PsiElementUtils.getPrevSiblingOfType(functionCall, TwigPattern.getTranslationKeyPattern(this.filter));
             if(function == null) {
                 return null;
             }

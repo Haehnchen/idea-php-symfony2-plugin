@@ -67,7 +67,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         // all file template "include" pattern
         extend(CompletionType.BASIC, PlatformPatterns.or(
-            TwigPattern.getPrintBlockFunctionPattern("include", "source"),
+            TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"),
             TwigPattern.getIncludeTagArrayPattern(),
             TwigPattern.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
         ),  new TemplateCompletionProvider());
@@ -76,7 +76,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')
         extend(
             CompletionType.BASIC,
-            TwigPattern.getTranslationPattern("trans", "transchoice"),
+            TwigPattern.getTranslationKeyPattern("trans", "transchoice"),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {

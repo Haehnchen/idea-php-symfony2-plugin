@@ -2,6 +2,7 @@ Changelog
 =========
 
 # Version names
+* 0.16.x: PhpStorm 2017.3.2+
 * 0.15.x: PhpStorm 2017.2+
 * 0.14.x: PhpStorm 2017.1+ (no support)
 * 0.13.x: PhpStorm 2016.3.1 (no support)

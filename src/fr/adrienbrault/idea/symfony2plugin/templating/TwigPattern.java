@@ -94,31 +94,6 @@ public class TwigPattern {
     }
 
     /**
-     * Check for {{ include('|')  }}
-     *
-     * @param functionName twig function name
-     */
-    public static ElementPattern<PsiElement> getPrintBlockFunctionPattern(String... functionName) {
-        //noinspection unchecked
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)
-            )
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    /**
      * {% include ['', ~ '', ''] %}
      */
     public static ElementPattern<PsiElement> getIncludeTagArrayPattern() {
@@ -184,12 +159,18 @@ public class TwigPattern {
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
                 PlatformPatterns.or(
+
+                    // old and inconsistently implementations of FUNCTION_CALL:
+                    // eg {% if asset('') %} does not provide a FUNCTION_CALL whereas a print block does
                     PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
                     PlatformPatterns.psiElement(TwigElementTypes.TAG),
                     PlatformPatterns.psiElement(TwigElementTypes.IF_TAG),
                     PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
                     PlatformPatterns.psiElement(TwigElementTypes.ELSE_TAG),
-                    PlatformPatterns.psiElement(TwigElementTypes.ELSEIF_TAG)
+                    PlatformPatterns.psiElement(TwigElementTypes.ELSEIF_TAG),
+
+                    // PhpStorm 2017.3.2: {{ asset('') }}
+                    PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
                 )
             )
             .afterLeafSkipping(
@@ -587,7 +568,12 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
-        return  PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK)).withLanguage(TwigLanguage.INSTANCE);
+        return PlatformPatterns.psiElement().withParent(PlatformPatterns.or(
+            PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
+
+            // PhpStorm 2017.3.2
+            PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
+        )).withLanguage(TwigLanguage.INSTANCE);
     }
 
     /**
@@ -951,7 +937,15 @@ public class TwigPattern {
         ;
     }
 
-    public static ElementPattern<PsiElement> getTranslationPattern(String... type) {
+    /**
+     * Pattern to match given string before "filter" with given function name
+     *
+     * {{ 'foo<caret>bar'|trans }}
+     * {{ 'foo<caret>bar'|trans() }}
+     * {{ 'foo<caret>bar'|transchoice() }}
+     */
+    @NotNull
+    public static ElementPattern<PsiElement> getTranslationKeyPattern(@NotNull String... type) {
         //noinspection unchecked
         return
             PlatformPatterns
