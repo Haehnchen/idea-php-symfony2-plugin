@@ -80,9 +80,9 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         checkContainsCompletion(lookupStrings);
     }
 
-    public void assertCompletionNotContains(String text, String configureByText, String... lookupStrings) {
+    public void assertCompletionNotContains(String filename, String configureByText, String... lookupStrings) {
 
-        myFixture.configureByText(text, configureByText);
+        myFixture.configureByText(filename, configureByText);
         myFixture.completeBasic();
 
         assertFalse(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
