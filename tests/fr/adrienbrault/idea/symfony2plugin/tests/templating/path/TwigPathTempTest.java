@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath#TwigPath
