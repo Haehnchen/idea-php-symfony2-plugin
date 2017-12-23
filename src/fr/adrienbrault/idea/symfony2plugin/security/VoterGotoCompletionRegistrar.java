@@ -1,25 +1,22 @@
 package fr.adrienbrault.idea.symfony2plugin.security;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -84,25 +81,9 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-            Collection<LookupElement> lookupElements = new ArrayList<>();
-
-            Set<String> elements = new HashSet<>();
-
-            VoterUtil.visitAttribute(getProject(), pair -> {
-                String name = pair.getFirst();
-                if(!elements.contains(name)) {
-                    LookupElementBuilder lookupElement = LookupElementBuilder.create(name).withIcon(Symfony2Icons.SYMFONY);
-                    PhpClass phpClass = PsiTreeUtil.getParentOfType(pair.getSecond(), PhpClass.class);
-                    if(phpClass != null) {
-                        lookupElement = lookupElement.withTypeText(phpClass.getName(), true);
-                    }
-
-                    lookupElements.add(lookupElement);
-                    elements.add(name);
-                }
-            });
-
-            return lookupElements;
+            VoterUtil.LookupElementPairConsumer consumer = new VoterUtil.LookupElementPairConsumer();
+            VoterUtil.visitAttribute(getProject(), consumer);
+            return consumer.getLookupElements();
         }
 
         @NotNull
