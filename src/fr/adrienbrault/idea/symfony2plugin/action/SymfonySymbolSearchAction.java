@@ -94,7 +94,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         private Map<String, Set<VirtualFile>> getTemplateMap() {
             if(this.templateMap == null) {
-                this.templateMap = TwigUtil.getTwigAndPhpTemplateFiles(this.project);
+                this.templateMap = TwigUtil.getTemplateMap(this.project, true);
             }
 
             return this.templateMap;
