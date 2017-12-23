@@ -107,30 +107,24 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         );
     }
 
-    /**
-     * @see TwigUtil#getTwigFileNames
-     */
     public void testGetTwigFileNames() {
         createFile("res/foobar/foo.html.twig");
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         assertContainsElements(
-            TwigUtil.getTwigFileNames(getProject()),
+            TwigUtil.getTemplateMap(getProject()).keySet(),
             "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig"
         );
     }
 
-    /**
-     * @see TwigUtil#getTwigAndPhpTemplateFiles
-     */
     public void testGetTwigAndPhpTemplateFiles() {
         createFiles("res/foobar/foo.html.twig", "res/foobar/foo.php");
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         assertContainsElements(
-            TwigUtil.getTwigAndPhpTemplateFiles(getProject()).keySet(),
+            TwigUtil.getTemplateMap(getProject(), true).keySet(),
             "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig",
             "@Foo/foobar/foo.php", "FooBundle:foobar:foo.php", ":foobar:foo.php", "foobar/foo.php"
         );

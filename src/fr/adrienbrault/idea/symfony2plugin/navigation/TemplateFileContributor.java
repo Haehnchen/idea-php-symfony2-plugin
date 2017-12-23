@@ -21,7 +21,7 @@ public class TemplateFileContributor implements ChooseByNameContributor {
             return new String[0];
         }
 
-        Collection<String> twigFileNames = TwigUtil.getTwigFileNames(project);
+        Collection<String> twigFileNames = TwigUtil.getTemplateMap(project).keySet();
         return twigFileNames.toArray(new String[twigFileNames.size()]);
     }
 
