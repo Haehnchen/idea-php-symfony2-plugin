@@ -7,3 +7,13 @@ namespace Symfony\Component\Security\Core\Authorization
         public function isGranted($attributes, $object = null);
     }
 }
+
+/**
+ * @Annotation
+ */
+namespace Sensio\Bundle\FrameworkExtraBundle\Configuration
+{
+    class Security
+    {
+    }
+}

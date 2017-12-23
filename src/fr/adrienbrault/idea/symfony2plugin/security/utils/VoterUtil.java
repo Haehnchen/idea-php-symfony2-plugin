@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.security.utils;
 
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
@@ -13,6 +15,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -22,6 +25,8 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -211,6 +216,36 @@ public class VoterUtil {
         public Set<PsiElement> getValues() {
             return values;
         }
+    }
+
+    public static class LookupElementPairConsumer implements Consumer<Pair<String, PsiElement>> {
+        @NotNull
+        private final Set<String> elements = new HashSet<>();
+
+        @NotNull
+        public Collection<LookupElement> getLookupElements() {
+            return lookupElements;
+        }
+
+        @Override
+        public void accept(Pair<String, PsiElement> pair) {
+            String name = pair.getFirst();
+            if (!elements.contains(name)) {
+                LookupElementBuilder lookupElement = LookupElementBuilder.create(name).withIcon(Symfony2Icons.SYMFONY);
+
+                PhpClass phpClass = PsiTreeUtil.getParentOfType(pair.getSecond(), PhpClass.class);
+                if (phpClass != null) {
+                    lookupElement = lookupElement.withTypeText(phpClass.getName(), true);
+                }
+
+                lookupElements.add(lookupElement);
+
+                elements.add(name);
+            }
+        }
+
+        @NotNull
+        private final Collection<LookupElement> lookupElements = new ArrayList<>();
     }
 
     /**
