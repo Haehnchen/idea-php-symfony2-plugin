@@ -59,7 +59,7 @@ public class TwigTranslationKeyIntention extends PsiElementBaseIntentionAction {
 
     @Nullable
     private Pair<String, String> getKeyAndDomain(@NotNull PsiElement psiElement) {
-        if(!TwigPattern.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
+        if(!TwigPattern.getTranslationKeyPattern("trans", "transchoice").accepts(psiElement)) {
             return null;
         }
 

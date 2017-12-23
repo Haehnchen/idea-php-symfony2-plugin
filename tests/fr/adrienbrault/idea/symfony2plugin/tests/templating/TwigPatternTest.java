@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -192,7 +193,6 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         ));
     }
 
-
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getParameterAsStringPattern
      */
@@ -209,6 +209,7 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
             fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getParameterAsStringPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ path('f<caret>o') }}"))
         );
     }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getTransDomainPattern
      */
@@ -244,5 +245,13 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(
             fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(test ~ 'test', [], 'f<caret>o') }}"))
         );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getTranslationKeyPattern
+     */
+    public void testGetTranslationPattern() {
+        assertTrue(TwigPattern.getTranslationKeyPattern("trans").accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'f<caret>oo'|trans }}")));
+        assertTrue(TwigPattern.getTranslationKeyPattern("trans").accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'f<caret>oo'|trans('foobar') }}")));
     }
 }

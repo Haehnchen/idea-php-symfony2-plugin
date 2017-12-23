@@ -31,7 +31,7 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(PsiElement element) {
-                if((TwigPattern.getTemplateFileReferenceTagPattern().accepts(element) || TwigPattern.getPrintBlockFunctionPattern("include", "source").accepts(element)) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+                if((TwigPattern.getTemplateFileReferenceTagPattern().accepts(element) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(element)) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                     invoke(element, holder);
                 }
 

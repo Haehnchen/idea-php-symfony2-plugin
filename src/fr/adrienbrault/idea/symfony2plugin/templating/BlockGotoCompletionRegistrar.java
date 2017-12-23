@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {{ block('foo_block') }}
-        registrar.register(TwigPattern.getPrintBlockFunctionPattern("block"), psiElement -> {
+        registrar.register(TwigPattern.getPrintBlockOrTagFunctionPattern("block"), psiElement -> {
             if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return null;
             }

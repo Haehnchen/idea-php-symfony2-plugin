@@ -208,7 +208,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
 
             if(element instanceof TwigCompositeElement) {
                 // {{ include('template.html') }}
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getPrintBlockFunctionPattern("include"));
+                PsiElement includeTag = PsiElementUtils.getChildrenOfType(element, TwigPattern.getPrintBlockOrTagFunctionPattern("include"));
                 if(includeTag != null) {
                     collectContextVars(TwigTokenTypes.IDENTIFIER, element, includeTag);
                 }
