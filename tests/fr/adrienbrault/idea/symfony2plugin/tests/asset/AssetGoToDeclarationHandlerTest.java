@@ -1,19 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.asset;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtureTestCase {
-
+public class AssetGoToDeclarationHandlerTest extends SymfonyTempCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        createDummyFiles(
+        createFiles(
             "web/assets/foo.css",
             "web/assets/foo.js",
             "web/foo.js"
@@ -24,8 +23,6 @@ public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixt
      * @see fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler
      */
     public void testGotoDeclarationTargetsTag() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
         assertNavigationContainsFile(TwigFileType.INSTANCE, "" +
                 "{% javascripts\n" +
                 "    'assets/foo<caret>.js'\n" +
@@ -59,8 +56,6 @@ public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixt
      * @see fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler
      */
     public void testGotoDeclarationTargetsAsset() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{{ asset('assets/foo<caret>.css') }}", "foo.css");
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{{ asset('assets/foo<caret>.js') }}", "foo.js");
 
@@ -76,8 +71,6 @@ public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixt
      * @see fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler
      */
     public void testGotoDeclarationTargetsAssetInRoot() {
-        if (System.getenv("PHPSTORM_ENV") != null) return;
-
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{{ asset('foo<caret>.js') }}", "foo.js");
     }
 }

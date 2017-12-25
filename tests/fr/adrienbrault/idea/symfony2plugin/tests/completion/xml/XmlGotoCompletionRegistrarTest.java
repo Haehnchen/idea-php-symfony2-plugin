@@ -119,29 +119,6 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
-    public void testThatTemplateInsideRouteDefaultKeyCompletedAndNavigable() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        try {
-            createDummyFiles("app/Resources/views/foo.html.twig");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertCompletionContains(XmlFileType.INSTANCE, "" +
-                "    <route id=\"root\" path=\"/wp-admin\">\n" +
-                "        <default key=\"template\"><caret></default>\n" +
-                "    </route>",
-            "foo.html.twig"
-        );
-
-        assertNavigationMatch(XmlFileType.INSTANCE, "" +
-            "    <route id=\"root\" path=\"/wp-admin\">\n" +
-            "        <default key=\"template\">foo.ht<caret>ml.twig</default>\n" +
-            "    </route>"
-        );
-    }
-
     public void testThatDecoratesServiceTagProvidesReferences() {
         assertCompletionContains(XmlFileType.INSTANCE, "" +
                 "<?xml version=\"1.0\"?>\n" +

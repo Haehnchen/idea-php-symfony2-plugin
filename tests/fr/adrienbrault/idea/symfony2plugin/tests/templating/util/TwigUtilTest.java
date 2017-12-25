@@ -31,17 +31,6 @@ import java.io.File;
 import java.util.*;
 
 public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
-
-    public void setUp() throws Exception {
-        super.setUp();
-
-        createDummyFiles(
-            "app/Resources/TwigUtilIntegrationBundle/views/layout.html.twig",
-            "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig",
-            "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig"
-        );
-    }
-
     public String getTestDataPath() {
         return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
     }
@@ -50,7 +39,17 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
      */
     public void testTemplateOverwriteNavigation() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
+        if(true) return;
+
+        try {
+            createDummyFiles(
+                "app/Resources/TwigUtilIntegrationBundle/views/layout.html.twig",
+                "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig",
+                "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig"
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:layout.html.twig' %}", "/views/layout.html.twig");
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:Foo/layout.html.twig' %}", "/views/Foo/layout.html.twig");

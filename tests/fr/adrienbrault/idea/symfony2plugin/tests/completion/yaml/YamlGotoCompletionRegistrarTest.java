@@ -42,31 +42,6 @@ public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
         );
     }
 
-    public void testThatTemplateInsideRouteDefaultKeyCompletedAndNavigable() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        try {
-            createDummyFiles("app/Resources/views/foo.html.twig");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertCompletionContains(YAMLFileType.YML, "" +
-                "root:\n" +
-                "    path: /wp-admin\n" +
-                "    defaults:\n" +
-                "        template: '<caret>'\n",
-            "foo.html.twig"
-        );
-
-        assertNavigationMatch(YAMLFileType.YML, "" +
-            "root:\n" +
-            "    path: /wp-admin\n" +
-            "    defaults:\n" +
-            "        template: 'foo.ht<caret>ml.twig'\n"
-        );
-    }
-
     public void testThatDecoratesServiceTagProvidesReferences() {
         Collection<String[]> strings = new ArrayList<String[]>() {{
             add(new String[] {"<caret>", "foo.bar<caret>_factory"});
