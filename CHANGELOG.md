@@ -23,7 +23,7 @@ Changelog
 * [Form] Calling setDefault for data class does not associates form with binded class [#1048](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1048)
 
 ## 0.15.160
-* Support donenv type cast syntax [#1080](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1080)
+* Support dotenv type cast syntax [#1080](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1080)
 * Support finalized Symfony 3.4 ControllerTrait shortcuts
 * Provide add better "app" folder detection and add more tests for
 * Support absolute path in Twig templates; optimize path resolving
