@@ -784,4 +784,17 @@ public class XmlHelper {
 
         return index;
     }
+
+    /**
+     * Sine linemarker must be attached to leaf items, we add every navigation target onto the tag name. As XML_NAME
+     * also indicate ending tag we need to make sure that only that starting is allowed for os
+     *
+     * Attach to "<service" but not to "</service":
+     * <service class="Foobar"></service>
+     */
+    public static PsiElementPattern.Capture<PsiElement> getXmlTagNameLeafStartPattern() {
+        return PlatformPatterns.psiElement(XmlElementType.XML_NAME)
+            .afterLeaf(PlatformPatterns.psiElement(XmlTokenType.XML_START_TAG_START))
+            .withParent(XmlTag.class);
+    }
 }

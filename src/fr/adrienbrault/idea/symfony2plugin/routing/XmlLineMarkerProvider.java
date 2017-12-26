@@ -8,7 +8,6 @@ import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -28,13 +27,12 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
-
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
 
         for(PsiElement psiElement: psiElements) {
-            if(psiElement.getNode().getElementType() == XmlElementType.XML_NAME) {
+            if(XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
                 attachRouteActions(psiElement, lineMarkerInfos);
             } else if(psiElement instanceof XmlFile) {
                 RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarker((PsiFile) psiElement);

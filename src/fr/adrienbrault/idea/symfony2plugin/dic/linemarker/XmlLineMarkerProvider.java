@@ -6,7 +6,6 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -37,7 +36,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
         LazyDecoratedServiceValues lazyDecoratedServiceValues = null;
 
         for (PsiElement psiElement : psiElements) {
-            if(psiElement.getNode().getElementType() != XmlElementType.XML_NAME) {
+            if(!XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
                 continue;
             }
 
