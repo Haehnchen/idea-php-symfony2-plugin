@@ -169,22 +169,27 @@ public class TwigTypeResolveUtil {
      *
      * "@var foo \Foo"
      */
-    private static Map<String, String> findInlineStatementVariableDocBlock(PsiElement psiInsideBlock, final IElementType parentStatement) {
-        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, psiElement -> {
-            if (psiElement instanceof TwigCompositeElement) {
-                if (PlatformPatterns.psiElement(parentStatement).accepts(psiElement)) {
-                    return true;
-                }
-            }
-            return false;
-        });
+    private static Map<String, String> findInlineStatementVariableDocBlock(@NotNull PsiElement psiInsideBlock, @NotNull IElementType parentStatement, boolean nextParent) {
+        PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiInsideBlock, psiElement ->
+            PlatformPatterns.psiElement(parentStatement).accepts(psiElement)
+        );
 
         Map<String, String> variables = new HashMap<>();
         if(twigCompositeElement == null) {
             return variables;
         }
 
-        return getInlineCommentDocsVars(twigCompositeElement);
+        Map<String, String> inlineCommentDocsVars = getInlineCommentDocsVars(twigCompositeElement);
+
+        // visit parent elements for extending scope
+        if(nextParent) {
+            PsiElement parent = twigCompositeElement.getParent();
+            if(parent != null) {
+                inlineCommentDocsVars.putAll(findInlineStatementVariableDocBlock(twigCompositeElement.getParent(), parentStatement, true));
+            }
+        }
+
+        return inlineCommentDocsVars;
     }
 
     /**
@@ -237,7 +242,6 @@ public class TwigTypeResolveUtil {
 
     @NotNull
     public static Map<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement, @NotNull Set<VirtualFile> visitedFiles) {
-
         Map<String, Set<String>> globalVars = new HashMap<>();
         Map<String, PsiVariable> controllerVars = new HashMap<>();
 
@@ -255,9 +259,9 @@ public class TwigTypeResolveUtil {
         }
 
         // globals first
-        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT)));
-        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.MACRO_STATEMENT)));
-        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT)));
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT, true)));
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.MACRO_STATEMENT, false)));
+        globalVars.putAll(convertHashMapToTypeSet(findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT, false)));
 
         for(Map.Entry<String, Set<String>> entry: globalVars.entrySet()) {
             Set<String> types = entry.getValue();

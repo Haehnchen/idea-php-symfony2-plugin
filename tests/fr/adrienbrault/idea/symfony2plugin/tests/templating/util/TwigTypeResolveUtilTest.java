@@ -1,12 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +57,31 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
         assertMatches("{# @var foo_1 \\AppBundle\\Entity\\MeterValueDTO #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
         assertMatches("{# @var \\AppBundle\\Entity\\MeterValueDTO foo_1 #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
         assertMatches("{# foo_1 \\AppBundle\\Entity\\MeterValueDTO #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+    }
+
+    /**
+     * @see TwigTypeResolveUtil#collectScopeVariables
+     */
+    public void testCollectScopeVariables() {
+        myFixture.configureByText(TwigFileType.INSTANCE,
+            "{# @var b \\Foo\\Bar #}" +
+                "{% block one %}\n" +
+                "    {# @var a \\Foo\\Bar #}\n" +
+                "\n" +
+                "    {% block two %}\n" +
+                "        {% block two %}\n" +
+                "            {{ <caret> }}\n" +
+                "        {% endblock %}\n" +
+                "    {% endblock %}\n" +
+                "{% endblock %}"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        Map<String, PsiVariable> stringPsiVariableMap = TwigTypeResolveUtil.collectScopeVariables(psiElement);
+
+        assertContainsElements(stringPsiVariableMap.get("a").getTypes(), "\\Foo\\Bar");
+        assertContainsElements(stringPsiVariableMap.get("b").getTypes(), "\\Foo\\Bar");
     }
 
     private void assertMatches(@NotNull String content, @NotNull String... regularExpressions) {
