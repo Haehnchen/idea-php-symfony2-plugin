@@ -2,6 +2,7 @@ Changelog
 =========
 
 # Version names
+* 0.16.x: PhpStorm 2017.3.2+
 * 0.15.x: PhpStorm 2017.2+
 * 0.14.x: PhpStorm 2017.1+ (no support)
 * 0.13.x: PhpStorm 2016.3.1 (no support)
@@ -10,7 +11,7 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 0.15.163
+## 0.15.163 / 0.16.163
 * Fix assets reading and provide explicit resolving for asset files instead of rescanning them to improve performance and drop massive \`opendirectoryd\` cpu time [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809) [#1118](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1118)
 * Support iterator in twig loop completion [#1097](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1097) [#1035](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035)
 * Migrate LineMarker target to leaf elements to fix performance warning / error [#1122](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1122)
