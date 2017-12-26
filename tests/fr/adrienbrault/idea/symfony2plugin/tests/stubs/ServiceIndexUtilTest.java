@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -13,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -96,6 +99,13 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
             ServiceIndexUtil.findParameterDefinitions(PsiManager.getInstance(getProject()).findFile(xmlVirtualFile), "foo_xml_parameter"),
             new MyXmlTagCondition("foo_xml_parameter", "key"))
         );
+    }
+
+    public void testGetParentServices() {
+        Map<String, Collection<ContainerService>> parentServices = ServiceIndexUtil.getParentServices(getProject());
+
+        assertNotNull(parentServices.get("foo.yml_id.parent").stream().filter(service -> "foo.yml_id".equals(service.getName())).findFirst().orElse(null));
+        assertNotNull(parentServices.get("foo.xml_id.parent").stream().filter(service -> "foo.xml_id".equals(service.getName())).findFirst().orElse(null));
     }
 
     private static class MyYamlKeyValueCondition implements Condition<PsiElement> {

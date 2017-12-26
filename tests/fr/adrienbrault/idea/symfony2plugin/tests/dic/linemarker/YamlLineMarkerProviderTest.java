@@ -33,6 +33,17 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testThatParentServiceShouldProvideMarker() {
+        assertLineMarker(createYamlFile("" +
+                "services:\n" +
+                "\n" +
+                "    foo_bar_main:\n" +
+                "        class: Foo\\Bar\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to parent")
+        );
+    }
+
     public void testThatDecoratesProvidesOverwriteMarker() {
         assertLineMarker(createYamlFile("" +
                 "services:\n" +
@@ -41,6 +52,17 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
                 "        decorates: app.mailer\n"
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to decorated service")
+        );
+    }
+
+    public void testThatParentProvidesOverwriteMarker() {
+        assertLineMarker(createYamlFile("" +
+                "services:\n" +
+                "\n" +
+                "    foo_bar_main:\n" +
+                "        parent: app.mailer\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to parent service")
         );
     }
 

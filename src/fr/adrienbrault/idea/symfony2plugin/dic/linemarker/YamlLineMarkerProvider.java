@@ -33,7 +33,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        LazyDecoratedServiceValues lazyDecoratedServices = null;
+        LazyDecoratedParentServiceValues lazyDecoratedServices = null;
 
 
         for (PsiElement psiElement : psiElements) {
@@ -47,7 +47,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             }
 
             if(lazyDecoratedServices == null) {
-                lazyDecoratedServices = new LazyDecoratedServiceValues(psiElement.getProject());
+                lazyDecoratedServices = new LazyDecoratedParentServiceValues(psiElement.getProject());
             }
 
             // services -> service_name
@@ -55,28 +55,46 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedServiceValues lazyDecoratedServices) {
+    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedServices) {
         String id = yamlKeyValue.getKeyText();
         if(StringUtils.isBlank(id)) {
             return;
         }
 
-        // decorates: @foobar
+        // decorates: foobar
         String decorates = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates");
         if(decorates != null && StringUtils.isNotBlank(decorates)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, decorates));
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, decorates));
         }
 
-        NavigationGutterIconBuilder<PsiElement> lineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
+        // parent: foobar
+        String parent = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "parent");
+        if(parent != null && StringUtils.isNotBlank(parent)) {
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.PARENT, parent));
+        }
+
+        // foreign "decorates" linemarker
+        NavigationGutterIconBuilder<PsiElement> decorateLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
             yamlKeyValue.getProject(),
+            ServiceUtil.ServiceLineMarker.DECORATE,
             lazyDecoratedServices.getDecoratedServices(),
             id
         );
 
-        if(lineMarker == null) {
-            return;
+        if(decorateLineMarker != null) {
+            result.add(decorateLineMarker.createLineMarkerInfo(leafTarget));
         }
 
-        result.add(lineMarker.createLineMarkerInfo(leafTarget));
+        // foreign "parent" linemarker
+        NavigationGutterIconBuilder<PsiElement> parentLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
+            yamlKeyValue.getProject(),
+            ServiceUtil.ServiceLineMarker.PARENT,
+            lazyDecoratedServices.getDecoratedServices(),
+            id
+        );
+
+        if(parentLineMarker != null) {
+            result.add(parentLineMarker.createLineMarkerInfo(leafTarget));
+        }
     }
 }
