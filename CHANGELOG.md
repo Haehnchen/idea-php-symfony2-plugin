@@ -18,6 +18,7 @@ Changelog
 * \[Security\] support voter attributes in is\_granted and has\_role security annotation [#892](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/892)
 * Visit parent blocks for Twig variables [#1035](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035)
 * Add support for PhpClass references in ParamConverter::class annotation property
+* \[0.16\] Support Twig lexer changes in PhpStorm 2017.3.2 [#1123](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1123) [#1125](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1125)
 
 ## 0.15.162
 * Refactored Twig api in preparation for plugin split
@@ -47,8 +48,8 @@ Changelog
 * Merge twig and yaml goto / navigation handler into one extension
 
 ## 0.15.158
-* [Shopware #meetnext] Add service argument updater via PHP intention
-* [SymfonyLive] Add support for indexed and named arguments [#998](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/998)
+* \[Shopware #meetnext\] Add service argument updater via PHP intention
+* \[SymfonyLive\] Add support for indexed and named arguments [#998](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/998)
 * Improve support for class as id services in xml metadata
 * Fix NPE for call to TranslationUtil.getTranslationLookupElementsOnDomain [#1067](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1067)
 * Allow array function like array_merge variables in template rendering variables completion [#1052](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1052)
