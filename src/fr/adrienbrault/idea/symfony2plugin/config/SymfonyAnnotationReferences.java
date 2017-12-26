@@ -30,8 +30,13 @@ public class SymfonyAnnotationReferences implements PhpAnnotationReferenceProvid
         if((annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.DEFAULT || "id".equals(annotationPropertyParameter.getPropertyName())) && PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), "\\JMS\\DiExtraBundle\\Annotation\\Service")) {
             return new PsiReference[]{ new ServiceReference((StringLiteralExpression) annotationPropertyParameter.getElement(), false) };
         }
+
         if((annotationPropertyParameter.getType() == AnnotationPropertyParameter.Type.DEFAULT) && PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), "\\JMS\\DiExtraBundle\\Annotation\\Inject")) {
             return new PsiReference[]{ new ServiceReference((StringLiteralExpression) annotationPropertyParameter.getElement(), false) };
+        }
+
+        if("class".equals(annotationPropertyParameter.getPropertyName()) && PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\ParamConverter")) {
+            return new PsiReference[]{ new PhpClassReference((StringLiteralExpression) annotationPropertyParameter.getElement(), true).setUseClasses(true).setUseInterfaces(true) };
         }
 
         return new PsiReference[0];
