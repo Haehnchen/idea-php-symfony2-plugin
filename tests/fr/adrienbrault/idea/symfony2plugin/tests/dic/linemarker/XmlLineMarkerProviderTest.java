@@ -34,6 +34,18 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         );
     }
 
+    public void testThatParentServiceShouldProvideMarker() {
+        assertLineMarker(createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "       <service id=\"foo_bar_main\" class=\"Foo\\Bar\\Apple\"/>\n" +
+                "    </services>\n" +
+                "</container>"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to decoration")
+        );
+    }
+
     public void testThatDecoratesProvidesOverwriteMarker() {
         assertLineMarker(createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                 "<container>\n" +
@@ -43,6 +55,18 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
                 "</container>"
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to decorated service")
+        );
+    }
+
+    public void testThatParentProvidesOverwriteMarker() {
+        assertLineMarker(createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "       <service id=\"foo_bar_main\" parent=\"app.mailer\"/>\n" +
+                "    </services>\n" +
+                "</container>"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to parent service")
         );
     }
 

@@ -14,23 +14,35 @@ import java.util.Map;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-class LazyDecoratedServiceValues {
+class LazyDecoratedParentServiceValues {
     @NotNull
     private final Project project;
 
     @Nullable
-    private Map<String, Collection<ContainerService>> map;
+    private Map<String, Collection<ContainerService>> decorates;
 
-    LazyDecoratedServiceValues(@NotNull Project project) {
+    @Nullable
+    private Map<String, Collection<ContainerService>> parents;
+
+    LazyDecoratedParentServiceValues(@NotNull Project project) {
         this.project = project;
     }
 
     @NotNull
     public Map<String, Collection<ContainerService>> getDecoratedServices() {
-        if(this.map == null) {
-            this.map = ServiceIndexUtil.getDecoratedServices(this.project);
+        if(this.decorates == null) {
+            this.decorates = ServiceIndexUtil.getDecoratedServices(this.project);
         }
 
-        return map;
+        return decorates;
+    }
+
+    @NotNull
+    public Map<String, Collection<ContainerService>> getParentServices() {
+        if(this.parents == null) {
+            this.parents = ServiceIndexUtil.getParentServices(this.project);
+        }
+
+        return parents;
     }
 }

@@ -37,6 +37,7 @@ import java.util.*;
 public class ServiceIndexUtil {
 
     private static final Key<CachedValue<Map<String, Collection<ContainerService>>>> SERVICE_DECORATION_CACHE = new Key<>("SERVICE_DECORATION");
+    private static final Key<CachedValue<Map<String, Collection<ContainerService>>>> SERVICE_PARENT = new Key<>("SERVICE_PARENT");
 
     private static final ExtensionPointName<ServiceDefinitionLocator> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"
@@ -198,6 +199,51 @@ public class ServiceIndexUtil {
             }
 
             services.get(decorates).add(containerService);
+        }
+
+        return services;
+    }
+
+    /**
+     * Get all services that extends a given "parent" id
+     */
+    @NotNull
+    public static Map<String, Collection<ContainerService>> getParentServices(@NotNull Project project) {
+        CachedValue<Map<String, Collection<ContainerService>>> cache = project.getUserData(SERVICE_PARENT);
+
+        if (cache == null) {
+            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
+                    CachedValueProvider.Result.create(getParentServicesInner(project), PsiModificationTracker.MODIFICATION_COUNT)
+                , false);
+
+            project.putUserData(SERVICE_PARENT, cache);
+        }
+
+        return cache.getValue();
+    }
+
+    /**
+     * All services "parents" in cached condition
+     */
+    @NotNull
+    private static Map<String, Collection<ContainerService>> getParentServicesInner(@NotNull Project project) {
+        Map<String, Collection<ContainerService>> services = new HashMap<>();
+
+        for (ContainerService containerService : ContainerCollectionResolver.getServices(project).values()) {
+            if(containerService.getService() == null) {
+                continue;
+            }
+
+            String parent = containerService.getService().getParent();
+            if(parent == null) {
+                continue;
+            }
+
+            if(!services.containsKey(parent)) {
+                services.put(parent, new ArrayList<>());
+            }
+
+            services.get(parent).add(containerService);
         }
 
         return services;

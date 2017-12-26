@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <container>
     <services>
-        <service id="app.decorating_mailer" decorates="foo_bar_main"/>
+        <service id="app.decorating_mailer" decorates="foo_bar_main" parent="foo_bar_main"/>
         <service id="app.mailer"/>
     </services>
 </container>

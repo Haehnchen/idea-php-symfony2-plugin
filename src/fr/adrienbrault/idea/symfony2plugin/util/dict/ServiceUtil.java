@@ -129,6 +129,13 @@ public class ServiceUtil {
     private static final Key<CachedValue<Collection<String>>> KERNEL_PARAMETER_CACHE = new Key<>("KERNEL_PARAMETER_CACHE");
 
     /**
+     * Linemarker types for service declarations
+     */
+    public enum ServiceLineMarker {
+        DECORATE, PARENT
+    }
+
+    /**
      * %test%, service, \Class\Name to PhpClass
      */
     @Nullable
@@ -556,7 +563,7 @@ public class ServiceUtil {
     }
 
     @Nullable
-    public static NavigationGutterIconBuilder<PsiElement> getLineMarkerForDecoratedServiceId(@NotNull Project project, @NotNull Map<String, Collection<ContainerService>> decorated, @NotNull String id) {
+    public static NavigationGutterIconBuilder<PsiElement> getLineMarkerForDecoratedServiceId(@NotNull Project project, @NotNull ServiceLineMarker lineMarker, @NotNull Map<String, Collection<ContainerService>> decorated, @NotNull String id) {
         if(!decorated.containsKey(id)) {
             return null;
         }
@@ -568,7 +575,7 @@ public class ServiceUtil {
 
         return NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
             .setTargets(lazy)
-            .setTooltipText("Navigate to decoration");
+            .setTooltipText(lineMarker == ServiceLineMarker.DECORATE ? "Navigate to decoration" : "Navigate to parent" );
     }
 
     /**
@@ -642,13 +649,15 @@ public class ServiceUtil {
     }
 
     /**
-     *  <service id="foo_bar_main" decorates="app.mailer"/>
+     * Provides a lazy linemarker based on the given id eg for "decorated" or "parent" services:
+     *
+     * <service id="foo_bar_main" decorates="app.mailer"/>
      */
     @NotNull
-    public static RelatedItemLineMarkerInfo<PsiElement> getLineMarkerForDecoratesServiceId(@NotNull PsiElement psiElement, @NotNull String decorates) {
+    public static RelatedItemLineMarkerInfo<PsiElement> getLineMarkerForDecoratesServiceId(@NotNull PsiElement psiElement, @NotNull ServiceLineMarker lineMarker, @NotNull String foreignId) {
         return NavigationGutterIconBuilder.create(PhpIcons.OVERRIDEN)
-            .setTargets(ServiceIndexUtil.getServiceIdDefinitionLazyValue(psiElement.getProject(), Collections.singletonList(decorates)))
-            .setTooltipText("Navigate to decorated service")
+            .setTargets(ServiceIndexUtil.getServiceIdDefinitionLazyValue(psiElement.getProject(), Collections.singletonList(foreignId)))
+            .setTooltipText(lineMarker == ServiceLineMarker.DECORATE ? "Navigate to decorated service" : "Navigate to parent service")
             .createLineMarkerInfo(psiElement);
     }
 }
