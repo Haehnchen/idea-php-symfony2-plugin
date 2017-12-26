@@ -10,6 +10,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.15.163
+* Fix assets reading and provide explicit resolving for asset files instead of rescanning them to improve performance and drop massive \`opendirectoryd\` cpu time [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809) [#1118](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1118)
+* Support iterator in twig loop completion [#1097](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1097) [#1035](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035)
+* Migrate LineMarker target to leaf elements to fix performance warning / error [#1122](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1122)
+* \[Security\] support voter attributes in is\_granted and has\_role security annotation [#892](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/892)
+* Visit parent blocks for Twig variables [#1035](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035)
+* Add support for PhpClass references in ParamConverter::class annotation property
+
 ## 0.15.162
 * Refactored Twig api in preparation for plugin split
 * Add Twig block name indexer to improve performance [#1091](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1091)
