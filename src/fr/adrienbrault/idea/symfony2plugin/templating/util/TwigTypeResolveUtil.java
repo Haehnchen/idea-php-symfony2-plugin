@@ -85,10 +85,11 @@ public class TwigTypeResolveUtil {
         new FormFieldResolver(),
     };
 
-    public static String[] formatPsiTypeName(PsiElement psiElement, boolean includeCurrent) {
-        ArrayList<String> strings = new ArrayList<>(Arrays.asList(formatPsiTypeName(psiElement)));
+    @NotNull
+    public static Collection<String> formatPsiTypeNameWithCurrent(@NotNull PsiElement psiElement) {
+        Collection<String> strings = new ArrayList<>(formatPsiTypeName(psiElement));
         strings.add(psiElement.getText());
-        return strings.toArray(new String[strings.size()]);
+        return strings;
     }
 
     /**
@@ -97,26 +98,25 @@ public class TwigTypeResolveUtil {
      * ["foo", "bar"]
      */
     @NotNull
-    public static String[] formatPsiTypeName(@NotNull PsiElement psiElement) {
-
+    public static Collection<String> formatPsiTypeName(@NotNull PsiElement psiElement) {
         String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.or(
             PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
             PlatformPatterns.psiElement(PsiWhiteSpace.class
         )));
 
         if(typeNames.trim().length() == 0) {
-            return new String[]{};
+            return Collections.emptyList();
         }
 
         if(typeNames.endsWith(".")) {
             typeNames = typeNames.substring(0, typeNames.length() -1);
         }
 
-        String[] possibleTypes;
+        Collection<String> possibleTypes = new ArrayList<>();
         if(typeNames.contains(".")) {
-            possibleTypes = typeNames.split("\\.");
+            possibleTypes.addAll(Arrays.asList(typeNames.split("\\.")));
         } else {
-            possibleTypes = new String[]{typeNames};
+            possibleTypes.add(typeNames);
         }
 
         return possibleTypes;
@@ -125,22 +125,21 @@ public class TwigTypeResolveUtil {
     /**
      * Collects all possible variables in given path for last given item of "typeName"
      *
-     * @param typeName Variable path "foo.bar" => ["foo", "bar"]
+     * @param types Variable path "foo.bar" => ["foo", "bar"]
      * @return types for last item of typeName parameter
      */
     @NotNull
-    public static Collection<TwigTypeContainer> resolveTwigMethodName(@NotNull PsiElement psiElement, @NotNull String[] typeName) {
-
-        if(typeName.length == 0) {
+    public static Collection<TwigTypeContainer> resolveTwigMethodName(@NotNull PsiElement psiElement, @NotNull Collection<String> types) {
+        if(types.size() == 0) {
             return Collections.emptyList();
         }
 
-        List<PsiVariable> rootVariables = getRootVariableByName(psiElement, typeName[0]);
-        if(typeName.length == 1) {
-
+        String rootType = types.iterator().next();
+        Collection<PsiVariable> rootVariables = getRootVariableByName(psiElement, rootType);
+        if(types.size() == 1) {
             Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
             for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
-                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, typeName[0], new ArrayList<>(), rootVariables);
+                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootVariables);
             }
 
             return twigTypeContainers;
@@ -150,15 +149,15 @@ public class TwigTypeResolveUtil {
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
         previousElements.add(new ArrayList<>(type));
 
-        for (int i = 1; i <= typeName.length - 1; i++ ) {
-            type = resolveTwigMethodName(type, typeName[i], previousElements);
+        String[] typeNames = types.toArray(new String[types.size()]);
+        for (int i = 1; i <= typeNames.length - 1; i++ ) {
+            type = resolveTwigMethodName(type, typeNames[i], previousElements);
             previousElements.add(new ArrayList<>(type));
 
             // we can stop on empty list
             if(type.size() == 0) {
                 return Collections.emptyList();
             }
-
         }
 
         return type;
@@ -321,23 +320,22 @@ public class TwigTypeResolveUtil {
         return arrayValues;
     }
 
-    private static Collection<String> collectForArrayScopeVariablesFoo(Project project, String[] typeName, PsiVariable psiVariable) {
-
+    @NotNull
+    private static Collection<String> collectForArrayScopeVariablesFoo(@NotNull Project project, @NotNull Collection<String> typeName, @NotNull PsiVariable psiVariable) {
         Collection<String> previousElements = psiVariable.getTypes();
 
-        for (int i = 1; i <= typeName.length - 1; i++ ) {
+        String[] strings = typeName.toArray(new String[typeName.size()]);
 
-            previousElements = resolveTwigMethodName(project, previousElements, typeName[i]);
+        for (int i = 1; i <= strings.length - 1; i++ ) {
+            previousElements = resolveTwigMethodName(project, previousElements, strings[i]);
 
             // we can stop on empty list
             if(previousElements.size() == 0) {
                 return Collections.emptyList();
             }
-
         }
 
         return previousElements;
-
     }
 
     private static void collectForArrayScopeVariables(PsiElement psiElement, Map<String, PsiVariable> globalVars) {
@@ -371,15 +369,17 @@ public class TwigTypeResolveUtil {
         if(forScopeVariable == null) {
             return;
         }
+
         PhpType phpType = new PhpType();
 
-        String[] forTagInIdentifierString = getForTagIdentifierAsString(forTag);
+        Collection<String> forTagInIdentifierString = getForTagIdentifierAsString(forTag);
         // {% for coolBar in coolBars.foos %}
-        if (forTagInIdentifierString != null && forTagInIdentifierString.length > 1) {
+        if (forTagInIdentifierString.size() > 1) {
 
             // nested resolve
-            if(globalVars.containsKey(forTagInIdentifierString[0])) {
-                PsiVariable psiVariable = globalVars.get(forTagInIdentifierString[0]);
+            String rootElement = forTagInIdentifierString.iterator().next();
+            if(globalVars.containsKey(rootElement)) {
+                PsiVariable psiVariable = globalVars.get(rootElement);
                 for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), forTagInIdentifierString, psiVariable)) {
                     phpType.add(arrayType);
                 }
@@ -411,19 +411,17 @@ public class TwigTypeResolveUtil {
 
     }
 
-    private static List<PsiVariable> getRootVariableByName(PsiElement psiElement, String variableName) {
+    @NotNull
+    private static Collection<PsiVariable> getRootVariableByName(@NotNull PsiElement psiElement, @NotNull String variableName) {
+        Collection<PsiVariable> phpNamedElements = new ArrayList<>();
 
-        List<PsiVariable> phpNamedElements = new ArrayList<>();
         for(Map.Entry<String, PsiVariable> variable : collectScopeVariables(psiElement).entrySet()) {
             if(variable.getKey().equals(variableName)) {
                 phpNamedElements.add(variable.getValue());
-                //phpNamedElements.addAll(PhpElementsUtil.getClassFromPhpTypeSet(psiElement.getProject(), variable.getValue().getTypes()));
             }
-
         }
 
         return phpNamedElements;
-
     }
 
     private static Collection<TwigTypeContainer> resolveTwigMethodName(Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> twigTypeContainer) {
@@ -577,29 +575,28 @@ public class TwigTypeResolveUtil {
      *  {% for car in "cars"|length %}
      *  {% for car in "cars.test" %}
      */
-    @Nullable
-    private static String[] getForTagIdentifierAsString(PsiElement forTag) {
-
+    @NotNull
+    private static Collection<String> getForTagIdentifierAsString(PsiElement forTag) {
         if(forTag.getNode().getElementType() != TwigElementTypes.FOR_TAG) {
-            return null;
+            return Collections.emptyList();
         }
 
         // getChildren hack
         PsiElement firstChild = forTag.getFirstChild();
         if(firstChild == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         // find IN token
         PsiElement psiIn = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.IN));
         if(psiIn == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         // find next IDENTIFIER, eg skip whitespaces
         PsiElement psiIdentifier = PsiElementUtils.getNextSiblingOfType(psiIn, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
         if(psiIdentifier == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         // find non common token type. we only allow: "test.test"
@@ -609,11 +606,10 @@ public class TwigTypeResolveUtil {
         )));
 
         if(afterInVarPsiElement == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         return TwigTypeResolveUtil.formatPsiTypeName(afterInVarPsiElement);
     }
-
 }
 

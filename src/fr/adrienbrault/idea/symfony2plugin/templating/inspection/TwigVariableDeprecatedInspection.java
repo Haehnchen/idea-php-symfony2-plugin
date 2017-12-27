@@ -48,9 +48,8 @@ public class TwigVariableDeprecatedInspection extends LocalInspectionTool {
         }
 
         private void visit(@NotNull PsiElement element) {
-
-            String[] beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element);
-            if(beforeLeaf.length == 0) {
+            Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element);
+            if(beforeLeaf.size() == 0) {
                 return;
             }
 

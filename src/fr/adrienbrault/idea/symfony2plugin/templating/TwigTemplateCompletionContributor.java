@@ -499,7 +499,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            String[] possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+            Collection<String> possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
 
             // find core function for that
             for(TwigTypeContainer twigTypeContainer: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
@@ -597,18 +597,20 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             // "foobar".<caret>
-            String[] possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
-            if(possibleTypes.length != 1) {
+            Collection<String> possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+            if(possibleTypes.size() != 1) {
                 return;
             }
+
+            String rootElement = possibleTypes.iterator().next();
 
             resultSet.addAllElements(
                 TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile()).stream()
                     .filter(twigMacro ->
-                        twigMacro.getName().startsWith(possibleTypes[0] + ".")
+                        twigMacro.getName().startsWith(rootElement + ".")
                     )
                     .map((Function<TwigMacro, LookupElement>) twigMacro ->
-                        LookupElementBuilder.create(twigMacro.getName().substring(possibleTypes[0].length() + 1))
+                        LookupElementBuilder.create(twigMacro.getName().substring(rootElement.length() + 1))
                             .withTypeText(twigMacro.getTemplate(), true)
                             .withTailText(twigMacro.getParameter(), true)
                             .withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance())

@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class FormFieldResolver implements TwigTypeResolver {
 
-    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable List<PsiVariable> psiVariables) {
+    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
 
         if(targets.size() == 0 || psiVariables == null || previousElements == null || previousElements.size() != 0) {
             return;
@@ -36,7 +36,7 @@ public class FormFieldResolver implements TwigTypeResolver {
         if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
             if(PhpElementsUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
                 if(psiVariables.size() > 0) {
-                    PsiElement var = psiVariables.get(0).getElement();
+                    PsiElement var = psiVariables.iterator().next().getElement();
 
                     // $form->createView()
                     if(var instanceof MethodReference) {

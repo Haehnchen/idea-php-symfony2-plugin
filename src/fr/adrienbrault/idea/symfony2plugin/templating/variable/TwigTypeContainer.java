@@ -38,7 +38,7 @@ public class TwigTypeContainer {
         return stringElement;
     }
 
-    public static Collection<TwigTypeContainer> fromCollection(Project project, List<PsiVariable> psiVariables) {
+    public static Collection<TwigTypeContainer> fromCollection(Project project, Collection<PsiVariable> psiVariables) {
 
         List<TwigTypeContainer> twigTypeContainerList = new ArrayList<>();
 
@@ -60,5 +60,4 @@ public class TwigTypeContainer {
     public Object getDataHolder() {
         return dataHolder;
     }
-
 }
