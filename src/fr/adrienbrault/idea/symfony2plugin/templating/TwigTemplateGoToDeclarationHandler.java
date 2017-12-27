@@ -422,9 +422,9 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         // class, class.method, class.method.method
         // click on first item is our class name
-        String[] beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
-        if(beforeLeaf.length == 0) {
-            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeName(psiElement, true));
+        Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+        if(beforeLeaf.size() == 0) {
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(psiElement));
             for(TwigTypeContainer twigTypeContainer: twigTypeContainers) {
                 if(twigTypeContainer.getPhpNamedElement() != null) {
                     targetPsiElements.add(twigTypeContainer.getPhpNamedElement());

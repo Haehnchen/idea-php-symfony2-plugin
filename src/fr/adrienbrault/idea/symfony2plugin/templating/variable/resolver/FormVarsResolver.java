@@ -16,9 +16,7 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormVarsResolver implements TwigTypeResolver {
-
-    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable List<PsiVariable> psiVariables) {
-
+    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
         if(!"vars".equals(typeName) || previousElements.size() == 0) {
             return;
         }
@@ -40,11 +38,8 @@ public class FormVarsResolver implements TwigTypeResolver {
     }
 
     private void attachVars(Project project, Collection<TwigTypeContainer> targets) {
-
         for(String string: FormOptionsUtil.getFormViewVars(project, "form")) {
             targets.add(new TwigTypeContainer(string));
         }
-
     }
-
 }
