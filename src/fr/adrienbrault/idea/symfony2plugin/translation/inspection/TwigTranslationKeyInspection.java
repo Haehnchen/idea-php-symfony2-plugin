@@ -37,7 +37,7 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement psiElement) {
-            if(!TwigPattern.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
+            if(!TwigPattern.getTranslationKeyPattern("trans", "transchoice").accepts(psiElement)) {
                 super.visitElement(psiElement);
                 return;
             }

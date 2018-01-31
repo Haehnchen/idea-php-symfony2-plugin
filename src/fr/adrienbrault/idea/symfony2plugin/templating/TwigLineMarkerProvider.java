@@ -69,7 +69,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
-            } else if (TwigPattern.getBlockTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockFunctionPattern("block").accepts(psiElement)) {
+            } else if (TwigPattern.getBlockTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("block").accepts(psiElement)) {
                 // blocks: {% block 'foobar' %}, {{ block('foobar') }}
 
                 VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
@@ -240,7 +240,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachBlockOverwrites(PsiElement psiElement, @NotNull FileOverwritesLazyLoader loader) {
+    private LineMarkerInfo attachBlockOverwrites(@NotNull PsiElement psiElement, @NotNull FileOverwritesLazyLoader loader) {
         if(!TwigBlockUtil.hasBlockOverwrites(psiElement, loader)) {
             return null;
         }

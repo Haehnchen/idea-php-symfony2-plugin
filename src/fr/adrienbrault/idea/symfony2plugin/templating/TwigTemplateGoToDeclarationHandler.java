@@ -63,7 +63,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getRouteParameterGoTo(psiElement));
         }
 
-        if(TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockFunctionPattern("include", "source").accepts(psiElement)) {
+        if(TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
             // support: {% include() %}, {{ include() }}
             targets.addAll(getTwigFiles(psiElement, offset));
         } else if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT).withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
@@ -91,7 +91,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getTranslationDomainGoto(psiElement));
         }
 
-        if (TwigPattern.getTranslationPattern("trans", "transchoice").accepts(psiElement)) {
+        if (TwigPattern.getTranslationKeyPattern("trans", "transchoice").accepts(psiElement)) {
             targets.addAll(getTranslationKeyGoTo(psiElement));
         }
 
@@ -140,7 +140,9 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .withParent(PlatformPatterns.or(
                 PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
-                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
+                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
+
+                PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
             )).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
 
             targets.addAll(this.getFunctions(psiElement));
