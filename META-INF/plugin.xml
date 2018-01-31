@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.16.163</version>
+    <version>0.16.164</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,12 +101,9 @@
 <![CDATA[
 
 <ul>
-    <li>Fix assets reading and provide explicit resolving for asset files instead of rescanning them to improve performance and drop massive `opendirectoryd` cpu time <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809">#809</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1118">#1118</a></li>
-    <li>Support iterator in twig loop completion <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1097">#1097</a> <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035">#1035</a></li>
-    <li>Migrate LineMarker target to leaf elements to fix performance warning / error <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1122">#1122</a></li>
-    <li>[Security] support voter attributes in is_granted and has_role security annotation <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/892">#892</a></li>
-    <li>Visit parent blocks for Twig variables <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1035">#1035</a></li>
-    <li>Add support for PhpClass references in ParamConverter::class annotation property</li>
+    <li>Fix decorates linemarker is added twice because of XML ending tag</li>
+    <li>[DIC] Add parent service linemarker definition <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1131">#1131</a></li>
+    <li>Drop support for PhpStorm 2017.2.x releases</li>
 </ul>
 
 <br/>

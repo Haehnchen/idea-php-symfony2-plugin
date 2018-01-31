@@ -3,13 +3,18 @@ Changelog
 
 # Version names
 * 0.16.x: PhpStorm 2017.3.2+
-* 0.15.x: PhpStorm 2017.2+
+* 0.15.x: PhpStorm 2017.2+ (no support)
 * 0.14.x: PhpStorm 2017.1+ (no support)
 * 0.13.x: PhpStorm 2016.3.1 (no support)
 * 0.12.x: PhpStorm 2016.1+ (no support)
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.16.164
+* Fix decorates linemarker is added twice because of XML ending tag
+* \[DIC\] Add parent service linemarker definition [#1131](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1131)
+* Drop support for PhpStorm 2017.2.x releases
 
 ## 0.15.163 / 0.16.163
 * Fix assets reading and provide explicit resolving for asset files instead of rescanning them to improve performance and drop massive \`opendirectoryd\` cpu time [#809](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/809) [#1118](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1118)
