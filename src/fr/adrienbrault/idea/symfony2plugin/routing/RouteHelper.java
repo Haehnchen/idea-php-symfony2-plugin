@@ -224,9 +224,9 @@ public class RouteHelper {
         String[] split = controllerName.split(":");
         if(split.length == 3) {
             // try to resolve on bundle path
-            SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getBundle(split[0]);
-            if(symfonyBundle != null) {
+            for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundle(split[0])) {
                 PhpClass aClass = PhpElementsUtil.getClass(project, symfonyBundle.getNamespaceName() + "Controller\\" + split[1] + "Controller");
+                // @TODO: support multiple bundle names
                 if(aClass != null) {
                     return new ControllerClassOnShortcutReturn(aClass);
                 }

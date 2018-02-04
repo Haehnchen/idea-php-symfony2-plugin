@@ -5,7 +5,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiDirectory;
-import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -13,7 +12,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,7 +70,7 @@ public class AssetDirectoryReader {
             return files;
         }
 
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(project));
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(project);
         for(SymfonyBundle bundle : symfonyBundleUtil.getBundles()) {
             PsiDirectory bundleDirectory = bundle.getDirectory();
             if(null == bundleDirectory) {
@@ -112,8 +114,7 @@ public class AssetDirectoryReader {
             int i = filename.indexOf("/");
             if(i > 0) {
                 String relativeFilename = filename.substring(1, i);
-                SymfonyBundle bundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getBundle(relativeFilename);
-                if(bundle != null) {
+                for (SymfonyBundle bundle : new SymfonyBundleUtil(project).getBundle(relativeFilename)) {
                     String assetPath = filename.substring(i + 1);
 
                     Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(assetPath);

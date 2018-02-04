@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.BundleFile;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ResourceFileInsertHandler;
@@ -38,9 +37,7 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
             return;
         }
 
-        PhpIndex phpIndex = PhpIndex.getInstance(completionParameters.getPosition().getProject());
-
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(phpIndex);
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(completionParameters.getPosition().getProject());
         List<BundleFile> bundleFiles = new ArrayList<>();
 
         for(SymfonyBundle symfonyBundle : symfonyBundleUtil.getBundles()) {
