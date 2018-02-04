@@ -48,7 +48,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        List<PsiElement> targets = new ArrayList<>();
+        Collection<PsiElement> targets = new HashSet<>();
 
         IElementType elementType = psiElement.getNode().getElementType();
 
