@@ -10,91 +10,69 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyBundleUtil {
+    @NotNull
+    private final Project project;
 
-    protected PhpIndex phpIndex;
-    protected HashMap<String, SymfonyBundle> symfonyBundles;
+    @Nullable
+    private Collection<SymfonyBundle> symfonyBundles;
 
-    public SymfonyBundleUtil(PhpIndex phpIndex) {
-        this.phpIndex = phpIndex;
-        this.loadBundles();
+    public SymfonyBundleUtil(@NotNull Project project) {
+        this.project = project;
     }
 
-    public SymfonyBundleUtil(Project project) {
-        this(PhpIndex.getInstance(project));
-    }
-
-    protected void loadBundles() {
-
-        this.symfonyBundles = new HashMap<>();
-        Collection<PhpClass> phpClasses = this.phpIndex.getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
-
-        for (PhpClass phpClass : phpClasses) {
-            this.symfonyBundles.put(phpClass.getName(), new SymfonyBundle(phpClass));
+    @NotNull
+    public Collection<SymfonyBundle> getBundles() {
+        if(symfonyBundles != null) {
+            return symfonyBundles;
         }
 
+        symfonyBundles = new ArrayList<>();
+
+        Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
+
+        for (PhpClass phpClass : phpClasses) {
+            symfonyBundles.add(new SymfonyBundle(phpClass));
+        }
+
+        return symfonyBundles;
     }
 
-    public Collection<SymfonyBundle> getBundles() {
-        return this.symfonyBundles.values();
-    }
-
+    @NotNull
     public Map<String, SymfonyBundle> getParentBundles() {
-
         Map<String, SymfonyBundle> bundles = new HashMap<>();
 
-        for (Map.Entry<String, SymfonyBundle> entry : this.symfonyBundles.entrySet()) {
-            if(entry.getValue().getParentBundleName() != null) {
-                bundles.put(entry.getKey(), entry.getValue());
+        for (SymfonyBundle bundle : getBundles()) {
+            if(bundle.getParentBundleName() != null) {
+                bundles.put(bundle.getName(), bundle);
             }
         }
 
         return bundles;
     }
 
-    @Nullable
-    public SymfonyBundle getBundle(String bundleName) {
-        return this.symfonyBundles.get(bundleName);
+    @NotNull
+    public Collection<SymfonyBundle> getBundle(@NotNull String bundleName) {
+        return getBundles()
+            .stream()
+            .filter(
+                symfonyBundle -> bundleName.equals(symfonyBundle.getName())
+            )
+            .collect(Collectors.toSet());
     }
 
-    public boolean bundleExists(String bundleName) {
-        return this.symfonyBundles.get(bundleName) != null;
-    }
-
     @Nullable
-    public SymfonyBundle getContainingBundle(String bundleShortcutName) {
-
-        if(!bundleShortcutName.startsWith("@")) {
-           return null;
-        }
-
-        int stripedBundlePos = bundleShortcutName.indexOf("/");
-        if(stripedBundlePos == -1) {
-            return null;
-        }
-
-        String bundleName = bundleShortcutName.substring(1, stripedBundlePos);
-        for(SymfonyBundle bundle : this.getBundles()) {
-            if(bundle.getName().equals(bundleName)) {
-                return bundle;
-            }
-        }
-
-        return null;
-    }
-
-
-    @Nullable
-    public SymfonyBundle getContainingBundle(PhpClass phpClass) {
-
-        for(SymfonyBundle bundle : this.getBundles()) {
+    public SymfonyBundle getContainingBundle(@NotNull PhpClass phpClass) {
+        for(SymfonyBundle bundle : getBundles()) {
             if(bundle.isInBundle(phpClass)) {
                 return bundle;
             }
@@ -104,9 +82,8 @@ public class SymfonyBundleUtil {
     }
 
     @Nullable
-    public SymfonyBundle getContainingBundle(PsiFile psiFile) {
-
-        for(SymfonyBundle bundle : this.getBundles()) {
+    public SymfonyBundle getContainingBundle(@NotNull PsiFile psiFile) {
+        for(SymfonyBundle bundle : getBundles()) {
             if(bundle.isInBundle(psiFile)) {
                 return bundle;
             }
@@ -117,8 +94,7 @@ public class SymfonyBundleUtil {
 
     @Nullable
     public SymfonyBundle getContainingBundle(@NotNull VirtualFile virtualFile) {
-
-        for(SymfonyBundle bundle : this.getBundles()) {
+        for(SymfonyBundle bundle : getBundles()) {
             if(bundle.isInBundle(virtualFile)) {
                 return bundle;
             }
@@ -128,9 +104,8 @@ public class SymfonyBundleUtil {
     }
 
     @Nullable
-    public SymfonyBundle getContainingBundle(PsiDirectory directory) {
-
-        for(SymfonyBundle bundle : this.getBundles()) {
+    public SymfonyBundle getContainingBundle(@NotNull PsiDirectory directory) {
+        for(SymfonyBundle bundle : getBundles()) {
             if(bundle.isInBundle(directory.getVirtualFile())) {
                 return bundle;
             }
@@ -138,5 +113,4 @@ public class SymfonyBundleUtil {
 
         return null;
     }
-
 }

@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.util.controller;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
@@ -23,21 +22,19 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ControllerIndex {
-
-    private Project project;
-    private PhpIndex phpIndex;
+    @NotNull
+    final private Project project;
 
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-    public ControllerIndex(Project project) {
+    public ControllerIndex(@NotNull Project project) {
        this.project = project;
-       this.phpIndex = PhpIndex.getInstance(project);
     }
 
     public Collection<ControllerAction> getActions() {
         Collection<ControllerAction> actions = new ArrayList<>();
 
-        for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(phpIndex).getBundles()) {
+        for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundles()) {
             actions.addAll(this.getActionMethods(symfonyBundle));
         }
 

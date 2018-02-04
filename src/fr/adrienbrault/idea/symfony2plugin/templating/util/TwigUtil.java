@@ -125,7 +125,7 @@ public class TwigUtil {
             return new String[0];
         }
 
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(PhpIndex.getInstance(method.getProject()));
+        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(method.getProject());
         SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(phpClass);
         if(symfonyBundle == null) {
             return new String[0];

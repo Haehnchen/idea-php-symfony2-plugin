@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
 import com.intellij.psi.PsiDirectory;
-import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -24,7 +23,7 @@ public class BundleTwigNamespaceExtension implements TwigNamespaceExtension {
     public Collection<TwigPath> getNamespaces(@NotNull TwigNamespaceExtensionParameter parameter) {
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
-        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(PhpIndex.getInstance(parameter.getProject())).getBundles();
+        Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(parameter.getProject()).getBundles();
         for (SymfonyBundle bundle : symfonyBundles) {
             PsiDirectory views = bundle.getSubDirectory("Resources", "views");
             if(views == null) {

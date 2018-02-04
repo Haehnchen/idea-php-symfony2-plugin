@@ -112,7 +112,7 @@ public class EntityHelper {
             }
         }
 
-        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getContainingBundle(phpClass);
+        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(project).getContainingBundle(phpClass);
         if(symfonyBundle != null) {
             PhpClass repositoryClass = getEntityRepositoryClass(project, symfonyBundle, presentableFQN);
             if(repositoryClass != null) {

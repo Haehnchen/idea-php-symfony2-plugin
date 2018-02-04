@@ -13,7 +13,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
-import com.jetbrains.php.PhpIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
@@ -200,18 +199,18 @@ public class FileResourceUtil {
 
         String bundleName = content.substring(1, content.indexOf("/"));
 
-        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getBundle(bundleName);
-        if(symfonyBundle == null) {
-            return Collections.emptyList();
+        Collection<PsiFile> targets = new HashSet<>();
+
+        for (SymfonyBundle bundle : new SymfonyBundleUtil(project).getBundle(bundleName)) {
+            String path = content.substring(content.indexOf("/") + 1);
+            PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, bundle.getRelative(path));
+
+            if(psiFile != null) {
+                targets.add(psiFile);
+            }
         }
 
-        String path = content.substring(content.indexOf("/") + 1);
-        PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, symfonyBundle.getRelative(path));
-        if(psiFile == null) {
-            return Collections.emptyList();
-        }
-
-        return Collections.singletonList(psiFile);
+        return targets;
     }
 
     /**
@@ -231,8 +230,7 @@ public class FileResourceUtil {
 
         String bundleName = content.substring(1, content.indexOf("\\"));
 
-        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(PhpIndex.getInstance(project)).getBundle(bundleName);
-        if(symfonyBundle == null) {
+        if(new SymfonyBundleUtil(project).getBundle(bundleName).size() == 0) {
             return Collections.emptyList();
         }
 
