@@ -11,6 +11,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.16.165
+* Prevent duplicate same targets in yaml targets eg for class navigation
+* Refactoring bundle loading, replacing HashMaps with ArrayList for non unique bundle project names
+
 ## 0.16.164
 * Fix decorates linemarker is added twice because of XML ending tag
 * \[DIC\] Add parent service linemarker definition [#1131](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1131)

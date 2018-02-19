@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Plugin</name>
-    <version>0.16.164</version>
+    <version>0.16.165</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -101,9 +101,8 @@
 <![CDATA[
 
 <ul>
-    <li>Fix decorates linemarker is added twice because of XML ending tag</li>
-    <li>[DIC] Add parent service linemarker definition <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1131">#1131</a></li>
-    <li>Drop support for PhpStorm 2017.2.x releases</li>
+    <li>Prevent duplicate same targets in yaml targets eg for class navigation</li>
+    <li>Refactoring bundle loading, replacing HashMaps with ArrayList for non unique bundle project names</li>
 </ul>
 
 <br/>
