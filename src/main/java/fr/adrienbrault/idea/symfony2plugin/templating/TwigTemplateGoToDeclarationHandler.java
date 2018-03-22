@@ -256,10 +256,15 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getTwigFiles(@NotNull PsiElement psiElement, int offset) {
+        int calulatedOffset = offset - psiElement.getTextRange().getStartOffset();
+        if (calulatedOffset < 0) {
+            calulatedOffset = 0;
+        }
+
         return TwigUtil.getTemplateNavigationOnOffset(
             psiElement.getProject(),
             psiElement.getText(),
-            offset - psiElement.getTextRange().getStartOffset()
+            calulatedOffset
         );
     }
 
