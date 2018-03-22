@@ -1,0 +1,46 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+buildscript {
+    repositories {
+        mavenCentral()
+
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.2.18"
+}
+
+apply plugin: 'idea'
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'java'
+
+intellij {
+    version ideaVersion
+    plugins = [
+            "com.jetbrains.php:${phpPluginVersion}",
+            "com.jetbrains.twig:${twigPluginVersion}",
+            "de.espend.idea.php.annotation:${annotationPluginVersion}",
+            "de.espend.idea.php.toolbox:${toolboxPluginVersion}",
+            'yaml',
+            'CSS',
+            'java-i18n',
+            'properties'
+    ]
+    pluginName 'Symfony Plugin'
+
+    patchPluginXml {
+        sinceBuild '173'
+        untilBuild '181.*'
+    }
+}
+
+group 'fr.adrienbrault.idea.symfony2plugin'
+version '0.16.165'
+
+wrapper {
+    gradleVersion '4.3.1'
+}
+
+test.testLogging.exceptionFormat = TestExceptionFormat.FULL
