@@ -16,7 +16,7 @@ public class FormExtensionServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/dict/appDevDebugProjectContainer.xml");
 
         FormExtensionServiceParser formExtensionServiceParser = new FormExtensionServiceParser();
         formExtensionServiceParser.parser(new FileInputStream(testFile));

@@ -13,7 +13,7 @@ public class XmlEventParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
 
         XmlEventParser serviceMapParser = new XmlEventParser();
         serviceMapParser.parser(new FileInputStream(testFile));

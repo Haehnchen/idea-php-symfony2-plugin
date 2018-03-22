@@ -13,7 +13,7 @@ public class XmlTagParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
 
         XmlTagParser xmlTagParser = new XmlTagParser();
         xmlTagParser.parser(new FileInputStream(testFile));

@@ -15,7 +15,7 @@ public class EntityNamesServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/component/appDevDebugProjectContainer.xml");
         EntityNamesServiceParser entityNamesServiceParser = new EntityNamesServiceParser();
         entityNamesServiceParser.parser(new FileInputStream(testFile));
         Map<String, String> map = entityNamesServiceParser.getEntityNameMap();

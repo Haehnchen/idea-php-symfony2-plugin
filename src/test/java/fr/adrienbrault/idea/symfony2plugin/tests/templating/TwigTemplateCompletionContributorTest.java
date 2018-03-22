@@ -34,7 +34,7 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void testBlockCompletion() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
 
-        createWorkaroundFile("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block <caret> %}", "foo");
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block \"<caret>\" %}", "foo");
@@ -52,7 +52,7 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void testBlockCompletionForEmbed() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
 
-        createWorkaroundFile("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
 
         assertCompletionContains(TwigFileType.INSTANCE, "" +
                 "{% embed '::embed.html.twig' %}\n" +

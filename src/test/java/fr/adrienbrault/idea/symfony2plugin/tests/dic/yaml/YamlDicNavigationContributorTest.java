@@ -25,7 +25,7 @@ public class YamlDicNavigationContributorTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic";
     }
 
     public void testFactoryClassMethodNavigation() {

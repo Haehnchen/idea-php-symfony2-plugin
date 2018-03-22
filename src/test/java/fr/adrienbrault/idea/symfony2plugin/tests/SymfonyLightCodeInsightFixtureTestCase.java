@@ -549,12 +549,9 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
         return Pair.create(problemsHolder.getResults(), caretOffset);
     }
 
-    protected void createDummyFiles(String... files) throws Exception {
+    protected void createDummyFiles(String... files) {
         for (String file : files) {
-            String path = myFixture.getProject().getBaseDir().getPath() + "/" + file;
-            File f = new File(path);
-            f.getParentFile().mkdirs();
-            f.createNewFile();
+            myFixture.addFileToProject(file, "");
         }
     }
 
@@ -685,7 +682,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
             boolean match(@NotNull T value);
         }
     }
-    
+
     public static class LineMarker {
         public interface Assert {
             boolean match(@NotNull LineMarkerInfo markerInfo);

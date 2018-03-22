@@ -17,7 +17,7 @@ import java.io.IOException;
 public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatExtendsProvidesBlockLineMarker() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
-        createWorkaroundFile("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
 
         PsiFile psiFile = myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{% extends 'block.html.twig' %}\n" +
@@ -29,7 +29,7 @@ public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
 
     public void testThatBlockInsideEmbedMustProvideBlockLineMarker() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
-        createWorkaroundFile("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
 
         PsiFile psiFile = myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{% embed 'block.html.twig' %}\n" +
@@ -42,7 +42,7 @@ public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
 
     public void testThatBlockInsideEmbedMustNotProvideBlockLineMarkerForFileScope() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
-        createWorkaroundFile("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
 
         PsiFile psiFile = myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{% extends 'block.html.twig' %}\n" +

@@ -123,7 +123,7 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         if(System.getenv("PHPSTORM_ENV") != null) return;
 
         try {
-            createDummyFiles("app/Resources/views/foo.html.twig");
+            myFixture.addFileToProject("app/Resources/views/foo.html.twig", "");
         } catch (Exception e) {
             e.printStackTrace();
         }

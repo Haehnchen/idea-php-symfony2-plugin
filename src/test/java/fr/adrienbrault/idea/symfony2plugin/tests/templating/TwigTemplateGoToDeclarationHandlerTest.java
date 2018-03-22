@@ -40,7 +40,7 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     public void testBlockNavigation() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
 
-        createWorkaroundFile("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
 
         assertNavigationMatch(
             TwigFileType.INSTANCE,
@@ -72,7 +72,7 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     public void testBlockNavigationInEmbed() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
 
-        createWorkaroundFile("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
+        myFixture.addFileToProject("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
 
         assertNavigationMatch(
             TwigFileType.INSTANCE,

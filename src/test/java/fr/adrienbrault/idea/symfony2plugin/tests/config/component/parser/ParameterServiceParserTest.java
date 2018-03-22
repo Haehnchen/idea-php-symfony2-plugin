@@ -12,7 +12,7 @@ public class ParameterServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/component/parser/appDevDebugProjectContainer.xml");
         ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
         parameterServiceParser.parser(new FileInputStream(testFile));
 
