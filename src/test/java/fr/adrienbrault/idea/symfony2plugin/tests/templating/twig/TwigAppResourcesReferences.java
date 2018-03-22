@@ -16,7 +16,7 @@ public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTe
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToLocalDeclarationHandler
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testTwigTemplatesInsideTwigFileCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
