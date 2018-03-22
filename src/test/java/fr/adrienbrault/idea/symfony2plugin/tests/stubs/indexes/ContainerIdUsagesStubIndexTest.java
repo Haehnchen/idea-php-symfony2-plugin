@@ -18,7 +18,7 @@ public class ContainerIdUsagesStubIndexTest extends SymfonyLightCodeInsightFixtu
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
     }
 
     public void testThatXmlArgumentUsageExtracted() {
@@ -34,7 +34,7 @@ public class ContainerIdUsagesStubIndexTest extends SymfonyLightCodeInsightFixtu
 
         assertIndexContainsKeyWithValue(ContainerIdUsagesStubIndex.KEY, "xml_setter_foobar_1", value -> value == 2);
     }
-    
+
     public void testThatYamlArgumentUsageExtracted() {
         assertIndexContains(ContainerIdUsagesStubIndex.KEY, "usage_yml_foobar", "usage_yml_foobar2", "usage_yml_foobar3");
 

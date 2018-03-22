@@ -16,7 +16,7 @@ public class TwigPathServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/appDevDebugProjectContainer.xml");
 
         TwigPathServiceParser parser = new TwigPathServiceParser();
         parser.parser(new FileInputStream(testFile));

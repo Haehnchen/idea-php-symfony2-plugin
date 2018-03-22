@@ -24,7 +24,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
     }
 
     public void testThatServiceIdOfYamlFileIsIndexed() {

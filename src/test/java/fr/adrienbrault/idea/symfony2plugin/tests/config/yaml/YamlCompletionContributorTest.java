@@ -3,10 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -27,7 +29,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/yaml/fixtures";
     }
 
     public void testResourcesInsideSameDirectoryProvidesCompletion() {

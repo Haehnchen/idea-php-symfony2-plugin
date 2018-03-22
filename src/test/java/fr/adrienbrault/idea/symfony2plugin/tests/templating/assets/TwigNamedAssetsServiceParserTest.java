@@ -15,7 +15,7 @@ public class TwigNamedAssetsServiceParserTest extends UsefulTestCase {
 
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/assets/appDevDebugProjectContainer.xml");
 
         TwigNamedAssetsServiceParser parser = new TwigNamedAssetsServiceParser();
         parser.parser(new FileInputStream(testFile));

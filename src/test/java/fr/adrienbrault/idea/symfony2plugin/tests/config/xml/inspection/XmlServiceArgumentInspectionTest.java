@@ -18,7 +18,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/xml/inspection/fixtures";
     }
 
     public void testMissingArgumentProvidesInspection() {

@@ -18,7 +18,7 @@ public class XmlConstructServiceSuggestionCollectorTest extends SymfonyLightCode
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/container/suggestion/fixtures";
     }
 
     public void testServiceSuggestionForCallArguments() {

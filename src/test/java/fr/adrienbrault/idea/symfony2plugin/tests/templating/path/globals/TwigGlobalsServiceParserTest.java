@@ -13,7 +13,7 @@ public class TwigGlobalsServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/globals/appDevDebugProjectContainer.xml");
 
         TwigGlobalsServiceParser parser = new TwigGlobalsServiceParser();
         parser.parser(new FileInputStream(testFile));

@@ -19,7 +19,7 @@ public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLi
     }
 
     protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/fixtures";
     }
 
     public void testCompletionForTwigTransPlaceholder() {

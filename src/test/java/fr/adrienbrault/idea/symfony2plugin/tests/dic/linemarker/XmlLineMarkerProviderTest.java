@@ -19,7 +19,7 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/linemarker/fixtures";
     }
 
     public void testThatDecoratedServiceShouldProvideMarker() {

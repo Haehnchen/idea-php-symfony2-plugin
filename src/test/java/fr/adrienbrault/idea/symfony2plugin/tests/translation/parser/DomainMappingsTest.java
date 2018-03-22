@@ -15,7 +15,7 @@ public class DomainMappingsTest extends Assert {
 
     @Test
     public void testParser() throws FileNotFoundException {
-        File testFile = new File(this.getClass().getResource("appDevDebugProjectContainer.xml").getFile());
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/parser/appDevDebugProjectContainer.xml");
 
         DomainMappings bla = new DomainMappings();
         bla.parser(new FileInputStream(testFile));

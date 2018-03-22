@@ -18,7 +18,7 @@ public class FormStringToClassConstantIntentionTest extends SymfonyLightCodeInsi
     }
 
     protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/intention/fixtures";
     }
 
     public void testIntentionIsAvailable() {

@@ -26,7 +26,7 @@ public class XmlDicInspectionsTest extends SymfonyLightCodeInsightFixtureTestCas
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("..").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/xml/fixtures";
     }
 
     public void testThatUnknownServiceIsHighlighted() {

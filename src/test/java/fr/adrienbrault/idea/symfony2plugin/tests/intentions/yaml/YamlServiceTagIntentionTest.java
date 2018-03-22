@@ -18,7 +18,7 @@ public class YamlServiceTagIntentionTest extends SymfonyLightCodeInsightFixtureT
     }
 
     protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/intentions/yaml/fixtures";
     }
 
     public void testTagIntentionIsAvailable() {

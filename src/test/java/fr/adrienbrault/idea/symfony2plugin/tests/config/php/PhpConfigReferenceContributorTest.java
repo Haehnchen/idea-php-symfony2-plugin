@@ -17,7 +17,7 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/php/fixtures";
     }
 
     public void testTagReferences() {

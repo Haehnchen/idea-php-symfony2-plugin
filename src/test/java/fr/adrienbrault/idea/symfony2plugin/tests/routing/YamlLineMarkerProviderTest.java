@@ -32,7 +32,7 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     protected String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/fixtures";
     }
 
     public void testDoctrineFirstLineModelNavigation() {

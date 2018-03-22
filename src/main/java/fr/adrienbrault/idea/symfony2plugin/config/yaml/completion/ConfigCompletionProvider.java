@@ -120,7 +120,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             if(virtualFile != null) {
                 document = builder.parse(VfsUtil.virtualToIoFile(virtualFile));
             } else {
-                document = builder.parse(ConfigCompletionProvider.class.getResourceAsStream("/resources/symfony2-config.xml"));
+                document = builder.parse(ConfigCompletionProvider.class.getResourceAsStream("/symfony2-config.xml"));
             }
 
             return document;
@@ -167,7 +167,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         if(StringUtils.isNotBlank(textContent)) {
             lookupElementBuilder = lookupElementBuilder.withTailText("(" + textContent + ")", true);
         }
-        
+
         if(nodeVars.containsKey(nodeName)) {
             lookupElementBuilder = lookupElementBuilder.withTypeText(StringUtil.shortenTextWithEllipsis(nodeVars.get(nodeName), 100, 0), true);
         }
@@ -252,7 +252,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         if(currentNodeItem == null) {
             return null;
         }
-        
+
         for (int i = 1; i < items.size(); i++) {
 
             currentNodeItem = getElementByTagNameWithUnPluralize(currentNodeItem, items.get(i));
@@ -298,7 +298,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
     @NotNull
     private Map<String, String> getNodeCommentVars(@Nullable Node node) {
         Map<String, String> comments = new HashMap<>();
-        
+
         if(node == null) return comments;
 
         Node previousSibling = node.getPreviousSibling();

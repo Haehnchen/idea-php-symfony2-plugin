@@ -28,7 +28,7 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("fixtures").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/fixtures";
     }
 
     /**
@@ -45,7 +45,7 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetEntityRepositoryClassInSameNamespaceFallback() {
         assertEquals("FooBundle\\Entity\\Car\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Car\\Bar").getPresentableFQN());
     }
-    
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#resolveShortcutName
      */

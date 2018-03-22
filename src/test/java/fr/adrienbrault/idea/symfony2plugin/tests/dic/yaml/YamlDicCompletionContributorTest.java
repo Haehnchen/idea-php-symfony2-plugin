@@ -25,7 +25,7 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return new File(this.getClass().getResource("..").getFile()).getAbsolutePath();
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic";
     }
 
     public void testServiceCompletion() {
