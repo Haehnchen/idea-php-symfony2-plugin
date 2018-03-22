@@ -3,7 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.twig;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTestCase {
+public class TwigAppResourcesReferencesTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
@@ -19,6 +19,8 @@ public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTe
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testTwigTemplatesInsideTwigFileCompletion() {
+        if(System.getenv("PHPSTORM_ENV") != null) return;
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends '<caret>' %}", "::base.html.twig", ":Default:layout.html.twig");
         assertCompletionContains(TwigFileType.INSTANCE, "{% extends \"<caret>\" %}", "::base.html.twig", ":Default:layout.html.twig");
 
@@ -61,6 +63,8 @@ public class TwigAppResourcesReferences extends SymfonyLightCodeInsightFixtureTe
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
      */
     public void testTwigTemplatesInsideTwigFileNavigation() {
+        if(System.getenv("PHPSTORM_ENV") != null) return;
+
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>::base.html.twig' %}", "app/Resources/views/base.html.twig");
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends \"<caret>::base.html.twig\" %}", "app/Resources/views/base.html.twig");
 

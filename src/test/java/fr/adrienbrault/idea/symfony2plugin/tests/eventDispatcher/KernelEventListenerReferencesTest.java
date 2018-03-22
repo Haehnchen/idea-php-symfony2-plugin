@@ -10,7 +10,7 @@ import java.io.File;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class KernelEventListenerReferences extends SymfonyLightCodeInsightFixtureTestCase {
+public class KernelEventListenerReferencesTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
@@ -28,6 +28,7 @@ public class KernelEventListenerReferences extends SymfonyLightCodeInsightFixtur
      * @see fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference
      */
     public void testKernelEventListenerTagOnIndexCompletion() {
+        if(System.getenv("PHPSTORM_ENV") != null) return;
 
         assertCompletionContains(XmlFileType.INSTANCE, "<container>\n" +
                 "  <services>\n" +
