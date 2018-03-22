@@ -23,6 +23,7 @@ intellij {
             "com.jetbrains.twig:${twigPluginVersion}",
             "de.espend.idea.php.annotation:${annotationPluginVersion}",
             "de.espend.idea.php.toolbox:${toolboxPluginVersion}",
+            'webDeployment',
             'yaml',
             'CSS',
             'java-i18n',
