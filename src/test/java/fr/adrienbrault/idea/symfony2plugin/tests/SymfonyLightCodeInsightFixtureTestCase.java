@@ -48,7 +48,6 @@ import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.*;
 
 /**
@@ -799,7 +798,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
                             CommandProcessor.getInstance().executeCommand(indicator.getProject(), new Runnable() {
                                 @Override
                                 public void run() {
-                                    indicator.setMergeCommand();
+                                    CommandProcessor.getInstance().setCurrentCommandGroupId("Completion" + indicator.hashCode());
                                     indicator.getLookup().finishLookup(Lookup.AUTO_INSERT_SELECT_CHAR, lookupElement);
                                 }
                             }, "Autocompletion", null);
