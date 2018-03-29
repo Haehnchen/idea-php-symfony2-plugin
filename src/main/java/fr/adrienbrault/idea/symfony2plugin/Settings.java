@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
-import com.intellij.openapi.components.*;
+import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.components.State;
+import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
@@ -16,8 +19,7 @@ import java.util.List;
 @State(
        name = "Symfony2PluginSettings",
        storages = {
-               @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
-               @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/symfony2.xml", scheme = StorageScheme.DIRECTORY_BASED)
+               @Storage("/symfony2.xml")
        }
 )
 public class Settings implements PersistentStateComponent<Settings> {
