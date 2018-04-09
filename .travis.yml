@@ -2,22 +2,28 @@ sudo: false
 language: java
 jdk:
   - oraclejdk8
-  
-script: "./travis.sh"
+
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+- rm -fr $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
+- rm -fr $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+
 cache:
   directories:
-    - .cache
-before_script:
- - sudo apt-get -qq update
- - sudo apt-get install ant-optional
- - chmod +x travis.sh
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
+
+before_install:
+- "export ORG_GRADLE_PROJECT_ideaVersion=${IDEA_VERSION}"
+- "export ORG_GRADLE_PROJECT_phpPluginVersion=${PHP_PLUGIN_VERSION}"
+- "export ORG_GRADLE_PROJECT_twigPluginVersion=${TWIG_PLUGIN_VERSION}"
+- "export ORG_GRADLE_PROJECT_toolboxPluginVersion=${TOOLBOX_PLUGIN_VERSION}"
+- "export ORG_GRADLE_PROJECT_annotationPluginVersion=${ANNOTATION_PLUGIN_VERSION}"
 
 env:
-  #- PHPSTORM_ENV=2017.2 # unsupported api
-  #- PHPSTORM_ENV=2017.2.4 # unsupported api
-  - PHPSTORM_ENV=2017.3.2
-  #- PHPSTORM_ENV=eap # disabled never used
+  - PHPSTORM_ENV="skip incomplete" IDEA_VERSION="IU-2018.1" PHP_PLUGIN_VERSION="181.4203.565" TWIG_PLUGIN_VERSION="181.3741.23" TOOLBOX_PLUGIN_VERSION="0.4.6" ANNOTATION_PLUGIN_VERSION="5.3"
+  - PHPSTORM_ENV="skip incomplete" IDEA_VERSION="IU-2017.3.5" PHP_PLUGIN_VERSION="173.4301.34" TWIG_PLUGIN_VERSION="173.4301.7" TOOLBOX_PLUGIN_VERSION="0.4.6" ANNOTATION_PLUGIN_VERSION="5.2.1"
 
-matrix:
-  allow_failures:
-    - env: PHPSTORM_ENV=eap
+script:
+- "./gradlew check buildPlugin"
