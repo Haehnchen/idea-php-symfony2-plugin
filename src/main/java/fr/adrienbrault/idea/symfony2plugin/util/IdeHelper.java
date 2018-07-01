@@ -135,7 +135,7 @@ public class IdeHelper {
                 Notifications.Bus.notify(new Notification("Symfony Plugin", "Symfony Plugin", "Plugin enabled", NotificationType.INFORMATION), project);
             } else if("dismiss".equals(event.getDescription())) {
 
-                // use dont want to show notification again
+                // user doesnt want to show notification again
                 Settings.getInstance(project).dismissEnableNotification = true;
             }
 
@@ -151,6 +151,11 @@ public class IdeHelper {
         // Symfony 3.0 structure
         if(VfsUtil.findRelativeFile(project.getBaseDir(), "var", "cache") != null) {
             Settings.getInstance(project).pathToTranslation = "var/cache/dev/translations";
+        }
+
+        // Symfony 4.0 structure
+        if(VfsUtil.findRelativeFile(project.getBaseDir(), "public") != null) {
+            Settings.getInstance(project).directoryToWeb = "public";
         }
     }
 
