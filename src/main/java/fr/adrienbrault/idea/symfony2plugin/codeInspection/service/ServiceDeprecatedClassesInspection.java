@@ -140,7 +140,7 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
             } else if(element.getNode().getElementType() == YAMLTokenTypes.TEXT) {
                 // @service
                 String text = element.getText();
-                if(text != null && StringUtils.isNotBlank(text) && text.startsWith("@")) {
+                if(StringUtils.isNotBlank(text) && text.startsWith("@")) {
                     this.problemRegistrar.attachDeprecatedProblem(element, text.substring(1), holder);
                     this.problemRegistrar.attachServiceDeprecatedProblem(element, text.substring(1), holder);
                 }
