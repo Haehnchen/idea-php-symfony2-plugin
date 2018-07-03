@@ -9,10 +9,8 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-
-import java.io.File;
+import fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
