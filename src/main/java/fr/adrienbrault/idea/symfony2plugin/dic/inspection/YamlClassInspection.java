@@ -52,7 +52,7 @@ public class YamlClassInspection extends LocalInspectionTool {
         }
 
         if(PhpElementsUtil.getClassInterface(psiElement.getProject(), className) == null) {
-            holder.registerProblem(psiElement, "Missing Class", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+            holder.registerProblem(psiElement, "Missing class", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
         }
     }
 }
