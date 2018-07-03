@@ -6,7 +6,9 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.action.quickfix.CorrectClassNameCasingYamlLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -20,6 +22,10 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class YamlClassInspection extends LocalInspectionTool {
+
+    public static final String MESSAGE_WRONG_CASING = "Wrong class casing";
+    public static final String MESSAGE_MISSING_CLASS = "Missing class";
+
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
         if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
@@ -29,7 +35,7 @@ public class YamlClassInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(PsiElement psiElement) {
-                if(!((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(psiElement) || YamlElementPatternHelper.getParameterClassPattern().accepts(psiElement)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement))) {
+                if (!((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(psiElement) || YamlElementPatternHelper.getParameterClassPattern().accepts(psiElement)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement))) {
                     super.visitElement(psiElement);
                     return;
                 }
@@ -44,15 +50,18 @@ public class YamlClassInspection extends LocalInspectionTool {
     private void invoke(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
         String className = PsiElementUtils.getText(psiElement);
 
-        if(YamlHelper.isValidParameterName(className)) {
+        if (YamlHelper.isValidParameterName(className)) {
             String resolvedParameter = ContainerCollectionResolver.resolveParameter(psiElement.getProject(), className);
-            if(resolvedParameter != null && PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(resolvedParameter).size() > 0) {
-                return ;
+            if (resolvedParameter != null && PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(resolvedParameter).size() > 0) {
+                return;
             }
         }
 
-        if(PhpElementsUtil.getClassInterface(psiElement.getProject(), className) == null) {
-            holder.registerProblem(psiElement, "Missing Class", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+        PhpClass foundClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), className);
+        if (foundClass == null) {
+            holder.registerProblem(psiElement, MESSAGE_MISSING_CLASS, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+        } else if (!foundClass.getPresentableFQN().equals(className)) {
+            holder.registerProblem(psiElement, MESSAGE_WRONG_CASING, ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new CorrectClassNameCasingYamlLocalQuickFix(foundClass.getPresentableFQN()));
         }
     }
 }
