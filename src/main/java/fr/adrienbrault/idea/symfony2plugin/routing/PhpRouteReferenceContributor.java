@@ -37,7 +37,7 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
     };
 
     @Override
-    public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
+    public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
             new PsiReferenceProvider() {
