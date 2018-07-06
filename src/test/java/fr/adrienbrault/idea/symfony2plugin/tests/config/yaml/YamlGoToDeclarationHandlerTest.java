@@ -10,8 +10,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
@@ -92,6 +90,15 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
 
         assertNavigationMatch(YAMLFileType.YML, "bar: \"!php/const:\\YAML_<caret>FOO_BAR\"");
         assertNavigationMatch(YAMLFileType.YML, "bar: '!php/const:\\YAML_<caret>FOO_BAR'");
+    }
+
+    public void testPhpConstantNavigation34() {
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const \\YAML_<caret>FOO_BAR");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const YAML_<caret>FOO_BAR");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const Yaml\\Foo\\Bar::YAML_FOO_BAR<caret>_CLASS");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const Yaml\\Foo\\Bar::::YAML_FOO_BAR<caret>_CLASS");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const Yaml\\Foo\\Bar:YAML_FOO_BAR<caret>_CLASS");
+        assertNavigationMatch(YAMLFileType.YML, "bar: !php/const \\Yaml\\Foo\\Bar:YAML_FOO_BAR<caret>_CLASS");
     }
 
     public void testParameter() {

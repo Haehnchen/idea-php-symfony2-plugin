@@ -69,6 +69,11 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
                     targets.addAll(constantGoto(psiElement, psiText));
                 }
 
+                // mind the whitespace
+                if(hasNewConst(psiElement)) {
+                    targets.addAll(newConstantGoto(psiElement, psiText));
+                }
+
                 if(psiText.contains("\\")) {
                     targets.addAll(classGoToDeclaration(psiElement, psiText)) ;
                 }
@@ -162,6 +167,22 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return targets.toArray(new PsiElement[targets.size()]);
     }
 
+    private boolean hasNewConst(@NotNull PsiElement psiElement) {
+        PsiElement prevSibling = psiElement.getPrevSibling();
+        while (prevSibling != null) {
+            IElementType elementType = prevSibling.getNode().getElementType();
+            if (elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING || elementType == YAMLTokenTypes.SCALAR_STRING || elementType == YAMLTokenTypes.TAG) {
+                String psiText = PsiElementUtils.getText(prevSibling);
+
+                return psiText.equals("!php/const");
+            }
+
+            prevSibling = prevSibling.getPrevSibling();
+        }
+
+        return false;
+    }
+
     @NotNull
     private Collection<PsiElement> classGoToDeclaration(@NotNull PsiElement psiElement, @NotNull String className) {
 
@@ -234,6 +255,14 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return ServiceContainerUtil.getTargetsForConstant(psiElement.getProject(), constantName);
     }
 
+    @NotNull
+    private Collection<PsiElement> newConstantGoto(@NotNull PsiElement psiElement, @NotNull String constantName) {
+        if(StringUtils.isBlank(constantName)) {
+            return Collections.emptyList();
+        }
+
+        return ServiceContainerUtil.getTargetsForConstant(psiElement.getProject(), constantName);
+    }
 
     @NotNull
     private Collection<PsiElement> visitConfigKey(@NotNull PsiElement psiElement) {
