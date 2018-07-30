@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.intentions.yaml.dic;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -47,14 +48,26 @@ public class YamlCreateServiceArgumentsCallbackTest extends SymfonyLightCodeInsi
             }
         }, null, null);
 
-        assertEquals("" +
-                "services:\n" +
-                "    foo:\n" +
-                "        class: Foo\\Foo\n" +
-                "        arguments: ['@foo', '@?', '@?']\n",
-            yamlFile.getText()
-        );
-
+        ApplicationInfo instance = ApplicationInfo.getInstance();
+        String minorVersion = instance.getMinorVersion();
+        if ((instance.getMajorVersion().equals("2018") && Integer.valueOf(minorVersion) >= 2)) {
+            assertEquals("" +
+                            "services:\n" +
+                            "    foo:\n" +
+                            "        class: Foo\\Foo\n" +
+                            "        arguments:\n" +
+                            "          ['@foo', '@?', '@?']\n",
+                    yamlFile.getText()
+            );
+        } else {
+            assertEquals("" +
+                            "services:\n" +
+                            "    foo:\n" +
+                            "        class: Foo\\Foo\n" +
+                            "        arguments: ['@foo', '@?', '@?']\n",
+                    yamlFile.getText()
+            );
+        }
     }
 
 }

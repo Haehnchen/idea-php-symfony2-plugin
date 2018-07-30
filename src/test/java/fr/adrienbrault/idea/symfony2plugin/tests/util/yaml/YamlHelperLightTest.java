@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
@@ -16,10 +17,8 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
-import org.jetbrains.yaml.psi.impl.YAMLArrayImpl;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -338,16 +337,31 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
 
-        assertEquals("" +
-                "services:\n" +
-                "   foo:\n" +
-                "       car: test\n" +
-                "   my_service:\n" +
-                "      class: foo\n" +
-                "      tag:\n" +
-                "          - foo",
-            yamlFile.getText()
-        );
+        ApplicationInfo instance = ApplicationInfo.getInstance();
+        String minorVersion = instance.getMinorVersion();
+        if ((instance.getMajorVersion().equals("2018") && Integer.valueOf(minorVersion) >= 2)) {
+            assertEquals("" +
+                            "services:\n" +
+                            "   foo:\n" +
+                            "       car: test\n" +
+                            "   my_service:\n" +
+                            "     class: foo\n" +
+                            "     tag:\n" +
+                            "     - foo",
+                    yamlFile.getText()
+            );
+        } else {
+            assertEquals("" +
+                            "services:\n" +
+                            "   foo:\n" +
+                            "       car: test\n" +
+                            "   my_service:\n" +
+                            "      class: foo\n" +
+                            "      tag:\n" +
+                            "          - foo",
+                    yamlFile.getText()
+            );
+        }
     }
 
     /**
@@ -366,14 +380,27 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
 
-        assertEquals("" +
-                "foo: foo\n" +
-                "services:\n" +
-                "  my_service:\n" +
-                "   class: foo\n" +
-                "   tag: foo",
-            yamlFile.getText()
-        );
+        ApplicationInfo instance = ApplicationInfo.getInstance();
+        String minorVersion = instance.getMinorVersion();
+        if ((instance.getMajorVersion().equals("2018") && Integer.valueOf(minorVersion) >= 2)) {
+            assertEquals("" +
+                            "foo: foo\n" +
+                            "services:\n" +
+                            "  my_service:\n" +
+                            "    class: foo\n" +
+                            "    tag: foo",
+                    yamlFile.getText()
+            );
+        }else {
+            assertEquals("" +
+                            "foo: foo\n" +
+                            "services:\n" +
+                            "  my_service:\n" +
+                            "   class: foo\n" +
+                            "   tag: foo",
+                    yamlFile.getText()
+            );
+        }
     }
 
     /**
