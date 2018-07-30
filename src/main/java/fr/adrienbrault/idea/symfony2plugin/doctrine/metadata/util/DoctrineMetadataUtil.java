@@ -316,9 +316,9 @@ public class DoctrineMetadataUtil {
             if(yamlDocument != null) {
                 YAMLValue topLevelValue = yamlDocument.getTopLevelValue();
                 if(topLevelValue instanceof YAMLMapping) {
-                    PsiElement firstChild = topLevelValue.getFirstChild();
-                    if(firstChild instanceof YAMLKeyValue) {
-                        String keyText = ((YAMLKeyValue) firstChild).getKeyText();
+                    YAMLKeyValue firstChild = PsiTreeUtil.findChildOfType(topLevelValue, YAMLKeyValue.class);
+                    if(firstChild != null) {
+                        String keyText = firstChild.getKeyText();
                         if(StringUtils.isNotBlank(keyText)) {
                             return keyText;
                         }

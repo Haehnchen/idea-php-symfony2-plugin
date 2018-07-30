@@ -15,7 +15,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.File;
 import java.util.*;
 
 /**
@@ -236,7 +235,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
         }) {
             myFixture.configureByText(YAMLFileType.YML, s);
             PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-            assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
+            assertEquals(String.format("Fixture %s", s), "Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
         }
     }
 }
