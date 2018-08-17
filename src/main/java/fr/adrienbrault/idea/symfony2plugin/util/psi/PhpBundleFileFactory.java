@@ -69,7 +69,7 @@ public class PhpBundleFileFactory {
             throw new Exception("File already exists");
         }
 
-        String COMPILER_TEMPLATE = "/resources/fileTemplates/" + template + ".php";
+        String COMPILER_TEMPLATE = "/fileTemplates/" + template + ".php";
         String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
         if(fileTemplateContent == null) {
             throw new Exception("Template content error");
@@ -154,7 +154,7 @@ public class PhpBundleFileFactory {
             groupStatement.addRangeBefore(methodReference, semicolon, groupStatement.getLastChild());
         }
 
-        String COMPILER_TEMPLATE = "/resources/fileTemplates/compiler_pass.php";
+        String COMPILER_TEMPLATE = "/fileTemplates/compiler_pass.php";
         String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
         if(fileTemplateContent == null) {
             throw new Exception("Template content error");
