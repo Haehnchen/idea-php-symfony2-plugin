@@ -50,9 +50,7 @@ public class NewBundleCommandAction extends NewBundleFileActionAbstract {
                     return;
                 }
 
-                if(bundleFile != null) {
-                    new OpenFileDescriptor(getProject(), bundleFile.getContainingFile().getVirtualFile(), 0).navigate(true);
-                }
+                new OpenFileDescriptor(getProject(), bundleFile.getContainingFile().getVirtualFile(), 0).navigate(true);
             }
 
             @Override
