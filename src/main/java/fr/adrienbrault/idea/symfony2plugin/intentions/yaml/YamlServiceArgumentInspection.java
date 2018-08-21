@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
 
 import com.intellij.codeInspection.*;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -131,9 +132,13 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor problemDescriptor) {
             final PsiElement serviceKeyValue = problemDescriptor.getPsiElement().getParent();
 
-            if(serviceKeyValue instanceof YAMLKeyValue) {
-                ServiceActionUtil.fixServiceArgument((YAMLKeyValue) serviceKeyValue);
+            if(!(serviceKeyValue instanceof YAMLKeyValue)) {
+                return;
             }
+
+            WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> {
+                ServiceActionUtil.fixServiceArgument((YAMLKeyValue) serviceKeyValue);
+            });
         }
     }
 }
