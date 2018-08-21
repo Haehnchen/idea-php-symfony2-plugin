@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.ui.components.JBList;
 import com.intellij.util.Consumer;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.PhpLanguage;
@@ -63,7 +64,8 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
             });
         };
 
-        JBPopupFactory.getInstance().createPopupChooserBuilder(new ArrayList<>(map.keySet()))
+        final JBList<String> list = new JBList<>(map.keySet());
+        JBPopupFactory.getInstance().createListPopupBuilder(list)
                 .setTitle("Symfony: Services Definitions")
                 .setItemChosenCallback(consumer)
                 .createPopup()
