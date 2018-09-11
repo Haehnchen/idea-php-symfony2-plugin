@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
-import com.intellij.util.Consumer;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -58,16 +57,14 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
             map.put(VfsUtil.getRelativePath(element.getContainingFile().getVirtualFile(), element.getProject().getBaseDir()), element);
         }
 
-        Consumer<String> consumer = (selected) -> {
-            WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> {
-                invokeByScope(map.get(selected), editor);
-            });
-        };
-
         final JBList<String> list = new JBList<>(map.keySet());
         JBPopupFactory.getInstance().createListPopupBuilder(list)
                 .setTitle("Symfony: Services Definitions")
-                .setItemChosenCallback(consumer)
+                .setItemChoosenCallback(() -> {
+                    WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> {
+                        invokeByScope(map.get(list.getSelectedValue()), editor);
+                    });
+                })
                 .createPopup()
                 .showInBestPositionFor(editor)
         ;
