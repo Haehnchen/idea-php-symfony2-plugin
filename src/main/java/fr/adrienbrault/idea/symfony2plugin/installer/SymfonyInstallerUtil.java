@@ -178,7 +178,7 @@ public class SymfonyInstallerUtil {
 
             // @TODO: PhpStorm9:
             // simple replacement for: com.intellij.util.io.HttpRequests
-            URL url = new URL("http://symfony.com/versions.json");
+            URL url = new URL("https://symfony.com/versions.json");
             URLConnection conn = url.openConnection();
             conn.setRequestProperty("User-Agent", userAgent);
             conn.connect();
