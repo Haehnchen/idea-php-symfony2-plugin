@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -90,6 +91,11 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
     }
 
     private void phpVisitor(final @NotNull ProblemsHolder holder, @NotNull PsiFile psiFile) {
+
+        /* skip inspections since it doesn't make sense in SF 4, where service IDs are often FQNs */
+        if (SymfonyUtil.isVersionGreaterThen(psiFile.getProject(), "3.4.999")) {
+            return;
+        }
 
         psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
