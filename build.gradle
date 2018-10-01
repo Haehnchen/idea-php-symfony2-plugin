@@ -21,6 +21,7 @@ apply plugin: 'java'
 
 intellij {
     version ideaVersion
+    updateSinceUntilBuild false
     plugins = [
             "com.jetbrains.php:${phpPluginVersion}",
             "com.jetbrains.twig:${twigPluginVersion}",

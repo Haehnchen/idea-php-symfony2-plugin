@@ -28,4 +28,4 @@ env:
   - PHPSTORM_ENV="skip incomplete" IDEA_VERSION="IU-2017.3.5" PHP_PLUGIN_VERSION="173.4301.34" TWIG_PLUGIN_VERSION="173.4301.7" TOOLBOX_PLUGIN_VERSION="0.4.6" ANNOTATION_PLUGIN_VERSION="5.2.1"
 
 script:
-- "./gradlew check buildPlugin"
+- "./gradlew check verifyPlugin buildPlugin"
