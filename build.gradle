@@ -9,8 +9,11 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.3"
+    id "org.jetbrains.intellij" version "0.3.11"
+    id 'com.palantir.git-version' version "0.11.0"
 }
+
+def htmlFixer = { htmlFile -> file(htmlFile).text.replace('<html>', '').replace('</html>', '') }
 
 apply plugin: 'idea'
 apply plugin: 'org.jetbrains.intellij'
@@ -31,14 +34,26 @@ intellij {
             'properties'
     ]
     pluginName 'Symfony Plugin'
+}
 
-    patchPluginXml {
-        sinceBuild '173'
-    }
+patchPluginXml {
+    sinceBuild '173'
+    changeNotes = htmlFixer('src/main/resources/META-INF/change-notes.html')
+}
+
+publishPlugin {
+    username System.getenv('IJ_REPO_USERNAME')
+    password System.getenv('IJ_REPO_PASSWORD')
 }
 
 group 'fr.adrienbrault.idea.symfony2plugin'
-version '0.16.165'
+
+def details = versionDetails()
+if (details.isCleanTag) {
+    version = "${details.lastTag}"
+} else {
+    version = "${details.lastTag}.${details.gitHash}-SNAPSHOT"
+}
 
 wrapper {
     gradleVersion '4.3.1'
