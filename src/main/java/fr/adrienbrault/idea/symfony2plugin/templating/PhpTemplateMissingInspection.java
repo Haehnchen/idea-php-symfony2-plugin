@@ -39,7 +39,7 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
 
     private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
         String templateNameIfMissing = getTemplateNameIfMissing(psiElement);
-        if(templateNameIfMissing == null) {
+        if(templateNameIfMissing == null || templateNameIfMissing.isEmpty()) {
             return;
         }
 
