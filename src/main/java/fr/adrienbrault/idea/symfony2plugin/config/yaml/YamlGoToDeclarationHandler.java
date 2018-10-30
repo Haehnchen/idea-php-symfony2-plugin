@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
@@ -85,6 +86,14 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
                 if(psiText.matches("^[\\w_.]+") && getGlobalServiceStringPattern().accepts(psiElement)) {
                     targets.addAll(serviceGoToDeclaration(psiElement, psiText));
                 }
+            }
+        }
+
+        if (elementType == YAMLTokenTypes.SCALAR_KEY) {
+            String psiText = PsiElementUtils.getText(psiElement);
+
+            if(psiText.startsWith("$")) {
+                targets.addAll(namedArgumentGoto(psiElement)) ;
             }
         }
 
@@ -165,6 +174,17 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         return targets.toArray(new PsiElement[targets.size()]);
+    }
+
+    private Collection<? extends PsiElement> namedArgumentGoto(PsiElement psiElement) {
+        Collection<PsiElement> psiElements = new HashSet<>();
+
+        Parameter yamlNamedArgument = ServiceContainerUtil.getYamlNamedArgument(psiElement, new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject()));
+        if (yamlNamedArgument != null) {
+            psiElements.add(yamlNamedArgument);
+        }
+
+        return psiElements;
     }
 
     private boolean hasNewConst(@NotNull PsiElement psiElement) {

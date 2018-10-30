@@ -12,6 +12,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
@@ -354,6 +355,42 @@ public class ServiceContainerUtil {
                                             PsiElementUtils.getPrevSiblingsOfType(sequenceItem, PlatformPatterns.psiElement(YAMLSequenceItem.class)).size(),
                                             yamlScalar
                                         );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * arguments: ['$foobar': '@foo']
+     */
+    @Nullable
+    public static Parameter getYamlNamedArgument(@NotNull PsiElement psiElement, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        PsiElement context = psiElement.getContext();
+        if(context instanceof YAMLKeyValue) {
+            // arguments: ['$foobar': '@foo']
+
+            String parameterName = ((YAMLKeyValue) context).getKeyText();
+            if(parameterName.startsWith("$") && parameterName.length() > 1) {
+                PsiElement yamlMapping = context.getParent();
+                if(yamlMapping instanceof YAMLMapping) {
+                    PsiElement yamlKeyValue = yamlMapping.getParent();
+                    if(yamlKeyValue instanceof YAMLKeyValue) {
+                        String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
+                        if(keyText.equals("arguments")) {
+                            YAMLMapping parentMapping = ((YAMLKeyValue) yamlKeyValue).getParentMapping();
+                            if(parentMapping != null) {
+                                String serviceId = getServiceClassFromServiceMapping(parentMapping);
+                                if(StringUtils.isNotBlank(serviceId)) {
+                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceId, lazyServiceCollector);
+                                    if(serviceClass != null) {
+                                        return PhpElementsUtil.getConstructorParameterArgumentByName(serviceClass, StringUtils.stripStart(parameterName, "$"));
                                     }
                                 }
                             }

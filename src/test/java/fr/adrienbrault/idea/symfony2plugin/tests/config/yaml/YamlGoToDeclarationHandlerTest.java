@@ -4,6 +4,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -223,6 +224,16 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
             "foobar:\n" +
             "    controller: Foo<caret>bar\n" +
             PlatformPatterns.psiElement(Method.class)
+        );
+    }
+
+    public void testNamedArgumentsNavigationForService() {
+        assertNavigationMatch("services.yml", "" +
+                        "services:\n" +
+                        "    Foo\\Bar:\n" +
+                        "       arguments:\n" +
+                        "           $<caret>i: ~\n",
+                PlatformPatterns.psiElement(Parameter.class)
         );
     }
 
