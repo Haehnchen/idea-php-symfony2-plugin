@@ -14,7 +14,9 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLTokenTypes;
 
 /**
  * Check if class exists
@@ -35,12 +37,17 @@ public class YamlClassInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(PsiElement psiElement) {
-                if (!((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(psiElement) || YamlElementPatternHelper.getParameterClassPattern().accepts(psiElement)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement))) {
-                    super.visitElement(psiElement);
-                    return;
+                if ((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(psiElement) || YamlElementPatternHelper.getParameterClassPattern().accepts(psiElement)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
+                    // foobar.foo:
+                    //   class: Foobar\Foo
+                    invoke(psiElement, holder);
+                } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement.getParent())) {
+                    // Foobar\Foo: ~
+                    String text = PsiElementUtils.getText(psiElement);
+                    if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
+                        invoke(psiElement, holder);
+                    }
                 }
-
-                invoke(psiElement, holder);
 
                 super.visitElement(psiElement);
             }
