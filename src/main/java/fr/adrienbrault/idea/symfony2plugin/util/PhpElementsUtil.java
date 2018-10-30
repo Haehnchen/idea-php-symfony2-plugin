@@ -1302,6 +1302,21 @@ public class PhpElementsUtil {
     /**
      * Find argument by name in constructor parameter: __construct($foobar)
      */
+    @Nullable
+    public static Parameter getConstructorParameterArgumentByName(@NotNull PhpClass phpClass, @NotNull String argumentName) {
+        Method constructor = phpClass.getConstructor();
+        if(constructor == null) {
+            return null;
+        }
+
+        return Arrays.stream(constructor.getParameters()).filter(
+                parameter -> argumentName.equals(parameter.getName())
+        ).findFirst().orElse(null);
+    }
+
+    /**
+     * Find argument by name in constructor parameter: __construct($foobar)
+     */
     public static int getConstructorArgumentByName(@NotNull PhpClass phpClass, @NotNull String argumentName) {
         Method constructor = phpClass.getConstructor();
         if(constructor == null) {
