@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
@@ -337,31 +336,16 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
 
-        ApplicationInfo instance = ApplicationInfo.getInstance();
-        String minorVersion = instance.getMinorVersion();
-        if ((instance.getMajorVersion().equals("2018") && Integer.valueOf(minorVersion) >= 2)) {
-            assertEquals("" +
-                            "services:\n" +
-                            "   foo:\n" +
-                            "       car: test\n" +
-                            "   my_service:\n" +
-                            "     class: foo\n" +
-                            "     tag:\n" +
-                            "     - foo",
-                    yamlFile.getText()
-            );
-        } else {
-            assertEquals("" +
-                            "services:\n" +
-                            "   foo:\n" +
-                            "       car: test\n" +
-                            "   my_service:\n" +
-                            "      class: foo\n" +
-                            "      tag:\n" +
-                            "          - foo",
-                    yamlFile.getText()
-            );
-        }
+        assertEquals("" +
+                        "services:\n" +
+                        "   foo:\n" +
+                        "       car: test\n" +
+                        "   my_service:\n" +
+                        "     class: foo\n" +
+                        "     tag:\n" +
+                        "     - foo",
+                yamlFile.getText()
+        );
     }
 
     /**
@@ -380,27 +364,14 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
 
-        ApplicationInfo instance = ApplicationInfo.getInstance();
-        String minorVersion = instance.getMinorVersion();
-        if ((instance.getMajorVersion().equals("2018") && Integer.valueOf(minorVersion) >= 2)) {
-            assertEquals("" +
-                            "foo: foo\n" +
-                            "services:\n" +
-                            "  my_service:\n" +
-                            "    class: foo\n" +
-                            "    tag: foo",
-                    yamlFile.getText()
-            );
-        }else {
-            assertEquals("" +
-                            "foo: foo\n" +
-                            "services:\n" +
-                            "  my_service:\n" +
-                            "   class: foo\n" +
-                            "   tag: foo",
-                    yamlFile.getText()
-            );
-        }
+        assertEquals("" +
+                        "foo: foo\n" +
+                        "services:\n" +
+                        "  my_service:\n" +
+                        "    class: foo\n" +
+                        "    tag: foo",
+                yamlFile.getText()
+        );
     }
 
     /**
