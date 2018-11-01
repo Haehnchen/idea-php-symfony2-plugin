@@ -2,6 +2,7 @@ Changelog
 =========
 
 # Version names
+* 0.17.x: PhpStorm 2018.2+
 * 0.16.x: PhpStorm 2017.3.2+
 * 0.15.x: PhpStorm 2017.2+ (no support)
 * 0.14.x: PhpStorm 2017.1+ (no support)
@@ -11,34 +12,42 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 0.16.166
+## 0.17.168
+* Symfony 4.2: Support improved form type extensions [#1246](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1246) (Daniel Espendiller)
+* Named arguments in bind should provide navigation with [#1241](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1241) (Daniel Espendiller)
+* Provide class existing inspection for class named service [#1239](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1239) (Daniel Espendiller)
+* Cleanup non relevant old PhpStorm versions and add "2018.2.5" test env (Daniel Espendiller)
+* Named arguments should be clickable [#1240](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1240) (Daniel Espendiller)
 
-<ul>
-<li>28a81b49 Add 2018.3 to build matrix (Cedric Ziel)</li>
-<li>79623036 Inline Callback (Cedric Ziel)</li>
-<li>9a2e7042 Fixed Symfony installer version selection to use https (Thomas Schulz)</li>
-<li>0e8c1f44 Move back to JBList to support legacy platform (Cedric Ziel)</li>
-<li>243d9896 Move write action out of AWT event for PhpServiceArgumentIntention (Cedric Ziel)</li>
-<li>4b6c480d Adjust resource path for bundle file creation (Cedric Ziel)</li>
-<li>e8a58704 Remove unnecessary null check (Cedric Ziel)</li>
-<li>26e9e8b6 Update PHP plugin version to 182.3684.42 in 2018.2 build (Cedric Ziel)</li>
-<li>e8d51e22 Adapt to changed YAML Psi to find the first KeyValue mapping (Cedric Ziel)</li>
-<li>1eb302b0 Fix whitespace issues in fixtures (Cedric Ziel)</li>
-<li>88c8dc0b Update build environment to 2018.2 stable (Cedric Ziel)</li>
-<li>fba2ded5 Add YAML const GoTo Target for Symfony 3.2+ style constants (Cedric Ziel)</li>
-<li>6cdd1695 Add inspection and quick fix for fuzzy service class names (Cedric Ziel)</li>
-<li>4eda083a Remove unused imports (Cedric Ziel)</li>
-<li>9ccf2e55 Use adequate casing for sentence (Cedric Ziel)</li>
-<li>83475218 Drop unnecessary condition (Cedric Ziel)</li>
-<li>eed2fca0 When able to, detect Symfony 4 "public" directory (Cedric Ziel)</li>
-<li>1fb795a3 Small cleanups (Cedric Ziel)</li>
-<li>d46aadf9 Fix Yaml Inspection for deprecated structure (Cedric Ziel)</li>
-<li>6af47fd3 Update intelli gradle plugin to 0.3.3 (Cedric Ziel)</li>
-<li>eaa23c6d Add 2018.2 to build matrix (Cedric Ziel)</li>
-<li>147d6d09 Migrate Project structure to use gradle (#1164) (Cedric Ziel)</li>
-<li>1d727c39 fix travis 2017.3.x build (Daniel Espendiller)</li>
-<li>6f6a15fa Fix anchor/querystring order (Massimiliano Arione)</li>
-<li>ad7742e4 Fix link to asset function (Massimiliano Arione)</li></ul>
+## 0.16.167
+* Do not set until constraint so EAP users can still use the plugin
+
+## 0.16.166
+* Add 2018.3 to build matrix (Cedric Ziel)
+* Inline Callback (Cedric Ziel)
+* Fixed Symfony installer version selection to use https (Thomas Schulz)
+* Move back to JBList to support legacy platform (Cedric Ziel)
+* Move write action out of AWT event for PhpServiceArgumentIntention (Cedric Ziel)
+* Adjust resource path for bundle file creation (Cedric Ziel)
+* Remove unnecessary null check (Cedric Ziel)
+* Update PHP plugin version to 182.3684.42 in 2018.2 build (Cedric Ziel)
+* Adapt to changed YAML Psi to find the first KeyValue mapping (Cedric Ziel)
+* Fix whitespace issues in fixtures (Cedric Ziel)
+* Update build environment to 2018.2 stable (Cedric Ziel)
+* Add YAML const GoTo Target for Symfony 3.2+ style constants (Cedric Ziel)
+* Add inspection and quick fix for fuzzy service class names (Cedric Ziel)
+* Remove unused imports (Cedric Ziel)
+* Use adequate casing for sentence (Cedric Ziel)
+* Drop unnecessary condition (Cedric Ziel)
+* When able to, detect Symfony 4 "public" directory (Cedric Ziel)
+* Small cleanups (Cedric Ziel)
+* Fix Yaml Inspection for deprecated structure (Cedric Ziel)
+* Update intelli gradle plugin to 0.3.3 (Cedric Ziel)
+* Add 2018.2 to build matrix (Cedric Ziel)
+* Migrate Project structure to use gradle ([#1164](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1164)) (Cedric Ziel)
+* Fix travis 2017.3.x build (Daniel Espendiller)
+* Fix anchor/querystring order (Massimiliano Arione)
+* Fix link to asset function (Massimiliano Arione)
 
 ## 0.16.165
 * Prevent duplicate same targets in yaml targets eg for class navigation
