@@ -237,6 +237,27 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testNamedArgumentsNavigationForDefaultBinding() {
+        assertNavigationMatch("services.yml", "" +
+                        "services:\n" +
+                        "   _defaults:\n" +
+                        "       bind:\n" +
+                        "           $<caret>i: ~\n"+
+                        "   Foo\\Bar: ~" +
+                PlatformPatterns.psiElement(Parameter.class)
+        );
+
+        assertNavigationMatch("services.yml", "" +
+                "services:\n" +
+                "   _defaults:\n" +
+                "       bind:\n" +
+                "           $<caret>i: ~\n"+
+                "   foobar:\n" +
+                "       class: Foo\\Bar\n" +
+                PlatformPatterns.psiElement(Parameter.class)
+        );
+    }
+
     @NotNull
     private PsiElementPattern.Capture<PhpClass> getClassPattern() {
         return PlatformPatterns.psiElement(PhpClass.class);
