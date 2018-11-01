@@ -31,10 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLMapping;
-import org.jetbrains.yaml.psi.YAMLScalar;
-import org.jetbrains.yaml.psi.YAMLSequenceItem;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
 
@@ -92,8 +89,16 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         if (elementType == YAMLTokenTypes.SCALAR_KEY) {
             String psiText = PsiElementUtils.getText(psiElement);
 
-            if(psiText.startsWith("$")) {
-                targets.addAll(namedArgumentGoto(psiElement)) ;
+            if (psiText.startsWith("$")) {
+                targets.addAll(namedArgumentGoto(psiElement));
+
+                // services:
+                //      _defaults:
+                //          bind:
+                //              $fo<caret>obar: '@foobar'
+                if (YamlElementPatternHelper.getBindArgumentPattern().accepts(psiElement)) {
+                    targets.addAll(namedDefaultBindArgumentGoto(psiElement, psiText));
+                }
             }
         }
 
@@ -176,7 +181,29 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return targets.toArray(new PsiElement[targets.size()]);
     }
 
-    private Collection<? extends PsiElement> namedArgumentGoto(PsiElement psiElement) {
+    private Collection<? extends PsiElement> namedDefaultBindArgumentGoto(@NotNull PsiElement psiElement, @NotNull String parameterName) {
+        Collection<PsiElement> psiElements = new HashSet<>();
+
+        PsiFile containingFile = psiElement.getContainingFile();
+        if (containingFile instanceof YAMLFile) {
+            for (PhpClass phpClass : YamlHelper.getPhpClassesInYamlFile((YAMLFile) containingFile, new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject()))) {
+                Method constructor = phpClass.getConstructor();
+                if (constructor == null) {
+                    continue;
+                }
+
+                for (Parameter parameter : constructor.getParameters()) {
+                    if (parameter.getName().equals(parameterName.substring(1))) {
+                        psiElements.add(parameter);
+                    }
+                }
+            }
+        }
+
+        return psiElements;
+    }
+
+    private Collection<? extends PsiElement> namedArgumentGoto(@NotNull PsiElement psiElement) {
         Collection<PsiElement> psiElements = new HashSet<>();
 
         Parameter yamlNamedArgument = ServiceContainerUtil.getYamlNamedArgument(psiElement, new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject()));

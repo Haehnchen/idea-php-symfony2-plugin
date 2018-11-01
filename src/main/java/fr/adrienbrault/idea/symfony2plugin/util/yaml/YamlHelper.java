@@ -18,10 +18,15 @@ import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
@@ -34,6 +39,7 @@ import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
+import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 import java.util.*;
 
@@ -1167,5 +1173,34 @@ public class YamlHelper {
         public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
             return psiElement.getNextSibling() instanceof YAMLMapping;
         }
+    }
+
+    @NotNull
+    public static Collection<PhpClass> getPhpClassesInYamlFile(@NotNull YAMLFile yamlFile, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        Collection<PhpClass> phpClasses = new HashSet<>();
+
+        for (YAMLKeyValue keyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
+            YAMLValue value = keyValue.getValue();
+            if (value instanceof YAMLMapping) {
+                // foo.bar:
+                //    classes: ...
+                String serviceId = ServiceContainerUtil.getServiceClassFromServiceMapping((YAMLMapping) value);
+                if (StringUtils.isNotBlank(serviceId)) {
+                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(yamlFile.getProject(), serviceId, lazyServiceCollector);
+                    if (serviceClass != null) {
+                        phpClasses.add(serviceClass);
+                    }
+                }
+            } else if(value instanceof YAMLPlainTextImpl) {
+                // Foo\Bar: ~
+                String text = keyValue.getKeyText();
+
+                if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text)) {
+                    phpClasses.addAll(PhpElementsUtil.getClassesInterface(yamlFile.getProject(), text));
+                }
+            }
+        }
+
+        return phpClasses;
     }
 }

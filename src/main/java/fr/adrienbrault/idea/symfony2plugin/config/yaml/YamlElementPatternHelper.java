@@ -680,6 +680,22 @@ public class YamlElementPatternHelper {
     }
 
     /**
+     * services:
+     *     _defaults:
+     *         bind:
+     *             $fo<caret>obar: '@foobar'
+     */
+    public static PsiElementPattern.Capture<PsiElement> getBindArgumentPattern() {
+        return PlatformPatterns.psiElement().withParent(
+                PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(
+                        PlatformPatterns.psiElement(YAMLMapping.class).withParent(
+                                PlatformPatterns.psiElement(YAMLKeyValue.class).withName("bind")
+                        )
+                )
+        );
+    }
+
+    /**
      * !tagged twig.extension
      */
     public static ElementPattern<PsiElement> getTaggedServicePattern() {

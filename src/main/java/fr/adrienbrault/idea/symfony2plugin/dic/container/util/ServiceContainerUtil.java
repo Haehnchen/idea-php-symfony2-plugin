@@ -410,7 +410,7 @@ public class ServiceContainerUtil {
      *  arguments: ~
      */
     @Nullable
-    private static String getServiceClassFromServiceMapping(@NotNull YAMLMapping yamlMapping) {
+    public static String getServiceClassFromServiceMapping(@NotNull YAMLMapping yamlMapping) {
         YAMLKeyValue classKeyValue = yamlMapping.getKeyValueByKey("class");
 
         // Symfony 3.3: "class" is optional; use service id for class
