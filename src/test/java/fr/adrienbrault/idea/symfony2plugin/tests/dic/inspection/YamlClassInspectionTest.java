@@ -40,5 +40,8 @@ public class YamlClassInspectionTest extends SymfonyLightCodeInsightFixtureTestC
         assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: 'Args\\Fo<caret>O'", YamlClassInspection.MESSAGE_WRONG_CASING);
         assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: \"Args\\Fo<caret>O\"", YamlClassInspection.MESSAGE_WRONG_CASING);
         assertLocalInspectionNotContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING);
+
+        assertLocalInspectionContains("services.yml", "services:\n  Args\\Fo<caret>oBar: ~", YamlClassInspection.MESSAGE_MISSING_CLASS);
+        assertLocalInspectionNotContains("services.yml", "services:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING);
     }
 }
