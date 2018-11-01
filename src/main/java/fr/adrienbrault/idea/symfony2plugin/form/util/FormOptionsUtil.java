@@ -27,9 +27,6 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormOptionsUtil {
-
-    public static final String EXTENDED_TYPE_METHOD = "getExtendedType";
-
     /**
      * Symfony2 / 3 Form setting options per FormType via method
      */

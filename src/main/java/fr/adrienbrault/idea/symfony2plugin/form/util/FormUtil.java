@@ -12,6 +12,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -537,30 +538,70 @@ public class FormUtil {
     }
 
     /**
-     * Get getExtendedType as string
+     * Get getExtendedType and getExtendedTypes (Symfony >= 4.2) as string
      *
-     * 'Foo::class' and string 'foo' supported
+     * "return Foo::class;"
+     * "return 'foobar';"
+     * "return [Foo::class, FooBar::class];"
+     * "return true === true ? FileType::class : Form:class;"
+     * "yield Foo::class;"
      */
     @NotNull
     public static Collection<String> getFormExtendedType(@NotNull PhpClass phpClass) {
-        Method getParent = phpClass.findMethodByName(FormOptionsUtil.EXTENDED_TYPE_METHOD);
-        if(getParent == null) {
-            return Collections.emptySet();
-        }
-
         Collection<String> types = new HashSet<>();
 
-        for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(getParent, PhpReturn.class)) {
-            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+        // public function getExtendedType() { return FileType::class; }
+        // public function getExtendedType() { return true === true ? FileType::class : Form:class; }
+        Method extendedType = phpClass.findMethodByName("getExtendedType");
+        if(extendedType != null) {
+            for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(extendedType, PhpReturn.class)) {
+                PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
 
-            // true ? 'foo' : 'foo'
-            if(firstPsiChild instanceof TernaryExpression) {
-                types.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings((TernaryExpression) firstPsiChild));
+                // true ? 'foo' : 'foo'
+                if(firstPsiChild instanceof TernaryExpression) {
+                    types.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings((TernaryExpression) firstPsiChild));
+                }
+
+                String stringValue = PhpElementsUtil.getStringValue(firstPsiChild);
+                if(stringValue != null) {
+                    types.add(stringValue);
+                }
+            }
+        }
+
+        // Symfony 4.2: Support improved form type extensions:
+        // public static function getExtendedTypes(): iterable:
+        // https://symfony.com/blog/new-in-symfony-4-2-improved-form-type-extensions
+        Method extendedTypes = phpClass.findMethodByName("getExtendedTypes");
+        if (extendedTypes != null) {
+            // [Foo::class, FooBar::class]
+            for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(extendedTypes, PhpReturn.class)) {
+                PhpPsiElement arrayCreationExpression = phpReturn.getFirstPsiChild();
+                if (arrayCreationExpression instanceof ArrayCreationExpression) {
+                    Collection<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, psiElement ->
+                            psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+                    );
+
+                    for (PsiElement child : arrayValues) {
+                        String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
+                        if (stringValue != null) {
+                            types.add(stringValue);
+                        }
+                    }
+                }
             }
 
-            String stringValue = PhpElementsUtil.getStringValue(firstPsiChild);
-            if(stringValue != null) {
-                types.add(stringValue);
+            // yield Foo::class
+            for (PhpYield phpReturn : PsiTreeUtil.collectElementsOfType(extendedTypes, PhpYield.class)) {
+                PsiElement yieldArgument = phpReturn.getArgument();
+                if (yieldArgument == null) {
+                    continue;
+                }
+
+                String stringValue = PhpElementsUtil.getStringValue(yieldArgument);
+                if (stringValue != null) {
+                    types.add(stringValue);
+                }
             }
         }
 
