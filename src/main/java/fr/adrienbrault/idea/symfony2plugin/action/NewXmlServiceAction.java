@@ -17,7 +17,7 @@ public class NewXmlServiceAction  extends AbstractProjectDumbAwareAction {
     @Override
     public void actionPerformed(AnActionEvent event) {
         final Project project = event.getData(PlatformDataKeys.PROJECT);
-        ServiceActionUtil.buildFile(event, project, "/resources/fileTemplates/container.xml");
+        ServiceActionUtil.buildFile(event, project, "/fileTemplates/container.xml");
     }
 
 
