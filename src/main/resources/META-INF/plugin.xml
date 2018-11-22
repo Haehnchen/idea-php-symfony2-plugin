@@ -548,6 +548,7 @@
         <extensionPoint name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
         <extensionPoint name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
         <extensionPoint name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"/>
+        <extensionPoint name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
         <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
         <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
     </extensionPoints>
