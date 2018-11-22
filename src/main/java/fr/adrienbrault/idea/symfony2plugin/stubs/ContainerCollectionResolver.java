@@ -14,6 +14,8 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector;
+import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
@@ -39,6 +41,10 @@ public class ContainerCollectionResolver {
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
+    );
+
+    private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector> EXTENSIONS_PARAMETER = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"
     );
 
     public static Collection<String> getServiceNames(@NotNull Project project) {
@@ -454,6 +460,21 @@ public class ContainerCollectionResolver {
                 }
 
                 this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, true));
+            }
+
+            // Extension points
+            ServiceParameterCollectorParameter.Id parameter = null;
+            Collection<ContainerParameter> exps = new ArrayList<>();
+            for (ServiceParameterCollector parameterCollector : EXTENSIONS_PARAMETER.getExtensions()) {
+                if(parameter == null) {
+                    parameter = new ServiceParameterCollectorParameter.Id(project, exps);
+                }
+
+                parameterCollector.collectIds(parameter);
+            }
+
+            for (ContainerParameter extParameter: exps) {
+                this.containerParameterMap.put(extParameter.getName(), extParameter);
             }
 
             return this.containerParameterMap;
