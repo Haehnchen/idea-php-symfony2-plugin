@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * Check if class exists
@@ -45,7 +46,10 @@ public class YamlClassInspection extends LocalInspectionTool {
                     // Foobar\Foo: ~
                     String text = PsiElementUtils.getText(psiElement);
                     if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
-                        invoke(psiElement, holder);
+                        PsiElement yamlKeyValue = psiElement.getParent();
+                        if (yamlKeyValue instanceof YAMLKeyValue && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "exclude") == null) {
+                            invoke(psiElement, holder);
+                        }
                     }
                 }
 
