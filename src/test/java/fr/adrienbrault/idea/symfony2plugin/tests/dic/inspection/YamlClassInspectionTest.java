@@ -43,5 +43,21 @@ public class YamlClassInspectionTest extends SymfonyLightCodeInsightFixtureTestC
 
         assertLocalInspectionContains("services.yml", "services:\n  Args\\Fo<caret>oBar: ~", YamlClassInspection.MESSAGE_MISSING_CLASS);
         assertLocalInspectionNotContains("services.yml", "services:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING);
+
+        assertLocalInspectionNotContains(
+                "services.yml",
+                "services:\n" +
+                        "  Args\\Fo<caret>oBar:\n" +
+                        "       resource: ~",
+                YamlClassInspection.MESSAGE_MISSING_CLASS
+        );
+
+        assertLocalInspectionNotContains(
+                "services.yml",
+                "services:\n" +
+                        "  Args\\Fo<caret>oBar:\n" +
+                        "       exclude: ~",
+                YamlClassInspection.MESSAGE_MISSING_CLASS
+        );
     }
 }
