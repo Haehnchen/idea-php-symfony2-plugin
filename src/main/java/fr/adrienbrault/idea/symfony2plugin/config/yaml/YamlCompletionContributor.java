@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompleti
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineYamlAnnotationLookupBuilder;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.PhpEntityClassCompletionProvider;
@@ -40,6 +41,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProv
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
@@ -48,6 +50,7 @@ import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -244,6 +247,16 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getParentKeyName("services"),
             new MyServiceKeyAsClassCompletionParametersCompletionProvider()
         );
+
+        // services:
+        //  _defaults:
+        //    bind:
+        //      $<caret>: ''
+        extend(
+            CompletionType.BASIC,
+            YamlElementPatternHelper.getNamedDefaultBindPattern(),
+            new NamedArgumentCompletionProvider()
+        );
     }
 
     /**
@@ -374,6 +387,35 @@ public class YamlCompletionContributor extends CompletionContributor {
                     PhpClassCompletionProvider.addClassCompletion(parameters, completionResultSet, position, false);
                 }
             }
+        }
+    }
+
+    /**
+     * services:
+     *     _defaults:
+     *         bind:
+     *             $projectDir: '%kernel.project_dir%'
+     */
+    private static class NamedArgumentCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
+            HashSet<String> uniqueParameters = new HashSet<>();
+
+            ServiceContainerUtil.visitNamedArguments(parameters.getPosition().getContainingFile(), parameter -> {
+                String name = parameter.getName();
+                if (uniqueParameters.contains(name)) {
+                    return;
+                }
+
+                uniqueParameters.add(name);
+
+                // create argument for yaml: $parameter
+                result.addElement(
+                        LookupElementBuilder.create("$" + name)
+                                .withIcon(parameter.getIcon())
+                                .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"), true)
+                );
+            });
         }
     }
 

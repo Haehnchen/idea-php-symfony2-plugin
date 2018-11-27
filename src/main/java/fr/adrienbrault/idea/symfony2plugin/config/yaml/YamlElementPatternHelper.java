@@ -712,6 +712,28 @@ public class YamlElementPatternHelper {
     }
 
     /**
+     * services:
+     *  _defaults:
+     *      bind:
+     *          $<caret>: ''
+     */
+    static PsiElementPattern.Capture<PsiElement> getNamedDefaultBindPattern() {
+        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withText(PlatformPatterns.string().startsWith("$")).withParent(
+            PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+                @Override
+                public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                    return "bind".equals(yamlKeyValue.getKeyText());
+                }
+            }).withParent(PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+                @Override
+                public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                    return "_defaults".equals(yamlKeyValue.getKeyText());
+                }
+            })))))
+        );
+    }
+
+    /**
      * Match elements types
      */
     private static class ElementTypePatternCondition extends PatternCondition<PsiElement> {

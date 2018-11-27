@@ -184,21 +184,12 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
     private Collection<? extends PsiElement> namedDefaultBindArgumentGoto(@NotNull PsiElement psiElement, @NotNull String parameterName) {
         Collection<PsiElement> psiElements = new HashSet<>();
 
-        PsiFile containingFile = psiElement.getContainingFile();
-        if (containingFile instanceof YAMLFile) {
-            for (PhpClass phpClass : YamlHelper.getPhpClassesInYamlFile((YAMLFile) containingFile, new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject()))) {
-                Method constructor = phpClass.getConstructor();
-                if (constructor == null) {
-                    continue;
-                }
-
-                for (Parameter parameter : constructor.getParameters()) {
-                    if (parameter.getName().equals(parameterName.substring(1))) {
-                        psiElements.add(parameter);
-                    }
-                }
+        String argumentWithoutDollar = parameterName.substring(1);
+        ServiceContainerUtil.visitNamedArguments(psiElement.getContainingFile(), parameter -> {
+            if (parameter.getName().equals(argumentWithoutDollar)) {
+                psiElements.add(parameter);
             }
-        }
+        });
 
         return psiElements;
     }
