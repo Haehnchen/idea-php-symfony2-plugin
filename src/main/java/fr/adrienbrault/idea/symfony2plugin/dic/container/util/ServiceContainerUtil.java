@@ -37,10 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -401,6 +398,25 @@ public class ServiceContainerUtil {
         }
 
         return null;
+    }
+
+    /**
+     * services:
+     *  _defaults:
+     *      bind:
+     *       $<caret>: ''
+     */
+    public static void visitNamedArguments(@NotNull PsiFile psiFile, @NotNull Consumer<Parameter> processor) {
+        if (psiFile instanceof YAMLFile) {
+            for (PhpClass phpClass : YamlHelper.getPhpClassesInYamlFile((YAMLFile) psiFile, new ContainerCollectionResolver.LazyServiceCollector(psiFile.getProject()))) {
+                Method constructor = phpClass.getConstructor();
+                if (constructor == null) {
+                    continue;
+                }
+
+                Arrays.stream(constructor.getParameters()).forEach(processor::consume);
+            }
+        }
     }
 
     /**

@@ -302,4 +302,15 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "Bar"
         );
     }
+
+    public void testNamedArgumentCompletionForDefaultsBinding() {
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  _defaults:\n" +
+                "    bind:\n" +
+                "      $<caret>: ~\n" +
+                "  Foo\\Bar: ~",
+            "$i"
+        );
+    }
 }
