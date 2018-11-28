@@ -1,14 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
-import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
-
-import java.io.File;
-import java.net.URL;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
