@@ -716,21 +716,43 @@ public class YamlElementPatternHelper {
      *  _defaults:
      *      bind:
      *          $<caret>: ''
+     *
+     *  _defaults:
+     *      bind:
+     *          $<caret>
      */
-    static PsiElementPattern.Capture<PsiElement> getNamedDefaultBindPattern() {
-        return PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withText(PlatformPatterns.string().startsWith("$")).withParent(
-            PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
-                @Override
-                public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
-                    return "bind".equals(yamlKeyValue.getKeyText());
-                }
-            }).withParent(PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
-                @Override
-                public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
-                    return "_defaults".equals(yamlKeyValue.getKeyText());
-                }
-            })))))
+    static ElementPattern<PsiElement> getNamedDefaultBindPattern() {
+        // "__defaults" key
+        PsiElementPattern.Capture<YAMLMapping> defaultsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+            @Override
+            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                return "_defaults".equals(yamlKeyValue.getKeyText());
+            }
+        }));
+
+        // "bind" bind
+        PsiElementPattern.Capture<YAMLMapping> bindKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+            @Override
+            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                return "bind".equals(yamlKeyValue.getKeyText());
+            }
+        }).withParent(defaultsKey));
+
+        // complete code
+        // bind:
+        // $<caret>: ''
+        PsiElementPattern.Capture<PsiElement> argumentPattern = PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withText(PlatformPatterns.string().startsWith("$")).withParent(
+            PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(bindKey)
         );
+
+        // incomplete code
+        // bind:
+        // $<caret>
+        PsiElementPattern.Capture<PsiElement> incompleteCodePattern = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(PlatformPatterns.string().startsWith("$")).withParent(
+            PlatformPatterns.psiElement(YAMLScalar.class).withParent(bindKey)
+        );
+
+        return PlatformPatterns.or(argumentPattern, incompleteCodePattern);
     }
 
     /**
