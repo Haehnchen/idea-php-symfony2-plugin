@@ -12,6 +12,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.17.169
+* Provide completion for yaml arguments in \_defaults -> bind (Daniel Espendiller)
+* Dont inspection service resources a classes for inspection [#1255](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1255) (Daniel Espendiller)
+* Allow other plugins to extend container parameters [#1259](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1259) (Shyim)
+* Fix service.xml creating [#1256](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1256) (Shyim)
+* Symfony 4.2: Translation detection fixed for new TranslatorInterface namespace [#1254](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1254) (Michael Wolf)
+
 ## 0.17.168
 * Symfony 4.2: Support improved form type extensions [#1246](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1246) (Daniel Espendiller)
 * Named arguments in bind should provide navigation with [#1241](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1241) (Daniel Espendiller)
