@@ -192,7 +192,12 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
                                     .create(ServiceUtil.getServiceNameForClass(getProject(), aClass))
                                     .withIcon(Symfony2Icons.SERVICE);
 
+                                LookupElementBuilder lookupElementWithClassName = LookupElementBuilder
+                                        .create(aClass)
+                                        .withIcon(Symfony2Icons.SERVICE);
+
                                 arguments.getResultSet().addElement(lookupElement);
+                                arguments.getResultSet().addElement(lookupElementWithClassName);
                             }
                         }
                     }
