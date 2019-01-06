@@ -51,10 +51,10 @@ public class TranslationStringParser {
 
         TranslationStringMap string_map = new TranslationStringMap();
 
-        Matcher matcher = Pattern.compile("'([\\w]+)'\\s=>.*?array\\s\\((.*?)\\s\\),", Pattern.MULTILINE).matcher(string);
+        Matcher matcher = Pattern.compile("'([\\w]+(\\+intl\\-icu)?)'\\s=>.*?array\\s\\((.*?)\\s\\),", Pattern.MULTILINE).matcher(string);
         while(matcher.find()){
             String domain = matcher.group(1);
-            String array_strings = matcher.group(2);
+            String array_strings = matcher.group(3);
 
             Matcher match_strings = Pattern.compile("\\s'(.*?)'\\s=>\\s'.*?',\\s", Pattern.MULTILINE).matcher(array_strings);
             while(match_strings.find()){

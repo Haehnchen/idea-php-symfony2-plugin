@@ -16,13 +16,16 @@ public class TranslationStringParserTest  extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/translation/translations/catalogue.de.php");
         TranslationStringMap map =  new TranslationStringParser().parse(testFile);
 
-        assertTrue(map.getDomainMap("FOSUserBundle").contains("registration.email.message"));
-
         assertTrue(map.getDomainList().contains("FOSUserBundle"));
+        assertTrue(map.getDomainList().contains("icu_domain+intl-icu"));
         assertFalse(map.getDomainList().contains("NotInList"));
 
         assertTrue(map.getDomainMap("FOSUserBundle").size() > 0);
+        assertTrue(map.getDomainMap("icu_domain+intl-icu").size() > 0);
         assertNull(map.getDomainMap("NotInList"));
+
+        assertTrue(map.getDomainMap("FOSUserBundle").contains("registration.email.message"));
+        assertTrue(map.getDomainMap("icu_domain+intl-icu").contains("login.submit"));
     }
 
     @Test
