@@ -402,6 +402,15 @@ public class TranslationUtil {
             placeholder.add(matcher.group(1));
         }
 
+        // Simple parser for MessageFormat by the ICU project
+        matcher = Pattern.compile("(\\{\\s*[^{]*\\s*})").matcher(text);
+        while(matcher.find()){
+            // Keep the whole placeholder for consistency with other formats, but also add just the placeholder name
+            // as this is allowed with the ICU format.
+            placeholder.add(matcher.group(1));
+            placeholder.add(matcher.group(1).replace("{", "").replace("}", "").trim());
+        }
+
         return placeholder;
     }
 
