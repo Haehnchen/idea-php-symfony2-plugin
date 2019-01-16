@@ -12,6 +12,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.17.170
+* Add simple parsing for ICU MessageFormat placeholder (Markus Fasselt) [#1269](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1269)
+* Add supports for translation domains with +intl-icu suffix (Markus Fasselt) [#1269](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1269)
+* Add class name autocompletion to new service definition (Shyim) [#1265](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1265)
+
 ## 0.17.169
 * Provide completion for yaml arguments in \_defaults -> bind (Daniel Espendiller)
 * Dont inspection service resources a classes for inspection [#1255](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1255) (Daniel Espendiller)
