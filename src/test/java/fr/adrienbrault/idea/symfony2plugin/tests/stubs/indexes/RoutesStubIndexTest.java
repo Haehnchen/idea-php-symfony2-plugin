@@ -110,6 +110,14 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("My\\PostController::editAction", route.getController());
     }
 
+    public void testAnnotationIndexOfMethodPatternAndClassPrefixWithSpecialPath() {
+        assertIndexContains(RoutesStubIndex.KEY, "blog_home_special");
+        RouteInterface route = getFirstValue("blog_home_special");
+
+        assertEquals("blog_home_special", route.getName());
+        assertEquals("/foo/edit/{!id<.*>}/{!id<\\d+>}////", route.getPath());
+    }
+
     public void testAnnotationThatEmptyRouteNameUseBundleMethodName() {
         assertIndexContains(RoutesStubIndex.KEY, "myfoobar_car_index");
         RouteInterface route = getFirstValue("myfoobar_car_index");

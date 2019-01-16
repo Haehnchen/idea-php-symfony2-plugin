@@ -19,6 +19,14 @@ namespace My
         }
 
         /**
+         * @Route("/edit/{!id<.*>}/{!id<\d+>}////", name="blog_home_special")
+         * @Method("GET")
+         */
+        public function specialAction()
+        {
+        }
+
+        /**
          * @Route("/edit/{id}", name="blog_home_get_head")
          * @Method({"GET","HEAD"})
          */
