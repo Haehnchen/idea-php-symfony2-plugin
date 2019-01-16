@@ -188,6 +188,14 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertContainsElements(placeholder, "%title", "%url");
     }
 
+    public void testGetPlaceholderFromTranslationForIcuStyle() {
+        Set<String> placeholder = TranslationUtil.getPlaceholderFromTranslation(
+            "Updated URL for feed {title} to {url}."
+        );
+
+        assertContainsElements(placeholder, "{title}", "{url}", "title", "url");
+    }
+
     public void testGetPlaceholderFromTranslationForKeyAndDomain() {
         Set<String> placeholder = TranslationUtil.getPlaceholderFromTranslation(
             getProject(), "my_foobar", "symfony"

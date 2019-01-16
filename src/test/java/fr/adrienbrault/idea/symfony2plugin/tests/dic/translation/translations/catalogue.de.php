@@ -51,6 +51,10 @@ das Team.
   array (
     'login.headline' => 'Anmeldung',
   ),
+  'icu_domain+intl-icu' =>
+  array (
+    'login.submit' => 'Einloggen',
+  ),
 ));
 
 $catalogueEn = new MessageCatalogue('en', array (

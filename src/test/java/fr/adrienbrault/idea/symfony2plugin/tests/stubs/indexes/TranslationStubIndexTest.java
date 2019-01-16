@@ -20,6 +20,7 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("messages.fr.xlf");
+        myFixture.copyFileToProject("messages+intl-icu.fr.xlf");
         myFixture.copyFileToProject("messages_two.fr.xlf");
         myFixture.copyFileToProject("foo.fr.xliff");
         myFixture.copyFileToProject("fr.xlf");
@@ -89,6 +90,10 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         assertContainsElements(getDomainKeys("car_flex_yml"), "foo_yaml.symfony.great");
         assertContainsElements(getDomainKeys("car_flex_yaml"), "foo_yaml.symfony.great");
         assertContainsElements(getDomainKeys("car_xlf_flex"), "Symfony is great");
+    }
+    public void testThatIcuMessagesAreInIndex() {
+        assertContainsElements(getDomainKeys("messages"), "Hello {name}");
+        assertContainsElements(getDomainKeys("messages"), "resname.hello");
     }
 
     @NotNull
