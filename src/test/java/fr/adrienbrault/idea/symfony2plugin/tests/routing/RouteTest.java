@@ -35,7 +35,7 @@ public class RouteTest extends Assert {
 
     @Test
     public void testControllerNullable() {
-        assertEquals(null, new Route("foo", new HashSet<>(), new HashMap<String, String>() {{
+        assertNull(new Route("foo", new HashSet<>(), new HashMap<String, String>() {{
             put("_controller", null);
         }}, new HashMap<>(), new ArrayList<>()).getController());
 
@@ -47,10 +47,24 @@ public class RouteTest extends Assert {
     @Test
     public void testPathVariables() {
         StubIndexedRoute route = new StubIndexedRoute("foobar");
-        route.setPath("/foo/{foo}/{foobar}/bar");
+        route.setPath("/foo/{foo}/{foobar}/{#foo1}/{|foo2}/bar");
 
-        assertTrue("foobar",
-            new Route(route).getVariables().containsAll(Arrays.asList("foo", "foobar"))
+        Set<String> variables = new Route(route).getVariables();
+        assertEquals(2, variables.size());
+        assertTrue("foobar", variables.containsAll(Arrays.asList("foo", "foobar")));
+    }
+
+    @Test
+    public void testPathVariablesForDefault() {
+        StubIndexedRoute route = new StubIndexedRoute("foobar");
+        route.setPath("/foo/{!foo}/{!foobar}//{Foobar2}bar");
+
+        Set<String> variables = new Route(route).getVariables();
+
+        assertEquals(3, variables.size());
+        assertTrue(
+            "foobar",
+            variables.containsAll(Arrays.asList("foo", "foobar", "Foobar2"))
         );
     }
 }
