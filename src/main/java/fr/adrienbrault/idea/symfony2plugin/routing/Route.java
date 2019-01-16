@@ -83,8 +83,10 @@ public class Route implements RouteInterface {
 
         // possible fallback
         // /hello/{foo}/{foo1}/bar
+        // /hello/{!foo}/{!foo<\d+>}
+        // /hello/{foo<\d+>}
         Set<String> hashSet = new TreeSet<>();
-        Matcher matcher = Pattern.compile("\\{!?(\\w+)}").matcher(this.path);
+        Matcher matcher = Pattern.compile("\\{!?(\\w+)[<[^}].*>]*}").matcher(this.path);
         while(matcher.find()){
             hashSet.add(matcher.group(1));
         }

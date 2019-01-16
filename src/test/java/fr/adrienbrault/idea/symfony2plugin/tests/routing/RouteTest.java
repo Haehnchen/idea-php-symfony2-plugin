@@ -60,11 +60,18 @@ public class RouteTest extends Assert {
         route.setPath("/foo/{!foo}/{!foobar}//{Foobar2}bar");
 
         Set<String> variables = new Route(route).getVariables();
-
         assertEquals(3, variables.size());
-        assertTrue(
-            "foobar",
-            variables.containsAll(Arrays.asList("foo", "foobar", "Foobar2"))
-        );
+        assertTrue(variables.containsAll(Arrays.asList("foo", "foobar", "Foobar2")));
+    }
+
+    @Test
+    public void testPathVariablesForWildcardInlineRequirements() {
+        StubIndexedRoute route = new StubIndexedRoute("foobar");
+        route.setPath("/foo/{!foo<.*>}/aaa{foobar<.*>}aaa/{page<\\d+>}/{page2<\\d+}>}/aaaa/{page3<\\{}d+}>}/");
+
+        Set<String> variables = new Route(route).getVariables();
+        assertEquals(5, variables.size());
+
+        assertTrue(variables.containsAll(Arrays.asList("foo", "foobar", "page", "page2", "page3")));
     }
 }
