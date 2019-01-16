@@ -14,7 +14,7 @@ import java.util.Objects;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class StubIndexedRoute implements RouteInterface, Serializable{
+public class StubIndexedRoute implements RouteInterface, Serializable {
 
     @NotNull
     private final String name;
