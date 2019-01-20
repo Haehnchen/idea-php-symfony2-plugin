@@ -4,10 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -27,6 +24,8 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
     private static MethodMatcher.CallToSignature[] GET_REPOSITORIES_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
+        /*new MethodMatcher.CallToSignature("\\QsGeneralBundle\\Controller\\EntityController", "getRepo"),
+        new MethodMatcher.CallToSignature("\\QsGeneralBundle\\Controller\\SecurityController", "getRepo"),*/
     };
 
     final public static char TRIM_KEY = '\u0185';
@@ -43,7 +42,9 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
             return null;
         }
 
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")) {
+        if(!(e instanceof MethodReference)
+                || (!PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")
+                    && !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepo"))) {
             return null;
         }
 
@@ -80,7 +81,15 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
             return phpNamedElementCollections;
         }
 
-        if (!PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, GET_REPOSITORIES_SIGNATURES)) {
+        String returnType = ((Method) phpNamedElement).getReturnType() == null
+                ? null
+                : ((Method) phpNamedElement).getReturnType().getType().toString();
+        String repoClass = "\\Doctrine\\Common\\Persistence\\ObjectRepository";
+
+        boolean isMethod = PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, GET_REPOSITORIES_SIGNATURES);
+        boolean isReturnType = returnType != null && PhpElementsUtil.isInstanceOf(project, returnType, repoClass);
+
+        if (!isMethod && !isReturnType) {
             return phpNamedElementCollections;
         }
 
