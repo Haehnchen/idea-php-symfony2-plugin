@@ -24,8 +24,6 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
     private static MethodMatcher.CallToSignature[] GET_REPOSITORIES_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
-        /*new MethodMatcher.CallToSignature("\\QsGeneralBundle\\Controller\\EntityController", "getRepo"),
-        new MethodMatcher.CallToSignature("\\QsGeneralBundle\\Controller\\SecurityController", "getRepo"),*/
     };
 
     private static String repositoryClass = "\\Doctrine\\Common\\Persistence\\ObjectRepository";
@@ -44,9 +42,7 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
             return null;
         }
 
-        if(!(e instanceof MethodReference)
-                || (!PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")
-                    && !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepo"))) {
+        if(!(e instanceof MethodReference)) {
             return null;
         }
 
