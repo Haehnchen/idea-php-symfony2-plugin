@@ -121,6 +121,7 @@
         <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindTypeProvider"/>
         <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
         <libraryRoot id="symfony_meta" path="/symfony-meta/" runtime="false"/>
+        <libraryRoot id="doctrine_meta" path="/doctrine-meta/" runtime="false"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
