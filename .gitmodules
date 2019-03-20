@@ -1,3 +1,3 @@
 [submodule "src/main/resources/symfony-meta"]
 	path = src/main/resources/symfony-meta
-	url = https://github.com/King2500/symfony-meta.git
+	url = https://github.com/King2500/symfony-phpstorm-meta.git
