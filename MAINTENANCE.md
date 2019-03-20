@@ -13,7 +13,7 @@ To build the plugin, execute the gradle task `buildPlugin`.
 ./gradlew clean buildPlugin
 ```
 
-The artifact zip can then be found in `build/distrubutions`. This is the
+The artifact zip can then be found in `build/distributions`. This is the
 final result which can be uploaded to the JetBrains repository.
 
 The checklist for a new release should be the following:

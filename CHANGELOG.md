@@ -12,6 +12,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.17.171
+* Add symfony-meta folder as PHP library into plugin (Thomas Schulz) [#1286](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1286)
+* Routes: Adding support for inlined wildcard requirements [#1273](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1273) (Daniel Espendiller)
+* Symfony 4.3: Support "Always Include Route Default Values" parameter syntax [#1271](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1271) (Daniel Espendiller)
+
 ## 0.17.170
 * Add simple parsing for ICU MessageFormat placeholder (Markus Fasselt) [#1269](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1269)
 * Add supports for translation domains with +intl-icu suffix (Markus Fasselt) [#1269](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1269)
