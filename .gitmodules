@@ -1,3 +1,6 @@
 [submodule "src/main/resources/symfony-meta"]
 	path = src/main/resources/symfony-meta
 	url = https://github.com/King2500/symfony-phpstorm-meta.git
+[submodule "src/main/resources/doctrine-meta"]
+	path = src/main/resources/doctrine-meta
+	url = https://github.com/King2500/doctrine-phpstorm-meta.git
