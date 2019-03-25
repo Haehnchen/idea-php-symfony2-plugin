@@ -27,7 +27,7 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
             "        class: Tag\\Instance<caret>Check\\EmptyClass\n" +
             "        tags:\n" +
             "            -  { name: twig.extension }",
-            "Class needs to implement '\\Twig_Extension' for tag 'twig.extension'"
+            "Class needs to implement '\\Twig_ExtensionInterface' for tag 'twig.extension'"
         );
     }
 

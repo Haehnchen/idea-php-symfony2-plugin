@@ -87,7 +87,7 @@ public class ServiceUtil {
         put("translation.loader", "\\Symfony\\Component\\Translation\\Loader\\LoaderInterface");
         put("translation.extractor", "\\Symfony\\Component\\Translation\\Extractor\\ExtractorInterface");
         put("translation.dumper", "\\Symfony\\Component\\Translation\\Dumper\\DumperInterface");
-        put("twig.extension", "\\Twig_Extension");
+        put("twig.extension", "\\Twig_ExtensionInterface");
         put("twig.loader", "\\Twig_LoaderInterface");
         put("validator.constraint_validator", "Symfony\\Component\\Validator\\ConstraintValidator");
         put("validator.initializer", "Symfony\\Component\\Validator\\ObjectInitializerInterface");
