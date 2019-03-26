@@ -32,6 +32,11 @@ public class DefaultServiceNameStrategyTest extends SymfonyLightCodeInsightFixtu
         assertEquals("foobar_foo_bar_foo_bar_fo.foo_bar.foo_bar", defaultNaming.getServiceName(getParameter("Foobar\\FooBar\\FooBar\\FoBundle\\FooBar\\FooBar")));
     }
 
+    public void testThatServiceNotInBundleCanContainBundleWord() {
+        DefaultServiceNameStrategy defaultNaming = new DefaultServiceNameStrategy();
+        assertEquals("foo.foo_bar.search_bundle_subscriber", defaultNaming.getServiceName(getParameter("Foo\\FooBar\\SearchBundleSubscriber")));
+    }
+
     private ServiceNameStrategyParameter getParameter(String className) {
         return new ServiceNameStrategyParameter(getProject(), className);
     }
