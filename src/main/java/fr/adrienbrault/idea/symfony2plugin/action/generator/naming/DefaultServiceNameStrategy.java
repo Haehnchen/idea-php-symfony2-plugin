@@ -41,6 +41,10 @@ public class DefaultServiceNameStrategy implements ServiceNameStrategyInterface 
                 }
             }
 
+            if (x < 0) {
+                return formatParts(Arrays.asList(split));
+            }
+
             Collection<String> parts = new ArrayList<>();
             parts.add(StringUtils.join(Arrays.copyOfRange(split, 0, x), "_"));
 
