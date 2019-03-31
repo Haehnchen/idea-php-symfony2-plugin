@@ -12,6 +12,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.17.172
+* Fix service generation when a class name contains "Bundle" (Vincent Dechenaux) [#1293](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1293)
+* Services with tag twig.extension should implement Twig_ExtensionInterface (Vincent Dechenaux) [#1292](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1292)
+* Add doctrine-meta folder as PHP library into plugin (Thomas Schulz) [#1290](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1290)
+* Add doctrine-phpstorm-meta as submodule (Thomas Schulz) [#1290](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1290)
+* Updated symfony-phpstorm-meta files (Thomas Schulz) [#1289](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1289)
+
 ## 0.17.171
 * Add symfony-meta folder as PHP library into plugin (Thomas Schulz) [#1286](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1286)
 * Routes: Adding support for inlined wildcard requirements [#1273](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1273) (Daniel Espendiller)
