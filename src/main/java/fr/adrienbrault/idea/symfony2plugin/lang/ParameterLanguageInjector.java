@@ -12,7 +12,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.mozilla.javascript.ast.VariableDeclaration;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,13 +39,19 @@ public class ParameterLanguageInjector implements MultiHostInjector {
             new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\EntityManager", "createQuery"),
             new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query", "setDQL"),
     };
+    public static final String DQL_VARIABLE_NAME = "dql";
 
     private final MethodLanguageInjection[] LANGUAGE_INJECTIONS = {
-            new MethodLanguageInjection("CSS", "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
-            new MethodLanguageInjection("XPath", null, null, XPATH_SIGNATURES),
-            new MethodLanguageInjection("JSON", null, null, JSON_SIGNATURES),
-            new MethodLanguageInjection("DQL", null, null, DQL_SIGNATURES),
+            new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
+            new MethodLanguageInjection(LANGUAGE_ID_XPATH, null, null, XPATH_SIGNATURES),
+            new MethodLanguageInjection(LANGUAGE_ID_JSON, null, null, JSON_SIGNATURES),
+            new MethodLanguageInjection(LANGUAGE_ID_DQL, null, null, DQL_SIGNATURES),
     };
+
+    private static final String LANGUAGE_ID_JSON = "JSON";
+    private static final String LANGUAGE_ID_XPATH = "XPath";
+    private static final String LANGUAGE_ID_CSS = "CSS";
+    private static final String LANGUAGE_ID_DQL = "DQL";
 
     public ParameterLanguageInjector() {
     }
@@ -70,11 +75,16 @@ public class ParameterLanguageInjector implements MultiHostInjector {
 
         PsiElement parent = expr.getParent();
 
-        if (!(parent instanceof ParameterList) || expr.getPrevPsiSibling() != null) {
+        final boolean isParameter = parent instanceof ParameterList && expr.getPrevPsiSibling() == null; // 1st parameter
+        final boolean isAssignment = parent instanceof AssignmentExpression;
+
+        if (!isParameter && !isAssignment) {
             return;
         }
 
-        parent = parent.getParent();
+        if (isParameter)  {
+            parent = parent.getParent();
+        }
 
         for (MethodLanguageInjection languageInjection : LANGUAGE_INJECTIONS) {
             Language language = languageInjection.getLanguage();
@@ -91,19 +101,19 @@ public class ParameterLanguageInjector implements MultiHostInjector {
                 }
             }
             // $dql = "...";
-//            else if (parent instanceof AssignmentExpression) {
-//                if ("DQL".equals(language.getID())) {
-//                    PhpPsiElement variable = ((AssignmentExpression) parent).getVariable();
-//
-//                    if (variable instanceof VariableDeclaration) {
-//                        if ("dql".equals(variable.getName())) {
-//                            injectLanguage(registrar, expr, language, languageInjection);
-//                            return;
-//                        }
-//                    }
-//                }
-//            }
+            else if (parent instanceof AssignmentExpression) {
+                if (LANGUAGE_ID_DQL.equals(language.getID())) {
+                    PhpPsiElement variable = ((AssignmentExpression) parent).getVariable();
+                    if (variable instanceof Variable) {
+                        if (DQL_VARIABLE_NAME.equals(variable.getName())) {
+                            injectLanguage(registrar, expr, language, languageInjection);
+                            return;
+                        }
+                    }
+                }
+            }
         }
+
     }
 
     private void injectLanguage(@NotNull MultiHostRegistrar registrar, @NotNull StringLiteralExpressionImpl element, Language language, MethodLanguageInjection languageInjection) {
