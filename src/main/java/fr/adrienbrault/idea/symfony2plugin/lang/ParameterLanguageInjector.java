@@ -39,7 +39,6 @@ public class ParameterLanguageInjector implements MultiHostInjector {
             new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\EntityManager", "createQuery"),
             new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query", "setDQL"),
     };
-    public static final String DQL_VARIABLE_NAME = "dql";
 
     private final MethodLanguageInjection[] LANGUAGE_INJECTIONS = {
             new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
@@ -48,10 +47,12 @@ public class ParameterLanguageInjector implements MultiHostInjector {
             new MethodLanguageInjection(LANGUAGE_ID_DQL, null, null, DQL_SIGNATURES),
     };
 
-    private static final String LANGUAGE_ID_JSON = "JSON";
-    private static final String LANGUAGE_ID_XPATH = "XPath";
-    private static final String LANGUAGE_ID_CSS = "CSS";
-    private static final String LANGUAGE_ID_DQL = "DQL";
+    public static final String LANGUAGE_ID_CSS = "CSS";
+    public static final String LANGUAGE_ID_XPATH = "XPath";
+    public static final String LANGUAGE_ID_JSON = "JSON";
+    public static final String LANGUAGE_ID_DQL = "DQL";
+
+    private static final String DQL_VARIABLE_NAME = "dql";
 
     public ParameterLanguageInjector() {
     }
