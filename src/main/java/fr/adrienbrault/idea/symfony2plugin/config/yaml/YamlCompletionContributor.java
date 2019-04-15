@@ -41,6 +41,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProv
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlTagCompletionProvider;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -257,6 +258,28 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getNamedDefaultBindPattern(),
             new NamedArgumentCompletionProvider()
         );
+
+        extend(
+            CompletionType.BASIC,
+            YamlElementPatternHelper.getSingleLineTextOrTag(),
+            new YamlTagCompletionProvider()
+        );
+    }
+
+    @Override
+    public boolean invokeAutoPopup(@NotNull PsiElement position, char typeChar) {
+        // Only for Yaml tag places (scalar values)
+        //   key: !<caret>
+        if (!YamlElementPatternHelper.getSingleLineTextOrTag().accepts(position) && !(position.getPrevSibling() instanceof YAMLKeyValue)) {
+            return super.invokeAutoPopup(position, typeChar);
+        }
+
+//        if (position instanceof LeafPsiElement) {
+//            if (((LeafPsiElement) position).getElementType() == YAMLTokenTypes.TAG && position.getText().startsWith("!")) {
+//                return super.invokeAutoPopup(position, typeChar);
+//            }
+//        }
+        return typeChar == '!';
     }
 
     /**

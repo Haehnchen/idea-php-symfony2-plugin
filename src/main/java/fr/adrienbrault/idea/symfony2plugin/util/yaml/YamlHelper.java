@@ -20,6 +20,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
@@ -468,6 +469,14 @@ public class YamlHelper {
 
     public static boolean isRoutingFile(PsiFile psiFile) {
         return psiFile.getName().contains("routing") || psiFile.getVirtualFile().getPath().contains("/routing");
+    }
+
+    public static boolean isConfigFile(@NotNull PsiFile psiFile) {
+        return psiFile.getName().contains("config") || psiFile.getVirtualFile().getPath().contains("/config");
+    }
+
+    public static boolean isInsideServiceDefinition(@NotNull PsiElement psiElement) {
+        return YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement);
     }
 
     /**
