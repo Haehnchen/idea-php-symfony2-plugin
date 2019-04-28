@@ -12,6 +12,8 @@ import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+import static fr.adrienbrault.idea.symfony2plugin.util.VersionUtil.productVersionGreaterThanOrEqual;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -39,7 +41,7 @@ public class YamlUnquotedColon extends LocalInspectionTool {
         public void visitElement(PsiElement element) {
             // every array element implements this interface
             // check for inside "foo: <foo: foo>"
-            if(!(element instanceof YAMLCompoundValue) || element.getNode().getElementType() != YAMLElementTypes.COMPOUND_VALUE) {
+            if(!isIllegalColonExpression(element)) {
                 super.visitElement(element);
                 return;
             }
@@ -66,6 +68,15 @@ public class YamlUnquotedColon extends LocalInspectionTool {
             );
 
             super.visitElement(element);
+        }
+
+        private boolean isIllegalColonExpression(PsiElement element) {
+
+            if (productVersionGreaterThanOrEqual(2018, 3)) {
+                return (element instanceof YAMLCompoundValue) && element.getNode().getElementType() == YAMLElementTypes.MAPPING;
+            }
+
+            return (element instanceof YAMLCompoundValue) && element.getNode().getElementType() == YAMLElementTypes.COMPOUND_VALUE;
         }
     }
 }

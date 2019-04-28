@@ -9,16 +9,19 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.11"
+    id "org.jetbrains.intellij" version "0.4.8"
     id 'com.palantir.git-version' version "0.11.0"
 }
 
 def htmlFixer = { htmlFile -> file(htmlFile).text.replace('<html>', '').replace('</html>', '') }
 
 apply plugin: 'idea'
-apply plugin: 'org.jetbrains.intellij'
-apply plugin: 'java'
 
+apply plugin: 'java'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+apply plugin: 'org.jetbrains.intellij'
 intellij {
     version ideaVersion
     updateSinceUntilBuild false
@@ -57,7 +60,7 @@ if (details.isCleanTag) {
 }
 
 wrapper {
-    gradleVersion '4.3.1'
+    gradleVersion '5.4.1'
 }
 
 test.testLogging.exceptionFormat = TestExceptionFormat.FULL
