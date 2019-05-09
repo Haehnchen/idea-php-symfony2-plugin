@@ -728,6 +728,22 @@ public class YamlElementPatternHelper {
     }
 
     /**
+     * !php/const <caret>
+     */
+    public static ElementPattern<PsiElement> getPhpConstPattern() {
+        return
+            PlatformPatterns
+                .psiElement()
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement().withText("!php/const")
+                );
+    }
+
+    /**
      * services:
      *  _defaults:
      *      bind:

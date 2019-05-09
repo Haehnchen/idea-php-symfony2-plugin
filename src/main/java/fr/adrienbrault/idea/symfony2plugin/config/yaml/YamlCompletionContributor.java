@@ -259,6 +259,8 @@ public class YamlCompletionContributor extends CompletionContributor {
             new NamedArgumentCompletionProvider()
         );
 
+        // config:
+        //   key: !<caret>
         extend(
             CompletionType.BASIC,
             YamlElementPatternHelper.getSingleLineTextOrTag(),
