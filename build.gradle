@@ -35,7 +35,6 @@ intellij {
             'webDeployment',
             'yaml',
             'CSS',
-            'XPath',
             'java-i18n',
             'properties'
     ]
