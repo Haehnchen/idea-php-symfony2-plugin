@@ -155,6 +155,10 @@ public class RouteHelper {
             return new PsiElement[0];
         }
 
+        // escaping
+        // "Foobar\\Test"
+        controllerName = controllerName.replace("\\\\", "\\");
+
         if(controllerName.contains("::")) {
 
             // FooBundle\Controller\BarController::fooBarAction

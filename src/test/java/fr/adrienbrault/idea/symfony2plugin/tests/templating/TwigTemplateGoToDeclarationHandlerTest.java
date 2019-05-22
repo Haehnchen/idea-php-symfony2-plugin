@@ -171,6 +171,13 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('CONST<caret>_FOO') }}", PlatformPatterns.psiElement());
     }
 
+    public void testTestControllerActionsProvidesReferences() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ controller('\\FooBundle\\Cont<caret>roller\\FooController::barAction') }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ controller('\\\\FooBundle\\\\Cont<caret>roller\\\\FooController::barAction') }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ controller('FooBundle\\Cont<caret>roller\\FooController::barAction') }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ controller('FooBundle\\\\Cont<caret>roller\\\\FooController::barAction') }}", PlatformPatterns.psiElement(Method.class).withName("barAction"));
+    }
+
     public void testFunctionNavigation() {
         assertNavigationMatch(
             TwigFileType.INSTANCE,
