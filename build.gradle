@@ -47,7 +47,7 @@ intellij {
             'properties',
             'xpath'
     ]
-    pluginName 'Symfony Plugin'
+    pluginName 'Symfony Support'
 
     // Can't instantiate configurable for PHP Toolbox 
     // at de.espend.idea.php.toolbox.ui.application.ToolboxApplicationForm.<init>(ToolboxApplicationForm.java:26)
