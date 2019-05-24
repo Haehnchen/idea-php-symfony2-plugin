@@ -5,10 +5,11 @@
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
-<h1>Symfony Plugin</h1>
+<p>Support for Symfony framework / components.</p>
+
+<br/>
 
 <a href="http://symfony2-plugin.espend.de/">Documentation</a> | <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin-doc">Doc on GitHub</a> | <a href="https://www.paypal.me/DanielEspendiller">Donate</a>
-<br/>
 
 <h2>Install</h2>
 
@@ -21,10 +22,7 @@
     <li>(Optional) To support <b>XLIFF translations</b> add "*.xlf" / "*.xliff" to XML "Editor" -> "File Types"</li>
 </ul>
 
-<h2>Features:</h2>
-
-<h3>Version</h3>
-<p>This plugin supports Symfony 2, 3, 4, ...</p>
+<h2>Features</h2>
 
 <h3>Dependency Injection Container</h3>
 <ul>
@@ -96,19 +94,6 @@
     <li><a href="https://github.com/Haehnchen">Daniel Espendiller</a></li>
 </ul>
       ]]></description>
-
-    <change-notes>
-<![CDATA[
-
-<ul>
-    <li>Prevent duplicate same targets in yaml targets eg for class navigation</li>
-    <li>Refactoring bundle loading, replacing HashMaps with ArrayList for non unique bundle project names</li>
-</ul>
-
-<br/>
-<a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">see full changelog</a> | <a href="https://www.paypal.me/DanielEspendiller">Donate</a>
-]]>
-    </change-notes>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="182.0"/>
