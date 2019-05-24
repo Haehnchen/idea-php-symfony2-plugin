@@ -400,6 +400,10 @@ public class PhpElementsUtil {
         return methods;
     }
 
+    static public boolean hasClassConstantFields(@NotNull PhpClass phpClass) {
+        return phpClass.getFields().stream().anyMatch(Field::isConstant);
+    }
+
     @Nullable
     static public String getArrayHashValue(ArrayCreationExpression arrayCreationExpression, String keyName) {
         ArrayHashElement translationArrayHashElement = PsiElementUtils.getChildrenOfType(arrayCreationExpression, PlatformPatterns.psiElement(ArrayHashElement.class)
