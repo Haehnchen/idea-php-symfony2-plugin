@@ -11,6 +11,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
@@ -1211,5 +1212,28 @@ public class YamlHelper {
         }
 
         return phpClasses;
+    }
+
+    /**
+     * key: !my_tag <caret>
+     */
+    public static boolean isElementAfterYamlTag(PsiElement psiElement) {
+        if (!(psiElement instanceof LeafPsiElement)) {
+            return false;
+        }
+
+        // key: !my_tag <caret>\n
+        if (((LeafPsiElement) psiElement).getElementType() == YAMLTokenTypes.EOL) {
+            PsiElement prevElement = PsiTreeUtil.getDeepestVisibleLast(psiElement);
+            if (prevElement instanceof LeafPsiElement) {
+                if (((LeafPsiElement) prevElement).getElementType() == YAMLTokenTypes.TAG) {
+                    return ((LeafPsiElement) prevElement).getText().startsWith("!");
+                }
+            }
+        }
+
+        PsiElement tagElement = PsiTreeUtil.findSiblingBackward(psiElement, YAMLTokenTypes.TAG, null);
+
+        return tagElement != null;
     }
 }

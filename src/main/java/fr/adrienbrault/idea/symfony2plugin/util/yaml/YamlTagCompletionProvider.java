@@ -51,15 +51,8 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
 
             // Don't complete again after tag (at end of line)
             // key: !my_tag <caret>\n
-            if (((LeafPsiElement) psiElement).getElementType() == YAMLTokenTypes.EOL) {
-                PsiElement prevElement = PsiTreeUtil.getDeepestVisibleLast(psiElement);
-                if (prevElement instanceof LeafPsiElement) {
-                    if (((LeafPsiElement) prevElement).getElementType() == YAMLTokenTypes.TAG) {
-                        if (((LeafPsiElement) prevElement).getText().startsWith("!")) {
-                            return;
-                        }
-                    }
-                }
+            if (YamlHelper.isElementAfterYamlTag(psiElement)) {
+                return;
             }
 
             // Don't complete again after tag (after second "!")
@@ -82,7 +75,7 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
                     }
                 }
             }
-            if (elementText.startsWith("!")) {
+            if (elementText.startsWith("!") || elementText.startsWith(".")) {
                 result = result.withPrefixMatcher(elementText);
             }
         }

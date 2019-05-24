@@ -41,6 +41,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProv
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeywordsCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlTagCompletionProvider;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -265,6 +266,14 @@ public class YamlCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             YamlElementPatternHelper.getSingleLineTextOrTag(),
             new YamlTagCompletionProvider()
+        );
+
+        // config:
+        //   key: <caret>
+        extend(
+            CompletionType.BASIC,
+            YamlElementPatternHelper.getSingleLineText(),
+            new YamlKeywordsCompletionProvider()
         );
     }
 

@@ -114,6 +114,15 @@ public class YamlElementPatternHelper {
         );
     }
 
+    public static ElementPattern<PsiElement> getSingleLineText() {
+        return
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns.psiElement(YAMLScalar.class))
+                .withLanguage(YAMLLanguage.INSTANCE)
+        ;
+    }
+
     public static ElementPattern<PsiElement> getSingleLineTextOrTag() {
         return PlatformPatterns.or(
             PlatformPatterns
