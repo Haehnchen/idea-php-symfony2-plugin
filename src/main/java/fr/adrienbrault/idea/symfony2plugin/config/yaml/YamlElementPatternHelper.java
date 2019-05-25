@@ -748,7 +748,10 @@ public class YamlElementPatternHelper {
                         PlatformPatterns.psiElement(PsiWhiteSpace.class),
                         PlatformPatterns.psiElement(YAMLTokenTypes.WHITESPACE)
                     ),
-                    PlatformPatterns.psiElement().withText("!php/const")
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement().withText("!php/const"),
+                        PlatformPatterns.psiElement().withText("!php/const:")
+                    )
                 );
     }
 
