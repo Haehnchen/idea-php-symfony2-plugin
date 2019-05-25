@@ -746,7 +746,7 @@ public class YamlElementPatternHelper {
                 .afterLeafSkipping(
                     PlatformPatterns.or(
                         PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        PlatformPatterns.psiElement(YAMLTokenTypes.WHITESPACE)
                     ),
                     PlatformPatterns.psiElement().withText("!php/const")
                 );
