@@ -2,8 +2,9 @@ Changelog
 =========
 
 # Version names
-* 0.17.x: PhpStorm 2018.2+
-* 0.16.x: PhpStorm 2017.3.2+
+* 0.18.x: PhpStorm 2019.1+
+* 0.17.x: PhpStorm 2018.2+ (no support)
+* 0.16.x: PhpStorm 2017.3.2+ (no support)
 * 0.15.x: PhpStorm 2017.2+ (no support)
 * 0.14.x: PhpStorm 2017.1+ (no support)
 * 0.13.x: PhpStorm 2016.3.1 (no support)
@@ -11,6 +12,15 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.18.173
+* Remove "Plugin" from plugin name (Daniel Espendiller) [#1312](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1312)
+* Support double backslashes for Twig controller references (Daniel Espendiller) [#1316](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1316)
+* Fixed Symfony installer download to use https (Tugdual Saunier) [#1311](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1311)
+* Fix changed indentation rules in 2018.3 with YAML (Cedric Ziel) [#1307](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1307)
+* Add DQL language injection for $dql variables (Thomas Schulz)
+* Add language injection for method parameters (CSS, XPath, DQL, JSON) (Thomas Schulz) [#1301](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1301)
+* Add Symfony plugin SVG icons (for light & dark themes) (Thomas Schulz) [#1298](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1298)
 
 ## 0.17.172
 * Fix service generation when a class name contains "Bundle" (Vincent Dechenaux) [#1293](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1293)
