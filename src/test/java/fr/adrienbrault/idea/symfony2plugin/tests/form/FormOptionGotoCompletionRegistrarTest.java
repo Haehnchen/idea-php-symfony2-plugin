@@ -36,7 +36,7 @@ public class FormOptionGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
                     String.format("$builder->add('foo', %s, [\n", s) +
                     "'<caret>'\n" +
                     "])",
-                "configure_options"
+                "configure_options", "class_const_option", "global_const_option", "global_const_define"
             );
 
             assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
@@ -44,7 +44,7 @@ public class FormOptionGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
                     String.format("$builder->add('foo', %s, [\n", s) +
                     "'<caret>' => ''\n" +
                     "])",
-                "configure_options"
+                "configure_options", "class_const_option", "global_const_option", "global_const_define"
             );
 
             assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
