@@ -3,8 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *

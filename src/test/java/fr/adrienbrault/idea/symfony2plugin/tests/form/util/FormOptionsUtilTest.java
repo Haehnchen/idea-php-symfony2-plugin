@@ -14,7 +14,6 @@ import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;

@@ -60,11 +60,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
         final JBList<String> list = new JBList<>(map.keySet());
         JBPopupFactory.getInstance().createListPopupBuilder(list)
                 .setTitle("Symfony: Services Definitions")
-                .setItemChoosenCallback(() -> {
-                    WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> {
-                        invokeByScope(map.get(list.getSelectedValue()), editor);
-                    });
-                })
+                .setItemChoosenCallback(() -> WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> invokeByScope(map.get(list.getSelectedValue()), editor)))
                 .createPopup()
                 .showInBestPositionFor(editor)
         ;

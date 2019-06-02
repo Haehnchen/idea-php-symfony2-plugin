@@ -9,7 +9,6 @@ import com.jetbrains.php.lang.psi.elements.Parameter;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

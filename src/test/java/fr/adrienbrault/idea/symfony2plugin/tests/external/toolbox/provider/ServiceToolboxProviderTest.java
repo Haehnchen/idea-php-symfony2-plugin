@@ -11,7 +11,6 @@ import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderArguments;
 import fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceToolboxProvider;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

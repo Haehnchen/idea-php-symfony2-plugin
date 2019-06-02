@@ -1,11 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.dbal;
 
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

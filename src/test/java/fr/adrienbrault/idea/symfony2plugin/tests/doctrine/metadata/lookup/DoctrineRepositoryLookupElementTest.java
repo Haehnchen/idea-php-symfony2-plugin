@@ -6,8 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup.DoctrineRepo
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *

@@ -2,8 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.dic.xml;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor

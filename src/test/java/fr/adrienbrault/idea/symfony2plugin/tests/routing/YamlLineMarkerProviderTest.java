@@ -1,15 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

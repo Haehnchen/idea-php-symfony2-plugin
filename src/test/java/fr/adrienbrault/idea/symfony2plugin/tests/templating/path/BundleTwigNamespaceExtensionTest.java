@@ -8,7 +8,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.BundleTwigNamespaceEx
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.Collection;
 
 /**

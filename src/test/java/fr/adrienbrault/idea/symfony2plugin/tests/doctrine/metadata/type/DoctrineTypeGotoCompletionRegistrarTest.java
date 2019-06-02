@@ -4,7 +4,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

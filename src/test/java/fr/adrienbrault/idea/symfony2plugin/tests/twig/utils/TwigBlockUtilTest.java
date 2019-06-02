@@ -12,7 +12,6 @@ import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

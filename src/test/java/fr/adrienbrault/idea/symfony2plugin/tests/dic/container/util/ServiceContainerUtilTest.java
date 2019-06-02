@@ -14,7 +14,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;

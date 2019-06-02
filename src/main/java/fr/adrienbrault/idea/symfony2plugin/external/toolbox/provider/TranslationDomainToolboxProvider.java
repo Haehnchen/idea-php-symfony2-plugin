@@ -40,12 +40,7 @@ public class TranslationDomainToolboxProvider extends PhpToolboxProviderAbstract
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> psiElements = new HashSet<>();
-        for (PsiFile psiFile : TranslationUtil.getDomainPsiFiles(parameter.getProject(), parameter.getContents())) {
-            psiElements.add(psiFile);
-        }
-
-        return psiElements;
+        return new HashSet<>(TranslationUtil.getDomainPsiFiles(parameter.getProject(), parameter.getContents()));
     }
 
     @NotNull

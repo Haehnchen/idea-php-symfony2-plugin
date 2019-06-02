@@ -399,7 +399,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
             final Collection<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
 
-            FileBasedIndex.getInstance().getFilesWithKey(id, new HashSet<String>(Arrays.asList(key)), new Processor<VirtualFile>() {
+            FileBasedIndex.getInstance().getFilesWithKey(id, new HashSet<String>(Collections.singletonList(key)), new Processor<VirtualFile>() {
                 @Override
                 public boolean process(VirtualFile virtualFile) {
                     virtualFiles.add(virtualFile);
@@ -542,7 +542,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
                 }
             });
 
-            psiElementVisitor.visitFile(psiFile.getContainingFile());;
+            psiElementVisitor.visitFile(psiFile.getContainingFile());
         }
 
         return Pair.create(problemsHolder.getResults(), caretOffset);

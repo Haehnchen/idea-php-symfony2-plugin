@@ -4,8 +4,6 @@ import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.FilterGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see FilterGotoCompletionRegistrar

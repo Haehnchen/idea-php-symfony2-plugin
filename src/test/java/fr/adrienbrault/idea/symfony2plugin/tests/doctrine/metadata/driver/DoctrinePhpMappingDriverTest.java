@@ -7,8 +7,6 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMapp
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrinePhpMappingDriver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *

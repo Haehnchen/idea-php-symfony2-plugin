@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -29,8 +28,7 @@ public class DoctrineYamlGotoCompletionRegistrar implements GotoCompletionRegist
     }
 
     private static class ClassGotoCompletionProvider extends GotoCompletionProvider {
-
-        public ClassGotoCompletionProvider(PsiElement element) {
+        private ClassGotoCompletionProvider(PsiElement element) {
             super(element);
         }
 
@@ -43,18 +41,12 @@ public class DoctrineYamlGotoCompletionRegistrar implements GotoCompletionRegist
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
-
             String psiText = PsiElementUtils.getText(element);
             if(StringUtils.isBlank(psiText)) {
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> classes = new ArrayList<>();
-            for (PhpClass phpClass : DoctrineMetadataUtil.getClassInsideScope(element, psiText)) {
-                classes.add(phpClass);
-            }
-
-            return classes;
+            return new ArrayList<>(DoctrineMetadataUtil.getClassInsideScope(element, psiText));
         }
     }
 }

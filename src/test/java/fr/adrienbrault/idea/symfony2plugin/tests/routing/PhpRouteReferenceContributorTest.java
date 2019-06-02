@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

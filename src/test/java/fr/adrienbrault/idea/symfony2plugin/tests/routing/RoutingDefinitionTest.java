@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 import com.intellij.ide.highlighter.XmlFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

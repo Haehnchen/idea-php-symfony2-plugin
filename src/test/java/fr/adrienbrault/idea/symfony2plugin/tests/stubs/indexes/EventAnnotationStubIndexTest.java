@@ -7,8 +7,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *

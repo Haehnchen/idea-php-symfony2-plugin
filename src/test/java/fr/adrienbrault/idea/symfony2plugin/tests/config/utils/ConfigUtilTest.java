@@ -5,7 +5,6 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;

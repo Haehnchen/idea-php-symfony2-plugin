@@ -8,7 +8,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.Set;
 
 /**

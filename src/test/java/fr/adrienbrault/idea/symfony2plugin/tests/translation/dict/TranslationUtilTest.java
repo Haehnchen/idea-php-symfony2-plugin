@@ -11,7 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;

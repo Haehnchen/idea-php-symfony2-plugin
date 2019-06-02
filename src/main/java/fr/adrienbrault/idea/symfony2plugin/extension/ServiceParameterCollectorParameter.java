@@ -2,8 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.extension;
 
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

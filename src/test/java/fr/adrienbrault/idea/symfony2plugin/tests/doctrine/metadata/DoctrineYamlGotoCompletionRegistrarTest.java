@@ -1,15 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
 
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 /**

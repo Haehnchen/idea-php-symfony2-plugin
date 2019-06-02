@@ -11,7 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

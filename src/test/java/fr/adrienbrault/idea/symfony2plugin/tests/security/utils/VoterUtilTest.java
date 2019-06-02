@@ -5,7 +5,6 @@ import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
 import fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.Set;
 
 /**

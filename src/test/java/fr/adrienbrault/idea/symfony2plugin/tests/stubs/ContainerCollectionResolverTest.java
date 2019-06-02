@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
-import java.io.File;
 import java.util.Set;
 
 /**

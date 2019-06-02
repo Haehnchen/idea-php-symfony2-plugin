@@ -4,8 +4,6 @@ import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */

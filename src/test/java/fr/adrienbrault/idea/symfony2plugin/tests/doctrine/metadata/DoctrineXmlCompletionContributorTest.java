@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

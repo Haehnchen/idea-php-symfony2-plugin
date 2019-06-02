@@ -59,7 +59,7 @@ public class ContainerCollectionResolver {
     @Nullable
     public static ContainerService getService(@NotNull Project project, @NotNull String serviceName) {
         Map<String, ContainerService> services = getServices(project);
-        return services.containsKey(serviceName) ? services.get(serviceName) : null;
+        return services.getOrDefault(serviceName, null);
     }
 
     public static Map<String, ContainerService> getServices(@NotNull Project project) {

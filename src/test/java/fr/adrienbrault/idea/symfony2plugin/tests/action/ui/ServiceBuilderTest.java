@@ -12,7 +12,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.*;
 
 /**

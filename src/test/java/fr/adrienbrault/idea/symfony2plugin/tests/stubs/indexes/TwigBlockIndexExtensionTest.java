@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.Arrays;
 
 /**

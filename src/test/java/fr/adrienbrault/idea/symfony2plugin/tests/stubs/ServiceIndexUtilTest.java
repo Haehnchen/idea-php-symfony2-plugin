@@ -13,7 +13,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 

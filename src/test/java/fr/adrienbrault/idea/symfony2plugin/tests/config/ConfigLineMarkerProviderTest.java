@@ -4,8 +4,6 @@ import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerProvider

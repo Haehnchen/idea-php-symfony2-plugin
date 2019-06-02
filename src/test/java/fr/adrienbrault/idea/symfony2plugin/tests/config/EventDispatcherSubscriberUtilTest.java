@@ -6,14 +6,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
-import java.io.File;
 import java.util.Collection;
 
 /**
