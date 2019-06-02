@@ -10,10 +10,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -85,17 +82,56 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                         }
 
                         PsiElement[] parameters = methodReference.getParameters();
-                        if(parameters.length == 0 || !(parameters[0] instanceof StringLiteralExpression)) {
+                        if(parameters.length == 0) {
                             return;
                         }
 
-                        String contents = ((StringLiteralExpression) parameters[0]).getContents();
-                        if(StringUtils.isBlank(contents) || !contents.endsWith(".html.twig")) {
+                        if (parameters[0] instanceof StringLiteralExpression) {
+                            // foo('foo.html.twig')
+                            String contents = ((StringLiteralExpression) parameters[0]).getContents();
+                            if (StringUtils.isBlank(contents) || !contents.endsWith(".html.twig")) {
+                                return;
+                            }
+
+                            Function parentOfType = PsiTreeUtil.getParentOfType(methodReference, Function.class);
+                            if(parentOfType == null) {
+                                return;
+                            }
+
+                            addTemplateWithScope(contents, StringUtils.stripStart(parentOfType.getFQN(), "\\"));
+                        } else if(parameters[0] instanceof PhpReference) {
+                            for (PhpNamedElement phpNamedElement : ((PhpReference) parameters[0]).resolveLocal()) {
+                                // foo(self::foo)
+                                // foo($this->foo)
+                                if (phpNamedElement instanceof Field) {
+                                    PsiElement defaultValue = ((Field) phpNamedElement).getDefaultValue();
+                                    if (defaultValue instanceof StringLiteralExpression) {
+                                        addStringLiteralScope(methodReference, (StringLiteralExpression) defaultValue);
+                                    }
+                                }
+
+                                // foo($var) => $var = 'test.html.twig'
+                                if (phpNamedElement instanceof Variable) {
+                                    PsiElement assignmentExpression = phpNamedElement.getParent();
+                                    if (assignmentExpression instanceof AssignmentExpression) {
+                                        PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
+                                        if (value instanceof StringLiteralExpression) {
+                                            addStringLiteralScope(methodReference, (StringLiteralExpression) value);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    private void addStringLiteralScope(@NotNull MethodReference methodReference, @NotNull StringLiteralExpression defaultValue) {
+                        String contents = defaultValue.getContents();
+                        if (StringUtils.isBlank(contents) && contents.endsWith(".twig")) {
                             return;
                         }
 
                         Function parentOfType = PsiTreeUtil.getParentOfType(methodReference, Function.class);
-                        if(parentOfType == null) {
+                        if (parentOfType == null) {
                             return;
                         }
 
