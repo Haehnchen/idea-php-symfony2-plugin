@@ -20,6 +20,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "       $var = 'var.html.twig';\n" +
             "       $foo->render('foo-render.html.twig');\n" +
             "       $foo->render('foo-render.html.twig');\n" +
+            "       $foo->render('foobar-render.twig');\n" +
             "       $foo->render('@!Foo/overwrite.html.twig');\n" +
             "       $foo->renderView('foo-renderView.html.twig');\n" +
             "       $foo->renderResponse('foo-renderResponse.html.twig');\n" +
@@ -39,7 +40,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContains(
             PhpTwigTemplateUsageStubIndex.KEY,
             "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig",
-            "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig"
+            "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig", "foobar-render.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-render.html.twig", value ->

@@ -89,7 +89,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                         if (parameters[0] instanceof StringLiteralExpression) {
                             // foo('foo.html.twig')
                             String contents = ((StringLiteralExpression) parameters[0]).getContents();
-                            if (StringUtils.isBlank(contents) || !contents.endsWith(".html.twig")) {
+                            if (StringUtils.isBlank(contents) || !contents.endsWith(".twig")) {
                                 return;
                             }
 
@@ -160,7 +160,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                         }
 
                         String template = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template");
-                        if(template != null && template.endsWith(".html.twig")) {
+                        if(template != null && template.endsWith(".twig")) {
                             Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
                             if(methodScope != null) {
                                 addTemplateWithScope(template, StringUtils.stripStart(methodScope.getFQN(), "\\"));
