@@ -27,7 +27,7 @@ public class PsiVariable {
     }
 
     public PsiVariable(@NotNull String type) {
-        this.types = Collections.singleton(type);;
+        this.types = Collections.singleton(type);
     }
 
     @NotNull

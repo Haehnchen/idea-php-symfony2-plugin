@@ -1,14 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
 
-import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

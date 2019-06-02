@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableReso
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
 import java.util.Map;
 
 /**

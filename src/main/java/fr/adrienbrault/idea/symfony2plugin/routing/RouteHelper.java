@@ -998,8 +998,7 @@ public class RouteHelper {
     @NotNull
     private static Map<String, Route> getAllRoutesProxy(@NotNull Project project) {
 
-        Map<String, Route> routes = new HashMap<>();
-        routes.putAll(RouteHelper.getCompiledRoutes(project));
+        Map<String, Route> routes = new HashMap<>(RouteHelper.getCompiledRoutes(project));
 
         Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
 

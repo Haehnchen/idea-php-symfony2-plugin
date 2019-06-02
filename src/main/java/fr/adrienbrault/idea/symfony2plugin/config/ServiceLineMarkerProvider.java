@@ -209,13 +209,9 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Collection<PhpClass> phpClasses = new ArrayList<>();
-
         // class in same namespace
         String className = ((PhpClass) phpClassContext).getFQN() + "Validator";
-        phpClasses.addAll(
-            PhpElementsUtil.getClassesInterface(psiElement.getProject(), className)
-        );
+        Collection<PhpClass> phpClasses = new ArrayList<>(PhpElementsUtil.getClassesInterface(psiElement.getProject(), className));
 
         // @TODO: validateBy alias
 

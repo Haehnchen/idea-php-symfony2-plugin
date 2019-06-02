@@ -50,8 +50,7 @@ public class TwigSettingsForm implements Configurable {
             return;
         }
 
-        List<TwigPath> sortableLookupItems = new ArrayList<>();
-        sortableLookupItems.addAll(TwigUtil.getTwigNamespaces(this.project, true));
+        List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(this.project, true));
         Collections.sort(sortableLookupItems);
 
         for (TwigPath twigPath : sortableLookupItems) {
@@ -97,8 +96,7 @@ public class TwigSettingsForm implements Configurable {
                 super.mouseClicked(e);
                 TwigSettingsForm.this.resetList();
 
-                List<TwigPath> sortableLookupItems = new ArrayList<>();
-                sortableLookupItems.addAll(TwigUtil.getTwigNamespaces(TwigSettingsForm.this.project, false));
+                List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(TwigSettingsForm.this.project, false));
                 Collections.sort(sortableLookupItems);
 
                 for (TwigPath twigPath : sortableLookupItems) {

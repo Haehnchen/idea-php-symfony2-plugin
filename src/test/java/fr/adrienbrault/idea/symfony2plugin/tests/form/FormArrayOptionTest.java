@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.form;
 
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

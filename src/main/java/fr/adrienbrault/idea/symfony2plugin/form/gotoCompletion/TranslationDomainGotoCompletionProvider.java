@@ -37,11 +37,6 @@ public class TranslationDomainGotoCompletionProvider extends GotoCompletionProvi
             return Collections.emptyList();
         }
 
-        Collection<PsiElement> targets = new ArrayList<>();
-        for (PsiFile psiFile : TranslationUtil.getDomainPsiFiles(getElement().getProject(), stringLiteralValue)) {
-            targets.add(psiFile);
-        }
-
-        return targets;
+        return new ArrayList<>(TranslationUtil.getDomainPsiFiles(getElement().getProject(), stringLiteralValue));
     }
 }

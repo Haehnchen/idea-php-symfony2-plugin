@@ -21,7 +21,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -121,13 +120,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        List<MethodParameterSetting> methodParameterSettings = new ArrayList<>();
-
-        for(MethodParameterSetting methodParameterSetting :this.tableView.getListTableModel().getItems()) {
-            methodParameterSettings.add(methodParameterSetting);
-        }
-
-        getSettings().methodParameterSettings = methodParameterSettings;
+        getSettings().methodParameterSettings = new ArrayList<>(this.tableView.getListTableModel().getItems());
         this.changed = false;
     }
 

@@ -5,7 +5,6 @@ import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 
-import java.io.File;
 import java.util.Collection;
 
 /**

@@ -1,9 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.yaml.YAMLFileType;
-
-import java.io.File;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

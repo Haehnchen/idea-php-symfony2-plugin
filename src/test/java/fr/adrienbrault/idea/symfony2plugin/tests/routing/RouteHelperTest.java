@@ -20,7 +20,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
 
-import java.io.File;
 import java.util.*;
 
 /**

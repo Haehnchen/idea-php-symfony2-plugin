@@ -138,10 +138,10 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
-        assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 3).stream().filter(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())).count() > 0);
-        assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), ":foobar:foo.html.twig", 3).stream().filter(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())).count() > 0);
+        assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 3).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())));
+        assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), ":foobar:foo.html.twig", 3).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())));
 
-        assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 10).stream().filter(psiElement -> psiElement instanceof PsiFile && "foo.html.twig".equals(((PsiFile) psiElement).getName())).count() > 0);
+        assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 10).stream().anyMatch(psiElement -> psiElement instanceof PsiFile && "foo.html.twig".equals(((PsiFile) psiElement).getName())));
 
         assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).size() == 0);
     }
@@ -209,7 +209,7 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
     }
 
     private void assertIsDirectoryAtOffset(@NotNull String templateName, int offset, @NotNull String directory) {
-        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), templateName, offset).stream().filter(psiElement -> psiElement instanceof PsiDirectory && directory.equals(((PsiDirectory) psiElement).getName())).count() > 0);
+        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), templateName, offset).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && directory.equals(((PsiDirectory) psiElement).getName())));
     }
 
     @NotNull

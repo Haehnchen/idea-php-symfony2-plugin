@@ -10,7 +10,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 

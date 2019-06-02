@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.variable.collector;
 
-import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 

@@ -6,8 +6,6 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
@@ -33,9 +31,7 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
     public void testGetFileResourceRefers() {
         PsiFile psiFile = myFixture.configureByText("foo.xml", "foo");
 
-        assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceRefers(getProject(), psiFile.getVirtualFile()), virtualFile -> {
-            return virtualFile.getName().equals("target.xml");
-        }));
+        assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceRefers(getProject(), psiFile.getVirtualFile()), virtualFile -> virtualFile.getName().equals("target.xml")));
     }
 
     public void testGetFileResourceTargetsInBundleDirectory() {

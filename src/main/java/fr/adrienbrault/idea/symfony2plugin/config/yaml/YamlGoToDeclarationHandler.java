@@ -268,9 +268,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     @NotNull
     private Collection<PsiElement> parameterGoToDeclaration(@NotNull PsiElement psiElement, @NotNull String psiParameterName) {
-        Collection<PsiElement> targets = new ArrayList<>();
-
-        targets.addAll(
+        Collection<PsiElement> targets = new ArrayList<>(
             DotEnvUtil.getEnvironmentVariableTargetsForParameter(psiElement.getProject(), psiParameterName)
         );
 

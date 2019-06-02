@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.io.File;
 import java.util.*;
 
 public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {

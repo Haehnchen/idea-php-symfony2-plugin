@@ -5,10 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 

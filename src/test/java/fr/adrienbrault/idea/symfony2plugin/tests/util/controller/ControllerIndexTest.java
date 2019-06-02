@@ -4,7 +4,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 
-import java.io.File;
 import java.util.Collection;
 
 /**

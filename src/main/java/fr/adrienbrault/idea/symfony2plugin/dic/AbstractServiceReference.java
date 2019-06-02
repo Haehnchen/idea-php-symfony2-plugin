@@ -45,8 +45,6 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
     @Override
     public Object[] getVariants() {
 
-        List<LookupElement> results = new ArrayList<>();
-
         ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
             .ServiceCollector.create(getElement().getProject());
 
@@ -56,10 +54,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
             values = ContainerUtil.filter(values, service -> !service.isPrivate());
         }
 
-        results.addAll(
-            ServiceCompletionProvider.getLookupElements(null, values).getLookupElements()
-        );
-
+        List<LookupElement> results = new ArrayList<>(ServiceCompletionProvider.getLookupElements(null, values).getLookupElements());
         return results.toArray();
     }
 }

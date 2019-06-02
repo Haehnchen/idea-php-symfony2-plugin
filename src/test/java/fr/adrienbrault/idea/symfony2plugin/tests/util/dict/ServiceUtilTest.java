@@ -11,7 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.Map;
 import java.util.Set;
 

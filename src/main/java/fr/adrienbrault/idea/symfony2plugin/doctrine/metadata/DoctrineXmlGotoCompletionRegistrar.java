@@ -5,7 +5,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -24,7 +23,6 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
 
     @Override
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
-
         registrar.register(XmlPatterns.psiElement().withParent(PlatformPatterns.or(
             DoctrineMetadataPattern.getXmlModelClass(),
             DoctrineMetadataPattern.getXmlRepositoryClass(),
@@ -36,7 +34,7 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
 
     private static class ClassGotoCompletionProvider extends GotoCompletionProvider {
 
-        public ClassGotoCompletionProvider(PsiElement element) {
+        private ClassGotoCompletionProvider(PsiElement element) {
             super(element);
         }
 
@@ -49,7 +47,6 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
-
             PsiElement parent = element.getParent();
             if(!(parent instanceof XmlAttributeValue)) {
                 return Collections.emptyList();
@@ -60,12 +57,7 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
                 return Collections.emptyList();
             }
 
-            Collection<PsiElement> classes = new ArrayList<>();
-            for (PhpClass phpClass : DoctrineMetadataUtil.getClassInsideScope(element, value)) {
-                classes.add(phpClass);
-            }
-
-            return classes;
+            return new ArrayList<>(DoctrineMetadataUtil.getClassInsideScope(element, value));
         }
     }
 }
