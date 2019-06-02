@@ -20,6 +20,9 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.impl.ClassConstImpl;
+import com.jetbrains.php.lang.psi.elements.impl.ConstantImpl;
+import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
@@ -58,6 +61,30 @@ public class PhpElementsUtil {
             PhpPsiElement child = arrayHashElement.getKey();
             if(child instanceof StringLiteralExpression) {
                 keys.put(((StringLiteralExpression) child).getContents(), child);
+            }
+            if(child instanceof ClassConstantReference) {
+                PsiElement val = ((ClassConstantReference) child).resolve();
+                if (val instanceof ClassConstImpl) {
+                    PsiElement value = ((ClassConstImpl) val).getDefaultValue();
+                    if (value != null && value.getText() != null) {
+                        keys.put(value.getText().replace("\"", "").replace("\'", ""), child);
+                    }
+                }
+            }
+            if(child instanceof ConstantReference) {
+                PsiElement val = ((ConstantReference) child).resolve();
+                if(val instanceof PhpDefine) {
+                    PhpPsiElement value = ((PhpDefineImpl) val).getValue();
+                    if (value != null) {
+                        keys.put(value.getText().replace("\"", "").replace("\'", ""), child);
+                    }
+                }
+                if(val instanceof ConstantImpl) {
+                    PsiElement value = ((ConstantImpl) val).getValue();
+                    if (value != null && value.getText() != null) {
+                        keys.put(value.getText().replace("\"", "").replace("\'", ""), child);
+                    }
+                }
             }
         }
 
