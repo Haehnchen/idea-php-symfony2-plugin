@@ -35,7 +35,7 @@ public class SymfonyInstallerUtil {
     @Nullable
     public static VirtualFile downloadPhar(@Nullable Project project, JComponent component, @Nullable String toDir)
     {
-        return PhpConfigurationUtil.downloadFile(project, component, toDir, "https://symfony.com/installer", "symfony.phar");
+        return PhpConfigurationUtil.downloadFile(project, component, toDir, "https://get.symfony.com/symfony.phar", "symfony.phar");
     }
 
     @Nullable
