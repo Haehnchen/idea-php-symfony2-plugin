@@ -13,6 +13,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.174
+* Some code cleanup (Daniel Espendiller) [#1325](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1325)
+* Strip format from Twig template references index: ".html.twig" => ".twig" (Daniel Espendiller) [#1324](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1324)
+* Twig template references should resolve local scope for getting template name from vars, const, fields, ... (Daniel Espendiller) [#1324](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1324)
+* Added support for constants as FormOption (Thomas Rothe) [#1323](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1323)
+* Update Symfony- and Doctrine-phpstorm-meta files (Thomas Schulz) [#1318](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1318)
+
 ## 0.18.173
 * Remove "Plugin" from plugin name (Daniel Espendiller) [#1312](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1312)
 * Support double backslashes for Twig controller references (Daniel Espendiller) [#1316](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1316)
