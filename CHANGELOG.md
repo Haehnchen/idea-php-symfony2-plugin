@@ -13,6 +13,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.175
+* Follow the redirect for symfony installer [#1325](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1325) (Daniel Espendiller)
+
 ## 0.18.174
 * Some code cleanup (Daniel Espendiller) [#1325](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1325)
 * Strip format from Twig template references index: ".html.twig" => ".twig" (Daniel Espendiller) [#1324](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1324)
