@@ -8,6 +8,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,14 +20,18 @@ import java.util.Arrays;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-abstract public class SymfonyInstallerCommandExecutor {
+public class SymfonyInstallerCommandExecutor {
 
     private static final long CHECKING_TIMEOUT_IN_MILLISECONDS = 1000L;
+    private SymfonyInstallerSettings symfonyInstallerSettings;
+    private File temporaryDirectory;
     private final Project myProject;
     private final VirtualFile baseDir;
     private final String[] command;
 
-    public SymfonyInstallerCommandExecutor(@NotNull Project project, @NotNull VirtualFile baseDir, @NotNull String[] command) {
+    SymfonyInstallerCommandExecutor(@NotNull SymfonyInstallerSettings symfonyInstallerSettings, @Nullable File temporaryDirectory, @NotNull Project project, @NotNull VirtualFile baseDir, @NotNull String[] command) {
+        this.symfonyInstallerSettings = symfonyInstallerSettings;
+        this.temporaryDirectory = temporaryDirectory;
         this.myProject = project;
         this.baseDir = baseDir;
         this.command = command;
@@ -56,7 +61,7 @@ abstract public class SymfonyInstallerCommandExecutor {
 
                     processHandler.addProcessListener(new ProcessAdapter() {
                         @Override
-                        public void onTextAvailable(ProcessEvent event, com.intellij.openapi.util.Key outputType) {
+                        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull com.intellij.openapi.util.Key outputType) {
                             String text = event.getText();
                             outputBuilder.append(text);
 
@@ -122,8 +127,30 @@ abstract public class SymfonyInstallerCommandExecutor {
         ProgressManager.getInstance().run(task);
     }
 
-    abstract protected void onFinish(@Nullable String successMessage);
-    abstract protected void onError(@NotNull String message);
-    protected abstract String getProgressTitle();
+    protected void onFinish(@Nullable String message) {
+        IdeHelper.enablePluginAndConfigure(this.myProject);
+
+        if(message != null) {
+            // replace empty lines, provide html output, and remove our temporary path
+            SymfonyInstallerProjectGenerator.showInfoNotification(myProject, message
+                .replaceAll("(?m)^\\s*$[\n\r]{1,}", "")
+                .replaceAll("(\r\n|\n)", "<br />")
+                .replace("/" + SymfonyInstallerUtil.PROJECT_SUB_FOLDER, "")
+            );
+        }
+
+        // remove temporary symfony installer folder
+        if(temporaryDirectory != null) {
+            FileUtil.delete(temporaryDirectory);
+        }
+    }
+
+    protected void onError(@NotNull String message) {
+        SymfonyInstallerProjectGenerator.showErrorNotification(myProject, message);
+    }
+
+    protected String getProgressTitle() {
+        return String.format("Installing Symfony %s", this.symfonyInstallerSettings.getVersion().getPresentableName());
+    }
 
 }

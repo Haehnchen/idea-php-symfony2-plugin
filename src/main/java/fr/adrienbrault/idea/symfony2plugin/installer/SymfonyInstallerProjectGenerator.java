@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PlatformUtils;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +38,53 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
 
     @Override
     public void generateProject(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
+        String version = settings.getVersion().getVersion();
+
+        if (version.equals("latest") || version.equals("demo") || version.equals("website")) {
+            generateViaComposer(project, baseDir, settings, module);
+            return;
+        }
+
+        int b = 0;
+        try {
+            b = Integer.valueOf(version.substring(0, 1));
+        } catch (NumberFormatException ignored) {
+        }
+
+        if (b > 0 && b < 3) {
+            generateViaInstaller(project, baseDir, settings, module);
+        } else {
+            generateViaComposer(project, baseDir, settings, module);
+        }
+    }
+
+    private void generateViaComposer(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
+        final File baseDirFile = new File(baseDir.getPath());
+        final File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
+
+        String composerPath;
+        File symfonyInProject = null;
+        if (settings.isDownload()) {
+
+            VirtualFile file = SymfonyInstallerUtil.downloadComposer(project, null, tempFile.getPath());
+            if (file == null)  {
+                showErrorNotification(project, "Cannot download composer.phar file");
+                Symfony2ProjectComponent.getLogger().warn("Cannot download composer.phar file");
+                return;
+            }
+
+            composerPath = file.getPath();
+            symfonyInProject = tempFile;
+        } else {
+            composerPath = settings.getExistingPath();
+        }
+
+        String[] commands = SymfonyInstallerUtil.getCreateComposerSymfonyProjectCommand(settings.getVersion(), composerPath, baseDir.getPath(), settings.getPhpInterpreter());
+
+        new SymfonyInstallerCommandExecutor(settings, symfonyInProject, project, baseDir, commands).execute();
+    }
+
+    private void generateViaInstaller(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
         final File baseDirFile = new File(baseDir.getPath());
         final File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
 
@@ -59,48 +107,15 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
 
         String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion(), composerPath, baseDir.getPath(), settings.getPhpInterpreter(), null);
 
-        final File finalSymfonyInProject = symfonyInProject;
-        SymfonyInstallerCommandExecutor executor = new SymfonyInstallerCommandExecutor(project, baseDir, commands) {
-            @Override
-            protected void onFinish(@Nullable String message) {
-                IdeHelper.enablePluginAndConfigure(project);
-
-                if(message != null) {
-                    // replace empty lines, provide html output, and remove our temporary path
-                    showInfoNotification(project, message
-                        .replaceAll("(?m)^\\s*$[\n\r]{1,}", "")
-                        .replaceAll("(\r\n|\n)", "<br />")
-                        .replace("/" + SymfonyInstallerUtil.PROJECT_SUB_FOLDER, "")
-                    );
-                }
-
-                // remove temporary symfony installer folder
-                if(finalSymfonyInProject != null) {
-                    FileUtil.delete(finalSymfonyInProject);
-                }
-
-            }
-
-            @Override
-            protected void onError(@NotNull String message) {
-                showErrorNotification(project, message);
-            }
-
-            @Override
-            protected String getProgressTitle() {
-                return String.format("Installing Symfony %s", settings.getVersion().getPresentableName());
-            }
-        };
-
-        executor.execute();
+        new SymfonyInstallerCommandExecutor(settings, symfonyInProject, project, baseDir, commands).execute();
     }
 
-    private static void showErrorNotification(@NotNull Project project, @NotNull String content)
+    static void showErrorNotification(@NotNull Project project, @NotNull String content)
     {
         Notifications.Bus.notify(new Notification(SymfonyInstallerUtil.INSTALLER_GROUP_DISPLAY_ID, "Symfony-Installer", content, NotificationType.ERROR, null), project);
     }
 
-    private static void showInfoNotification(@NotNull Project project, @NotNull String content)
+    static void showInfoNotification(@NotNull Project project, @NotNull String content)
     {
         Notifications.Bus.notify(new Notification(SymfonyInstallerUtil.INSTALLER_GROUP_DISPLAY_ID, "Symfony-Installer", content, NotificationType.INFORMATION, null), project);
     }

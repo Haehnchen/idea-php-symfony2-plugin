@@ -39,6 +39,12 @@ public class SymfonyInstallerUtil {
     }
 
     @Nullable
+    public static VirtualFile downloadComposer(@Nullable Project project, JComponent component, @Nullable String toDir)
+    {
+        return PhpConfigurationUtil.downloadFile(project, component, toDir, "https://getcomposer.org/composer.phar", "composer.phar");
+    }
+
+    @Nullable
     public static String extractSuccessMessage(@NotNull String output)
     {
         Matcher matcher = Pattern.compile("Preparing project[.]*(.*)", Pattern.DOTALL).matcher(output);
@@ -64,7 +70,8 @@ public class SymfonyInstallerUtil {
     public static boolean isSuccessfullyInstalled(@NotNull String output) {
         // successfully installed
         // [RuntimeException]
-        return output.toLowerCase().contains("successfully") && !output.toLowerCase().contains("exception]");
+        return !output.toLowerCase().contains("exception]")
+            && (output.toLowerCase().contains("successfully") || output.toLowerCase().contains("run your application"));
     }
 
     @Nullable
@@ -81,6 +88,30 @@ public class SymfonyInstallerUtil {
         }
 
         return output;
+    }
+
+    @NotNull
+    public static String[] getCreateComposerSymfonyProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath) {
+
+        List<String> commands = new ArrayList<>();
+
+        commands.add(phpPath);
+        commands.add(installerPath);
+        commands.add("create-project");
+        commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
+
+        // "php symfony demo"
+        String selectedVersion = version.getVersion();
+        if("website".equals(selectedVersion)) {
+            commands.add("symfony/website-skeleton");
+        } else if("latest".equals(selectedVersion)) {
+            commands.add("symfony/skeleton");
+        } else {
+            commands.add("symfony/skeleton");
+            commands.add("4.2");
+        }
+
+        return ArrayUtil.toStringArray(commands);
     }
 
     @NotNull
