@@ -1,24 +1,28 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementVisitor;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.containers.HashSet;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import gnu.trove.THashMap;
+import one.util.streamex.StreamEx;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -69,8 +73,10 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
                 return map;
             }
 
-            psiFile.accept(new MyPsiRecursiveElementWalkingVisitor(map));
-
+            StreamEx.of(((PhpFile) psiFile).getTopLevelDefs().values())
+                .select(PhpClass.class)
+                .flatMap(clazz -> StreamEx.of(clazz.getOwnMethods()))
+                .forEach(method -> processMethod(method, map));
             return map;
         };
     }
@@ -130,89 +136,52 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
         return true;
     }
 
-    private class MyPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementVisitor {
-
-        private final Map<String, ContainerBuilderCall> map;
-
-        MyPsiRecursiveElementWalkingVisitor(@NotNull Map<String, ContainerBuilderCall> map) {
-            this.map = map;
-        }
-
-        @Override
-        public void visitElement(PsiElement element) {
-            if(!(element instanceof Parameter)) {
-                super.visitElement(element);
-                return;
-            }
-
-            ClassReference classReference = ObjectUtils.tryCast(element.getFirstChild(), ClassReference.class);
-            if(classReference == null) {
-                return;
-            }
-
-            String fqn = StringUtils.stripStart(classReference.getFQN(), "\\");
-            if(!SET.contains(fqn)) {
-                return;
-            }
-
-            Parameter parentOfType = PsiTreeUtil.getParentOfType(classReference, Parameter.class);
-            if(parentOfType == null) {
-                return;
-            }
-
-            final String name = parentOfType.getName();
-
-            Method method = PsiTreeUtil.getParentOfType(classReference, Method.class);
-            if(method == null) {
-                return;
-            }
-
-            method.accept(new MyMethodVariableVisitor(name, map));
-
-            super.visitElement(element);
+    private void processMethod(@NotNull Method method, @NotNull Map<String, ContainerBuilderCall> map) {
+        Set<CharSequence> containerParameters = StreamEx.of(method.getParameters())
+            .filter(ContainerBuilderStubIndex::isContainerParam)
+            .map(Parameter::getNameCS)
+            .toSet();
+        if (containerParameters.isEmpty()) return;
+        MyInstructionProcessor processor = new MyInstructionProcessor(map, containerParameters);
+        for (PhpInstruction instruction : method.getControlFlow().getInstructions()) {
+            instruction.process(processor);
         }
     }
 
-    private class MyMethodVariableVisitor extends PsiRecursiveElementVisitor {
+    private static boolean isContainerParam(@NotNull Parameter parameter) {
+        String parameterType = parameter.getDeclaredType().toString();
+        return SET.contains(StringUtils.stripStart(parameterType, "\\"));
+    }
 
+    private static class MyInstructionProcessor extends PhpInstructionProcessor {
         @NotNull
-        private final String name;
-
+        private final Map<String, ContainerBuilderCall> map;
         @NotNull
-        private final Map<String, ContainerBuilderCall> result;
+        private final Set<CharSequence> containerParameters;
 
-        MyMethodVariableVisitor(@NotNull String name, @NotNull Map<String, ContainerBuilderCall> result) {
-            this.name = name;
-            this.result = result;
+        MyInstructionProcessor(@NotNull Map<String, ContainerBuilderCall> map,
+                               @NotNull Set<CharSequence> containerParameters) {
+            this.map = map;
+            this.containerParameters = containerParameters;
         }
-
+        
         @Override
-        public void visitElement(PsiElement element) {
-            if(!(element instanceof Variable) || !name.equals(((Variable) element).getName())) {
-                super.visitElement(element);
-                return;
-            }
-
-            MethodReference methodReference = ObjectUtils.tryCast(element.getParent(), MethodReference.class);
-            if(methodReference == null || !METHODS.contains(methodReference.getName())) {
-                super.visitElement(element);
-                return;
-            }
-
+        public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
+            if (!instruction.getAccess().isRead() ||
+                    !containerParameters.contains(instruction.getVariableName())) return true;
+            
+            MethodReference methodReference = 
+                    ObjectUtils.tryCast(instruction.getAnchor().getParent(), MethodReference.class);
+            if (methodReference == null || !METHODS.contains(methodReference.getName())) return true;
+            
             String value = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
-            if(value == null) {
-                super.visitElement(element);
-                return;
-            }
-
+            if (value == null) return true;
+            
             String methodName = methodReference.getName();
-            if(!result.containsKey(methodName)) {
-                result.put(methodName, new ContainerBuilderCall());
-            }
-
-            result.get(methodName).addParameter(value);
-
-            super.visitElement(element);
+            map.computeIfAbsent(methodName, name -> new ContainerBuilderCall());
+            map.get(methodName).addParameter(value);
+            
+            return true;
         }
     }
 }
