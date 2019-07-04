@@ -46,9 +46,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlTagCompletionProvider;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -281,7 +279,11 @@ public class YamlCompletionContributor extends CompletionContributor {
     public boolean invokeAutoPopup(@NotNull PsiElement position, char typeChar) {
         // Only for Yaml tag places (scalar values)
         //   key: !<caret>
-        if (!YamlElementPatternHelper.getSingleLineTextOrTag().accepts(position) && !(position.getPrevSibling() instanceof YAMLKeyValue)) {
+        if (!YamlElementPatternHelper.getSingleLineTextOrTag().accepts(position)
+            && !(position.getPrevSibling() instanceof YAMLKeyValue)
+            && !(position.getParent() instanceof YAMLSequenceItem)
+            && !(position.getParent() instanceof YAMLSequence)
+        ) {
             return super.invokeAutoPopup(position, typeChar);
         }
 
