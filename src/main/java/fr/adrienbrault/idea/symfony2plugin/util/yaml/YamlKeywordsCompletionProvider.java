@@ -33,6 +33,11 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
         String elementText = psiElement.getText();
         //System.out.println("text: " + elementText);
 
+        // TODO: Don't complete inside key
+//        if (psiElement.getParent() instanceof YAMLMapping && PsiTreeUtil.getPrevSiblingOfType(psiElement, YAMLKeyValue.class) == null) {
+//            return;
+//        }
+
         if (psiElement instanceof LeafPsiElement) {
 //            // Don't complete after tag (at end of line)
 //            // key: !my_tag <caret>\n

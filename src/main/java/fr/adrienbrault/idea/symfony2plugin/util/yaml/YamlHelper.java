@@ -476,8 +476,17 @@ public class YamlHelper {
         return psiFile.getName().contains("config") || psiFile.getVirtualFile().getPath().contains("/config");
     }
 
+    public static boolean isServicesFile(@NotNull PsiFile psiFile) {
+        return psiFile.getName().contains("services") || psiFile.getVirtualFile().getPath().contains("/services");
+    }
+
     public static boolean isInsideServiceDefinition(@NotNull PsiElement psiElement) {
         return YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement);
+    }
+
+    public static boolean isInsideServiceArgumentDefinition(@NotNull PsiElement psiElement) {
+        return isInsideServiceDefinition(psiElement)
+            && YamlElementPatternHelper.getInsideKeyValue("arguments", "properties", "calls").accepts(psiElement);
     }
 
     /**
