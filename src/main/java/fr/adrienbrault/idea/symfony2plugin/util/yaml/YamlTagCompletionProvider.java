@@ -149,17 +149,17 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
             }
 
             // !tagged_locator since Symfony 4.3
-            if (tag.equals(TAG_TAGGED_LOCATOR) && !SymfonyUtil.isVersionGreaterThenEquals(project, "4.3")) {
+            if (tag.equals(TAG_TAGGED_LOCATOR) && SymfonyUtil.isVersionLessThen(project, "4.3")) {
                 continue;
             }
 
             // !iterator and !service since Symfony 3.3
-            if ((tag.equals(TAG_ITERATOR) || tag.equals(TAG_SERVICE)) && !SymfonyUtil.isVersionGreaterThenEquals(project, "3.3")) {
+            if ((tag.equals(TAG_ITERATOR) || tag.equals(TAG_SERVICE)) && SymfonyUtil.isVersionLessThen(project, "3.3")) {
                 continue;
             }
 
             // !service_locator since Symfony 4.2
-            if (tag.equals(TAG_SERVICE_LOCATOR) && !SymfonyUtil.isVersionGreaterThenEquals(project, "4.2")) {
+            if (tag.equals(TAG_SERVICE_LOCATOR) && SymfonyUtil.isVersionLessThen(project, "4.2")) {
                 continue;
             }
 
