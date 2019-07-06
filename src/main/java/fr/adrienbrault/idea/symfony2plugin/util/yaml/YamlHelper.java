@@ -1245,4 +1245,12 @@ public class YamlHelper {
 
         return tagElement != null;
     }
+
+    /**
+     * key: foo\n
+     * <caret>
+     */
+    public static boolean isElementAfterEol(PsiElement psiElement) {
+        return PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLTokenTypes.EOL)) != null;
+    }
 }
