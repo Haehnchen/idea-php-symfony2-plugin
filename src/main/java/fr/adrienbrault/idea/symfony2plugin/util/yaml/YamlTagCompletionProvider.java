@@ -6,7 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.impl.source.tree.ElementType;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.impl.source.tree.PsiErrorElementImpl;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -74,7 +74,7 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
             if (((LeafPsiElement) psiElement).getElementType() == YAMLTokenTypes.TAG) {
                 if (psiElement.getParent() instanceof PsiErrorElementImpl) {
                     // Error "Multiple tags are not permitted"
-                    if (((PsiErrorElementImpl) psiElement.getParent()).getElementType() == ElementType.ERROR_ELEMENT) {
+                    if (((PsiErrorElementImpl) psiElement.getParent()).getElementType() == TokenType.ERROR_ELEMENT) {
                         return;
                     }
                 }
