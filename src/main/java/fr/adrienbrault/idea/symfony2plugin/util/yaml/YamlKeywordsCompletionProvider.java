@@ -54,6 +54,8 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
             return;
 
             /* For 2019.2+
+             see https://github.com/JetBrains/intellij-community/commit/3fa4357b2fa419710c1819040aa561a53c886d2b
+
             PsiElement position = parameters.getPosition();
             JsonLikePsiWalker walker = JsonLikePsiWalker.getWalker(position, jsonRootSchema);
             if (walker != null) {
