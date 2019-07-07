@@ -80,7 +80,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("factory_service", "<= 2.5");
         put("factory_method", "<= 2.5");
         put("autowire", "(bool) >= 2.8");
-        put("autowiring_type", ">= 2.8");
+        put("autowiring_types", ">= 2.8, < 4.0");
         put("deprecated", "(string) >= 2.8");
         put("decorates", null);
         put("decoration_inner_name", null);
