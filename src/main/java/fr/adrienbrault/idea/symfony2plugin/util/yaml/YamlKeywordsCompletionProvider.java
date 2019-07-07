@@ -4,9 +4,12 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.jsonSchema.ide.JsonSchemaService;
+import com.jetbrains.jsonSchema.impl.JsonSchemaObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -14,12 +17,22 @@ import java.util.Map;
 
 public class YamlKeywordsCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    public final static HashMap<String, String> yamlKeywords = new HashMap<String, String>() {{
-        put("~", "null");
-        put("null", "null");
-        put("true", "bool");
-        put("false", "bool");
-        put(".inf", "double");
+    private static final String YAML_TYPE_NULL = "null";
+    private static final String YAML_TYPE_BOOL = "bool";
+    private static final String YAML_TYPE_DOUBLE = "double";
+
+    private static final String YAML_KEYWORD_TILDE = "~";
+    private static final String YAML_KEYWORD_NULL = "null";
+    private static final String YAML_KEYWORD_TRUE = "true";
+    private static final String YAML_KEYWORD_FALSE = "false";
+    private static final String YAML_KEYWORD_INF = ".inf";
+
+    private final static HashMap<String, String> yamlKeywords = new HashMap<String, String>() {{
+        put(YAML_KEYWORD_TILDE, YAML_TYPE_NULL);
+        put(YAML_KEYWORD_NULL, YAML_TYPE_NULL);
+        put(YAML_KEYWORD_TRUE, YAML_TYPE_BOOL);
+        put(YAML_KEYWORD_FALSE, YAML_TYPE_BOOL);
+        put(YAML_KEYWORD_INF, YAML_TYPE_DOUBLE);
     }};
 
     @Override
@@ -28,6 +41,39 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
         PsiElement psiElement = parameters.getOriginalPosition();
         if (psiElement == null) {
             return;
+        }
+
+        Project project = psiElement.getProject();
+        final JsonSchemaService jsonSchemaService = JsonSchemaService.Impl.get(project);
+        JsonSchemaObject jsonRootSchema = jsonSchemaService.getSchemaObject(parameters.getOriginalFile().getVirtualFile());
+
+        //final List<JsonSchemaType> yamlTypes = new ArrayList<>();
+
+        if (jsonRootSchema != null) {
+            // for now we should not show any keywords, when a JSON Schema is active for this YAML file
+            return;
+
+            /* For 2019.2+
+            PsiElement position = parameters.getPosition();
+            JsonLikePsiWalker walker = JsonLikePsiWalker.getWalker(position, jsonRootSchema);
+            if (walker != null) {
+                final PsiElement checkable = walker.findElementToCheck(position);
+                final ThreeState isName = walker.isName(checkable);
+                final JsonPointerPosition jsonPointerPosition = walker.findPosition(checkable, isName == ThreeState.NO);
+                if (jsonPointerPosition != null) {
+                    final Collection<JsonSchemaObject> schemas = new JsonSchemaResolver(project, jsonRootSchema, jsonPointerPosition).resolve();
+                    schemas.forEach(schema -> {
+                        if (isName == ThreeState.NO) {
+                            if (schema.getTypeVariants() != null) {
+                                yamlTypes.addAll(schema.getTypeVariants());
+                            } else if (schema.getType() != null) {
+                                yamlTypes.add(schema.getType());
+                            }
+                        }
+                    });
+                }
+            }
+            */
         }
 
         String elementText = psiElement.getText();
@@ -49,9 +95,33 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
             result = result.withPrefixMatcher(elementText);
         }
 
+        /*
+        boolean isYamlNullable = yamlTypes.contains(JsonSchemaType._null);
+        boolean isYamlNumber = yamlTypes.contains(JsonSchemaType._number) || yamlTypes.contains(JsonSchemaType._integer);
+        boolean elementHasType = yamlTypes.size() > 0;
+        */
+
         for (Map.Entry<String, String> entry : yamlKeywords.entrySet()) {
-            LookupElementBuilder lookupElement = LookupElementBuilder.create(entry.getKey())
-                    .withTypeText(entry.getValue());
+            String yamlKeyword = entry.getKey();
+            String yamlType = entry.getValue();
+
+            /*if (elementHasType) {
+                if (YAML_KEYWORD_TILDE.equals(yamlKeyword) && !isYamlNullable) {
+                    continue;
+                }
+                if (YAML_KEYWORD_NULL.equals(yamlKeyword) && isYamlNullable) {
+                    continue;
+                }
+                if (YAML_TYPE_BOOL.equals(yamlType)) {
+                    continue;
+                }
+                if (YAML_TYPE_DOUBLE.equals(yamlType) && !isYamlNumber) {
+                    continue;
+                }
+            }*/
+
+            LookupElementBuilder lookupElement = LookupElementBuilder.create(yamlKeyword)
+                    .withTypeText(yamlType);
             result.addElement(lookupElement);
         }
     }
