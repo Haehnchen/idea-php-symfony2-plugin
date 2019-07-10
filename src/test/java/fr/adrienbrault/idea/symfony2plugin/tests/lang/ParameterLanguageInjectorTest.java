@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.lang;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
+import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.fixtures.InjectionTestFixture;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import junit.framework.TestCase;
 
 import static fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector.*;
 
@@ -56,7 +58,9 @@ public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtur
         String base = "<?php $em = new \\Doctrine\\ORM\\EntityManager();\n";
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$em->createQuery('SELECT b FR<caret>OM \\Foo\\Bar b');", LANGUAGE_ID_DQL);
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$em->createQuery('<caret>');", LANGUAGE_ID_DQL);
-
+        assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$em->createQuery(<<caret><<AAA\n \nAAA\n);", null);
+        assertInjectedFragmentText(PhpFileType.INSTANCE, base + "$em->createQuery(<<<AAA\nSELEC<caret>T\nAAA\n);", "SELECT");
+        assertInjectedFragmentText(PhpFileType.INSTANCE, base + "$em->createQuery(<<<'AAA'\nSELEC<caret>T a\nAAA\n);", "SELECT a");
         base = "<?php $q = new \\Doctrine\\ORM\\Query();\n";
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$q->setDQL('SELECT b FR<caret>OM \\Foo\\Bar b');", LANGUAGE_ID_DQL);
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$q->setDQL('<caret>');", LANGUAGE_ID_DQL);
@@ -68,5 +72,12 @@ public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtur
     private void assertInjectedLangAtCaret(LanguageFileType fileType, String configureByText, String lang) {
         myFixture.configureByText(fileType, configureByText);
         injectionTestFixture.assertInjectedLangAtCaret(lang);
+    }
+
+    private void assertInjectedFragmentText(LanguageFileType fileType, String configureByText, String text) {
+        myFixture.configureByText(fileType, configureByText);
+        PsiElement injectedElement = injectionTestFixture.getInjectedElement();
+        assertNotNull(injectedElement);
+        TestCase.assertEquals(text, injectedElement.getContainingFile().getText());
     }
 }
