@@ -118,11 +118,8 @@ public class ParameterLanguageInjector implements MultiHostInjector {
     }
 
     private void injectLanguage(@NotNull MultiHostRegistrar registrar, @NotNull StringLiteralExpressionImpl element, Language language, MethodLanguageInjection languageInjection) {
-        final int length = ((StringLiteralExpression) element).getContents().length();
-        final TextRange range = TextRange.create(1, length + 1);
-
         registrar.startInjecting(language)
-                .addPlace(languageInjection.getPrefix(), languageInjection.getSuffix(), element, range)
+                .addPlace(languageInjection.getPrefix(), languageInjection.getSuffix(), element, element.getValueRange())
                 .doneInjecting();
     }
 
