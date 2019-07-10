@@ -13,6 +13,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.176
+* Fixed injection range for heredoc/nowdoc literals in automatic injectors (Andrey Sokolov) [#1337](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1337)
+* Fix typo/wrong YAML service attribute for autowiring_types (Thomas Schulz) [#1335](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1335)
+* Container stub index performance: move to unrecursive indexer (AlexMovsesov) [#1333](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1333)
+
 ## 0.18.175
 * Follow the redirect for symfony installer [#1325](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1325) (Daniel Espendiller)
 
