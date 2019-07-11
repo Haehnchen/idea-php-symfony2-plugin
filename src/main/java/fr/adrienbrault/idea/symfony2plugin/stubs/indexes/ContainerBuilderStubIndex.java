@@ -167,7 +167,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
         
         @Override
         public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
-            if (!instruction.getAccess().isRead() ||
+            if (instruction.getAccess().isWrite() || instruction.getAccess().isWriteRef() ||
                     !containerParameters.contains(instruction.getVariableName())) return true;
             
             MethodReference methodReference = 
