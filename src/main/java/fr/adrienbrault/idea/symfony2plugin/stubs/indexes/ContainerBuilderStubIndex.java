@@ -13,6 +13,7 @@ import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableI
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -73,8 +74,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
                 return map;
             }
 
-            StreamEx.of(((PhpFile) psiFile).getTopLevelDefs().values())
-                .select(PhpClass.class)
+            StreamEx.of(PhpPsiUtil.findAllClasses((PhpFile) psiFile))
                 .flatMap(clazz -> StreamEx.of(clazz.getOwnMethods()))
                 .forEach(method -> processMethod(method, map));
             return map;
