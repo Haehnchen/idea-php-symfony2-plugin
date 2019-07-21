@@ -8,12 +8,19 @@ namespace Symfony\Component\Security\Core\Authorization
     }
 }
 
-/**
- * @Annotation
- */
 namespace Sensio\Bundle\FrameworkExtraBundle\Configuration
 {
+    /**
+     * @Annotation
+     */
     class Security
+    {
+    }
+
+    /**
+     * @Annotation
+     */
+    class IsGranted
     {
     }
 }
