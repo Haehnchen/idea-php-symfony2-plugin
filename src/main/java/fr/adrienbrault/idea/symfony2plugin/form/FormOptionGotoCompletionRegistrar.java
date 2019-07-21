@@ -23,9 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -81,36 +79,35 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             return null;
         }
 
-        @Nullable
         private GotoCompletionProvider getMatchingOption(ParameterList parameterList, @NotNull PsiElement psiElement) {
-
             // form name can be a string alias; also resolve on constants, properties, ...
             PsiElement psiElementAt = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1);
 
-            String formTypeName = null;
+            Set<String> formTypeNames = new HashSet<>();
             if(psiElementAt != null) {
                 PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(psiElementAt);
                 if(phpClass != null) {
-                    formTypeName = phpClass.getFQN();
+                    formTypeNames.add(phpClass.getFQN());
                 }
             }
 
             // fallback to form
-            if(formTypeName == null) {
-                formTypeName = "form";
+            if(formTypeNames.size() == 0) {
+                formTypeNames.add("form"); // old Symfony systems
+                formTypeNames.add("Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType");
             }
 
-            return new FormReferenceCompletionProvider(psiElement, formTypeName);
+            return new FormReferenceCompletionProvider(psiElement, formTypeNames);
         }
     }
 
     private static class FormReferenceCompletionProvider extends GotoCompletionProvider {
+        @NotNull
+        private final Collection<String> formTypes;
 
-        private final String formType;
-
-        FormReferenceCompletionProvider(@NotNull PsiElement element, @NotNull String formType) {
+        FormReferenceCompletionProvider(@NotNull PsiElement element, @NotNull Collection<String> formTypes) {
             super(element);
-            this.formType = formType;
+            this.formTypes = formTypes;
         }
 
         @NotNull
@@ -127,14 +124,21 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             final Collection<PsiElement> psiElements = new ArrayList<>();
-            FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionTargetVisitor(value, psiElements));
+            for (String formType : formTypes) {
+                FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionTargetVisitor(value, psiElements));
+            }
+
             return psiElements;
         }
 
         @NotNull
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> lookupElements = new ArrayList<>();
-            FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
+
+            for (String formType : formTypes) {
+                FormOptionsUtil.visitFormOptions(getProject(), formType, new FormOptionLookupVisitor(lookupElements));
+            }
+
             return lookupElements;
         }
     }
