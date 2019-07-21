@@ -12,4 +12,8 @@ namespace FooBundle\Controller {
     class FooController {
         public function fooAction() {}
     }
+
+    class FooBarController {
+        public function __invoke() {}
+    }
 }
