@@ -13,6 +13,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.177
+* Support default form types for different Symfony versions (Daniel Espendiller) [#1343](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1343)
+* Improve completion support for FQCN::method routes (Daniel Espendiller) [#1231](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1231) [#1159](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1159)
+* Support @IsGranted attribute in annotations (Daniel Espendiller) [#1341](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1341) [#1189](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1189)
+* ContainerBuilderStubIndex: remove accessing to another indexes in the indexer, use more suitable API for extracting classes from file (AlexMovsesov) [#1339](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1339) [#1340](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1340)
+
 ## 0.18.176
 * Fixed injection range for heredoc/nowdoc literals in automatic injectors (Andrey Sokolov) [#1337](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1337)
 * Fix typo/wrong YAML service attribute for autowiring_types (Thomas Schulz) [#1335](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1335)
