@@ -87,7 +87,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "foo:\n" +
                 "    pattern:  /hello/{name}\n" +
                 "    defaults: { _controller: <caret> }",
-            "FooBundle:Foo:foo"
+            "FooBundle:Foo:foo", "FooBundle\\Controller\\FooController::fooAction", "FooBundle\\Controller\\FooBarController"
         );
     }
 

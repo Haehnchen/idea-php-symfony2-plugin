@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +32,7 @@ public class ControllerIndex {
        this.project = project;
     }
 
+    @NotNull
     public Collection<ControllerAction> getActions() {
         Collection<ControllerAction> actions = new ArrayList<>();
 
@@ -65,8 +67,8 @@ public class ControllerIndex {
         return new ControllerAction(serviceId, method);
     }
 
-    private List<ControllerAction> getActionMethods(SymfonyBundle symfonyBundle) {
-
+    @NotNull
+    private Collection<ControllerAction> getActionMethods(@NotNull SymfonyBundle symfonyBundle) {
         String namespaceName = symfonyBundle.getNamespaceName();
         if(!namespaceName.startsWith("\\")) {
             namespaceName = "\\" + namespaceName;
@@ -81,12 +83,15 @@ public class ControllerIndex {
         List<ControllerAction> actions = new ArrayList<>();
 
         for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(this.project, namespaceName)) {
-
             if(!phpClass.getName().endsWith("Controller")) {
                 continue;
             }
 
             String presentableFQN = phpClass.getPresentableFQN();
+            if(presentableFQN.contains("\\Test\\") || presentableFQN.contains("\\Tests\\") || presentableFQN.startsWith("Test\\") || presentableFQN.startsWith("\\Test\\")) {
+                continue;
+            }
+
             if(!presentableFQN.startsWith("\\")) {
                 presentableFQN = "\\" + presentableFQN;
             }
@@ -100,13 +105,22 @@ public class ControllerIndex {
 
             for(Method method : phpClass.getMethods()) {
                 String methodName = method.getName();
-                if(methodName.endsWith("Action") && method.getAccess().isPublic()) {
+                if(!method.getAccess().isPublic() || (method.getName().startsWith("__") && !method.getName().equals("__invoke"))) {
+                    continue;
+                }
+
+                if(methodName.endsWith("Action")) {
                     String shortcutName = symfonyBundle.getName() + ":" + ns.replace("/", "\\") + ':' + methodName.substring(0, methodName.length() - 6);
                     actions.add(new ControllerAction(shortcutName, method));
                 }
 
+                String shortcutName = StringUtils.stripStart(phpClass.getPresentableFQN(), "\\");
+                if(methodName.equals("__invoke")) {
+                    actions.add(new ControllerAction(shortcutName, method));
+                } else {
+                    actions.add(new ControllerAction(shortcutName + "::" + method.getName(), method));
+                }
             }
-
         }
 
         return actions;
