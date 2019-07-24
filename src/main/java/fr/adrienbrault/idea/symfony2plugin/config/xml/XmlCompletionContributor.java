@@ -99,8 +99,7 @@ public class XmlCompletionContributor extends CompletionContributor {
     private static class ArgumentParameterCompletionProvider extends CompletionProvider<CompletionParameters> {
 
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             PsiElement psiElement = completionParameters.getOriginalPosition();
             if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
@@ -116,6 +115,7 @@ public class XmlCompletionContributor extends CompletionContributor {
             // %env('foobar')%
             for (String s : DotEnvUtil.getEnvironmentVariables(project)) {
                 completionResultSet.addElement(new ParameterLookupPercentElement(new ContainerParameter("env(" + s +")", false)));
+                completionResultSet.addElement(new ParameterLookupPercentElement(new ContainerParameter("env(resolve:" + s +")", false)));
             }
         }
     }

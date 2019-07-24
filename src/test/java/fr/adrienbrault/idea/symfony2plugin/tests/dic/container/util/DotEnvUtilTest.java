@@ -44,5 +44,11 @@ public class DotEnvUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             .filter(psiElement -> psiElement instanceof PsiFile && "env.env".equals(((PsiFile) psiElement).getName()))
             .count()
         );
+
+        assertEquals(1, DotEnvUtil.getEnvironmentVariableTargetsForParameter(getProject(), "%env(int:json:foo_foo:foo-foo:foobar)%")
+            .stream()
+            .filter(psiElement -> psiElement instanceof PsiFile && "env.env".equals(((PsiFile) psiElement).getName()))
+            .count()
+        );
     }
 }
