@@ -43,6 +43,7 @@ namespace Foo\Bar
             if(true) {
                 foreach([] as $_) {
                     (new TreeBuilder())->root('foobar_root');
+                    (new TreeBuilder('foobar_root_11'));
                 }
             }
         }

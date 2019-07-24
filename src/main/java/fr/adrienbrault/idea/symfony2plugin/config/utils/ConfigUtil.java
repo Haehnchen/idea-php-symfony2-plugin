@@ -8,9 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.*;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
@@ -107,12 +105,28 @@ public class ConfigUtil {
                 continue;
             }
 
+            Collection<ParameterListOwner> parameterOwners = new ArrayList<>();
+
+            // Symfony < 4.1: (new TreeBuilder())->root('foobar')
             for(MethodReference methodReference: PsiTreeUtil.findChildrenOfType(method, MethodReference.class)) {
                 if(!PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Config\\Definition\\Builder\\TreeBuilder", "root")) {
                     continue;
                 }
 
-                PsiElement[] parameters = methodReference.getParameters();
+                parameterOwners.add(methodReference);
+            }
+
+            // Symfony >= 4.1: new TreeBuilder('foobar')
+            for(NewExpression methodReference: PsiTreeUtil.findChildrenOfType(method, NewExpression.class)) {
+                if(!PhpElementsUtil.isNewExpressionPhpClassWithInstance(methodReference, "Symfony\\Component\\Config\\Definition\\Builder\\TreeBuilder")) {
+                    continue;
+                }
+
+                parameterOwners.add(methodReference);
+            }
+
+            for (ParameterListOwner ownerParameters : parameterOwners) {
+                PsiElement[] parameters = ownerParameters.getParameters();
                 if (parameters.length == 0) {
                     continue;
                 }
