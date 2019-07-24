@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -53,8 +54,8 @@ public class DotEnvUtil {
 
         // https://github.com/symfony/symfony/pull/23901 => RegisterEnvVarProcessorsPass
         // '%env(int:DATABASE_PORT)%'
-        // '%env(resolve:DB)%'
-        Matcher matcher = Pattern.compile("^[\\w]+:(.*)$", Pattern.MULTILINE).matcher(parameterName);
+        // '%env(resolve:int:foo:DB)%'
+        Matcher matcher = Pattern.compile("^[\\w-_^:]+:(.*)$", Pattern.MULTILINE).matcher(parameterName);
         if(matcher.find()){
             parameterName = matcher.group(1);
         }
@@ -96,7 +97,31 @@ public class DotEnvUtil {
     }
 
     private static void visitEnvironment(@NotNull Project project, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        for (VirtualFile virtualFile : FilenameIndex.getAllFilesByExt(project, "env", GlobalSearchScope.allScope(project))) {
+        Set<VirtualFile> files = new HashSet<>(
+            FilenameIndex.getAllFilesByExt(project, "env", GlobalSearchScope.allScope(project))
+        );
+
+        // try to find some env's ;)
+        for (String file : new String[]{".env", ".env.dist", ".env.test", ".env.local"}) {
+            files.addAll(FilenameIndex.getVirtualFilesByName(project, file, GlobalSearchScope.allScope(project)));
+        }
+
+        // search root directory for all ".env*" files
+        VirtualFile projectDir = VfsUtil.findRelativeFile(project.getBaseDir());
+        if (projectDir != null) {
+            for (VirtualFile child : projectDir.getChildren()) {
+                if (child.getName().startsWith(".env")) {
+                    files.add(child);
+                }
+            }
+        }
+
+        for (VirtualFile virtualFile : files) {
+            PsiFile file = PsiManager.getInstance(project).findFile(virtualFile);
+            if(file == null) {
+                continue;
+            }
+
             Properties variables = new Properties();
             try {
                 variables.load(virtualFile.getInputStream());
@@ -104,15 +129,10 @@ public class DotEnvUtil {
                 continue;
             }
 
-            PsiFile file = PsiManager.getInstance(project).findFile(virtualFile);
-            if(file == null) {
-                continue;
-            }
-
             for (Map.Entry<Object, Object> variable : variables.entrySet()) {
                 Object key = variable.getKey();
                 if(key instanceof String) {
-                    consumer.accept(Pair.create(key.toString(), file));
+                    consumer.accept(Pair.create((String) key, file));
                 }
             }
         }

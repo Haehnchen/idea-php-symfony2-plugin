@@ -132,7 +132,7 @@ public class YamlCompletionContributor extends CompletionContributor {
             CompletionType.BASIC, YamlElementPatternHelper.getServiceParameterDefinition(),
             new CompletionProvider<CompletionParameters>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
-                                           ProcessingContext context,
+                                           @NotNull ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
 
                     if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
@@ -151,6 +151,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
                     for (String s : DotEnvUtil.getEnvironmentVariables(element.getProject())) {
                         resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(" + s +")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
+                        resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(resolve:" + s +")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
                     }
                 }
             }
