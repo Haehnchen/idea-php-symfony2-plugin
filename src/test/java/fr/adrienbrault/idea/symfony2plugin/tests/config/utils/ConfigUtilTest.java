@@ -31,6 +31,7 @@ public class ConfigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertContainsElements(signatures.get("foobar_root"), "\\Foo\\Bar\\MyConfiguration");
         assertContainsElements(signatures.get("foobar_root"), "\\Foo\\Bar\\MyNextConfiguration");
+        assertContainsElements(signatures.get("foobar_root_11"), "\\Foo\\Bar\\MyNextConfiguration");
     }
 
     /**

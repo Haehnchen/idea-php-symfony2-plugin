@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.*;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
@@ -43,6 +44,8 @@ public class YamlElementPatternHelper {
      *
      * /../config/packages/doctrine.yml
      * /../config/packages/test/doctrine.yml
+     *
+     * /../config/packages/doctrine.yaml
      */
     private static final PatternCondition<PsiFile> CONFIG_YAML_PATTERN = new PatternCondition<PsiFile>("Yaml Configuration") {
         @Override
@@ -55,12 +58,19 @@ public class YamlElementPatternHelper {
                 return true;
             }
 
-            VirtualFile virtualFile = psiFile.getVirtualFile();
-            if(virtualFile == null) {
+            // psiFile.virtualFile is empty; check via folder structure
+            PsiDirectory containingDirectory = psiFile.getContainingDirectory();
+            if (containingDirectory == null) {
                 return false;
             }
 
-            String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), virtualFile);
+            if ("packages".equals(containingDirectory.getName())) {
+                return true;
+            }
+
+            VirtualFile virtualDirectoryFile = containingDirectory.getVirtualFile();
+
+            String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), virtualDirectoryFile);
             return relativePath != null && relativePath.contains("config/packages/");
         }
     };
