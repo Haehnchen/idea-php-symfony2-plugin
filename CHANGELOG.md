@@ -13,6 +13,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.178
+* Support new node tree structure of Symfony configuration and fix pattern for possible empty file of config file detection [#1344](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1344) (Daniel Espendiller)
+* Support more dotenv files [#1345](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1345) (Daniel Espendiller)
+
 ## 0.18.177
 * Support default form types for different Symfony versions (Daniel Espendiller) [#1343](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1343)
 * Improve completion support for FQCN::method routes (Daniel Espendiller) [#1231](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1231) [#1159](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1159)
