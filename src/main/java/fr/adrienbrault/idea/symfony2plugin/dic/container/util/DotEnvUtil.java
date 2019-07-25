@@ -10,10 +10,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValue;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.psi.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -158,7 +155,15 @@ public class DotEnvUtil {
 
         for (String file : DOCKER_FILES) {
             for (PsiFile psiFile : FilenameIndex.getFilesByName(project, file, GlobalSearchScope.allScope(project))) {
+                // ENV DOCKERFILE_FOO /bar
                 Matcher matcher = Pattern.compile("ENV\\s+([^\\s]*)\\s+").matcher(psiFile.getText());
+                while(matcher.find()){
+                    consumer.accept(Pair.create(matcher.group(1), psiFile));
+                }
+
+                // ENV ADMIN_USER_DOCKERFILE="mark"
+                // ENV ADMIN_USER_DOCKERFILE ="mark"
+                matcher = Pattern.compile("ENV\\s+([\\w+]*)\\s*=").matcher(psiFile.getText());
                 while(matcher.find()){
                     consumer.accept(Pair.create(matcher.group(1), psiFile));
                 }
@@ -169,10 +174,14 @@ public class DotEnvUtil {
     /**
      * environment:
      *   - FOOBAR=0
+     *
+     * environment:
+     *   FOOBAR: 0
      */
     private static void visitEnvironmentSquenceItems(@NotNull Consumer<Pair<String, PsiElement>> consumer, @NotNull YAMLKeyValue yamlKeyValue) {
         YAMLKeyValue environment = YamlHelper.getYamlKeyValue(yamlKeyValue, "environment");
         if (environment != null) {
+            // FOOBAR=0
             for (YAMLSequenceItem yamlSequenceItem : YamlHelper.getSequenceItems(environment)) {
                 YAMLValue value = yamlSequenceItem.getValue();
                 if (value instanceof YAMLScalar) {
@@ -183,6 +192,14 @@ public class DotEnvUtil {
                             consumer.accept(Pair.create(split[0], value));
                         }
                     }
+                }
+            }
+
+            // FOOBAR: 0
+            YAMLMapping childOfType = PsiTreeUtil.getChildOfType(environment, YAMLMapping.class);
+            if (childOfType != null) {
+                for (Map.Entry<String, YAMLValue> entry : YamlHelper.getYamlArrayKeyMap(childOfType).entrySet()) {
+                    consumer.accept(Pair.create(entry.getKey(), entry.getValue()));
                 }
             }
         }

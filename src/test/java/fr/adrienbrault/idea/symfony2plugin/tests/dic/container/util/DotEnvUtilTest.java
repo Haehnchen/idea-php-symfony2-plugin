@@ -21,7 +21,7 @@ public class DotEnvUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public void testGetEnvironmentVariables() {
-        assertContainsElements(DotEnvUtil.getEnvironmentVariables(getProject()), "foobar", "DEBUG_WEB", "DEBUG_SERVICES", "DOCKERFILE_FOO");
+        assertContainsElements(DotEnvUtil.getEnvironmentVariables(getProject()), "foobar", "DEBUG_WEB", "DEBUG_SERVICES", "DOCKERFILE_FOO", "DEBUG_WEB_2", "DEBUG_SERVICES_2", "ADMIN_USER_DOCKERFILE");
     }
 
     public void testGetEnvironmentVariableTargets() {

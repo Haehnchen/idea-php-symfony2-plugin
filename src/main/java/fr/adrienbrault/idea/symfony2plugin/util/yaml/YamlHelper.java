@@ -297,6 +297,28 @@ public class YamlHelper {
         return getYamlKeyValue(yamlHash, keyName, false);
     }
 
+    /**
+     * test:
+     *   DEBUG_WEB_1: 1
+     *   DEBUG_WEB_2: 1
+     */
+    @NotNull
+    public static Map<String, YAMLValue> getYamlArrayKeyMap(@NotNull YAMLMapping yamlHash) {
+        Map<String, YAMLValue> keys = new HashMap<>();
+
+        for(YAMLKeyValue yamlKeyValue: PsiTreeUtil.getChildrenOfAnyType(yamlHash, YAMLKeyValue.class)) {
+            String keyText = yamlKeyValue.getKeyText();
+            if (StringUtils.isNotBlank(keyText)) {
+                YAMLValue value = yamlKeyValue.getValue();
+                if (value != null) {
+                    keys.put(keyText, value);
+                }
+            }
+        }
+
+        return keys;
+    }
+
     @Nullable
     public static String getYamlKeyValueAsString(@NotNull YAMLMapping yamlHash, @NotNull String keyName) {
         YAMLKeyValue yamlKeyValue = getYamlKeyValue(yamlHash, keyName, false);
