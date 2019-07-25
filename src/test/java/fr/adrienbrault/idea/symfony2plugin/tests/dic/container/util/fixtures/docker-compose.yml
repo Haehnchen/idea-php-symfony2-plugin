@@ -2,7 +2,14 @@ services:
   foobar:
     environment:
       - DEBUG_SERVICES=1
+  foobar2:
+    environment:
+      DEBUG_SERVICES_2: 1
 
 web:
   environment:
     - DEBUG_WEB=1
+
+web2:
+  environment:
+    DEBUG_WEB_2: 1
