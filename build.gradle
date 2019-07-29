@@ -30,32 +30,64 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 apply plugin: 'org.jetbrains.intellij'
-intellij {
-    version ideaVersion
-    updateSinceUntilBuild false
-    plugins = [
-            "com.jetbrains.php:${phpPluginVersion}",
-            "com.jetbrains.twig:${twigPluginVersion}",
-            "com.jetbrains.php.dql:${dqlPluginVersion}",
-            "de.espend.idea.php.annotation:${annotationPluginVersion}",
-            "de.espend.idea.php.toolbox:${toolboxPluginVersion}",
-            'coverage',
-            'webDeployment',
-            'yaml',
-            'CSS',
-            'java-i18n',
-            'properties',
-            'xpath'
-    ]
-    pluginName 'Symfony Support'
 
-    // Can't instantiate configurable for PHP Toolbox 
-    // at de.espend.idea.php.toolbox.ui.application.ToolboxApplicationForm.<init>(ToolboxApplicationForm.java:26)
-    tasks {
-        "buildSearchableOptions" {
-            enabled = false
+if (ideaVersion == "IU-2019.1.3") {
+    intellij {
+        version ideaVersion
+        updateSinceUntilBuild false
+        plugins = [
+                "com.jetbrains.php:${phpPluginVersion}",
+                "com.jetbrains.twig:${twigPluginVersion}",
+                "com.jetbrains.php.dql:${dqlPluginVersion}",
+                "de.espend.idea.php.annotation:${annotationPluginVersion}",
+                "de.espend.idea.php.toolbox:${toolboxPluginVersion}",
+                'coverage',
+                'webDeployment',
+                'yaml',
+                'CSS',
+                'java-i18n',
+                'properties',
+                'xpath'
+        ]
+        pluginName 'Symfony Support'
+
+        // Can't instantiate configurable for PHP Toolbox
+        // at de.espend.idea.php.toolbox.ui.application.ToolboxApplicationForm.<init>(ToolboxApplicationForm.java:26)
+        tasks {
+            "buildSearchableOptions" {
+                enabled = false
+            }
         }
-    }    
+    }
+} else {
+    intellij {
+        version ideaVersion
+        updateSinceUntilBuild false
+        plugins = [
+                "com.jetbrains.php:${phpPluginVersion}",
+                "com.jetbrains.twig:${twigPluginVersion}",
+                "com.jetbrains.php.dql:${dqlPluginVersion}",
+                "de.espend.idea.php.annotation:${annotationPluginVersion}",
+                "de.espend.idea.php.toolbox:${toolboxPluginVersion}",
+                'coverage',
+                'webDeployment',
+                'yaml',
+                'CSS',
+                'java-i18n',
+                'properties',
+                'xpath',
+                'java'
+        ]
+        pluginName 'Symfony Support'
+
+        // Can't instantiate configurable for PHP Toolbox
+        // at de.espend.idea.php.toolbox.ui.application.ToolboxApplicationForm.<init>(ToolboxApplicationForm.java:26)
+        tasks {
+            "buildSearchableOptions" {
+                enabled = false
+            }
+        }
+    }
 }
 
 patchPluginXml {
