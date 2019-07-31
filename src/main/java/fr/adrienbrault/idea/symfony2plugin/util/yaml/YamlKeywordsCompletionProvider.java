@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -38,10 +39,12 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
 
-        PsiElement psiElement = parameters.getOriginalPosition();
-        if (psiElement == null) {
-            return;
-        }
+//        PsiElement psiElement = parameters.getOriginalPosition() != null ? parameters.getOriginalPosition() : parameters.getPosition();
+//        if (psiElement == null) {
+//            return;
+//        }
+
+        PsiElement psiElement = parameters.getPosition();
 
         Project project = psiElement.getProject();
         final JsonSchemaService jsonSchemaService = JsonSchemaService.Impl.get(project);
@@ -78,7 +81,7 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
             */
         }
 
-        String elementText = psiElement.getText();
+        String elementText = psiElement.getText().replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");
 
         if (psiElement instanceof LeafPsiElement) {
 //            // Don't complete after tag (at end of line)

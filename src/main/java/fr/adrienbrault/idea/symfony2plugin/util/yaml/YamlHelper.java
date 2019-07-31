@@ -1251,6 +1251,9 @@ public class YamlHelper {
      * <caret>
      */
     public static boolean isElementAfterEol(PsiElement psiElement) {
+        if (psiElement.getParent() instanceof YAMLPlainTextImpl) {
+            psiElement = psiElement.getParent();
+        }
         return PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLTokenTypes.EOL)) != null;
     }
 }

@@ -118,7 +118,13 @@ public class YamlElementPatternHelper {
         return
             PlatformPatterns
                 .psiElement(YAMLTokenTypes.TEXT)
-                .withParent(PlatformPatterns.psiElement(YAMLScalar.class))
+                .withParent(PlatformPatterns.psiElement(YAMLScalar.class)
+                    .withParent(PlatformPatterns.or(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class),
+                        PlatformPatterns.psiElement(YAMLSequenceItem.class)
+                        )
+                    )
+                )
                 .withLanguage(YAMLLanguage.INSTANCE)
         ;
     }
