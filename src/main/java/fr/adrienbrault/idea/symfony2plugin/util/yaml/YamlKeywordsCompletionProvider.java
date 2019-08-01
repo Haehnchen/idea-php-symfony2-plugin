@@ -81,7 +81,6 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
             */
         }
 
-        String elementText = psiElement.getText().replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");
 
         if (psiElement instanceof LeafPsiElement) {
 //            // Don't complete after tag (at end of line)
@@ -97,7 +96,12 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
                 return;
             }
 
-            result = result.withPrefixMatcher(elementText);
+            String prefix = psiElement.getText();
+
+            if (prefix.contains(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED)) {
+                prefix = prefix.substring(0, prefix.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED));
+            }
+            result = result.withPrefixMatcher(prefix);
         }
 
         /*
