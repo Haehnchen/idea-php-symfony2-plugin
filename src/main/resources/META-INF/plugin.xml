@@ -540,6 +540,7 @@
         <extensionPoint name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
         <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
         <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
+        <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">

@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.profiler.widget.SymfonyProfilerWidget;
@@ -33,6 +34,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     public static String HELP_URL = "http://symfony2-plugin.espend.de/";
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
+    public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
 
     private Project project;
 
