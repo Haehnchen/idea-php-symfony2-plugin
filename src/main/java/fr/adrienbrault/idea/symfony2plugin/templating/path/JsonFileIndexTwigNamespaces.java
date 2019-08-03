@@ -91,7 +91,7 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
 
             for(TwigPathJson twigPath : configJson.getNamespaces()) {
                 String path = twigPath.getPath();
-                if(path == null) {
+                if(path == null || path.equals(".")) {
                     path = "";
                 }
 
