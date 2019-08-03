@@ -15,12 +15,17 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "class Foo\n" +
             "{\n" +
             "   const FOO = 'const.html.twig';\n" +
+            "   const FOO_TERNARY = 'const-ternary.html.twig';\n" +
+            "   const FOO_COALESCE = 'const-coalesce.html.twig';\n" +
             "   private $foo = 'private.html.twig';\n" +
             "   public function foobar() {\n" +
             "       $var = 'var.html.twig';\n" +
             "       $foo->render('foo-render.html.twig');\n" +
             "       $foo->render('foo-render.html.twig');\n" +
             "       $foo->render('foobar-render.twig');\n" +
+            "       $foo->render(true === true ? 'foo-render-ternary.html.twig' : self::FOO_TERNARY);\n" +
+            "       $foo->render($foobar ?? 'foo-render-coalesce.html.twig');\n" +
+            "       $foo->render($foobar ?? self::FOO_COALESCE);\n" +
             "       $foo->render('@!Foo/overwrite.html.twig');\n" +
             "       $foo->renderView('foo-renderView.html.twig');\n" +
             "       $foo->renderResponse('foo-renderResponse.html.twig');\n" +
@@ -40,7 +45,8 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContains(
             PhpTwigTemplateUsageStubIndex.KEY,
             "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig",
-            "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig", "foobar-render.twig"
+            "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig", "foobar-render.twig",
+            "foo-render-ternary.html.twig", "const-ternary.html.twig", "foo-render-coalesce.html.twig", "const-coalesce.html.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-render.html.twig", value ->

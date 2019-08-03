@@ -107,37 +107,67 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                         }
 
                         if (parameters[0] instanceof StringLiteralExpression) {
-                            // foo('foo.html.twig')
-                            String contents = ((StringLiteralExpression) parameters[0]).getContents();
-                            if (StringUtils.isBlank(contents) || !contents.endsWith(".twig")) {
-                                return;
-                            }
-
-                            Function parentOfType = PsiTreeUtil.getParentOfType(methodReference, Function.class);
-                            if(parentOfType == null) {
-                                return;
-                            }
-
-                            addTemplateWithScope(contents, StringUtils.stripStart(parentOfType.getFQN(), "\\"));
-                        } else if(parameters[0] instanceof PhpReference) {
-                            for (PhpNamedElement phpNamedElement : ((PhpReference) parameters[0]).resolveLocal()) {
-                                // foo(self::foo)
-                                // foo($this->foo)
-                                if (phpNamedElement instanceof Field) {
-                                    PsiElement defaultValue = ((Field) phpNamedElement).getDefaultValue();
-                                    if (defaultValue instanceof StringLiteralExpression) {
-                                        addStringLiteralScope(methodReference, (StringLiteralExpression) defaultValue);
-                                    }
+                            resolveString(methodReference, parameters[0]);
+                        } else if(parameters[0] instanceof TernaryExpression) {
+                            // render(true === true ? 'foo.twig.html' : 'foobar.twig.html')
+                            for (PhpPsiElement phpPsiElement : new PhpPsiElement[]{((TernaryExpression) parameters[0]).getTrueVariant(), ((TernaryExpression) parameters[0]).getFalseVariant()}) {
+                                if (phpPsiElement == null) {
+                                    continue;
                                 }
 
-                                // foo($var) => $var = 'test.html.twig'
-                                if (phpNamedElement instanceof Variable) {
-                                    PsiElement assignmentExpression = phpNamedElement.getParent();
-                                    if (assignmentExpression instanceof AssignmentExpression) {
-                                        PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
-                                        if (value instanceof StringLiteralExpression) {
-                                            addStringLiteralScope(methodReference, (StringLiteralExpression) value);
-                                        }
+                                if (phpPsiElement instanceof StringLiteralExpression) {
+                                    resolveString(methodReference, phpPsiElement);
+                                } else if(phpPsiElement instanceof PhpReference) {
+                                    resolvePhpReference(methodReference, phpPsiElement);
+                                }
+                            }
+                        } else if(parameters[0] instanceof PhpReference) {
+                            resolvePhpReference(methodReference, parameters[0]);
+                        } else if(parameters[0] instanceof BinaryExpression) {
+                            // render($foo ?? 'foo.twig.html')
+                            PsiElement phpPsiElement = ((BinaryExpression) parameters[0]).getRightOperand();
+
+                            if (phpPsiElement instanceof StringLiteralExpression) {
+                                resolveString(methodReference, phpPsiElement);
+                            } else if(phpPsiElement instanceof PhpReference) {
+                                resolvePhpReference(methodReference, phpPsiElement);
+                            }
+                        }
+                    }
+
+                    private void resolveString(@NotNull MethodReference methodReference, PsiElement parameter) {
+                        // foo('foo.html.twig')
+                        String contents = ((StringLiteralExpression) parameter).getContents();
+                        if (StringUtils.isBlank(contents) || !contents.endsWith(".twig")) {
+                            return;
+                        }
+
+                        Function parentOfType = PsiTreeUtil.getParentOfType(methodReference, Function.class);
+                        if(parentOfType == null) {
+                            return;
+                        }
+
+                        addTemplateWithScope(contents, StringUtils.stripStart(parentOfType.getFQN(), "\\"));
+                    }
+
+                    private void resolvePhpReference(@NotNull MethodReference methodReference, PsiElement parameter) {
+                        for (PhpNamedElement phpNamedElement : ((PhpReference) parameter).resolveLocal()) {
+                            // foo(self::foo)
+                            // foo($this->foo)
+                            if (phpNamedElement instanceof Field) {
+                                PsiElement defaultValue = ((Field) phpNamedElement).getDefaultValue();
+                                if (defaultValue instanceof StringLiteralExpression) {
+                                    addStringLiteralScope(methodReference, (StringLiteralExpression) defaultValue);
+                                }
+                            }
+
+                            // foo($var) => $var = 'test.html.twig'
+                            if (phpNamedElement instanceof Variable) {
+                                PsiElement assignmentExpression = phpNamedElement.getParent();
+                                if (assignmentExpression instanceof AssignmentExpression) {
+                                    PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
+                                    if (value instanceof StringLiteralExpression) {
+                                        addStringLiteralScope(methodReference, (StringLiteralExpression) value);
                                     }
                                 }
                             }
