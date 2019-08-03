@@ -1,7 +1,6 @@
 sudo: false
 language: java
 jdk:
-  - oraclejdk9
   - oraclejdk11
 
 before_cache:
