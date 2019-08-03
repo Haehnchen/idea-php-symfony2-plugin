@@ -14,6 +14,8 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtensionParameter;
+import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -33,7 +35,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
     private static int MAX_FILE_BYTE_SIZE = 2097152;
     private static ObjectStreamDataExternalizer<TemplateUsage> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
-    public static Set<String> RENDER_METHODS = new HashSet<String>() {{
+    private static Set<String> RENDER_METHODS = new HashSet<String>() {{
         add("render");
         add("renderView");
         add("renderResponse");
@@ -64,6 +66,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                 Map<String, Set<String>> items = new HashMap<>();
 
                 psiFile.accept(new PsiRecursiveElementWalkingVisitor() {
+                    private Set<String> methods = null;
 
                     @Override
                     public void visitElement(PsiElement element) {
@@ -77,7 +80,24 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
                     private void visitMethodReference(@NotNull MethodReference methodReference) {
                         String methodName = methodReference.getName();
-                        if(!RENDER_METHODS.contains(methodName)) {
+
+                        // init methods once per file
+                        if(methods == null) {
+                            methods = new HashSet<>();
+                            methods.addAll(RENDER_METHODS);
+
+                            PluginConfigurationExtension[] extensions = Symfony2ProjectComponent.PLUGIN_CONFIGURATION_EXTENSION.getExtensions();
+                            if(extensions.length > 0) {
+                                PluginConfigurationExtensionParameter pluginConfiguration = new PluginConfigurationExtensionParameter(inputData.getProject());
+                                for (PluginConfigurationExtension extension : extensions) {
+                                    extension.invokePluginConfiguration(pluginConfiguration);
+                                }
+
+                                methods.addAll(pluginConfiguration.getTemplateUsageMethod());
+                            }
+                        }
+
+                        if(!methods.contains(methodName)) {
                             return;
                         }
 
