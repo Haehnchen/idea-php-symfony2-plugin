@@ -13,6 +13,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.179
+* Extract index and compiled translations into extension [#1355](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1355) (Daniel Espendiller)
+* Provide placeholder completion for Symfony translation contract implementation (Daniel Espendiller)
+* Support coalesce and ternary resolving in template name usage for php [#1354](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1354) (Daniel Espendiller)
+* Provide extension for configure some global plugin constants [#1353](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1353) (Daniel Espendiller)
+* Support same directory in Twig namespace json (Daniel Espendiller)
+* Extract more possible Docker env keys [#1349](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1349) (Daniel Espendiller)
+
 ## 0.18.178
 * Support new node tree structure of Symfony configuration and fix pattern for possible empty file of config file detection [#1344](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1344) (Daniel Espendiller)
 * Support more dotenv files [#1345](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1345) (Daniel Espendiller)
