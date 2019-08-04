@@ -31,22 +31,13 @@ import java.util.stream.Collectors;
 public class CompiledTranslatorProvider implements TranslatorProvider {
     @Override
     public boolean hasTranslationKey(@NotNull Project project, @NotNull String keyName, @NotNull String domainName) {
-        for(Set<String> keys: FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
-            if(keys.contains(keyName)) {
-                return true;
-            }
-        }
-
-        return false;
+        Set<String> domainMap = TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName);
+        return domainMap != null && domainMap.contains(keyName);
     }
 
     @Override
     public boolean hasDomain(@NotNull Project project, @NotNull String domainName) {
-        return FileBasedIndex.getInstance().getValues(
-            TranslationStubIndex.KEY,
-            domainName,
-            GlobalSearchScope.allScope(project)
-        ).size() > 0;
+        return TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName);
     }
 
     @NotNull
