@@ -57,9 +57,6 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
         TAG_SERVICE_LOCATOR,
     };
 
-    @NotNull
-    private static final InsertQuotesInsertHandler insertQuotesInsertHandler = new InsertQuotesInsertHandler();
-
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
 
         PsiElement psiElement = parameters.getOriginalPosition();
@@ -165,8 +162,8 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
                 continue;
             }
 
-            LookupElementBuilder lookupElement = LookupElementBuilder.create(tag + " ")
-                    .withPresentableText(tag);
+            LookupElementBuilder lookupElement = LookupElementBuilder.create(tag)
+                .withInsertHandler(InsertSpaceInsertHandler.getInstance());
 
             // Show !php/object only when invoking completion 2 times and we're not inside services
             // (see parse flags in comment above)
@@ -175,19 +172,36 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
                     continue;
                 } else {
                     // key: !php/object '<caret>'
-                    lookupElement = lookupElement.withInsertHandler(insertQuotesInsertHandler);
+                    lookupElement = lookupElement.withInsertHandler(InsertQuotesInsertHandler.getInstance());
                 }
 
             result.addElement(lookupElement);
         }
     }
 
-    static class InsertQuotesInsertHandler implements InsertHandler<LookupElement> {
+    static class InsertSpaceInsertHandler implements InsertHandler<LookupElement> {
+        private static final InsertQuotesInsertHandler instance = new InsertQuotesInsertHandler();
 
         @Override
-        public void handleInsert(InsertionContext context, LookupElement lookupElement) {
+        public void handleInsert(InsertionContext context, @NotNull LookupElement lookupElement) {
+            EditorModificationUtil.insertStringAtCaret(context.getEditor(), " ", false, 1);
+        }
+
+        public static InsertQuotesInsertHandler getInstance() {
+            return instance;
+        }
+    }
+
+    static class InsertQuotesInsertHandler implements InsertHandler<LookupElement> {
+        private static final InsertQuotesInsertHandler instance = new InsertQuotesInsertHandler();
+
+        @Override
+        public void handleInsert(InsertionContext context, @NotNull LookupElement lookupElement) {
             EditorModificationUtil.insertStringAtCaret(context.getEditor(), "''", false, 1);
-            //context.getEditor().getCaretModel().moveCaretRelatively(-1, 0, false, false, true);
+        }
+
+        public static InsertQuotesInsertHandler getInstance() {
+            return instance;
         }
     }
 }
