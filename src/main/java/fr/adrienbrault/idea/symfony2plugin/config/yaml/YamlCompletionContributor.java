@@ -41,12 +41,12 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProv
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlKeywordsCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlTagCompletionProvider;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.YAMLCompoundValue;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -257,42 +257,6 @@ public class YamlCompletionContributor extends CompletionContributor {
             YamlElementPatternHelper.getNamedDefaultBindPattern(),
             new NamedArgumentCompletionProvider()
         );
-
-        // config:
-        //   key: !<caret>
-        extend(
-            CompletionType.BASIC,
-            YamlElementPatternHelper.getSingleLineTextOrTag(),
-            new YamlTagCompletionProvider()
-        );
-
-        // config:
-        //   key: <caret>
-        extend(
-            CompletionType.BASIC,
-            YamlElementPatternHelper.getSingleLineText(),
-            new YamlKeywordsCompletionProvider()
-        );
-    }
-
-    @Override
-    public boolean invokeAutoPopup(@NotNull PsiElement position, char typeChar) {
-        // Only for Yaml tag places (scalar values)
-        //   key: !<caret>
-        if (!YamlElementPatternHelper.getSingleLineTextOrTag().accepts(position)
-            && !(position.getPrevSibling() instanceof YAMLKeyValue)
-            && !(position.getParent() instanceof YAMLSequenceItem)
-            && !(position.getParent() instanceof YAMLSequence)
-        ) {
-            return super.invokeAutoPopup(position, typeChar);
-        }
-
-//        if (position instanceof LeafPsiElement) {
-//            if (((LeafPsiElement) position).getElementType() == YAMLTokenTypes.TAG && position.getText().startsWith("!")) {
-//                return super.invokeAutoPopup(position, typeChar);
-//            }
-//        }
-        return typeChar == '!';
     }
 
     /**

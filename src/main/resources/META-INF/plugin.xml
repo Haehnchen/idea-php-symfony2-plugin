@@ -194,6 +194,7 @@
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
+        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlCompletionContributor"/>
 
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
