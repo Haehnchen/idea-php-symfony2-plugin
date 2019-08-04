@@ -17,6 +17,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Thomas Schulz <mail@king2500.net>
+ */
 public class YamlKeywordsCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     private static final String YAML_TYPE_NULL = "null";
@@ -39,11 +42,6 @@ public class YamlKeywordsCompletionProvider extends CompletionProvider<Completio
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
-
-//        PsiElement psiElement = parameters.getOriginalPosition() != null ? parameters.getOriginalPosition() : parameters.getPosition();
-//        if (psiElement == null) {
-//            return;
-//        }
 
         PsiElement psiElement = parameters.getPosition();
 

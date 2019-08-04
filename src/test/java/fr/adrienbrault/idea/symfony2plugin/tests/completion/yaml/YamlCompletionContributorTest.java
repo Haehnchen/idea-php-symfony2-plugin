@@ -190,6 +190,22 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         );
     }
 
+    public void testServiceArgumentCompletionForSymfony50() {
+        myFixture.copyFileToProject("Symfony50.php");
+        assertCompletionContains("services.yaml", "" +
+                "services:\n" +
+                "    my_service:\n" +
+                "        arguments: [<caret>]\n",
+            "!tagged_iterator", "!tagged_locator", "!service_locator", "!iterator", "!service"
+        );
+        assertCompletionNotContains("services.yaml", "" +
+                "services:\n" +
+                "    my_service:\n" +
+                "        arguments: [<caret>]\n",
+            "!tagged"
+        );
+    }
+
     public void testKeywordsCompletion() {
         assertCompletionContains(YAMLFileType.YML, "" +
                 "root:\n" +
