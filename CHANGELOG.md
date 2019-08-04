@@ -13,6 +13,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.180
+* Twig variable is searching based on template index, which supports much more use cases [#1356](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1356) (Daniel Espendiller)
+
 ## 0.18.179
 * Extract index and compiled translations into extension [#1355](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1355) (Daniel Espendiller)
 * Provide placeholder completion for Symfony translation contract implementation (Daniel Espendiller)
