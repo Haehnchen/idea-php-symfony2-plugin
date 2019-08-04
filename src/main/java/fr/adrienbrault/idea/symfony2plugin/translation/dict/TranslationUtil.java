@@ -1,37 +1,24 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
-import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.PhpIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
+import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
+import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.YAMLUtil;
-import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -46,6 +33,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,6 +42,8 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
+    public static final ExtensionPointName<TranslatorProvider> TRANSLATION_PROVIDER = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider");
+
     public static MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
@@ -84,76 +74,14 @@ public class TranslationUtil {
         return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
     }
 
-    public static PsiElement[] getTranslationPsiElements(final Project project, final String translationKey, final String domain) {
-        List<PsiElement> psiFoundElements = new ArrayList<>();
-        List<VirtualFile> virtualFilesFound = new ArrayList<>();
+    public static PsiElement[] getTranslationPsiElements(@NotNull Project project, @NotNull String translationKey, @NotNull String domain) {
+        Collection<PsiElement> targets = new HashSet<>();
 
-        // @TODO: completely remove this? support translation paths from service compiler
-        // search for available domain files
-        for(VirtualFile translationVirtualFile : getDomainFilePsiElements(project, domain)) {
-            if(translationVirtualFile.getFileType() != YAMLFileType.YML) {
-                continue;
-            }
+        Arrays.stream(getTranslationProviders())
+            .map(translationProvider -> translationProvider.getTranslationTargets(project, translationKey, domain))
+            .forEach(targets::addAll);
 
-            PsiFile psiFile = PsiElementUtils.virtualFileToPsiFile(project, translationVirtualFile);
-            if(psiFile instanceof YAMLFile) {
-                PsiElement yamlDocu = PsiTreeUtil.findChildOfType(psiFile, YAMLDocument.class);
-                if(yamlDocu != null) {
-                    YAMLKeyValue goToPsi = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, translationKey.split("\\."));
-                    if(goToPsi != null) {
-                        // multiline are line values are not resolve properly on psiElements use key as fallback target
-                        PsiElement valuePsiElement = goToPsi.getValue();
-                        psiFoundElements.add(valuePsiElement != null ? valuePsiElement : goToPsi);
-                        virtualFilesFound.add(translationVirtualFile);
-                    }
-                }
-            }
-        }
-
-        // collect on index
-        final YamlTranslationCollector translationCollector = (keyName, yamlKeyValue) -> {
-            if (keyName.equals(translationKey)) {
-
-                // multiline "line values" are not resolve properly on psiElements use key as fallback target
-                PsiElement valuePsiElement = yamlKeyValue.getValue();
-                psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
-
-                return false;
-            }
-
-            return true;
-        };
-
-        FileBasedIndex.getInstance().getFilesWithKey(TranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
-            // prevent duplicate targets and dont walk same file twice
-            if(virtualFilesFound.contains(virtualFile)) {
-                return true;
-            }
-
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-            if(psiFile == null) {
-                return true;
-            }
-
-            if(psiFile instanceof YAMLFile) {
-                YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
-            } else if(isSupportedXlfFile(psiFile)) {
-                // fine: xlf registered as XML file. try to find source value
-                psiFoundElements.addAll(getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));
-            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()))) {
-                // xlf are plain text because not supported by jetbrains
-                // for now we can only set file target
-                psiFoundElements.addAll(FileBasedIndex.getInstance()
-                    .getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile))).stream()
-                    .filter(string -> string.contains(translationKey)).map(string -> psiFile)
-                    .collect(Collectors.toList())
-                );
-            }
-
-            return true;
-        }, GlobalSearchScope.allScope(project));
-
-        return psiFoundElements.toArray(new PsiElement[psiFoundElements.size()]);
+        return targets.toArray(new PsiElement[0]);
     }
 
     /**
@@ -217,125 +145,80 @@ public class TranslationUtil {
         return psiElements;
     }
 
-    public static boolean hasDomain(Project project, String domainName) {
-        return TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName) ||
-            FileBasedIndex.getInstance().getValues(
-                TranslationStubIndex.KEY,
-                domainName,
-                GlobalSearchScope.allScope(project)
-            ).size() > 0;
+    public static boolean hasDomain(@NotNull Project project, @NotNull String domainName) {
+        return Arrays.stream(getTranslationProviders())
+            .anyMatch(translatorProvider -> translatorProvider.hasDomain(project, domainName));
     }
 
     public static boolean hasTranslationKey(@NotNull Project project, String keyName, String domainName) {
-
         if(!hasDomain(project, domainName)) {
             return false;
         }
 
-        Set<String> domainMap = TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName);
-        if(domainMap != null && domainMap.contains(keyName)) {
-            return true;
-        }
-
-        for(Set<String> keys: FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project))){
-            if(keys.contains(keyName)) {
-                return true;
-            }
-        }
-
-        return false;
+        return Arrays.stream(getTranslationProviders())
+            .anyMatch(translatorProvider -> translatorProvider.hasTranslationKey(project, keyName, domainName));
     }
 
     @NotNull
     public static List<LookupElement> getTranslationLookupElementsOnDomain(@NotNull Project project, @NotNull String domainName) {
-
-        Set<String> keySet = new HashSet<>();
-        List<Set<String>> test = FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domainName, GlobalSearchScope.allScope(project));
-        for(Set<String> keys: test ){
-            keySet.addAll(keys);
-        }
-
         List<LookupElement> lookupElements = new ArrayList<>();
 
-        TranslationStringMap map = TranslationIndex.getInstance(project).getTranslationMap();
-        Collection<String> domainMap = map.getDomainMap(domainName);
+        Map<String, Boolean> keys = new HashMap<>();
 
-        if(domainMap != null) {
-
-            // php translation parser; are not weak and valid keys
-            for(String stringId : domainMap) {
-                lookupElements.add(new TranslatorLookupElement(stringId, domainName));
-            }
-
-            // attach weak translations keys on file index
-            for(String stringId : keySet) {
-                if(!domainMap.contains(stringId)) {
-                    lookupElements.add(new TranslatorLookupElement(stringId, domainName, true));
+        for (TranslatorProvider translationProvider : getTranslationProviders()) {
+            for (TranslatorProviderDict.TranslationKey translationKey : translationProvider.getTranslationsForDomain(project, domainName)) {
+                String domain = translationKey.getDomain();
+                if (keys.containsKey(domain)) {
+                    // weak to full
+                    if(!keys.get(domain) && !translationKey.isWeak()) {
+                        keys.put(domain, translationKey.isWeak());
+                    }
+                } else {
+                    keys.put(domain, translationKey.isWeak());
                 }
             }
-
-            return lookupElements;
         }
 
         // fallback on index
-        for(String stringId : keySet) {
-            lookupElements.add(new TranslatorLookupElement(stringId, domainName, true));
+        for(Map.Entry<String, Boolean> entry : keys.entrySet()) {
+            lookupElements.add(new TranslatorLookupElement(entry.getKey(), domainName, entry.getValue()));
         }
 
         return lookupElements;
     }
 
     @NotNull
-    public static List<LookupElement> getTranslationDomainLookupElements(Project project) {
+    public static List<LookupElement> getTranslationDomainLookupElements(@NotNull Project project) {
+        Map<String, Boolean> domains = new HashMap<>();
 
-        List<LookupElement> lookupElements = new ArrayList<>();
-
-        // domains on complied file
-        TranslationStringMap map = TranslationIndex.getInstance(project).getTranslationMap();
-        Set<String> domainList = map.getDomainList();
-        for(String domainKey : domainList) {
-            lookupElements.add(new TranslatorLookupElement(domainKey, domainKey));
-        }
-
-        // attach index domains as weak one
-        for(String domainKey: SymfonyProcessors.createResult(project, TranslationStubIndex.KEY, domainList)) {
-            if(!domainList.contains(domainKey)) {
-                lookupElements.add(new TranslatorLookupElement(domainKey, domainKey, true));
+        for (TranslatorProvider translationProvider : getTranslationProviders()) {
+            for (TranslatorProviderDict.TranslationDomain translationDomain : translationProvider.getTranslationDomains(project)) {
+                String domain = translationDomain.getDomain();
+                if (domains.containsKey(domain)) {
+                    // weak to full
+                    if(!domains.get(domain) && !translationDomain.isWeak()) {
+                        domains.put(domain, translationDomain.isWeak());
+                    }
+                } else {
+                    domains.put(domain, translationDomain.isWeak());
+                }
             }
         }
 
-        return lookupElements;
+        return domains.entrySet().stream()
+            .map((Function<Map.Entry<String, Boolean>, LookupElement>) entry ->
+                new TranslatorLookupElement(entry.getKey(), entry.getKey(), entry.getValue())
+            ).collect(Collectors.toList());
     }
 
-    public static List<PsiFile> getDomainPsiFiles(final Project project, String domainName) {
+    public static List<PsiFile> getDomainPsiFiles(@NotNull Project project, @NotNull String domainName) {
+        Set<VirtualFile> files = new HashSet<>();
 
-        final List<PsiFile> results = new ArrayList<>();
-        final List<VirtualFile> uniqueFileList = new ArrayList<>();
-
-        // get translation files from compiler
-        for(VirtualFile virtualFile : TranslationUtil.getDomainFilePsiElements(project, domainName)) {
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-            if(psiFile != null) {
-                uniqueFileList.add(virtualFile);
-                results.add(psiFile);
-            }
+        for (TranslatorProvider translationProvider : getTranslationProviders()) {
+            files.addAll(translationProvider.getDomainPsiFiles(project, domainName));
         }
 
-        FileBasedIndex.getInstance().getFilesWithKey(TranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domainName)), virtualFile -> {
-            if(uniqueFileList.contains(virtualFile)) {
-                return true;
-            }
-
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-            if(psiFile != null) {
-                uniqueFileList.add(virtualFile);
-                results.add(psiFile);
-            }
-
-            return true;
-        }, PhpIndex.getInstance(project).getSearchScope());
-
-        return results;
+        return new ArrayList<>(PsiElementUtils.convertVirtualFilesToPsiFiles(project, files));
     }
 
     @NotNull
@@ -412,6 +295,10 @@ public class TranslationUtil {
         }
 
         return placeholder;
+    }
+
+    private static TranslatorProvider[] getTranslationProviders() {
+        return TRANSLATION_PROVIDER.getExtensions();
     }
 
     /**
