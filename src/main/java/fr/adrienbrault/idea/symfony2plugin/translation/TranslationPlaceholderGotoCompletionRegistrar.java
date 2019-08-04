@@ -106,6 +106,7 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
 
             MethodMatcher.MethodMatchParameter match = new MethodMatcher.ArrayParameterMatcher(context, placeHolderParameter)
                 .withSignature("Symfony\\Component\\Translation\\TranslatorInterface", method)
+                .withSignature("Symfony\\Contracts\\Translation\\TranslatorInterface", method)
                 .match();
 
             if (match == null) {
