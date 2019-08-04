@@ -33,7 +33,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "$var = ['foobar1' => $myVar];\n" +
             "\n" +
             "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
-            "$x->render('foo', $var);\n" +
+            "$x->render('foo.html.twig', $var);\n" +
             "\n" +
             "}"
         );
@@ -53,7 +53,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "$var['foobar'] = $myVar;\n" +
             "\n" +
             "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
-            "$x->render('foo', ['foobar' => $myVar]);\n" +
+            "$x->render('foo.html.twig', ['foobar' => $myVar]);\n" +
             "\n" +
             "}"
         );
@@ -72,7 +72,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "$var['foobar'] = $myVar;\n" +
             "\n" +
             "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
-            "$x->render('foo', array_merge($var, ['foobar1' => $myVar]));\n" +
+            "$x->render('foo.html.twig', array_merge($var, ['foobar1' => $myVar]));\n" +
             "\n" +
             "}"
         );
@@ -92,7 +92,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "$var['foobar'] = $myVar;\n" +
             "\n" +
             "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
-            "$x->render('foo', $var + ['foobar1' => $myVar]);\n" +
+            "$x->render('foo.html.twig', $var + ['foobar1' => $myVar]);\n" +
             "\n" +
             "}"
         );
@@ -112,7 +112,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "$var['foobar'] = $myVar;\n" +
             "\n" +
             "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
-            "$x->render('foo', $var += ['foobar1' => $myVar]);\n" +
+            "$x->render('foo.html.twig', $var += ['foobar1' => $myVar]);\n" +
             "\n" +
             "}"
         );
@@ -121,5 +121,84 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesForTernary() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
+            "$myVar = new \\MyVars\\MyVar();\n" +
+            "$var['foobar'] = $myVar;\n" +
+            "\n" +
+            "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
+            "$x->render(true === true ? 'foo.html.twig' : 'foo', $var += ['foobar1' => $myVar]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+
+        assertContainsElements(vars.keySet(), "foobar");
+        assertContainsElements(vars.keySet(), "foobar1");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesForCoalesce() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
+            "$test = 'foo.html.twig'\n" +
+            "$var['foobar'] = $myVar;\n" +
+            "\n" +
+            "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
+            "$x->render($foobar ?? $test, $var += ['foobar1' => $myVar]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+
+        assertContainsElements(vars.keySet(), "foobar");
+        assertContainsElements(vars.keySet(), "foobar1");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesForVariable() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
+            "$test = 'foo.html.twig'\n" +
+            "$var['foobar'] = $myVar;\n" +
+            "\n" +
+            "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
+            "$x->render($test, $var += ['foobar1' => $myVar]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+
+        assertContainsElements(vars.keySet(), "foobar");
+        assertContainsElements(vars.keySet(), "foobar1");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesForVariableWithInvalidTemplateNameString() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
+            "$test = 'foo.html'\n" +
+            "$var['foobar'] = $myVar;\n" +
+            "\n" +
+            "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
+            "$x->render($test, $var += ['foobar1' => $myVar]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+
+        assertFalse(vars.containsKey("foobar"));
     }
 }
