@@ -69,6 +69,16 @@ public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtur
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, "<?php $dql = \"<caret>\");", LANGUAGE_ID_DQL);
     }
 
+    public void testTextLanguageInjections() {
+        String base = "<?php $output = new \\Symfony\\Component\\Console\\Output\\Output();\n";
+        assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$output->write('<info>foo<caret></info>');", LANGUAGE_ID_TEXT);
+
+        String base2 = "<?php /** @var $output \\Symfony\\Component\\Console\\Output\\OutputInterface */\n";
+        assertInjectedLangAtCaret(PhpFileType.INSTANCE, base2 + "$output->writeln('<info>foo<caret></info>');", LANGUAGE_ID_TEXT);
+
+        assertInjectedLangAtCaret(PhpFileType.INSTANCE, "\\Symfony\\Component\\Console\\Formatter\\OutputFormatter::escape('<info>foo<caret></info>');", LANGUAGE_ID_TEXT);
+    }
+
     private void assertInjectedLangAtCaret(LanguageFileType fileType, String configureByText, String lang) {
         myFixture.configureByText(fileType, configureByText);
         injectionTestFixture.assertInjectedLangAtCaret(lang);
