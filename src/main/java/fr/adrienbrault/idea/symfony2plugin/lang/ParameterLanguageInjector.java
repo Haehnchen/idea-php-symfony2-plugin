@@ -43,6 +43,8 @@ public class ParameterLanguageInjector implements MultiHostInjector {
     private static final MethodMatcher.CallToSignature[] RESET_INJECTION_SIGNATURES = {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\OutputInterface", "write"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\OutputInterface", "writeln"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\Output", "write"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\Output", "writeln"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Formatter\\OutputFormatter", "escape"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Formatter\\OutputFormatter", "escapeTrailingBackslash"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Formatter\\OutputFormatterInterface", "format"),
