@@ -4,9 +4,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.Variable;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -292,5 +290,15 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             PhpElementsUtil.getClassMethod(getProject(), "FooBar\\Car", "getBar"),
             new MethodMatcher.CallToSignature("FooBar\\Foo", "getBar"))
         );
+    }
+
+    /**
+     * @see PhpElementsUtil.StringResolver#findStringValues
+     */
+    public void testThatPhpThatStringValueCanBeResolvedViaChainResolve() {
+        assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), StringLiteralExpression.class, "<?php foo('test.html');")), "test.html");
+        assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), BinaryExpression.class, "<?php foo($var ?? 'test.html');")), "test.html");
+        assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), ParameterList.class, "<?php $var = 'test.html'; foo($var);").getFirstPsiChild()), "test.html");
+        assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), TernaryExpression.class, "<?php $var = 'test.html'; $x = true == true ? $var : 'test2.html';")), "test.html", "test2.html");
     }
 }
