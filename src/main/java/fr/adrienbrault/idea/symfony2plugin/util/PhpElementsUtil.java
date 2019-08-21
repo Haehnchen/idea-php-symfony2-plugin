@@ -1458,4 +1458,84 @@ public class PhpElementsUtil {
             return visitor.variables;
         }
     }
+
+
+    /**
+     * Find string values based on a given PsiElement and its references
+     *
+     * - render(true === true ? 'foo.twig.html' : 'foobar.twig.html')
+     * - foo(self::foo), foo($var), foo($this->foo), ...
+     * - render($foo ?? 'foo.twig.html')
+     */
+    public static class StringResolver {
+        public static Collection<String> findStringValues(@NotNull PsiElement psiElement) {
+            Collection<String> strings = new HashSet<>();
+
+            if (psiElement instanceof StringLiteralExpression) {
+                strings.add(resolveString((StringLiteralExpression) psiElement));
+            } else if(psiElement instanceof TernaryExpression) {
+                // render(true === true ? 'foo.twig.html' : 'foobar.twig.html')
+                for (PhpPsiElement phpPsiElement : new PhpPsiElement[]{((TernaryExpression) psiElement).getTrueVariant(), ((TernaryExpression) psiElement).getFalseVariant()}) {
+                    if (phpPsiElement == null) {
+                        continue;
+                    }
+
+                    if (phpPsiElement instanceof StringLiteralExpression) {
+                        strings.add(resolveString((StringLiteralExpression) phpPsiElement));
+                    } else if(phpPsiElement instanceof PhpReference) {
+                        strings.add(resolvePhpReference((PhpReference) phpPsiElement));
+                    }
+                }
+            } else if(psiElement instanceof PhpReference) {
+                // foo(self::foo)
+                // foo($this->foo)
+                // foo($var)
+                strings.add(resolvePhpReference((PhpReference) psiElement));
+            } else if(psiElement instanceof BinaryExpression) {
+                // render($foo ?? 'foo.twig.html')
+                PsiElement phpPsiElement = ((BinaryExpression) psiElement).getRightOperand();
+
+                if (phpPsiElement instanceof StringLiteralExpression) {
+                    strings.add(resolveString((StringLiteralExpression) phpPsiElement));
+                } else if(phpPsiElement instanceof PhpReference) {
+                    strings.add(resolvePhpReference((PhpReference) phpPsiElement));
+                }
+            }
+
+            return strings;
+        }
+
+        @Nullable
+        private static String resolveString(@NotNull StringLiteralExpression parameter) {
+            String contents = parameter.getContents();
+            return StringUtils.isBlank(contents) ? null : contents;
+        }
+
+        @Nullable
+        private static String resolvePhpReference(@NotNull PhpReference parameter) {
+            for (PhpNamedElement phpNamedElement : ((PhpReference) parameter).resolveLocal()) {
+                // foo(self::foo)
+                // foo($this->foo)
+                if (phpNamedElement instanceof Field) {
+                    PsiElement defaultValue = ((Field) phpNamedElement).getDefaultValue();
+                    if (defaultValue instanceof StringLiteralExpression) {
+                        return resolveString((StringLiteralExpression) defaultValue);
+                    }
+                }
+
+                // foo($var) => $var = 'test.html.twig'
+                if (phpNamedElement instanceof Variable) {
+                    PsiElement assignmentExpression = phpNamedElement.getParent();
+                    if (assignmentExpression instanceof AssignmentExpression) {
+                        PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
+                        if (value instanceof StringLiteralExpression) {
+                            return resolveString((StringLiteralExpression) value);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
 }

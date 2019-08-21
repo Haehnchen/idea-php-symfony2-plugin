@@ -36,6 +36,12 @@ public class RenderParameterGotoCompletionRegistrarTest extends SymfonyLightCode
         assertContainsElements(RenderParameterGotoCompletionRegistrar.getTemplatesForScope(psiElement), "foo.html.twig");
     }
 
+    public void testSpecialReferencesTemplateNameResolve() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php $var = 'foo.html.twig'; foo($var, ['<caret>']);");
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertContainsElements(RenderParameterGotoCompletionRegistrar.getTemplatesForScope(psiElement), "foo.html.twig");
+    }
+
     public void testTemplateNameExtractionForFunctionForFunctionsAsReturn() {
         myFixture.configureByText(PhpFileType.INSTANCE, "" +
             "<?php\n" +

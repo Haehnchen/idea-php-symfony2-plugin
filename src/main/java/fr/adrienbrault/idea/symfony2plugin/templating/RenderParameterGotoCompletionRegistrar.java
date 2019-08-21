@@ -172,11 +172,10 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             // foobar('foo.html.twig', ['<caret>'])
             PsiElement prevSibling = arrayCreationElement.getPrevPsiSibling();
             if(prevSibling != null) {
-                String stringValue = PhpElementsUtil.getStringValue(prevSibling);
-                if(stringValue != null && stringValue.toLowerCase().endsWith(".twig")) {
-                    templates.add(
-                        TwigUtil.normalizeTemplateName(stringValue)
-                    );
+                for (String stringValue : PhpElementsUtil.StringResolver.findStringValues(prevSibling)) {
+                    if(stringValue != null && stringValue.toLowerCase().endsWith(".twig")) {
+                        templates.add(TwigUtil.normalizeTemplateName(stringValue));
+                    }
                 }
             }
         }
