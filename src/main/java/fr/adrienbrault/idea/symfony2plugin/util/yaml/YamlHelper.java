@@ -11,6 +11,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
@@ -20,6 +21,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
@@ -490,6 +492,23 @@ public class YamlHelper {
 
     public static boolean isRoutingFile(PsiFile psiFile) {
         return psiFile.getName().contains("routing") || psiFile.getVirtualFile().getPath().contains("/routing");
+    }
+
+    public static boolean isConfigFile(@NotNull PsiFile psiFile) {
+        return psiFile.getName().contains("config") || psiFile.getVirtualFile().getPath().contains("/config");
+    }
+
+    public static boolean isServicesFile(@NotNull PsiFile psiFile) {
+        return psiFile.getName().contains("services") || psiFile.getVirtualFile().getPath().contains("/services");
+    }
+
+    public static boolean isInsideServiceDefinition(@NotNull PsiElement psiElement) {
+        return YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement);
+    }
+
+    public static boolean isInsideServiceArgumentDefinition(@NotNull PsiElement psiElement) {
+        return isInsideServiceDefinition(psiElement)
+            && YamlElementPatternHelper.getInsideKeyValue("arguments", "properties", "calls").accepts(psiElement);
     }
 
     /**
@@ -1224,5 +1243,37 @@ public class YamlHelper {
         }
 
         return phpClasses;
+    }
+
+    /**
+     * key: !my_tag <caret>
+     */
+    public static boolean isElementAfterYamlTag(PsiElement psiElement) {
+        if (!(psiElement instanceof LeafPsiElement)) {
+            return false;
+        }
+
+        // key: !my_tag <caret>\n
+        if (((LeafPsiElement) psiElement).getElementType() == YAMLTokenTypes.EOL) {
+            PsiElement prevElement = PsiTreeUtil.getDeepestVisibleLast(psiElement);
+            if (prevElement instanceof LeafPsiElement) {
+                if (((LeafPsiElement) prevElement).getElementType() == YAMLTokenTypes.TAG) {
+                    return ((LeafPsiElement) prevElement).getText().startsWith("!");
+                }
+            }
+        }
+
+        return PsiTreeUtil.findSiblingBackward(psiElement, YAMLTokenTypes.TAG, null) != null;
+    }
+
+    /**
+     * key: foo\n
+     * <caret>
+     */
+    public static boolean isElementAfterEol(PsiElement psiElement) {
+        if (psiElement.getParent() instanceof YAMLPlainTextImpl) {
+            psiElement = psiElement.getParent();
+        }
+        return PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLTokenTypes.EOL)) != null;
     }
 }

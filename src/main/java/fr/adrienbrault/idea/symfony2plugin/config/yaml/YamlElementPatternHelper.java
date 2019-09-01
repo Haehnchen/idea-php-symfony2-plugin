@@ -124,6 +124,37 @@ public class YamlElementPatternHelper {
         );
     }
 
+    public static ElementPattern<PsiElement> getSingleLineText() {
+        return
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns.psiElement(YAMLScalar.class)
+                    .withParent(PlatformPatterns.or(
+                        PlatformPatterns.psiElement(YAMLKeyValue.class),
+                        PlatformPatterns.psiElement(YAMLSequenceItem.class)
+                        )
+                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE)
+        ;
+    }
+
+    public static ElementPattern<PsiElement> getSingleLineTextOrTag() {
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(PlatformPatterns.psiElement(YAMLScalar.class)
+//                    .withParent(PlatformPatterns
+//                            .psiElement(YAMLKeyValue.class)
+//                    )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE),
+            PlatformPatterns
+                .psiElement(YAMLTokenTypes.TAG)
+                .withLanguage(YAMLLanguage.INSTANCE)
+        );
+    }
+
     /**
      * provides auto complete on
      *
@@ -718,6 +749,25 @@ public class YamlElementPatternHelper {
                         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
                     ),
                     PlatformPatterns.psiElement().withText("!tagged")
+                );
+    }
+
+    /**
+     * !php/const <caret>
+     */
+    public static ElementPattern<PsiElement> getPhpConstPattern() {
+        return
+            PlatformPatterns
+                .psiElement()
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(YAMLTokenTypes.WHITESPACE)
+                    ),
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement().withText("!php/const"),
+                        PlatformPatterns.psiElement().withText("!php/const:")
+                    )
                 );
     }
 
