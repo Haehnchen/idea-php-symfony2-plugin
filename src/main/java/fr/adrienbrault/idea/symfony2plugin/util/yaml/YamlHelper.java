@@ -1263,9 +1263,7 @@ public class YamlHelper {
             }
         }
 
-        PsiElement tagElement = PsiTreeUtil.findSiblingBackward(psiElement, YAMLTokenTypes.TAG, null);
-
-        return tagElement != null;
+        return PsiTreeUtil.findSiblingBackward(psiElement, YAMLTokenTypes.TAG, null) != null;
     }
 
     /**

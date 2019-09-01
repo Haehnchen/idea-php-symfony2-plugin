@@ -167,27 +167,27 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
 
             // Show !php/object only when invoking completion 2 times and we're not inside services
             // (see parse flags in comment above)
-            if (tag.equals(TAG_PHP_OBJECT))
+            if (tag.equals(TAG_PHP_OBJECT)) {
                 if (!allTags || isServices) {
                     continue;
-                } else {
-                    // key: !php/object '<caret>'
-                    lookupElement = lookupElement.withInsertHandler(InsertQuotesInsertHandler.getInstance());
                 }
+
+                lookupElement = lookupElement.withInsertHandler(InsertQuotesInsertHandler.getInstance());
+            }
 
             result.addElement(lookupElement);
         }
     }
 
     static class InsertSpaceInsertHandler implements InsertHandler<LookupElement> {
-        private static final InsertQuotesInsertHandler instance = new InsertQuotesInsertHandler();
+        private static final InsertSpaceInsertHandler instance = new InsertSpaceInsertHandler();
 
         @Override
         public void handleInsert(InsertionContext context, @NotNull LookupElement lookupElement) {
             EditorModificationUtil.insertStringAtCaret(context.getEditor(), " ", false, 1);
         }
 
-        public static InsertQuotesInsertHandler getInstance() {
+        public static InsertSpaceInsertHandler getInstance() {
             return instance;
         }
     }
@@ -197,7 +197,7 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
 
         @Override
         public void handleInsert(InsertionContext context, @NotNull LookupElement lookupElement) {
-            EditorModificationUtil.insertStringAtCaret(context.getEditor(), "''", false, 1);
+            EditorModificationUtil.insertStringAtCaret(context.getEditor(), " ''", false, 1);
         }
 
         public static InsertQuotesInsertHandler getInstance() {

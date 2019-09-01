@@ -45,11 +45,6 @@ public class YamlCompletionContributor extends CompletionContributor {
             return super.invokeAutoPopup(position, typeChar);
         }
 
-//        if (position instanceof LeafPsiElement) {
-//            if (((LeafPsiElement) position).getElementType() == YAMLTokenTypes.TAG && position.getText().startsWith("!")) {
-//                return super.invokeAutoPopup(position, typeChar);
-//            }
-//        }
         return typeChar == '!';
     }
 }
