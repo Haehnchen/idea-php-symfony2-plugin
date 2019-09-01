@@ -13,6 +13,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.181
+* Completion for YAML tags, keywords and PHP constants [#1336](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1336) [#1364](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1364) (Thomas Schulz)
+* Support template name references resolve when complete / navigate to Twig variables on twig render() parameter [#1361](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1361) (Daniel Espendiller)
+
 ## 0.18.180
 * Twig variable is searching based on template index, which supports much more use cases [#1356](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1356) (Daniel Espendiller)
 
