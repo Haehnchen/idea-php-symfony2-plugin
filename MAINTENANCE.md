@@ -46,5 +46,10 @@ automatically. This will include the changelog generated earlier.
 Execute the following gradle task:
 
 ```bash
-IJ_REPO_USERNAME=youruser IJ_REPO_PASSWORD=yourpassword ./gradlew clean buildPlugin publishPlugin
+IJ_TOKEN=yourtoken ./gradlew clean buildPlugin publishPlugin
 ```
+
+Token documentation:
+
+* http://www.jetbrains.org/intellij/sdk/docs/plugin_repository/api/plugin_upload.html
+* https://www.jetbrains.com/help/hub/Manage-Permanent-Tokens.html
