@@ -29,6 +29,7 @@ public class Settings implements PersistentStateComponent<Settings> {
         "app/cache/dev/appDevDebugProjectContainer.xml",
         "var/cache/dev/appDevDebugProjectContainer.xml",
         "var/cache/dev/srcDevDebugProjectContainer.xml",
+        "var/cache/dev/srcApp_KernelDevDebugContainer.xml",
     };
 
     // Default Symfony 2, 3 and 4 paths
