@@ -104,4 +104,67 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "foo-annotation-property.html.twig".equals(value.getTemplate()) && value.getScopes().contains("Foobar.foobar")
         );
     }
+
+    public void testEmptyTemplateAnnotationIndexUsingTemplateGuesser() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;" +
+            "" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +
+            "class MyNiceFoobarController\n" +
+            "{" +
+            "/**\n" +
+            " *\n" +
+            " * @Template()\n" +
+            " */" +
+            "public function foobarWhatAction() {}" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "my_nice_foobar/foobar_what.html.twig"
+        );
+    }
+
+    public void testEmptyTemplateAnnotationIndexUsingInvokeTemplateGuesser() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;" +
+            "" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +
+            "class MyNiceFoobarController\n" +
+            "{" +
+            "/**\n" +
+            " *\n" +
+            " * @Template()\n" +
+            " */" +
+            "public function __invoke() {}" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "my_nice_foobar.html.twig"
+        );
+    }
+
+    public void testEmptyTemplateAnnotationIndexWithDirectoryUseTemplateGuesser() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller\\CarItem\\WithApple;" +
+            "" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +
+            "class MyNiceFoobarController\n" +
+            "{" +
+            "/**\n" +
+            " *\n" +
+            " * @Template()\n" +
+            " */" +
+            "public function foobarWhatAction() {}" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "car_item/with_apple/my_nice_foobar/foobar_what.html.twig"
+        );
+    }
 }
