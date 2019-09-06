@@ -1,23 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.containers.ArrayListSet;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import kotlin.Pair;
 import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +21,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -380,12 +380,35 @@ public class PhpMethodVariableResolveUtil {
                 }
 
                 String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
-                if(!"Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template".equals(StringUtils.stripStart(annotationFqnName, "\\"))) {
+                if(!StringUtils.stripStart(TwigUtil.TEMPLATE_ANNOTATION_CLASS, "\\").equals(StringUtils.stripStart(annotationFqnName, "\\"))) {
                     return;
                 }
 
                 String template = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template");
-                if(template != null && template.endsWith(".twig")) {
+                if (template == null) {
+                    // see \Sensio\Bundle\FrameworkExtraBundle\Templating\TemplateGuesser
+                    // App\Controller\MyNiceController::myAction => my_nice/my.html.twig
+                    Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
+                    if(methodScope != null) {
+                        PhpClass phpClass = methodScope.getContainingClass();
+                        if (phpClass != null) {
+                            // App\Controller\  "MyNice"  Controller
+                            Matcher matcher = Pattern.compile("Controller\\\\(.+)Controller$", Pattern.MULTILINE).matcher(StringUtils.stripStart(phpClass.getFQN(), "\\"));
+                            if(matcher.find()){
+                                String group = underscore(matcher.group(1).replace("\\", "/"));
+                                String name = methodScope.getName();
+
+                                // __invoke is using controller as template name
+                                if (name.equals("__invoke")) {
+                                    addTemplateWithScope(group + ".html.twig", methodScope, null);
+                                } else {
+                                    String action = name.endsWith("Action") ? name.substring(0, name.length() - "Action".length()) : name;
+                                    addTemplateWithScope(group + "/" + underscore(action) + ".html.twig", methodScope, null);
+                                }
+                            }
+                        }
+                    }
+                } else if(template.endsWith(".twig")) {
                     Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
                     if(methodScope != null) {
                         addTemplateWithScope(template, methodScope, null);
