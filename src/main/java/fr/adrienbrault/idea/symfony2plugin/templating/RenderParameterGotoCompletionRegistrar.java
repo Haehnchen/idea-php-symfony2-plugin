@@ -12,7 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.TwigIcons;
@@ -164,9 +164,9 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             // }
             Method method = PsiTreeUtil.getParentOfType(parentArrayCreation, Method.class);
             if(method != null) {
-                TemplatesControllerRelatedGotoCollector.visitMethodTemplateNames(method, pair -> templates.add(
-                    TwigUtil.normalizeTemplateName(pair.getFirst())
-                ));
+                PhpMethodVariableResolveUtil.visitRenderTemplateFunctions(method, triple ->
+                    templates.add(TwigUtil.normalizeTemplateName(triple.getFirst()))
+                );
             }
         } else {
             // foobar('foo.html.twig', ['<caret>'])
