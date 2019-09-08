@@ -13,6 +13,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.182
+* Remove custom related template search for controller and migrate to indexer visitor [#1370](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1370) (Daniel Espendiller)
+* Provide template guesser for @Template with default property is empty [#1368](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1368) (Daniel Espendiller)
+* Added path for default debug container in Symfony 4 [#1367](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1367) (Artem Oliynyk)
+
 ## 0.18.181
 * Completion for YAML tags, keywords and PHP constants [#1336](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1336) [#1364](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1364) (Thomas Schulz)
 * Support template name references resolve when complete / navigate to Twig variables on twig render() parameter [#1361](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1361) (Daniel Espendiller)
