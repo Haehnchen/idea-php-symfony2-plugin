@@ -54,29 +54,31 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
                     }
                 }
 
-                for(TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(psiFile, TwigExtendsTag.class)) {
-                    for (String templateName : TwigUtil.getTwigExtendsTagTemplates(extendsTag)) {
-                        blocks.putIfAbsent("extends", new HashSet<>());
-                        blocks.get("extends").add(TwigUtil.normalizeTemplateName(templateName));
-                    }
-                }
-
-                for(TwigCompositeElement twigCompositeElement: PsiTreeUtil.getChildrenOfTypeAsList(psiFile, TwigCompositeElement.class)) {
-                    if(twigCompositeElement.getNode().getElementType() == TwigElementTypes.TAG) {
-                        twigCompositeElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                            @Override
-                            public void visitElement(PsiElement element) {
-                                if(TwigPattern.getTwigTagUseNamePattern().accepts(element) && PsiElementUtils.getParentOfType(element, TwigElementTypes.EMBED_STATEMENT) == null) {
-                                    String templateName = TwigUtil.normalizeTemplateName(PsiElementUtils.trimQuote(element.getText()));
-                                    if(StringUtils.isNotBlank(templateName)) {
-                                        blocks.putIfAbsent("use", new HashSet<>());
-                                        blocks.get("use").add(templateName);
+                for(PsiElement psiElement : PsiTreeUtil.getChildrenOfAnyType(psiFile, TwigExtendsTag.class, TwigCompositeElement.class)) {
+                    if (psiElement instanceof TwigExtendsTag) {
+                        // {% extends 'foo.html.twig' %}
+                        for (String templateName : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) psiElement)) {
+                            blocks.putIfAbsent("extends", new HashSet<>());
+                            blocks.get("extends").add(TwigUtil.normalizeTemplateName(templateName));
+                        }
+                    } else if(psiElement instanceof TwigCompositeElement) {
+                        // {% use 'foo.html.twig' %}
+                        if(psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
+                            psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+                                @Override
+                                public void visitElement(PsiElement element) {
+                                    if(TwigPattern.getTwigTagUseNamePattern().accepts(element) && PsiElementUtils.getParentOfType(element, TwigElementTypes.EMBED_STATEMENT) == null) {
+                                        String templateName = TwigUtil.normalizeTemplateName(PsiElementUtils.trimQuote(element.getText()));
+                                        if(StringUtils.isNotBlank(templateName)) {
+                                            blocks.putIfAbsent("use", new HashSet<>());
+                                            blocks.get("use").add(templateName);
+                                        }
                                     }
-                                }
 
-                                super.visitElement(element);
-                            }
-                        });
+                                    super.visitElement(element);
+                                }
+                            });
+                        }
                     }
                 }
             }
