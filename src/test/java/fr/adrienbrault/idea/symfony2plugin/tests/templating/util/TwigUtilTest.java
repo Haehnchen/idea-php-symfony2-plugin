@@ -272,15 +272,23 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
             "{% form_theme form ':Foobar:fields.html.twig' %}" +
-            "{% form_theme form.foobar \":Foobar:fields_foobar.html.twig\" %}" +
-            "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}" +
-            "{% form_theme form.foobar with {\":Foobar:fields_foobar_2.html.twig\", \":Foobar:fields_foobar_3.html.twig\", \":Foobar:fields_foobar_4.html.twig\"} %}"
+                "{% include 'include.html.twig' %}" +
+                "{% import 'import.html.twig' %}" +
+                "{% from 'from.html.twig' import foobar %}" +
+                "{% import 'import.html.twig' %}" +
+                "{{ include('include_function.html.twig') }}" +
+                "{{ source('source_function.html.twig') }}" +
+                "{% embed 'embed.html.twig' %}" +
+                "{% form_theme form.foobar \":Foobar:fields_foobar.html.twig\" %}" +
+                "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}" +
+                "{% form_theme form.foobar with {\":Foobar:fields_foobar_2.html.twig\", \":Foobar:fields_foobar_3.html.twig\", \":Foobar:fields_foobar_4.html.twig\"} %}"
         );
 
         TwigUtil.visitTemplateIncludes((TwigFile) fileFromText, templateInclude ->
             includes.add(templateInclude.getTemplateName())
         );
 
+        assertContainsElements(includes, "include.html.twig", "import.html.twig", "from.html.twig", "include_function.html.twig", "source_function.html.twig", "embed.html.twig");
         assertContainsElements(includes, ":Foobar:fields.html.twig", ":Foobar:fields_foobar.html.twig", ":Foobar:fields_foobar_1.html.twig");
         assertContainsElements(includes, ":Foobar:fields_foobar_2.html.twig", ":Foobar:fields_foobar_3.html.twig", ":Foobar:fields_foobar_4.html.twig");
     }
