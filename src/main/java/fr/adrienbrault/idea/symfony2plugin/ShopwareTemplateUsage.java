@@ -49,7 +49,6 @@ public class ShopwareTemplateUsage implements TwigFileUsage {
         return false;
     }
 
-
     @Nullable
     private Collection<String> getTemplateParameter(@NotNull PsiElement psiElement, @NotNull String tag) {
         if (psiElement.getNode().getElementType() == TwigElementTypes.TAG) {

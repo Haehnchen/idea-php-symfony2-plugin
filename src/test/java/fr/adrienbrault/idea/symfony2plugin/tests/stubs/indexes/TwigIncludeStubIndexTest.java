@@ -37,7 +37,8 @@ public class TwigIncludeStubIndexTest extends SymfonyLightCodeInsightFixtureTest
             "{% include '@!Foo/overwrite.html.twig' %}\n" +
             "\n" +
             "{% form_theme form.foobar with \"form_theme_1.html.twig\" %}" +
-            "{% form_theme form.foobar with [\"form_theme_2.html.twig\", \"form_theme_3.html.twig\", \"form_theme_4.html.twig\"] %}"
+            "{% form_theme form.foobar with [\"form_theme_2.html.twig\", \"form_theme_3.html.twig\", \"form_theme_4.html.twig\"] %}" +
+            "{% sw_include 'sw_include.html.twig' %}\n"
         );
     }
 
@@ -51,7 +52,7 @@ public class TwigIncludeStubIndexTest extends SymfonyLightCodeInsightFixtureTest
             "include_func_space.html.twig", "include_statement_0.html.twig", "include_statement_0.html.twig",
             "include_array_0.html.twig", "include_array_1.html.twig", "embed_foo_quote.html.twig",
             "embed_foo_double_quote.html.twig", "from_foo_quote.html.twig", "import_foo_quote.html.twig",
-            "@Foo/overwrite.html.twig", "form_theme_1.html.twig", "form_theme_2.html.twig", "form_theme_3.html.twig"
+            "@Foo/overwrite.html.twig", "form_theme_1.html.twig", "form_theme_2.html.twig", "form_theme_3.html.twig", "sw_include.html.twig"
         );
     }
 }
