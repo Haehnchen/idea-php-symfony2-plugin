@@ -13,6 +13,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.18.183
+* Add linemarker icon for navigate to "extends" tag of the given Twig [#1376](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1376) (Daniel Espendiller)
+* Optimize Twig "extends" tag indexing performance [#1374](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1374) (Daniel Espendiller)
+
 ## 0.18.182
 * Remove custom related template search for controller and migrate to indexer visitor [#1370](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1370) (Daniel Espendiller)
 * Provide template guesser for @Template with default property is empty [#1368](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1368) (Daniel Espendiller)
