@@ -26,11 +26,13 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -62,6 +64,11 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 LineMarkerInfo lineIncludes = attachIncludes((TwigFile) psiElement);
                 if(lineIncludes != null) {
                     results.add(lineIncludes);
+                }
+
+                LineMarkerInfo extending = attachExtends((TwigFile) psiElement);
+                if(extending != null) {
+                    results.add(extending);
                 }
 
                 // eg bundle overwrites
@@ -113,6 +120,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(twigFile));
     }
 
+    @Nullable
     private LineMarkerInfo attachIncludes(@NotNull TwigFile twigFile) {
         Collection<String> templateNames = TwigUtil.getTemplateNamesForFile(twigFile);
 
@@ -138,6 +146,37 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
             .setTargets(new MyTemplateIncludeLazyValue(twigFile, templateNames))
             .setTooltipText("Navigate to includes")
+            .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
+
+        return builder.createLineMarkerInfo(twigFile);
+    }
+
+    @Nullable
+    private LineMarkerInfo attachExtends(@NotNull TwigFile twigFile) {
+        Collection<String> templateNames = TwigUtil.getTemplateNamesForFile(twigFile);
+
+        boolean found = false;
+        for(String templateName: templateNames) {
+            Project project = twigFile.getProject();
+
+            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(
+                TwigExtendsStubIndex.KEY, templateName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE)
+            );
+
+            // stop on first target, we load them lazily afterwards
+            if(containingFiles.size() > 0) {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            return null;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
+            .setTargets(new TemplateExtendsLazyTargets(twigFile.getProject(), twigFile.getVirtualFile()))
+            .setTooltipText("Navigate to extends")
             .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
 
         return builder.createLineMarkerInfo(twigFile);
@@ -372,6 +411,27 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         @Override
         protected Icon getIcon(PsiElement psiElement) {
             return TwigIcons.TwigFileIcon;
+        }
+    }
+
+    /**
+     * Find "extends" which are targeting the given template file
+     */
+    private static class TemplateExtendsLazyTargets extends NotNullLazyValue<Collection<? extends PsiElement>> {
+        @NotNull
+        private final Project project;
+        @NotNull
+        private final VirtualFile virtualFile;
+
+        TemplateExtendsLazyTargets(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+            this.project = project;
+            this.virtualFile = virtualFile;
+        }
+
+        @NotNull
+        @Override
+        protected Collection<? extends PsiElement> compute() {
+            return PsiElementUtils.convertVirtualFilesToPsiFiles(project, TwigUtil.getTemplatesExtendingFile(project, virtualFile));
         }
     }
 }
