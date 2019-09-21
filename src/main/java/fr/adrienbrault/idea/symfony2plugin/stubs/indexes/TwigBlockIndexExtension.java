@@ -55,13 +55,7 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
                 }
 
                 for(PsiElement psiElement : PsiTreeUtil.getChildrenOfAnyType(psiFile, TwigExtendsTag.class, TwigCompositeElement.class)) {
-                    if (psiElement instanceof TwigExtendsTag) {
-                        // {% extends 'foo.html.twig' %}
-                        for (String templateName : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) psiElement)) {
-                            blocks.putIfAbsent("extends", new HashSet<>());
-                            blocks.get("extends").add(TwigUtil.normalizeTemplateName(templateName));
-                        }
-                    } else if(psiElement instanceof TwigCompositeElement) {
+                    if(psiElement instanceof TwigCompositeElement) {
                         // {% use 'foo.html.twig' %}
                         if(psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
                             psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {

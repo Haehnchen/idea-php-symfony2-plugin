@@ -7,6 +7,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,20 +53,21 @@ public class TwigFileUtil {
         }
 
         Set<VirtualFile> myVirtualFiles = new HashSet<>();
+        Set<String> templates = new HashSet<>();
 
-        for (String s : new String[]{"extends", "use"}) {
-            Set<String> templates = new HashSet<>();
+        FileBasedIndex.getInstance()
+            .getValues(TwigBlockIndexExtension.KEY, "use", GlobalSearchScope.fileScope(file))
+            .forEach(templates::addAll);
 
-            FileBasedIndex.getInstance()
-                .getValues(TwigBlockIndexExtension.KEY, s, GlobalSearchScope.fileScope(file))
-                .forEach(templates::addAll);
+        FileBasedIndex.getInstance()
+            .getFileData(TwigExtendsStubIndex.KEY, file.getVirtualFile(), file.getProject())
+            .forEach((templateName, aVoid) -> templates.add(templateName));
 
-            for (String template : templates) {
-                for (VirtualFile virtualFile : TwigUtil.getTemplateFiles(file.getProject(), template)) {
-                    if (!virtualFiles.contains(virtualFile)) {
-                        myVirtualFiles.add(virtualFile);
-                        virtualFiles.add(virtualFile);
-                    }
+        for (String template : templates) {
+            for (VirtualFile virtualFile : TwigUtil.getTemplateFiles(file.getProject(), template)) {
+                if (!virtualFiles.contains(virtualFile)) {
+                    myVirtualFiles.add(virtualFile);
+                    virtualFiles.add(virtualFile);
                 }
             }
         }
