@@ -543,6 +543,7 @@
         <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
         <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
         <extensionPoint name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
+        <extensionPoint name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">

@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -10,7 +8,6 @@ import com.intellij.util.io.KeyDescriptor;
 import com.intellij.util.io.VoidDataExternalizer;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import gnu.trove.THashMap;
@@ -47,19 +44,9 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
                 return map;
             }
 
-            PsiElement[] twigExtendsTags = PsiTreeUtil.collectElements(psiFile,
-                psiElement -> psiElement instanceof TwigExtendsTag
+            TwigUtil.visitTemplateExtends((TwigFile) psiFile, pair ->
+                map.put(TwigUtil.normalizeTemplateName(pair.getFirst()), null)
             );
-
-            if(twigExtendsTags.length == 0) {
-                return map;
-            }
-
-            for(PsiElement twigExtendsTag: twigExtendsTags) {
-                for (String s : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) twigExtendsTag)) {
-                    map.put(TwigUtil.normalizeTemplateName(s), null);
-                }
-            }
 
             return map;
         };

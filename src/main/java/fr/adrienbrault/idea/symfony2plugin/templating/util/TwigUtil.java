@@ -36,6 +36,7 @@ import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -92,8 +93,12 @@ public class TwigUtil {
         BUNDLE, ADD_PATH
     }
 
-    private static final ExtensionPointName<TwigNamespaceExtension> EXTENSIONS = new ExtensionPointName<>(
+    private static final ExtensionPointName<TwigNamespaceExtension> TWIG_NAMESPACE_EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
+    );
+
+    private static final ExtensionPointName<TwigFileUsage> TWIG_FILE_USAGE_EXTENSIONS = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"
     );
 
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
@@ -1312,7 +1317,7 @@ public class TwigUtil {
 
         // load extension
         TwigNamespaceExtensionParameter parameter = new TwigNamespaceExtensionParameter(project);
-        for (TwigNamespaceExtension namespaceExtension : EXTENSIONS.getExtensions()) {
+        for (TwigNamespaceExtension namespaceExtension : TWIG_NAMESPACE_EXTENSIONS.getExtensions()) {
             twigPaths.addAll(namespaceExtension.getNamespaces(parameter));
         }
 
@@ -2301,6 +2306,14 @@ public class TwigUtil {
                         }
                     }
                 }
+
+                for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
+                    if (extension.isIncludeTemplate(psiElement)) {
+                        for (String template : extension.getIncludeTemplate(psiElement)) {
+                            consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.INCLUDE));
+                        }
+                    }
+                }
             }
 
             return false;
@@ -2706,6 +2719,31 @@ public class TwigUtil {
         }
 
         return lookupElements;
+    }
+
+    public static void visitTemplateExtends(@NotNull TwigFile twigFile, Consumer<Pair<String, PsiElement>> consumer) {
+        twigFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(PsiElement element) {
+                if (element instanceof TwigExtendsTag) {
+                    for (String s : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) element)) {
+                        consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(s), element));
+                    }
+                }
+
+                for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
+                    if (!extension.isExtendsTemplate(element)) {
+                       continue;
+                    }
+
+                    for (String template : extension.getExtendsTemplate(element)) {
+                        consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
     }
 
     public static class DomainScope {
