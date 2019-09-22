@@ -2,7 +2,8 @@ Changelog
 =========
 
 # Version names
-* 0.18.x: PhpStorm 2019.1+
+* 0.19.x: PhpStorm 2019.2+
+* 0.18.x: PhpStorm 2019.1+ (no support)
 * 0.17.x: PhpStorm 2018.2+ (no support)
 * 0.16.x: PhpStorm 2017.3.2+ (no support)
 * 0.15.x: PhpStorm 2017.2+ (no support)
@@ -12,6 +13,9 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.19.184
+* Provide extension for twig include and extends usage (Daniel Espendiller)
 
 ## 0.18.183
 * Add linemarker icon for navigate to "extends" tag of the given Twig [#1376](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1376) (Daniel Espendiller)
