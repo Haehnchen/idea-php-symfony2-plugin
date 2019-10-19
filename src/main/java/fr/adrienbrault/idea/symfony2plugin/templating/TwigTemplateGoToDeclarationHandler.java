@@ -103,7 +103,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText()));
         }
 
-        if(TwigPattern.getFilterPattern().accepts(psiElement)) {
+        if(PlatformPatterns.or(TwigPattern.getFilterPattern(), TwigPattern.getApplyFilterPattern()).accepts(psiElement)) {
             targets.addAll(getFilterGoTo(psiElement));
         }
 

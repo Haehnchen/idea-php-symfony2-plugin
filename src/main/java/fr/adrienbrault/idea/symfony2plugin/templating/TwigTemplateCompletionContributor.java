@@ -171,6 +171,21 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new FilterCompletionProvider()
         );
 
+        // {% apply upper %}This text becomes uppercase{% endapply %}
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getApplyFilterPattern(),
+            new CompletionProvider<CompletionParameters>() {
+                @Override
+                protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+                    Project project = completionParameters.getPosition().getProject();
+                    for(Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(project).getFilters().entrySet()) {
+                        completionResultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
+                    }
+                }
+            }
+        );
+
         // provides support for {{ '<xxx>' }}
         extend(
             CompletionType.BASIC,

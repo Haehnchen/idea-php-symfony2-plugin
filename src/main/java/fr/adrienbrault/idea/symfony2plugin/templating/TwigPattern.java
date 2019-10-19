@@ -1089,6 +1089,27 @@ public class TwigPattern {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * {% apply <caret> %}foobar{% endapply %}
+     */
+    static ElementPattern<PsiElement> getApplyFilterPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).with(new PatternCondition<PsiElement>("aa") {
+                    @Override
+                    public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+                        return "apply".equalsIgnoreCase(psiElement.getText());
+                    }
+                })
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getForTagInVariablePattern() {
 
         // {% for key, user in "users" %}
