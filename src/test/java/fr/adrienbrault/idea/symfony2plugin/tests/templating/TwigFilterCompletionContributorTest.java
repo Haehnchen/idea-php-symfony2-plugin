@@ -6,11 +6,12 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see com.jetbrains.twig.completion.TwigCompletionContributor
+ * @see TwigTemplateCompletionContributor
  */
 public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -28,6 +29,11 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_minify_query", "doctrine_pretty_query");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'test'  |   <caret> }}", "doctrine_minify_query", "doctrine_pretty_query");
         assertCompletionContains(TwigFileType.INSTANCE, "{{     'test'    |       <caret>   }}", "doctrine_minify_query", "doctrine_pretty_query");
+    }
+
+    public void testTwigExtensionFilterViaApplyCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% apply <caret> %}foo{% endapply %}", "doctrine_minify_query", "doctrine_pretty_query");
+        assertNavigationContains(TwigFileType.INSTANCE, "{% apply doctrine<caret>_minify_query %}foo{% endapply %}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::minifyQuery");
     }
 
     public void testTwigExtensionFilterNavigation() {
@@ -164,7 +170,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToLocalDeclarationHandler
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testSetTagIsAvailableForFunctionReferences() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% set = <caret> %}", "json_bar");
