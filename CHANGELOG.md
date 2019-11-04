@@ -14,6 +14,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.185
+* Add support for Twig apply tag filters (Daniel Espendiller) [#1388](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1388)
+
 ## 0.19.184
 * Provide extension for twig include and extends usage (Daniel Espendiller)
 
