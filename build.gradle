@@ -1,23 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-        maven {
-            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
-        }
-
-    }
-    dependencies {
-        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.5.0-SNAPSHOT"
-    }
-}
-
 plugins {
-    id "org.jetbrains.intellij" version "0.4.8"
+    id "org.jetbrains.intellij" version "0.4.11"
     id 'com.palantir.git-version' version "0.11.0"
 }
 
