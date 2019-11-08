@@ -43,7 +43,6 @@ Building, debugging and other
 --------------------
 
 * Open the project in IntelliJ, and follow the steps here : http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
-* See how to debug and get into PhpStorm dev [german only](http://www.espend.de/artikel/wissenwertes-ueber-die-intellij-idea-phpstorm-plugin-entwicklung.html)
 * Want to donate? nice go [here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8)
 
 What? Something still does not work? Damn! :cry:
